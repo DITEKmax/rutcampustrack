@@ -2692,6 +2692,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y shellcheck
       - name: Lint scripts/*.sh
         run: shellcheck --severity=warning scripts/*.sh
+      - name: Parse local-stand PowerShell source
+        shell: pwsh
+        run: |
+          $localStandTokens = $null
+          $localStandParseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD 'scripts/local-stand.ps1'), [ref]$localStandTokens, [ref]$localStandParseErrors) | Out-Null
+          if ($localStandParseErrors.Count -gt 0) { throw 'Tracked local-stand PowerShell syntax validation failed' }
 
   # M13 G17 — структурная валидация Grafana dashboard JSON-файлов.
   # Catch'ит broken JSON / missing uid|title / 0 panels до VPS deploy.
@@ -3527,118 +3534,306 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Verify exact stranded semester effect reconciliation
-        id: semester-reconciliation
+      - name: Verify owned semester metadata and historical promotion through the ready UI
+        id: admin-semester-ui
         timeout-minutes: 9
         if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
-          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-semester-reconciliation-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_ADMIN_SEMESTER_UI_RUN: ${{ runner.temp }}/rct-admin-semester-ui-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-admin-semester-ui-${{ github.run_id }}-${{ github.run_attempt }}
           NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
           PLAYWRIGHT_NO_COPY_PROMPT: '1'
           NODE_OPTIONS: --max-old-space-size=512
           CI: 'true'
         run: |
           umask 077
-          printf 'RCT_SEMESTER_RECONCILIATION_RUN=%s\n' "$RCT_SEMESTER_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          printf 'RCT_ADMIN_SEMESTER_UI_RUN=%s\n' "$RCT_ADMIN_SEMESTER_UI_RUN" >> "$GITHUB_ENV"
           mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
           mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
           printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
-          set +e
-          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'FULL admin reconciles one exact stranded close before archive completion$'
-          case_exit=$?
-          set -e
-          if ! python3 - <<'PY_RECONCILIATION_GATE'
-          import json, os, stat
-          from pathlib import Path
+          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'FULL admin manages owned semester metadata and historical group promotion through the ready UI$'
 
-          def pairs(items):
-              result = {}
-              for key, value in items:
-                  if key in result:
-                      raise ValueError('Duplicate reconciliation field')
-                  result[key] = value
-              return result
-
-          restored = False
-          try:
-              path = Path(os.environ['RCT_SEMESTER_LIFECYCLE_RUN']) / 'reconciliation.safe.json'
-              with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
-                  info = os.fstat(stream.fileno())
-                  if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600 or not 0 < info.st_size <= 4096:
-                      raise ValueError('Invalid reconciliation receipt')
-                  raw = stream.read(4097)
-                  if len(raw) != info.st_size:
-                      raise ValueError('Reconciliation receipt size changed')
-              value = json.loads(raw, object_pairs_hook=pairs,
-                                 parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite reconciliation field')))
-              booleans = {'exactDlqEnvelope', 'pendingBeforeReplay', 'appliedAfterReplay',
-                          'sameArchiveCompleted', 'duplicateBusinessUnchanged', 'recoveryPublishAttempted',
-                          'duplicateAttempted', 'restorationSucceeded', 'clockUnchanged'}
-              keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
-                                 'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome',
-                                 'firstRestartFailure', 'mainCloseLastRead'}
-              if (type(value) is not dict or set(value) != keys
-                      or value['schema'] != 'semester-reconciliation.v3'
-                      or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
-                      or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
-                      or value['measuredListenerAttempts'] != 'UNKNOWN'
-                      or not all(type(value[key]) is bool for key in booleans)
-                      or not (value['retainedDlqCopies'] == 'UNKNOWN'
-                              or (type(value['retainedDlqCopies']) is int and value['retainedDlqCopies'] == 1))
-                      or value['cleanupOutcome'] not in {'PENDING', 'PASSED', 'FAILED'}):
-                  raise ValueError('Invalid closed reconciliation schema')
-              restart = value['firstRestartFailure']
-              if restart is not None and (
-                      type(restart) is not dict or set(restart) != {'phase', 'service', 'cause'}
-                      or not all(type(restart[key]) is str for key in ('phase', 'service', 'cause'))
-                      or restart['phase'] not in {'MAIN', 'CLEANUP'}
-                      or restart['service'] not in {'ATTENDANCE', 'SCHEDULE'}
-                      or restart['cause'] not in {'NOT_RUNNING', 'HEALTH_STARTING', 'HEALTH_UNHEALTHY', 'HEALTH_UNKNOWN'}):
-                  raise ValueError('Invalid closed reconciliation restart failure')
-              last_read = value['mainCloseLastRead']
-              if last_read is not None and (
-                      type(last_read) is not dict
-                      or set(last_read) != {'targetPresent', 'groupMatches', 'semesterMatches', 'status'}
-                      or not all(type(last_read[key]) is bool
-                                 for key in ('targetPresent', 'groupMatches', 'semesterMatches'))
-                      or type(last_read['status']) is not str
-                      or last_read['status'] not in {'PLANNED', 'ACTIVE', 'CLOSED', 'OTHER_OR_ABSENT'}):
-                  raise ValueError('Invalid closed reconciliation main close read')
-              restored = (value['restorationSucceeded'] is True
-                          and value['clockUnchanged'] is True and value['cleanupOutcome'] == 'PASSED')
-          except Exception:
-              pass
-          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
-              output.write('restorationSucceeded=' + str(restored).lower() + '\n')
-          print('Semester reconciliation restoration gate: ' + ('RESTORED' if restored else 'UNPROVEN'))
-          if not restored:
-              raise SystemExit(1)
-          PY_RECONCILIATION_GATE
-          then
-            if [ "$case_exit" -ne 0 ]; then exit "$case_exit"; fi
-            exit 1
-          fi
-          exit "$case_exit"
-
-      - name: Upload closed semester reconciliation outcome
-        if: always() && steps.semester-reconciliation.outcome != 'skipped'
+      - name: Upload closed admin semester UI outcome
+        if: always() && steps.admin-semester-ui.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
-          name: semester-reconciliation-safe-${{ github.run_attempt }}
-          path: |
-            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/artifacts/safe-results.json
-            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation.safe.json
+          name: admin-semester-ui-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_ADMIN_SEMESTER_UI_RUN }}/artifacts/safe-results.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Verify exact subject deletion through real proof and participants
+        id: subject-deletion-cascade
+        timeout-minutes: 12
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-subject-deletion-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_SUBJECT_DELETE_RUN=%s\n' "$RCT_SEMESTER_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
+          printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
+          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'HEADMAN deletes one subject through real proof and participants while mixed EXCUSE keeps the control subject$'
+
+      - name: Upload closed subject deletion cascade outcome
+        if: always() && steps.subject-deletion-cascade.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: subject-deletion-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_SUBJECT_DELETE_RUN }}/artifacts/safe-results.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Verify interrupted assignment closure and next-day replacement
+        id: assignment-lifecycle
+        timeout-minutes: 12
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_ASSIGNMENT_LIFECYCLE_RUN: ${{ runner.temp }}/rct-assignment-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_ASSIGNMENT_LIFECYCLE_RUN=%s\n' "$RCT_ASSIGNMENT_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          printf 'restorationSucceeded=false\n' >> "$GITHUB_OUTPUT"
+          python3 - <<'PY_ASSIGNMENT'
+          import datetime, json, os, re, selectors, stat, subprocess, time
+          from pathlib import Path
+
+          root = Path.cwd()
+          work = Path(os.environ['RCT_ASSIGNMENT_LIFECYCLE_RUN'])
+          work.mkdir(mode=0o700)
+          (work / 'artifacts').mkdir(mode=0o700)
+          for phase in ('prepare', 'pending', 'resume'):
+              (work / 'artifacts' / phase).mkdir(mode=0o700)
+          (work / 'disposable-target').write_text('RCT_ASSIGNMENT_LIFECYCLE_DISPOSABLE\n')
+          compose = ['docker', 'compose', '--env-file', 'tests/e2e/.env.ci', '-p', 'rct-e2e',
+                     '-f', 'docker-compose.e2e.yml', '-f', 'tests/e2e/infra/docker-compose.clock-fixture.yml']
+
+          def call(argv, *, cwd=root, env=None, seconds=180):
+              result = subprocess.run(argv, cwd=cwd, env=env, stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE, timeout=seconds)
+              if result.returncode:
+                  raise RuntimeError('Assignment lifecycle command failed')
+              return result.stdout
+
+          def inspect(cid):
+              info = json.loads(call(['docker', 'inspect', cid], seconds=15))[0]
+              labels = info['Config']['Labels']
+              if (info['Id'] != cid or labels.get('com.docker.compose.project') != 'rct-e2e'
+                      or labels.get('com.docker.compose.service') != 'schedule-service'):
+                  raise RuntimeError('Schedule ownership mismatch')
+              return info
+
+          def clock_snapshot():
+              directory = Path(os.environ['RCT_E2E_TEACHING_CLOCK_DIR'])
+              expected = Path(os.environ['RUNNER_TEMP']) / ('rct-first3-clock-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+              info = directory.lstat()
+              if (directory != expected or not stat.S_ISDIR(info.st_mode) or directory.is_symlink()
+                      or info.st_uid != os.getuid()):
+                  raise RuntimeError('Assignment clock directory ownership mismatch')
+              directory_identity = (info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid)
+              def read_owned(name, limit):
+                  path = directory / name
+                  before = path.lstat()
+                  with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
+                      info = os.fstat(stream.fileno())
+                      if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
+                              or stat.S_IMODE(info.st_mode) != 0o644 or not 0 < info.st_size <= limit
+                              or (before.st_dev, before.st_ino) != (info.st_dev, info.st_ino)):
+                          raise RuntimeError('Assignment clock file ownership mismatch')
+                      value = stream.read(limit + 1)
+                      identity = (info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid,
+                                  info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+                      after = os.fstat(stream.fileno())
+                      if (len(value) != info.st_size
+                              or identity != (after.st_dev, after.st_ino, after.st_mode, after.st_uid,
+                                              after.st_gid, after.st_size, after.st_mtime_ns, after.st_ctime_ns)):
+                          raise RuntimeError('Assignment clock file changed while reading')
+                      return value, identity
+              marker = read_owned('disposable-target', 64)
+              if marker[0] != b'RCT_E2E_DISPOSABLE\n':
+                  raise RuntimeError('Assignment clock disposable marker mismatch')
+              clock = read_owned('current-instant', 128)
+              if not re.fullmatch(rb'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z\n?', clock[0]):
+                  raise RuntimeError('Assignment clock input mismatch')
+              return directory_identity, marker, clock
+
+          def api(phase, restart_ready_until_ms=None):
+              env = {**os.environ, 'RCT_ASSIGNMENT_LIFECYCLE_PHASE': phase}
+              if phase == 'resume':
+                  if not isinstance(restart_ready_until_ms, int):
+                      raise RuntimeError('Assignment restart deadline is missing')
+                  env['RCT_ASSIGNMENT_RESTART_READY_UNTIL_MS'] = str(restart_ready_until_ms)
+              call(['npx', 'playwright', 'test', '--config', 'playwright.assignment-lifecycle.config.ts',
+                    '--project=chromium'], cwd=root / 'tests/e2e',
+                   env=env,
+                   seconds=330 if phase == 'prepare' else 150)
+
+          def close_failure_diagnostic(since):
+              academic = call([*compose, 'ps', '-q', 'academic-service'], seconds=15).decode().strip()
+              info = json.loads(call(['docker', 'inspect', academic], seconds=15))[0]
+              labels = info['Config']['Labels']
+              if (labels.get('com.docker.compose.project') != 'rct-e2e'
+                      or labels.get('com.docker.compose.service') != 'academic-service'):
+                  raise RuntimeError('Academic diagnostic ownership mismatch')
+              payload = bytearray()
+              deadline = time.monotonic() + 15
+              with subprocess.Popen(['docker', 'logs', '--since', since, '--tail', '200', academic],
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
+                  try:
+                      with selectors.DefaultSelector() as ready:
+                          ready.register(process.stdout, selectors.EVENT_READ)
+                          while True:
+                              remaining = deadline - time.monotonic()
+                              if remaining <= 0 or not ready.select(remaining):
+                                  raise TimeoutError('Academic diagnostic deadline')
+                              chunk = os.read(process.stdout.fileno(), min(65536, 8388609 - len(payload)))
+                              if not chunk:
+                                  break
+                              payload.extend(chunk)
+                              if len(payload) > 8388608:
+                                  print('ASSIGNMENT_CLOSE_DIAGNOSTIC_UNAVAILABLE')
+                                  return
+                      if process.wait(timeout=max(0.01, deadline - time.monotonic())):
+                          print('ASSIGNMENT_CLOSE_DIAGNOSTIC_UNAVAILABLE')
+                          return
+                  finally:
+                      if process.poll() is None:
+                          process.kill()
+                      process.wait(timeout=5)
+              classes = {
+                  'io.grpc.StatusRuntimeException': 'GRPC_STATUS',
+                  'io.grpc.StatusException': 'GRPC_STATUS',
+                  'org.postgresql.util.PSQLException': 'POSTGRESQL',
+                  'javax.net.ssl.SSLHandshakeException': 'TLS_HANDSHAKE',
+                  'java.net.ConnectException': 'CONNECT',
+                  'java.lang.IllegalStateException': 'ILLEGAL_STATE',
+                  'java.lang.IllegalArgumentException': 'ILLEGAL_ARGUMENT',
+              }
+              sites = {'ScheduleGrpcClient.java': 'ACADEMIC_SCHEDULE_GRPC',
+                       'AssignmentClosureService.java': 'ASSIGNMENT_CLOSURE'}
+              statuses = {'OK', 'CANCELLED', 'UNKNOWN', 'INVALID_ARGUMENT', 'DEADLINE_EXCEEDED',
+                          'NOT_FOUND', 'ALREADY_EXISTS', 'PERMISSION_DENIED', 'RESOURCE_EXHAUSTED',
+                          'FAILED_PRECONDITION', 'ABORTED', 'OUT_OF_RANGE', 'UNIMPLEMENTED',
+                          'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS', 'UNAUTHENTICATED'}
+              pattern = re.compile(r'Assignment lifecycle pending operationId=([0-9a-fA-F-]{36}) '
+                                   r'operationKind=CLOSE_UNASSIGN phase=RESUME_CLOSE '
+                                   r'failureClass=([A-Za-z0-9_.$]{1,256}) grpcStatus=([A-Z_]{1,32}) '
+                                   r'applicationFrame=(NONE|[A-Za-z0-9_.$-]{1,128}#[A-Za-z0-9_.$<>-]{1,128}:-?[0-9]{1,9})')
+              warnings, operations = [], set()
+              for line in payload.splitlines():
+                  if len(line) > 16384:
+                      continue
+                  try:
+                      record = json.loads(line)
+                      if record.get('logger') != 'ru.rutcampustrack.academic.assignment.AssignmentClosureService':
+                          continue
+                      message = record.get('msg')
+                      match = pattern.fullmatch(message) if isinstance(message, str) else None
+                      if not match or match[3] not in statuses:
+                          continue
+                      operations.add(match[1])
+                      warnings.append({'operationKind': 'CLOSE_UNASSIGN', 'phase': 'RESUME_CLOSE',
+                                       'failureClass': classes.get(match[2], 'OTHER'),
+                                       'grpcStatus': match[3],
+                                       'applicationSite': ('NONE' if match[4] == 'NONE' else
+                                                           sites.get(match[4].split('#', 1)[0], 'OTHER'))})
+                  except (ValueError, TypeError, AttributeError):
+                      continue
+              print(json.dumps({'diagnostic': 'ASSIGNMENT_CLOSE', 'resumeWindow': True,
+                                'state': 'MATCHES' if warnings else 'NO_MATCH',
+                                'singleOperation': len(operations) == 1, 'warnings': warnings[-4:]}))
+
+          cid = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
+          if not re.fullmatch('[0-9a-f]{64}', cid):
+              raise SystemExit('Owned Schedule is missing')
+          original = inspect(cid)
+          if not original['State']['Running'] or original['State'].get('Health', {}).get('Status') != 'healthy':
+              raise SystemExit('Owned Schedule is not ready')
+          original_clock = clock_snapshot()
+          restart_needed = False
+          stage = 'prepare'
+          resume_since = None
+
+          def restart():
+              ready_until_ms = int((time.time() + 120) * 1000)
+              call([*compose, 'up', '-d', '--no-build', '--no-recreate', '--no-deps', '--pull', 'never',
+                    '--wait', '--wait-timeout', '120', 'schedule-service'], seconds=150)
+              current = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
+              info = inspect(current)
+              if (current != cid or info['Image'] != original['Image']
+                      or not info['State']['Running']
+                      or info['State'].get('Health', {}).get('Status') != 'healthy'):
+                  raise RuntimeError('Original Schedule did not recover')
+              return ready_until_ms
+
+          try:
+              api('prepare')
+              stage = 'pending'
+              restart_needed = True
+              call([*compose, 'stop', '--timeout', '15', 'schedule-service'], seconds=45)
+              if inspect(cid)['State']['Running']:
+                  raise RuntimeError('Owned Schedule did not stop')
+              api('pending')
+              stage = 'restart'
+              restart_ready_until_ms = restart()
+              restart_needed = False
+              stage = 'resume'
+              resume_since = datetime.datetime.now(datetime.timezone.utc).isoformat()
+              api('resume', restart_ready_until_ms)
+              print('PASS real assignment closure retry, retained history and next-day replacement')
+          except Exception as error:
+              if stage == 'resume' and resume_since:
+                  try:
+                      close_failure_diagnostic(resume_since)
+                  except Exception:
+                      print('ASSIGNMENT_CLOSE_DIAGNOSTIC_UNAVAILABLE')
+              print('FAIL assignment lifecycle stage=' + stage + ' class=' + type(error).__name__)
+              raise SystemExit(1)
+          finally:
+              if restart_needed:
+                  restart()
+              current = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
+              info = inspect(current)
+              if (current != cid or info['Image'] != original['Image']
+                      or not info['State']['Running']
+                      or info['State'].get('Health', {}).get('Status') != 'healthy'
+                      or clock_snapshot() != original_clock):
+                  raise RuntimeError('Assignment restoration could not be verified')
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+                  output.write('restorationSucceeded=true\n')
+          PY_ASSIGNMENT
+
+      - name: Upload closed assignment lifecycle outcomes
+        if: always() && steps.assignment-lifecycle.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: assignment-lifecycle-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_ASSIGNMENT_LIFECYCLE_RUN }}/artifacts/*/safe-results.json
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Record a closed exception hint after the failed archived lesson report
-        if: ${{ !cancelled() && steps.semester-reconciliation.outcome == 'failure' }}
+      - name: Record a closed exception hint after the failed lesson creation
+        if: ${{ !cancelled() && steps.assignment-lifecycle.outcome == 'failure' }}
         timeout-minutes: 1
         env:
-          RCT_HTTP500_DIAGNOSTIC_STAGE: REPORT500
+          RCT_HTTP500_DIAGNOSTIC_STAGE: LESSON_CREATE500
           RCT_E2E_SYNTHETIC_SEED: 'true'
         run: &closed-http500-diagnostic |
           python3 - <<'PY_HTTP500_DIAGNOSTIC'
@@ -4228,252 +4423,39 @@ jobs:
           print(json.dumps(result, sort_keys=True))
           PY_HTTP500_DIAGNOSTIC
 
-      - name: Verify interrupted assignment closure and next-day replacement
-        id: assignment-lifecycle
-        timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
+      - name: Verify Today quick request after the genuine first lesson closes
+        id: student-today-quick-request
+        timeout-minutes: 4
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
+        working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
-          RCT_ASSIGNMENT_LIFECYCLE_RUN: ${{ runner.temp }}/rct-assignment-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_E2E_GEO_RUN: ${{ runner.temp }}/rct-student-today-quick-request-${{ github.run_id }}-${{ github.run_attempt }}
           NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
           PLAYWRIGHT_NO_COPY_PROMPT: '1'
           NODE_OPTIONS: --max-old-space-size=512
           CI: 'true'
         run: |
           umask 077
-          printf 'RCT_ASSIGNMENT_LIFECYCLE_RUN=%s\n' "$RCT_ASSIGNMENT_LIFECYCLE_RUN" >> "$GITHUB_ENV"
-          printf 'restorationSucceeded=false\n' >> "$GITHUB_OUTPUT"
-          python3 - <<'PY_ASSIGNMENT'
-          import datetime, json, os, re, selectors, stat, subprocess, time
-          from pathlib import Path
+          printf 'RCT_STUDENT_TODAY_RUN=%s\n' "$RCT_E2E_GEO_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_E2E_GEO_RUN"
+          mkdir -m 700 -- "$RCT_E2E_GEO_RUN/artifacts"
+          npx playwright test --config playwright.teaching-clock.config.ts --project=chromium --grep 'student uses Today quick request after the genuine first lesson closes @cloud-accepted$'
 
-          root = Path.cwd()
-          work = Path(os.environ['RCT_ASSIGNMENT_LIFECYCLE_RUN'])
-          work.mkdir(mode=0o700)
-          (work / 'artifacts').mkdir(mode=0o700)
-          for phase in ('prepare', 'pending', 'resume'):
-              (work / 'artifacts' / phase).mkdir(mode=0o700)
-          (work / 'disposable-target').write_text('RCT_ASSIGNMENT_LIFECYCLE_DISPOSABLE\n')
-          compose = ['docker', 'compose', '--env-file', 'tests/e2e/.env.ci', '-p', 'rct-e2e',
-                     '-f', 'docker-compose.e2e.yml', '-f', 'tests/e2e/infra/docker-compose.clock-fixture.yml']
-
-          def call(argv, *, cwd=root, env=None, seconds=180):
-              result = subprocess.run(argv, cwd=cwd, env=env, stdout=subprocess.PIPE,
-                                      stderr=subprocess.PIPE, timeout=seconds)
-              if result.returncode:
-                  raise RuntimeError('Assignment lifecycle command failed')
-              return result.stdout
-
-          def inspect(cid):
-              info = json.loads(call(['docker', 'inspect', cid], seconds=15))[0]
-              labels = info['Config']['Labels']
-              if (info['Id'] != cid or labels.get('com.docker.compose.project') != 'rct-e2e'
-                      or labels.get('com.docker.compose.service') != 'schedule-service'):
-                  raise RuntimeError('Schedule ownership mismatch')
-              return info
-
-          def clock_snapshot():
-              directory = Path(os.environ['RCT_E2E_TEACHING_CLOCK_DIR'])
-              expected = Path(os.environ['RUNNER_TEMP']) / ('rct-first3-clock-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
-              info = directory.lstat()
-              if (directory != expected or not stat.S_ISDIR(info.st_mode) or directory.is_symlink()
-                      or info.st_uid != os.getuid()):
-                  raise RuntimeError('Assignment clock directory ownership mismatch')
-              directory_identity = (info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid)
-              def read_owned(name, limit):
-                  path = directory / name
-                  before = path.lstat()
-                  with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
-                      info = os.fstat(stream.fileno())
-                      if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
-                              or stat.S_IMODE(info.st_mode) != 0o644 or not 0 < info.st_size <= limit
-                              or (before.st_dev, before.st_ino) != (info.st_dev, info.st_ino)):
-                          raise RuntimeError('Assignment clock file ownership mismatch')
-                      value = stream.read(limit + 1)
-                      identity = (info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid,
-                                  info.st_size, info.st_mtime_ns, info.st_ctime_ns)
-                      after = os.fstat(stream.fileno())
-                      if (len(value) != info.st_size
-                              or identity != (after.st_dev, after.st_ino, after.st_mode, after.st_uid,
-                                              after.st_gid, after.st_size, after.st_mtime_ns, after.st_ctime_ns)):
-                          raise RuntimeError('Assignment clock file changed while reading')
-                      return value, identity
-              marker = read_owned('disposable-target', 64)
-              if marker[0] != b'RCT_E2E_DISPOSABLE\n':
-                  raise RuntimeError('Assignment clock disposable marker mismatch')
-              clock = read_owned('current-instant', 128)
-              if not re.fullmatch(rb'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z\n?', clock[0]):
-                  raise RuntimeError('Assignment clock input mismatch')
-              return directory_identity, marker, clock
-
-          def api(phase, restart_ready_until_ms=None):
-              env = {**os.environ, 'RCT_ASSIGNMENT_LIFECYCLE_PHASE': phase}
-              if phase == 'resume':
-                  if not isinstance(restart_ready_until_ms, int):
-                      raise RuntimeError('Assignment restart deadline is missing')
-                  env['RCT_ASSIGNMENT_RESTART_READY_UNTIL_MS'] = str(restart_ready_until_ms)
-              call(['npx', 'playwright', 'test', '--config', 'playwright.assignment-lifecycle.config.ts',
-                    '--project=chromium'], cwd=root / 'tests/e2e',
-                   env=env,
-                   seconds=330 if phase == 'prepare' else 150)
-
-          def close_failure_diagnostic(since):
-              academic = call([*compose, 'ps', '-q', 'academic-service'], seconds=15).decode().strip()
-              info = json.loads(call(['docker', 'inspect', academic], seconds=15))[0]
-              labels = info['Config']['Labels']
-              if (labels.get('com.docker.compose.project') != 'rct-e2e'
-                      or labels.get('com.docker.compose.service') != 'academic-service'):
-                  raise RuntimeError('Academic diagnostic ownership mismatch')
-              payload = bytearray()
-              deadline = time.monotonic() + 15
-              with subprocess.Popen(['docker', 'logs', '--since', since, '--tail', '200', academic],
-                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
-                  try:
-                      with selectors.DefaultSelector() as ready:
-                          ready.register(process.stdout, selectors.EVENT_READ)
-                          while True:
-                              remaining = deadline - time.monotonic()
-                              if remaining <= 0 or not ready.select(remaining):
-                                  raise TimeoutError('Academic diagnostic deadline')
-                              chunk = os.read(process.stdout.fileno(), min(65536, 8388609 - len(payload)))
-                              if not chunk:
-                                  break
-                              payload.extend(chunk)
-                              if len(payload) > 8388608:
-                                  print('ASSIGNMENT_CLOSE_DIAGNOSTIC_UNAVAILABLE')
-                                  return
-                      if process.wait(timeout=max(0.01, deadline - time.monotonic())):
-                          print('ASSIGNMENT_CLOSE_DIAGNOSTIC_UNAVAILABLE')
-                          return
-                  finally:
-                      if process.poll() is None:
-                          process.kill()
-                      process.wait(timeout=5)
-              classes = {
-                  'io.grpc.StatusRuntimeException': 'GRPC_STATUS',
-                  'io.grpc.StatusException': 'GRPC_STATUS',
-                  'org.postgresql.util.PSQLException': 'POSTGRESQL',
-                  'javax.net.ssl.SSLHandshakeException': 'TLS_HANDSHAKE',
-                  'java.net.ConnectException': 'CONNECT',
-                  'java.lang.IllegalStateException': 'ILLEGAL_STATE',
-                  'java.lang.IllegalArgumentException': 'ILLEGAL_ARGUMENT',
-              }
-              sites = {'ScheduleGrpcClient.java': 'ACADEMIC_SCHEDULE_GRPC',
-                       'AssignmentClosureService.java': 'ASSIGNMENT_CLOSURE'}
-              statuses = {'OK', 'CANCELLED', 'UNKNOWN', 'INVALID_ARGUMENT', 'DEADLINE_EXCEEDED',
-                          'NOT_FOUND', 'ALREADY_EXISTS', 'PERMISSION_DENIED', 'RESOURCE_EXHAUSTED',
-                          'FAILED_PRECONDITION', 'ABORTED', 'OUT_OF_RANGE', 'UNIMPLEMENTED',
-                          'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS', 'UNAUTHENTICATED'}
-              pattern = re.compile(r'Assignment lifecycle pending operationId=([0-9a-fA-F-]{36}) '
-                                   r'operationKind=CLOSE_UNASSIGN phase=RESUME_CLOSE '
-                                   r'failureClass=([A-Za-z0-9_.$]{1,256}) grpcStatus=([A-Z_]{1,32}) '
-                                   r'applicationFrame=(NONE|[A-Za-z0-9_.$-]{1,128}#[A-Za-z0-9_.$<>-]{1,128}:-?[0-9]{1,9})')
-              warnings, operations = [], set()
-              for line in payload.splitlines():
-                  if len(line) > 16384:
-                      continue
-                  try:
-                      record = json.loads(line)
-                      if record.get('logger') != 'ru.rutcampustrack.academic.assignment.AssignmentClosureService':
-                          continue
-                      message = record.get('msg')
-                      match = pattern.fullmatch(message) if isinstance(message, str) else None
-                      if not match or match[3] not in statuses:
-                          continue
-                      operations.add(match[1])
-                      warnings.append({'operationKind': 'CLOSE_UNASSIGN', 'phase': 'RESUME_CLOSE',
-                                       'failureClass': classes.get(match[2], 'OTHER'),
-                                       'grpcStatus': match[3],
-                                       'applicationSite': ('NONE' if match[4] == 'NONE' else
-                                                           sites.get(match[4].split('#', 1)[0], 'OTHER'))})
-                  except (ValueError, TypeError, AttributeError):
-                      continue
-              print(json.dumps({'diagnostic': 'ASSIGNMENT_CLOSE', 'resumeWindow': True,
-                                'state': 'MATCHES' if warnings else 'NO_MATCH',
-                                'singleOperation': len(operations) == 1, 'warnings': warnings[-4:]}))
-
-          cid = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
-          if not re.fullmatch('[0-9a-f]{64}', cid):
-              raise SystemExit('Owned Schedule is missing')
-          original = inspect(cid)
-          if not original['State']['Running'] or original['State'].get('Health', {}).get('Status') != 'healthy':
-              raise SystemExit('Owned Schedule is not ready')
-          original_clock = clock_snapshot()
-          restart_needed = False
-          stage = 'prepare'
-          resume_since = None
-
-          def restart():
-              ready_until_ms = int((time.time() + 120) * 1000)
-              call([*compose, 'up', '-d', '--no-build', '--no-recreate', '--no-deps', '--pull', 'never',
-                    '--wait', '--wait-timeout', '120', 'schedule-service'], seconds=150)
-              current = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
-              info = inspect(current)
-              if (current != cid or info['Image'] != original['Image']
-                      or not info['State']['Running']
-                      or info['State'].get('Health', {}).get('Status') != 'healthy'):
-                  raise RuntimeError('Original Schedule did not recover')
-              return ready_until_ms
-
-          try:
-              api('prepare')
-              stage = 'pending'
-              restart_needed = True
-              call([*compose, 'stop', '--timeout', '15', 'schedule-service'], seconds=45)
-              if inspect(cid)['State']['Running']:
-                  raise RuntimeError('Owned Schedule did not stop')
-              api('pending')
-              stage = 'restart'
-              restart_ready_until_ms = restart()
-              restart_needed = False
-              stage = 'resume'
-              resume_since = datetime.datetime.now(datetime.timezone.utc).isoformat()
-              api('resume', restart_ready_until_ms)
-              print('PASS real assignment closure retry, retained history and next-day replacement')
-          except Exception as error:
-              if stage == 'resume' and resume_since:
-                  try:
-                      close_failure_diagnostic(resume_since)
-                  except Exception:
-                      print('ASSIGNMENT_CLOSE_DIAGNOSTIC_UNAVAILABLE')
-              print('FAIL assignment lifecycle stage=' + stage + ' class=' + type(error).__name__)
-              raise SystemExit(1)
-          finally:
-              if restart_needed:
-                  restart()
-              current = call([*compose, 'ps', '-q', 'schedule-service'], seconds=15).decode().strip()
-              info = inspect(current)
-              if (current != cid or info['Image'] != original['Image']
-                      or not info['State']['Running']
-                      or info['State'].get('Health', {}).get('Status') != 'healthy'
-                      or clock_snapshot() != original_clock):
-                  raise RuntimeError('Assignment restoration could not be verified')
-              with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-                  output.write('restorationSucceeded=true\n')
-          PY_ASSIGNMENT
-
-      - name: Upload closed assignment lifecycle outcomes
-        if: always() && steps.assignment-lifecycle.outcome != 'skipped'
+      - name: Upload closed Today quick request outcome
+        if: always() && steps.student-today-quick-request.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
-          name: assignment-lifecycle-safe-${{ github.run_attempt }}
-          path: ${{ env.RCT_ASSIGNMENT_LIFECYCLE_RUN }}/artifacts/*/safe-results.json
-          if-no-files-found: warn
+          name: student-today-quick-request-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_STUDENT_TODAY_RUN }}/artifacts/safe-results.json
+          if-no-files-found: error
           retention-days: 7
-
-      - name: Record a closed exception hint after the failed lesson creation
-        if: ${{ !cancelled() && steps.assignment-lifecycle.outcome == 'failure' }}
-        timeout-minutes: 1
-        env:
-          RCT_HTTP500_DIAGNOSTIC_STAGE: LESSON_CREATE500
-          RCT_E2E_SYNTHETIC_SEED: 'true'
-        run: *closed-http500-diagnostic
 
       - name: Verify real Vue schedule lifecycle and attendance requests
         id: lesson-lifecycle
         timeout-minutes: 17
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -4547,6 +4529,7 @@ jobs:
           # Keep this disposable clock advanced until services stop; no live reset.
           print('PASS owned educational clock advanced to a future weekday at 09:00 Moscow')
           PY_LESSON_CLOCK
+          printf 'clockReady=true\n' >> "$GITHUB_OUTPUT"
           npx playwright test --config playwright.lesson-lifecycle.config.ts --project=chromium
 
       - name: Upload closed lesson lifecycle outcome
@@ -4566,10 +4549,145 @@ jobs:
           RCT_E2E_SYNTHETIC_SEED: 'true'
         run: *closed-http500-diagnostic
 
+      - name: Verify exact stranded semester effect reconciliation
+        id: semester-reconciliation
+        timeout-minutes: 9
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-semester-reconciliation-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_SEMESTER_RECONCILIATION_RUN=%s\n' "$RCT_SEMESTER_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
+          printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
+          set +e
+          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'FULL admin reconciles one exact stranded close before archive completion$'
+          case_exit=$?
+          set -e
+          if ! python3 - <<'PY_RECONCILIATION_GATE'
+          import json, os, stat
+          from pathlib import Path
+
+          def pairs(items):
+              result = {}
+              for key, value in items:
+                  if key in result:
+                      raise ValueError('Duplicate reconciliation field')
+                  result[key] = value
+              return result
+
+          restored = False
+          try:
+              path = Path(os.environ['RCT_SEMESTER_LIFECYCLE_RUN']) / 'reconciliation.safe.json'
+              with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
+                  info = os.fstat(stream.fileno())
+                  if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600 or not 0 < info.st_size <= 4096:
+                      raise ValueError('Invalid reconciliation receipt')
+                  raw = stream.read(4097)
+                  if len(raw) != info.st_size:
+                      raise ValueError('Reconciliation receipt size changed')
+              value = json.loads(raw, object_pairs_hook=pairs,
+                                 parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite reconciliation field')))
+              booleans = {'exactDlqEnvelope', 'pendingBeforeReplay', 'appliedAfterReplay',
+                          'sameArchiveCompleted', 'duplicateBusinessUnchanged', 'recoveryPublishAttempted',
+                          'duplicateAttempted', 'restorationSucceeded', 'clockUnchanged'}
+              keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
+                                 'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome',
+                                 'firstRestartFailure', 'mainCloseLastRead'}
+              if type(value) is dict and value.get('schema') == 'semester-reconciliation.v4':
+                  keys |= {'firstHttp500OwnedServices', 'strandedLastRead'}
+              if (type(value) is not dict or set(value) != keys
+                      or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4'}
+                      or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
+                      or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
+                      or value['measuredListenerAttempts'] != 'UNKNOWN'
+                      or not all(type(value[key]) is bool for key in booleans)
+                      or not (value['retainedDlqCopies'] == 'UNKNOWN'
+                              or (type(value['retainedDlqCopies']) is int and value['retainedDlqCopies'] == 1))
+                      or value['cleanupOutcome'] not in {'PENDING', 'PASSED', 'FAILED'}):
+                  raise ValueError('Invalid closed reconciliation schema')
+              restart = value['firstRestartFailure']
+              if restart is not None and (
+                      type(restart) is not dict or set(restart) != {'phase', 'service', 'cause'}
+                      or not all(type(restart[key]) is str for key in ('phase', 'service', 'cause'))
+                      or restart['phase'] not in {'MAIN', 'CLEANUP'}
+                      or restart['service'] not in {'ATTENDANCE', 'SCHEDULE'}
+                      or restart['cause'] not in {'NOT_RUNNING', 'HEALTH_STARTING', 'HEALTH_UNHEALTHY', 'HEALTH_UNKNOWN'}):
+                  raise ValueError('Invalid closed reconciliation restart failure')
+              last_read = value['mainCloseLastRead']
+              if last_read is not None and (
+                      type(last_read) is not dict
+                      or set(last_read) != {'targetPresent', 'groupMatches', 'semesterMatches', 'status'}
+                      or not all(type(last_read[key]) is bool
+                                 for key in ('targetPresent', 'groupMatches', 'semesterMatches'))
+                      or type(last_read['status']) is not str
+                      or last_read['status'] not in {'PLANNED', 'ACTIVE', 'CLOSED', 'OTHER_OR_ABSENT'}):
+                  raise ValueError('Invalid closed reconciliation main close read')
+              if value['schema'] == 'semester-reconciliation.v4':
+                  services = value['firstHttp500OwnedServices']
+                  if services is not None:
+                      if type(services) is not dict or set(services) != {'ATTENDANCE', 'SCHEDULE'}:
+                          raise ValueError('Invalid closed reconciliation service snapshot')
+                      for state in services.values():
+                          if (type(state) is not dict
+                                  or set(state) != {'running', 'health', 'samePinnedId', 'sameNetworkAddresses'}
+                                  or not all(type(state[key]) is bool or state[key] == 'UNKNOWN'
+                                             for key in ('running', 'samePinnedId', 'sameNetworkAddresses'))
+                                  or state['health'] not in {'HEALTHY', 'STARTING', 'UNHEALTHY', 'UNKNOWN'}):
+                              raise ValueError('Invalid closed reconciliation service state')
+                  stranded = value['strandedLastRead']
+                  if stranded is not None and (
+                          type(stranded) is not dict
+                          or set(stranded) != {'deadReadyOne', 'deadUnackedZero', 'mainReadyZero', 'mainUnackedZero'}
+                          or not all(type(flag) is bool for flag in stranded.values())):
+                      raise ValueError('Invalid closed reconciliation stranded read')
+              restored = (value['restorationSucceeded'] is True
+                          and value['clockUnchanged'] is True and value['cleanupOutcome'] == 'PASSED')
+          except Exception:
+              pass
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write('restorationSucceeded=' + str(restored).lower() + '\n')
+          print('Semester reconciliation restoration gate: ' + ('RESTORED' if restored else 'UNPROVEN'))
+          if not restored:
+              raise SystemExit(1)
+          PY_RECONCILIATION_GATE
+          then
+            if [ "$case_exit" -ne 0 ]; then exit "$case_exit"; fi
+            exit 1
+          fi
+          exit "$case_exit"
+
+      - name: Upload closed semester reconciliation outcome
+        if: always() && steps.semester-reconciliation.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: semester-reconciliation-safe-${{ github.run_attempt }}
+          path: |
+            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/artifacts/safe-results.json
+            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation.safe.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Record a closed exception hint after the failed archived lesson report
+        if: ${{ !cancelled() && steps.semester-reconciliation.outcome == 'failure' }}
+        timeout-minutes: 1
+        env:
+          RCT_HTTP500_DIAGNOSTIC_STAGE: REPORT500
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+        run: *closed-http500-diagnostic
+
       - name: Restore a real application checkpoint into fresh disposable databases
         id: application-recovery
         timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.lesson-lifecycle.outputs.clockReady == 'true' }}
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
@@ -4930,96 +5048,6 @@ jobs:
             ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/lifecycle.safe.json
             ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/effect.safe.json
           if-no-files-found: warn
-          retention-days: 7
-
-      - name: Verify owned semester metadata and historical promotion through the ready UI
-        id: admin-semester-ui
-        timeout-minutes: 9
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
-        working-directory: tests/e2e
-        env:
-          E2E_BASE_URL: https://localhost:8443
-          RCT_E2E_SYNTHETIC_SEED: 'true'
-          RCT_ADMIN_SEMESTER_UI_RUN: ${{ runner.temp }}/rct-admin-semester-ui-${{ github.run_id }}-${{ github.run_attempt }}
-          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-admin-semester-ui-${{ github.run_id }}-${{ github.run_attempt }}
-          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
-          PLAYWRIGHT_NO_COPY_PROMPT: '1'
-          NODE_OPTIONS: --max-old-space-size=512
-          CI: 'true'
-        run: |
-          umask 077
-          printf 'RCT_ADMIN_SEMESTER_UI_RUN=%s\n' "$RCT_ADMIN_SEMESTER_UI_RUN" >> "$GITHUB_ENV"
-          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
-          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
-          printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
-          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'FULL admin manages owned semester metadata and historical group promotion through the ready UI$'
-
-      - name: Upload closed admin semester UI outcome
-        if: always() && steps.admin-semester-ui.outcome != 'skipped'
-        uses: actions/upload-artifact@v4
-        with:
-          name: admin-semester-ui-safe-${{ github.run_attempt }}
-          path: ${{ env.RCT_ADMIN_SEMESTER_UI_RUN }}/artifacts/safe-results.json
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Verify exact subject deletion through real proof and participants
-        id: subject-deletion-cascade
-        timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
-        working-directory: tests/e2e
-        env:
-          E2E_BASE_URL: https://localhost:8443
-          RCT_E2E_SYNTHETIC_SEED: 'true'
-          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-subject-deletion-${{ github.run_id }}-${{ github.run_attempt }}
-          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
-          PLAYWRIGHT_NO_COPY_PROMPT: '1'
-          NODE_OPTIONS: --max-old-space-size=512
-          CI: 'true'
-        run: |
-          umask 077
-          printf 'RCT_SUBJECT_DELETE_RUN=%s\n' "$RCT_SEMESTER_LIFECYCLE_RUN" >> "$GITHUB_ENV"
-          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
-          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
-          printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
-          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'HEADMAN deletes one subject through real proof and participants while mixed EXCUSE keeps the control subject$'
-
-      - name: Upload closed subject deletion cascade outcome
-        if: always() && steps.subject-deletion-cascade.outcome != 'skipped'
-        uses: actions/upload-artifact@v4
-        with:
-          name: subject-deletion-safe-${{ github.run_attempt }}
-          path: ${{ env.RCT_SUBJECT_DELETE_RUN }}/artifacts/safe-results.json
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Verify Today quick request after the genuine first lesson closes
-        id: student-today-quick-request
-        timeout-minutes: 4
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' && steps.application-recovery.outcome == 'success' && steps.semester-lifecycle.outcome == 'success' }}
-        working-directory: tests/e2e
-        env:
-          E2E_BASE_URL: https://localhost:8443
-          RCT_E2E_SYNTHETIC_SEED: 'true'
-          RCT_E2E_GEO_RUN: ${{ runner.temp }}/rct-student-today-quick-request-${{ github.run_id }}-${{ github.run_attempt }}
-          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
-          PLAYWRIGHT_NO_COPY_PROMPT: '1'
-          NODE_OPTIONS: --max-old-space-size=512
-          CI: 'true'
-        run: |
-          umask 077
-          printf 'RCT_STUDENT_TODAY_RUN=%s\n' "$RCT_E2E_GEO_RUN" >> "$GITHUB_ENV"
-          mkdir -m 700 -- "$RCT_E2E_GEO_RUN"
-          mkdir -m 700 -- "$RCT_E2E_GEO_RUN/artifacts"
-          npx playwright test --config playwright.teaching-clock.config.ts --project=chromium --grep 'student uses Today quick request after the genuine first lesson closes @cloud-accepted$'
-
-      - name: Upload closed Today quick request outcome
-        if: always() && steps.student-today-quick-request.outcome != 'skipped'
-        uses: actions/upload-artifact@v4
-        with:
-          name: student-today-quick-request-safe-${{ github.run_attempt }}
-          path: ${{ env.RCT_STUDENT_TODAY_RUN }}/artifacts/safe-results.json
-          if-no-files-found: error
           retention-days: 7
 
       - name: Stop owned fresh recovery targets

@@ -3096,133 +3096,6 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       // No second JS bundle is claimed: restore its compatible policy before the real UI reload.
       // The existing gate retains required.value until it unmounts on reload.
       fixture.restorePolicy();
-      // Evaluating the unique new-release realm can wake it; this is observation,
-      // not proof that an uninstrumented worker would have activated.
-      const receiveNonce = randomUUID();
-      const workerReceiveObserver = await (async () => {
-        const candidates = context
-          .serviceWorkers()
-          .filter((worker) => worker.url() === original.script);
-        const matches: typeof candidates = [];
-        for (const worker of candidates) {
-          const release = await worker
-            .evaluate<string>('typeof releaseVersion === "string" ? releaseVersion : ""')
-            .catch(() => null);
-          if (release === null) return null;
-          if (release === '0.0.1') matches.push(worker);
-        }
-        if (matches.length !== 1) return null;
-        return matches[0].evaluateHandle(
-          ({ script, scope, nonce }) => {
-            const workerGlobal = globalThis as unknown as {
-              registration: ServiceWorkerRegistration;
-              location: { href: string };
-            };
-            const marker = '__rctWorkerUpdateReceiveProbe';
-            const owner = Object.getPrototypeOf(globalThis);
-            const descriptor = Object.getOwnPropertyDescriptor(owner, 'skipWaiting');
-            if (
-              workerGlobal.location.href !== script ||
-              workerGlobal.registration.scope !== scope ||
-              workerGlobal.registration.waiting?.state !== 'installed' ||
-              workerGlobal.registration.waiting.scriptURL !== script ||
-              Object.getOwnPropertyDescriptor(globalThis, marker) !== undefined ||
-              !descriptor ||
-              typeof descriptor.value !== 'function' ||
-              !descriptor.configurable
-            )
-              return null;
-            const nativeSkipWaiting = descriptor.value as () => Promise<void>;
-            let received = false;
-            let invoked = false;
-            let outcome: 'PENDING' | 'FULFILLED' | 'REJECTED' | 'THROWN' | 'UNAVAILABLE' =
-              'PENDING';
-            const onMessage = (event: MessageEvent) => {
-              try {
-                if (Object.getOwnPropertyDescriptor(event.data, 'type')?.value === 'SKIP_WAITING')
-                  received = true;
-              } catch {
-                // A malformed unrelated message does not change its native delivery.
-              }
-            };
-            const observed = function (this: unknown, ...args: unknown[]): Promise<void> {
-              const ownCall = this === globalThis;
-              if (ownCall) {
-                invoked = true;
-                outcome = 'PENDING';
-              }
-              let result: Promise<void>;
-              try {
-                result = Reflect.apply(nativeSkipWaiting, this, args);
-              } catch (error) {
-                if (ownCall) outcome = 'THROWN';
-                throw error;
-              }
-              if (ownCall) {
-                try {
-                  void Promise.prototype.then
-                    .call(
-                      result,
-                      () => {
-                        outcome = 'FULFILLED';
-                      },
-                      () => {
-                        outcome = 'REJECTED';
-                      },
-                    )
-                    .catch(() => {});
-                } catch {
-                  outcome = 'UNAVAILABLE';
-                  // Keep the exact native promise, including observation failure.
-                }
-              }
-              return result;
-            };
-            const restoreProbe = () => {
-              try {
-                removeEventListener('message', onMessage);
-              } finally {
-                try {
-                  if (Object.getOwnPropertyDescriptor(owner, 'skipWaiting')?.value === observed)
-                    Object.defineProperty(owner, 'skipWaiting', descriptor);
-                } finally {
-                  if (Object.getOwnPropertyDescriptor(globalThis, marker)?.value === nonce)
-                    delete (globalThis as unknown as Record<string, unknown>)[marker];
-                }
-              }
-            };
-            Object.defineProperty(globalThis, marker, { value: nonce, configurable: true });
-            try {
-              Object.defineProperty(owner, 'skipWaiting', { ...descriptor, value: observed });
-              addEventListener('message', onMessage);
-            } catch {
-              restoreProbe();
-              return null;
-            }
-            return {
-              read: (expectedNonce: string) => {
-                if (
-                  expectedNonce !== nonce ||
-                  Object.getOwnPropertyDescriptor(globalThis, marker)?.value !== nonce ||
-                  Object.getOwnPropertyDescriptor(owner, 'skipWaiting')?.value !== observed
-                )
-                  return 'UNAVAILABLE' as const;
-                if (!received)
-                  return invoked
-                    ? ('INVOKED_RECEIVE_UNOBSERVED' as const)
-                    : ('NOT_RECEIVED_NOT_INVOKED' as const);
-                if (!invoked) return 'RECEIVED_NOT_INVOKED' as const;
-                return outcome;
-              },
-              restore: (expectedNonce: string) => {
-                if (expectedNonce !== nonce) return;
-                restoreProbe();
-              },
-            };
-          },
-          { script: original.script!, scope: original.scope, nonce: receiveNonce },
-        );
-      })().catch(() => null);
       const skipWaitingObserver = await page
         .evaluateHandle(async () => {
           const unavailable = { read: () => 'UNAVAILABLE' as const, restore: () => {} };
@@ -3309,26 +3182,9 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
           const skipWaiting = await skipWaitingObserver
             ?.evaluate((value) => value.read())
             .catch(() => 'UNAVAILABLE' as const);
-          if (skipWaiting === 'SENT_TO_CANDIDATE') {
-            const received = await workerReceiveObserver
-              ?.evaluate((value, nonce) => value?.read(nonce) ?? 'UNAVAILABLE', receiveNonce)
-              .catch(() => 'UNAVAILABLE' as const);
-            if (received === 'NOT_RECEIVED_NOT_INVOKED')
-              expect.soft(false, 'PWA update SENT_WORKER_NOT_RECEIVED_NOT_INVOKED').toBe(true);
-            else if (received === 'INVOKED_RECEIVE_UNOBSERVED')
-              expect.soft(false, 'PWA update SENT_WORKER_INVOKED_RECEIVE_UNOBSERVED').toBe(true);
-            else if (received === 'RECEIVED_NOT_INVOKED')
-              expect.soft(false, 'PWA update SENT_WORKER_RECEIVED_NOT_INVOKED').toBe(true);
-            else if (received === 'PENDING')
-              expect.soft(false, 'PWA update SENT_WORKER_NATIVE_PENDING').toBe(true);
-            else if (received === 'FULFILLED')
-              expect.soft(false, 'PWA update SENT_WORKER_NATIVE_FULFILLED').toBe(true);
-            else if (received === 'REJECTED')
-              expect.soft(false, 'PWA update SENT_WORKER_NATIVE_REJECTED').toBe(true);
-            else if (received === 'THROWN')
-              expect.soft(false, 'PWA update SENT_WORKER_NATIVE_THROWN').toBe(true);
-            else expect.soft(false, 'PWA update SENT_WORKER_RECEIVE_UNAVAILABLE').toBe(true);
-          } else if (skipWaiting === 'NOT_OBSERVED')
+          if (skipWaiting === 'SENT_TO_CANDIDATE')
+            expect.soft(false, 'PWA update SKIP_WAITING_SENT_TO_CANDIDATE').toBe(true);
+          else if (skipWaiting === 'NOT_OBSERVED')
             expect.soft(false, 'PWA update SKIP_WAITING_NOT_OBSERVED').toBe(true);
           else expect.soft(false, 'PWA update SKIP_WAITING_UNAVAILABLE').toBe(true);
         }
@@ -3336,10 +3192,6 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         // A completed navigation destroys the old prototype; otherwise restore it exactly.
         await skipWaitingObserver?.evaluate((value) => value.restore()).catch(() => {});
         await skipWaitingObserver?.dispose().catch(() => {});
-        await workerReceiveObserver
-          ?.evaluate((value, nonce) => value?.restore(nonce), receiveNonce)
-          .catch(() => {});
-        await workerReceiveObserver?.dispose().catch(() => {});
       }
       await expect(gate).toHaveCount(0);
       await requireProductionWorker(page);

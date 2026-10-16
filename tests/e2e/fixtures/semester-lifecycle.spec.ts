@@ -2761,8 +2761,14 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     wanted.every((key) => secret[key]),
     'Synthetic CI credentials are required',
   );
+  type OwnedServiceState = {
+    running: boolean | 'UNKNOWN';
+    health: 'HEALTHY' | 'STARTING' | 'UNHEALTHY' | 'UNKNOWN';
+    samePinnedId: boolean | 'UNKNOWN';
+    sameNetworkAddresses: boolean | 'UNKNOWN';
+  };
   const diagnostic = {
-    schema: 'semester-reconciliation.v3',
+    schema: 'semester-reconciliation.v4',
     phase: 'SETUP',
     configuredListenerAttempts: 3,
     measuredListenerAttempts: 'UNKNOWN',
@@ -2788,7 +2794,18 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       semesterMatches: boolean;
       status: 'PLANNED' | 'ACTIVE' | 'CLOSED' | 'OTHER_OR_ABSENT';
     } | null,
+    firstHttp500OwnedServices: null as {
+      ATTENDANCE: OwnedServiceState;
+      SCHEDULE: OwnedServiceState;
+    } | null,
+    strandedLastRead: null as {
+      deadReadyOne: boolean;
+      deadUnackedZero: boolean;
+      mainReadyZero: boolean;
+      mainUnackedZero: boolean;
+    } | null,
   };
+  let strandedLastRead: typeof diagnostic.strandedLastRead = null;
   const stopped = new Set<string>();
   let eventAccepted = false,
     applied = false,
@@ -3032,6 +3049,87 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       'Owned container labels changed',
     );
     return current;
+  };
+  const unknownServiceState = (): OwnedServiceState => ({
+    running: 'UNKNOWN',
+    health: 'UNKNOWN',
+    samePinnedId: 'UNKNOWN',
+    sameNetworkAddresses: 'UNKNOWN',
+  });
+  const networkAddresses = (value: unknown): [string, string, string][] | null => {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) return null;
+    const names = Object.keys(value).sort();
+    if (names.length === 0 || names.length > 8) return null;
+    const addresses: [string, string, string][] = [];
+    for (const name of names) {
+      if (name.length === 0 || name.length > 128) return null;
+      const row: unknown = Object.getOwnPropertyDescriptor(value, name)?.value;
+      if (row === null || typeof row !== 'object' || Array.isArray(row)) return null;
+      const ipv4: unknown = Object.getOwnPropertyDescriptor(row, 'IPAddress')?.value;
+      const ipv6: unknown = Object.getOwnPropertyDescriptor(row, 'GlobalIPv6Address')?.value;
+      if (
+        typeof ipv4 !== 'string' ||
+        typeof ipv6 !== 'string' ||
+        ipv4.length > 64 ||
+        ipv6.length > 64 ||
+        (ipv4 !== '' && isIP(ipv4) !== 4) ||
+        (ipv6 !== '' && isIP(ipv6) !== 6) ||
+        (ipv4 === '' && ipv6 === '')
+      )
+        return null;
+      addresses.push([name, ipv4, ipv6]);
+    }
+    return addresses;
+  };
+  const captureHttp500OwnedServices = (error: unknown) => {
+    if (cleaning || diagnostic.firstHttp500OwnedServices !== null) return;
+    let message: unknown;
+    try {
+      if (error !== null && typeof error === 'object')
+        message = Object.getOwnPropertyDescriptor(error, 'message')?.value;
+    } catch {
+      return;
+    }
+    if (
+      message !== 'Reported synthetic dataset DATASET_ATTENDANCE_REPORT_HTTP: HTTP 500' &&
+      message !== 'Reported synthetic dataset DATASET_LESSON_CREATE_HTTP: HTTP 500'
+    )
+      return;
+    const savedNativeFailure = nativeFailure;
+    const snapshot = (service: 'attendance-service' | 'schedule-service'): OwnedServiceState => {
+      try {
+        const current = identity(service);
+        const before = networkAddresses(pins[service].networks);
+        const after = networkAddresses(current.networks);
+        return {
+          running: typeof current.running === 'boolean' ? current.running : 'UNKNOWN',
+          health:
+            current.health === 'healthy'
+              ? 'HEALTHY'
+              : current.health === 'starting'
+                ? 'STARTING'
+                : current.health === 'unhealthy'
+                  ? 'UNHEALTHY'
+                  : 'UNKNOWN',
+          samePinnedId: true,
+          sameNetworkAddresses:
+            before === null || after === null
+              ? 'UNKNOWN'
+              : JSON.stringify(before) === JSON.stringify(after),
+        };
+      } catch {
+        return unknownServiceState();
+      }
+    };
+    try {
+      diagnostic.firstHttp500OwnedServices = {
+        ATTENDANCE: snapshot('attendance-service'),
+        SCHEDULE: snapshot('schedule-service'),
+      };
+    } finally {
+      // Diagnostic inspect errors must not replace the original native failure record.
+      nativeFailure = savedNativeFailure;
+    }
   };
   const pg = (sql: string): any => {
     const raw = docker(
@@ -3710,6 +3808,13 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       .poll(
         async () => {
           const q = await queues();
+          // Last completed MAIN read, not a timestamp or a cleanup observation.
+          strandedLastRead = {
+            deadReadyOne: q.dead.messages_ready === 1,
+            deadUnackedZero: q.dead.messages_unacknowledged === 0,
+            mainReadyZero: q.main.messages_ready === 0,
+            mainUnackedZero: q.main.messages_unacknowledged === 0,
+          };
           return (
             q.dead.messages_ready === 1 &&
             q.dead.messages_unacknowledged === 0 &&
@@ -3953,6 +4058,8 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
   } catch (error) {
     if (nativeFailure !== undefined && nativeFailure.error === error) nativeFailure.report();
     originalFailure = { error };
+    diagnostic.strandedLastRead = strandedLastRead;
+    captureHttp500OwnedServices(error);
     retainFirstDatasetHttpFailure(info.annotations, error);
   } finally {
     cleaning = true;

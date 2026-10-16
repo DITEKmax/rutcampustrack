@@ -76070,11 +76070,11 @@
     "b460bc2_current_Root_feature_Source_checkpoint": {
       "utc": "2026-10-16T03:35:02.557859+00:00",
       "state": "ROOT_REVIEWED_TABLE3_AND_CLIENT_WITNESS2_WIP_OVER_B2C",
-      "count": 301,
+      "count": 335,
       "currentPins": [
         {
           "sourceRef": ".github/workflows/ci.yml",
-          "sha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe"
+          "sha256": "9dfb3297d2e3ff2cd419ffd7e0e55377525725c9e67bb15299c9e4ca425a1a90"
         },
         {
           "sourceRef": "docker-compose.e2e.yml",
@@ -76502,7 +76502,7 @@
         },
         {
           "sourceRef": "infra/local-stand/compose.yml",
-          "sha256": "bb844652ab00ce6466eb91af1c47cdd56f7e1fb45dfb74bc84aa0678156668dd"
+          "sha256": "08484a805fab5fe237ccf1c2b371b85cb475ada7c26b68e146b253355ae9c73a"
         },
         {
           "sourceRef": "proto/academic.proto",
@@ -77198,7 +77198,7 @@
         },
         {
           "sourceRef": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
-          "sha256": "de7297382c7bfd47dc1cf8c4c5b3b163d008def3fafa6cbfe160fd94bcb6352b"
+          "sha256": "d469a8bc30a211b7eb2f6fa102120e464bdfd2417bb6d44049ad3768a8a573ab"
         },
         {
           "sourceRef": "tests/e2e/infra/scripts/generate-test-certs.sh",
@@ -77250,7 +77250,7 @@
         },
         {
           "sourceRef": "tests/e2e/specs/mobile-real-server.spec.ts",
-          "sha256": "e7eba4e9e8ae4d3b18b7be20da7c2e5203c7d9e7737638546f8244ef6433818f"
+          "sha256": "ead4183dd213616367ed6feca69f74b2efe4a6a46f5d3ad39ccff7b85155c3c0"
         },
         {
           "sourceRef": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
@@ -77399,13 +77399,25 @@
         {
           "sourceRef": "docker-compose.prod.yml",
           "sha256": "ecd84fd24fc5bd4c8d89c5192ffd7fd92ad658ecceba9514d4320d117b38e083"
+        },
+        {
+          "sourceRef": ".env.prod.example",
+          "sha256": "cf6ef7d33cdd6d81951e7b5d06b94c8b721e2ed3db2c7537f34e19c2fc43baf2"
+        },
+        {
+          "sourceRef": "scripts/validate-env-prod.sh",
+          "sha256": "ea4b7169189cf6e261a1d3a8bc9a8b0ed8363b1b1d91a3495daefdbc9884ea07"
+        },
+        {
+          "sourceRef": "scripts/local-stand.ps1",
+          "sha256": "ce0e63c0a1bcc2b1ce0e7c4aa9644aeff6208f309a3a7a8164c1e86ae8bf12aa"
         }
       ],
       "pendingIntegration": "Mechanical7only01b28421localunpublished; exactweek14+prior4+Academic3+unit2+Admin1=24semanticWIP. Recon31linereview/HeadmanStatsClock2authorpending; official261terminalCI/CovFAIL/cleanupSUCCESS. Rootintegratedchecks/normalhooks/coherentcommit/pushnext, thennewordinarygates/BFFofficialstock.",
       "rootActiveProcess": null,
-      "published": "b2c682657899339c660fb4c747489453d24fba7c",
-      "localHead": "b2c682657899339c660fb4c747489453d24fba7c",
-      "currentHead": "b2c682657899339c660fb4c747489453d24fba7c"
+      "published": true,
+      "localHead": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+      "currentHead": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240"
     },
     "Admin_directed_TLS_Bot_fourteen_Root_integration": {
       "utc": "2026-10-15T14:49:34.116547+00:00",
@@ -169660,11 +169672,2099 @@
       },
       "initialMembershipAckConsumerCompatibility": {
         "utc": "2026-10-16T16:14:46.688394+00:00",
-        "state": "SOURCE_FROZEN_UNBOUND_AWAIT_TINY_REVIEW",
+        "state": "APPROVE_SOURCE_ONLY_FUTURE_REVISION_BINDING_NEXT",
         "receipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json#current79255db1Primary.futureAcademicInitialMembershipAckReasonConsumerSourcePlan",
         "sha256": "2456374b4eb6cd9e1e53f03b311ad58a6978a23fbfa704be67a6eec648878dea",
         "delta": "OnlyoneexactRAMappend of ACADEMIC_INITIAL_MEMBERSHIP_ACK_PENDING to reasonCode finite set with exactcountguard; inversehistorical9857/pinnedstrictschema54b7 unchanged; newproducerfixturede729 onlyfuturebinding. No oldbodyrelabel.",
-        "controls": "20actualextractedvalidatorcontrolsPASS/1.223s/allreaped; bothprimary+cleanup+FAILEDflags/new and24oldenums; strictunknown/near/types/extra/otherfieldreject. controlSource2ac1e45b71036e631cf0e7d4eeef1d41c170eda7439220209501c29c856dddbf. No Actions/network/native/body."
+        "controls": "20actualextractedvalidatorcontrolsPASS/1.223s/allreaped; bothprimary+cleanup+FAILEDflags/new and24oldenums; strictunknown/near/types/extra/otherfieldreject. controlSource2ac1e45b71036e631cf0e7d4eeef1d41c170eda7439220209501c29c856dddbf. No Actions/network/native/body.",
+        "review": {
+          "utc": "2026-10-16T16:14:51.311803+00:00",
+          "outcome": "APPROVE_SOURCE_ONLY",
+          "importantFindings": [],
+          "consumerSha256": "2456374b4eb6cd9e1e53f03b311ad58a6978a23fbfa704be67a6eec648878dea",
+          "historicalConsumerSha256": "9857f28785e29c0d676ea77d53d8e4d7fa5619f8dfe60291ca18086a25ea391c",
+          "historicalSchemaSha256": "54b7db32cb86dd028113a6e77992975841e908371c6e99731f4050ef8c8acf84",
+          "producerFixtureSha256": "de7297382c7bfd47dc1cf8c4c5b3b163d008def3fafa6cbfe160fd94bcb6352b",
+          "independentSourceReview": [
+            "Exact two-line consumer delta inspected: assert pinned schema contains reasonCode set prefix exactly once, then fixed single enum append in RAM. Independently removing these two lines exactly recreates historical9857 Source. Historical schema actual bytes/hash54b7 verified.",
+            "Actual schema validate_semester_progress checks exact keys/strict string membership, validate_semester_lifecycle applies it to primary and cleanup. Added enum matches approved producer fixedmapping; old enums and other fields/booleans/flags/transport/source/caps guards unchanged.",
+            "Retained actual20-control Source2ac1e45b71036e631cf0e7d4eeef1d41c170eda7439220209501c29c856dddbf inspected: extracted consumer AST operation and actual validator,24 old enums retained, primary/cleanup/FAILEDflags,near/type/unknown/rawphrase/extra/otherfield rejection and oldschema newenum refusal. No rerun."
+          ],
+          "qualification": "Future purpose remains UNBOUND pending exact next revision. No current/previous body reinterpretation, Actions/network/native execution, scenario/cause credit. Ordinary after still required."
+        }
+      }
+    },
+    "currentB5a592c2Publication": {
+      "utc": "2026-10-16T16:16:25.895505+00:00",
+      "state": "REAL_PUSH_READBACK_DRAFT_EXACT_SOURCE_GATES_PENDING",
+      "head": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+      "previousRemoteHead": "79255db1b7e262ca71b7b791f2ec7e3fb63b5296",
+      "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "branch": "codex/server-validation-20261011",
+      "PR": {
+        "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+        "number": 2,
+        "head": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "baseRef": "main",
+        "baseRevision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "draft": true,
+        "merged": false,
+        "reportedMergeRevision": "89bdbff148659204341e80a1d29122e9867167ae",
+        "actualCheckout": "PENDING_WORKFLOW_RECEIPT_NOT_API_INFERENCE"
+      },
+      "push": {
+        "session": 73851,
+        "chunk": "4885fb",
+        "exit": 0,
+        "actual": "79255db1..b5a592c2 codex/server-validation-20261011 -> samebranch"
+      },
+      "readback": {
+        "gitLsRemoteAndLocalHead": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "tree": "58464d03ec779fcda08af4e241def9f493efdbb0",
+        "parent": "79255db1b7e262ca71b7b791f2ec7e3fb63b5296",
+        "officialPrHead": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "chunk": "99a007",
+        "transportPushAndReadbackSeparate": true
+      },
+      "rangeGitleaks": {
+        "range": "79255db1b7e262ca71b7b791f2ec7e3fb63b5296..b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "commits": 1,
+        "bytes": 285187,
+        "durationMs": 794,
+        "findings": 0,
+        "exit": 0,
+        "session": 2341,
+        "chunk": "073454"
+      },
+      "sourceInventory": [
+        {
+          "sourceRef": ".github/workflows/ci.yml",
+          "sha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe"
+        },
+        {
+          "sourceRef": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+          "sha256": "de7297382c7bfd47dc1cf8c4c5b3b163d008def3fafa6cbfe160fd94bcb6352b"
+        },
+        {
+          "sourceRef": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sha256": "e7eba4e9e8ae4d3b18b7be20da7c2e5203c7d9e7737638546f8244ef6433818f"
+        }
+      ],
+      "reviewAndLocalChecks": "current79255db1Publication coherentCiEnvironmentIndependentReview/workerDiagnosticIndependentRecheck/initialMembershipPendingReasonRootIntegration/threeSourceCoherentPrecommit; exactthreeSources/c93approvals+allconfiguredstaged10filesPASS; all332pinsmatch. Consumerreason paired tinyreviewAPPROVE saved before futurebinding.",
+      "productQualification": "Harness-only correction/diagnostics; actualpasswordrecovery/Recon/Subject/Today/worker and pendingarchive after STILLNOT_RUN. Oldcurrent792adequatefinitePASS retained; oldPUSHarchivepending/cleanupFAIL and specificHTTP500 observations remainopen. No finalgates credit from oldSHA.",
+      "observerGO": "Root soleassignsc80nexthead finiteordinaryActions scope, no manualdispatch/localstand/oldbodyrepeat; parameterbinding fromimmutableGitnewhead andnewfixturede729/nativeworkerlines. RequiredoldstandaloneconsumerSources/guards retained, ACKreasonfixedenum pair independentlyapproved; no oldbodyreinterpretation.",
+      "matrix": "stories218overlapping206PASS3UNKNOWN5EXCLUDED4OWNER; boundaries52:46PASS5UNKNOWN1OWNER; B16 currentarchivepending distinct B08RPC/Subject. Allproductownerquestionsanswered.",
+      "prepareDrainReadOnlyInvariant": {
+        "utc": "2026-10-16T16:19:34.779650+00:00",
+        "author": "c91 read-only",
+        "receipt": "/workspace/rutcampustrack/.agent/evidence/c91-system16-sensitivity.safe.json#b5B13PrepareDrainReadOnlyInvariant",
+        "outcome": {
+          "utc": "2026-10-16T16:18:58.622764+00:00",
+          "publication": "b5a592c2 Root-authoritative current Source; fouroriginalB13pins and publishedfixturede729 exactreadback",
+          "result": "NO_CONCRETE_DEADLOCK_OR_CLOCK_CUTOFF_COUNTEREXAMPLE_FOUND_IN_BOUNDED_PATH",
+          "sourcePins": {
+            "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/InitialMembershipAttendanceBackfillService.java": "d0336e7386142cbd15a15e9390b503b1e913981cce2f536fdc16150b75c665f1",
+            "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/InitialMembershipAttendanceBackfillWorkService.java": "c002b507a7b6d6a43c09b26847fd4178ed624c5dd78ec45b93c696b99a506e4a",
+            "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/InitialMembershipAttendanceBackfillAcknowledgementConsumer.java": "f099bad4d39d778bb7c0b9e1683c3ea4ca15c1782e47e9db9c64938e551147de",
+            "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/AcademicSemesterArchiveBarrierTransaction.java": "c8e7f52a1ebff996d1dcd759edde9a64405254132b5466aa7781217953ce6577",
+            "tests/e2e/fixtures/semester-lifecycle.spec.ts": "de7297382c7bfd47dc1cf8c4c5b3b163d008def3fafa6cbfe160fd94bcb6352b",
+            "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/SemesterArchiveFence.java": "4f7383059e63fd80cfdfb4f567142aba50e2736f4a105fe70aac933b0bdab1da",
+            "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/PairWriteCoordinator.java": "451b92e49c1b6d15959fa99fa3734035cad967fd7fc84920d87170cb31ae539a",
+            "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterArchiveCoordinator.java": "32d8a5cba374220fe1d3274eff260231f698b5eb74e954716758f0e03e5bb254"
+          },
+          "invariant": [
+            "WorkService.admit27–42 takes same PG semester ordinary-write admission before PENDING work/outbox; post-fence new admission refuses transactionally.",
+            "BackfillService.prepare111–132 explicitly accepts fresh ARCHIVING/writeBlocked=true, inactive semester not independently refused; rejects archived/release/deletecommit as intended.",
+            "Mongo PairWriteCoordinator117→SemesterArchiveFence74–88 permits already-admitted effects in ARCHIVE_PREPARING; semester fence held before sorted lesson fences/effect+receipt+ACK atomic tx.",
+            "Academic firstPendingReason1317 blocks READY while any admitted initial work PENDING; coordinator386–403 only then enqueues AttendanceSEAL.",
+            "ACKconsumer54–76 uses SAME PG advisory semaphore then own work row and exact identity/hash; no active/ordinary-write gate, so ARCHIVING does not block APPLIED.",
+            "Backfill existing exact receipt replay at65–71 validates identity and emits fresh ACK without remote semester read, including after seal; no work-age expiry/cutoff is added."
+          ],
+          "clockQualification": "Visible Instant.now uses effect/fence/receipt timestamps, not a new age/clock admission cutoff for this path. Fixture creates late initial member before archive. No broad clock/architecture review.",
+          "actualQualification": "PR genuine wholePASS retained; prior PUSH pending reason unobserved. Source invariant alone cannot locate current ACK/backlog state or uniquely explain historical timeout. Newly published closed reason mapping may discriminate in next ordinary CI.",
+          "operations": "Read-only Source inspection plus existing own receipt only; no Source/test/CI/Git/network/Actions/runtime changes."
+        },
+        "qualification": "No concrete PREPARE deadlock/cutoff Sourcecounterexample found; oldPUSHpendingcause stillunobserved/UNKNOWN, no new runtime orproductfix claim."
+      },
+      "draftPrBodyUpdated": {
+        "utc": "2026-10-16T16:19:34.779671+00:00",
+        "status": "STRUCTURED_API_SUCCESS",
+        "head": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "description": "Finalbranchbehavior incllatebackfill/RPC config/mixedticket+Today/worker+archive/recon pending, latest harness3Source/currentgatesqualified; no Ready/merge/deploy."
+      },
+      "initialOrdinaryRuns": {
+        "utc": "2026-10-16T16:20:45.281117+00:00",
+        "head": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "pushCI": 38930488363,
+        "prCI": 38930505820,
+        "coverage": 38930505548,
+        "security": 38930505885,
+        "openapi": 38930506022,
+        "pushBrowserJob": 117072907966,
+        "prBrowserJob": 117072965188,
+        "stage": "Bothbrowserstep11; finishednonbrowserjobsreportedSUCCESS/no firstFAIL; actualPUSHcheckoutreaderactive, PRfollows. ArtifactmetadataPUSH12058562190/PR12058955889 ready, notactualcheckoutPASS untilstrictbody read.",
+        "observer": "c80 sole boundedobserver; no Rootreader/process/Sourcechange",
+        "publicationSafePoint": false
+      },
+      "pushCheckoutProvenance": {
+        "state": "STRICT_CHECKOUT_ARTIFACT_VERIFIED",
+        "artifact": 12058562190,
+        "run": 38930488363,
+        "digest": "sha256:61cfb70587c9a293c390f1b49f58a526ebf5a72aa0d4b55bc27aa9038279e93e",
+        "bytes": 272,
+        "checkout": {
+          "checkout_sha": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+          "tree_sha": "58464d03ec779fcda08af4e241def9f493efdbb0",
+          "producer_head_sha": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240"
+        },
+        "officialParentAndTreeJoin": "VERIFIED",
+        "officialParents": [
+          "79255db1b7e262ca71b7b791f2ec7e3fb63b5296"
+        ]
+      },
+      "prCheckoutProvenance": {
+        "state": "STRICT_CHECKOUT_ARTIFACT_VERIFIED",
+        "artifact": 12058955889,
+        "run": 38930505820,
+        "digest": "sha256:4ff83a11901638986bc30adedf9509e76057788452d1ecfcaa46d4509d9997f6",
+        "bytes": 293,
+        "checkout": {
+          "checkout_sha": "89bdbff148659204341e80a1d29122e9867167ae",
+          "tree_sha": "58464d03ec779fcda08af4e241def9f493efdbb0",
+          "producer_head_sha": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240"
+        },
+        "officialParentAndTreeJoin": "VERIFIED",
+        "officialParents": [
+          "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "b5a592c2f8c0ed9df1ead362cae60fb32ee44240"
+        ]
+      },
+      "latestGateCheckpoint": {
+        "utc": "2026-10-16T16:22:04.706335+00:00",
+        "security": "SUCCESS",
+        "openapi": "SUCCESS",
+        "CI": "BOTH_ACTIVE",
+        "coverage": "ACTIVE",
+        "firstFail": "NONE_OBSERVED",
+        "sourceBinding": "19existingbrowserpurposes/52exactdeclarations reboundimmutableGitb5; worker2842/3409/3450 andfixturede729fixedACKconsumer pairedAPPROVE. Actualcheckoutreadersreaped; no oldbodyrepeat.",
+        "qualification": "NotnewuserpathPASS/finalgatesDONE. c80 continues."
+      },
+      "serverAndFirstBrowserProgress": {
+        "utc": "2026-10-16T16:30:30.907945+00:00",
+        "pushRun": 38930488363,
+        "pushNonbrowser": "ALL20SUCCESS",
+        "prRun": 38930505820,
+        "prNonbrowser": "19OF20SUCCESS_REMAININGACTIVE",
+        "pushBrowser": "FIRST3step16/upload17SUCCESS, Remaining18active",
+        "prBrowser": "Boot11active",
+        "coverage": "8OF9SUCCESS_REMAININGACTIVE",
+        "oldProofReuse": "Unchangedadequate792 native/FIRST3 actual bodies retainedproducerqualified; no duplicatecounts/bodyreads. Newmaterial prioritizedWorker2842/Rolepasswordrecovery/Recon/B13Subject/Today.",
+        "qualification": "WholeCI/currentremaininguseractuals/finalcriteria stillPENDING"
+      },
+      "currentPushWorker3": {
+        "state": "EXACT_STRICT_PRIMARY_READ",
+        "producer": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "run": 38930488363,
+        "artifact": 12058788398,
+        "digest": "sha256:bc2d0948a12171c6afda9b957e312acc18a4bb2efb9d79d4c7b2c711f7aef775",
+        "bytes": 396,
+        "members": {
+          "safe-results.json": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 2842,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 3700,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 3409,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 894,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 3450,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 784,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          }
+        },
+        "diagnosticSchema": {
+          "safe-results.json": [
+            {
+              "caseCode": "production worker update activates through the update gate and retains a warm launch",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "synthetic installation prompt handles dismissed unavailable and accepted outcomes",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "synthetic iOS installation instructions dismiss persistently without a native prompt",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ]
+        },
+        "sourcePins": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe"
+          },
+          {
+            "path": "tests/e2e/fixtures/artifact-privacy.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
+          },
+          {
+            "path": "tests/e2e/fixtures/safe-reporter.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
+          },
+          {
+            "path": "tests/e2e/playwright.real-mobile.config.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "831fdde574a459a895e4c0b90bb53672025d1c3499dcf9da4987a7e9512ece9a"
+          },
+          {
+            "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "e7eba4e9e8ae4d3b18b7be20da7c2e5203c7d9e7737638546f8244ef6433818f"
+          }
+        ],
+        "exactDeclarations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 2842,
+            "title": "production worker update activates through the update gate and retains a warm launch",
+            "project": "chromium",
+            "call": "test",
+            "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+          },
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 3409,
+            "title": "synthetic installation prompt handles dismissed unavailable and accepted outcomes",
+            "project": "chromium",
+            "call": "test",
+            "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+          },
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 3450,
+            "title": "synthetic iOS installation instructions dismiss persistently without a native prompt",
+            "project": "chromium",
+            "call": "test",
+            "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+          }
+        ],
+        "schemaSource": "/workspace/scratch/rct-validation/ci_493_remaining/homework/strict-browser-schema.py",
+        "schemaOriginalSha256": "bb021efbdc4af9bafe5102321e3cef94bd972481677ce3889246449ea79a9520",
+        "schemaSpecializedSha256": "f5dc0d7d64e3483aa7d1395083cfe2dc350690d69fb38d2dd934a9dc777c8c2d",
+        "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
+        "cause": "UNKNOWN"
+      },
+      "currentPushRole7": {
+        "state": "EXACT_STRICT_PRIMARY_READ",
+        "producer": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "run": 38930488363,
+        "artifact": 12059567050,
+        "digest": "sha256:65c6cb335b5582b5e0cb8fed4c1fbd95b4fc7f74fa3c2df66807db6eff7d3a9b",
+        "bytes": 479,
+        "members": {
+          "safe-results.json": {
+            "status": "passed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "cloud-accepted-admin-grants.spec.ts",
+                "line": 111,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 5574,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "cloud-accepted-admin-grants.spec.ts",
+                "line": 787,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 13192,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "cloud-accepted-auth-security.spec.ts",
+                "line": 444,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 2972,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "cloud-accepted-auth-security.spec.ts",
+                "line": 912,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 3659,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "cloud-accepted-role-authority.spec.ts",
+                "line": 28,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 2317,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "cloud-accepted-role-authority.spec.ts",
+                "line": 239,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 1102,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              },
+              {
+                "file": "mobile-real-server.spec.ts",
+                "line": 4961,
+                "project": "chromium",
+                "status": "passed",
+                "expectedStatus": "passed",
+                "durationMs": 1710,
+                "errorCount": 0,
+                "diagnostics": [],
+                "errorLocations": []
+              }
+            ]
+          }
+        },
+        "diagnosticSchema": {
+          "safe-results.json": [
+            {
+              "caseCode": "FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "FULL exports five group attendance formats; dashboard-only LIMITED reads until revocation @cloud-accepted",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "own profile security changes password and replacement login rejects old authority @cloud-accepted",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "password recovery consumes its own delivered OTP and admits the replacement password @cloud-accepted",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "four durable grants default to STUDENT; explicit role survives reload and stale version cannot switch @cloud-accepted",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "unconfirmed UI logout clears its owner and rejects a late real feed through reload @cloud-accepted",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ]
+        },
+        "sourcePins": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe"
+          },
+          {
+            "path": "tests/e2e/playwright.real-mobile.config.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "831fdde574a459a895e4c0b90bb53672025d1c3499dcf9da4987a7e9512ece9a"
+          },
+          {
+            "path": "tests/e2e/fixtures/safe-reporter.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
+          },
+          {
+            "path": "tests/e2e/fixtures/artifact-privacy.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
+          },
+          {
+            "path": "tests/e2e/fixtures/pwa-auth.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "befccc5d5075ec6845bc1db98f9e4fddc114fce363a43049aa58403fde7e23d6"
+          },
+          {
+            "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "e7eba4e9e8ae4d3b18b7be20da7c2e5203c7d9e7737638546f8244ef6433818f"
+          },
+          {
+            "path": "tests/e2e/specs/cloud-accepted-role-authority.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "5660e994154b9a5b7c5cc8f823eee56602d2fe159f5bf751e6338c0fee472736"
+          },
+          {
+            "path": "tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "69356d62a601c5bd61dea0c4c0c1745d823dfd5e418b91fbef756c0a9a0b2c70"
+          },
+          {
+            "path": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "41874dfbd8a498a093bc7319f9ea7e9d283b548b6fc4475fd99875c60b9eb78e"
+          }
+        ],
+        "exactDeclarations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts",
+            "line": 4961,
+            "title": "SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions",
+            "call": "test",
+            "project": "chromium"
+          },
+          {
+            "file": "cloud-accepted-role-authority.spec.ts",
+            "sourcePath": "tests/e2e/specs/cloud-accepted-role-authority.spec.ts",
+            "line": 28,
+            "title": "four durable grants default to STUDENT; explicit role survives reload and stale version cannot switch @cloud-accepted",
+            "call": "test",
+            "project": "chromium"
+          },
+          {
+            "file": "cloud-accepted-role-authority.spec.ts",
+            "sourcePath": "tests/e2e/specs/cloud-accepted-role-authority.spec.ts",
+            "line": 239,
+            "title": "unconfirmed UI logout clears its owner and rejects a late real feed through reload @cloud-accepted",
+            "call": "test",
+            "project": "chromium"
+          },
+          {
+            "file": "cloud-accepted-admin-grants.spec.ts",
+            "sourcePath": "tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+            "line": 111,
+            "title": "FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted",
+            "call": "test",
+            "project": "chromium"
+          },
+          {
+            "file": "cloud-accepted-admin-grants.spec.ts",
+            "sourcePath": "tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+            "line": 787,
+            "title": "FULL exports five group attendance formats; dashboard-only LIMITED reads until revocation @cloud-accepted",
+            "call": "test",
+            "project": "chromium"
+          },
+          {
+            "file": "cloud-accepted-auth-security.spec.ts",
+            "sourcePath": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+            "line": 444,
+            "title": "own profile security changes password and replacement login rejects old authority @cloud-accepted",
+            "call": "test",
+            "project": "chromium"
+          },
+          {
+            "file": "cloud-accepted-auth-security.spec.ts",
+            "sourcePath": "tests/e2e/specs/cloud-accepted-auth-security.spec.ts",
+            "line": 912,
+            "title": "password recovery consumes its own delivered OTP and admits the replacement password @cloud-accepted",
+            "call": "test",
+            "project": "chromium"
+          }
+        ],
+        "schemaSource": "/workspace/scratch/rct-validation/ci_493_remaining/homework/strict-browser-schema.py",
+        "schemaOriginalSha256": "bb021efbdc4af9bafe5102321e3cef94bd972481677ce3889246449ea79a9520",
+        "schemaSpecializedSha256": "260ce3f0d3338ce01f11e1061edc6a732c31045667100a1c6e167506327e3161",
+        "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
+        "cause": "UNKNOWN"
+      },
+      "currentMaterialActualProgress": {
+        "utc": "2026-10-16T16:33:48.685197+00:00",
+        "worker": "Exact3PASS: 2842=3700ms/3409=894/3450=784, instrumentedobservercanwakeworker; NOTuninstrumentedacceptance. c86 sole nextcandidate restoresexactpriorapprovedead4183 Source, all originalUI/hardtime/cache/offline/page-outgoingassertions unchanged. Rootwillnotinterruptcurrentusefulruns.",
+        "passwordRecovery": "Roleexact7wholePASS/currentAuth9123659ms deliveredownOTP→replacementpasswordlogin; actualoldlookupfailure notonthisrun. Otherrole/grant/session/suspended casesPASS; no uniquehistoricalDockerexitcauseclaim.",
+        "gates": "BothCI ALL20nonbrowserSUCCESS; Coverage38930505548/Security38930505885/OpenAPI38930506022SUCCESS; browsersstilluseful PUSHHW31/PRFIRST3; publicationSafePointfalse.",
+        "remainder": "Recon-specificHTTP500/Subject/Today/archive stillpending; aftercurrentoutcomes finaluninstrumentedworker Source and anyotherneededactualfixes formnextboundedpackage, notnewframework."
+      },
+      "uninstrumentedWorkerFinalCandidate": {
+        "utc": "2026-10-16T16:34:47.602750+00:00",
+        "state": "AUTHOR_FROZEN_ROOT_NOT_INTEGRATED_UNTIL_SAFEPOINT",
+        "author": "c86",
+        "sourceRef": "tests/e2e/specs/mobile-real-server.spec.ts",
+        "authorSource": "/workspace/rct-worktrees/q09-client-remaining-20261014/tests/e2e/specs/mobile-real-server.spec.ts",
+        "rootPreSha256": "e7eba4e9e8ae4d3b18b7be20da7c2e5203c7d9e7737638546f8244ef6433818f",
+        "sha256": "ead4183dd213616367ed6feca69f74b2efe4a6a46f5d3ad39ccff7b85155c3c0",
+        "inverse": "Author exactlyremovedONLYthree workerrealmprobe/combinedmarker/cleanup hunks (includingP2guardwithinprobe); reconstructedinverse===git792wholefile beforewrite. RootindependentlyverifiedpostSHA andbyteexactimmutablegit792.",
+        "preserved": "Page outgoingpostMessage diagnostic, UIclick/original5s/controllerchange/reload/cache/offline/allhardassertions. Cases2842/3261/3302 restored. No productSW/UI/API change, no newflag/framework/case.",
+        "checks": "CachedwholefilePrettier+TypeScriptparserPASS/reaped; reusepriorapprovedead418type/review. No newbroadtest/TSC/native/network.",
+        "reason": "Currentb5instrumented3.7sGREEN qualifiedcanwakeworker; requiredfinalordinaryuninstrumentedcase remains pending. No claimobservercausedhistoricalFAIL. Retainb5Source/actual inGit/receipts.",
+        "integration": "WaitcurrentusefulCIbothterminal/cleanup/readersreaped, combinewithanyactualnecessaryfix; no cancellation/Sourcechange now."
+      },
+      "publicDirectedConfigurationCompatibilityGap": {
+        "utc": "2026-10-16T16:38:09.733057+00:00",
+        "state": "FIVE_SOURCE_CORRECTION_FROZEN_APPROVED_NATIVE_AND_ROOT_INTEGRATION_PENDING",
+        "sourceRefs": [
+          {
+            "sourceRef": ".env.prod.example",
+            "sha256": "19313607658da3c48d8d25da65b1633ac70ff69aa9b45f4ba7f24aa0d4f89a08"
+          },
+          {
+            "sourceRef": "scripts/validate-env-prod.sh",
+            "sha256": "c27a20c3d0707f44f0d9c2afe73044c4b6d127a3696231276f66305b3fb1347b"
+          },
+          {
+            "sourceRef": "infra/local-stand/compose.yml",
+            "sha256": "bb844652ab00ce6466eb91af1c47cdd56f7e1fb45dfb74bc84aa0678156668dd"
+          }
+        ],
+        "facts": "New accepted directed GetSemesterState needs distinct ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN. Currentprodcompose256/357 requires it, butpublic.env.prod.example128–135 andvalidatorREQUIRED_VARS102–118/directchecks350–352 omit it. Documentedcopytemplate+validator path canacceptmissingrequiredconfig. Publiclocal-stand script1793/1818 anditsdifferentcompose also omitdirection, so generationalone insufficient. No actuallocal/privateenv/18514/secret/deployworkflow inspection or runtime.",
+        "scope": "Onlycoherentpublictemplate/validator+genericlocal-stand generator/compose Source update byc89; noactualstandoperation/config/secretrotation. CurrentCIdoesnotwait/interrupt. Optionalrotationdocs/research outofcriticalpath.",
+        "verification": "Meaningful syntheticmissing/malformed/duplicate direction controls through existing publicvalidator seam; publiccompose/parser/PSsyntax ifcached; exactconfigtuple/generation Source guard preservation, c93one coherent review. No localGradle/Docker/stand/install/newframework.",
+        "releaseQualification": "Thisis configuration compatibility defect ofnewrequiredidentity, notproofactualPUSHarchiveACKcause. Uninstrumentedworkerrestoration willjoincoherent nextpackage atSafePoint."
+      },
+      "publicDirectedConfigurationAuthorFrozenAndReview": {
+        "utc": "2026-10-16T16:44:06.865950+00:00",
+        "state": "FIVE_AUTHOR_FROZEN_APPROVED_ROOT_NOT_INTEGRATED",
+        "author": "c89",
+        "worktree": "/tmp/rct-headman-hw-intent-6cdce-20261015",
+        "sourcePins": [
+          {
+            "sourceRef": ".env.prod.example",
+            "preSha256": "19313607658da3c48d8d25da65b1633ac70ff69aa9b45f4ba7f24aa0d4f89a08",
+            "sha256": "cf6ef7d33cdd6d81951e7b5d06b94c8b721e2ed3db2c7537f34e19c2fc43baf2"
+          },
+          {
+            "sourceRef": "scripts/validate-env-prod.sh",
+            "preSha256": "c27a20c3d0707f44f0d9c2afe73044c4b6d127a3696231276f66305b3fb1347b",
+            "sha256": "ea4b7169189cf6e261a1d3a8bc9a8b0ed8363b1b1d91a3495daefdbc9884ea07"
+          },
+          {
+            "sourceRef": "scripts/local-stand.ps1",
+            "preSha256": "ed98ebbd126c8555b2d3726d88c250e35a5a25ba5047f128a9ba0872b5743752",
+            "sha256": "ce0e63c0a1bcc2b1ce0e7c4aa9644aeff6208f309a3a7a8164c1e86ae8bf12aa"
+          },
+          {
+            "sourceRef": "infra/local-stand/compose.yml",
+            "preSha256": "bb844652ab00ce6466eb91af1c47cdd56f7e1fb45dfb74bc84aa0678156668dd",
+            "sha256": "08484a805fab5fe237ccf1c2b371b85cb475ada7c26b68e146b253355ae9c73a"
+          },
+          {
+            "sourceRef": ".github/workflows/ci.yml",
+            "preSha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe",
+            "sha256": "f369e4f6f2ac300dd1955539fcd682b946d91565bb614d811176e1b8b78e1f45"
+          }
+        ],
+        "checks": "ActualfullBashvalidator10syntheticcontrols: oldmissingkeyaccepted0→newmissingrejected2; valid0; malformed/noncanonical/collisioneach3prior+optionalAcademicAttendance rejects3. No valuesincapturedoutput. bash-n/YAML/canonicalPrettier/exactinversePASS; fullPS AST NOT_RUN locally (nocachedruntime), addedONEexistingCI-shellcheck Parser.ParseFile-onlystepmustPASSnextordinaryCI. No Sourceexecution/native/privateconfig/ownerstand/secret/Deploy access.",
+        "controlSource": "/tmp/rct-c89-public-direction-controls.py",
+        "authorReceipt": "/tmp/rct-headman-hw-intent-6cdce-20261015/.agent/evidence/c89-hw-intent.safe.json#currentB5PublicDirectedTokenCompatibilityImplementation",
+        "reviewReceipt": "/workspace/rutcampustrack/.agent/evidence/c93-gateway500-review.safe.json#currentB5PublicDirectedTokenCompatibilityReview",
+        "review": {
+          "utc": "2026-10-16T16:43:21.522464+00:00",
+          "outcome": "APPROVE_SOURCE_ONLY",
+          "importantFindings": [],
+          "requestedModel": "gpt-6.1-sol/high",
+          "actualModel": "UNKNOWN",
+          "base": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+          "pins": {
+            ".env.prod.example": "cf6ef7d33cdd6d81951e7b5d06b94c8b721e2ed3db2c7537f34e19c2fc43baf2",
+            "scripts/validate-env-prod.sh": "ea4b7169189cf6e261a1d3a8bc9a8b0ed8363b1b1d91a3495daefdbc9884ea07",
+            "scripts/local-stand.ps1": "ce0e63c0a1bcc2b1ce0e7c4aa9644aeff6208f309a3a7a8164c1e86ae8bf12aa",
+            "infra/local-stand/compose.yml": "08484a805fab5fe237ccf1c2b371b85cb475ada7c26b68e146b253355ae9c73a",
+            ".github/workflows/ci.yml": "f369e4f6f2ac300dd1955539fcd682b946d91565bb614d811176e1b8b78e1f45"
+          },
+          "independentSourceReview": [
+            "Actual four public-template/validator/local-stand/compose diffs inspected; exact currentRoot pre/post hashes verified. Changes address concrete new B13 directed-token compatibility, preserve all other behavior.",
+            "Public template adds independent32byte/43char placeholder. Existing full validator now requires new variable, uses unchanged canonical last-sextet check, and rejects equality with three required plus optional Academic->Attendance directions. Errors name only keys, no secret values.",
+            "Actual local generator primitive uses cryptographic32byte RNG plus canonical conversion. New independent token generated once and collisions rejected before private output; initialization still refuses overwrite. Config asserts canonical Academic receiver value, same exact case-sensitive Attendance sender proof and nonreuse with other existing directions.",
+            "Local compose maps new required placeholder only Academic and Attendance. Existing TLS/authority/ports/ownership/private file and ambient variable suppression contracts unchanged. Actual backend receiver binding reviewed earlier remains authoritative.",
+            "Actual retained full Bash validator synthetic control Source245a77886fa9281b1220a37f3366c76343fae0d810951be8e282464cc139a8e3 inspected: oldmissing accepted0/newmissing2/newvalid0/malformed/noncanonical/fourcollisions3; generated values absent captured output. Author10controls/Bashsyntax/YAML/formatter/inverse PASS qualified, no rerun.",
+            "Tiny fifth-file CI delta inspected in existing ShellCheck job: pwsh Parser.ParseFile of tracked local-stand.ps1, token/error refs discarded, fixed failure on parseErrors. No script execution/dot-source/import/env/runtime action. Independently removing added step exactly recreates existingRoot5022 workflow."
+          ],
+          "qualification": {
+            "powerShellAst": "NOT_RUN locally; actual new syntax-only step must pass next ordinaryCI.",
+            "nativeOrComposeOrOwnerLocalConfig": "NOT_RUN; Source-only approval, not launch/deploy/runtime acceptance.",
+            "privateOrActualCredentials": "NOT_READ; only public example/config Source and synthetic controls inspected.",
+            "oldWorkerReview": "Not repeated; restoration candidate separate exact inverse.",
+            "ordinaryCi": "Required after integrated revision."
+          },
+          "writes": "Own existing review receipt entry only; no Source/Git/shared-doc/native/network/Actions mutations."
+        },
+        "integration": "Wait currentCI usefulbothterminal/cleanup/readersreaped; nextcoherent SIXSourcepackage includesthis5 +frozenuninstrumentedWorkeread418 exactapprovedrestoration. RootSourceallunchangedb5/canonical332match."
+      },
+      "firstRuntimeFailMetadata": {
+        "utc": "2026-10-16T16:47:59.635223+00:00",
+        "event": "push",
+        "run": 38930488363,
+        "reportedSteps": [
+          {
+            "number": 41,
+            "domain": "Recon",
+            "outcome": "FAIL"
+          },
+          {
+            "number": 44,
+            "domain": "Assignment",
+            "outcome": "FAIL"
+          },
+          {
+            "number": 47,
+            "domain": "Lesson",
+            "outcome": "FAIL"
+          },
+          {
+            "number": 50,
+            "domain": "Recovery",
+            "outcome": "FAIL"
+          }
+        ],
+        "stage": "PUSHcleanup64active; PRtarget39active/useful. No cause/500signature/bodyclassifiedyet; c80 readsactualcurrentRecon thenAssignment primary.",
+        "qualification": "Do not inferfourindependentproductbugs or rootcause frommetadata; all20serverjobs/CovSecOpenAPISUCCESS preserved. No priorbodyrepeat/cancel/newpush untilsafePoint."
+      },
+      "currentPushRecon": {
+        "state": "EXACT_STRICT_PRIMARY_READ",
+        "producer": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "run": 38930488363,
+        "artifact": 12060945039,
+        "digest": "sha256:667951cbadc7ba1e6eca68b1daae5b84351e51fc0851e26dddd060bdc6f71ab7",
+        "bytes": 976,
+        "members": {
+          "artifacts/safe-results.json": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "semester-lifecycle.spec.ts",
+                "line": 2705,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 171234,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "DATASET_HTTP",
+                    "cause": "DATASET_ATTENDANCE_REPORT_HTTP",
+                    "httpStatus": 500
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_ERROR",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_FRAME_DATASET_CALL",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "semester-lifecycle.spec.ts",
+                    "line": 3916
+                  }
+                ]
+              }
+            ]
+          },
+          "reconciliation.safe.json": {
+            "schema": "semester-reconciliation.v3",
+            "phase": "EXACT_REPLAY",
+            "configuredListenerAttempts": 3,
+            "measuredListenerAttempts": "UNKNOWN",
+            "exactDlqEnvelope": true,
+            "pendingBeforeReplay": true,
+            "appliedAfterReplay": true,
+            "sameArchiveCompleted": true,
+            "duplicateBusinessUnchanged": false,
+            "recoveryPublishAttempted": true,
+            "duplicateAttempted": false,
+            "retainedDlqCopies": 1,
+            "restorationSucceeded": true,
+            "clockUnchanged": true,
+            "cleanupOutcome": "PASSED",
+            "firstRestartFailure": null,
+            "mainCloseLastRead": {
+              "targetPresent": true,
+              "groupMatches": true,
+              "semesterMatches": true,
+              "status": "CLOSED"
+            }
+          }
+        },
+        "diagnosticSchema": {
+          "artifacts/safe-results.json": [
+            {
+              "caseCode": "FULL admin reconciles one exact stranded close before archive completion",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "reconciliation.safe.json": "EXACT_PUBLISHED_CLOSED_V3_NO_PRIVATE_FIELDS"
+        },
+        "sourcePins": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe"
+          },
+          {
+            "path": "tests/e2e/fixtures/artifact-privacy.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
+          },
+          {
+            "path": "tests/e2e/fixtures/safe-reporter.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
+          },
+          {
+            "path": "tests/e2e/playwright.semester-lifecycle.config.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "68ab83bb146db745fd39fc0d033a1db9a03b33a4ea5077f4edb6d11560484bce"
+          },
+          {
+            "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "de7297382c7bfd47dc1cf8c4c5b3b163d008def3fafa6cbfe160fd94bcb6352b"
+          }
+        ],
+        "exactDeclarations": [
+          {
+            "sourcePath": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+            "file": "semester-lifecycle.spec.ts",
+            "title": "FULL admin reconciles one exact stranded close before archive completion",
+            "project": "chromium",
+            "line": 2705,
+            "call": "test"
+          }
+        ],
+        "schemaSource": "/workspace/scratch/rct-validation/ci_493_remaining/semester-three-member/strict-browser-schema.py",
+        "schemaOriginalSha256": "54b7db32cb86dd028113a6e77992975841e908371c6e99731f4050ef8c8acf84",
+        "schemaSpecializedSha256": "9bfe71c1825084bad789d08b30c52f700d9f14c5c4c895088815f8e6d4ca276c",
+        "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
+        "cause": "UNKNOWN"
+      },
+      "reconRuntimeTargetReached": {
+        "utc": "2026-10-16T16:49:09.500142+00:00",
+        "state": "GENUINE_REPORT_HTTP500_REPRODUCED",
+        "scope": "CommonenvCIfixgotpastoldDockerSETUP; exactreplay/pending→applied/samearchivecompleted then validcurrentHEADMAN archivedreport→HTTP500 at3916. Restoration/clock/cleanupPASS; no cause yet.",
+        "next": "c80approvedclosed8hint43 thenAssignmentprimary; c91 readonlySourceRCA currentflow/report domain, no expected200relaxation/no newruntimes. PRstilluseful/no cancel.",
+        "specificOldIssue": "HTTP500-POST-RECON-01 remains OPEN. Do not infer laterfailuresindependent."
+      },
+      "currentPushAssignment": {
+        "state": "EXACT_STRICT_PRIMARY_READ",
+        "producer": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "run": 38930488363,
+        "artifact": 12059239616,
+        "digest": "sha256:62fd892b2f5cadd6a4d982a749738b30ca4c0007ce4ebf4ff627e2f09de00f83",
+        "bytes": 507,
+        "members": {
+          "prepare/safe-results.json": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "assignment-lifecycle.spec.ts",
+                "line": 1014,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 835,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "DATASET_HTTP",
+                    "cause": "DATASET_LESSON_CREATE_HTTP",
+                    "httpStatus": 500
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_ERROR",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_FRAME_DATASET_CALL",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "assignment-lifecycle.spec.ts",
+                    "line": 495
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "diagnosticSchema": {
+          "prepare/safe-results.json": [
+            {
+              "caseCode": "assignment lifecycle API phase",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ]
+        },
+        "sourcePins": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe"
+          },
+          {
+            "path": "tests/e2e/fixtures/artifact-privacy.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
+          },
+          {
+            "path": "tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "a265cc995c5f90301c07c9e4e1ccd645d9cc67ed51e1c33db0d62579245b0937"
+          },
+          {
+            "path": "tests/e2e/fixtures/safe-reporter.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
+          },
+          {
+            "path": "tests/e2e/playwright.assignment-lifecycle.config.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "cfa219188cde95192b0208aa68094f38f1f2ca537a44f9533803d7c94c941f25"
+          }
+        ],
+        "exactDeclarations": [
+          {
+            "file": "assignment-lifecycle.spec.ts",
+            "line": 1014,
+            "title": "assignment lifecycle API phase",
+            "project": "chromium",
+            "call": "test",
+            "sourcePath": "tests/e2e/fixtures/assignment-lifecycle.spec.ts"
+          }
+        ],
+        "schemaSource": "/workspace/scratch/rct-validation/ci_c3ff_closed_read/assignment/strict-browser-schema.py",
+        "schemaOriginalSha256": "fe4176c0d223777bfdddd76421f5ddd0e9908d4f2db9785c58c863743e9bfd31",
+        "schemaSpecializedSha256": "1be9ef69273635fb2974369d3655be9338baf5e1bebd3602cb674eec26c5259d",
+        "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
+        "cause": "UNKNOWN"
+      },
+      "currentPushLesson4": {
+        "state": "EXACT_STRICT_PRIMARY_READ",
+        "producer": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "run": 38930488363,
+        "artifact": 12059334574,
+        "digest": "sha256:595bdf381518dd04d18ec1d556a272ae93907e4096efeb5315721c13f4cf1bab",
+        "bytes": 581,
+        "members": {
+          "safe-results.json": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "mobile-attendance-requests.spec.ts",
+                "line": 9,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 98,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "DATASET_HTTP",
+                    "cause": "DATASET_LESSON_CREATE_HTTP",
+                    "httpStatus": 500
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_ERROR",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_FRAME_DATASET_CALL",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-attendance-requests.spec.ts",
+                    "line": 9
+                  }
+                ]
+              },
+              {
+                "file": "mobile-lesson-lifecycle.spec.ts",
+                "line": 20,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 66,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "DATASET_HTTP",
+                    "cause": "DATASET_LESSON_CREATE_HTTP",
+                    "httpStatus": 500
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_ERROR",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_FRAME_DATASET_CALL",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-lesson-lifecycle.spec.ts",
+                    "line": 20
+                  }
+                ]
+              },
+              {
+                "file": "mobile-schedule-lifecycle.spec.ts",
+                "line": 390,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 62,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "DATASET_HTTP",
+                    "cause": "DATASET_LESSON_CREATE_HTTP",
+                    "httpStatus": 500
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_ERROR",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_FRAME_DATASET_CALL",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-schedule-lifecycle.spec.ts",
+                    "line": 390
+                  }
+                ]
+              },
+              {
+                "file": "mobile-schedule-lifecycle.spec.ts",
+                "line": 1833,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 57,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "DATASET_HTTP",
+                    "cause": "DATASET_LESSON_CREATE_HTTP",
+                    "httpStatus": 500
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_ERROR",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_FRAME_DATASET_CALL",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "mobile-schedule-lifecycle.spec.ts",
+                    "line": 1833
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "diagnosticSchema": {
+          "safe-results.json": [
+            {
+              "caseCode": "exhausted manual budget still permits a failed-geo AUTO request that the headman approves",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "HEADMAN cancels a marked lesson and restores its journal without reviving homework @real-mobile",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "HEADMAN removes and returns a recurring slot without losing past identity or marks @real-mobile",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            },
+            {
+              "caseCode": "STUDENT warm semester ETag stays scoped and refreshes the same physical room in Today @real-mobile",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ]
+        },
+        "sourcePins": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe"
+          },
+          {
+            "path": "tests/e2e/playwright.lesson-lifecycle.config.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "902b728094d881a9940ce7dae13b2986adf77b2c9e8839c4a2daa946f018899c"
+          },
+          {
+            "path": "tests/e2e/fixtures/safe-reporter.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
+          },
+          {
+            "path": "tests/e2e/fixtures/artifact-privacy.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
+          },
+          {
+            "path": "tests/e2e/fixtures/pwa-auth.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "befccc5d5075ec6845bc1db98f9e4fddc114fce363a43049aa58403fde7e23d6"
+          },
+          {
+            "path": "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "398474d7054fa48066476bb28d51fdcf5a758ba2d6c41db5293118788050094e"
+          },
+          {
+            "path": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "bbc225fdcd6bc8f1288a1c08a186fef2cd54b1785500330fb79038b066e2cb49"
+          },
+          {
+            "path": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "c712de4566077ea8136f0f3e256076036fe3e9d3e237ac61a1435bbfaa92f917"
+          }
+        ],
+        "exactDeclarations": [
+          {
+            "file": "mobile-lesson-lifecycle.spec.ts",
+            "sourcePath": "tests/e2e/specs/mobile-lesson-lifecycle.spec.ts",
+            "line": 20,
+            "title": "HEADMAN cancels a marked lesson and restores its journal without reviving homework @real-mobile",
+            "call": "test",
+            "project": "chromium"
+          },
+          {
+            "file": "mobile-schedule-lifecycle.spec.ts",
+            "sourcePath": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+            "line": 390,
+            "title": "HEADMAN removes and returns a recurring slot without losing past identity or marks @real-mobile",
+            "call": "test",
+            "project": "chromium"
+          },
+          {
+            "file": "mobile-schedule-lifecycle.spec.ts",
+            "sourcePath": "tests/e2e/specs/mobile-schedule-lifecycle.spec.ts",
+            "line": 1833,
+            "title": "STUDENT warm semester ETag stays scoped and refreshes the same physical room in Today @real-mobile",
+            "call": "test",
+            "project": "chromium"
+          },
+          {
+            "file": "mobile-attendance-requests.spec.ts",
+            "sourcePath": "tests/e2e/specs/mobile-attendance-requests.spec.ts",
+            "line": 9,
+            "title": "exhausted manual budget still permits a failed-geo AUTO request that the headman approves",
+            "call": "test",
+            "project": "chromium"
+          }
+        ],
+        "schemaSource": "/workspace/scratch/rct-validation/ci_edb_closed_read/lesson/strict-browser-schema.py",
+        "schemaOriginalSha256": "f58f9968e09af8968d9f09429cee3a1f816e74ff99742c41b4c2d0dddcde9565",
+        "schemaSpecializedSha256": "6a5b70e63a90dd472ff9ccd1e276a5db2931c3266bcae5dd3ce6ee28f3de8f97",
+        "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
+        "cause": "UNKNOWN"
+      },
+      "currentPushRecovery": {
+        "state": "EXACT_STRICT_PRIMARY_READ",
+        "producer": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "run": 38930488363,
+        "artifact": 12059304426,
+        "digest": "sha256:4be6051ac2b4642cf6c861736b883466ba2e3cf3f1a5be0066685aadd423d8d2",
+        "bytes": 495,
+        "members": {
+          "seed/safe-results.json": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "application-recovery.spec.ts",
+                "line": 527,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 804,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "DATASET_HTTP",
+                    "cause": "DATASET_LESSON_CREATE_HTTP",
+                    "httpStatus": 500
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_CLASS_ERROR",
+                    "httpStatus": 0
+                  },
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "REPORTED_FRAME_DATASET_CALL",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "application-recovery.spec.ts",
+                    "line": 527
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "diagnosticSchema": {
+          "seed/safe-results.json": [
+            {
+              "caseCode": "application recovery API phase",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ]
+        },
+        "sourcePins": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe"
+          },
+          {
+            "path": "tests/e2e/fixtures/artifact-privacy.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
+          },
+          {
+            "path": "tests/e2e/fixtures/safe-reporter.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
+          },
+          {
+            "path": "tests/e2e/fixtures/application-recovery.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "cd19fb174b422b4ced91f64fbce6a8a538803192f684bee1d9b5d3ba57268389"
+          },
+          {
+            "path": "tests/e2e/playwright.application-recovery.config.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "5b910f7f71fafdb9f04cfcdba5899217e6e1e1d0ec8f8aa2ddaad33384d6ab9c"
+          }
+        ],
+        "exactDeclarations": [
+          {
+            "sourcePath": "tests/e2e/fixtures/application-recovery.spec.ts",
+            "file": "application-recovery.spec.ts",
+            "line": 527,
+            "title": "application recovery API phase",
+            "call": "test",
+            "project": "chromium"
+          }
+        ],
+        "schemaSource": "/workspace/scratch/rct-validation/ci_edb_closed_read/recovery/strict-browser-schema.py",
+        "schemaOriginalSha256": "bfc324d3531199a09006a5f7a6ec9ec93f3e0452de859ce633b412d70dccd797",
+        "schemaSpecializedSha256": "00b8c998f8242b5ec5333cd6c38a43615ab1b6b9187fd94269b674fc21cef0cc",
+        "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
+        "cause": "UNKNOWN"
+      },
+      "postReconCausalCheckpoint": {
+        "utc": "2026-10-16T16:52:07.596182+00:00",
+        "report": "GenuinearchivedownHEADMANreport500 afterexactreplay/APPLIED/completedarchive, actualrestoration/clock/cleanupPASS. Reportclosed8AMBIGUOUS/noownFrame; Attendance noeligibleERROR/malformedrecord; Gatewayallowlistedjava.net.ConnectException unkeyed/UNMAPPED_EXCEPTION_CLASS+UNQUALIFIED_SUPPRESSION, notrequestcause.",
+        "assignment": "prepare1014 FAIL835ms/frame495 DATASET_LESSON_CREATE_HTTP500, remainingphasesNOTPRODUCED; samealready-readScheduleclosed8AMBIGUOUS/noownFrame/noeligibleERROR/malformed, GatewayConnectException unkeyed. No newrawfetch.",
+        "lesson": "All4faildatasetLessonCreate500 beforebusiness: 9=98ms/20=66ms/390=62ms/1833=57ms. No newforms/week/table failures claimed.",
+        "recovery": "seed527 FAIL804ms/1error LessonCreate500; subsequentrestorephasesabsent.",
+        "events": "PUSHbrowserterminalFAIL/Original52Admin55Subject57Today59SKIPPED/containercleanup61–64SUCCESS; PRRecon41usefulactive/safePointfalse.",
+        "next": "c91 source-RCA existing restart/readiness/serviceidentity/resolver seams, no expected200weakening/newgenericcampaign. Publicconfig5+uninstrumentedworker1 frozenapproved queue waitsSafePoint; allRootSourceb5 unchanged."
+      },
+      "finalGatesAndCleanup": {
+        "at": "2026-10-16T16:54:17.083059+00:00",
+        "allCurrentExactHeadGates": [
+          {
+            "id": 38930505548,
+            "name": "Coverage",
+            "event": "pull_request",
+            "head_sha": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "status": "completed",
+            "conclusion": "success",
+            "updated_at": "2026-10-16T16:32:29Z"
+          },
+          {
+            "id": 38930505820,
+            "name": "CI",
+            "event": "pull_request",
+            "head_sha": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "status": "completed",
+            "conclusion": "failure",
+            "updated_at": "2026-10-16T16:52:26Z"
+          },
+          {
+            "id": 38930505885,
+            "name": "Security",
+            "event": "pull_request",
+            "head_sha": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "status": "completed",
+            "conclusion": "success",
+            "updated_at": "2026-10-16T16:18:20Z"
+          },
+          {
+            "id": 38930506022,
+            "name": "OpenAPI Drift Guard",
+            "event": "pull_request",
+            "head_sha": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "status": "completed",
+            "conclusion": "success",
+            "updated_at": "2026-10-16T16:17:15Z"
+          },
+          {
+            "id": 38930488363,
+            "name": "CI",
+            "event": "push",
+            "head_sha": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "status": "completed",
+            "conclusion": "failure",
+            "updated_at": "2026-10-16T16:47:51Z"
+          }
+        ],
+        "allOwnedReadersReaped": true,
+        "publicationSafePoint": true,
+        "globalPublicationDeferredReason": null,
+        "bothRunsTerminal": true,
+        "businessRestorationNotPromoted": true,
+        "browser": {
+          "id": 117072965188,
+          "status": "completed",
+          "conclusion": "failure",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Record the actual PR checkout revision",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Upload the closed checkout revision",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Run actions/setup-java@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Prepare disposable FIRST3 clock and private artifacts",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Set up Docker Buildx",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Generate self-signed TLS cert",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Boot isolated Vue auth stack",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            },
+            {
+              "name": "Link synthetic Telegram teacher in the ephemeral database",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12
+            },
+            {
+              "name": "Install Playwright + browsers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13
+            },
+            {
+              "name": "Trust the disposable localhost certificate for Chromium workers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14
+            },
+            {
+              "name": "Run auth-flow @smoke specs (chromium only)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15
+            },
+            {
+              "name": "Run accepted FIRST3 with closed diagnostics (chromium only)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16
+            },
+            {
+              "name": "Upload safe FIRST3 outcomes and observations",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            },
+            {
+              "name": "Run remaining five accepted mobile scenarios (chromium only)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "Upload safe remaining five outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            },
+            {
+              "name": "Trust the disposable localhost certificate for WebKit workers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 20
+            },
+            {
+              "name": "Run accepted online session revocation and recovery in actual WebKit",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 21
+            },
+            {
+              "name": "Upload closed WebKit outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 22
+            },
+            {
+              "name": "Run the real production worker update and install logic",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 23
+            },
+            {
+              "name": "Upload closed worker lifecycle and install logic outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 24
+            },
+            {
+              "name": "Run real Vue administrator account lifecycle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 25
+            },
+            {
+              "name": "Upload closed administrator lifecycle outcome",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 26
+            },
+            {
+              "name": "Run real Vue role transition and logout-all",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 27
+            },
+            {
+              "name": "Upload closed role transition and logout-all outcome",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 28
+            },
+            {
+              "name": "Verify real student geolocation and manual absence prohibition",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 29
+            },
+            {
+              "name": "Upload closed student geolocation outcome",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 30
+            },
+            {
+              "name": "Verify real Vue helper homework edit and retained completion",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 31
+            },
+            {
+              "name": "Upload closed homework lifecycle outcome",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 32
+            },
+            {
+              "name": "Verify real Vue map viewing and download after API replacement",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 33
+            },
+            {
+              "name": "Upload closed map lifecycle outcome",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 34
+            },
+            {
+              "name": "Verify real Vue FULL and LIMITED registry downloads",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 35
+            },
+            {
+              "name": "Upload closed registry export outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 36
+            },
+            {
+              "name": "Verify real Vue helper statistics cancellation and request decisions",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 37
+            },
+            {
+              "name": "Upload closed helper capability outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 38
+            },
+            {
+              "name": "Check the real homework notification target against a controlled navigation fault",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 39
+            },
+            {
+              "name": "Upload closed homework notification sensitivity outcomes",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 40
+            },
+            {
+              "name": "Verify exact stranded semester effect reconciliation",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 41
+            },
+            {
+              "name": "Upload closed semester reconciliation outcome",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 42
+            },
+            {
+              "name": "Record a closed exception hint after the failed archived lesson report",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 43
+            },
+            {
+              "name": "Verify interrupted assignment closure and next-day replacement",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 44
+            },
+            {
+              "name": "Upload closed assignment lifecycle outcomes",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 45
+            },
+            {
+              "name": "Record a closed exception hint after the failed lesson creation",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 46
+            },
+            {
+              "name": "Verify real Vue schedule lifecycle and attendance requests",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 47
+            },
+            {
+              "name": "Upload closed lesson lifecycle outcome",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 48
+            },
+            {
+              "name": "Record a reported projection hint after failed Student statistics",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 49
+            },
+            {
+              "name": "Restore a real application checkpoint into fresh disposable databases",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 50
+            },
+            {
+              "name": "Upload closed application recovery API outcomes",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 51
+            },
+            {
+              "name": "Verify real semester archive and restore participants",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 52
+            },
+            {
+              "name": "Locate the pending semester effect without exposing event data",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 53
+            },
+            {
+              "name": "Upload closed semester lifecycle outcome",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 54
+            },
+            {
+              "name": "Verify owned semester metadata and historical promotion through the ready UI",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 55
+            },
+            {
+              "name": "Upload closed admin semester UI outcome",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 56
+            },
+            {
+              "name": "Verify exact subject deletion through real proof and participants",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 57
+            },
+            {
+              "name": "Upload closed subject deletion cascade outcome",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 58
+            },
+            {
+              "name": "Verify Today quick request after the genuine first lesson closes",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 59
+            },
+            {
+              "name": "Upload closed Today quick request outcome",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 60
+            },
+            {
+              "name": "Stop owned fresh recovery targets",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 61
+            },
+            {
+              "name": "Remove only this job's test certificate trust",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 62
+            },
+            {
+              "name": "Remove only this job's WebKit test certificate trust",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 63
+            },
+            {
+              "name": "Stop isolated e2e containers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 64
+            },
+            {
+              "name": "Post Set up Docker Buildx",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 124
+            },
+            {
+              "name": "Post Setup Gradle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 125
+            },
+            {
+              "name": "Post Run actions/setup-java@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 126
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 127
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 128
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 129
+            }
+          ]
+        },
+        "nonBrowserJobsAll20Success": true,
+        "globalCleanupSteps62To64": "SUCCESS",
+        "recoveryTargets61": "SKIPPED_NO_TARGETS_STARTED",
+        "reconciliationRestorationSucceeded": false,
+        "reconciliationCleanupOutcome": "FAILED"
+      },
+      "currentPrRecon": {
+        "state": "EXACT_STRICT_PRIMARY_READ",
+        "producer": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "run": 38930505820,
+        "artifact": 12060536623,
+        "digest": "sha256:0c83f85808f44e6ae2b62baf61b720da65f619a37438b6abed34d93226447fa8",
+        "bytes": 896,
+        "members": {
+          "artifacts/safe-results.json": {
+            "status": "failed",
+            "runnerErrors": 0,
+            "unsafeArtifact": false,
+            "suppressedStdoutBytes": 0,
+            "suppressedStderrBytes": 0,
+            "results": [
+              {
+                "file": "semester-lifecycle.spec.ts",
+                "line": 2705,
+                "project": "chromium",
+                "status": "failed",
+                "expectedStatus": "passed",
+                "durationMs": 147511,
+                "errorCount": 1,
+                "diagnostics": [
+                  {
+                    "stage": "UNKNOWN",
+                    "cause": "UNKNOWN",
+                    "httpStatus": 0
+                  }
+                ],
+                "errorLocations": [
+                  {
+                    "file": "semester-lifecycle.spec.ts",
+                    "line": 3709
+                  }
+                ]
+              }
+            ]
+          },
+          "reconciliation.safe.json": {
+            "schema": "semester-reconciliation.v3",
+            "phase": "STRANDED",
+            "configuredListenerAttempts": 3,
+            "measuredListenerAttempts": "UNKNOWN",
+            "exactDlqEnvelope": false,
+            "pendingBeforeReplay": false,
+            "appliedAfterReplay": false,
+            "sameArchiveCompleted": false,
+            "duplicateBusinessUnchanged": false,
+            "recoveryPublishAttempted": false,
+            "duplicateAttempted": false,
+            "retainedDlqCopies": "UNKNOWN",
+            "restorationSucceeded": false,
+            "clockUnchanged": true,
+            "cleanupOutcome": "FAILED",
+            "firstRestartFailure": null,
+            "mainCloseLastRead": {
+              "targetPresent": true,
+              "groupMatches": true,
+              "semesterMatches": true,
+              "status": "CLOSED"
+            }
+          }
+        },
+        "diagnosticSchema": {
+          "artifacts/safe-results.json": [
+            {
+              "caseCode": "FULL admin reconciles one exact stranded close before archive completion",
+              "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+            }
+          ],
+          "reconciliation.safe.json": "EXACT_PUBLISHED_CLOSED_V3_NO_PRIVATE_FIELDS"
+        },
+        "sourcePins": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe"
+          },
+          {
+            "path": "tests/e2e/fixtures/artifact-privacy.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
+          },
+          {
+            "path": "tests/e2e/fixtures/safe-reporter.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
+          },
+          {
+            "path": "tests/e2e/playwright.semester-lifecycle.config.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "68ab83bb146db745fd39fc0d033a1db9a03b33a4ea5077f4edb6d11560484bce"
+          },
+          {
+            "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+            "sourceRef": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+            "sha256": "de7297382c7bfd47dc1cf8c4c5b3b163d008def3fafa6cbfe160fd94bcb6352b"
+          }
+        ],
+        "exactDeclarations": [
+          {
+            "sourcePath": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+            "file": "semester-lifecycle.spec.ts",
+            "title": "FULL admin reconciles one exact stranded close before archive completion",
+            "project": "chromium",
+            "line": 2705,
+            "call": "test"
+          }
+        ],
+        "schemaSource": "/workspace/scratch/rct-validation/ci_493_remaining/semester-three-member/strict-browser-schema.py",
+        "schemaOriginalSha256": "54b7db32cb86dd028113a6e77992975841e908371c6e99731f4050ef8c8acf84",
+        "schemaSpecializedSha256": "9bfe71c1825084bad789d08b30c52f700d9f14c5c4c895088815f8e6d4ca276c",
+        "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
+        "cause": "UNKNOWN"
+      },
+      "currentClosed500Hints": {
+        "state": "EXACT_APPROVED_CLOSED8_PROJECTION",
+        "producer": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "run": 38930488363,
+        "job": 117072907966,
+        "checkout": "b5a592c2f8c0ed9df1ead362cae60fb32ee44240",
+        "producerSourceSha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe",
+        "consumerSourceSha256": "66ed3802ff28b23d73db5e15c2852faa3427b8591b497f848ca399479c3f2793",
+        "records": [
+          {
+            "sourceStage": "ATTENDANCE_LESSON_REPORT",
+            "count": 1,
+            "outcome": {
+              "exceptionCategory": "UNKNOWN",
+              "reportedAmbiguityEvidence": [
+                {
+                  "capturedOrigin": "ATTENDANCE_MVC",
+                  "exceptionClasses": [],
+                  "ownFrames": [],
+                  "reasons": [
+                    "MALFORMED_LOG_RECORD",
+                    "NO_ELIGIBLE_ERROR_RECORD"
+                  ]
+                },
+                {
+                  "capturedOrigin": "GATEWAY_WEBFLUX",
+                  "exceptionClasses": [
+                    "java.net.ConnectException"
+                  ],
+                  "ownFrames": [],
+                  "reasons": [
+                    "UNMAPPED_EXCEPTION_CLASS",
+                    "UNQUALIFIED_SUPPRESSION"
+                  ]
+                }
+              ],
+              "reportedExceptionChain": [],
+              "reportedExceptionClassChain": [],
+              "reportedOrigin": "UNKNOWN",
+              "reportedOwnFrame": null,
+              "sourceStage": "ATTENDANCE_LESSON_REPORT",
+              "state": "AMBIGUOUS"
+            }
+          },
+          {
+            "sourceStage": "SCHEDULE_ONEOFF_LESSON_CREATE",
+            "count": 1,
+            "outcome": {
+              "exceptionCategory": "UNKNOWN",
+              "reportedAmbiguityEvidence": [
+                {
+                  "capturedOrigin": "SCHEDULE_MVC",
+                  "exceptionClasses": [],
+                  "ownFrames": [],
+                  "reasons": [
+                    "MALFORMED_LOG_RECORD",
+                    "NO_ELIGIBLE_ERROR_RECORD"
+                  ]
+                },
+                {
+                  "capturedOrigin": "GATEWAY_WEBFLUX",
+                  "exceptionClasses": [
+                    "java.net.ConnectException"
+                  ],
+                  "ownFrames": [],
+                  "reasons": [
+                    "UNMAPPED_EXCEPTION_CLASS",
+                    "UNQUALIFIED_SUPPRESSION"
+                  ]
+                }
+              ],
+              "reportedExceptionChain": [],
+              "reportedExceptionClassChain": [],
+              "reportedOrigin": "UNKNOWN",
+              "reportedOwnFrame": null,
+              "sourceStage": "SCHEDULE_ONEOFF_LESSON_CREATE",
+              "state": "AMBIGUOUS"
+            }
+          }
+        ],
+        "invalidClosedCandidateCount": 0,
+        "unknownStageCount": 0,
+        "targetSignatureVerified": [
+          "ATTENDANCE_LESSON_REPORT",
+          "SCHEDULE_ONEOFF_LESSON_CREATE"
+        ],
+        "scheduleTargetQualification": "VERIFIED_CURRENT_ASSIGNMENT_PREPARE_HTTP500",
+        "qualification": "Captured-stream finite unkeyed REPORTED evidence only; no exact request correlation, cause or uniqueness. SDK response RAM-only discarded; postresponse cap32MiB.",
+        "rawRetained": false
+      },
+      "reconSourceDiscriminatorPlan": {
+        "utc": "2026-10-16T16:58:21.621872+00:00",
+        "sourceFacts": "c91 exactcurrentfixturerestart uses stop→up--no-build--no-recreate--no-deps--pullnever--wait40; validates SAMECID/image/project/service/labels/mounts andrunning+healthy. AdditionalreadinessAcademicactualRPC+exactsemesterStateVersion. No provencontainerreplacement/DNSbug; networkaddressesnotcompared andnoAT500state retained. Cleanuprestoration flags doNOTfreshservicehealthcheck ifrestartno-op. No sourcecause.",
+        "newActualPr": "PR2705 FAIL147511ms/frame3709 STRANDEDfourwaypoll15s unknownoperand; replayflagsfalse/restorationfalse/cleanupFAILED/clocktrue. Nottarget500, no PRhint/logfetch.",
+        "minimalAuthorScope": "c86soleFixturede729writer: existingfailureonlycarrier v4 fixedtwoOwnedServices running/closedhealth/sameCID/sameNetworkAddressesbool +lastcompletedSTRANDEDfourpredicatebools; no additionalHTTP/probe/log/env/IP/CIDoutput/wait/200change. Originalerror/nativefailurebookkeeping preserved; sameidentityhelper guards. Mobileead418frozenuninstrumented separate source. c89soleexistingCIvalidator exactversionedfields +necessary31controls, no newframework/artifact. c93onecoherentreview required.",
+        "queueOrderCheck": "StraightmoveReconlast blocked: itrequiresoriginalpinnedDBs thatfreshRecoveryintentionallystops. c89 boundedchecks whetherindependentOriginal/Admin/Subject/Today canrunBEFOREfault+freshRecovery withoutweakeningacceptedrecoveryproofs; no blindmove/recoverybarrierremoval. Existinganchorbody mustremainbyteexact ifrelocated.",
+        "platformBoundary": "B014GatewayloginIPwitness remainsFROZEN; thisiscomparisonalreadyreadownedDockerinspectmetadataonly, no login/IPprobing/alternativecaller."
+      },
+      "readyFiveSourceRootIntegration": {
+        "utc": "2026-10-16T16:58:50.982498+00:00",
+        "state": "EXACT_ROOT_INTEGRATED_UNCOMMITTED_AT_CONFIRMED_SAFEPOINT",
+        "sources": [
+          {
+            "sourceRef": ".env.prod.example",
+            "preSha256": "19313607658da3c48d8d25da65b1633ac70ff69aa9b45f4ba7f24aa0d4f89a08",
+            "sha256": "cf6ef7d33cdd6d81951e7b5d06b94c8b721e2ed3db2c7537f34e19c2fc43baf2"
+          },
+          {
+            "sourceRef": "scripts/validate-env-prod.sh",
+            "preSha256": "c27a20c3d0707f44f0d9c2afe73044c4b6d127a3696231276f66305b3fb1347b",
+            "sha256": "ea4b7169189cf6e261a1d3a8bc9a8b0ed8363b1b1d91a3495daefdbc9884ea07"
+          },
+          {
+            "sourceRef": "scripts/local-stand.ps1",
+            "preSha256": "ed98ebbd126c8555b2d3726d88c250e35a5a25ba5047f128a9ba0872b5743752",
+            "sha256": "ce0e63c0a1bcc2b1ce0e7c4aa9644aeff6208f309a3a7a8164c1e86ae8bf12aa"
+          },
+          {
+            "sourceRef": "infra/local-stand/compose.yml",
+            "preSha256": "bb844652ab00ce6466eb91af1c47cdd56f7e1fb45dfb74bc84aa0678156668dd",
+            "sha256": "08484a805fab5fe237ccf1c2b371b85cb475ada7c26b68e146b253355ae9c73a"
+          },
+          {
+            "sourceRef": "tests/e2e/specs/mobile-real-server.spec.ts",
+            "preSha256": "e7eba4e9e8ae4d3b18b7be20da7c2e5203c7d9e7737638546f8244ef6433818f",
+            "sha256": "ead4183dd213616367ed6feca69f74b2efe4a6a46f5d3ad39ccff7b85155c3c0"
+          }
+        ],
+        "allCanonicalCount": 335,
+        "addedCanonicalSourceRefs": [
+          ".env.prod.example",
+          "scripts/validate-env-prod.sh",
+          "scripts/local-stand.ps1"
+        ],
+        "review": "Public4c93coherentAPPROVE +routineexactrestorationofalreadyapprovedMobileead418; wholeauthorformatterparser/inverse andBash10controlsPASS. No redundantfullreview/source rewrite.",
+        "remaining": "RootCIstill502/Fixturestillde729. Soleauthorsc89/c86 minimalversionedfailurecarrier+matchingCIvalidator/order safechecks; c93targetedcoherentreviewafterfreeze; onecommit onlyaftercomplete. No currentreaders/runs active."
+      },
+      "reconciliationDiagnosticProducerCiConsumerFrozen": {
+        "utc": "2026-10-16T17:05:01.754893+00:00",
+        "state": "ALL_FROZEN_ONE_C93_COHERENT_REVIEW_RUNNING_ROOT2FILES_UNCHANGED",
+        "sources": [
+          {
+            "sourceRef": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+            "preSha256": "de7297382c7bfd47dc1cf8c4c5b3b163d008def3fafa6cbfe160fd94bcb6352b",
+            "sha256": "d469a8bc30a211b7eb2f6fa102120e464bdfd2417bb6d44049ad3768a8a573ab",
+            "authorSource": "/workspace/rct-worktrees/q09-client-remaining-20261014/tests/e2e/fixtures/semester-lifecycle.spec.ts"
+          },
+          {
+            "sourceRef": ".github/workflows/ci.yml",
+            "preSha256": "502242244fa8ea56fb305024586765498275a404a2f9a9f2fa142a018313dfbe",
+            "sha256": "9dfb3297d2e3ff2cd419ffd7e0e55377525725c9e67bb15299c9e4ca425a1a90",
+            "authorSource": "/tmp/rct-headman-hw-intent-6cdce-20261015/.github/workflows/ci.yml"
+          }
+        ],
+        "producer": "5scopedhunks/v4twofailurefields only; actual38extractedcontrols/formatter/parser/qualifiedRootoverlayTSC182PASS. Firstfixedown-datareport/create500captures2alreadypinnedserviceclosedhealth/running/sameID/networkaddressesbool usingidentity; save/restorenativeFailure/originalerror, per-servicefailureUNKNOWN, no rawvalues. LastcompleteSTRANDEDfourbool copiedoncebeforecleanup, no newqueue/readiness/wait/API/probe/200change.",
+        "CI": "EightgroupsAdmin→Subject→Assignment09→Today10→Lessonnextweekday09→ReconoriginalDB→Recovery09→Originalcheckpoint. Existing31v3/v4gatecontrols+34order/clock/bodyinventorycontrolsPASS; YAML/PythonAST/canonicalformatterPASS. Exactoldstepsexactlyonce/allenvcapsjobs preserved exceptv4gateandfixedclockReady outputAFTERsuccessfulLessonpreludecommit/readback. Source4lessoncasesnosharedclockwriter; RecoveryclockReadygateindependentofUIwholePASS; Originalcheckpointguardmaintained. Homework+Assignmentrestorationbarriers retained. HTTPanchorrelocatedfirstAssignmenthint3838 byteexact/all3resolvedbodiesidentical/no forwardalias. Public4/ParseFilestepunchangedapproved.",
+        "consumer": "c80existingreceiptcurrentB5a592c2Primary.futureReconciliationV4ConsumerSourcePlan675a119a3b1d4089ef390a822e3e9aa2aabd09329210186f5303404d6cdd5f7a; historicalv3inverse8783byteexact. Strictversion4/exact2nullablefields/types/closedkeys/capsidentitiesoldrestorationpreserved; actual125targetednew+historicalcontrolsPASS0.34s. Futurehead/CIUNBOUND, no oldbodyread/native.",
+        "review": {
+          "utc": "2026-10-16T17:11:14.178906+00:00",
+          "outcome": "APPROVE_SOURCE_ONLY",
+          "receiptRef": "/workspace/rutcampustrack/.agent/evidence/c93-gateway500-review.safe.json#currentB5ReconciliationV4ProducerConsumerCiOrderReview",
+          "reviewReceiptSha256": "598922cb031500c9ee95fc9efa8cf2d77ecc8649549fc69e84c4cd4962eb593c",
+          "importantFindings": [],
+          "nativeAfter": "NOT_RUN",
+          "futurePurpose": "UNBOUND",
+          "sourceQualification": "Producer/consumer inverses exact; original error and strict codecs/caps/restoration unchanged; currentcause UNKNOWN."
+        }
+      },
+      "sevenSourceRootIntegration": {
+        "utc": "2026-10-16T17:11:14.178906+00:00",
+        "state": "EXACT_ROOT_INTEGRATED_UNCOMMITTED",
+        "sourceCount": 7,
+        "sourcePins": [
+          {
+            "sourceRef": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+            "sha256": "d469a8bc30a211b7eb2f6fa102120e464bdfd2417bb6d44049ad3768a8a573ab"
+          },
+          {
+            "sourceRef": ".github/workflows/ci.yml",
+            "sha256": "9dfb3297d2e3ff2cd419ffd7e0e55377525725c9e67bb15299c9e4ca425a1a90"
+          }
+        ],
+        "readyFiveRef": "readyFiveSourceRootIntegration",
+        "reviewRef": "reconciliationDiagnosticProducerCiConsumerFrozen.review",
+        "checksNext": "configured owned staged checks → coherent commit → actual range Gitleaks → real push/readback → ordinary CI",
+        "nativeAfter": "NOT_RUN",
+        "currentHttp500Cause": "UNKNOWN",
+        "workerFinal": "uninstrumented ead418 ordinary check required",
+        "configuredChecks": {
+          "utc": "2026-10-16T17:12:47.402348+00:00",
+          "result": "PASS",
+          "command": "configured pre-commit==4.6.2 --offline --files exact13 owned staged paths",
+          "receipt": "session61019/chunkfe2b3c exit0",
+          "gates": [
+            "Gitleaks",
+            "check-yaml",
+            "check-json",
+            "check-added-large-files",
+            "end-of-file-fixer",
+            "trailing-whitespace"
+          ],
+          "whitespace": "git diff --check PASS",
+          "sourceRerun": "No rerun unchanged adequate author controls/review; actual native after pending"
+        }
       }
     }
   }

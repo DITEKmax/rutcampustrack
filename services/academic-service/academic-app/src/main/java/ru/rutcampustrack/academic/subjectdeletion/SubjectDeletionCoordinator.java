@@ -1,5 +1,7 @@
 package ru.rutcampustrack.academic.subjectdeletion;
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,6 +29,10 @@ public class SubjectDeletionCoordinator {
     }
 
     @Scheduled(fixedDelayString = "${subject-deletion.retry-delay-ms:1000}")
+    @SchedulerLock(
+            name = "academic-subject-deletion-retry",
+            lockAtMostFor = "PT5M",
+            lockAtLeastFor = "PT1S")
     public void resumePending() {
         for (UUID operation : commands.pending()) advance(operation);
     }

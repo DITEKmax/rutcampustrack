@@ -1066,9 +1066,11 @@ isolated(
     await page.getByRole('button', { name: 'Ещё', exact: true }).click();
     await page.getByRole('button', { name: 'Домашнее задание', exact: true }).click();
     await page.getByRole('button', { name: 'Открыть архив', exact: true }).click();
-    // Existing seven-day calendar, three weeks forward; no clock/semester mutation.
+    // Navigate the existing calendar to the final Sunday-adjusted target week.
     const weekdayOffset = (new Date(`${dataset.today}T12:00:00Z`).getUTCDay() + 6) % 7;
-    const weeksForward = Math.floor((23 + weekdayOffset) / 7);
+    const daysForward =
+      (Date.parse(`${targetDate}T12:00:00Z`) - Date.parse(`${dataset.today}T12:00:00Z`)) / 86400000;
+    const weeksForward = Math.floor((daysForward + weekdayOffset) / 7);
     for (let index = 0; index < weeksForward; index++)
       await page.getByRole('button', { name: 'Следующая неделя', exact: true }).click();
     const dayText = new Intl.DateTimeFormat('ru-RU', {

@@ -142,7 +142,7 @@ CREATE TRIGGER a0_subject_delete_lifecycle
     FOR EACH ROW
     EXECUTE FUNCTION guard_schedule_subject_deletion_write ();
 
-CREATE TRIGGER a0_subject_delete_binding
+CREATE TRIGGER a_subject_delete_binding
     BEFORE INSERT OR UPDATE OR DELETE ON lesson_homework_bindings
     FOR EACH ROW
     EXECUTE FUNCTION guard_schedule_subject_deletion_write ();

@@ -466,3 +466,22 @@ DF-ADMIN-ORDINARY-RESET-001 FIXED_CURRENT_NATIVE: exact013 controlled previous-a
 ## Current c4 checking corrections and authoritative journal closure
 
 2026-10-15T22:33:11.866652+00:00: JS-SYSTEM-16 is PASS by actual c4 Mongo metrics + genuine Teacher Table/Chart and existing selected renderer meaningful75→100 fallback mutation RED→exactrestoreGREEN, independently approved; D028 defers stored counters only. HOMEWORK27 last initial-intent gap likewise actual c4case1406PASS. These do not imply wholeCI/Student503 PASS. Checking corrections now reviewed/Root integrated: prebootstrap real advancing security clock in5cases (Source counterexample, actualoldclock/unique causeUNKNOWN); single existing bounded429 retry; exact HEADMAN menu-label mismatch; closedtransfer diagnostics and4fixedfailure phases; nativeafter pending. See central currentC4FixtureCorrectionPlan and SYSTEM16_server_journal_metrics_bounded_contract.actualAcceptance.
+
+
+## DEF-STUDENT-CANCELLED-PROJECTION — Source-confirmed product counterexample
+
+2026-10-16T00:16:34.254254+00:00; severity P1; Student cancelled-lesson attendance projection. A genuine cancellation stores internal CANCELLED marks, but StudentAttendanceProjectionService canonicalStatus rejects them in markIndex before schedule matching and again in metrics before cancelled-occurrence exclusion. Actual e0e lesson20 failed expected ownAttendance HTTP200 at299; actual status/unique nativecause UNKNOWN. Assigned c87 existing2-file service/test red-before→minimalfix→green, retaining unknown-code guards/scope/null-zero rules. No Source or native fix accepted yet. Evidence central#currentE0e0820fPublication.cancelledStudentProjectionConfirmedSourceCounterexample.
+
+
+## DEF-AUTH-SUBJECT-PROOF-CLOCK-BEAN — Source-confirmed startup defect
+
+2026-10-16T00:35:41.857441+00:00; severity P1; new SubjectDeletionProofService requires ninth java.time.Clock in sole constructor, absent Auth production/base-test/shared scan providers. ExistingAuth constructorpattern uses Clock.systemUTC with explicittestseam. Current289 known4+9+1 Authclass context STATE failures and browserBOOT11FAIL consistent, unique nativeexceptionchain UNKNOWN. Minimalonefileproductionctor correction assignedc89; API/TTL/security-clock semantics retained. Evidence central#current289889e7Publication.authContextSourceRca.
+
+## DEF-SCHEDULE-SUBJECT-BINDING-FENCE-ORDER — Source-confirmed ordinary write regression
+
+2026-10-16T00:35:41.857441+00:00; severity P1; new V32 a0_subject_delete_binding BEFOREtrigger runs before V24 a_homework_binding_placement, then rejects supported LESSON INSERT lacking scope that initializer shouldderive. MinimalnewV32triggerordering correction assignedoriginalauthorc87; do not rewritelegacyfixtures to hideproductbug. SeparateP2 StudentOccurrenceMigrationIT expects13/latest31 despite new14/latest32, adjustonlytheseexpectations. Current55ScheduleSOURCE_METHOD failures/DATABASEframes retained; UPDATE1169 cause stillUNKNOWN, not55separateproductverdicts. Evidence central#current289889e7Publication.scheduleV32SourceRca.
+
+
+## 2026-10-16T00:46:08.939092+00:00 — bounded causal correction package Source-ready
+
+DEF-STUDENT-CANCELLED-PROJECTION (including superseded physical-generation history), DEF-AUTH-SUBJECT-PROOF-CLOCK-BEAN and DEF-SCHEDULE-SUBJECT-BINDING-FENCE-ORDER are FIXED_SOURCE_INDEPENDENTLY_REVIEWED_NATIVE_PENDING. ProjectionknownbadRED→13cachedGREEN and SchedulerArchRuleRED→GREEN retained; 13cachedunitcases no realHTTP/PG/browser claim. Checking corrections: migrationcount14/latest32, finalSunday-adjusted calendarweeks, sameSessionownStudentreturn, fixedbooleanrowdiagnostic, CIclock-safeDAG. OfficialAcademicstock+generatedtypes synced; integratedJava/TS/PWA/TMA/formatterchecksPASS. Independentc86 approvals cover exactsourcepins in central#current289889e7Publication.nextCoherentCorrections. ScheduleUPDATE1169/strictAcademicnativecause remainUNKNOWN.

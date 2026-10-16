@@ -36,7 +36,8 @@ test('four durable grants default to STUDENT; explicit role survives reload and 
     | 'GROUP_READBACK'
     | 'GROUP_VISIBLE_BACK'
     | 'ADMIN_SWITCH_RELOAD'
-    | 'ADMIN_UI' = 'SETUP';
+    | 'ADMIN_UI'
+    | 'STUDENT_RETURN' = 'SETUP';
   try {
     const retryCutoffMs =
       (loginStartedAt.get(info) ?? 0) + Math.max(0, Math.min(info.timeout, 120000) - 30000);
@@ -146,6 +147,37 @@ test('four durable grants default to STUDENT; explicit role survives reload and 
     await expect(
       page.getByRole('button', { name: 'Создать пользователя', exact: true }),
     ).toBeVisible();
+
+    // WEB01: return to shared own STUDENT features through the same authenticated session.
+    phase = 'STUDENT_RETURN';
+    const [studentContextReply, studentReturn] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.request().method() === 'GET' &&
+          new URL(response.url()).pathname === '/api/v1/student/session',
+      ),
+      selectRole(page, 'Студент'),
+    ]);
+    expect(studentReturn.session).toMatchObject({
+      userId: String(user.id),
+      sessionId: session.sessionId,
+      activeRole: 'STUDENT',
+    });
+    expect(studentContextReply.status()).toBe(200);
+    const studentContext = await studentContextReply.json();
+    expect(
+      String(studentContext.user.id) === String(user.id) &&
+        String(studentContext.group.id) === String(dataset.otherGroup.id),
+      'Student context belongs to the same user and current own group',
+    ).toBe(true);
+    await expect(page.locator('.today-shell')).toBeVisible();
+    const studentNavigation = page.getByRole('navigation', { name: 'Основная навигация' });
+    await expect(
+      studentNavigation.getByRole('button', { name: 'Посещаемость', exact: true }),
+    ).toBeEnabled();
+    await expect(
+      studentNavigation.getByRole('button', { name: 'Задания', exact: true }),
+    ).toBeEnabled();
   } catch (error) {
     // Preserve the original closed cause before the fixed phase wrapper is sanitized.
     const diagnostic = classifySafeFailure(error);
@@ -179,6 +211,8 @@ test('four durable grants default to STUDENT; explicit role survives reload and 
         throw new Error('Four-grant administrator switch and reload failed', { cause: error });
       case 'ADMIN_UI':
         throw new Error('Four-grant administrator UI failed', { cause: error });
+      case 'STUDENT_RETURN':
+        throw new Error('Four-grant own student return failed', { cause: error });
     }
   }
 });

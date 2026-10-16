@@ -105,7 +105,8 @@ public class StudentAttendanceProjectionService {
                 markIndex(
                         attendanceReadPort.findByUserId(claims.userId(), semesterId),
                         allLessons,
-                        claims.userId());
+                        claims.userId(),
+                        semesterId);
         List<Lesson> materializedAll =
                 allLessons.stream()
                         .map(lesson -> lesson.withMark(ownMarks.get(lesson.lessonId())))
@@ -413,7 +414,7 @@ public class StudentAttendanceProjectionService {
     }
 
     private Map<Long, AttendanceRecord> markIndex(
-            List<AttendanceRecord> records, List<Lesson> lessons, long userId) {
+            List<AttendanceRecord> records, List<Lesson> lessons, long userId, long semesterId) {
         if (records == null) {
             throw StudentProjectionException.invalidOccurrence(
                     "Attendance returned no record list");
@@ -429,8 +430,14 @@ public class StudentAttendanceProjectionService {
                 throw StudentProjectionException.invalidOccurrence(
                         "attendance record has no lesson id");
             }
-            canonicalStatus(record.status(), record.lessonId());
             Lesson lesson = lessonsById.get(record.lessonId());
+            if (lesson == null
+                    && isRetainedCancelledGeneration(record, lessons, userId, semesterId)) {
+                // The canonical Schedule query omits superseded physical generations.
+                // Keep their proven cancellation history out of both the view and denominator.
+                continue;
+            }
+            canonicalStatus(record.status(), record.lessonId(), lesson);
             if (lesson == null) {
                 continue;
             }
@@ -452,6 +459,46 @@ public class StudentAttendanceProjectionService {
             }
         }
         return result;
+    }
+
+    private boolean isRetainedCancelledGeneration(
+            AttendanceRecord record, List<Lesson> lessons, long userId, long semesterId) {
+        if (record.status() != AttendanceStatus.CANCELLED
+                || record.userId() == null
+                || record.userId() != userId
+                || record.groupId() == null
+                || record.subjectId() == null
+                || record.lessonDate() == null) {
+            return false;
+        }
+        List<Lesson> replacements =
+                lessons.stream()
+                        .filter(
+                                lesson ->
+                                        lesson.groupId() == record.groupId()
+                                                && lesson.subjectId() == record.subjectId()
+                                                && lesson.date().equals(record.lessonDate()))
+                        .toList();
+        if (replacements.isEmpty()) return false;
+        LessonResponse retained = scheduleGrpcClient.getLessonById(record.lessonId());
+        if (retained == null
+                || retained.getId() != record.lessonId()
+                || retained.getSemesterId() != semesterId
+                || retained.getGroupId() != record.groupId()
+                || retained.getSubjectId() != record.subjectId()
+                || !retained.getDate().equals(record.lessonDate().toString())
+                || !"cancelled".equalsIgnoreCase(retained.getStatus())
+                || retained.getOccurrenceId() <= 0
+                || retained.getGeneration() <= 0
+                || record.lessonNumber() != null
+                        && retained.getLessonNumber() != record.lessonNumber()) {
+            return false;
+        }
+        return replacements.stream()
+                .anyMatch(
+                        lesson ->
+                                lesson.occurrenceId() == retained.getOccurrenceId()
+                                        && lesson.lessonId() != retained.getId());
     }
 
     private List<Subject> subjectViews(
@@ -838,7 +885,11 @@ public class StudentAttendanceProjectionService {
                                                         .toList();
                                     }
                                     Map<Long, AttendanceRecord> marks =
-                                            markIndex(participantRecords, rankLessons, userId);
+                                            markIndex(
+                                                    participantRecords,
+                                                    rankLessons,
+                                                    userId,
+                                                    semesterId);
                                     List<Lesson> markedLessons =
                                             rankLessons.stream()
                                                     .map(
@@ -923,10 +974,21 @@ public class StudentAttendanceProjectionService {
     private MetricsBundle metrics(Collection<Lesson> lessons, List<AttendanceRecord> records) {
         Map<Long, AttendanceStatus> statuses = new HashMap<>();
         if (records != null) {
+            Map<Long, Lesson> lessonsById =
+                    lessons.stream()
+                            .collect(
+                                    Collectors.toMap(
+                                            Lesson::lessonId,
+                                            lesson -> lesson,
+                                            (left, right) -> left));
             for (AttendanceRecord record : records) {
                 if (record != null && record.lessonId() != null) {
                     statuses.put(
-                            record.lessonId(), canonicalStatus(record.status(), record.lessonId()));
+                            record.lessonId(),
+                            canonicalStatus(
+                                    record.status(),
+                                    record.lessonId(),
+                                    lessonsById.get(record.lessonId())));
                 }
             }
         }
@@ -941,7 +1003,8 @@ public class StudentAttendanceProjectionService {
                                                             ? null
                                                             : canonicalStatus(
                                                                     lesson.mark().status(),
-                                                                    lesson.lessonId());
+                                                                    lesson.lessonId(),
+                                                                    lesson);
                                     return occurrence(lesson, status);
                                 })
                         .toList();
@@ -962,6 +1025,16 @@ public class StudentAttendanceProjectionService {
             case CANCELLED ->
                     AttendanceMetricCalculator.Occurrence.cancelled(lesson.occurrenceId());
         };
+    }
+
+    private static AttendanceStatus canonicalStatus(
+            AttendanceStatus status, long lessonId, Lesson lesson) {
+        if (status == AttendanceStatus.CANCELLED
+                && lesson != null
+                && lesson.scheduleState() == ScheduleState.CANCELLED) {
+            return status;
+        }
+        return canonicalStatus(status, lessonId);
     }
 
     private static AttendanceStatus canonicalStatus(AttendanceStatus status, long lessonId) {

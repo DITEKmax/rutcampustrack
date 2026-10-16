@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,19 @@ public class SubjectDeletionProofService
     private final ObjectMapper mapper;
     private final Clock clock;
     private final SecureRandom random = new SecureRandom();
+
+    @Autowired
+    public SubjectDeletionProofService(
+            JdbcTemplate jdbc,
+            JwtService jwt,
+            AuthService auth,
+            org.springframework.security.crypto.password.PasswordEncoder passwords,
+            BcryptConcurrencyGuard bcrypt,
+            LoginRateLimiter limiter,
+            OtpProperties otp,
+            ObjectMapper mapper) {
+        this(jdbc, jwt, auth, passwords, bcrypt, limiter, otp, mapper, Clock.systemUTC());
+    }
 
     public SubjectDeletionProofService(
             JdbcTemplate jdbc,

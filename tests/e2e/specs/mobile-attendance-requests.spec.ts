@@ -879,6 +879,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   const statsStudent = stats.rows.find(
     (row: { studentId: number }) => row.studentId === dataset.student.id,
   );
+  expect(statsStudent !== undefined).toBe(true);
   expect(statsStudent?.displayName === dataset.student.displayName).toBe(true);
   const detailPath = `/api/attendance/reports/headman/stats/students/${dataset.student.id}/detail`;
   const [detailReply] = await Promise.all([

@@ -100,7 +100,7 @@ class StudentAttendanceProjectionServiceTest {
                                         11, AttendanceStatus.EXCUSED, "2026-09-15", comment),
                                 explanationMark(
                                         12,
-                                        AttendanceStatus.EXCUSED,
+                                        AttendanceStatus.CANCELLED,
                                         "2026-09-16",
                                         "Устаревшее пояснение"),
                                 explanationMark(
@@ -119,12 +119,126 @@ class StudentAttendanceProjectionServiceTest {
                         new StudentAttendanceProjectionService.Explanation(
                                 null, null, null, "Занятие отменено преподавателем"));
         assertThat(lessons.get(2).explanation()).isNull();
+        assertThat(lessons.get(1).uiStatus()).isEqualTo("CANCELLED");
+        assertThat(result.metrics().heldCount()).isEqualTo(2);
+        assertThat(result.metrics().presentCount()).isEqualTo(1);
+        assertThat(result.metrics().excusedCount()).isEqualTo(1);
         var history = result.subjects().getFirst().typeCards().getFirst().history();
         assertThat(history)
                 .extracting(StudentAttendanceProjectionService.HistorySegment::id)
                 .containsExactly("101", "103");
         assertThat(history.getFirst().explanation()).isEqualTo(lessons.getFirst().explanation());
         assertThat(history.getLast().explanation()).isNull();
+    }
+
+    @Test
+    void retainedCancelledGenerationDoesNotReviveOrCountBesideCurrentReplacement() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(
+                        scope().toBuilder()
+                                .clearRankGroupId()
+                                .clearRankSubjects()
+                                .clearActiveRosterUserIds()
+                                .setRankEligible(false)
+                                .setRankVisibility(
+                                        StudentProjectionRankVisibility
+                                                .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
+                                .build());
+        var replacement =
+                lesson(21, 101, "2026-09-15", "closed").toBuilder()
+                        .setLessonNumber(2)
+                        .setGeneration(2)
+                        .build();
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(LessonsResponse.newBuilder().addLessons(replacement).build());
+        var retained =
+                lesson(11, 101, "2026-09-15", "cancelled").toBuilder().setGeneration(1).build();
+        when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID))
+                .thenReturn(
+                        List.of(
+                                mark(11, OWN_ID, AttendanceStatus.CANCELLED, "2026-09-15"),
+                                mark(21, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15")));
+        for (LessonResponse unproven :
+                List.of(
+                        retained.toBuilder().setId(12).build(),
+                        retained.toBuilder().setSemesterId(SEMESTER_ID + 1).build(),
+                        retained.toBuilder().setGroupId(RANK_GROUP_ID + 1).build(),
+                        retained.toBuilder().setSubjectId(SUBJECT_ID + 1).build(),
+                        retained.toBuilder().setDate("2026-09-16").build(),
+                        retained.toBuilder().setStatus("closed").build(),
+                        retained.toBuilder().setOccurrenceId(102).build(),
+                        retained.toBuilder().setGeneration(0).build())) {
+            when(scheduleGrpcClient.getLessonById(11L)).thenReturn(unproven);
+            assertThatThrownBy(
+                            () -> service.project(claims(), SEMESTER_ID, null, "weeks", List.of()))
+                    .isInstanceOf(StudentProjectionException.class)
+                    .hasMessageContaining("has CANCELLED status");
+        }
+        when(scheduleGrpcClient.getLessonById(11L)).thenReturn(retained);
+        var result = service.project(claims(), SEMESTER_ID, null, "weeks", List.of());
+        assertThat(result.days())
+                .singleElement()
+                .satisfies(
+                        day ->
+                                assertThat(day.lessons())
+                                        .singleElement()
+                                        .satisfies(
+                                                lesson -> {
+                                                    assertThat(lesson.lessonId()).isEqualTo(21L);
+                                                    assertThat(lesson.uiStatus())
+                                                            .isEqualTo("PRESENT");
+                                                }));
+        assertThat(result.metrics().heldCount()).isEqualTo(1);
+        assertThat(result.metrics().presentCount()).isEqualTo(1);
+        assertThat(result.metrics().absentCount()).isZero();
+        assertThat(result.subjects().getFirst().typeCards().getFirst().history())
+                .extracting(StudentAttendanceProjectionService.HistorySegment::id)
+                .containsExactly("101");
+        assertThat(result.graph().days())
+                .singleElement()
+                .satisfies(point -> assertThat(point.metrics().heldCount()).isEqualTo(1));
+    }
+
+    @Test
+    void cancellationStillRejectsUnmatchedScheduleCorruptStatusAndForeignOwner() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope());
+        for (String state : List.of("planned", "active", "closed")) {
+            when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                    .thenReturn(
+                            LessonsResponse.newBuilder()
+                                    .addLessons(lesson(11, 101, "2026-09-15", state))
+                                    .build());
+            when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID))
+                    .thenReturn(
+                            List.of(mark(11, OWN_ID, AttendanceStatus.CANCELLED, "2026-09-15")));
+            assertThatThrownBy(
+                            () -> service.project(claims(), SEMESTER_ID, null, "weeks", List.of()))
+                    .isInstanceOf(StudentProjectionException.class)
+                    .hasMessageContaining("has CANCELLED status")
+                    .satisfies(
+                            error ->
+                                    assertThat(((StudentProjectionException) error).kind())
+                                            .isEqualTo(
+                                                    StudentProjectionException.Kind
+                                                            .INVALID_OCCURRENCE));
+        }
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(11, 101, "2026-09-15", "cancelled"))
+                                .build());
+        for (AttendanceRecord invalid :
+                List.of(
+                        mark(12, OWN_ID, AttendanceStatus.CANCELLED, "2026-09-15"),
+                        mark(11, OWN_ID + 1, AttendanceStatus.CANCELLED, "2026-09-15"),
+                        mark(11, OWN_ID, AttendanceStatus.CANCELLED, "2026-09-16"),
+                        mark(11, OWN_ID, AttendanceStatus.FREE_ATTENDANCE, "2026-09-15"),
+                        mark(11, OWN_ID, null, "2026-09-15"))) {
+            when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID)).thenReturn(List.of(invalid));
+            assertThatThrownBy(
+                            () -> service.project(claims(), SEMESTER_ID, null, "weeks", List.of()))
+                    .isInstanceOf(StudentProjectionException.class);
+        }
     }
 
     @Test

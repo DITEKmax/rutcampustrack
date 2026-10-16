@@ -2866,99 +2866,100 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Verify real Vue schedule lifecycle and attendance requests
-        id: lesson-lifecycle
-        timeout-minutes: 17
+      - name: Verify exact stranded semester effect reconciliation
+        id: semester-reconciliation
+        timeout-minutes: 9
         if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
-          RCT_LESSON_LIFECYCLE_RUN: ${{ runner.temp }}/rct-lesson-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
-          RCT_E2E_REMAINING5: 'true'
-          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-lesson-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-semester-reconciliation-${{ github.run_id }}-${{ github.run_attempt }}
           NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
           PLAYWRIGHT_NO_COPY_PROMPT: '1'
           NODE_OPTIONS: --max-old-space-size=512
           CI: 'true'
         run: |
           umask 077
-          printf 'RCT_LESSON_LIFECYCLE_RUN=%s\n' "$RCT_LESSON_LIFECYCLE_RUN" >> "$GITHUB_ENV"
-          mkdir -m 700 -- "$RCT_LESSON_LIFECYCLE_RUN"
-          mkdir -m 700 -- "$RCT_LESSON_LIFECYCLE_RUN/artifacts"
-          # Room receipts need a genuinely future start.
-          # Earlier user lanes may advance the shared clock; never rewind it.
-          python3 - <<'PY_LESSON_CLOCK'
-          import datetime, os, re, stat, uuid
+          printf 'RCT_SEMESTER_RECONCILIATION_RUN=%s\n' "$RCT_SEMESTER_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
+          printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
+          set +e
+          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'FULL admin reconciles one exact stranded close before archive completion$'
+          case_exit=$?
+          set -e
+          if ! python3 - <<'PY_RECONCILIATION_GATE'
+          import json, os, stat
           from pathlib import Path
-          from zoneinfo import ZoneInfo
 
-          directory = Path(os.environ['RCT_E2E_TEACHING_CLOCK_DIR'])
-          expected = Path(os.environ['RUNNER_TEMP']) / ('rct-first3-clock-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
-          info = directory.lstat()
-          if directory != expected or not stat.S_ISDIR(info.st_mode) or directory.is_symlink() or info.st_uid != os.getuid():
-              raise SystemExit('Lesson clock directory ownership mismatch')
+          def pairs(items):
+              result = {}
+              for key, value in items:
+                  if key in result:
+                      raise ValueError('Duplicate reconciliation field')
+                  result[key] = value
+              return result
 
-          def read_owned(path, limit):
+          restored = False
+          try:
+              path = Path(os.environ['RCT_SEMESTER_LIFECYCLE_RUN']) / 'reconciliation.safe.json'
               with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
                   info = os.fstat(stream.fileno())
-                  if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_size > limit or stat.S_IMODE(info.st_mode) != 0o644:
-                      raise SystemExit('Lesson clock file ownership mismatch')
-                  value = stream.read(limit + 1)
-                  if len(value) > limit:
-                      raise SystemExit('Lesson clock input exceeds its bound')
-                  return value, (info.st_dev, info.st_ino)
+                  if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600 or not 0 < info.st_size <= 4096:
+                      raise ValueError('Invalid reconciliation receipt')
+                  raw = stream.read(4097)
+                  if len(raw) != info.st_size:
+                      raise ValueError('Reconciliation receipt size changed')
+              value = json.loads(raw, object_pairs_hook=pairs,
+                                 parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite reconciliation field')))
+              booleans = {'exactDlqEnvelope', 'pendingBeforeReplay', 'appliedAfterReplay',
+                          'sameArchiveCompleted', 'duplicateBusinessUnchanged', 'recoveryPublishAttempted',
+                          'duplicateAttempted', 'restorationSucceeded', 'clockUnchanged'}
+              keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
+                                 'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome'}
+              if (type(value) is not dict or set(value) != keys
+                      or value['schema'] != 'semester-reconciliation.v1'
+                      or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
+                      or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
+                      or value['measuredListenerAttempts'] != 'UNKNOWN'
+                      or not all(type(value[key]) is bool for key in booleans)
+                      or not (value['retainedDlqCopies'] == 'UNKNOWN'
+                              or (type(value['retainedDlqCopies']) is int and value['retainedDlqCopies'] == 1))
+                      or value['cleanupOutcome'] not in {'PENDING', 'PASSED', 'FAILED'}):
+                  raise ValueError('Invalid closed reconciliation schema')
+              restored = (value['restorationSucceeded'] is True
+                          and value['clockUnchanged'] is True and value['cleanupOutcome'] == 'PASSED')
+          except Exception:
+              pass
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write('restorationSucceeded=' + str(restored).lower() + '\n')
+          print('Semester reconciliation restoration gate: ' + ('RESTORED' if restored else 'UNPROVEN'))
+          if not restored:
+              raise SystemExit(1)
+          PY_RECONCILIATION_GATE
+          then
+            if [ "$case_exit" -ne 0 ]; then exit "$case_exit"; fi
+            exit 1
+          fi
+          exit "$case_exit"
 
-          if read_owned(directory / 'disposable-target', 64)[0] != b'RCT_E2E_DISPOSABLE\n':
-              raise SystemExit('Lesson clock disposable marker mismatch')
-          clock = directory / 'current-instant'
-          original, identity = read_owned(clock, 128)
-          value = original.decode('ascii').strip()
-          if not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z', value):
-              raise SystemExit('Invalid current lesson clock')
-          current = datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
-          moscow = ZoneInfo('Europe/Moscow')
-          date = max(current.astimezone(moscow).date(), datetime.datetime.now(moscow).date()) + datetime.timedelta(days=1)
-          while date.weekday() >= 5:
-              date += datetime.timedelta(days=1)
-          future = datetime.datetime.combine(date, datetime.time(9), moscow).astimezone(datetime.timezone.utc)
-          if future <= current:
-              raise SystemExit('Lesson clock must advance monotonically')
-          updated = (future.isoformat(timespec='milliseconds').replace('+00:00', 'Z') + '\n').encode('ascii')
-          temporary = directory / ('lesson-' + uuid.uuid4().hex)
-          try:
-              descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
-              with os.fdopen(descriptor, 'wb') as stream:
-                  os.fchmod(stream.fileno(), 0o644)
-                  stream.write(updated)
-                  stream.flush()
-                  os.fsync(stream.fileno())
-              if read_owned(clock, 128) != (original, identity):
-                  raise SystemExit('Shared lesson clock changed before publication')
-              os.replace(temporary, clock)
-              if read_owned(clock, 128)[0] != updated:
-                  raise SystemExit('Forward lesson clock verification failed')
-          finally:
-              temporary.unlink(missing_ok=True)
-          # Keep this disposable clock advanced until services stop; no live reset.
-          print('PASS owned educational clock advanced to a future weekday at 09:00 Moscow')
-          PY_LESSON_CLOCK
-          npx playwright test --config playwright.lesson-lifecycle.config.ts --project=chromium
-
-      - name: Upload closed lesson lifecycle outcome
-        if: always() && steps.lesson-lifecycle.outcome != 'skipped'
+      - name: Upload closed semester reconciliation outcome
+        if: always() && steps.semester-reconciliation.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
-          name: lesson-lifecycle-safe-${{ github.run_attempt }}
-          path: ${{ env.RCT_LESSON_LIFECYCLE_RUN }}/artifacts/safe-results.json
+          name: semester-reconciliation-safe-${{ github.run_attempt }}
+          path: |
+            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/artifacts/safe-results.json
+            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation.safe.json
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Record a reported projection hint after failed Student statistics
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.lesson-lifecycle.outcome == 'failure' }}
+      - name: Record a closed exception hint after the failed archived lesson report
+        if: ${{ !cancelled() && steps.semester-reconciliation.outcome == 'failure' }}
         timeout-minutes: 1
         env:
-          RCT_HTTP500_DIAGNOSTIC_STAGE: STUDENT_STATS503
+          RCT_HTTP500_DIAGNOSTIC_STAGE: REPORT500
           RCT_E2E_SYNTHETIC_SEED: 'true'
         run: &closed-http500-diagnostic |
           python3 - <<'PY_HTTP500_DIAGNOSTIC'
@@ -3265,103 +3266,6 @@ jobs:
           print(json.dumps(result, sort_keys=True))
           PY_HTTP500_DIAGNOSTIC
 
-      - name: Verify exact stranded semester effect reconciliation
-        id: semester-reconciliation
-        timeout-minutes: 9
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
-        working-directory: tests/e2e
-        env:
-          E2E_BASE_URL: https://localhost:8443
-          RCT_E2E_SYNTHETIC_SEED: 'true'
-          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-semester-reconciliation-${{ github.run_id }}-${{ github.run_attempt }}
-          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
-          PLAYWRIGHT_NO_COPY_PROMPT: '1'
-          NODE_OPTIONS: --max-old-space-size=512
-          CI: 'true'
-        run: |
-          umask 077
-          printf 'RCT_SEMESTER_RECONCILIATION_RUN=%s\n' "$RCT_SEMESTER_LIFECYCLE_RUN" >> "$GITHUB_ENV"
-          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
-          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
-          printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
-          set +e
-          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'FULL admin reconciles one exact stranded close before archive completion$'
-          case_exit=$?
-          set -e
-          if ! python3 - <<'PY_RECONCILIATION_GATE'
-          import json, os, stat
-          from pathlib import Path
-
-          def pairs(items):
-              result = {}
-              for key, value in items:
-                  if key in result:
-                      raise ValueError('Duplicate reconciliation field')
-                  result[key] = value
-              return result
-
-          restored = False
-          try:
-              path = Path(os.environ['RCT_SEMESTER_LIFECYCLE_RUN']) / 'reconciliation.safe.json'
-              with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
-                  info = os.fstat(stream.fileno())
-                  if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600 or not 0 < info.st_size <= 4096:
-                      raise ValueError('Invalid reconciliation receipt')
-                  raw = stream.read(4097)
-                  if len(raw) != info.st_size:
-                      raise ValueError('Reconciliation receipt size changed')
-              value = json.loads(raw, object_pairs_hook=pairs,
-                                 parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite reconciliation field')))
-              booleans = {'exactDlqEnvelope', 'pendingBeforeReplay', 'appliedAfterReplay',
-                          'sameArchiveCompleted', 'duplicateBusinessUnchanged', 'recoveryPublishAttempted',
-                          'duplicateAttempted', 'restorationSucceeded', 'clockUnchanged'}
-              keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
-                                 'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome'}
-              if (type(value) is not dict or set(value) != keys
-                      or value['schema'] != 'semester-reconciliation.v1'
-                      or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
-                      or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
-                      or value['measuredListenerAttempts'] != 'UNKNOWN'
-                      or not all(type(value[key]) is bool for key in booleans)
-                      or not (value['retainedDlqCopies'] == 'UNKNOWN'
-                              or (type(value['retainedDlqCopies']) is int and value['retainedDlqCopies'] == 1))
-                      or value['cleanupOutcome'] not in {'PENDING', 'PASSED', 'FAILED'}):
-                  raise ValueError('Invalid closed reconciliation schema')
-              restored = (value['restorationSucceeded'] is True
-                          and value['clockUnchanged'] is True and value['cleanupOutcome'] == 'PASSED')
-          except Exception:
-              pass
-          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
-              output.write('restorationSucceeded=' + str(restored).lower() + '\n')
-          print('Semester reconciliation restoration gate: ' + ('RESTORED' if restored else 'UNPROVEN'))
-          if not restored:
-              raise SystemExit(1)
-          PY_RECONCILIATION_GATE
-          then
-            if [ "$case_exit" -ne 0 ]; then exit "$case_exit"; fi
-            exit 1
-          fi
-          exit "$case_exit"
-
-      - name: Upload closed semester reconciliation outcome
-        if: always() && steps.semester-reconciliation.outcome != 'skipped'
-        uses: actions/upload-artifact@v4
-        with:
-          name: semester-reconciliation-safe-${{ github.run_attempt }}
-          path: |
-            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/artifacts/safe-results.json
-            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation.safe.json
-          if-no-files-found: warn
-          retention-days: 7
-
-      - name: Record a closed exception hint after the failed archived lesson report
-        if: ${{ !cancelled() && steps.semester-reconciliation.outcome == 'failure' }}
-        timeout-minutes: 1
-        env:
-          RCT_HTTP500_DIAGNOSTIC_STAGE: REPORT500
-          RCT_E2E_SYNTHETIC_SEED: 'true'
-        run: *closed-http500-diagnostic
-
       - name: Verify interrupted assignment closure and next-day replacement
         id: assignment-lifecycle
         timeout-minutes: 12
@@ -3556,6 +3460,102 @@ jobs:
         timeout-minutes: 1
         env:
           RCT_HTTP500_DIAGNOSTIC_STAGE: LESSON_CREATE500
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+        run: *closed-http500-diagnostic
+
+      - name: Verify real Vue schedule lifecycle and attendance requests
+        id: lesson-lifecycle
+        timeout-minutes: 17
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.assignment-lifecycle.outcome == 'success' }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_LESSON_LIFECYCLE_RUN: ${{ runner.temp }}/rct-lesson-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_E2E_REMAINING5: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-lesson-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_LESSON_LIFECYCLE_RUN=%s\n' "$RCT_LESSON_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_LESSON_LIFECYCLE_RUN"
+          mkdir -m 700 -- "$RCT_LESSON_LIFECYCLE_RUN/artifacts"
+          # Room receipts need a genuinely future start.
+          # Earlier user lanes may advance the shared clock; never rewind it.
+          python3 - <<'PY_LESSON_CLOCK'
+          import datetime, os, re, stat, uuid
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+
+          directory = Path(os.environ['RCT_E2E_TEACHING_CLOCK_DIR'])
+          expected = Path(os.environ['RUNNER_TEMP']) / ('rct-first3-clock-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+          info = directory.lstat()
+          if directory != expected or not stat.S_ISDIR(info.st_mode) or directory.is_symlink() or info.st_uid != os.getuid():
+              raise SystemExit('Lesson clock directory ownership mismatch')
+
+          def read_owned(path, limit):
+              with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
+                  info = os.fstat(stream.fileno())
+                  if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_size > limit or stat.S_IMODE(info.st_mode) != 0o644:
+                      raise SystemExit('Lesson clock file ownership mismatch')
+                  value = stream.read(limit + 1)
+                  if len(value) > limit:
+                      raise SystemExit('Lesson clock input exceeds its bound')
+                  return value, (info.st_dev, info.st_ino)
+
+          if read_owned(directory / 'disposable-target', 64)[0] != b'RCT_E2E_DISPOSABLE\n':
+              raise SystemExit('Lesson clock disposable marker mismatch')
+          clock = directory / 'current-instant'
+          original, identity = read_owned(clock, 128)
+          value = original.decode('ascii').strip()
+          if not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z', value):
+              raise SystemExit('Invalid current lesson clock')
+          current = datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
+          moscow = ZoneInfo('Europe/Moscow')
+          date = max(current.astimezone(moscow).date(), datetime.datetime.now(moscow).date()) + datetime.timedelta(days=1)
+          while date.weekday() >= 5:
+              date += datetime.timedelta(days=1)
+          future = datetime.datetime.combine(date, datetime.time(9), moscow).astimezone(datetime.timezone.utc)
+          if future <= current:
+              raise SystemExit('Lesson clock must advance monotonically')
+          updated = (future.isoformat(timespec='milliseconds').replace('+00:00', 'Z') + '\n').encode('ascii')
+          temporary = directory / ('lesson-' + uuid.uuid4().hex)
+          try:
+              descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
+              with os.fdopen(descriptor, 'wb') as stream:
+                  os.fchmod(stream.fileno(), 0o644)
+                  stream.write(updated)
+                  stream.flush()
+                  os.fsync(stream.fileno())
+              if read_owned(clock, 128) != (original, identity):
+                  raise SystemExit('Shared lesson clock changed before publication')
+              os.replace(temporary, clock)
+              if read_owned(clock, 128)[0] != updated:
+                  raise SystemExit('Forward lesson clock verification failed')
+          finally:
+              temporary.unlink(missing_ok=True)
+          # Keep this disposable clock advanced until services stop; no live reset.
+          print('PASS owned educational clock advanced to a future weekday at 09:00 Moscow')
+          PY_LESSON_CLOCK
+          npx playwright test --config playwright.lesson-lifecycle.config.ts --project=chromium
+
+      - name: Upload closed lesson lifecycle outcome
+        if: always() && steps.lesson-lifecycle.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lesson-lifecycle-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_LESSON_LIFECYCLE_RUN }}/artifacts/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Record a reported projection hint after failed Student statistics
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.lesson-lifecycle.outcome == 'failure' }}
+        timeout-minutes: 1
+        env:
+          RCT_HTTP500_DIAGNOSTIC_STAGE: STUDENT_STATS503
           RCT_E2E_SYNTHETIC_SEED: 'true'
         run: *closed-http500-diagnostic
 

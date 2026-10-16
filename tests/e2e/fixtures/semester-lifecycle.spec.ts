@@ -837,11 +837,18 @@ async function ownedHistoricalPromotion(
       'Owned historical cohort must be newly seeded and unprocessed',
     );
     // Native SQL prepares historical state only; both actual mutations use Vue and the real API.
+    await expect(page.locator('main.admin-semester-screen')).toHaveAttribute(
+      'data-admin-semester-view',
+      'list',
+      { timeout: budget(10000) },
+    );
     await page
+      .locator('main.admin-semester-screen')
       .getByRole('button', { name: 'Назад', exact: true })
-      .first()
       .click({ timeout: budget(10000) });
+    await expect(page.locator('main.admin-more')).toBeVisible({ timeout: budget(10000) });
     await page
+      .getByRole('navigation', { name: 'Основная навигация', exact: true })
       .getByRole('button', { name: 'Группы', exact: true })
       .click({ timeout: budget(10000) });
     await page.getByRole('tab', { name: /^Черновики/ }).click({ timeout: budget(10000) });
@@ -2283,7 +2290,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     'Synthetic CI credentials are required',
   );
   const diagnostic = {
-    schema: 'semester-reconciliation.v2',
+    schema: 'semester-reconciliation.v3',
     phase: 'SETUP',
     configuredListenerAttempts: 3,
     measuredListenerAttempts: 'UNKNOWN',
@@ -2302,6 +2309,12 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       phase: 'MAIN' | 'CLEANUP';
       service: 'ATTENDANCE' | 'SCHEDULE';
       cause: 'NOT_RUNNING' | 'HEALTH_STARTING' | 'HEALTH_UNHEALTHY' | 'HEALTH_UNKNOWN';
+    } | null,
+    mainCloseLastRead: null as {
+      targetPresent: boolean;
+      groupMatches: boolean;
+      semesterMatches: boolean;
+      status: 'PLANNED' | 'ACTIVE' | 'CLOSED' | 'OTHER_OR_ABSENT';
     } | null,
   };
   const stopped = new Set<string>();
@@ -2382,14 +2395,19 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     '-f',
     join(root, 'tests/e2e/infra/docker-compose.clock-fixture.yml'),
   ];
-  const inspect = (id: string): Row =>
+  const inspect = (id: string, cap = 5000): Row =>
     JSON.parse(
-      docker([
-        'inspect',
-        '--format',
-        '{"id":{{json .Id}},"image":{{json .Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}',
-        id,
-      ]),
+      docker(
+        [
+          'inspect',
+          '--format',
+          '{"id":{{json .Id}},"image":{{json .Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}',
+          id,
+        ],
+        undefined,
+        {},
+        cap,
+      ),
     );
   const pins: Record<string, Row> = {};
   const canonicalObjectOrder = (value: unknown): unknown => {
@@ -2405,10 +2423,10 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     Array.isArray(value)
       ? value.map((record) => JSON.stringify(canonicalObjectOrder(record))).sort()
       : canonicalObjectOrder(value);
-  const identity = (service: string) => {
+  const identity = (service: string, cap = 5000) => {
     const pin = pins[service];
     requireValue(pin, 'Pinned owned service is required');
-    const current = inspect(pin.id);
+    const current = inspect(pin.id, cap);
     requireValue(
       current.id === pin.id &&
         current.image === pin.image &&
@@ -2535,9 +2553,15 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
     docker([...compose, 'stop', '--timeout', '10', service], undefined, {}, 15000);
     requireValue(identity(service).running === false, 'Owned service must stop');
   };
-  const restart = (service: string) => {
+  const restart = async (service: string) => {
     if (!stopped.has(service)) return;
-    identity(service);
+    const restartEnd = performance.now() + budget(45000);
+    const remaining = () => {
+      const value = Math.floor(restartEnd - performance.now());
+      requireValue(value > 0, 'Owned restart deadline exhausted');
+      return value;
+    };
+    identity(service, Math.min(5000, remaining()));
     docker(
       [
         ...compose,
@@ -2555,9 +2579,17 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
       ],
       undefined,
       {},
-      45000,
+      remaining(),
     );
-    const current = identity(service);
+    let current = identity(service, Math.min(5000, remaining()));
+    while (current.running && current.health === 'starting') {
+      const left = Math.floor(restartEnd - performance.now());
+      if (left <= 0) break;
+      await new Promise((resolve) => setTimeout(resolve, Math.min(250, left)));
+      const afterDelay = Math.floor(restartEnd - performance.now());
+      if (afterDelay <= 0) break;
+      current = identity(service, Math.min(5000, afterDelay));
+    }
     if (
       !(current.running && current.health === 'healthy') &&
       diagnostic.firstRestartFailure === null &&
@@ -2580,6 +2612,7 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
       current.running && current.health === 'healthy',
       'Same owned service must recover',
     );
+    requireValue(performance.now() <= restartEnd, 'Owned restart deadline exhausted');
     stopped.delete(service);
   };
   const request = await playwright.request.newContext({
@@ -2837,18 +2870,32 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
         'Exact create replay must identify its lesson',
       );
     }
-    const isClosed = async () =>
-      Object.values(
+    const isClosed = async () => {
+      const rows = Object.values(
         (await closeCommand!.actor.call('GET', closeCommand!.lessonsPath))._embedded ?? {},
-      )
-        .flat()
-        .some(
-          (row: any) =>
-            Number(row.id) === scope.lesson &&
-            Number(row.groupId) === scope.group &&
-            Number(row.semesterId) === scope.semester &&
-            row.status === 'CLOSED',
-        );
+      ).flat();
+      if (!cleaning) {
+        const target = (rows as Row[]).find((row) => Number(row.id) === scope.lesson);
+        diagnostic.mainCloseLastRead = {
+          targetPresent: target !== undefined,
+          groupMatches: target !== undefined && Number(target.groupId) === scope.group,
+          semesterMatches: target !== undefined && Number(target.semesterId) === scope.semester,
+          status:
+            target?.status === 'PLANNED' ||
+            target?.status === 'ACTIVE' ||
+            target?.status === 'CLOSED'
+              ? target.status
+              : 'OTHER_OR_ABSENT',
+        };
+      }
+      return rows.some(
+        (row: any) =>
+          Number(row.id) === scope.lesson &&
+          Number(row.groupId) === scope.group &&
+          Number(row.semesterId) === scope.semester &&
+          row.status === 'CLOSED',
+      );
+    };
     // One exact final read is still useful if the original wait expired just before cleanup.
     if (!(await isClosed())) {
       const remaining = Math.min(budget(90000), Math.floor(closeDeadline - performance.now()));
@@ -3015,7 +3062,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     );
     await recoverOwnClose();
     stop('schedule-service');
-    restart('attendance-service');
+    await restart('attendance-service');
     diagnostic.phase = 'STRANDED';
     await expect
       .poll(
@@ -3035,7 +3082,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       )
       .toBe(true);
     await stranded();
-    restart('schedule-service');
+    await restart('schedule-service');
     diagnostic.phase = 'PENDING_ARCHIVE';
     budget(10000, { archive: true }, true);
     for (const service of ['schedule-service', 'attendance-service']) {
@@ -3270,7 +3317,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     try {
       for (const service of ['schedule-service', 'attendance-service']) {
         try {
-          restart(service);
+          await restart(service);
         } catch (error) {
           cleanupFailure ??= { error };
         }

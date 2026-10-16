@@ -332,5 +332,43 @@ function pointAriaLabel(
       {{ periodLabel(selectedPoint) }} · «+» {{ metricText(selectedPoint.present) }} · «+ и у»
       {{ metricText(selectedPoint.presentOrExcused) }}
     </p>
+    <details class="headman-stats__advanced headman-stats-trend__data">
+      <summary>Данные графика</summary>
+      <div
+        class="headman-stats__table-wrap"
+        role="region"
+        aria-label="Табличные данные динамики"
+        tabindex="0"
+      >
+        <table>
+          <caption>Динамика посещаемости по периодам</caption>
+          <thead>
+            <tr>
+              <th scope="col">
+                Период
+              </th>
+              <th scope="col">
+                {{ presentLabel ?? 'Присутствовал' }}
+              </th>
+              <th scope="col">
+                {{ presentOrExcusedLabel ?? 'Присутствовал или отсутствовал по уважительной причине' }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="point in points"
+              :key="point.key"
+            >
+              <th scope="row">
+                {{ point.label }} {{ periodLabel(point) }}
+              </th>
+              <td>{{ metricText(point.present) }}</td>
+              <td>{{ metricText(point.presentOrExcused) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
   </div>
 </template>

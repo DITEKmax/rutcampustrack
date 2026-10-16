@@ -16,6 +16,7 @@ import {
   type HeadmanStatsBlock,
   type HeadmanStatsQuery,
   type HeadmanStatsTrendQuery,
+  type HeadmanStatsTrendPoint,
 } from './headman-stats-client'
 import {
   headmanStatsFixtureWeekPolicy,
@@ -75,6 +76,9 @@ class Node {
     }
     this.children.forEach(walk)
     return result
+  }
+  getBoundingClientRect(): { width: number } {
+    return { width: 0 }
   }
   focus(): void {}
   close(): void {}
@@ -850,4 +854,147 @@ it('a delayed academic policy cannot replace the current week policy after pager
     find(fixture.root, (node) => node.tag === 'small' && node.props['data-parity-number'] === 1),
   ).toBeUndefined()
   expect(fixture.trendQueries.at(-1)).toMatchObject({ mode: 'WEEK', weekStart: '2026-10-05' })
+})
+
+describe('actual Headman dynamics same-points table', () => {
+  const point = (
+    key: string,
+    from: string,
+    present: HeadmanStatsTrendPoint['present'],
+    presentOrExcused: HeadmanStatsTrendPoint['presentOrExcused'],
+  ): HeadmanStatsTrendPoint => ({
+    key,
+    label: `Период ${key}`,
+    from,
+    to: from,
+    present,
+    presentOrExcused,
+  })
+  const initialPoints = () => [
+    point(
+      'zero',
+      '2026-09-01',
+      { percent: 0, numerator: 0, denominator: 2 },
+      { percent: 50, numerator: 1, denominator: 2 },
+    ),
+    point(
+      'null',
+      '2026-09-08',
+      { percent: null, numerator: 0, denominator: 0 },
+      { percent: null, numerator: 0, denominator: 0 },
+    ),
+    point(
+      'full',
+      '2026-09-15',
+      { percent: 100, numerator: 1, denominator: 1 },
+      { percent: 100, numerator: 1, denominator: 1 },
+    ),
+  ]
+  const descendants = (node: Node): Node[] => [node, ...node.children.flatMap(descendants)]
+  async function chart(points = initialPoints()) {
+    vi.stubGlobal('document', { createElement: () => ({ getContext: () => null }) })
+    vi.stubGlobal('getComputedStyle', () => ({}))
+    const { default: ActualChart } = await vi.importActual<
+      typeof import('./HeadmanStatsTrendChart.vue')
+    >('./HeadmanStatsTrendChart.vue')
+    const state = shallowReactive({
+      points,
+      presentLabel: 'Присутствовал',
+      presentOrExcusedLabel: 'Присутствовал или отсутствовал по уважительной причине',
+    })
+    const root = new Node('root')
+    const app = renderer.createApp({
+      render: () => h(ActualChart, { from: '2026-09-01', to: '2026-09-30', ...state }),
+    })
+    apps.push(app)
+    app.mount(root)
+    await nextTick()
+    const table = () => {
+      const found = find(root, (node) => node.tag === 'table')
+      expect(found).toBeDefined()
+      return found!
+    }
+    const rows = () =>
+      descendants(table())
+        .filter((node) => node.tag === 'tbody')[0]!
+        .children.filter((node) => node.tag === 'tr')
+    return { root, state, table, rows }
+  }
+
+  it('offers a native closed disclosure and a focusable semantic table for every exact server point and both series', async () => {
+    const fixture = await chart()
+    const disclosure = find(fixture.root, (node) => node.tag === 'details')!
+    expect(disclosure).toBeDefined()
+    expect(disclosure.props.open).toBeUndefined()
+    expect(disclosure.children[0]!.tag).toBe('summary')
+    expect(text(disclosure.children[0]!)).toBe('Данные графика')
+    const region = find(disclosure, (node) => node.props.role === 'region')!
+    expect(region.props['aria-label']).toBe('Табличные данные динамики')
+    expect(region.props.tabindex).toBe('0')
+    expect(text(find(fixture.table(), (node) => node.tag === 'caption')!)).toBe(
+      'Динамика посещаемости по периодам',
+    )
+    expect(
+      descendants(fixture.table())
+        .filter((node) => node.props.scope === 'col')
+        .map((node) => text(node).trim()),
+    ).toEqual(['Период', 'Присутствовал', 'Присутствовал или отсутствовал по уважительной причине'])
+    expect(
+      fixture
+        .rows()
+        .map((row) =>
+          row.children.filter((node) => node.tag === 'th' || node.tag === 'td').map(text),
+        ),
+    ).toEqual([
+      ['Период zero 1 сент.', '0.0% (0 из 2)', '50.0% (1 из 2)'],
+      ['Период null 8 сент.', 'Нет данных', 'Нет данных'],
+      ['Период full 15 сент.', '100.0% (1 из 1)', '100.0% (1 из 1)'],
+    ])
+    expect(
+      fixture
+        .rows()
+        .every((row) => row.children.find((node) => node.tag === 'th')?.props.scope === 'row'),
+    ).toBe(true)
+    expect(descendants(fixture.root).filter((node) => node.tag === 'circle')).toHaveLength(4)
+  })
+
+  it('replaces table order and labels on a new trend and clears the old focused graph readout', async () => {
+    const fixture = await chart()
+    const circle = find(fixture.root, (node) => node.tag === 'circle')!
+    ;(circle.props.onFocus as () => void)()
+    await nextTick()
+    expect(
+      find(fixture.root, (node) => node.props.class === 'headman-stats-trend__readout'),
+    ).toBeDefined()
+    fixture.state.points = [
+      { ...initialPoints()[2]!, label: 'Новый <период>', from: '2026-09-15', to: '2026-09-16' },
+      initialPoints()[0]!,
+    ]
+    fixture.state.presentLabel = 'Был'
+    fixture.state.presentOrExcusedLabel = 'Был или уважительная причина'
+    await nextTick()
+    expect(
+      fixture.rows().map((row) => text(row.children.find((node) => node.tag === 'th')!)),
+    ).toEqual(['Новый <период> 15 сент. — 16 сент.', 'Период zero 1 сент.'])
+    expect(
+      descendants(fixture.table())
+        .filter((node) => node.props.scope === 'col')
+        .map((node) => text(node).trim()),
+    ).toEqual(['Период', 'Был', 'Был или уважительная причина'])
+    expect(
+      find(fixture.root, (node) => node.props.class === 'headman-stats-trend__readout'),
+    ).toBeUndefined()
+    expect(text(fixture.table())).not.toContain('Период null')
+    fixture.state.points = [initialPoints()[1]!]
+    await nextTick()
+    expect(text(fixture.root)).toContain('За выбранный период нет данных для графика.')
+    expect(
+      fixture.rows().map((row) => row.children.filter((node) => node.tag === 'td').map(text)),
+    ).toEqual([['Нет данных', 'Нет данных']])
+    fixture.state.points = []
+    await nextTick()
+    expect(fixture.rows()).toEqual([])
+    expect(text(fixture.root)).toContain('За выбранный период нет данных для графика.')
+    expect(text(fixture.table())).not.toContain('Новый <период>')
+  })
 })

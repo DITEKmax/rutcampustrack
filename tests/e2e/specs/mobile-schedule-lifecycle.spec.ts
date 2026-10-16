@@ -1142,7 +1142,7 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
             beforeRoom.subjectId === savedSubjectId &&
             beforeRoom.date === dataset.tomorrow &&
             beforeRoom.lessonNumber === 2 &&
-            beforeRoom.lessonType === 'LECTURE' &&
+            beforeRoom.lessonType === 'lecture' &&
             beforeRoom.room === 'Синтетическая статистика',
           'Visible created lecture is the authoritative current free-slot lesson',
         ).toBe(true);

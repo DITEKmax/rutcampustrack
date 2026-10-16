@@ -91,14 +91,14 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-function fixture() {
+function fixture(lessons: readonly HeadmanJournalLesson[] = []) {
   const owner = shallowReactive({ userId: '1', sessionId: 'session-a' })
   const childView = ref('agenda')
   let pending: Promise<readonly HeadmanJournalLesson[]> | null = null
   const listLessons = vi.fn(async () => {
     const reply = pending
     pending = null
-    return reply ? await reply : []
+    return reply ? await reply : lessons
   })
   const journal = { listLessons } as unknown as HeadmanJournalApi
   const schedule = {
@@ -178,6 +178,49 @@ async function openOneOff(root: Node): Promise<void> {
 }
 
 describe('lesson management owner identity in the actual SFC', () => {
+  it.each([
+    ['lecture', 'Лекция'],
+    ['practice', 'Практика'],
+    ['lab', 'Лабораторная'],
+    ['LECTURE', 'Лекция'],
+    ['PRACTICE', 'Практика'],
+    ['LAB', 'Лабораторная'],
+    [null, 'Тип не указан'],
+    ['seminar', 'Тип не указан'],
+  ])('renders physical type %s in its real card and detail', async (lessonType, label) => {
+    const f = fixture([
+      {
+        id: 61,
+        groupId: 4,
+        subjectId: 14,
+        date: '2026-10-16',
+        status: 'PLANNED',
+        lessonNumber: 2,
+        startTime: '10:40:00',
+        endTime: '12:10:00',
+        room: 'Аудитория',
+        lessonType,
+        occurrenceRevision: '1',
+        current: true,
+        transferOperationId: null,
+        transferState: null,
+      },
+    ])
+    await settle()
+    const card = nodes(f.root).find((item) => item.props['data-lesson-id'] === 61)!
+    expect(card).toBeDefined()
+    expect(text(card)).toContain(label)
+    await click(f.root, (item) => item === card)
+    expect(main(f.root).props['data-management-view']).toBe('detail')
+    expect(
+      text(
+        nodes(f.root).find(
+          (item) => item.props.class === 'lesson-management__card lesson-management__summary',
+        )!,
+      ),
+    ).toContain(label)
+  })
+
   it('keeps the one-off form when its parent publishes the view with an equivalent owner', async () => {
     const f = fixture()
     await settle()

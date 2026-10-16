@@ -3087,9 +3087,9 @@ jobs:
                           'duplicateAttempted', 'restorationSucceeded', 'clockUnchanged'}
               keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
                                  'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome',
-                                 'firstRestartFailure'}
+                                 'firstRestartFailure', 'mainCloseLastRead'}
               if (type(value) is not dict or set(value) != keys
-                      or value['schema'] != 'semester-reconciliation.v2'
+                      or value['schema'] != 'semester-reconciliation.v3'
                       or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
                       or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
                       or value['measuredListenerAttempts'] != 'UNKNOWN'
@@ -3106,6 +3106,15 @@ jobs:
                       or restart['service'] not in {'ATTENDANCE', 'SCHEDULE'}
                       or restart['cause'] not in {'NOT_RUNNING', 'HEALTH_STARTING', 'HEALTH_UNHEALTHY', 'HEALTH_UNKNOWN'}):
                   raise ValueError('Invalid closed reconciliation restart failure')
+              last_read = value['mainCloseLastRead']
+              if last_read is not None and (
+                      type(last_read) is not dict
+                      or set(last_read) != {'targetPresent', 'groupMatches', 'semesterMatches', 'status'}
+                      or not all(type(last_read[key]) is bool
+                                 for key in ('targetPresent', 'groupMatches', 'semesterMatches'))
+                      or type(last_read['status']) is not str
+                      or last_read['status'] not in {'PLANNED', 'ACTIVE', 'CLOSED', 'OTHER_OR_ABSENT'}):
+                  raise ValueError('Invalid closed reconciliation main close read')
               restored = (value['restorationSucceeded'] is True
                           and value['clockUnchanged'] is True and value['cleanupOutcome'] == 'PASSED')
           except Exception:

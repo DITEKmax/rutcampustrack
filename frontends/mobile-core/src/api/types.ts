@@ -284,8 +284,8 @@ export interface StudentAttendanceResponse {
   readonly semester: {
     readonly id: string
     readonly name: string
-    readonly dateFrom: string
-    readonly dateTo: string
+    readonly startsOn: string
+    readonly endsOn: string
   }
   readonly serverNow: string
   readonly terminalReadOnly: boolean

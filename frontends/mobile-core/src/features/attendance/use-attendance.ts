@@ -168,8 +168,8 @@ function mapWeeks(value: StudentAttendanceResponse): readonly StudentAttendanceW
       !Number.isFinite(new Date(`${week.dateFrom}T12:00:00Z`).getTime()) ||
       monday(week.dateFrom) !== week.dateFrom ||
       shiftDate(week.dateFrom, 6) !== week.dateTo ||
-      week.dateFrom > value.semester.dateTo ||
-      week.dateTo < value.semester.dateFrom ||
+      week.dateFrom > value.semester.endsOn ||
+      week.dateTo < value.semester.startsOn ||
       !Number.isSafeInteger(week.weekOfSemester) ||
       week.weekOfSemester < 1 ||
       (week.parityNumber !== 1 && week.parityNumber !== 2) ||
@@ -185,7 +185,12 @@ function mapWeeks(value: StudentAttendanceResponse): readonly StudentAttendanceW
 export function toAttendanceViewModel(value: StudentAttendanceResponse): AttendanceViewModel {
   return {
     weeks: mapWeeks(value),
-    semester: { ...value.semester },
+    semester: {
+      id: value.semester.id,
+      name: value.semester.name,
+      dateFrom: value.semester.startsOn,
+      dateTo: value.semester.endsOn,
+    },
     serverNow: value.serverNow,
     metrics: { ...value.metrics },
     days: value.days.map(mapDay),

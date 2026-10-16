@@ -1343,7 +1343,53 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   const readout = dynamics.locator('.headman-stats-trend__readout');
   await expect(readout).toContainText(`«+» ${trendMetricText(firstPoint.present)}`);
   await expect(readout).toContainText(`«+ и у» ${trendMetricText(firstPoint.presentOrExcused)}`);
-  await dynamics.getByRole('button', { name: 'Назад', exact: true }).click();
+
+  // The accepted table repeats every point from this same authoritative response.
+  const trendData = dynamics.locator('details.headman-stats-trend__data');
+  const summary = trendData.locator('summary');
+  await expect(summary).toHaveText('Данные графика');
+  await expect(trendData).toHaveJSProperty('open', false);
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  const tableRegion = dynamics.getByRole('region', {
+    name: 'Табличные данные динамики',
+    exact: true,
+  });
+  await expect(tableRegion).toBeVisible();
+  await expect(tableRegion).toHaveAttribute('tabindex', '0');
+  const trendTable = tableRegion.getByRole('table', {
+    name: 'Динамика посещаемости по периодам',
+    exact: true,
+  });
+  await expect(trendTable.getByRole('columnheader')).toHaveText([
+    'Период',
+    'Присутствовал',
+    'Присутствовал или отсутствовал по уважительной причине',
+  ]);
+  const tablePoints: (TrendPoint & { from: string; to: string })[] = subjectTrend.points;
+  const tableRows = trendTable.locator('tbody > tr');
+  await expect(tableRows).toHaveCount(tablePoints.length);
+  const periodDate = (value: string) =>
+    new Date(`${value}T12:00:00Z`).toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'short',
+      timeZone: 'UTC',
+    });
+  for (const [index, point] of tablePoints.entries()) {
+    const row = tableRows.nth(index);
+    const period =
+      point.from === point.to
+        ? periodDate(point.from)
+        : `${periodDate(point.from)} — ${periodDate(point.to)}`;
+    expect((await row.getByRole('rowheader').textContent())?.replace(/\s+/g, '')).toBe(
+      `${point.label}${period}`.replace(/\s+/g, ''),
+    );
+    await expect(row.getByRole('cell')).toHaveText([
+      trendMetricText(point.present),
+      trendMetricText(point.presentOrExcused),
+    ]);
+  }
+  await page.getByRole('button', { name: 'Назад', exact: true }).click();
   await expect(subjectTable).toBeVisible();
   // End bounded column/export/dynamics witnesses; all original following checks remain.
   await page.getByRole('button', { name: 'Индивидуально', exact: true }).click();

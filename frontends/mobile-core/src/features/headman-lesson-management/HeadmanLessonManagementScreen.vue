@@ -102,14 +102,16 @@ const title = computed(
 );
 const subject = (lesson: HeadmanJournalLesson) =>
   state.value?.assignments.find((a) => a.subjectId === lesson.subjectId)?.subjectName || 'Предмет';
-const typeName = (type: string | null | undefined) =>
-  type === 'LECTURE'
+const typeName = (type: string | null | undefined) => {
+  const canonical = type?.toUpperCase();
+  return canonical === 'LECTURE'
     ? 'Лекция'
-    : type === 'PRACTICE'
+    : canonical === 'PRACTICE'
       ? 'Практика'
-      : type === 'LAB'
+      : canonical === 'LAB'
         ? 'Лабораторная'
         : 'Тип не указан';
+};
 const dayLabel = (value: string) =>
   new Date(value + 'T00:00:00Z').toLocaleDateString('ru-RU', {
     timeZone: 'UTC',

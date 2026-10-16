@@ -7,7 +7,7 @@ import { sanitizeTestErrors } from '../fixtures/artifact-privacy';
 
 // Reuse the private real-mobile fixture and reporter; generated credentials stay in memory.
 test.use({ trace: 'off', video: 'off', screenshot: 'off' });
-test.afterEach(async ({}, info) => sanitizeTestErrors(info));
+test.afterEach(() => sanitizeTestErrors(test.info()));
 
 function response(page: Page, path: string, method: string) {
   return page.waitForResponse(
@@ -373,13 +373,13 @@ test('HEADMAN cancels a marked lesson and restores its journal without reviving 
         else expect.soft(false, 'LESSON_WEEK_FAILURE_ENABLED').toBe(true);
         const neighbor = weeks[currentWeekIndex + direction]!;
         if (
-          typeof attendanceBody.semester.dateFrom !== 'string' ||
-          typeof attendanceBody.semester.dateTo !== 'string'
+          typeof attendanceBody.semester.startsOn !== 'string' ||
+          typeof attendanceBody.semester.endsOn !== 'string'
         )
           expect.soft(false, 'LESSON_WEEK_FAILURE_NEIGHBOR_BOUNDS_UNKNOWN').toBe(true);
         else if (
-          neighbor.dateFrom <= attendanceBody.semester.dateTo &&
-          neighbor.dateTo >= attendanceBody.semester.dateFrom
+          neighbor.dateFrom <= attendanceBody.semester.endsOn &&
+          neighbor.dateTo >= attendanceBody.semester.startsOn
         )
           expect.soft(false, 'LESSON_WEEK_FAILURE_NEIGHBOR_IN_RESPONSE_BOUNDS').toBe(true);
         else expect.soft(false, 'LESSON_WEEK_FAILURE_NEIGHBOR_OUTSIDE_RESPONSE_BOUNDS').toBe(true);
@@ -493,7 +493,12 @@ test('HEADMAN cancels a marked lesson and restores its journal without reviving 
   await noLiveMarks();
   const archived = await archivedHomework();
 
-  let facts: Record<string, any>[] = [];
+  let facts: {
+    id: number;
+    action: string;
+    before: Record<string, unknown>;
+    after: Record<string, unknown>;
+  }[] = [];
   await expect
     .poll(
       async () => {

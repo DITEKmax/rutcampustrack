@@ -87,7 +87,7 @@ function mount(render: () => ReturnType<typeof h>) {
 
 function response(): StudentAttendanceResponse {
   return {
-    semester: { id: '9', name: 'Осень', dateFrom: '2020-09-02', dateTo: '2021-01-12' },
+    semester: { id: '9', name: 'Осень', startsOn: '2020-09-02', endsOn: '2021-01-12' },
     serverNow: '2020-12-30T10:00:00Z',
     terminalReadOnly: false,
     metrics: {
@@ -142,6 +142,7 @@ async function page(root: Node, label: string): Promise<void> {
   const button = nodes(root).find(
     (item) => item.tag === 'button' && item.props['aria-label'] === label,
   )!
+  expect(button.props.disabled).not.toBe(true)
   ;(button.props.onClick as () => void)()
   await settle()
 }
@@ -159,6 +160,17 @@ describe('student server week metadata in the existing attendance pager', () => 
     await page(root, 'Предыдущая неделя')
     expect(props.selectedDate).toBe('2020-12-28')
     expect(metadata(root)).toBe('Неделя 18 · Чётность 2')
+    const disabled = (label: string) =>
+      nodes(root).find((item) => item.tag === 'button' && item.props['aria-label'] === label)!.props
+        .disabled
+    props.selectedDate = '2020-09-02'
+    await settle()
+    expect(disabled('Предыдущая неделя')).toBe(true)
+    expect(disabled('Следующая неделя')).toBe(false)
+    props.selectedDate = '2021-01-12'
+    await settle()
+    expect(disabled('Следующая неделя')).toBe(true)
+    expect(disabled('Предыдущая неделя')).toBe(false)
   })
 
   it('keeps legacy absent metadata unknown rather than calculating labels on the client', async () => {

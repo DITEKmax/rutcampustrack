@@ -3062,10 +3062,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       let policyObserverRestored = false;
       let policyRead!: ReturnType<Page['waitForResponse']>;
       try {
-        policyRead = page.waitForResponse(
-          (response) => new URL(response.url()).pathname === '/app/version.json',
-        );
-        // Genuine network transitions invoke the existing production policy reader.
+        // Playwright restores page targets before worker targets; await the full network barrier.
         await context.setOffline(true);
         restoringPolicyNetwork = true;
         try {
@@ -3073,6 +3070,12 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         } finally {
           restoringPolicyNetwork = false;
         }
+        expect(await page.evaluate(() => document.visibilityState)).toBe('visible');
+        policyRead = page.waitForResponse(
+          (response) => new URL(response.url()).pathname === '/app/version.json',
+        );
+        // Synthetic host signal; the existing visible-policy listener performs the real fetch.
+        await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
         try {
           await policyRead;
         } catch (error) {

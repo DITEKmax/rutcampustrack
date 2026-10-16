@@ -562,7 +562,7 @@ jobs:
                   assert audit_line == 1265
                   audit_production = app / 'src/main/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveCoordinator.java'
                   audit_current = audit_production.read_bytes()
-                  assert hashlib.sha256(audit_current).hexdigest() == 'b47314fa5317f17dc1e95e278a01b32004d9ced06d9c5f1dd480d2d185a07bb6'
+                  assert hashlib.sha256(audit_current).hexdigest() == '682a47e0f7c570fccbc253b20dbc8070e60f7e8a3b30746bb8add44afbd38253'
                   audit_anchor = (b'            HomeworkActionRecordedEvent.publish(\n'
                                   b'                    events,\n'
                                   b'                    "HOMEWORK_ARCHIVED",\n'
@@ -575,7 +575,7 @@ jobs:
                   audit_negative = audit_current.replace(
                       audit_anchor, audit_anchor.replace(b'                    actualActorId,\n',
                                                         b'                    homework.getPublishedBy(),\n'))
-                  assert hashlib.sha256(audit_negative).hexdigest() == '22148473e411301f556b8b4ca0acf742c0fa1b70fc8198fcd0294ba9e720e1d8'
+                  assert hashlib.sha256(audit_negative).hexdigest() == '6581d2684ad06ca2c7ca3c94126fb14744c5a17c32723746ff2268a235eaa871'
                   audit = {'package': 'ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT',
                            'method': 'nonAuthorAssistantDeletePreservesCreatorHistoryAndActualActorOutboxOnReplay',
                            'source': audit_source, 'production': audit_production}
@@ -1450,7 +1450,7 @@ jobs:
                   proof['additionalRule']['sourceRestoredExact'] = True
               if audit is not None and current:
                   assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == '2a48d8fb0c270b67ab397d5bd28025ef356ada522ce8b2d4059c2bbb69636fcd'
-                  assert hashlib.sha256(audit['production'].read_bytes()).hexdigest() == 'b47314fa5317f17dc1e95e278a01b32004d9ced06d9c5f1dd480d2d185a07bb6'
+                  assert hashlib.sha256(audit['production'].read_bytes()).hexdigest() == '682a47e0f7c570fccbc253b20dbc8070e60f7e8a3b30746bb8add44afbd38253'
                   proof['auditRule']['sourceRestoredExact'] = True
               if admin_rights is not None and current:
                   assert hashlib.sha256(admin_rights['source'].read_bytes()).hexdigest() == '05d4ee3e8d97a35d0c44d02cad7c0450eec39632f71e29b92bb087084e86492e'

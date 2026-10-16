@@ -569,9 +569,33 @@ isolated(
     const checkbox = settings.getByRole('checkbox', { name: choiceName, exact: true });
     await expect(checkbox).toBeChecked({ checked: beforeChoice.appPush });
     await checkbox.setChecked(!beforeChoice.appPush);
-    const savePreferences = http(page, preferencesPath, 'PUT');
-    await settings.getByRole('button', { name: 'Сохранить настройки', exact: true }).click();
-    const savedResponse = await savePreferences;
+    let preferencesRequestObserved = false;
+    const observePreferencesRequest = (request: Request) => {
+      if (request.method() === 'PUT' && new URL(request.url()).pathname === preferencesPath)
+        preferencesRequestObserved = true;
+    };
+    page.on('request', observePreferencesRequest);
+    let savedResults: [PromiseSettledResult<Response>, PromiseSettledResult<void>];
+    try {
+      // Preserve click, request and response evidence when either action fails.
+      savedResults = await Promise.allSettled([
+        http(page, preferencesPath, 'PUT'),
+        settings.getByRole('button', { name: 'Сохранить настройки', exact: true }).click(),
+      ]);
+    } finally {
+      page.off('request', observePreferencesRequest);
+    }
+    const [saveResult, saveClickResult] = savedResults;
+    if (savedResults.some((result) => result.status === 'rejected')) {
+      expect
+        .soft(saveClickResult.status === 'fulfilled', 'Preference save click completed')
+        .toBe(true);
+      expect.soft(preferencesRequestObserved, 'Preference save PUT was emitted').toBe(true);
+      expect.soft(saveResult.status === 'fulfilled', 'Preference save response arrived').toBe(true);
+    }
+    if (saveClickResult.status === 'rejected') throw saveClickResult.reason;
+    if (saveResult.status === 'rejected') throw saveResult.reason;
+    const savedResponse = saveResult.value;
     expect(savedResponse.status()).toBe(200);
     const postedPreferences = savedResponse.request().postDataJSON();
     expect(postedPreferences.expectedRevision).toBe(beforePreferences.revision);

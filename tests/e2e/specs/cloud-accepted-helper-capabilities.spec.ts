@@ -196,6 +196,8 @@ test('VIEW_STATS renders own group but grants neither marking, roster export nor
 
   // CLIENT-FE-HEADMAN-09: the real own-roster button completes the existing file proof.
   await logoutPwa(page);
+  // Export-ticket deadlines use Auth's real clock, before mounting the HEADMAN owner.
+  await page.clock.setSystemTime(new Date());
   await loginPwa(page, dataset.headman, { retryUntilMs });
   const headmanRole = await selectRole(page, 'Староста');
   expect(headmanRole.session.activeRole).toBe('HEADMAN');

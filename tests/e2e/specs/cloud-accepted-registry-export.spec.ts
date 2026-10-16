@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import type { Download, Page, TestInfo } from '@playwright/test';
+import { isDeepStrictEqual } from 'node:util';
+import type { Download, Page, Response, TestInfo } from '@playwright/test';
 import {
   test,
   expect,
@@ -12,6 +13,7 @@ import {
 } from '../fixtures/cloud-accepted-support';
 import type { MobileDataset } from '../fixtures/mobile-dataset';
 import { loginPwa } from '../fixtures/pwa-auth';
+import { TEST_USERS } from '../fixtures/users';
 import { datasetHttpFailure } from '../fixtures/safe-reporter';
 
 registerPrivateSuite();
@@ -1258,4 +1260,581 @@ test('renderer outage terminates its PDF job safely and a fresh job downloads af
   );
   await call('GET', `/api/auth/export-jobs/${failedJob}/file`, undefined, 409);
   registryOutageFailedFacts(until, failedJob);
+});
+
+test('FULL admin applies group filters sorting and reset before downloading filtered HTML @cloud-accepted', async ({
+  page,
+  dataset,
+}, info) => {
+  const until = Date.now() + info.timeout - 5000;
+  const budget = (cap = 10000) => {
+    const remaining = Math.floor(until - Date.now());
+    registryRequire(remaining > 0, 'GROUPS_CLIENT_DEADLINE');
+    return Math.min(cap, remaining);
+  };
+  await page.clock.setFixedTime(new Date());
+  const admissionUntil = Math.min(Date.now() + 65000, until - 45000);
+  const admissionBudget = () => {
+    const remaining = Math.floor(admissionUntil - Date.now());
+    registryRequire(remaining > 0, 'GROUPS_CLIENT_ADMISSION_DEADLINE');
+    return Math.min(10000, remaining);
+  };
+  const admissionWork = (async () => {
+    let admitted = await loginPwa(page, TEST_USERS.admin, { retryUntilMs: admissionUntil });
+    if (admitted.session.activeRole !== 'ADMIN') {
+      let observedRole: Response | undefined;
+      const matchesRole = (response: Response) =>
+        new URL(response.url()).origin === new URL(String(info.project.use.baseURL)).origin &&
+        new URL(response.url()).pathname === '/api/auth/session/active-role' &&
+        response.request().method() === 'PUT';
+      const observeRole = (response: Response) => {
+        if (matchesRole(response)) observedRole ??= response;
+      };
+      page.on('response', observeRole);
+      try {
+        if (!(await page.getByRole('heading', { name: 'Сменить роль', exact: true }).isVisible())) {
+          await page
+            .getByRole('button', { name: 'Профиль', exact: true })
+            .click({ timeout: admissionBudget() });
+          await page
+            .getByRole('button', { name: 'Сменить роль', exact: true })
+            .click({ timeout: admissionBudget() });
+        }
+        await page
+          .getByRole('button', { name: /Администратор/ })
+          .click({ timeout: admissionBudget() });
+        const response =
+          observedRole ?? (await page.waitForResponse(matchesRole, { timeout: admissionBudget() }));
+        registryRequire(response.status() === 200, 'GROUPS_CLIENT_ROLE_STATUS');
+        const selected = await response.json();
+        registryRequire(
+          typeof selected.accessToken === 'string' &&
+            selected.accessToken.length > 0 &&
+            selected.session?.activeRole === 'ADMIN' &&
+            selected.session.userId === admitted.session.userId &&
+            selected.session.sessionId === admitted.session.sessionId &&
+            typeof selected.session.sessionVersion === 'string' &&
+            selected.session.sessionVersion.length > 0,
+          'GROUPS_CLIENT_SAME_SELECTED_SESSION',
+        );
+        admitted = selected;
+      } finally {
+        page.off('response', observeRole);
+      }
+    }
+    return admitted;
+  })();
+  let browser: Awaited<typeof admissionWork>;
+  let admissionTimer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    browser = await Promise.race([
+      admissionWork,
+      new Promise<never>((_, reject) => {
+        admissionTimer = setTimeout(
+          () => reject(new Error('Groups client admission deadline')),
+          Math.max(1, admissionUntil - Date.now()),
+        );
+      }),
+    ]);
+  } catch (error) {
+    let cancelTimer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([
+        (async () => {
+          await page.close({ runBeforeUnload: false });
+          await admissionWork.then(
+            () => undefined,
+            () => undefined,
+          );
+        })(),
+        new Promise<never>((_, reject) => {
+          cancelTimer = setTimeout(
+            () => reject(new Error('Groups client admission cancellation deadline')),
+            5000,
+          );
+        }),
+      ]);
+    } catch {
+      // A failed cancellation cannot admit the case; retain its original failure.
+    } finally {
+      if (cancelTimer !== undefined) clearTimeout(cancelTimer);
+    }
+    throw error;
+  } finally {
+    if (admissionTimer !== undefined) clearTimeout(admissionTimer);
+  }
+  registryRequire(until - Date.now() >= 45000, 'GROUPS_CLIENT_ACTION_RESERVE');
+  registryRequire(
+    browser.session.activeRole === 'ADMIN' &&
+      browser.session.userId === dataset.admin.session.userId,
+    'GROUPS_CLIENT_ACTOR',
+  );
+  const access = await dataset.request.get('/api/academic/admin-access/me', {
+    headers: { Authorization: `Bearer ${browser.accessToken}` },
+    timeout: budget(5000),
+  });
+  try {
+    registryRequire(
+      access.status() === 200 && access.headers()['cache-control']?.includes('no-store'),
+      'GROUPS_CLIENT_AUTHORITY_STATUS',
+    );
+    const current = await access.json();
+    registryRequire(
+      current.mode === 'FULL' &&
+        current.assigned === true &&
+        String(current.userId) === browser.session.userId,
+      'GROUPS_CLIENT_CURRENT_FULL',
+    );
+  } finally {
+    await access.dispose();
+  }
+  const seed = randomUUID().replace(/-/g, '');
+  const prefix = Array.from(
+    { length: 4 },
+    (_, index) =>
+      'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ'[Number.parseInt(seed.slice(index * 2, index * 2 + 2), 16) % 27],
+  ).join('');
+  const owned: { id: number; name: string; numericCode: string }[] = [];
+  for (const numericCode of ['111', '112', '211']) {
+    budget();
+    const row = await dataset.admin.call(
+      'POST',
+      '/api/academic/groups/registry',
+      { alphabeticCode: prefix, numericCode, trainingDurationYears: 4 },
+      [201],
+    );
+    registryRequire(
+      Number.isSafeInteger(row.id) &&
+        row.id > 0 &&
+        typeof row.name === 'string' &&
+        row.alphabeticCode === prefix &&
+        row.numericCode === numericCode &&
+        row.currentCourse === Number(numericCode[0]) &&
+        row.trainingDurationYears === 4 &&
+        row.status === 'DRAFT' &&
+        row.studentCount === 0 &&
+        row.headmanFio === null &&
+        row.draftReason === 'Староста не назначен',
+      'GROUPS_CLIENT_OWN_DRAFT',
+    );
+    owned.push({ id: row.id, name: row.name, numericCode });
+  }
+  // These three own rows stay with the disposable stand; no registry/history purge.
+  const screen = page.locator('main.admin-groups-screen');
+  const readJson = async (response: Response): Promise<Record<string, unknown>> => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        response.json(),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(
+            () => reject(new Error('Groups client response body deadline')),
+            budget(5000),
+          );
+        }),
+      ]);
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+    }
+  };
+  const listAfter = async (action: () => Promise<unknown>, query: Record<string, string>) => {
+    const expectedQuery = Object.entries({ ...query, page: '0', size: '3' }).sort();
+    const matches = (response: Response) => {
+      const url = new URL(response.url());
+      return (
+        url.origin === new URL(String(info.project.use.baseURL)).origin &&
+        url.pathname === '/api/academic/groups/registry' &&
+        response.request().method() === 'GET' &&
+        JSON.stringify([...url.searchParams.entries()].sort()) === JSON.stringify(expectedQuery)
+      );
+    };
+    let observed: Response | undefined;
+    const observe = (response: Response) => {
+      if (matches(response)) observed = response;
+    };
+    page.on('response', observe);
+    try {
+      await action();
+      const response = observed ?? (await page.waitForResponse(matches, { timeout: budget() }));
+      registryRequire(response.status() === 200, 'GROUPS_CLIENT_LIST_STATUS');
+      const body = await readJson(response);
+      registryRequire(
+        body.number === 0 && body.size === 3 && Array.isArray(body.items),
+        'GROUPS_CLIENT_LIST_PAGE',
+      );
+      return body;
+    } finally {
+      page.off('response', observe);
+    }
+  };
+  const search = screen.getByRole('searchbox', { name: 'Найти группу', exact: true });
+  const showDraftSearch = () =>
+    listAfter(
+      async () => {
+        await screen.getByRole('tab', { name: /^Черновики(?:\s|$)/ }).click({ timeout: budget() });
+        await search.fill(prefix, { timeout: budget() });
+        await screen
+          .getByRole('button', { name: 'Найти группу', exact: true })
+          .click({ timeout: budget() });
+      },
+      { status: 'DRAFT', search: prefix },
+    );
+  const filterCourseAndSort = async () => {
+    await screen
+      .getByRole('button', { name: 'Фильтры и сортировка', exact: true })
+      .click({ timeout: budget() });
+    await screen
+      .locator('button[aria-labelledby="admin-group-course-label admin-group-course-value"]')
+      .click({ timeout: budget() });
+    await screen
+      .locator('[data-filter-options="course"]')
+      .getByRole('button', { name: '1 курс', exact: true })
+      .click({ timeout: budget() });
+    await screen
+      .locator('button[aria-labelledby="admin-group-sort-label admin-group-sort-value"]')
+      .click({ timeout: budget() });
+    await screen
+      .locator('[data-filter-options="sort"]')
+      .getByRole('button', { name: 'По коду: Я–А', exact: true })
+      .click({ timeout: budget() });
+    return listAfter(
+      () =>
+        screen.getByRole('button', { name: 'Применить', exact: true }).click({ timeout: budget() }),
+      { status: 'DRAFT', search: prefix, course: '1', sort: 'name,desc' },
+    );
+  };
+  const expectedIds = [String(owned[1]!.id), String(owned[0]!.id)];
+  const assertFiltered = async (body: Record<string, unknown>) => {
+    const items = body.items as { id: number }[];
+    registryRequire(
+      body.totalElements === 2 &&
+        items.length === 2 &&
+        JSON.stringify(items.map((row) => String(row.id))) === JSON.stringify(expectedIds),
+      'GROUPS_CLIENT_FILTERED_ROWS',
+    );
+    const rows = screen.locator('.admin-groups-list [data-group-id]');
+    await expect(rows).toHaveCount(2, { timeout: budget() });
+    await expect
+      .poll(
+        async () =>
+          JSON.stringify(
+            await rows.evaluateAll((nodes) =>
+              nodes.map((node) => node.getAttribute('data-group-id')),
+            ),
+          ) === JSON.stringify(expectedIds),
+        { timeout: budget(), message: 'Groups UI retains the filtered descending order' },
+      )
+      .toBe(true);
+  };
+  await page
+    .getByRole('navigation', { name: 'Основная навигация' })
+    .getByRole('button', { name: 'Группы', exact: true })
+    .click({ timeout: budget() });
+  await expect(screen).toBeVisible({ timeout: budget() });
+  const unfiltered = await showDraftSearch();
+  registryRequire(
+    unfiltered.totalElements === 3 &&
+      JSON.stringify(
+        (unfiltered.items as { id: number }[]).map((row) => row.id).sort((a, b) => a - b),
+      ) === JSON.stringify(owned.map((row) => row.id).sort((a, b) => a - b)),
+    'GROUPS_CLIENT_OWN_NONMATCH_PRESENT',
+  );
+  await assertFiltered(await filterCourseAndSort());
+  await listAfter(
+    () =>
+      screen
+        .getByRole('button', { name: 'Сбросить фильтры и поиск', exact: true })
+        .click({ timeout: budget() }),
+    { status: 'ACTIVE' },
+  );
+  await expect(search).toHaveValue('', { timeout: budget() });
+  await expect(screen.getByRole('tab', { name: /^Активные(?:\s|$)/ })).toHaveAttribute(
+    'aria-selected',
+    'true',
+    { timeout: budget() },
+  );
+  await screen
+    .getByRole('button', { name: 'Фильтры и сортировка', exact: true })
+    .click({ timeout: budget() });
+  await expect(screen.locator('#admin-group-course-value')).toHaveText('Все курсы', {
+    timeout: budget(),
+  });
+  await expect(screen.locator('#admin-group-sort-value')).toHaveText('По умолчанию', {
+    timeout: budget(),
+  });
+  await screen.getByRole('button', { name: 'Назад', exact: true }).click({ timeout: budget() });
+  await showDraftSearch();
+  await assertFiltered(await filterCourseAndSort());
+
+  // Same text-only RegistryTableRenderer boundary as the user HTML carrier, with group columns.
+  const groupHtmlBoundary = (content: string) => {
+    const decode = (value: string) =>
+      value.replace(
+        /&(amp|lt|gt|quot|apos);/g,
+        (entity) =>
+          ({ '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'" })[entity]!,
+      );
+    const cells = (row: string, tag: 'th' | 'td') => {
+      const pattern = new RegExp(`<${tag}>([^<]*)</${tag}>`, 'g');
+      const values = [...row.matchAll(pattern)].map((match) => decode(match[1]!));
+      return row.replace(pattern, '').trim() === '' ? values : null;
+    };
+    const tables = [...content.matchAll(/<table>([\s\S]*?)<\/table>/g)];
+    const sections = tables[0]?.[1]?.match(
+      /^<thead><tr>([\s\S]*?)<\/tr><\/thead><tbody>([\s\S]*?)<\/tbody>$/,
+    );
+    const body = sections?.[2] ?? '';
+    const pattern = /<tr>([\s\S]*?)<\/tr>/g;
+    const rows = [...body.matchAll(pattern)].map((match) => cells(match[1]!, 'td'));
+    const expected = [owned[1]!, owned[0]!].map((row) => [
+      row.name,
+      prefix,
+      row.numericCode,
+      '1',
+      '4',
+      '0',
+      '',
+      'Староста не назначен',
+    ]);
+    return (
+      content.startsWith('<!doctype html>') &&
+      (content.match(/<table\b/gi)?.length ?? 0) === 1 &&
+      tables.length === 1 &&
+      !!sections &&
+      body.replace(pattern, '').trim() === '' &&
+      JSON.stringify(cells(sections[1]!, 'th')) ===
+        JSON.stringify([
+          'Группа',
+          'Буквенный код',
+          'Цифровой код',
+          'Курс',
+          'Срок обучения, лет',
+          'Студентов',
+          'Староста',
+          'Почему черновик',
+        ]) &&
+      JSON.stringify(rows) === JSON.stringify(expected) &&
+      !decode(content).includes(owned[2]!.name) &&
+      !/парол|password|password-reset|Telegram ID|Логин/i.test(content)
+    );
+  };
+  let catalogue: Response | undefined,
+    created: Response | undefined,
+    ready: Response | undefined,
+    ticketResponse: Response | undefined,
+    file: Response | undefined;
+  let download: Download | undefined;
+  let downloadStream: Awaited<ReturnType<Download['createReadStream']>> | undefined;
+  let downloadWork: Promise<Buffer> | undefined;
+  let downloadSettled = false;
+  let downloadFinished = false;
+  let cleaningDownload = false;
+  const baseOrigin = new URL(String(info.project.use.baseURL)).origin;
+  const observe = (response: Response) => {
+    const url = new URL(response.url());
+    if (url.origin !== baseOrigin) return;
+    const method = response.request().method();
+    if (url.pathname === '/api/academic/registry-exports/groups/formats' && method === 'GET')
+      catalogue ??= response;
+    if (url.pathname === '/api/auth/export-jobs' && method === 'POST') created ??= response;
+    if (/^\/api\/auth\/export-jobs\/[0-9a-f-]+$/.test(url.pathname) && method === 'GET')
+      ready = response;
+    if (/^\/api\/auth\/export-jobs\/[0-9a-f-]+\/ticket$/.test(url.pathname) && method === 'POST')
+      ticketResponse ??= response;
+    if (/^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(url.pathname) && method === 'GET')
+      file ??= response;
+  };
+  const observeDownload = (value: Download) => {
+    download ??= value;
+  };
+  page.on('response', observe);
+  page.on('download', observeDownload);
+  let primaryFailure: { error: unknown } | undefined;
+  try {
+    await screen
+      .getByRole('button', { name: 'Выгрузка', exact: true })
+      .click({ timeout: budget() });
+    catalogue ??= await page.waitForResponse(
+      (response) =>
+        new URL(response.url()).origin === baseOrigin &&
+        new URL(response.url()).pathname === '/api/academic/registry-exports/groups/formats' &&
+        response.request().method() === 'GET',
+      { timeout: budget() },
+    );
+    registryRequire(catalogue.status() === 200, 'GROUPS_CLIENT_FORMATS');
+    await screen.getByLabel(/^Формат выгрузки/).selectOption('html', { timeout: budget() });
+    await screen.getByRole('button', { name: 'Скачать', exact: true }).click({ timeout: budget() });
+    created ??= await page.waitForResponse(
+      (response) =>
+        new URL(response.url()).origin === baseOrigin &&
+        new URL(response.url()).pathname === '/api/auth/export-jobs' &&
+        response.request().method() === 'POST',
+      { timeout: budget(35000) },
+    );
+    registryRequire(created.status() === 202, 'GROUPS_CLIENT_CREATED_JOB');
+    const request = created.request().postDataJSON();
+    registryRequire(
+      isDeepStrictEqual(request.report, {
+        kind: 'ADMIN_GROUPS',
+        adminGroups: {
+          status: 'DRAFT',
+          search: prefix,
+          course: 1,
+          sorts: [{ field: 'name', descending: true }],
+          format: 'html',
+        },
+      }) &&
+        typeof request.requestId === 'string' &&
+        /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(request.requestId),
+      'GROUPS_CLIENT_EXACT_EXPORT_QUERY',
+    );
+    const job = await readJson(created);
+    registryRequire(
+      typeof job.jobId === 'string' &&
+        /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(job.jobId),
+      'GROUPS_CLIENT_JOB_ID',
+    );
+    const ticketPath = `/api/auth/export-jobs/${job.jobId}/ticket`;
+    ticketResponse ??= await page.waitForResponse(
+      (response) =>
+        new URL(response.url()).origin === baseOrigin &&
+        new URL(response.url()).pathname === ticketPath &&
+        response.request().method() === 'POST',
+      { timeout: budget(35000) },
+    );
+    registryRequire(
+      ticketResponse.status() === 200 &&
+        new URL(ticketResponse.url()).pathname === ticketPath &&
+        ready?.status() === 200 &&
+        new URL(ready.url()).pathname === `/api/auth/export-jobs/${job.jobId}`,
+      'GROUPS_CLIENT_OWN_READY_TICKET',
+    );
+    const state = await readJson(ready);
+    registryRequire(
+      state.jobId === job.jobId && state.state === 'ready',
+      'GROUPS_CLIENT_OWN_READY_STATE',
+    );
+    const ticket = await readJson(ticketResponse);
+    registryRequire(
+      typeof ticket.downloadPath === 'string' &&
+        /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(ticket.downloadPath) &&
+        typeof ticket.suggestedFilename === 'string' &&
+        ticket.suggestedFilename.endsWith('.html'),
+      'GROUPS_CLIENT_OWN_DOWNLOAD_PATH',
+    );
+    file ??= await page.waitForResponse(
+      (response) =>
+        new URL(response.url()).origin === baseOrigin &&
+        new URL(response.url()).pathname === ticket.downloadPath &&
+        response.request().method() === 'GET',
+      { timeout: budget() },
+    );
+    registryRequire(
+      file.status() === 200 &&
+        new URL(file.url()).pathname === ticket.downloadPath &&
+        file.headers()['content-type']?.split(';')[0] === 'text/html',
+      'GROUPS_CLIENT_DOWNLOADED_HTML',
+    );
+    download ??= await page.waitForEvent('download', { timeout: budget() });
+    registryRequire(
+      download.page() === page &&
+        new URL(download.url()).protocol === 'blob:' &&
+        new URL(download.url()).origin === baseOrigin &&
+        download.suggestedFilename() === ticket.suggestedFilename,
+      'GROUPS_CLIENT_BROWSER_DOWNLOAD',
+    );
+    const ownDownload = download;
+    downloadWork = (async () => {
+      const failure = await ownDownload.failure();
+      downloadFinished = true;
+      registryRequire(failure === null, 'GROUPS_CLIENT_DOWNLOAD_FINISHED');
+      downloadStream = await ownDownload.createReadStream();
+      registryRequire(downloadStream !== null, 'GROUPS_CLIENT_DOWNLOAD_STREAM');
+      if (cleaningDownload) {
+        downloadStream.destroy();
+        throw new Error('Groups client download cancelled');
+      }
+      // Same nonempty/20MiB buffer boundary as registryBrowserDownloadBytes, retaining
+      // this own stream so a stalled read can be destroyed before cleanup settles it.
+      const chunks: Buffer[] = [];
+      let size = 0;
+      for await (const chunk of downloadStream) {
+        const bytes = Buffer.from(chunk);
+        size += bytes.length;
+        registryRequire(size <= registryByteLimit, 'GROUPS_CLIENT_DOWNLOAD_BYTE_BOUND');
+        chunks.push(bytes);
+      }
+      registryRequire(size > 0, 'GROUPS_CLIENT_DOWNLOAD_NONEMPTY');
+      return Buffer.concat(chunks);
+    })();
+    void downloadWork.then(
+      () => {
+        downloadSettled = true;
+      },
+      () => {
+        downloadSettled = true;
+      },
+    );
+    let downloadTimer: ReturnType<typeof setTimeout> | undefined;
+    let bytes: Buffer;
+    try {
+      bytes = await Promise.race([
+        downloadWork,
+        new Promise<never>((_, reject) => {
+          downloadTimer = setTimeout(
+            () => reject(new Error('Groups client download deadline')),
+            budget(),
+          );
+        }),
+      ]);
+    } finally {
+      if (downloadTimer !== undefined) clearTimeout(downloadTimer);
+    }
+    const content = bytes.toString('utf8');
+    registryRequire(groupHtmlBoundary(content), 'GROUPS_CLIENT_HTML_EXACT_ROWS');
+    await expect(
+      page.getByRole('status').filter({ hasText: 'Файл готов. Скачивание передано браузеру.' }),
+    ).toBeVisible({ timeout: budget() });
+  } catch (error) {
+    primaryFailure = { error };
+    throw error;
+  } finally {
+    page.off('response', observe);
+    page.off('download', observeDownload);
+    cleaningDownload = true;
+    let cleanupTimer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([
+        (async () => {
+          if (!downloadSettled && downloadStream && !downloadStream.destroyed)
+            downloadStream.destroy();
+          if (download) registryRequire(download.page() === page, 'GROUPS_CLIENT_CLEANUP_OWNER');
+          const cancellation = await Promise.allSettled([
+            download && !downloadFinished ? download.cancel() : Promise.resolve(),
+            primaryFailure ? page.close({ runBeforeUnload: false }) : Promise.resolve(),
+          ]);
+          if (downloadWork)
+            await downloadWork.then(
+              () => undefined,
+              () => undefined,
+            );
+          registryRequire(
+            cancellation.every((result) => result.status === 'fulfilled'),
+            'GROUPS_CLIENT_CANCELLATION',
+          );
+          if (download) await download.delete();
+        })(),
+        new Promise<never>((_, reject) => {
+          cleanupTimer = setTimeout(
+            () => reject(new Error('Groups client download cleanup deadline')),
+            5000,
+          );
+        }),
+      ]);
+    } catch {
+      if (!primaryFailure) throw new Error('Groups client download cleanup failed');
+    } finally {
+      if (cleanupTimer !== undefined) clearTimeout(cleanupTimer);
+    }
+  }
 });

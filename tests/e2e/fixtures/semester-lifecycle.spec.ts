@@ -3588,12 +3588,26 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
         (row.validUntilExclusive == null || row.validUntilExclusive > shift(dataset.today, -1)),
     );
     requireValue(assignment, 'Own assignment must cover the historical close');
-    await expect
-      .poll(
-        async () => {
-          const q = await queues();
-          const state =
-            pg(`SELECT json_build_object('unproven',(SELECT count(*) FROM schedule_semester_archive_effect_ledger
+    const quiescence = {
+      firstFailed: 'UNOBSERVED' as
+        | 'UNOBSERVED'
+        | 'MAIN_READY'
+        | 'MAIN_UNACKED'
+        | 'MAIN_CONSUMER'
+        | 'DLQ_READY'
+        | 'DLQ_UNACKED'
+        | 'SCHEDULE_UNPROVEN'
+        | 'SCHEDULE_LEGACY'
+        | 'SCHEDULE_DUE',
+    };
+    try {
+      await expect
+        .poll(
+          async () => {
+            quiescence.firstFailed = 'UNOBSERVED';
+            const q = await queues();
+            const state =
+              pg(`SELECT json_build_object('unproven',(SELECT count(*) FROM schedule_semester_archive_effect_ledger
 WHERE (semester_id=${scope.semester} OR semester_id IS NULL) AND state<>'APPLIED'),
 'legacy',(SELECT count(*) FROM schedule_outbox o WHERE o.event_type IN
 ('lesson.closed','lesson.cancelled','lesson.deleted','lesson.one_off.cancelled','homework.binding.archived')
@@ -3602,20 +3616,57 @@ AND NOT EXISTS(SELECT 1 FROM schedule_semester_archive_effect_ledger e
 WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
 'due',(SELECT count(*) FROM lessons WHERE status IN ('planned','active') AND date+end_time+interval '5 minutes'
 <=('${clock.instant.toISOString()}'::timestamptz AT TIME ZONE 'Europe/Moscow')))`);
-          return (
-            q.main.messages_ready === 0 &&
-            q.main.messages_unacknowledged === 0 &&
-            q.main.consumers === 1 &&
-            q.dead.messages_ready === 0 &&
-            q.dead.messages_unacknowledged === 0 &&
-            state.unproven === 0 &&
-            state.legacy === 0 &&
-            state.due === 0
-          );
-        },
-        { timeout: budget(10000), message: 'Fresh synthetic namespace is quiescent' },
-      )
-      .toBe(true);
+            if (q.main.messages_ready !== 0) quiescence.firstFailed = 'MAIN_READY';
+            else if (q.main.messages_unacknowledged !== 0) quiescence.firstFailed = 'MAIN_UNACKED';
+            else if (q.main.consumers !== 1) quiescence.firstFailed = 'MAIN_CONSUMER';
+            else if (q.dead.messages_ready !== 0) quiescence.firstFailed = 'DLQ_READY';
+            else if (q.dead.messages_unacknowledged !== 0) quiescence.firstFailed = 'DLQ_UNACKED';
+            else if (state.unproven !== 0) quiescence.firstFailed = 'SCHEDULE_UNPROVEN';
+            else if (state.legacy !== 0) quiescence.firstFailed = 'SCHEDULE_LEGACY';
+            else if (state.due !== 0) quiescence.firstFailed = 'SCHEDULE_DUE';
+            return (
+              q.main.messages_ready === 0 &&
+              q.main.messages_unacknowledged === 0 &&
+              q.main.consumers === 1 &&
+              q.dead.messages_ready === 0 &&
+              q.dead.messages_unacknowledged === 0 &&
+              state.unproven === 0 &&
+              state.legacy === 0 &&
+              state.due === 0
+            );
+          },
+          { timeout: budget(10000), message: 'Fresh synthetic namespace is quiescent' },
+        )
+        .toBe(true);
+    } catch (error) {
+      switch (quiescence.firstFailed) {
+        case 'MAIN_READY':
+          expect.soft(false, 'D9_QUIESCENCE_MAIN_READY').toBe(true);
+          break;
+        case 'MAIN_UNACKED':
+          expect.soft(false, 'D9_QUIESCENCE_MAIN_UNACKED').toBe(true);
+          break;
+        case 'MAIN_CONSUMER':
+          expect.soft(false, 'D9_QUIESCENCE_MAIN_CONSUMER').toBe(true);
+          break;
+        case 'DLQ_READY':
+          expect.soft(false, 'D9_QUIESCENCE_DLQ_READY').toBe(true);
+          break;
+        case 'DLQ_UNACKED':
+          expect.soft(false, 'D9_QUIESCENCE_DLQ_UNACKED').toBe(true);
+          break;
+        case 'SCHEDULE_UNPROVEN':
+          expect.soft(false, 'D9_QUIESCENCE_SCHEDULE_UNPROVEN').toBe(true);
+          break;
+        case 'SCHEDULE_LEGACY':
+          expect.soft(false, 'D9_QUIESCENCE_SCHEDULE_LEGACY').toBe(true);
+          break;
+        case 'SCHEDULE_DUE':
+          expect.soft(false, 'D9_QUIESCENCE_SCHEDULE_DUE').toBe(true);
+          break;
+      }
+      throw error;
+    }
     const body = Object.freeze({
       groupId: dataset.group.id,
       subjectId: dataset.subject.id,

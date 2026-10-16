@@ -4819,7 +4819,7 @@ jobs:
       - name: Verify owned semester metadata and historical promotion through the ready UI
         id: admin-semester-ui
         timeout-minutes: 9
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.semester-lifecycle.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -4850,7 +4850,7 @@ jobs:
       - name: Verify exact subject deletion through real proof and participants
         id: subject-deletion-cascade
         timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.semester-lifecycle.outcome == 'success' && steps.admin-semester-ui.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -4880,7 +4880,7 @@ jobs:
       - name: Verify Today quick request after the genuine first lesson closes
         id: student-today-quick-request
         timeout-minutes: 4
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' && steps.application-recovery.outcome == 'success' && steps.semester-lifecycle.outcome == 'success' && steps.subject-deletion-cascade.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' && steps.application-recovery.outcome == 'success' && steps.semester-lifecycle.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443

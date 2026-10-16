@@ -3796,6 +3796,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       groupId: dataset.group.id,
       telegramId: multirole.telegramId,
     });
+    let rolePrimary: { error: unknown } | undefined;
     try {
       const logged = await loginPwa(page, multirole);
       expect(logged.session.activeRole).toBe('STUDENT');
@@ -3814,23 +3815,72 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
         )
           roleCommands += 1;
       };
+      const reconnectOrigin = new URL(page.url()).origin;
+      let refreshStatus: number | undefined;
+      let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+      let cancelCurrent: ((error: Error) => void) | undefined;
+      let resolveCurrent: ((response: Response) => void) | undefined;
+      let currentObserved = false;
+      let currentTimedOut = false;
+      let onlineRestored = false;
+      let offlinePrimary: { error: unknown } | undefined;
+      const observeReconnect = (response: Response) => {
+        const url = new URL(response.url());
+        if (url.origin !== reconnectOrigin) return;
+        if (url.pathname === '/api/auth/refresh' && response.request().method() === 'POST')
+          refreshStatus = response.status();
+        if (url.pathname === '/api/auth/session' && response.request().method() === 'GET') {
+          currentObserved = true;
+          resolveCurrent?.(response);
+        }
+      };
       page.on('request', countRole);
-      await context.setOffline(true);
       try {
+        await context.setOffline(true);
         await expect(teacher).toBeDisabled();
         await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
         await teacher.press('Enter');
         expect(roleCommands).toBe(0);
         await dataset.admin.call('PUT', rolePath, { status: 'SUSPENDED' });
-      } finally {
+        const reconnectTimeout = test.info().project.use.actionTimeout ?? 30000;
+        if (!Number.isSafeInteger(reconnectTimeout) || reconnectTimeout <= 0)
+          throw new Error('D002 existing action timeout must be finite');
+        const current = new Promise<Response>((resolve, reject) => {
+          resolveCurrent = resolve;
+          cancelCurrent = reject;
+          reconnectTimer = setTimeout(() => {
+            currentTimedOut = true;
+            reject(new Error('D002 reconnect current session response deadline'));
+          }, reconnectTimeout);
+        });
+        void current.catch(() => undefined);
+        page.on('response', observeReconnect);
         page.off('request', countRole);
-        const current = page.waitForResponse(
-          (item) =>
-            new URL(item.url()).pathname === '/api/auth/session' &&
-            item.request().method() === 'GET',
-        );
         await context.setOffline(false);
-        const response = await current;
+        onlineRestored = true;
+        let response: Response;
+        try {
+          response = await current;
+        } catch (error) {
+          if (currentTimedOut) {
+            if (refreshStatus === undefined)
+              expect.soft(false, 'D002_RECONNECT_REFRESH_UNOBSERVED').toBe(true);
+            else if (refreshStatus === 200)
+              expect.soft(false, 'D002_RECONNECT_REFRESH_200').toBe(true);
+            else if (refreshStatus === 401)
+              expect.soft(false, 'D002_RECONNECT_REFRESH_401').toBe(true);
+            else if (refreshStatus === 403)
+              expect.soft(false, 'D002_RECONNECT_REFRESH_403').toBe(true);
+            else if (refreshStatus === 429)
+              expect.soft(false, 'D002_RECONNECT_REFRESH_429').toBe(true);
+            else if (refreshStatus === 503)
+              expect.soft(false, 'D002_RECONNECT_REFRESH_503').toBe(true);
+            else expect.soft(false, 'D002_RECONNECT_REFRESH_OTHER').toBe(true);
+          }
+          throw error;
+        } finally {
+          if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
+        }
         expect(response.status()).toBe(200);
         const neutral = await response.json();
         expect(neutral.activeRole ?? null).toBeNull();
@@ -3846,6 +3896,21 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
               grant.role === 'TEACHER' && grant.selectable,
           ),
         ).toBe(true);
+      } catch (error) {
+        offlinePrimary = { error };
+        throw error;
+      } finally {
+        page.off('request', countRole);
+        page.off('response', observeReconnect);
+        if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
+        if (!currentObserved) cancelCurrent?.(new Error('D002 reconnect observation cancelled'));
+        if (!onlineRestored) {
+          try {
+            await context.setOffline(false);
+          } catch (error) {
+            if (!offlinePrimary) throw error;
+          }
+        }
       }
       await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
       await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
@@ -3853,9 +3918,22 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await selectPwaRole(page, 'Преподаватель');
       await expect(page.locator('.teacher-feature-owner')).toBeVisible();
       await logoutPwa(page);
+    } catch (error) {
+      rolePrimary = { error };
+      throw error;
     } finally {
-      await context.setOffline(false);
-      await dataset.admin.call('PUT', rolePath, { status: 'ACTIVE', groupId: dataset.group.id });
+      let cleanupFailure: { error: unknown } | undefined;
+      try {
+        await context.setOffline(false);
+      } catch (error) {
+        cleanupFailure = { error };
+      }
+      try {
+        await dataset.admin.call('PUT', rolePath, { status: 'ACTIVE', groupId: dataset.group.id });
+      } catch (error) {
+        cleanupFailure ??= { error };
+      }
+      if (!rolePrimary && cleanupFailure) throw cleanupFailure.error;
     }
 
     await loginPwa(page, dataset.student);

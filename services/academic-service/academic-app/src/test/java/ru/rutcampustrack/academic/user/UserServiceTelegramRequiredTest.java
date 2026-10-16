@@ -67,6 +67,7 @@ class UserServiceTelegramRequiredTest {
         lenient().when(group.getId()).thenReturn(1L);
         lenient().when(group.isActive()).thenReturn(true);
         Semester semester = org.mockito.Mockito.mock(Semester.class);
+        lenient().when(semester.getId()).thenReturn(1L);
         lenient().when(semester.getDateFrom()).thenReturn(LocalDate.of(2026, 9, 1));
         lenient().when(semester.getDateTo()).thenReturn(LocalDate.of(2027, 1, 31));
         GroupHistoryCoverage coverage = org.mockito.Mockito.mock(GroupHistoryCoverage.class);
@@ -227,7 +228,23 @@ class UserServiceTelegramRequiredTest {
     void studentWithTelegramIdIsAccepted() {
         CreateUserRequest req = req(UserRole.STUDENT, 123456789L, null);
         lenient().when(userRepository.existsByTelegramId(123456789L)).thenReturn(false);
-        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(userRepository.save(any()))
+                .thenAnswer(
+                        inv -> {
+                            ru.rutcampustrack.academic.entity.User user = inv.getArgument(0);
+                            org.springframework.test.util.ReflectionTestUtils.setField(
+                                    user, "id", 10L);
+                            return user;
+                        });
+        when(studentGroupHistoryRepository.save(any()))
+                .thenAnswer(
+                        inv -> {
+                            ru.rutcampustrack.academic.entity.StudentGroupHistory history =
+                                    inv.getArgument(0);
+                            org.springframework.test.util.ReflectionTestUtils.setField(
+                                    history, "id", 100L);
+                            return history;
+                        });
 
         assertThatCode(() -> service.createUser(req)).doesNotThrowAnyException();
 

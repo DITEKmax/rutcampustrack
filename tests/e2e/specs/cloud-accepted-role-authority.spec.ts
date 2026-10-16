@@ -35,7 +35,10 @@ test('four durable grants default to STUDENT; explicit role survives reload and 
     | 'HEADMAN_STALE'
     | 'GROUP_READBACK'
     | 'GROUP_VISIBLE_BACK'
-    | 'ADMIN_SWITCH_RELOAD'
+    | 'ADMIN_SELECT_HELPER'
+    | 'ADMIN_SELECTED_ROLE'
+    | 'ADMIN_RELOAD_HELPER'
+    | 'ADMIN_RELOADED_ROLE'
     | 'ADMIN_UI'
     | 'STUDENT_RETURN' = 'SETUP';
   try {
@@ -138,10 +141,14 @@ test('four durable grants default to STUDENT; explicit role survives reload and 
     await expect(member).toContainText('Помощник старосты');
     await group.getByRole('button', { name: 'Назад', exact: true }).click();
     await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
-    phase = 'ADMIN_SWITCH_RELOAD';
+    phase = 'ADMIN_SELECT_HELPER';
     const admin = await selectRole(page, 'Администратор');
+    phase = 'ADMIN_SELECTED_ROLE';
     expect(admin.session.activeRole).toBe('ADMIN');
-    expect((await reloadSession(page)).activeRole).toBe('ADMIN');
+    phase = 'ADMIN_RELOAD_HELPER';
+    const reloadedAdmin = await reloadSession(page);
+    phase = 'ADMIN_RELOADED_ROLE';
+    expect(reloadedAdmin.activeRole).toBe('ADMIN');
     phase = 'ADMIN_UI';
     await page.getByRole('button', { name: 'Аккаунты', exact: true }).click();
     await expect(
@@ -207,8 +214,18 @@ test('four durable grants default to STUDENT; explicit role survives reload and 
         throw new Error('Four-grant group readback failed', { cause: error });
       case 'GROUP_VISIBLE_BACK':
         throw new Error('Four-grant visible group and back navigation failed', { cause: error });
-      case 'ADMIN_SWITCH_RELOAD':
-        throw new Error('Four-grant administrator switch and reload failed', { cause: error });
+      case 'ADMIN_SELECT_HELPER':
+        throw new Error('Four-grant administrator role selection failed', { cause: error });
+      case 'ADMIN_SELECTED_ROLE':
+        throw new Error('Four-grant administrator selected-role assertion failed', {
+          cause: error,
+        });
+      case 'ADMIN_RELOAD_HELPER':
+        throw new Error('Four-grant administrator reload failed', { cause: error });
+      case 'ADMIN_RELOADED_ROLE':
+        throw new Error('Four-grant administrator reloaded-role assertion failed', {
+          cause: error,
+        });
       case 'ADMIN_UI':
         throw new Error('Four-grant administrator UI failed', { cause: error });
       case 'STUDENT_RETURN':

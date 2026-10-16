@@ -4262,10 +4262,41 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+      - name: Verify owned semester metadata and historical promotion through the ready UI
+        id: admin-semester-ui
+        timeout-minutes: 9
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.semester-lifecycle.outcome == 'success' }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_ADMIN_SEMESTER_UI_RUN: ${{ runner.temp }}/rct-admin-semester-ui-${{ github.run_id }}-${{ github.run_attempt }}
+          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-admin-semester-ui-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_ADMIN_SEMESTER_UI_RUN=%s\n' "$RCT_ADMIN_SEMESTER_UI_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
+          printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
+          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'FULL admin manages owned semester metadata and historical group promotion through the ready UI$'
+
+      - name: Upload closed admin semester UI outcome
+        if: always() && steps.admin-semester-ui.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-semester-ui-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_ADMIN_SEMESTER_UI_RUN }}/artifacts/safe-results.json
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Verify exact subject deletion through real proof and participants
         id: subject-deletion-cascade
         timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.semester-lifecycle.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.semester-lifecycle.outcome == 'success' && steps.admin-semester-ui.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443

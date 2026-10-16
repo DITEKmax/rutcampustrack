@@ -268,13 +268,16 @@ async function terminal(
   key: string,
   progress: ReturnType<typeof semesterProgress>,
   timeout = 120000,
+  acceptedOperation?: Row,
 ) {
   progress.action = action;
   progress.stage = 'COMMAND';
   const path = `/api/academic/semesters/${semesterId}/${action === 'ARCHIVE' ? 'archive' : 'restore'}`;
-  const operation = await admin.call('POST', path, undefined, [200, 202, 503], {
-    'Idempotency-Key': key,
-  });
+  const operation =
+    acceptedOperation ??
+    (await admin.call('POST', path, undefined, [200, 202, 503], {
+      'Idempotency-Key': key,
+    }));
   observeSemester(progress, operation);
   requireValue(
     typeof operation.operationId === 'string',
@@ -1579,7 +1582,6 @@ test('FULL admin archives and restores the disposable CI semester through real p
   requirePrivateArtifacts(info);
   test.setTimeout(420000);
   const browserLoginCutoff = performance.now() + 270000;
-  const promotionCaseEnd = promotionStartedAt.get(info)! + info.timeout - 10000;
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
   requireValue(
     run && isAbsolute(run),
@@ -1630,8 +1632,8 @@ test('FULL admin archives and restores the disposable CI semester through real p
   let ownSemesterId: number | undefined;
   let originalAuthorityCaptured = false;
   let archiveStarted = false;
-  const archiveKey = randomUUID();
-  const restoreKey = randomUUID();
+  let archiveKey: string = randomUUID();
+  let restoreKey: string = randomUUID();
   const diagnostic = {
     schema: 'semester-lifecycle.v1',
     primary: semesterProgress(),
@@ -1926,15 +1928,154 @@ test('FULL admin archives and restores the disposable CI semester through real p
       typeof beforeMark.markRevision === 'string' && beforeMark.markRevision.length > 0,
       'Owned mark requires an actual revision for the denied writer',
     );
+    const remainingLoginMs = Math.floor(browserLoginCutoff - performance.now());
+    requireValue(remainingLoginMs > 0, 'Browser activation login must retain recovery time');
+    const browserAdmin = await loginPwa(page, TEST_USERS.admin, {
+      retryUntilMs: Date.now() + Math.min(65000, remainingLoginMs),
+    });
+    requireValue(
+      browserAdmin.session.userId === admin.session.userId,
+      'Browser activation must use the same owned FULL administrator',
+    );
+    if (browserAdmin.session.activeRole !== 'ADMIN') await selectPwaRole(page, 'Администратор');
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await page.getByRole('button', { name: 'Семестры', exact: true }).click();
+    const ownCard = page.locator(`[data-semester-id="${ownSemesterId}"]`);
+    await expect(ownCard).toBeVisible();
+    const screen = page.locator('main.admin-semester-screen');
+    const uiBudget = (cap = 10000): number => {
+      const remaining = Math.floor(browserLoginCutoff - performance.now());
+      requireValue(remaining > 0, 'Vue semester lifecycle must retain original recovery time');
+      return Math.min(cap, remaining);
+    };
+    const archiveFromUi = async (action: 'ARCHIVE' | 'RESTORE') => {
+      const actionPath = `/api/academic/semesters/${ownSemesterId}/${action === 'ARCHIVE' ? 'archive' : 'restore'}`;
+      const initialLabel = action === 'ARCHIVE' ? 'Архивировать' : 'Восстановить';
+      const confirmationLabel =
+        action === 'ARCHIVE' ? 'Подтверди архивацию' : 'Подтверди восстановление';
+      const submitLabel =
+        action === 'ARCHIVE' ? 'Подтвердить архивацию' : 'Подтвердить восстановление';
+      await ownCard
+        .getByRole('button', { name: initialLabel, exact: true })
+        .click({ timeout: uiBudget() });
+      const confirmation = screen.getByRole('group', { name: confirmationLabel, exact: true });
+      await expect(confirmation).toBeVisible({ timeout: uiBudget() });
+      let commandRequest: import('@playwright/test').Request | undefined;
+      let commandResponse: Response | undefined;
+      let duplicateCommand = false;
+      const observeCommand = (value: import('@playwright/test').Request) => {
+        const url = new URL(value.url());
+        if (
+          url.origin !== origin.origin ||
+          url.pathname !== actionPath ||
+          value.method() !== 'POST'
+        )
+          return;
+        if (commandRequest && commandRequest !== value) {
+          duplicateCommand = true;
+          return;
+        }
+        commandRequest = value;
+        const key = value.headers()['idempotency-key'];
+        if (
+          typeof key === 'string' &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key)
+        ) {
+          if (action === 'ARCHIVE') archiveKey = key;
+          else restoreKey = key;
+        }
+      };
+      const matchesResponse = (value: Response) => value.request() === commandRequest;
+      const observeResponse = (value: Response) => {
+        if (matchesResponse(value)) commandResponse ??= value;
+      };
+      page.on('request', observeCommand);
+      page.on('response', observeResponse);
+      let operation: Row;
+      try {
+        await confirmation
+          .getByRole('button', { name: submitLabel, exact: true })
+          .click({ timeout: uiBudget() });
+        const response =
+          commandResponse ?? (await page.waitForResponse(matchesResponse, { timeout: uiBudget() }));
+        requireValue(
+          commandRequest && !duplicateCommand && [200, 202, 503].includes(response.status()),
+          'Vue archive command must retain one bound response',
+        );
+        const key = commandRequest.headers()['idempotency-key'];
+        requireValue(
+          key === (action === 'ARCHIVE' ? archiveKey : restoreKey) &&
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key),
+          'Vue archive command must retain its actual idempotency key',
+        );
+        let bodyTimer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          operation = await Promise.race([
+            response.json(),
+            new Promise<never>((_, reject) => {
+              bodyTimer = setTimeout(
+                () => reject(new Error('Vue archive response body deadline')),
+                uiBudget(5000),
+              );
+            }),
+          ]);
+        } finally {
+          if (bodyTimer !== undefined) clearTimeout(bodyTimer);
+        }
+        requireValue(
+          Number(operation.semesterId) === ownSemesterId &&
+            operation.action === action &&
+            typeof operation.operationId === 'string' &&
+            operation.operationId.length > 0 &&
+            (response.status() !== 503 ||
+              (operation.operationState === 'ERROR' && typeof operation.retryable === 'boolean')),
+          'Vue archive response must identify its owned typed operation',
+        );
+      } finally {
+        page.off('response', observeResponse);
+        page.off('request', observeCommand);
+      }
+      const settled = await terminal(
+        admin!,
+        ownSemesterId!,
+        action,
+        action === 'ARCHIVE' ? archiveKey : restoreKey,
+        diagnostic.primary,
+        uiBudget(120000),
+        operation,
+      );
+      const statusCard = screen.locator('.admin-semester-archive-status article').filter({
+        has: page.getByRole('heading', {
+          level: 3,
+          name: String(previousActive!.name),
+          exact: true,
+        }),
+      });
+      const continueCheck = statusCard.getByRole('button', {
+        name: 'Продолжить проверку',
+        exact: true,
+      });
+      if (await continueCheck.isVisible()) {
+        await expect(statusCard).toHaveCount(1, { timeout: uiBudget() });
+        await continueCheck.click({ timeout: uiBudget() });
+      }
+      await expect(
+        ownCard.getByRole('img', {
+          name: action === 'ARCHIVE' ? 'Архивный' : 'Неактивный',
+          exact: true,
+        }),
+      ).toBeVisible({ timeout: uiBudget(15000) });
+      await expect(
+        ownCard.getByRole('button', {
+          name: action === 'ARCHIVE' ? 'Восстановить' : 'Архивировать',
+          exact: true,
+        }),
+      ).toBeEnabled({ timeout: uiBudget(15000) });
+      return settled;
+    };
     clock.assertUnchanged();
     archiveStarted = true;
-    const archived = await terminal(
-      admin,
-      ownSemesterId,
-      'ARCHIVE',
-      archiveKey,
-      diagnostic.primary,
-    );
+    const archived = await archiveFromUi('ARCHIVE');
     diagnostic.primary.stage = 'ARCHIVED_READBACK';
     requireValue(
       (await semesters(admin)).every((row) => row.active === false),
@@ -1984,7 +2125,7 @@ test('FULL admin archives and restores the disposable CI semester through real p
         afterRefusals.operation.operationId === archived.operation.operationId,
       'Refused writers changed the archive authority',
     );
-    await terminal(admin, ownSemesterId, 'RESTORE', restoreKey, diagnostic.primary);
+    await archiveFromUi('RESTORE');
     diagnostic.primary.stage = 'RESTORED_READBACK';
     const inactive = await admin.call('GET', `/api/academic/semesters/${ownSemesterId}`);
     requireValue(
@@ -2021,20 +2162,6 @@ test('FULL admin archives and restores the disposable CI semester through real p
       inactive.dateFrom <= browserDate && inactive.dateTo >= browserDate,
       'Owned activation semester must also cover the real browser Moscow date',
     );
-    const remainingLoginMs = Math.floor(browserLoginCutoff - performance.now());
-    requireValue(remainingLoginMs > 0, 'Browser activation login must retain recovery time');
-    const browserAdmin = await loginPwa(page, TEST_USERS.admin, {
-      retryUntilMs: Date.now() + Math.min(65000, remainingLoginMs),
-    });
-    requireValue(
-      browserAdmin.session.userId === admin.session.userId,
-      'Browser activation must use the same owned FULL administrator',
-    );
-    if (browserAdmin.session.activeRole !== 'ADMIN') await selectPwaRole(page, 'Администратор');
-    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
-    await page.getByRole('button', { name: 'Семестры', exact: true }).click();
-    const ownCard = page.locator(`[data-semester-id="${ownSemesterId}"]`);
-    await expect(ownCard).toBeVisible();
     await expect(ownCard.getByRole('img', { name: 'Неактивный', exact: true })).toBeVisible();
     await ownCard.getByRole('button', { name: 'Сделать текущим', exact: true }).click();
     const activationPath = `/api/academic/semesters/${ownSemesterId}/activate`;
@@ -2095,14 +2222,6 @@ test('FULL admin archives and restores the disposable CI semester through real p
       beforeHistory,
       'Permitted homework edit changed attendance history',
     );
-    await ownedSemesterMetadataAndDeletion(
-      page,
-      admin,
-      promotionCaseEnd,
-      ownSemesterId,
-      clock.instant,
-    );
-    await ownedHistoricalPromotion(page, request, admin, promotionCaseEnd, ownSemesterId);
     diagnostic.primary.stage = 'COMPLETED';
   } catch (error) {
     primaryFailure = { error };
@@ -2223,6 +2342,281 @@ test('FULL admin archives and restores the disposable CI semester through real p
       writeFileSync(join(run, 'lifecycle.safe.json'), bytes, { flag: 'wx', mode: 0o600 });
     } catch (error) {
       cleanupFailure ??= { error };
+    }
+    if (primaryFailure) throw primaryFailure.error;
+    if (cleanupFailure) throw cleanupFailure.error;
+  }
+});
+
+test('FULL admin manages owned semester metadata and historical group promotion through the ready UI', async ({
+  playwright,
+  page,
+}, info) => {
+  requirePrivateArtifacts(info);
+  test.setTimeout(420000);
+  const promotionCaseEnd = promotionStartedAt.get(info)! + info.timeout - 10000;
+  const setupEnd = Math.min(performance.now() + 80000, promotionCaseEnd - 330000);
+  const setupBudget = (cap = 10000): number => {
+    const remaining = Math.floor(setupEnd - performance.now());
+    requireValue(
+      remaining > 0,
+      'Independent admin UI admission must retain original helper reserves',
+    );
+    return Math.min(cap, remaining);
+  };
+  const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(run && isAbsolute(run), 'Independent admin UI requires its private run directory');
+  for (const path of [run, join(run, 'artifacts')]) {
+    const stat = lstatSync(path);
+    requireValue(
+      stat.isDirectory() && !stat.isSymbolicLink() && (stat.mode & 0o777) === 0o700,
+      'Independent admin UI directories must be private',
+    );
+  }
+  const marker = join(run, 'disposable-target');
+  const markerInfo = lstatSync(marker);
+  const baseURL = String(info.project.use.baseURL);
+  requireValue(
+    markerInfo.isFile() &&
+      !markerInfo.isSymbolicLink() &&
+      (markerInfo.mode & 0o777) === 0o600 &&
+      markerInfo.size <= 64 &&
+      readFileSync(marker, 'utf8').trim() === 'RCT_SEMESTER_DISPOSABLE' &&
+      info.project.outputDir === join(run, 'artifacts') &&
+      baseURL === 'https://localhost:8443' &&
+      process.env.RCT_E2E_SYNTHETIC_SEED === 'true',
+    'Independent admin UI requires exact disposable CI ownership',
+  );
+  const clock = unchangedClock();
+  const request = await playwright.request.newContext({
+    baseURL,
+    ignoreHTTPSErrors: false,
+    timeout: 3000,
+  });
+  let primaryFailure: { error: unknown } | undefined;
+  let cleanupFailure: { error: unknown } | undefined;
+  const body = async (read: () => Promise<Row>): Promise<Row> => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        read(),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(
+            () => reject(new Error('Independent admin admission body deadline')),
+            setupBudget(5000),
+          );
+        }),
+      ]);
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+    }
+  };
+  try {
+    const admissionTimeout = setupBudget(80000);
+    const admissionWork = (async () => {
+      const browser = await loginPwa(page, TEST_USERS.admin, {
+        retryUntilMs: Date.now() + setupBudget(65000),
+      });
+      let token = browser.accessToken;
+      let session = browser.session;
+      if (session.activeRole !== 'ADMIN') {
+        let observedRole: Response | undefined;
+        const matchesRole = (response: Response) => {
+          const url = new URL(response.url());
+          return (
+            url.origin === baseURL &&
+            url.pathname === '/api/auth/session/active-role' &&
+            response.request().method() === 'PUT'
+          );
+        };
+        const observeRole = (response: Response) => {
+          if (matchesRole(response)) observedRole ??= response;
+        };
+        page.on('response', observeRole);
+        try {
+          if (
+            !(await page.getByRole('heading', { name: 'Сменить роль', exact: true }).isVisible())
+          ) {
+            await page
+              .getByRole('button', { name: 'Профиль', exact: true })
+              .click({ timeout: setupBudget() });
+            await page
+              .getByRole('button', { name: 'Сменить роль', exact: true })
+              .click({ timeout: setupBudget() });
+          }
+          await page
+            .getByRole('button', { name: /Администратор/ })
+            .click({ timeout: setupBudget() });
+          const response =
+            observedRole ?? (await page.waitForResponse(matchesRole, { timeout: setupBudget() }));
+          requireValue(
+            response.status() === 200,
+            'Independent admin UI role selection must succeed',
+          );
+          const selected = await body(() => response.json());
+          token = selected.accessToken;
+          session = selected.session;
+          await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible({
+            timeout: setupBudget(),
+          });
+        } finally {
+          page.off('response', observeRole);
+        }
+      }
+      requireValue(
+        typeof token === 'string' &&
+          token.length > 0 &&
+          session?.activeRole === 'ADMIN' &&
+          session.userId === browser.session.userId &&
+          session.sessionId === browser.session.sessionId &&
+          typeof session.sessionVersion === 'string' &&
+          session.sessionVersion.length > 0,
+        'Independent admin UI must retain its same authenticated FULL-admin session',
+      );
+      return { token, session };
+    })();
+    let admissionTimer: ReturnType<typeof setTimeout> | undefined;
+    let admitted: Awaited<typeof admissionWork>;
+    try {
+      admitted = await Promise.race([
+        admissionWork,
+        new Promise<never>((_, reject) => {
+          admissionTimer = setTimeout(
+            () => {
+              reject(new Error('Independent admin UI admission deadline'));
+            },
+            Math.max(1, Math.min(admissionTimeout, Math.floor(setupEnd - performance.now()))),
+          );
+        }),
+      ]);
+    } catch (error) {
+      let closeTimer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        await Promise.race([
+          (async () => {
+            await page.close({ runBeforeUnload: false });
+            await admissionWork.then(
+              () => undefined,
+              () => undefined,
+            );
+          })(),
+          new Promise<never>((_, reject) => {
+            closeTimer = setTimeout(
+              () => reject(new Error('Independent admin admission cancellation deadline')),
+              5000,
+            );
+          }),
+        ]);
+      } catch (cancellationError) {
+        cleanupFailure ??= { error: cancellationError };
+      } finally {
+        if (closeTimer !== undefined) clearTimeout(closeTimer);
+      }
+      throw error;
+    } finally {
+      if (admissionTimer !== undefined) clearTimeout(admissionTimer);
+    }
+    const { token, session } = admitted;
+    const admin = new Actor(request, token, session);
+    const read = async (path: string): Promise<Row> => {
+      const response = await request.get(path, {
+        headers: admin.headers(),
+        timeout: setupBudget(3000),
+      });
+      try {
+        requireValue(response.status() === 200, 'Independent admin admission read must succeed');
+        return await body(() => response.json());
+      } finally {
+        await response.dispose();
+      }
+    };
+    const access = await read('/api/academic/admin-access/me');
+    requireValue(
+      access.mode === 'FULL' &&
+        access.assigned === true &&
+        String(access.userId) === session.userId,
+      'Independent admin UI requires current assigned FULL authority',
+    );
+    const inventory = await read('/api/academic/semesters?size=100');
+    const rows: Row[] = inventory._embedded?.semesterResponseList ?? [];
+    requireValue(
+      Array.isArray(rows) &&
+        rows.length <= 100 &&
+        inventory.page?.number === 0 &&
+        inventory.page.totalElements === rows.length &&
+        rows.every(
+          (row) =>
+            Number.isSafeInteger(Number(row.id)) &&
+            Number(row.id) > 0 &&
+            row.transition === 'NONE' &&
+            row.releasePending === false &&
+            row.activationScheduled === false,
+        ) &&
+        new Set(rows.map((row) => Number(row.id))).size === rows.length,
+      'Independent admin UI needs a complete stable semester inventory',
+    );
+    const active = rows.filter((row) => row.active === true);
+    requireValue(active.length === 1, 'Independent admin UI requires exactly one current semester');
+    const currentSemesterId = Number(active[0].id);
+    const current = await read(`/api/academic/semesters/${currentSemesterId}`);
+    requireValue(
+      Number(current.id) === currentSemesterId &&
+        current.stateVersion === active[0].stateVersion &&
+        current.active === true &&
+        current.archived === false &&
+        current.activationScheduled === false &&
+        current.transition === 'NONE' &&
+        current.releasePending === false,
+      'Independent admin UI current semester authority must remain unchanged',
+    );
+    await page.getByRole('button', { name: 'Ещё', exact: true }).click({ timeout: setupBudget() });
+    await page
+      .getByRole('button', { name: 'Семестры', exact: true })
+      .click({ timeout: setupBudget() });
+    await expect(page.locator('main.admin-semester-screen')).toHaveAttribute(
+      'data-admin-semester-view',
+      'list',
+      { timeout: setupBudget() },
+    );
+    await expect(
+      page
+        .locator(`[data-semester-id="${currentSemesterId}"]`)
+        .getByRole('img', { name: 'Активный', exact: true }),
+    ).toBeVisible({ timeout: setupBudget() });
+    setupBudget(1);
+    clock.assertUnchanged();
+    await ownedSemesterMetadataAndDeletion(
+      page,
+      admin,
+      promotionCaseEnd,
+      currentSemesterId,
+      clock.instant,
+    );
+    await ownedHistoricalPromotion(page, request, admin, promotionCaseEnd, currentSemesterId);
+  } catch (error) {
+    primaryFailure = { error };
+    retainFirstDatasetHttpFailure(info.annotations, error);
+  } finally {
+    try {
+      clock.assertUnchanged();
+    } catch (error) {
+      cleanupFailure ??= { error };
+    }
+    let disposeTimer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([
+        request.dispose(),
+        new Promise<never>((_, reject) => {
+          disposeTimer = setTimeout(
+            () => reject(new Error('Independent admin request disposal deadline')),
+            5000,
+          );
+        }),
+      ]);
+    } catch (error) {
+      cleanupFailure ??= { error };
+    } finally {
+      if (disposeTimer !== undefined) clearTimeout(disposeTimer);
     }
     if (primaryFailure) throw primaryFailure.error;
     if (cleanupFailure) throw cleanupFailure.error;
@@ -2364,24 +2758,143 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     LANG: 'C.UTF-8',
     RCT_E2E_TEACHING_CLOCK_DIR: process.env.RCT_E2E_TEACHING_CLOCK_DIR!,
   };
+  let nativeFailure: { error: Error; report: () => void } | undefined;
   const docker = (
     args: string[],
     input?: string,
     extra: Record<string, string> = {},
     cap = 5000,
   ): string => {
+    const timeout = budget(cap);
     try {
       return execFileSync('docker', args, {
         cwd: root,
         env: { ...nativeEnv, ...extra },
         input,
-        timeout: budget(cap),
+        timeout,
         maxBuffer: 262144,
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe'],
       });
-    } catch {
-      throw new Error('Owned reconciliation command failed');
+    } catch (error) {
+      const failure = new Error('Owned reconciliation command failed');
+      if (!cleaning) {
+        let code: unknown;
+        let status: unknown;
+        if (typeof error === 'object' && error !== null) {
+          try {
+            code = Object.getOwnPropertyDescriptor(error, 'code')?.value;
+            status = Object.getOwnPropertyDescriptor(error, 'status')?.value;
+          } catch {
+            // Uninspectable errors remain UNKNOWN; no native output or accessor is read.
+          }
+        }
+        nativeFailure = {
+          error: failure,
+          report: () => {
+            const matches = (expected: (string | undefined)[]) =>
+              args.length === expected.length &&
+              args.every((value, index) => value === expected[index]);
+            const inspectFormat =
+              '{"id":{{json .Id}},"image":{{json .Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}';
+            if (
+              matches([
+                'exec',
+                '-i',
+                '-e',
+                'PGPASSWORD',
+                pins['postgres-schedule']?.id,
+                'psql',
+                '-X',
+                '-qAt',
+                '-U',
+                'rct_user',
+                '-d',
+                'schedule_db',
+                '-v',
+                'ON_ERROR_STOP=1',
+              ])
+            ) {
+              expect.soft(false, 'D9_NATIVE_SCHEDULE_PSQL').toBe(true);
+            } else if (
+              matches([
+                'exec',
+                '-i',
+                '-e',
+                'RCT_MONGO_PASSWORD',
+                pins['mongo-attendance']?.id,
+                'mongosh',
+                '--quiet',
+                '--nodb',
+                '--file',
+                '/dev/stdin',
+              ])
+            ) {
+              expect.soft(false, 'D9_NATIVE_ATTENDANCE_MONGO').toBe(true);
+            } else if (
+              matches(['inspect', '--format', inspectFormat, pins['schedule-service']?.id])
+            ) {
+              expect.soft(false, 'D9_NATIVE_SCHEDULE_INSPECT').toBe(true);
+            } else if (
+              matches(['inspect', '--format', inspectFormat, pins['attendance-service']?.id])
+            ) {
+              expect.soft(false, 'D9_NATIVE_ATTENDANCE_INSPECT').toBe(true);
+            } else if (matches([...compose, 'stop', '--timeout', '10', 'schedule-service'])) {
+              expect.soft(false, 'D9_NATIVE_SCHEDULE_STOP').toBe(true);
+            } else if (
+              matches([
+                ...compose,
+                'up',
+                '-d',
+                '--no-build',
+                '--no-recreate',
+                '--no-deps',
+                '--pull',
+                'never',
+                '--wait',
+                '--wait-timeout',
+                '40',
+                'attendance-service',
+              ])
+            ) {
+              expect.soft(false, 'D9_NATIVE_ATTENDANCE_RESTART').toBe(true);
+            } else {
+              expect.soft(false, 'D9_NATIVE_OTHER').toBe(true);
+            }
+            if (code === 'ETIMEDOUT') {
+              expect.soft(false, 'D9_NATIVE_TIMEOUT').toBe(true);
+            } else if (code === 'ENOBUFS') {
+              expect.soft(false, 'D9_NATIVE_OUTPUT_BOUND').toBe(true);
+            } else if (status === 1) {
+              expect.soft(false, 'D9_NATIVE_EXIT_1').toBe(true);
+            } else if (status === 2) {
+              expect.soft(false, 'D9_NATIVE_EXIT_2').toBe(true);
+            } else if (status === 3) {
+              expect.soft(false, 'D9_NATIVE_EXIT_3').toBe(true);
+            } else if (status === 125) {
+              expect.soft(false, 'D9_NATIVE_EXIT_125').toBe(true);
+            } else if (status === 126) {
+              expect.soft(false, 'D9_NATIVE_EXIT_126').toBe(true);
+            } else if (status === 127) {
+              expect.soft(false, 'D9_NATIVE_EXIT_127').toBe(true);
+            } else if (status === 137) {
+              expect.soft(false, 'D9_NATIVE_EXIT_137').toBe(true);
+            } else if (status === 143) {
+              expect.soft(false, 'D9_NATIVE_EXIT_143').toBe(true);
+            } else if (
+              typeof status === 'number' &&
+              Number.isSafeInteger(status) &&
+              status > 0 &&
+              status <= 255
+            ) {
+              expect.soft(false, 'D9_NATIVE_OTHER_NONZERO').toBe(true);
+            } else {
+              expect.soft(false, 'D9_NATIVE_UNKNOWN').toBe(true);
+            }
+          },
+        };
+      }
+      throw failure;
     }
   };
   const compose = [
@@ -3309,6 +3822,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     );
     diagnostic.duplicateBusinessUnchanged = true;
   } catch (error) {
+    if (nativeFailure !== undefined && nativeFailure.error === error) nativeFailure.report();
     originalFailure = { error };
     retainFirstDatasetHttpFailure(info.annotations, error);
   } finally {

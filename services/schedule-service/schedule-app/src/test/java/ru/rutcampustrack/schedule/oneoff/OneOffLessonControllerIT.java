@@ -803,6 +803,149 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
+    void concurrentDifferentKeysForSamePhysicalSlot_haveOneDurableWinnerAndTypedConflict()
+            throws Exception {
+        UUID firstKey = UUID.randomUUID(), secondKey = UUID.randomUUID();
+        assertThat(secondKey).isNotEqualTo(firstKey);
+        String payload = body((short) 1, "C-303");
+        CountDownLatch ready = new CountDownLatch(2), start = new CountDownLatch(1);
+        var executor = Executors.newFixedThreadPool(2);
+        Throwable primary = null;
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
+        try {
+            var first =
+                    executor.submit(
+                            () -> {
+                                ready.countDown();
+                                if (!start.await(15, TimeUnit.SECONDS))
+                                    throw new AssertionError("Physical-slot race did not start");
+                                return mvc.perform(
+                                                actor(post("/schedule/one-off-lessons"))
+                                                        .header("Idempotency-Key", firstKey)
+                                                        .contentType(MediaType.APPLICATION_JSON)
+                                                        .content(payload))
+                                        .andReturn()
+                                        .getResponse();
+                            });
+            var second =
+                    executor.submit(
+                            () -> {
+                                ready.countDown();
+                                if (!start.await(15, TimeUnit.SECONDS))
+                                    throw new AssertionError("Physical-slot race did not start");
+                                return mvc.perform(
+                                                actor(post("/schedule/one-off-lessons"))
+                                                        .header("Idempotency-Key", secondKey)
+                                                        .contentType(MediaType.APPLICATION_JSON)
+                                                        .content(payload))
+                                        .andReturn()
+                                        .getResponse();
+                            });
+            assertThat(ready.await(Math.max(1, deadline - System.nanoTime()), TimeUnit.NANOSECONDS))
+                    .isTrue();
+            start.countDown();
+            var responses =
+                    List.of(
+                            first.get(
+                                    Math.max(1, deadline - System.nanoTime()),
+                                    TimeUnit.NANOSECONDS),
+                            second.get(
+                                    Math.max(1, deadline - System.nanoTime()),
+                                    TimeUnit.NANOSECONDS));
+            assertThat(responses.stream().map(response -> response.getStatus()).sorted().toList())
+                    .containsExactly(201, 409);
+            var winner = responses.get(0).getStatus() == 201 ? responses.get(0) : responses.get(1);
+            var rejected =
+                    responses.get(0).getStatus() == 409 ? responses.get(0) : responses.get(1);
+            UUID winnerKey = responses.get(0).getStatus() == 201 ? firstKey : secondKey;
+            UUID rejectedKey = winnerKey.equals(firstKey) ? secondKey : firstKey;
+            assertThat(json.readTree(rejected.getContentAsString()).path("type").asText())
+                    .isEqualTo("https://api.rutcampustrack.ru/problems/conflict");
+            JsonNode accepted = json.readTree(winner.getContentAsString());
+            long physical = accepted.path("physicalLessonId").asLong();
+            long origin = accepted.path("id").asLong();
+            assertThat(physical).isPositive();
+            assertThat(origin).isPositive();
+            assertThat(create(winnerKey, (short) 1, "C-303")).isEqualTo(accepted);
+            assertThat(
+                            jdbcTemplate.queryForMap(
+                                    "SELECT id, one_off_lesson_id, group_id, subject_id, semester_id, date::text AS date, lesson_number::int AS lesson_number, generation, revision, status::text AS status FROM lessons"))
+                    .containsEntry("id", physical)
+                    .containsEntry("one_off_lesson_id", origin)
+                    .containsEntry("group_id", GROUP)
+                    .containsEntry("subject_id", SUBJECT)
+                    .containsEntry("semester_id", SEMESTER)
+                    .containsEntry("date", DATE.toString())
+                    .containsEntry("lesson_number", 1)
+                    .containsEntry("generation", 1L)
+                    .containsEntry("revision", 1L)
+                    .containsEntry("status", "planned");
+            assertThat(
+                            jdbcTemplate.queryForMap(
+                                    "SELECT id, physical_lesson_id FROM schedule_one_off_lessons"))
+                    .containsEntry("id", origin)
+                    .containsEntry("physical_lesson_id", physical);
+            assertThat(
+                            jdbcTemplate.queryForMap(
+                                    "SELECT id, one_off_lesson_id, current_lesson_id FROM lesson_occurrences"))
+                    .containsEntry("id", occurrence(physical))
+                    .containsEntry("one_off_lesson_id", origin)
+                    .containsEntry("current_lesson_id", physical);
+            assertThat(
+                            jdbcTemplate.queryForMap(
+                                    "SELECT actor_id, request_key, physical_lesson_id FROM schedule_one_off_create_replay"))
+                    .containsEntry("actor_id", ACTOR)
+                    .containsEntry("request_key", winnerKey)
+                    .containsEntry("physical_lesson_id", physical);
+            assertThat(
+                            jdbcTemplate.queryForObject(
+                                    "SELECT count(*) FROM schedule_one_off_create_replay WHERE request_key = ?",
+                                    Long.class,
+                                    rejectedKey))
+                    .isZero();
+            assertThat(
+                            jdbcTemplate.queryForMap(
+                                    "SELECT occurrence_id, lesson_id, action FROM lesson_lifecycle_entries"))
+                    .containsEntry("occurrence_id", occurrence(physical))
+                    .containsEntry("lesson_id", physical)
+                    .containsEntry("action", "CREATED");
+            assertThat(outboxStorage.findPending(20))
+                    .extracting(row -> row.eventType())
+                    .containsExactlyInAnyOrder(
+                            "lesson.one_off.created", "schedule.action-recorded");
+            var createdEvents =
+                    outboxStorage.findPending(20).stream()
+                            .filter(row -> row.eventType().equals("lesson.one_off.created"))
+                            .toList();
+            assertThat(createdEvents).hasSize(1);
+            assertThat(
+                            json.readTree(createdEvents.getFirst().payload())
+                                    .path("payload")
+                                    .path("lesson_id")
+                                    .asLong())
+                    .isEqualTo(physical);
+        } catch (Throwable error) {
+            primary = error;
+            throw error;
+        } finally {
+            start.countDown();
+            executor.shutdownNow();
+            try {
+                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    AssertionError cleanup =
+                            new AssertionError("Physical-slot race workers did not settle");
+                    if (primary == null) throw cleanup;
+                    primary.addSuppressed(cleanup);
+                }
+            } catch (InterruptedException cleanup) {
+                Thread.currentThread().interrupt();
+                if (primary == null) throw cleanup;
+                primary.addSuppressed(cleanup);
+            }
+        }
+    }
+
+    @Test
     void concurrentSameKeyAndChangedPayload_haveOneAtomicWinner() throws Exception {
         UUID key = UUID.randomUUID();
         CountDownLatch start = new CountDownLatch(1);

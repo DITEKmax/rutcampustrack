@@ -3096,43 +3096,102 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       // No second JS bundle is claimed: restore its compatible policy before the real UI reload.
       // The existing gate retains required.value until it unmounts on reload.
       fixture.restorePolicy();
-      const reloaded = page.waitForEvent('load').then(
-        () => true,
-        () => false,
-      );
-      await gate.getByRole('button', { name: 'Обновить приложение', exact: true }).click();
-      if (!(await reloaded)) {
-        expect.soft(false, 'PWA update LOAD_NOT_OBSERVED').toBe(true);
-        const observed = await page
-          .evaluate(async () => {
+      const skipWaitingObserver = await page
+        .evaluateHandle(async () => {
+          const unavailable = { read: () => 'UNAVAILABLE' as const, restore: () => {} };
+          try {
             const registration = await navigator.serviceWorker.getRegistration();
-            return {
-              oldDocument:
-                Object.getOwnPropertyDescriptor(window, '__rctWorkerUpdateOldWindow')?.value ===
-                true,
-              readyState: document.readyState,
-              active: registration?.active?.state === 'activated',
-              waiting: registration?.waiting?.state === 'installed',
-              updating: Boolean(registration?.installing),
+            const candidate = registration?.waiting;
+            const prototype = ServiceWorker.prototype;
+            const descriptor = Object.getOwnPropertyDescriptor(prototype, 'postMessage');
+            if (
+              candidate?.state !== 'installed' ||
+              !descriptor ||
+              typeof descriptor.value !== 'function' ||
+              !descriptor.configurable
+            )
+              return unavailable;
+            const nativePostMessage = descriptor.value as ServiceWorker['postMessage'];
+            let sentToCandidate = false;
+            const observed: ServiceWorker['postMessage'] = function (this: ServiceWorker, ...args) {
+              const result = Reflect.apply(nativePostMessage, this, args);
+              try {
+                const message = args[0];
+                if (
+                  this === candidate &&
+                  message !== null &&
+                  typeof message === 'object' &&
+                  Object.getOwnPropertyDescriptor(message, 'type')?.value === 'SKIP_WAITING'
+                )
+                  sentToCandidate = true;
+              } catch {
+                // Observation cannot replace the native call's return or exception.
+              }
+              return result;
             };
-          })
-          .catch(() => null);
-        if (observed === null) expect.soft(false, 'PWA update OBSERVATION_UNAVAILABLE').toBe(true);
-        else {
-          if (observed.oldDocument) expect.soft(false, 'PWA update OLD_DOCUMENT').toBe(true);
-          else expect.soft(false, 'PWA update NEW_DOCUMENT').toBe(true);
-          if (observed.readyState === 'loading')
-            expect.soft(false, 'PWA update DOCUMENT_LOADING').toBe(true);
-          else if (observed.readyState === 'interactive')
-            expect.soft(false, 'PWA update DOCUMENT_INTERACTIVE').toBe(true);
-          else expect.soft(false, 'PWA update DOCUMENT_COMPLETE').toBe(true);
-          if (observed.active) expect.soft(false, 'PWA update ACTIVE_ACTIVATED').toBe(true);
-          else expect.soft(false, 'PWA update ACTIVE_NOT_ACTIVATED').toBe(true);
-          if (observed.waiting) expect.soft(false, 'PWA update WAITING_INSTALLED').toBe(true);
-          else expect.soft(false, 'PWA update WAITING_NOT_INSTALLED').toBe(true);
-          if (observed.updating) expect.soft(false, 'PWA update INSTALLING_PRESENT').toBe(true);
-          else expect.soft(false, 'PWA update INSTALLING_ABSENT').toBe(true);
+            Object.defineProperty(prototype, 'postMessage', { ...descriptor, value: observed });
+            return {
+              read: () =>
+                sentToCandidate ? ('SENT_TO_CANDIDATE' as const) : ('NOT_OBSERVED' as const),
+              restore: () => Object.defineProperty(prototype, 'postMessage', descriptor),
+            };
+          } catch {
+            return unavailable;
+          }
+        })
+        .catch(() => null);
+      try {
+        const reloaded = page.waitForEvent('load').then(
+          () => true,
+          () => false,
+        );
+        await gate.getByRole('button', { name: 'Обновить приложение', exact: true }).click();
+        if (!(await reloaded)) {
+          expect.soft(false, 'PWA update LOAD_NOT_OBSERVED').toBe(true);
+          const observed = await page
+            .evaluate(async () => {
+              const registration = await navigator.serviceWorker.getRegistration();
+              return {
+                oldDocument:
+                  Object.getOwnPropertyDescriptor(window, '__rctWorkerUpdateOldWindow')?.value ===
+                  true,
+                readyState: document.readyState,
+                active: registration?.active?.state === 'activated',
+                waiting: registration?.waiting?.state === 'installed',
+                updating: Boolean(registration?.installing),
+              };
+            })
+            .catch(() => null);
+          if (observed === null)
+            expect.soft(false, 'PWA update OBSERVATION_UNAVAILABLE').toBe(true);
+          else {
+            if (observed.oldDocument) expect.soft(false, 'PWA update OLD_DOCUMENT').toBe(true);
+            else expect.soft(false, 'PWA update NEW_DOCUMENT').toBe(true);
+            if (observed.readyState === 'loading')
+              expect.soft(false, 'PWA update DOCUMENT_LOADING').toBe(true);
+            else if (observed.readyState === 'interactive')
+              expect.soft(false, 'PWA update DOCUMENT_INTERACTIVE').toBe(true);
+            else expect.soft(false, 'PWA update DOCUMENT_COMPLETE').toBe(true);
+            if (observed.active) expect.soft(false, 'PWA update ACTIVE_ACTIVATED').toBe(true);
+            else expect.soft(false, 'PWA update ACTIVE_NOT_ACTIVATED').toBe(true);
+            if (observed.waiting) expect.soft(false, 'PWA update WAITING_INSTALLED').toBe(true);
+            else expect.soft(false, 'PWA update WAITING_NOT_INSTALLED').toBe(true);
+            if (observed.updating) expect.soft(false, 'PWA update INSTALLING_PRESENT').toBe(true);
+            else expect.soft(false, 'PWA update INSTALLING_ABSENT').toBe(true);
+          }
+          const skipWaiting = await skipWaitingObserver
+            ?.evaluate((value) => value.read())
+            .catch(() => 'UNAVAILABLE' as const);
+          if (skipWaiting === 'SENT_TO_CANDIDATE')
+            expect.soft(false, 'PWA update SKIP_WAITING_SENT_TO_CANDIDATE').toBe(true);
+          else if (skipWaiting === 'NOT_OBSERVED')
+            expect.soft(false, 'PWA update SKIP_WAITING_NOT_OBSERVED').toBe(true);
+          else expect.soft(false, 'PWA update SKIP_WAITING_UNAVAILABLE').toBe(true);
         }
+      } finally {
+        // A completed navigation destroys the old prototype; otherwise restore it exactly.
+        await skipWaitingObserver?.evaluate((value) => value.restore()).catch(() => {});
+        await skipWaitingObserver?.dispose().catch(() => {});
       }
       await expect(gate).toHaveCount(0);
       await requireProductionWorker(page);
@@ -4675,7 +4734,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
   // Q03: one live multirole authority transition and the ready client's logout-all.
   test('SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions', async ({
     page,
-    dataset,
+    activeHeadmanDataset: dataset,
     playwright,
   }, info) => {
     const retryCutoffMs =

@@ -3779,7 +3779,7 @@ class StudentRequestDomainIT {
                 LocalTime.of(10, 0),
                 LocalTime.of(11, 0),
                 "closed",
-                false);
+                blockedLessonIds.contains(lessonId));
     }
 
     private LessonInfo compactLesson(long lessonId) {
@@ -3834,5 +3834,65 @@ class StudentRequestDomainIT {
         byte[] header = "%PDF-1.7\n".getBytes(java.nio.charset.StandardCharsets.US_ASCII);
         System.arraycopy(header, 0, bytes, 0, header.length);
         return bytes;
+    }
+
+    @Test
+    void blockedLessonDeniesManualRequestButAllowsExcuseAndUnblockRestoresEligibility() {
+        blockedLessonIds.addAll(List.of(71L, 72L));
+        var blocked = service.options(STUDENT, List.of(snapshot(71L), snapshot(72L)));
+        assertThat(blocked.lessons()).hasSize(2);
+        assertThat(blocked.lessons().getFirst().lateCheckinEligible())
+                .as("blocked lesson denies manual request option")
+                .isFalse();
+        assertThat(blocked.lessons().get(1).lateCheckinEligible()).isFalse();
+        assertThat(blocked.lessons())
+                .allSatisfy(option -> assertThat(option.excuseEligible()).isTrue());
+        long receiptsBefore = receiptRepository.count();
+        long outboxBefore = mongoTemplate.getCollection(OUTBOX_COLLECTION).countDocuments();
+        assertThat(budgetRepository.findAll()).isEmpty();
+
+        assertThatThrownBy(
+                        () ->
+                                service.submitLateCheckin(
+                                        STUDENT,
+                                        new LateCheckinSubmission(71L, "blocked-manual-late-71")))
+                .isInstanceOf(ConflictException.class);
+        assertThat(attendanceRepository.findAll()).isEmpty();
+        assertThat(lateCheckinRepository.findAll()).isEmpty();
+        assertThat(excuseRepository.findAll()).isEmpty();
+        assertThat(receiptRepository.count()).isEqualTo(receiptsBefore);
+        assertThat(budgetRepository.findAll()).isEmpty();
+        assertThat(mongoTemplate.getCollection(OUTBOX_COLLECTION).countDocuments())
+                .isEqualTo(outboxBefore);
+
+        RequestDetail excuse =
+                service.submitExcuse(STUDENT, excuse(List.of(71L), "blocked-excuse-71", List.of()));
+        assertThat(excuseRepository.findById(excuse.summary().id())).isPresent();
+        assertThat(receiptRepository.count()).isEqualTo(receiptsBefore + 1);
+        assertThat(actualOutboxEvents("excuse.requested")).hasSize(1);
+        assertThat(actualOutboxEvents("late_checkin.requested")).isEmpty();
+        assertThat(attendanceRepository.findAll()).isEmpty();
+        assertThat(lateCheckinRepository.findAll()).isEmpty();
+        assertThat(budgetRepository.findAll()).isEmpty();
+
+        blockedLessonIds.remove(72L);
+        var unblocked = service.options(STUDENT, List.of(snapshot(72L)));
+        assertThat(unblocked.lessons())
+                .singleElement()
+                .satisfies(
+                        option -> {
+                            assertThat(option.lateCheckinEligible()).isTrue();
+                            assertThat(option.excuseEligible()).isTrue();
+                        });
+        RequestDetail late =
+                service.submitLateCheckin(
+                        STUDENT, new LateCheckinSubmission(72L, "unblocked-manual-late-72"));
+        assertThat(lateCheckinRepository.findById(late.summary().id())).isPresent();
+        assertThat(receiptRepository.count()).isEqualTo(receiptsBefore + 2);
+        assertThat(actualOutboxEvents("late_checkin.requested")).hasSize(1);
+        assertThat(actualOutboxEvents("excuse.requested")).hasSize(1);
+        assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID))
+                .get()
+                .satisfies(budget -> assertThat(budget.getUsed()).isEqualTo(1));
     }
 }

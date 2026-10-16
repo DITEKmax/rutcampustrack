@@ -446,6 +446,7 @@ jobs:
           scoped_read = None
           progress = None
           subject_digest = None
+          accepted_boundary = None
           proof = {'schemaVersion': 1, 'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'],
                    'checkoutSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                    'service': service, 'state': 'UNEXPECTED_RED_RESULT', 'phase': 'SOURCE_ADMISSION'}
@@ -680,7 +681,7 @@ jobs:
                   digest_test_source = app / 'src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java'
                   digest_current, digest_test = digest_source.read_bytes(), digest_test_source.read_bytes()
                   assert hashlib.sha256(digest_current).hexdigest() == '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'
-                  assert hashlib.sha256(digest_test).hexdigest() == 'e1e1a3d23249ca58d7379e82f1ef14a833b0657840c9062e368069041e028ec6'
+                  assert hashlib.sha256(digest_test).hexdigest() == 'bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42'
                   assert digest_test == subprocess.check_output(['git', 'show', 'HEAD:' + digest_test_source.as_posix()])
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(digest_test_source)]) == b''
                   digest_anchor, digest_changed = b'|| !p.digest().equals(b.previewDigest())', b'|| false'
@@ -691,9 +692,9 @@ jobs:
                   digest_lines = digest_test.decode().splitlines()
                   digest_package = 'ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT'
                   digest_method = 'passwordAndExactPurposeScopedProofProduceOneDurableReplayableReceipt'
-                  assert digest_lines[38].strip() == 'void ' + digest_method + '() throws Exception {'
-                  assert digest_lines[64].strip() == 'assertPrivate(call("verify", new VerifyRequest(token, changedDigest, id, code)), 409);'
-                  assert digest_lines[274].strip() == 'assertThat(response.getStatusCode().value()).isEqualTo(expected);'
+                  assert digest_lines[36].strip() == 'void ' + digest_method + '() throws Exception {'
+                  assert digest_lines[62].strip() == 'assertPrivate(call("verify", new VerifyRequest(token, changedDigest, id, code)), 409);'
+                  assert digest_lines[272].strip() == 'assertThat(response.getStatusCode().value()).isEqualTo(expected);'
                   subject_digest = {'package': digest_package, 'method': digest_method,
                                     'source': digest_test_source, 'production': digest_source}
                   replacements[digest_source] = digest_negative
@@ -703,8 +704,8 @@ jobs:
                       'testSourceSha256': hashlib.sha256(digest_test).hexdigest(),
                       'productionSourceSha256': hashlib.sha256(digest_current).hexdigest(),
                       'counterexampleSourceSha256': hashlib.sha256(digest_negative).hexdigest(),
-                      'ruleFrame': digest_package + '.' + digest_method + '(SubjectDeletionProofHttpIT.java:65)',
-                      'helperFrame': digest_package + '.assertPrivate(SubjectDeletionProofHttpIT.java:275)'}
+                      'ruleFrame': digest_package + '.' + digest_method + '(SubjectDeletionProofHttpIT.java:63)',
+                      'helperFrame': digest_package + '.assertPrivate(SubjectDeletionProofHttpIT.java:273)'}
 
               elif service == 'notification-service':
                   package = 'ru.rutcampustrack.notification.history.NotificationStateV2IT'
@@ -734,7 +735,7 @@ jobs:
                   proof['counterexample'] = 'OMITTED_BUDGET_INCREMENT'
                   student_source = test_source
                   student_test = student_source.read_bytes()
-                  assert hashlib.sha256(student_test).hexdigest() == '2582d5c4de382bd46afeacd4c258678fbdcfff4916ade0cd17419dd7f3f38079'
+                  assert hashlib.sha256(student_test).hexdigest() == '897583460df1aa5fc31ab71507253ba93dd1611200c029ca000b922d77da2d5f'
                   student_production = app / 'src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java'
                   student_current = student_production.read_bytes()
                   assert hashlib.sha256(student_current).hexdigest() == 'f93136610cbd2fc01f44534a2731529c7adbcb325e88cd775880973d05b79fa3'
@@ -758,6 +759,97 @@ jobs:
                                  'testSha': hashlib.sha256(student_test).hexdigest(),
                                  'productionSha': hashlib.sha256(student_current).hexdigest(),
                                  'negative': student_negative, 'counterexample': 'OMITTED_CURRENT_GROUP_CATALOGUE_MISMATCH'}
+
+              # These four accepted boundary checks share the existing bounded RED/native gate.
+              boundary_rules = {
+                  'attendance-service': {
+                      'package': 'ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT',
+                      'method': 'blockedLessonDeniesManualRequestButAllowsExcuseAndUnblockRestoresEligibility',
+                      'source': 'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java',
+                      'testSha': '897583460df1aa5fc31ab71507253ba93dd1611200c029ca000b922d77da2d5f',
+                      'production': 'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java',
+                      'productionSha': 'cbcdae11c677ab8f954eb138230186287df30586aea681bc86b892df05c1e1b3',
+                      'anchor': '        if (lesson.blocked()) {\n            throw new ConflictException("Пара заблокирована");\n        }\n',
+                      'changed': '',
+                      'negativeSha': '48b1a29d234901c2fa1e12d2df2ce65e6ffedcd174a5cfd438dd10b0ab6121b4',
+                      'counterexample': 'OMITTED_BLOCKED_LESSON_MANUAL_REQUEST_GUARD',
+                      'ruleLine': 3846,
+                      'ruleSource': '.isFalse();',
+                      'messagePattern': '\\s*\\[blocked lesson denies manual request option\\]\\s*Expecting value to be false but was true\\s*',
+                  },
+                  'schedule-service': {
+                      'package': 'ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT',
+                      'method': 'concurrentDifferentKeysForSamePhysicalSlot_haveOneDurableWinnerAndTypedConflict',
+                      'source': 'services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java',
+                      'testSha': '9b86eb52b1b5111ba7f4243289a70c61bd92d1e64a87c1599ea366cdb4615123',
+                      'production': 'services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql',
+                      'productionSha': '8d02720f48b67e21c78373b214adb414a2f435a8016c35987839d330b6042fcc',
+                      'anchor': 'CREATE UNIQUE INDEX uq_lessons_included_physical_slot',
+                      'changed': 'CREATE INDEX uq_lessons_included_physical_slot',
+                      'negativeSha': '34bee124f01d6355c011ce1cf7bbd8780993eecd4595877b5eed84c125f736fb',
+                      'counterexample': 'NONUNIQUE_INCLUDED_PHYSICAL_SLOT_INDEX',
+                      'ruleLine': 856,
+                      'ruleSource': '.containsExactly(201, 409);',
+                      'messagePattern': '\\s*Expecting actual:\\s*\\[201, 201\\]\\s*to contain exactly \\(and in same order\\):\\s*\\[201, 409\\]\\s*but some elements were not found:\\s*\\[409\\]\\s*and others were not expected:\\s*\\[201\\]\\s*',
+                  },
+                  'auth-service': {
+                      'package': 'ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT',
+                      'method': 'loginOtpCannotAuthorizeSubjectDeletionAndRemainsUsableForLogin',
+                      'source': 'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java',
+                      'testSha': 'bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42',
+                      'production': 'services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java',
+                      'productionSha': '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81',
+                      'anchor': '        if (!MessageDigest.isEqual(\n                p.codeHash().getBytes(StandardCharsets.US_ASCII),\n                hash(request.challengeId() + ":" + request.code())\n                        .getBytes(StandardCharsets.US_ASCII))) {\n            // Consumed proof retries cannot exhaust or mutate the already accepted command.\n            if (p.receipt() == null)\n                jdbc.update(\n                        "UPDATE subject_deletion_proofs SET attempts=attempts+1 WHERE"\n                                + " challenge_hash=?",\n                        hash(request.challengeId()));\n            return new Verification(false, null);\n        }\n',
+                      'changed': '',
+                      'negativeSha': 'a466010d578083c39c3a54215a591ba9a6d2910064158f94b61acfc81a0fc7fd',
+                      'counterexample': 'OMITTED_CHALLENGE_SCOPED_SUBJECT_PROOF_CODE_GUARD',
+                      'ruleLine': 429,
+                      'ruleSource': 'assertPrivate(denied, 409);',
+                      'messagePattern': '\\s*expected:\\s*409\\s+but was:\\s*200\\s*',
+                      'helperLine': 273,
+                  },
+                  'academic-service': {
+                      'package': 'ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT',
+                      'method': 'unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation',
+                      'source': 'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java',
+                      'testSha': '317409764e7692bfd7148e0b57c02157ac3f9727aab05b45aa6737e88e7169d8',
+                      'production': 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java',
+                      'productionSha': '53741f8dc927a2198a518d90789f0cc94a4ed566888049acd0c4b5f03be9d148',
+                      'anchor': '        return AdminPermission.validate(input.mode(), input.permissions());',
+                      'changed': '        return AdminPermission.validate(input.mode(), input.permissions().stream().filter(java.util.Objects::nonNull).filter(AdminPermission.allCodes()::contains).toList());',
+                      'negativeSha': '06e0ff3c8d73a4f62ddc3541c916517d05a2d9c3e812143ca0d9f9cf12f78e23',
+                      'counterexample': 'SILENTLY_FILTERED_UNKNOWN_AND_NULL_ADMIN_PERMISSION_ELEMENTS',
+                      'ruleLine': 393,
+                      'ruleSource': '.isBadRequest())',
+                      'messagePattern': 'Status expected:<400> but was:<200>',
+                  },
+              }
+              if service in boundary_rules:
+                  accepted_boundary = boundary_rules[service]
+                  for key in ('source', 'production'):
+                      accepted_boundary[key] = pathlib.Path(accepted_boundary[key])
+                  boundary_source = accepted_boundary['source'].read_bytes()
+                  boundary_current = accepted_boundary['production'].read_bytes()
+                  assert hashlib.sha256(boundary_source).hexdigest() == accepted_boundary['testSha']
+                  assert hashlib.sha256(boundary_current).hexdigest() == accepted_boundary['productionSha']
+                  assert boundary_source == subprocess.check_output(['git', 'show', 'HEAD:' + accepted_boundary['source'].as_posix()])
+                  for path in (accepted_boundary['source'], accepted_boundary['production']):
+                      assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
+                  assert boundary_source.decode().splitlines()[accepted_boundary['ruleLine'] - 1].strip() == accepted_boundary['ruleSource']
+                  boundary_base = replacements.get(accepted_boundary['production'], boundary_current)
+                  boundary_anchor = accepted_boundary['anchor'].encode()
+                  assert boundary_base.count(boundary_anchor) == 1
+                  boundary_negative = boundary_base.replace(boundary_anchor, accepted_boundary['changed'].encode(), 1)
+                  assert hashlib.sha256(boundary_negative).hexdigest() == accepted_boundary['negativeSha']
+                  replacements[accepted_boundary['production']] = boundary_negative
+                  boundary_file = accepted_boundary['source'].name
+                  proof['acceptedBoundaryRule'] = {
+                      'counterexample': accepted_boundary['counterexample'],
+                      'testMethod': accepted_boundary['package'] + '.' + accepted_boundary['method'],
+                      'testSourceSha256': accepted_boundary['testSha'],
+                      'productionSourceSha256': accepted_boundary['productionSha'],
+                      'counterexampleSourceSha256': accepted_boundary['negativeSha'],
+                      'ruleFrame': accepted_boundary['package'] + '.' + accepted_boundary['method'] + '(' + boundary_file + ':' + str(accepted_boundary['ruleLine']) + ')'}
 
               if scoped_read is not None:
                   assert scoped_read['source'].read_bytes() == subprocess.check_output(['git', 'show', 'HEAD:' + scoped_read['source'].as_posix()])
@@ -797,6 +889,8 @@ jobs:
                   selectors += ['--tests', progress['package'] + '.' + progress['method']]
               if subject_digest is not None:
                   selectors += ['--tests', subject_digest['package'] + '.' + subject_digest['method']]
+              if accepted_boundary is not None:
+                  selectors += ['--tests', accepted_boundary['package'] + '.' + accepted_boundary['method']]
               with (private / 'red.private.log').open('wb') as log:
                   run = subprocess.run(['./gradlew', ':services:' + service + ':' + app.name + ':integrationTest',
                                         '--no-daemon', *(['--no-build-cache'] if audit is not None or service == 'auth-service' or scoped_read is not None or progress is not None else []), *selectors],
@@ -813,9 +907,9 @@ jobs:
               if service == 'attendance-service':
                   assert suite.tag == 'testsuite' and suite.get('name') == package
                   assert {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
-                      'tests': '2', 'failures': '2', 'errors': '0', 'skipped': '0'}
-                  assert len(cases) == 2
-                  assert {case.get('name') for case in cases} == {method + '()', scoped_read['method'] + '()'}
+                      'tests': '3', 'failures': '3', 'errors': '0', 'skipped': '0'}
+                  assert len(cases) == 3
+                  assert {case.get('name') for case in cases} == {method + '()', scoped_read['method'] + '()', accepted_boundary['method'] + '()'}
                   assert all(case.get('classname') == package for case in cases)
                   selected = [case for case in cases if case.get('name') == method + '()']
                   assert len(selected) == 1
@@ -1050,14 +1144,14 @@ jobs:
                   scoped_data = scoped_result.read_bytes()
                   assert b'<!DOCTYPE' not in scoped_data.upper() and b'<!ENTITY' not in scoped_data.upper()
                   scoped_suite = ET.fromstring(scoped_data)
-                  total = '2' if service == 'attendance-service' else '1'
+                  total = '3' if service == 'attendance-service' else '1'
                   assert scoped_suite.tag == 'testsuite' and scoped_suite.get('name') == scoped_read['package']
                   assert {key: scoped_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
                       'tests': total, 'failures': total, 'errors': '0', 'skipped': '0'}
                   scoped_cases = scoped_suite.findall('testcase')
                   expected_names = {scoped_read['method'] + '()'}
                   if service == 'attendance-service':
-                      expected_names.add(method + '()')
+                      expected_names.update({method + '()', accepted_boundary['method'] + '()'})
                   assert len(scoped_cases) == int(total)
                   assert {case.get('name') for case in scoped_cases} == expected_names
                   assert all(case.get('classname') == scoped_read['package'] for case in scoped_cases)
@@ -1098,11 +1192,14 @@ jobs:
                   digest_suite = ET.fromstring(digest_data)
                   assert digest_suite.tag == 'testsuite' and digest_suite.get('name') == subject_digest['package']
                   assert {key: digest_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
-                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                      'tests': '2', 'failures': '2', 'errors': '0', 'skipped': '0'}
                   digest_cases = digest_suite.findall('testcase')
-                  assert len(digest_cases) == 1
-                  digest_case = digest_cases[0]
-                  assert digest_case.get('classname') == subject_digest['package'] and digest_case.get('name') == subject_digest['method'] + '()'
+                  assert len(digest_cases) == 2
+                  assert {case.get('name') for case in digest_cases} == {subject_digest['method'] + '()', accepted_boundary['method'] + '()'}
+                  assert all(case.get('classname') == subject_digest['package'] for case in digest_cases)
+                  digest_selected = [case for case in digest_cases if case.get('name') == subject_digest['method'] + '()']
+                  assert len(digest_selected) == 1
+                  digest_case = digest_selected[0]
                   assert not digest_case.findall('error') and not digest_case.findall('skipped') and len(digest_case.findall('failure')) == 1
                   digest_failure = digest_case.find('failure')
                   assert digest_failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
@@ -1159,6 +1256,47 @@ jobs:
                                        tests=1, failures=1, errors=0, skipped=0,
                                        restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
 
+              if accepted_boundary is not None:
+                  assert run.returncode == 1
+                  boundary_result = results / ('TEST-' + accepted_boundary['package'] + '.xml')
+                  assert boundary_result.is_file() and not boundary_result.is_symlink() and 0 < boundary_result.stat().st_size <= 33554432
+                  boundary_data = boundary_result.read_bytes()
+                  assert b'<!DOCTYPE' not in boundary_data.upper() and b'<!ENTITY' not in boundary_data.upper()
+                  boundary_suite = ET.fromstring(boundary_data)
+                  expected_names = {accepted_boundary['method'] + '()'}
+                  if service == 'attendance-service':
+                      expected_names.update({method + '()', scoped_read['method'] + '()'})
+                  elif service == 'auth-service':
+                      expected_names.add(subject_digest['method'] + '()')
+                  total = str(len(expected_names))
+                  assert boundary_suite.tag == 'testsuite' and boundary_suite.get('name') == accepted_boundary['package']
+                  assert {key: boundary_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': total, 'failures': total, 'errors': '0', 'skipped': '0'}
+                  boundary_cases = boundary_suite.findall('testcase')
+                  assert len(boundary_cases) == len(expected_names)
+                  assert {case.get('name') for case in boundary_cases} == expected_names
+                  assert all(case.get('classname') == accepted_boundary['package'] for case in boundary_cases)
+                  boundary_selected = [case for case in boundary_cases if case.get('name') == accepted_boundary['method'] + '()']
+                  assert len(boundary_selected) == 1
+                  boundary_case = boundary_selected[0]
+                  assert not boundary_case.findall('error') and not boundary_case.findall('skipped') and len(boundary_case.findall('failure')) == 1
+                  boundary_failure = boundary_case.find('failure')
+                  assert boundary_failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
+                  boundary_message = boundary_failure.get('message', '').removeprefix(boundary_failure.get('type') + ': ')
+                  assert re.fullmatch(accepted_boundary['messagePattern'], boundary_message)
+                  boundary_named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(accepted_boundary['package'] + '.' + accepted_boundary['method'])
+                      + r'\(' + re.escape(accepted_boundary['source'].name) + r':([1-9][0-9]{0,5})\)[ \t]*$', boundary_failure.text or '')
+                  assert boundary_named_lines == [str(accepted_boundary['ruleLine'])]
+                  if 'helperLine' in accepted_boundary:
+                      helper_frame = accepted_boundary['package'] + '.assertPrivate(' + accepted_boundary['source'].name + ':' + str(accepted_boundary['helperLine']) + ')'
+                      assert len(re.findall(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?' + re.escape(helper_frame) + r'[ \t]*$', boundary_failure.text or '')) == 1
+                  proof['acceptedBoundaryRule'].update(
+                      state='EXPECTED_RULE_FAILURE', namedMethodFrameCount=1, expectedRuleFrameMatched=True,
+                      tests=1, failures=1, errors=0, skipped=0,
+                      restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
+
               proof.update(state='EXPECTED_RULE_FAILURE', tests=1, failures=1, errors=0, skipped=0,
                            restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
           finally:
@@ -1195,7 +1333,7 @@ jobs:
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
                   proof[scoped_read['proofKey']]['sourceRestoredExact'] = True
               if subject_digest is not None and current:
-                  assert hashlib.sha256(subject_digest['source'].read_bytes()).hexdigest() == 'e1e1a3d23249ca58d7379e82f1ef14a833b0657840c9062e368069041e028ec6'
+                  assert hashlib.sha256(subject_digest['source'].read_bytes()).hexdigest() == 'bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42'
                   assert hashlib.sha256(subject_digest['production'].read_bytes()).hexdigest() == '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'
                   for path in (subject_digest['source'], subject_digest['production']):
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
@@ -1205,6 +1343,13 @@ jobs:
                   assert hashlib.sha256(progress['production'].read_bytes()).hexdigest() == '8d95281c1aea016edea575196ba3282bac935ca27bb80ca99f4dcd35638bbc75'
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(progress['source'])]) == b''
                   proof['semesterProgressRule']['sourceRestoredExact'] = True
+
+              if accepted_boundary is not None and current:
+                  assert hashlib.sha256(accepted_boundary['source'].read_bytes()).hexdigest() == accepted_boundary['testSha']
+                  assert hashlib.sha256(accepted_boundary['production'].read_bytes()).hexdigest() == accepted_boundary['productionSha']
+                  for path in (accepted_boundary['source'], accepted_boundary['production']):
+                      assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
+                  proof['acceptedBoundaryRule']['sourceRestoredExact'] = True
 
               for source, name in [(results, 'red-results'), (reports, 'red-reports')]:
                   if source.exists():
@@ -1389,10 +1534,10 @@ jobs:
               'attendance-service': ('ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT',
                                      'studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue',
                                      'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java',
-                                     '2582d5c4de382bd46afeacd4c258678fbdcfff4916ade0cd17419dd7f3f38079'),
+                                     '897583460df1aa5fc31ab71507253ba93dd1611200c029ca000b922d77da2d5f'),
           }
           service = sys.argv[1]
-          if service not in targets:
+          if service not in targets and service != 'academic-service':
               raise SystemExit(0)
           def pairs(items):
               value = {}
@@ -1412,33 +1557,59 @@ jobs:
                   and meta['job'] == 'java-integration-test' and meta['testStepOutcome'] == 'success'
                   and meta['runId'] == os.environ['RCT_CI_RUN_ID']
                   and meta['runAttempt'] == os.environ['RCT_CI_RUN_ATTEMPT'])
-          package, method, source, digest = targets[service]
-          assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
-          if service == 'schedule-service':
-              production = pathlib.Path('services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java')
-              assert hashlib.sha256(production.read_bytes()).hexdigest() == '8d95281c1aea016edea575196ba3282bac935ca27bb80ca99f4dcd35638bbc75'
-              assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(production)]) == b''
-          selected = [case for case in value['cases'] if case.get('classname') == package and case.get('method') == method]
-          assert len(selected) == 1
-          case = selected[0]
-          assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == source
-                  and case['sourceSha256'] == digest and case['status'] == 'PASSED')
-          if service == 'auth-service':
-              package = 'ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT'
-              method = 'passwordAndExactPurposeScopedProofProduceOneDurableReplayableReceipt'
-              source = 'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java'
-              digest = 'e1e1a3d23249ca58d7379e82f1ef14a833b0657840c9062e368069041e028ec6'
-              production = pathlib.Path('services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java')
-              assert hashlib.sha256(production.read_bytes()).hexdigest() == '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'
+          if service in targets:
+              package, method, source, digest = targets[service]
               assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
-              for target in (source, str(production)):
-                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', target]) == b''
+              if service == 'schedule-service':
+                  production = pathlib.Path('services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java')
+                  assert hashlib.sha256(production.read_bytes()).hexdigest() == '8d95281c1aea016edea575196ba3282bac935ca27bb80ca99f4dcd35638bbc75'
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(production)]) == b''
               selected = [case for case in value['cases'] if case.get('classname') == package and case.get('method') == method]
               assert len(selected) == 1
               case = selected[0]
               assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == source
                       and case['sourceSha256'] == digest and case['status'] == 'PASSED')
+              if service == 'auth-service':
+                  package = 'ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT'
+                  method = 'passwordAndExactPurposeScopedProofProduceOneDurableReplayableReceipt'
+                  source = 'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java'
+                  digest = 'bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42'
+                  production = pathlib.Path('services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java')
+                  assert hashlib.sha256(production.read_bytes()).hexdigest() == '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'
+                  assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
+                  for target in (source, str(production)):
+                      assert subprocess.check_output(['git', 'status', '--porcelain', '--', target]) == b''
+                  selected = [case for case in value['cases'] if case.get('classname') == package and case.get('method') == method]
+                  assert len(selected) == 1
+                  case = selected[0]
+                  assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == source
+                          and case['sourceSha256'] == digest and case['status'] == 'PASSED')
           print('PASS exact restored scoped-read method in the ordinary integration gate')
+          boundary_targets = {
+              'attendance-service': ('ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT', 'blockedLessonDeniesManualRequestButAllowsExcuseAndUnblockRestoresEligibility',
+                  'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java', '897583460df1aa5fc31ab71507253ba93dd1611200c029ca000b922d77da2d5f',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java', 'cbcdae11c677ab8f954eb138230186287df30586aea681bc86b892df05c1e1b3'),
+              'schedule-service': ('ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT', 'concurrentDifferentKeysForSamePhysicalSlot_haveOneDurableWinnerAndTypedConflict',
+                  'services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java', '9b86eb52b1b5111ba7f4243289a70c61bd92d1e64a87c1599ea366cdb4615123',
+                  'services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql', '8d02720f48b67e21c78373b214adb414a2f435a8016c35987839d330b6042fcc'),
+              'auth-service': ('ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT', 'loginOtpCannotAuthorizeSubjectDeletionAndRemainsUsableForLogin',
+                  'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java', 'bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42',
+                  'services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java', '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'),
+              'academic-service': ('ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT', 'unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation',
+                  'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java', '317409764e7692bfd7148e0b57c02157ac3f9727aab05b45aa6737e88e7169d8',
+                  'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java', '53741f8dc927a2198a518d90789f0cc94a4ed566888049acd0c4b5f03be9d148'),
+          }
+          package, method, source, digest, production, production_digest = boundary_targets[service]
+          assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
+          assert hashlib.sha256(pathlib.Path(production).read_bytes()).hexdigest() == production_digest
+          for target in (source, production):
+              assert subprocess.check_output(['git', 'status', '--porcelain', '--', target]) == b''
+          selected = [case for case in value['cases'] if case.get('classname') == package and case.get('method') == method]
+          assert len(selected) == 1
+          case = selected[0]
+          assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == source
+                  and case['sourceSha256'] == digest and case['status'] == 'PASSED')
+          print('PASS exact restored accepted-boundary method in the ordinary integration gate')
           PY_SCOPED_RESTORED_GREEN
 
       - name: Upload safe integration outcomes

@@ -349,6 +349,97 @@ class AdminAccessAuthorityIT {
     }
 
     @Test
+    void unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation() throws Exception {
+        var factory = new org.springframework.aop.framework.ProxyFactory(service);
+        factory.setProxyTargetClass(true);
+        factory.addAdvice(
+                new org.springframework.transaction.interceptor.TransactionInterceptor(
+                        tx.getTransactionManager(),
+                        new org.springframework.transaction.interceptor
+                                .MatchAlwaysTransactionAttributeSource()));
+        var mvc =
+                org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
+                                new AdminAccessController(
+                                        (AdminAccessService) factory.getProxy(),
+                                        new AcademicAdminAccess(authority, context, jdbc)))
+                        .setControllerAdvice(
+                                new ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler())
+                        .build();
+        assertThat(authority.current(context.getClaims()).full()).isTrue();
+        String snapshotSql =
+                """
+SELECT jsonb_build_object(
+    'groups', (SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY id), '[]'::jsonb) FROM groups t),
+    'users', (SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM users t),
+    'grants', (SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM user_role_grants t),
+    'sessions', (SELECT jsonb_agg(to_jsonb(t) ORDER BY sid) FROM auth_sessions t),
+    'profiles', (SELECT jsonb_agg(to_jsonb(t) ORDER BY user_id) FROM admin_access_profiles t)
+)::text
+""";
+        String before = jdbc.queryForObject(snapshotSql, String.class);
+        for (String permissions :
+                List.of("[\"USERS_VIEW\",\"UNKNOWN\"]", "[\"USERS_VIEW\",null]")) {
+            mvc.perform(
+                            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
+                                            "/academic/users/4/admin-access")
+                                    .contentType("application/json")
+                                    .content(
+                                            "{\"mode\":\"LIMITED\",\"permissions\":"
+                                                    + permissions
+                                                    + ",\"expectedVersion\":0}"))
+                    .andExpect(
+                            org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                                    .status()
+                                    .isBadRequest())
+                    .andExpect(
+                            org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                                    .jsonPath("$.code")
+                                    .value("INVALID_ADMIN_ACCESS"));
+            assertThat(Objects.equals(before, jdbc.queryForObject(snapshotSql, String.class)))
+                    .as("Invalid permission elements preserve every owned durable authority row")
+                    .isTrue();
+            org.mockito.Mockito.verifyNoInteractions(publisher);
+        }
+        mvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
+                                        "/academic/users/4/admin-access")
+                                .contentType("application/json")
+                                .content(
+                                        "{\"mode\":\"LIMITED\",\"permissions\":[\"USERS_VIEW\"],\"expectedVersion\":0}"))
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.status()
+                                .isOk())
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.permissions[0]")
+                                .value("USERS_VIEW"))
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.permissions.length()")
+                                .value(1))
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.version")
+                                .value(1));
+        assertThat(authority.profile(4).permissions()).containsExactly("USERS_VIEW");
+        assertThat(authority.profile(4).version()).isEqualTo(1);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM user_role_grants WHERE user_id=4 AND"
+                                        + " role='admin' AND status='active'",
+                                Long.class))
+                .isEqualTo(1);
+        assertThat(Objects.equals(before, jdbc.queryForObject(snapshotSql, String.class)))
+                .as("The valid positive control performs a real durable authority transition")
+                .isFalse();
+        org.mockito.Mockito.verify(publisher)
+                .publishEvent(
+                        org.mockito.ArgumentMatchers.isA(
+                                ru.rutcampustrack.academic.event
+                                        .AdministrativeNotificationAdminAccessChangedEvent.class));
+    }
+
+    @Test
     void everyAssemblerCredentialProjectionUsesFreshCapabilityAndTargetProtection() {
         put(4, "LIMITED", List.of("USERS_VIEW", "USERS_MANAGE"), 0);
         var assembler =

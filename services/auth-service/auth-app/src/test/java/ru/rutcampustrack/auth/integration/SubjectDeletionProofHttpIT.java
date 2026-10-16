@@ -4,25 +4,22 @@ import static org.assertj.core.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import ru.rutcampustrack.auth.config.InternalIssuerProperties;
 import ru.rutcampustrack.auth.dto.SubjectDeletionProofModels.*;
 import ru.rutcampustrack.auth.service.JwtService;
 import ru.rutcampustrack.auth.session.SessionLifecycleService;
 import ru.rutcampustrack.auth.session.model.*;
 import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.*;
 
 /** Real private HTTP + PG. Codes/passwords/tokens are compared only as private booleans. */
 class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
@@ -34,6 +31,7 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
     @Autowired AuthSessionQueryPort queries;
     @Autowired JwtService jwt;
     @Autowired InternalIssuerProperties issuer;
+    @Autowired org.springframework.data.redis.core.StringRedisTemplate redis;
 
     @Test
     void passwordAndExactPurposeScopedProofProduceOneDurableReplayableReceipt() throws Exception {
@@ -319,8 +317,8 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
         long user =
                 jdbc.queryForObject(
                         "INSERT INTO"
-                            + " users(login,password_hash,last_name,first_name,group_id,is_headman)"
-                            + " VALUES(?,?,'Synthetic','Proof',?,TRUE) RETURNING id",
+                                + " users(login,password_hash,last_name,first_name,group_id,is_headman)"
+                                + " VALUES(?,?,'Synthetic','Proof',?,TRUE) RETURNING id",
                         Long.class,
                         "sd-" + UUID.randomUUID().toString().substring(0, 20),
                         passwords.encode(password),
@@ -330,8 +328,8 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
         for (String role : List.of("student", "headman"))
             jdbc.update(
                     "INSERT INTO"
-                        + " user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
-                        + " VALUES(?,?,'active',?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)",
+                            + " user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
+                            + " VALUES(?,?,'active',?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)",
                     user,
                     role,
                     group);
@@ -388,6 +386,128 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
             snapshot = selected.snapshot();
         }
         return jwt.generateInternalToken(snapshot, now, now.plusSeconds(120));
+    }
+
+    @Test
+    void loginOtpCannotAuthorizeSubjectDeletionAndRemainsUsableForLogin() throws Exception {
+        var f = fixture();
+        String token = token(f);
+        var b = binding(f);
+        String loginCode = null;
+        Throwable primary = null;
+        try {
+            var loginRequest =
+                    rest.postForEntity(
+                            "/auth/otp/request", Map.of("telegramId", f.telegram()), String.class);
+            assertThat(loginRequest.getStatusCode().value()).isEqualTo(204);
+            assertThat(loginRequest.getBody() == null || loginRequest.getBody().isBlank()).isTrue();
+            loginCode = redis.opsForValue().get("otp:" + f.telegram());
+            assertThat(loginCode != null && loginCode.matches("[0-9]{6}")).isTrue();
+            assertThat(
+                            Long.toString(f.telegram())
+                                    .equals(redis.opsForValue().get("otp_code:" + loginCode)))
+                    .as("The public LOGIN issuer owns both proof indexes")
+                    .isTrue();
+
+            var challenge = call("challenge", new ChallengeRequest(token, f.password(), b));
+            assertPrivate(challenge, 200);
+            String challengeId = json.readTree(challenge.getBody()).path("challengeId").asText();
+            String dangerousCode = ownCode(f.telegram(), challengeId);
+            assertThat(!Objects.equals(loginCode, dangerousCode))
+                    .as("Independently issued purpose proofs have distinct fixture values")
+                    .isTrue();
+            long sessionsBefore =
+                    count("SELECT count(*) FROM auth_sessions WHERE user_id=?", f.user());
+            assertThat(
+                            count(
+                                    "SELECT count(*) FROM subject_deletion_proofs WHERE actor_id=?"
+                                            + " AND receipt_id IS NOT NULL",
+                                    f.user()))
+                    .isZero();
+
+            var denied = call("verify", new VerifyRequest(token, b, challengeId, loginCode));
+            assertPrivate(denied, 409);
+            assertThat(
+                            count(
+                                    "SELECT count(*) FROM subject_deletion_proofs WHERE actor_id=?"
+                                            + " AND (receipt_id IS NOT NULL OR consumed_at IS NOT"
+                                            + " NULL)",
+                                    f.user()))
+                    .as("A LOGIN proof cannot produce a dangerous receipt")
+                    .isZero();
+            assertThat(ownEvents(f.telegram(), "otp.verified")).isZero();
+            assertThat(
+                            count(
+                                    "SELECT count(*) FROM subjects WHERE id=? AND semester_id=? AND"
+                                            + " group_id=?",
+                                    f.subject(),
+                                    f.semester(),
+                                    f.group()))
+                    .isOne();
+            assertThat(count("SELECT count(*) FROM auth_sessions WHERE user_id=?", f.user()))
+                    .isEqualTo(sessionsBefore);
+            assertThat(loginCode.equals(redis.opsForValue().get("otp:" + f.telegram())))
+                    .as("Refusal preserves the original LOGIN proof")
+                    .isTrue();
+
+            var login =
+                    rest.postForEntity(
+                            "/auth/otp/verify",
+                            Map.of("telegramId", f.telegram(), "code", loginCode),
+                            String.class);
+            assertThat(login.getStatusCode().value()).isEqualTo(200);
+            var pair = json.readTree(login.getBody());
+            assertThat(
+                            !pair.path("accessToken").asText().isBlank()
+                                    && !pair.path("refreshToken").asText().isBlank())
+                    .as("The original public LOGIN proof remains usable")
+                    .isTrue();
+            assertThat(count("SELECT count(*) FROM auth_sessions WHERE user_id=?", f.user()))
+                    .isEqualTo(sessionsBefore + 1);
+            assertThat(redis.hasKey("otp:" + f.telegram())).isFalse();
+            assertThat(redis.hasKey("otp_code:" + loginCode)).isFalse();
+
+            var accepted = call("verify", new VerifyRequest(token, b, challengeId, dangerousCode));
+            assertPrivate(accepted, 200);
+            var receipt = json.readTree(accepted.getBody());
+            assertThat(
+                            receipt.path("accepted").asBoolean()
+                                    && !receipt.path("receiptId").asText().isBlank())
+                    .as("The correctly scoped dangerous proof still succeeds")
+                    .isTrue();
+            assertThat(
+                            count(
+                                    "SELECT count(*) FROM subject_deletion_proofs WHERE actor_id=?"
+                                            + " AND receipt_id IS NOT NULL AND consumed_at IS NOT NULL",
+                                    f.user()))
+                    .isOne();
+            assertThat(
+                            count(
+                                    "SELECT count(*) FROM auth_outbox WHERE"
+                                            + " event_type='otp.verified' AND"
+                                            + " payload->'payload'->>'purpose'='subject_delete' AND"
+                                            + " payload->'payload'->>'challenge_id'=?",
+                                    challengeId))
+                    .isOne();
+        } catch (RuntimeException | Error failure) {
+            primary = failure;
+            throw failure;
+        } finally {
+            try {
+                var keys =
+                        new ArrayList<>(
+                                List.of(
+                                        "otp:" + f.telegram(), "otp_attempts:" + f.telegram(),
+                                        "otp_sent:" + f.telegram(),
+                                                "otp_verify_attempts:" + f.telegram()));
+                if (loginCode != null) keys.add("otp_code:" + loginCode);
+                redis.delete(keys);
+            } catch (RuntimeException failure) {
+                var fixed = new IllegalStateException("Owned LOGIN proof cleanup failed");
+                if (primary == null) throw fixed;
+                primary.addSuppressed(fixed);
+            }
+        }
     }
 
     private record Fixture(

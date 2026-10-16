@@ -41,11 +41,11 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.web.time.AcademicWeekCalendar;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -639,12 +639,7 @@ public class ReportService {
     }
 
     private static int weekNumberFrom(LocalDate semesterStart, LocalDate date) {
-        // Align both dates to the Monday of their week so Mon..Sun always lands
-        // in the same bucket, regardless of which weekday the semester starts on.
-        LocalDate startMon = semesterStart.with(java.time.DayOfWeek.MONDAY);
-        LocalDate dateMon = date.with(java.time.DayOfWeek.MONDAY);
-        long days = ChronoUnit.DAYS.between(startMon, dateMon);
-        return (int) (days / 7L) + 1;
+        return AcademicWeekCalendar.weekOfSemester(semesterStart, date);
     }
 
     private List<TopMissedSubject> buildTopMissed(List<AttendanceRecord> counted, int limit) {

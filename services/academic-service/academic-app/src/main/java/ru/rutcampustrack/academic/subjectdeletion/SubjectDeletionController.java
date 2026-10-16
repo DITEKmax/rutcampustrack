@@ -37,7 +37,9 @@ public class SubjectDeletionController implements SubjectDeletionApi {
     }
 
     @Override
-    public ResponseEntity<Operation> status(UUID id) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.status(id));
+    public ResponseEntity<Operation> status(UUID operationId) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(service.status(operationId));
     }
 }

@@ -2,8 +2,6 @@
 ALTER TABLE subjects
     ADD COLUMN semester_id bigint REFERENCES semesters (id);
 
-CREATE INDEX subjects_group_semester_idx ON subjects (group_id, semester_id, id);
-
 CREATE TABLE subject_deletion_operations (
     operation_id uuid PRIMARY KEY,
     idempotency_key uuid NOT NULL UNIQUE,

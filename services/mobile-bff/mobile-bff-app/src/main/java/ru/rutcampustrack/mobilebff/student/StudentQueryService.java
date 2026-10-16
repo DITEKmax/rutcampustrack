@@ -26,6 +26,7 @@ import ru.rutcampustrack.mobilebff.security.MobileRequestContext;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.web.time.AcademicWeekCalendar;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.net.URI;
@@ -35,6 +36,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -577,6 +579,7 @@ public class StudentQueryService {
                 LocalDate.parse(response.getDateFrom()),
                 LocalDate.parse(response.getDateTo()),
                 Instant.parse(response.getServerNow()),
+                attendanceWeeks(semester),
                 response.getTerminalReadOnly(),
                 metricSet(response.getMetrics()),
                 response.getDaysList().stream().map(StudentQueryService::day).toList(),
@@ -588,6 +591,25 @@ public class StudentQueryService {
                         "/api/v1/student/attendance?semesterId=" + response.getSemesterId(),
                         "statistics",
                         "/api/v1/student/statistics?semesterId=" + response.getSemesterId()));
+    }
+
+    private static List<StudentAttendanceWeek> attendanceWeeks(SemesterResponse semester) {
+        LocalDate start = LocalDate.parse(semester.getDateFrom());
+        LocalDate end = LocalDate.parse(semester.getDateTo());
+        List<StudentAttendanceWeek> weeks = new ArrayList<>();
+        for (LocalDate monday = AcademicWeekCalendar.monday(start);
+                !monday.isAfter(end);
+                monday = monday.plusWeeks(1)) {
+            AcademicWeekCalendar.Parity parity = AcademicWeekCalendar.parity(monday);
+            weeks.add(
+                    new StudentAttendanceWeek(
+                            monday,
+                            monday.plusDays(6),
+                            AcademicWeekCalendar.weekOfSemester(start, monday),
+                            parity.number(),
+                            parity.label()));
+        }
+        return List.copyOf(weeks);
     }
 
     private static StudentStatisticsResponse statisticsResponse(

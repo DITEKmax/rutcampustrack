@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,6 +47,7 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -89,6 +91,40 @@ class HeadmanStatsServiceTest {
                         CLOCK,
                         new HeadmanApprovedTicketResolver(excuseRepository, lateCheckinRepository));
         when(requestContext.getGroupId()).thenReturn(10L);
+    }
+
+    @Test
+    void productionBindingUsesEducationalTimeForClosedLessonRows() {
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true);
+        stubStatisticsData();
+        Clock realBeforeLessons =
+                Clock.fixed(Instant.parse("2026-03-31T05:00:00Z"), CLOCK.getZone());
+        var educationalTime =
+                new StaticListableBeanFactory(Map.of("educationalTime", new EducationalTime(CLOCK)))
+                        .getBeanProvider(EducationalTime.class);
+        var production =
+                new HeadmanStatsService(
+                        academicGrpcClient,
+                        scheduleGrpcClient,
+                        attendanceReadPort,
+                        excuseRepository,
+                        lateCheckinRepository,
+                        new HeadmanStatsDocxRenderer(),
+                        new HeadmanStatsTabularRenderer(),
+                        documentRendererGrpcClient,
+                        requestContext,
+                        realBeforeLessons,
+                        new HeadmanApprovedTicketResolver(excuseRepository, lateCheckinRepository),
+                        educationalTime);
+
+        var result =
+                production.query(
+                        new HeadmanStatsQueryRequest(null, List.of(), 0, 50, List.of(), List.of()));
+
+        assertThat(result.rows().stream().anyMatch(row -> row.studentId() == 1L))
+                .as("Educationally completed lessons retain the own roster student")
+                .isTrue();
+        assertThat(result.context().lessonsCount()).isEqualTo(2);
     }
 
     @Test

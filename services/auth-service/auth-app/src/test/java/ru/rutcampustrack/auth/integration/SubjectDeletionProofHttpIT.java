@@ -320,8 +320,11 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
                     group);
         long subject =
                 jdbc.queryForObject(
-                        "INSERT INTO subjects(name,type,group_id,semester_id)"
-                                + " VALUES(?,'lecture',?,?) RETURNING id",
+                        "WITH created_subject AS ("
+                                + " INSERT INTO subjects(name,type,group_id,semester_id)"
+                                + " VALUES(?,'lecture',?,?) RETURNING id)"
+                                + " INSERT INTO subject_lesson_types(subject_id,lesson_type)"
+                                + " SELECT id,'lecture' FROM created_subject RETURNING subject_id",
                         Long.class,
                         "Own deletion subject",
                         group,

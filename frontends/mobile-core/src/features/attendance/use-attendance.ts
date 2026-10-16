@@ -8,9 +8,11 @@ import type {
   StudentAttendanceTypeCard,
   StudentAttendanceLesson,
   StudentAttendanceSeriesPoint,
+  StudentAttendanceWeek,
 } from '../../api/types'
 import { studentFeatureScopeIdentity, type StudentFeatureScope } from '../../shared/session-owner'
 import type { AttendanceReadState, AttendanceViewModel } from './attendance-view-model'
+import { monday, shiftDate } from './attendance-periods'
 
 export type StudentAttendanceScopeInput = MaybeRefOrGetter<StudentFeatureScope | null | undefined>
 
@@ -152,8 +154,37 @@ function mapPoint(
   }
 }
 
+function mapWeeks(value: StudentAttendanceResponse): readonly StudentAttendanceWeek[] {
+  if (value.weeks === undefined) return []
+  if (!Array.isArray(value.weeks)) throw new Error('Не удалось получить данные недели.')
+  const seen = new Set<string>()
+  return value.weeks.map((week) => {
+    if (
+      !week ||
+      typeof week.dateFrom !== 'string' ||
+      typeof week.dateTo !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(week.dateFrom) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(week.dateTo) ||
+      !Number.isFinite(new Date(`${week.dateFrom}T12:00:00Z`).getTime()) ||
+      monday(week.dateFrom) !== week.dateFrom ||
+      shiftDate(week.dateFrom, 6) !== week.dateTo ||
+      week.dateFrom > value.semester.dateTo ||
+      week.dateTo < value.semester.dateFrom ||
+      !Number.isSafeInteger(week.weekOfSemester) ||
+      week.weekOfSemester < 1 ||
+      (week.parityNumber !== 1 && week.parityNumber !== 2) ||
+      week.parityLabel !== String(week.parityNumber) ||
+      seen.has(week.dateFrom)
+    )
+      throw new Error('Не удалось получить данные недели.')
+    seen.add(week.dateFrom)
+    return { ...week }
+  })
+}
+
 export function toAttendanceViewModel(value: StudentAttendanceResponse): AttendanceViewModel {
   return {
+    weeks: mapWeeks(value),
     semester: { ...value.semester },
     serverNow: value.serverNow,
     metrics: { ...value.metrics },
@@ -236,6 +267,8 @@ export function useAttendance(
       if (studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)) {
         throw new AttendanceStaleResponseError()
       }
+      // Validate supplied calendar metadata inside the query error boundary.
+      mapWeeks(response)
       return response
     },
     enabled: computed(() => scopeReady.value && !offline.value),

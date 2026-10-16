@@ -485,3 +485,18 @@ DF-ADMIN-ORDINARY-RESET-001 FIXED_CURRENT_NATIVE: exact013 controlled previous-a
 ## 2026-10-16T00:46:08.939092+00:00 — bounded causal correction package Source-ready
 
 DEF-STUDENT-CANCELLED-PROJECTION (including superseded physical-generation history), DEF-AUTH-SUBJECT-PROOF-CLOCK-BEAN and DEF-SCHEDULE-SUBJECT-BINDING-FENCE-ORDER are FIXED_SOURCE_INDEPENDENTLY_REVIEWED_NATIVE_PENDING. ProjectionknownbadRED→13cachedGREEN and SchedulerArchRuleRED→GREEN retained; 13cachedunitcases no realHTTP/PG/browser claim. Checking corrections: migrationcount14/latest32, finalSunday-adjusted calendarweeks, sameSessionownStudentreturn, fixedbooleanrowdiagnostic, CIclock-safeDAG. OfficialAcademicstock+generatedtypes synced; integratedJava/TS/PWA/TMA/formatterchecksPASS. Independentc86 approvals cover exactsourcepins in central#current289889e7Publication.nextCoherentCorrections. ScheduleUPDATE1169/strictAcademicnativecause remainUNKNOWN.
+
+
+## GAP-STUDENT-WEEK-METADATA — server parity and semester ordinal
+
+2026-10-16T01:02:49.246981+00:00; severity P2; JS-STUDENT-13/SYSTEM05, existing Student Attendance weekly pager. Independent c91 source resolution confirms retained accepted dates/parity/semester ordinal, BOTH metadata values server-emitted. Current BFF response/model/header exposes dates only. Existing Schedule AcademicWeekPolicy and server Monday-based first-partial-week ordinal provide accepted semantics; no owner rule missing. c87 minimal additive existing data/header design, no new screen or guessed parity formula. Separate ranking traversal witness c89. Source GAP, no observed native5xx claim. Evidence central#current261889cbPublication.student13WeekMetadataSourceResolution.
+
+
+## DEF-SUBJECT-OPERATION-STATUS-PATH — legitimate operation status rejected
+
+2026-10-16T01:25:35.287745+00:00; severity P1; new full-subject deletion operation status API. Current261 interface route contains {operationId}, inherited implicit @PathVariable has no explicit name, implementation status(UUID id) exposes id instead. c91 reproduced exactcompiled -parameters controller/API through actual cached Spring MVC: GET→400 MissingPathVariableException variableid, service never called. This explains a concrete Source failure distinct from unrelated Mockito restubbing fixtureNPEs. Minimal controller parameter binding correction authorized; URI/auth/service/no-store unchanged. Cachedafter and actualPG/HTTP/browser verification pending, no fullSubjectPASS. Evidence current261889cbPublication.academicFiveFailureAuthorGO +c91 existingownreceipt pendingfinalfrozenoutcome.
+
+
+## Current261 runtime delta and next coherent corrections
+
+2026-10-16T02:07:02.622423+00:00: DEF-STUDENT-CANCELLED-PROJECTION FIXED_CURRENT_NATIVE: exact261 Lesson20 wholePASS51.670s/art12019406052, alongside prior meaningful cachedRED→13GREEN and independentreview. Does not close Requests9 or wholeLesson. JS13 serverweekmetadata14 now Sourceimplemented/reviewed/RootWIP actualnewnativepending. Subjectoperationstatus realcachedMVC400→200/c86APPROVE/RootWIP actualPGbrowserpending. HeadmanStats educationalclock rowcounterexample compiledwrongclockRED→same12GREEN/c86APPROVE/RootWIP nativeRequests9pending. Confirmed checking-only corrections: recovery precheckpoint waits durable3marks (actualpriorfailurecauseUNKNOWN), directedarchive readiness+freshactionbudget, fiveV32-retainedreceipt tables inSchedule reset. No assertion/security/data-preservation weakening. Central current261889cbPublication holds exactpins/evidence/review.

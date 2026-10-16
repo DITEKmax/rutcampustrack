@@ -210,15 +210,16 @@ class SubjectDeletionHttpIT extends AbstractAcademicIntegrationTest {
     @Test
     void durableRemoteFailureResumesExactlyOneOwnSubjectAndKeepsOtherSemester() throws Exception {
         var failOnce = new AtomicBoolean(true);
-        when(participants.attendance(any()))
-                .thenAnswer(
+        doAnswer(
                         call -> {
                             SubjectDeletionCommand command = call.getArgument(0);
                             if (command.getAction() == SubjectDeletionAction.COMMIT
                                     && failOnce.getAndSet(false))
                                 throw new IllegalStateException("Owned participant unavailable");
                             return receipt(command, false);
-                        });
+                        })
+                .when(participants)
+                .attendance(any());
         JsonNode preview = body(signed(get(path() + "/deletion-preview")), 200);
         UUID operation = UUID.randomUUID(), key = UUID.randomUUID();
         String digest = preview.path("previewDigest").asText();
@@ -378,12 +379,13 @@ class SubjectDeletionHttpIT extends AbstractAcademicIntegrationTest {
         UUID proof =
                 proof(new SubjectDeletionAcademicData.Target(subject, 1L, 1, "", null), request);
         var verifying = new java.util.concurrent.CyclicBarrier(2);
-        when(auth.verify(any(), any()))
-                .thenAnswer(
+        doAnswer(
                         call -> {
                             verifying.await(5, java.util.concurrent.TimeUnit.SECONDS);
                             return proof;
-                        });
+                        })
+                .when(auth)
+                .verify(any(), any());
         var pool = java.util.concurrent.Executors.newFixedThreadPool(2);
         var entered = new java.util.concurrent.CountDownLatch(2);
         var release = new java.util.concurrent.CountDownLatch(1);
@@ -491,8 +493,7 @@ class SubjectDeletionHttpIT extends AbstractAcademicIntegrationTest {
     void revokedAuthorityAfterPrepareReleasesBothBeforeIrreversibleIntent() throws Exception {
         var preview = body(signed(get(path() + "/deletion-preview")), 200);
         var revokeOnce = new AtomicBoolean(true);
-        when(participants.schedule(any()))
-                .thenAnswer(
+        doAnswer(
                         call -> {
                             SubjectDeletionCommand c = call.getArgument(0);
                             if (c.getAction() == SubjectDeletionAction.SEAL
@@ -502,7 +503,9 @@ class SubjectDeletionHttpIT extends AbstractAcademicIntegrationTest {
                                             + " status='suspended',updated_at=NOW() WHERE user_id=3"
                                             + " AND role='headman'");
                             return receipt(c, true);
-                        });
+                        })
+                .when(participants)
+                .schedule(any());
         UUID operation = UUID.randomUUID();
         body(
                 confirm(

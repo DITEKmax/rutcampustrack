@@ -486,12 +486,29 @@ public final class StudentApiModels {
             @Schema(nullable = true) Integer position, int participantCount, boolean available) {}
 
     @Schema(
+            name = "StudentAttendanceWeek",
+            requiredProperties = {
+                "dateFrom",
+                "dateTo",
+                "weekOfSemester",
+                "parityNumber",
+                "parityLabel"
+            })
+    public record StudentAttendanceWeek(
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            int weekOfSemester,
+            int parityNumber,
+            String parityLabel) {}
+
+    @Schema(
             name = "StudentAttendance",
             requiredProperties = {
                 "semester",
                 "dateFrom",
                 "dateTo",
                 "serverNow",
+                "weeks",
                 "terminalReadOnly",
                 "metrics",
                 "days",
@@ -505,6 +522,7 @@ public final class StudentApiModels {
             LocalDate dateFrom,
             LocalDate dateTo,
             Instant serverNow,
+            List<StudentAttendanceWeek> weeks,
             boolean terminalReadOnly,
             StudentAttendanceMetricSet metrics,
             List<StudentAttendanceDay> days,

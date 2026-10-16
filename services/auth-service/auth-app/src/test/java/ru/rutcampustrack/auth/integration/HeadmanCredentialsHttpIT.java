@@ -377,6 +377,7 @@ VALUES ('consistent','Synthetic','Legacy',?,'synthetic-initial',FALSE),
                         .dataSource(dataSource)
                         .schemas(schema)
                         .locations(location)
+                        .target("59")
                         .load();
         assertThat(flyway.migrate().migrationsExecuted).isEqualTo(1);
         flyway.validate();

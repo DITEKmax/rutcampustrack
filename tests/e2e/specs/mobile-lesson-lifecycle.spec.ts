@@ -297,6 +297,75 @@ test('HEADMAN cancels a marked lesson and restores its journal without reviving 
     await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
     const read = ownAttendance ?? (await response(page, '/api/v1/student/attendance', 'GET'));
     expect(read.status()).toBe(200);
+    // JS-STUDENT-13: the existing pager renders this same admitted server calendar.
+    const attendanceBody = await read.json();
+    expect(attendanceBody.semester?.id === String(dataset.semester.id)).toBe(true);
+    expect(Array.isArray(attendanceBody.weeks) && attendanceBody.weeks.length > 1).toBe(true);
+    type ServerWeek = {
+      dateFrom: string;
+      dateTo: string;
+      weekOfSemester: number;
+      parityNumber: 1 | 2;
+      parityLabel: string;
+    };
+    const weeks = attendanceBody.weeks as ServerWeek[];
+    const currentWeekIndex = weeks.findIndex(
+      (week) => week.dateFrom <= dataset.today && dataset.today <= week.dateTo,
+    );
+    expect(currentWeekIndex >= 0).toBe(true);
+    const showWeek = async (week: ServerWeek) => {
+      expect(
+        Number.isSafeInteger(week.weekOfSemester) &&
+          week.weekOfSemester > 0 &&
+          [1, 2].includes(week.parityNumber) &&
+          week.parityLabel === String(week.parityNumber),
+        'The admitted response supplies week ordinal and public parity',
+      ).toBe(true);
+      const short = (date: Date) =>
+        date.toLocaleDateString('ru-RU', {
+          timeZone: 'UTC',
+          day: 'numeric',
+          month: 'short',
+        });
+      const lastRailDate = new Date(`${week.dateTo}T12:00:00Z`);
+      lastRailDate.setUTCDate(lastRailDate.getUTCDate() - 1);
+      const dates = `${short(new Date(`${week.dateFrom}T12:00:00Z`))} — ${short(lastRailDate)}`;
+      const header = page.locator('.attendance-week-pager__label');
+      await expect(header.locator('span').first()).toHaveText(dates);
+      await expect(header.locator('.attendance-week-pager__metadata')).toHaveText(
+        `Неделя ${week.weekOfSemester} · Чётность ${week.parityLabel}`,
+      );
+    };
+    await showWeek(weeks[currentWeekIndex]!);
+    const direction = currentWeekIndex + 1 < weeks.length ? 1 : -1;
+    await page
+      .getByRole('button', {
+        name: direction === 1 ? 'Следующая неделя' : 'Предыдущая неделя',
+        exact: true,
+      })
+      .click();
+    await showWeek(weeks[currentWeekIndex + direction]!);
+    await page
+      .getByRole('button', {
+        name: direction === 1 ? 'Предыдущая неделя' : 'Следующая неделя',
+        exact: true,
+      })
+      .click();
+    await showWeek(weeks[currentWeekIndex]!);
+    // Restore the original selected day before all unchanged cancellation assertions.
+    const selectedDay = new Date(`${dataset.today}T12:00:00Z`);
+    if (selectedDay.getUTCDay() === 0) await page.locator('.attendance-sunday').click();
+    else
+      await page
+        .getByRole('button', {
+          name: selectedDay.toLocaleDateString('ru-RU', {
+            timeZone: 'Europe/Moscow',
+            day: 'numeric',
+            month: 'long',
+          }),
+          exact: true,
+        })
+        .click();
   } finally {
     page.off('response', observeStudentAttendance);
   }

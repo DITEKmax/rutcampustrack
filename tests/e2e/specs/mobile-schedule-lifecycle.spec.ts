@@ -1319,6 +1319,117 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
       (await semesterMetrics.textContent()) === stableSemesterMetrics,
       'Subject/type/day selection leaves original semester totals stable',
     ).toBe(true);
+
+    // Keep every original three-person metric assertion before expanding this owned cohort.
+    const expectedRankingIds = new Set(
+      [dataset.student, dataset.headman, dataset.assistant].map((user) => String(user.id)),
+    );
+    for (let index = 0; index < 18; index++) {
+      const peer = await dataset.user('STUDENT', dataset.group.id);
+      expectedRankingIds.add(String(peer.id));
+    }
+    expect(expectedRankingIds.size).toBe(21);
+    const refreshedSessionLoaded = studentPage.waitForResponse(
+      (response) =>
+        response.request().method() === 'GET' &&
+        new URL(response.url()).pathname === '/api/auth/session',
+    );
+    // A normal browser refresh obtains the changed cohort without another login or cache hooks.
+    await studentPage.reload();
+    const refreshedSessionResponse = await refreshedSessionLoaded;
+    expect(refreshedSessionResponse.status()).toBe(200);
+    const refreshedSession = await refreshedSessionResponse.json();
+    expect(
+      refreshedSession.userId === studentLogin.session.userId &&
+        refreshedSession.sessionId === studentLogin.session.sessionId &&
+        refreshedSession.activeRole === 'STUDENT',
+      'Ranking pagination retains the same ordinary student session',
+    ).toBe(true);
+    await studentPage.getByRole('button', { name: 'Ещё', exact: true }).click();
+    await studentPage.getByRole('button', { name: 'Статистика', exact: true }).click();
+    const loadRankingPage = (requestedPage: number | null) =>
+      studentPage.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          response.request().method() === 'GET' &&
+          url.pathname === '/api/v1/student/statistics/ranking' &&
+          url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+          url.searchParams.get('size') === '20' &&
+          (requestedPage === null
+            ? !url.searchParams.has('page')
+            : url.searchParams.get('page') === String(requestedPage))
+        );
+      });
+    let nextRankingResponse = loadRankingPage(null);
+    await studentPage.getByRole('button', { name: 'Рейтинг группы', exact: true }).click();
+    const rankingPager = studentPage.getByRole('navigation', {
+      name: 'Страницы рейтинга',
+      exact: true,
+    });
+    const visitedRankingIds = new Set<string>();
+    for (const [index, targetPage] of [0, 1, 0].entries()) {
+      if (index > 0) {
+        nextRankingResponse = loadRankingPage(targetPage);
+        await rankingPager
+          .getByRole('button', { name: targetPage === 1 ? 'Ниже' : 'Выше', exact: true })
+          .click();
+      }
+      const response = await nextRankingResponse;
+      expect(response.status()).toBe(200);
+      const result = await response.json();
+      expect(
+        result.available && result.page === targetPage && result.size === 20 && result.total === 21,
+        'Ranking response is the requested page of the exact expanded own cohort',
+      ).toBe(true);
+      expect(
+        result.rows.length === (targetPage === 0 ? 20 : 1) &&
+          new Set(result.rows.map((row: { id: string }) => row.id)).size === result.rows.length &&
+          result.rows.every(
+            (row: { id: string; isSelf: boolean }) =>
+              expectedRankingIds.has(row.id) &&
+              row.id !== String(dataset.foreignStudent.id) &&
+              row.isSelf === (row.id === String(dataset.student.id)),
+          ) &&
+          result.rows.filter((row: { isSelf: boolean }) => row.isSelf).length ===
+            (targetPage === 0 ? 1 : 0),
+        'Every ranking page stays in the known own cohort and marks only the current student',
+      ).toBe(true);
+      await expect(rankingRows).toHaveCount(result.rows.length);
+      for (let rowIndex = 0; rowIndex < result.rows.length; rowIndex++) {
+        const row = result.rows[rowIndex];
+        visitedRankingIds.add(row.id);
+        const cells = (
+          await rankingRows.nth(rowIndex).locator(':scope > span').allTextContents()
+        ).map((value) => value.replace(/\s+/g, '').trim());
+        const expected = [
+          String(row.position ?? '—'),
+          `${row.name}${row.isSelf ? 'Это я' : ''}`,
+          metricText({ percent: row.percentage }),
+        ].map((value) => value.replace(/\s+/g, ''));
+        expect(
+          JSON.stringify(cells) === JSON.stringify(expected),
+          'Navigated ranking rows match the same authoritative response',
+        ).toBe(true);
+      }
+      await expect(rankingRows.locator('button,a,input')).toHaveCount(0);
+      await expect(rankingPager.locator('span')).toHaveText(`${targetPage + 1} / 2`);
+      if (targetPage === 0) {
+        await expect(
+          rankingPager.getByRole('button', { name: 'Выше', exact: true }),
+        ).toBeDisabled();
+        await expect(rankingPager.getByRole('button', { name: 'Ниже', exact: true })).toBeEnabled();
+      } else {
+        await expect(rankingPager.getByRole('button', { name: 'Выше', exact: true })).toBeEnabled();
+        await expect(
+          rankingPager.getByRole('button', { name: 'Ниже', exact: true }),
+        ).toBeDisabled();
+      }
+    }
+    expect(
+      visitedRankingIds.size === expectedRankingIds.size &&
+        [...expectedRankingIds].every((id) => visitedRankingIds.has(id)),
+      'Actual ranking navigation visits every member of the same own cohort',
+    ).toBe(true);
   } finally {
     for (const id of statisticsLessonIds) {
       await dataset.headmanActor

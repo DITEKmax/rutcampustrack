@@ -5,6 +5,7 @@ import io.grpc.StatusRuntimeException;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -73,6 +74,7 @@ import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotD
 import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -94,7 +96,7 @@ import java.util.TreeMap;
 
 /** Server-owned semester stats for the authenticated headman's current group. */
 @Service
-@RequiredArgsConstructor(onConstructor_ = @org.springframework.beans.factory.annotation.Autowired)
+@RequiredArgsConstructor
 public class HeadmanStatsService {
     private static final int MAX_SEMESTER_LESSONS = 5_000;
     private static final int MAX_PAGE_SIZE = 100;
@@ -151,6 +153,36 @@ public class HeadmanStatsService {
             ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionService
                     service) {
         studentProjection = service;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public HeadmanStatsService(
+            AcademicGrpcClient academicGrpcClient,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AttendanceReadPort attendanceReadPort,
+            ExcuseRepository excuseRepository,
+            LateCheckinRepository lateCheckinRepository,
+            HeadmanStatsDocxRenderer docxRenderer,
+            HeadmanStatsTabularRenderer tabularRenderer,
+            DocumentRendererGrpcClient documentRendererGrpcClient,
+            RequestContext requestContext,
+            Clock clock,
+            HeadmanApprovedTicketResolver approvedTicketResolver,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(
+                academicGrpcClient,
+                scheduleGrpcClient,
+                attendanceReadPort,
+                excuseRepository,
+                lateCheckinRepository,
+                docxRenderer,
+                tabularRenderer,
+                documentRendererGrpcClient,
+                requestContext,
+                educationalTime == null
+                        ? clock
+                        : educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(),
+                approvedTicketResolver);
     }
 
     public HeadmanStatsService(

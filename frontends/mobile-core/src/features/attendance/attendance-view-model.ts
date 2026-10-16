@@ -1,4 +1,4 @@
-import type { StudentAttendanceExplanation } from '../../api/types'
+import type { StudentAttendanceExplanation, StudentAttendanceWeek } from '../../api/types'
 
 export type AttendanceTheme = 'dark' | 'light'
 
@@ -112,6 +112,7 @@ export interface AttendanceGraphPoint {
 }
 
 export interface AttendanceViewModel {
+  readonly weeks?: readonly StudentAttendanceWeek[]
   readonly semester?: {
     readonly id: string
     readonly name: string

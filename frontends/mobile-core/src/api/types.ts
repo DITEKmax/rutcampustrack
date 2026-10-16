@@ -271,7 +271,16 @@ export interface StudentAttendanceSeriesPoint {
   readonly metrics: StudentAttendanceMetricSet
 }
 
+export interface StudentAttendanceWeek {
+  readonly dateFrom: string
+  readonly dateTo: string
+  readonly weekOfSemester: number
+  readonly parityNumber: 1 | 2
+  readonly parityLabel: string
+}
+
 export interface StudentAttendanceResponse {
+  readonly weeks?: readonly StudentAttendanceWeek[]
   readonly semester: {
     readonly id: string
     readonly name: string

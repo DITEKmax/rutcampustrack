@@ -108,6 +108,9 @@ watch(
 );
 const weekDays = computed(() => calendarWeek(readyData.value, weekDate.value));
 const railDays = computed(() => weekDays.value.slice(0, 6));
+const selectedWeek = computed(
+  () => data.value?.weeks?.find((week) => week.dateFrom === monday(weekDate.value)) ?? null,
+);
 const sunday = computed(() => weekDays.value[6]);
 const bounds = computed(() => attendanceBounds(readyData.value));
 function canPageWeek(delta: number): boolean {
@@ -483,7 +486,16 @@ function dateLabel(date: string): string {
             >
               ‹
             </button>
-            <span role="status">{{ shortDate(railDays[0]!.date) }} — {{ shortDate(railDays[5]!.date) }}</span>
+            <span
+              class="attendance-week-pager__label"
+              role="status"
+            >
+              <span>{{ shortDate(railDays[0]!.date) }} — {{ shortDate(railDays[5]!.date) }}</span>
+              <span
+                v-if="selectedWeek"
+                class="attendance-week-pager__metadata"
+              >Неделя {{ selectedWeek.weekOfSemester }} · Чётность {{ selectedWeek.parityLabel }}</span>
+            </span>
             <button
               type="button"
               aria-label="Следующая неделя"

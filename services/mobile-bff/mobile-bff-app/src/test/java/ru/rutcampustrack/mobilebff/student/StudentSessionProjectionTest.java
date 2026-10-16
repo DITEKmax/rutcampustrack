@@ -58,6 +58,69 @@ class StudentSessionProjectionTest {
     }
 
     @Test
+    void attendanceIncludesServerWeeksForTheAdmittedSemesterEvenWithoutLessons() {
+        when(requestContext.claims())
+                .thenReturn(
+                        new InternalJwtClaims(
+                                STUDENT_ID,
+                                SESSION_ID,
+                                1L,
+                                1L,
+                                "STUDENT",
+                                "ACTIVE",
+                                GROUP_ID,
+                                false,
+                                false));
+        when(academic.activeSemester())
+                .thenReturn(
+                        SemesterResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .setName("Зима")
+                                .setDateFrom("2020-12-30")
+                                .setDateTo("2021-01-12")
+                                .build());
+        when(attendance.projection(SEMESTER_ID, null, "days", java.util.List.of()))
+                .thenReturn(
+                        ru.rutcampustrack.attendance.grpc.StudentAttendanceProjectionResponse
+                                .newBuilder()
+                                .setSemesterId(SEMESTER_ID)
+                                .setDateFrom("2020-12-30")
+                                .setDateTo("2021-01-12")
+                                .setServerNow(SERVER_NOW.toString())
+                                .build());
+        var result = service.attendance(SEMESTER_ID);
+        assertThat(result.semester().id()).isEqualTo(Long.toString(SEMESTER_ID));
+        assertThat(result.dateFrom()).isEqualTo(java.time.LocalDate.parse("2020-12-30"));
+        assertThat(result.dateTo()).isEqualTo(java.time.LocalDate.parse("2021-01-12"));
+        assertThat(result.serverNow()).isEqualTo(SERVER_NOW);
+        assertThat(result.days()).isEmpty();
+        assertThat(result.weeks())
+                .containsExactly(
+                        new ru.rutcampustrack.mobilebff.contract.model.StudentApiModels
+                                .StudentAttendanceWeek(
+                                java.time.LocalDate.parse("2020-12-28"),
+                                java.time.LocalDate.parse("2021-01-03"),
+                                1,
+                                2,
+                                "2"),
+                        new ru.rutcampustrack.mobilebff.contract.model.StudentApiModels
+                                .StudentAttendanceWeek(
+                                java.time.LocalDate.parse("2021-01-04"),
+                                java.time.LocalDate.parse("2021-01-10"),
+                                2,
+                                2,
+                                "2"),
+                        new ru.rutcampustrack.mobilebff.contract.model.StudentApiModels
+                                .StudentAttendanceWeek(
+                                java.time.LocalDate.parse("2021-01-11"),
+                                java.time.LocalDate.parse("2021-01-17"),
+                                3,
+                                1,
+                                "1"));
+        org.mockito.Mockito.verifyNoInteractions(schedule);
+    }
+
+    @Test
     void attendanceExplanationMapsNestedOptionalDataAndFullCommentWithoutJoiningIds()
             throws Exception {
         var explanation =

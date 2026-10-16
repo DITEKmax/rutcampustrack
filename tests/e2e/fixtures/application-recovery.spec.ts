@@ -233,6 +233,41 @@ async function download(request: APIRequestContext, actor: Actor, path: string, 
   );
 }
 
+// A closed Schedule row alone does not prove its asynchronous Attendance effect committed.
+function historicalMarksSettled(
+  report: Record<string, unknown>,
+  lessonId: number,
+  groupId: number,
+  semesterId: number,
+  markedStudentId: number,
+  autoStudentIds: readonly number[],
+) {
+  const studentIds = [markedStudentId, ...autoStudentIds];
+  if (
+    report.lessonId !== lessonId ||
+    report.groupId !== groupId ||
+    report.semesterId !== semesterId ||
+    !Array.isArray(report.entries) ||
+    report.entries.length !== studentIds.length ||
+    new Set(studentIds).size !== studentIds.length
+  ) {
+    return false;
+  }
+  return studentIds.every((studentId) => {
+    const matches = (report.entries as Record<string, unknown>[]).filter(
+      (entry) => entry && typeof entry === 'object' && entry.userId === studentId,
+    );
+    if (matches.length !== 1) return false;
+    const entry = matches[0]!;
+    if (typeof entry.markRevision !== 'string' || entry.markRevision.trim().length === 0) {
+      return false;
+    }
+    return studentId === markedStudentId
+      ? entry.status === 'excused' && entry.source === 'headman' && entry.excuseType === 'ILLNESS'
+      : entry.status === 'absent' && entry.source === 'auto_scheduler';
+  });
+}
+
 async function seed(request: APIRequestContext, run: string) {
   const clockDirectory = process.env.RCT_E2E_TEACHING_CLOCK_DIR;
   requireValue(clockDirectory, 'Recovery requires an owned educational clock');
@@ -366,6 +401,22 @@ async function seed(request: APIRequestContext, run: string) {
     }
     throw error;
   }
+
+  // Settle the historical close effect while Rabbit is still running, before the immutable capture.
+  await expect
+    .poll(
+      async () =>
+        historicalMarksSettled(
+          await headman.call('GET', reportPath),
+          historyLessonId,
+          Number(dataset.group.id),
+          Number(dataset.semester.id),
+          dataset.student.id,
+          [dataset.headman.id, dataset.assistant.id],
+        ),
+      { timeout: 60000, message: 'Recovery historical attendance marks are durably materialized' },
+    )
+    .toBe(true);
 
   // Keep this binding separate from MobileDataset's already published DATE-mode homework.
   const sourceDate = studyDay(shift(dataset.tomorrow, 1));

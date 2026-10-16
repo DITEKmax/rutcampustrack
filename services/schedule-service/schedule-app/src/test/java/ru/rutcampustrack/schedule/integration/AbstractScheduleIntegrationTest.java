@@ -144,6 +144,7 @@ ON CONFLICT (assignment_id) DO NOTHING
      * cleanup.
      */
     protected void resetScheduleData() {
+        // V32 retained receipts no longer have parent FKs for TRUNCATE CASCADE to follow.
         jdbcTemplate.execute(
                 """
                 TRUNCATE TABLE
@@ -151,6 +152,11 @@ ON CONFLICT (assignment_id) DO NOTHING
                     schedule_outbox,
                     schedule_semester_archive_barriers,
                     lesson_homework_bindings,
+                    schedule_one_off_create_replay,
+                    one_off_lesson_restore_authorities,
+                    schedule_recurring_lifecycle_replay,
+                    lesson_template_restore_authorities,
+                    lesson_room_change_ledger,
                     schedule_assignment_rebind_ledger,
                     schedule_assignment_replacement_templates,
                     schedule_assignment_replacement_operations,

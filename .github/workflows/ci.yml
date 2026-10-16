@@ -444,6 +444,7 @@ jobs:
           audit = None
           admin_rights = None
           scoped_read = None
+          progress = None
           proof = {'schemaVersion': 1, 'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'],
                    'checkoutSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                    'service': service, 'state': 'UNEXPECTED_RED_RESULT', 'phase': 'SOURCE_ADMISSION'}
@@ -469,6 +470,36 @@ jobs:
                       replacements[path] = old
                   proof['counterexample'] = 'PREVIOUS_ROOM_PROJECTION'
                   proof['previousRevision'] = previous
+                  progress_source = app / 'src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java'
+                  progress_test = progress_source.read_bytes()
+                  assert hashlib.sha256(progress_test).hexdigest() == 'c795768085454244f7daf310ceb0e1f40947273f2d5f7de8cfe8917b6813a357'
+                  assert progress_test == subprocess.check_output(['git', 'show', 'HEAD:' + progress_source.as_posix()])
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(progress_source)]) == b''
+                  progress_lines = progress_test.decode().splitlines()
+                  assert progress_lines[202].strip() == 'void semesterProgressCountsFullPhysicalSemesterWithoutChangingDefaultLessonPage()'
+                  progress_oracle = '.andExpect(jsonPath("$.semesterProgress.items[0].done").value(1))'
+                  assert sum(progress_oracle in line for line in progress_lines) == 1
+                  assert progress_lines[246].strip() == progress_oracle
+                  progress_production = app / 'src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java'
+                  progress_current = progress_production.read_bytes()
+                  assert hashlib.sha256(progress_current).hexdigest() == '8d95281c1aea016edea575196ba3282bac935ca27bb80ca99f4dcd35638bbc75'
+                  progress_anchor = b'AND l.date + l.start_time <= CAST(:moscowNow AS timestamp)'
+                  assert progress_current.count(progress_anchor) == 1
+                  progress_negative = progress_current.replace(progress_anchor, b'')
+                  assert hashlib.sha256(progress_negative).hexdigest() == '8b6dc2f9ac45a04abb3f76a60bd8773d88bf59b42a3fa68cd801cbc2680154e0'
+                  progress_index = progress_current.index(progress_anchor)
+                  assert progress_negative[:progress_index] + progress_anchor + progress_negative[progress_index:] == progress_current
+                  progress = {'package': 'ru.rutcampustrack.schedule.integration.LessonApiIT',
+                              'method': 'semesterProgressCountsFullPhysicalSemesterWithoutChangingDefaultLessonPage',
+                              'source': progress_source, 'production': progress_production}
+                  replacements[progress_production] = progress_negative
+                  proof['semesterProgressRule'] = {
+                      'counterexample': 'OMITTED_CLOSED_LESSON_STARTED_DATE_FILTER',
+                      'testMethod': progress['package'] + '.' + progress['method'],
+                      'testSourceSha256': hashlib.sha256(progress_test).hexdigest(),
+                      'productionSourceSha256': hashlib.sha256(progress_current).hexdigest(),
+                      'counterexampleSourceSha256': hashlib.sha256(progress_negative).hexdigest(),
+                      'ruleFrame': progress['package'] + '.' + progress['method'] + '(LessonApiIT.java:247)'}
               elif service == 'academic-service':
                   package = 'ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT'
                   method = 'protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment'
@@ -676,7 +707,7 @@ jobs:
                   assert hashlib.sha256(student_test).hexdigest() == '2582d5c4de382bd46afeacd4c258678fbdcfff4916ade0cd17419dd7f3f38079'
                   student_production = app / 'src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java'
                   student_current = student_production.read_bytes()
-                  assert hashlib.sha256(student_current).hexdigest() == '17e26402e6755a830e02e8d6aa59db4e4f046ca8c9f7be65a16e41a654524835'
+                  assert hashlib.sha256(student_current).hexdigest() == 'f93136610cbd2fc01f44534a2731529c7adbcb325e88cd775880973d05b79fa3'
                   student_anchor = (b'        long groupId = scope.getRankGroupId();\n'
                                     b'        if (claims.groupId() == null\n'
                                     b'                || claims.groupId() <= 0\n'
@@ -685,7 +716,7 @@ jobs:
                   student_changed = student_anchor.replace(b'                || groupId != claims.groupId()\n', b'')
                   assert student_current.count(student_anchor) == 1
                   student_negative = student_current.replace(student_anchor, student_changed)
-                  assert hashlib.sha256(student_negative).hexdigest() == 'a38fa8767339c5c0f38ea1029907365a5fd1356d2c9e748ff4c09c46ead5365a'
+                  assert hashlib.sha256(student_negative).hexdigest() == 'f678bb87c3d27397297f5db6f2b40faeb11e0cb4b13ae9209028e26a0107f570'
                   assert student_negative.replace(student_changed, student_anchor) == student_current
                   student_lines = student_test.decode().splitlines()
                   assert student_lines[451].strip() == 'void studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue() {'
@@ -732,9 +763,11 @@ jobs:
                   selectors += ['--tests', admin_rights['package'] + '.' + admin_rights['method']]
               if scoped_read is not None:
                   selectors += ['--tests', scoped_read['package'] + '.' + scoped_read['method']]
+              if progress is not None:
+                  selectors += ['--tests', progress['package'] + '.' + progress['method']]
               with (private / 'red.private.log').open('wb') as log:
                   run = subprocess.run(['./gradlew', ':services:' + service + ':' + app.name + ':integrationTest',
-                                        '--no-daemon', *(['--no-build-cache'] if audit is not None or service == 'auth-service' or scoped_read is not None else []), *selectors],
+                                        '--no-daemon', *(['--no-build-cache'] if audit is not None or service == 'auth-service' or scoped_read is not None or progress is not None else []), *selectors],
                                        stdout=log, stderr=subprocess.STDOUT, timeout=360)
               proof['nativeExit'] = run.returncode
               assert run.returncode != 0
@@ -1024,6 +1057,39 @@ jobs:
                                      tests=1, failures=1, errors=0, skipped=0,
                                      restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
 
+              if progress is not None:
+                  assert run.returncode == 1
+                  progress_result = results / ('TEST-' + progress['package'] + '.xml')
+                  assert progress_result.is_file() and 0 < progress_result.stat().st_size <= 33554432
+                  progress_data = progress_result.read_bytes()
+                  assert b'<!DOCTYPE' not in progress_data.upper() and b'<!ENTITY' not in progress_data.upper()
+                  progress_suite = ET.fromstring(progress_data)
+                  assert progress_suite.tag == 'testsuite' and progress_suite.get('name') == progress['package']
+                  assert {key: progress_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                  progress_cases = progress_suite.findall('testcase')
+                  assert len(progress_cases) == 1
+                  progress_case = progress_cases[0]
+                  assert progress_case.get('classname') == progress['package'] and progress_case.get('name') == progress['method'] + '()'
+                  assert not progress_case.findall('error') and not progress_case.findall('skipped') and len(progress_case.findall('failure')) == 1
+                  progress_failure = progress_case.find('failure')
+                  assert progress_failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
+                  progress_message = progress_failure.get('message', '').removeprefix(progress_failure.get('type') + ': ')
+                  assert re.fullmatch(r'JSON path "\$\.semesterProgress\.items\[0\]\.done" expected:<1> but was:<2>', progress_message)
+                  progress_named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(progress['package'] + '.' + progress['method'])
+                      + r'\(LessonApiIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', progress_failure.text or '')
+                  progress_rule = proof['semesterProgressRule']
+                  progress_rule['namedMethodFrameCount'] = len(progress_named_lines)
+                  progress_rule['expectedRuleFrameMatched'] = bool(
+                      re.search(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                                + re.escape(progress_rule['ruleFrame']) + r'[ \t]*$', progress_failure.text or ''))
+                  assert progress_rule['namedMethodFrameCount'] == 1 and progress_rule['expectedRuleFrameMatched']
+                  progress_rule.update(state='EXPECTED_RULE_FAILURE', expectedDone=1, observedDone=2,
+                                       tests=1, failures=1, errors=0, skipped=0,
+                                       restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
+
               proof.update(state='EXPECTED_RULE_FAILURE', tests=1, failures=1, errors=0, skipped=0,
                            restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
           finally:
@@ -1059,6 +1125,11 @@ jobs:
                   for path in (scoped_read['source'], scoped_read['production']):
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
                   proof[scoped_read['proofKey']]['sourceRestoredExact'] = True
+              if progress is not None and current:
+                  assert hashlib.sha256(progress['source'].read_bytes()).hexdigest() == 'c795768085454244f7daf310ceb0e1f40947273f2d5f7de8cfe8917b6813a357'
+                  assert hashlib.sha256(progress['production'].read_bytes()).hexdigest() == '8d95281c1aea016edea575196ba3282bac935ca27bb80ca99f4dcd35638bbc75'
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(progress['source'])]) == b''
+                  proof['semesterProgressRule']['sourceRestoredExact'] = True
 
               for source, name in [(results, 'red-results'), (reports, 'red-reports')]:
                   if source.exists():
@@ -1205,7 +1276,7 @@ jobs:
         id: java-tests
         # Auth failed before tests while resolving compileProtoPath dependencies.
         # Refresh resolution metadata for this lane; keep the same task and gates.
-        run: ./gradlew ${{ matrix.service.path }}:integrationTest --no-daemon ${{ matrix.service.name == 'auth-service' && '--refresh-dependencies' || '' }}
+        run: ./gradlew ${{ matrix.service.path }}:integrationTest --no-daemon ${{ matrix.service.name == 'auth-service' && '--refresh-dependencies' || '' }} ${{ matrix.service.name == 'schedule-service' && '--no-build-cache' || '' }}
 
       - name: Upload integration test reports
         if: failure()
@@ -1232,6 +1303,10 @@ jobs:
           import hashlib, json, os, pathlib, subprocess, sys
 
           targets = {
+              'schedule-service': ('ru.rutcampustrack.schedule.integration.LessonApiIT',
+                                   'semesterProgressCountsFullPhysicalSemesterWithoutChangingDefaultLessonPage',
+                                   'services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java',
+                                   'c795768085454244f7daf310ceb0e1f40947273f2d5f7de8cfe8917b6813a357'),
               'auth-service': ('ru.rutcampustrack.auth.integration.ExportJobHttpIT',
                                'readyTeacherFilesRequireEveryCapturedCurrentPairWhileIndependentPairRemainsUsable',
                                'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java',
@@ -1264,6 +1339,10 @@ jobs:
                   and meta['runAttempt'] == os.environ['RCT_CI_RUN_ATTEMPT'])
           package, method, source, digest = targets[service]
           assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
+          if service == 'schedule-service':
+              production = pathlib.Path('services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java')
+              assert hashlib.sha256(production.read_bytes()).hexdigest() == '8d95281c1aea016edea575196ba3282bac935ca27bb80ca99f4dcd35638bbc75'
+              assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(production)]) == b''
           selected = [case for case in value['cases'] if case.get('classname') == package and case.get('method') == method]
           assert len(selected) == 1
           case = selected[0]

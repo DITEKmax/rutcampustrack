@@ -183,6 +183,21 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                         new ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest(
                                 firstAvailableManagedGroupName("УВП")));
 
+        // Create and activate the intended homework semester before the subject writer
+        // binds its immutable semester identity (D029).
+        testSemester = new Semester();
+        testSemester.setName("Test Semester " + System.nanoTime());
+        testSemester.setDateFrom(LocalDate.of(2027, 1, 1));
+        testSemester.setDateTo(LocalDate.of(2027, 6, 30));
+        testSemester.setSemesterType(ru.rutcampustrack.academic.contract.enums.SemesterType.SPRING);
+        testSemester.setAcademicYear(2026);
+        testSemester.setActive(false);
+        testSemester.setCreatedAt(OffsetDateTime.now());
+        testSemester = semesterRepository.save(testSemester);
+
+        when(requestContext.getUserId()).thenReturn(null);
+        testSemester = semesterService.activateSemester(testSemester.getId());
+
         // Create the subject and its canonical lesson type atomically through
         // the managed writer; the database requires every subject to retain a
         // corresponding subject_lesson_types row.
@@ -196,18 +211,6 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                                 SubjectType.LECTURE,
                                 List.of(SubjectType.LECTURE),
                                 List.of()));
-
-        // Create a semester for homework tests (inactive, so it doesn't conflict with exclusion
-        // constraint)
-        testSemester = new Semester();
-        testSemester.setName("Test Semester " + System.nanoTime());
-        testSemester.setDateFrom(LocalDate.of(2027, 1, 1));
-        testSemester.setDateTo(LocalDate.of(2027, 6, 30));
-        testSemester.setSemesterType(ru.rutcampustrack.academic.contract.enums.SemesterType.SPRING);
-        testSemester.setAcademicYear(2026);
-        testSemester.setActive(false);
-        testSemester.setCreatedAt(OffsetDateTime.now());
-        testSemester = semesterRepository.save(testSemester);
 
         // Create the student through UserService so enrollment history is
         // written atomically with the user row.

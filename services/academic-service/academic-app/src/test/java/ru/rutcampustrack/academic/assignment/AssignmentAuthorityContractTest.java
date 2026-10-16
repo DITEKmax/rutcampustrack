@@ -74,6 +74,7 @@ class AssignmentAuthorityContractTest {
         when(semesters.findByIdForUpdate(33L)).thenReturn(java.util.Optional.of(semester));
         when(subjects.findById(11L)).thenReturn(java.util.Optional.of(subject));
         when(subject.getGroupId()).thenReturn(22L);
+        when(subject.getSemesterId()).thenReturn(33L);
         when(types.existsBySubjectIdAndLessonType(11L, SubjectType.LECTURE)).thenReturn(true);
         when(users.findById(7L)).thenReturn(java.util.Optional.of(teacher));
         when(teacher.getId()).thenReturn(7L);
@@ -117,6 +118,7 @@ class AssignmentAuthorityContractTest {
         when(semesters.findByIdForUpdate(33L)).thenReturn(java.util.Optional.of(semester));
         when(subjects.findById(11L)).thenReturn(java.util.Optional.of(subject));
         when(subject.getGroupId()).thenReturn(22L);
+        when(subject.getSemesterId()).thenReturn(33L);
         when(types.existsBySubjectIdAndLessonType(11L, SubjectType.LECTURE)).thenReturn(true);
         when(users.findById(7L)).thenReturn(java.util.Optional.of(teacher));
         when(teacher.getId()).thenReturn(7L);
@@ -142,7 +144,10 @@ class AssignmentAuthorityContractTest {
                                         LocalDate.of(2026, 9, 1),
                                         null))
                 .isInstanceOf(ConflictException.class);
+        verify(assignments)
+                .findOverlapping(7L, 11L, 22L, 33L, "lecture", LocalDate.of(2026, 9, 1), null);
         verify(assignments, never()).save(any(Assignment.class));
+        verify(assignments, never()).saveAndFlush(any(Assignment.class));
     }
 
     private static Semester semester(LocalDate from, LocalDate to) {

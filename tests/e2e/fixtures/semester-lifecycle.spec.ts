@@ -2441,6 +2441,38 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
         'Archive dependencies must remain healthy',
       );
     }
+    const readinessEnd = performance.now() + budget(10000);
+    await expect
+      .poll(
+        async () => {
+          const remaining = Math.floor(readinessEnd - performance.now());
+          requireValue(remaining > 0, 'Directed archive readiness deadline exhausted');
+          const response = await admin!.request.get(
+            `/api/academic/semesters/${scope.semester}/delete-preview`,
+            { headers: admin!.headers(), timeout: Math.min(2000, remaining) },
+          );
+          try {
+            if (response.status() === 503) return false;
+            requireValue(response.status() === 200, 'Directed archive readiness read rejected');
+            const preview = await response.json();
+            requireValue(
+              preview.semesterId === scope.semester &&
+                preview.priorState === 'ACTIVE' &&
+                preview.stateVersion === previous!.stateVersion,
+              'Directed archive readiness semester identity changed',
+            );
+            return true;
+          } finally {
+            await response.dispose();
+          }
+        },
+        {
+          timeout: Math.max(1, Math.floor(readinessEnd - performance.now())),
+          message: 'Academic directed archive dependencies are ready',
+        },
+      )
+      .toBe(true);
+    budget(10000, { archive: true }, true);
     archiveStarted = true;
     authorityDirty = true;
     const operation = await admin.call(

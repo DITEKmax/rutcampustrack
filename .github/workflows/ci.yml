@@ -2789,9 +2789,14 @@ jobs:
           fi
 
   e2e-auth:
-    name: Playwright E2E auth flow
+    name: Playwright E2E auth flow (${{ matrix.group }})
     runs-on: ubuntu-latest
     timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        group: [client, lifecycle]
     steps:
       - uses: actions/checkout@v4
       - name: Record the actual PR checkout revision
@@ -2816,7 +2821,7 @@ jobs:
       - name: Upload the closed checkout revision
         uses: actions/upload-artifact@v4
         with:
-          name: checkout-safe-${{ github.run_attempt }}
+          name: checkout-safe-${{ matrix.group }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/rct-checkout.safe.json
           if-no-files-found: error
           retention-days: 7
@@ -3061,6 +3066,7 @@ jobs:
           PY_TRUST
 
       - name: Run auth-flow @smoke specs (chromium only)
+        if: ${{ matrix.group == 'client' }}
         working-directory: tests/e2e
         env:
           # M13 G25.3 — HTTPS через self-signed cert на reverse-proxy
@@ -3071,7 +3077,7 @@ jobs:
 
       - name: Run accepted FIRST3 with closed diagnostics (chromium only)
         id: first3
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3100,7 +3106,7 @@ jobs:
 
       - name: Run remaining five accepted mobile scenarios (chromium only)
         id: remaining5
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3128,7 +3134,7 @@ jobs:
 
       - name: Trust the disposable localhost certificate for WebKit workers
         id: webkit-ready
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         run: |
           test "$RUNNER_ENVIRONMENT" = github-hosted
           test ! -e /usr/local/share/ca-certificates/rct-e2e-localhost.crt
@@ -3139,7 +3145,7 @@ jobs:
       - name: Run accepted online session revocation and recovery in actual WebKit
         id: webkit-subset
         timeout-minutes: 7
-        if: ${{ !cancelled() && steps.webkit-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.webkit-ready.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3169,7 +3175,7 @@ jobs:
       - name: Run the real production worker update and install logic
         id: worker-lifecycle
         timeout-minutes: 5
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3198,7 +3204,7 @@ jobs:
 
       - name: Run real Vue administrator account lifecycle
         id: admin-lifecycle
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3227,7 +3233,7 @@ jobs:
 
       - name: Run real Vue role transition and logout-all
         id: role-logout
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3257,7 +3263,7 @@ jobs:
       - name: Verify real student geolocation and manual absence prohibition
         id: student-geo
         timeout-minutes: 4
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3286,7 +3292,7 @@ jobs:
       - name: Verify real Vue helper homework edit and retained completion
         id: homework-lifecycle
         timeout-minutes: 7
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3317,7 +3323,7 @@ jobs:
       - name: Verify real Vue map viewing and download after API replacement
         id: map-lifecycle
         timeout-minutes: 4
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3348,7 +3354,7 @@ jobs:
       - name: Verify real Vue FULL and LIMITED registry downloads
         id: registry-export
         timeout-minutes: 7
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3379,7 +3385,7 @@ jobs:
       - name: Verify real Vue helper statistics cancellation and request decisions
         id: helper-capabilities
         timeout-minutes: 5
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3410,7 +3416,7 @@ jobs:
       - name: Check the real homework notification target against a controlled navigation fault
         id: homework-target-sensitivity
         timeout-minutes: 7
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
@@ -3537,7 +3543,7 @@ jobs:
       - name: Verify owned semester metadata and historical promotion through the ready UI
         id: admin-semester-ui
         timeout-minutes: 9
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
+        if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3568,7 +3574,7 @@ jobs:
       - name: Verify exact subject deletion through real proof and participants
         id: subject-deletion-cascade
         timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
+        if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -3598,7 +3604,7 @@ jobs:
       - name: Verify interrupted assignment closure and next-day replacement
         id: assignment-lifecycle
         timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
+        if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') }}
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
@@ -4426,7 +4432,7 @@ jobs:
       - name: Verify Today quick request after the genuine first lesson closes
         id: student-today-quick-request
         timeout-minutes: 4
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
+        if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -4455,7 +4461,7 @@ jobs:
       - name: Verify real Vue schedule lifecycle and attendance requests
         id: lesson-lifecycle
         timeout-minutes: 17
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
+        if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -4552,7 +4558,7 @@ jobs:
       - name: Verify exact stranded semester effect reconciliation
         id: semester-reconciliation
         timeout-minutes: 9
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
+        if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -4693,7 +4699,7 @@ jobs:
       - name: Restore a real application checkpoint into fresh disposable databases
         id: application-recovery
         timeout-minutes: 12
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.lesson-lifecycle.outputs.clockReady == 'true' }}
+        if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.e2e-ready.outcome == 'success' && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.lesson-lifecycle.outputs.clockReady == 'true' }}
         env:
           E2E_BASE_URL: https://localhost:8443
           RCT_E2E_SYNTHETIC_SEED: 'true'
@@ -5021,7 +5027,7 @@ jobs:
       - name: Verify real semester archive and restore participants
         id: semester-lifecycle
         timeout-minutes: 9
-        if: ${{ !cancelled() && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
+        if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' }}
         working-directory: tests/e2e
         env:
           E2E_BASE_URL: https://localhost:8443
@@ -5096,3 +5102,19 @@ jobs:
       - name: Stop isolated e2e containers
         if: always()
         run: docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml down
+
+  e2e-auth-required:
+    name: Playwright E2E auth flow
+    if: ${{ always() }}
+    needs: e2e-auth
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Require both isolated browser groups to succeed
+        env:
+          RCT_BROWSER_MATRIX_RESULT: ${{ needs.e2e-auth.result }}
+        run: |
+          if [ "$RCT_BROWSER_MATRIX_RESULT" != success ]; then
+            printf '%s\n' 'Required browser groups did not both succeed'
+            exit 1
+          fi

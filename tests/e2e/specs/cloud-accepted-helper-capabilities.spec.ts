@@ -346,7 +346,7 @@ test('CANCEL_LESSONS confirms a real cancellation and revoked restore cannot res
 }, info) => {
   const cutoff =
     (retryStartedAt.get(info) ?? performance.now()) + Math.min(info.timeout, 120000) - 30000;
-  const retryUntilMs = Date.now() + Math.max(0, cutoff - performance.now());
+  const retryUntilMs = Date.now() + Math.max(0, Math.floor(cutoff - performance.now()));
   const { user, grant } = await singleCapability(dataset, 'CANCEL_LESSONS');
   const lesson = await oneOff(dataset, dataset.today, 8);
   const { accessToken } = await loginPwa(page, user, { retryUntilMs });

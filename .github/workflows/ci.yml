@@ -244,7 +244,7 @@ jobs:
 
       - name: Unit tests ${{ matrix.service.name }}
         id: java-tests
-        run: ./gradlew ${{ matrix.service.path }}:test --no-daemon
+        run: ./gradlew ${{ matrix.service.path }}:test --no-daemon ${{ matrix.service.name == 'schedule-service' && '--no-build-cache' || '' }}
 
       - name: Upload unit test reports
         if: failure()
@@ -445,6 +445,7 @@ jobs:
           admin_rights = None
           scoped_read = None
           progress = None
+          subject_digest = None
           proof = {'schemaVersion': 1, 'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'],
                    'checkoutSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                    'service': service, 'state': 'UNEXPECTED_RED_RESULT', 'phase': 'SOURCE_ADMISSION'}
@@ -675,6 +676,35 @@ jobs:
                                  'testSha': hashlib.sha256(teacher_test).hexdigest(),
                                  'productionSha': hashlib.sha256(teacher_current).hexdigest(),
                                  'negative': teacher_negative, 'counterexample': 'OMITTED_CAPTURED_TEACHER_PAIRS_REAUTHORIZATION'}
+                  digest_source = app / 'src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java'
+                  digest_test_source = app / 'src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java'
+                  digest_current, digest_test = digest_source.read_bytes(), digest_test_source.read_bytes()
+                  assert hashlib.sha256(digest_current).hexdigest() == '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'
+                  assert hashlib.sha256(digest_test).hexdigest() == 'e1e1a3d23249ca58d7379e82f1ef14a833b0657840c9062e368069041e028ec6'
+                  assert digest_test == subprocess.check_output(['git', 'show', 'HEAD:' + digest_test_source.as_posix()])
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(digest_test_source)]) == b''
+                  digest_anchor, digest_changed = b'|| !p.digest().equals(b.previewDigest())', b'|| false'
+                  assert digest_current.count(digest_anchor) == 1
+                  digest_negative = digest_current.replace(digest_anchor, digest_changed)
+                  assert hashlib.sha256(digest_negative).hexdigest() == '101e3c63f1fca24beffebbf3a932dcb6e1c928f86a9bc5ffee35df2e88ae39ab'
+                  assert digest_negative.replace(digest_changed, digest_anchor) == digest_current
+                  digest_lines = digest_test.decode().splitlines()
+                  digest_package = 'ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT'
+                  digest_method = 'passwordAndExactPurposeScopedProofProduceOneDurableReplayableReceipt'
+                  assert digest_lines[38].strip() == 'void ' + digest_method + '() throws Exception {'
+                  assert digest_lines[64].strip() == 'assertPrivate(call("verify", new VerifyRequest(token, changedDigest, id, code)), 409);'
+                  assert digest_lines[274].strip() == 'assertThat(response.getStatusCode().value()).isEqualTo(expected);'
+                  subject_digest = {'package': digest_package, 'method': digest_method,
+                                    'source': digest_test_source, 'production': digest_source}
+                  replacements[digest_source] = digest_negative
+                  proof['subjectDigestRule'] = {
+                      'counterexample': 'OMITTED_SUBJECT_PREVIEW_DIGEST_BINDING',
+                      'testMethod': digest_package + '.' + digest_method,
+                      'testSourceSha256': hashlib.sha256(digest_test).hexdigest(),
+                      'productionSourceSha256': hashlib.sha256(digest_current).hexdigest(),
+                      'counterexampleSourceSha256': hashlib.sha256(digest_negative).hexdigest(),
+                      'ruleFrame': digest_package + '.' + digest_method + '(SubjectDeletionProofHttpIT.java:65)',
+                      'helperFrame': digest_package + '.assertPrivate(SubjectDeletionProofHttpIT.java:275)'}
 
               elif service == 'notification-service':
                   package = 'ru.rutcampustrack.notification.history.NotificationStateV2IT'
@@ -765,6 +795,8 @@ jobs:
                   selectors += ['--tests', scoped_read['package'] + '.' + scoped_read['method']]
               if progress is not None:
                   selectors += ['--tests', progress['package'] + '.' + progress['method']]
+              if subject_digest is not None:
+                  selectors += ['--tests', subject_digest['package'] + '.' + subject_digest['method']]
               with (private / 'red.private.log').open('wb') as log:
                   run = subprocess.run(['./gradlew', ':services:' + service + ':' + app.name + ':integrationTest',
                                         '--no-daemon', *(['--no-build-cache'] if audit is not None or service == 'auth-service' or scoped_read is not None or progress is not None else []), *selectors],
@@ -1057,6 +1089,43 @@ jobs:
                                      tests=1, failures=1, errors=0, skipped=0,
                                      restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
 
+              if subject_digest is not None:
+                  assert run.returncode == 1
+                  digest_result = results / ('TEST-' + subject_digest['package'] + '.xml')
+                  assert digest_result.is_file() and not digest_result.is_symlink() and 0 < digest_result.stat().st_size <= 33554432
+                  digest_data = digest_result.read_bytes()
+                  assert b'<!DOCTYPE' not in digest_data.upper() and b'<!ENTITY' not in digest_data.upper()
+                  digest_suite = ET.fromstring(digest_data)
+                  assert digest_suite.tag == 'testsuite' and digest_suite.get('name') == subject_digest['package']
+                  assert {key: digest_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                  digest_cases = digest_suite.findall('testcase')
+                  assert len(digest_cases) == 1
+                  digest_case = digest_cases[0]
+                  assert digest_case.get('classname') == subject_digest['package'] and digest_case.get('name') == subject_digest['method'] + '()'
+                  assert not digest_case.findall('error') and not digest_case.findall('skipped') and len(digest_case.findall('failure')) == 1
+                  digest_failure = digest_case.find('failure')
+                  assert digest_failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
+                  digest_message = digest_failure.get('message', '').removeprefix(digest_failure.get('type') + ': ')
+                  assert re.fullmatch(r'\s*expected:\s*409\s+but was:\s*200\s*', digest_message)
+                  digest_named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(subject_digest['package'] + '.' + subject_digest['method'])
+                      + r'\(SubjectDeletionProofHttpIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', digest_failure.text or '')
+                  digest_rule = proof['subjectDigestRule']
+                  digest_rule['namedMethodFrameCount'] = len(digest_named_lines)
+                  digest_rule['expectedRuleFrameMatched'] = bool(
+                      re.search(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                                + re.escape(digest_rule['ruleFrame']) + r'[ \t]*$', digest_failure.text or ''))
+                  digest_rule['expectedHelperFrameMatched'] = len(re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(digest_rule['helperFrame']) + r'[ \t]*$', digest_failure.text or '')) == 1
+                  assert (digest_rule['namedMethodFrameCount'] == 1 and digest_rule['expectedRuleFrameMatched']
+                          and digest_rule['expectedHelperFrameMatched'])
+                  digest_rule.update(state='EXPECTED_RULE_FAILURE', expectedStatus=409, observedStatus=200,
+                                     tests=1, failures=1, errors=0, skipped=0,
+                                     restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
+
               if progress is not None:
                   assert run.returncode == 1
                   progress_result = results / ('TEST-' + progress['package'] + '.xml')
@@ -1125,6 +1194,12 @@ jobs:
                   for path in (scoped_read['source'], scoped_read['production']):
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
                   proof[scoped_read['proofKey']]['sourceRestoredExact'] = True
+              if subject_digest is not None and current:
+                  assert hashlib.sha256(subject_digest['source'].read_bytes()).hexdigest() == 'e1e1a3d23249ca58d7379e82f1ef14a833b0657840c9062e368069041e028ec6'
+                  assert hashlib.sha256(subject_digest['production'].read_bytes()).hexdigest() == '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'
+                  for path in (subject_digest['source'], subject_digest['production']):
+                      assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
+                  proof['subjectDigestRule']['sourceRestoredExact'] = True
               if progress is not None and current:
                   assert hashlib.sha256(progress['source'].read_bytes()).hexdigest() == 'c795768085454244f7daf310ceb0e1f40947273f2d5f7de8cfe8917b6813a357'
                   assert hashlib.sha256(progress['production'].read_bytes()).hexdigest() == '8d95281c1aea016edea575196ba3282bac935ca27bb80ca99f4dcd35638bbc75'
@@ -1348,6 +1423,21 @@ jobs:
           case = selected[0]
           assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == source
                   and case['sourceSha256'] == digest and case['status'] == 'PASSED')
+          if service == 'auth-service':
+              package = 'ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT'
+              method = 'passwordAndExactPurposeScopedProofProduceOneDurableReplayableReceipt'
+              source = 'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java'
+              digest = 'e1e1a3d23249ca58d7379e82f1ef14a833b0657840c9062e368069041e028ec6'
+              production = pathlib.Path('services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java')
+              assert hashlib.sha256(production.read_bytes()).hexdigest() == '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'
+              assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
+              for target in (source, str(production)):
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', target]) == b''
+              selected = [case for case in value['cases'] if case.get('classname') == package and case.get('method') == method]
+              assert len(selected) == 1
+              case = selected[0]
+              assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == source
+                      and case['sourceSha256'] == digest and case['status'] == 'PASSED')
           print('PASS exact restored scoped-read method in the ordinary integration gate')
           PY_SCOPED_RESTORED_GREEN
 
@@ -3083,6 +3173,36 @@ jobs:
               'org.springframework.dao.DataIntegrityViolationException': 'DATA_INTEGRITY',
               'org.springframework.http.converter.HttpMessageNotWritableException': 'HTTP_SERIALIZATION',
           }
+          HTTP500_STAGES = {'ATTENDANCE_LESSON_REPORT', 'SCHEDULE_ONEOFF_LESSON_CREATE'}
+          OWN_FRAME_SOURCES = {
+              'ATTENDANCE_REPORT_SERVICE': ('attendance-service', 'ru.rutcampustrack.attendance.report.ReportService',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java',
+                  '8ba6b4eea45e27b10d31b9daa010898cac4db68daaa4bfc46c08e71010f730d1', 1812),
+              'ATTENDANCE_READ_PORT': ('attendance-service', 'ru.rutcampustrack.attendance.checkin.AttendanceReadPortImpl',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/checkin/AttendanceReadPortImpl.java',
+                  'eac7f0c10408548f82bf2043e601cf84f796ce2369994a1698a9f3f54b1322f6', 128),
+              'HEADMAN_APPROVED_TICKET_RESOLVER': ('attendance-service', 'ru.rutcampustrack.attendance.report.HeadmanApprovedTicketResolver',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanApprovedTicketResolver.java',
+                  '7ccf99773d14f56d7ec70a54ca869033c04bcb2b58adbb674cb0e818696847f7', 96),
+              'ATTENDANCE_REPORT_CONTROLLER': ('attendance-service', 'ru.rutcampustrack.attendance.report.ReportController',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportController.java',
+                  '9253480728210dbb49474a4fa14b6318cf2c9f2e85fba28c99d1fe68f281c4c4', 303),
+              'SCHEDULE_ONEOFF_SERVICE': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonService',
+                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java',
+                  '01cef7d1734a2c850a89b37a164dc5f2fc55ac5ba2771a48ec98c42c53448c46', 75),
+              'SCHEDULE_ONEOFF_COORDINATOR': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonCoordinator',
+                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonCoordinator.java',
+                  'ce21e00634da8326fd8386be27f0bc89e5f8e1d610ecfa3bcf0717223c648205', 181),
+              'SCHEDULE_ONEOFF_WRITER': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonWriter',
+                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonWriter.java',
+                  '4f3bf7ba2033ae7b03e162544a1f8a4788b44eb49fba8b73695baa050defab79', 856),
+              'SCHEDULE_SEMESTER_ARCHIVE_WRITE_FENCE': ('schedule-service', 'ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence',
+                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveWriteFence.java',
+                  '38ec1cb6f70cd2af052648ac645491ee3166db9549adcde77199735d1628b597', 265),
+              'SCHEDULE_ONEOFF_CONTROLLER': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonController',
+                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java',
+                  '31dbb34318391172689f937046e4aed7e63b239e45be371fa9b04271d6b53417', 59),
+          }
           PROJECTION_KINDS = {
               'INVALID_OCCURRENCE', 'DUPLICATE_OCCURRENCE', 'UNSUPPORTED_ATTENDANCE_STATUS',
               'INVALID_ROSTER', 'INVALID_METRICS', 'ACADEMIC_DEPENDENCY', 'SCHEDULE_DEPENDENCY', 'UNKNOWN',
@@ -3112,8 +3232,38 @@ jobs:
               return json.loads(raw, object_pairs_hook=pairs,
                                 parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
 
-          def output(state, stage, category='UNKNOWN'):
-              return {'state': state, 'exceptionCategory': category, 'sourceStage': stage}
+          def output(state, stage, category='UNKNOWN', chain=None, own_frame=None):
+              value = {'state': state, 'exceptionCategory': category, 'sourceStage': stage}
+              if stage in HTTP500_STAGES:
+                  value.update(reportedExceptionChain=[] if chain is None else chain,
+                               reportedOwnFrame=own_frame)
+              return value
+
+          def verify_http_sources(config):
+              for service, _, source, digest, lines in OWN_FRAME_SOURCES.values():
+                  if service != config[5]:
+                      continue
+                  path = Path(source)
+                  info = path.lstat()
+                  if not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 262144:
+                      raise ValueError('Reported frame source unavailable')
+                  raw = path.read_bytes()
+                  if hashlib.sha256(raw).hexdigest() != digest or len(raw.splitlines()) != lines:
+                      raise ValueError('Reported frame source changed')
+
+          def reported_own_frame(stack, config):
+              matches = []
+              for symbol, (service, clazz, source, _, line_bound) in OWN_FRAME_SOURCES.items():
+                  if service != config[5]:
+                      continue
+                  pattern = (r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
+                             + re.escape(clazz) + r'\.[A-Za-z_$<>][A-Za-z0-9_$<>]*\('
+                             + re.escape(Path(source).name) + r':([1-9][0-9]{0,5})\)[ \t]*$')
+                  for match in re.finditer(pattern, stack):
+                      line = int(match[1])
+                      if line <= line_bound:
+                          matches.append((match.start(), {'symbol': symbol, 'line': line}))
+              return min(matches, key=lambda item: item[0])[1] if matches else None
 
           def is_student_stats_failure(value):
               keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
@@ -3212,7 +3362,8 @@ jobs:
           def classify(payload, config):
               stage = config[6]
               if len(payload) > LIMIT or len(payload.splitlines()) > 200:
-                  return output('UNAVAILABLE_LOG_FORMAT', stage)
+                  return output('UNAVAILABLE_LOG_FORMAT' if config[4] == 'STUDENT_STATS_HTTP503'
+                                else 'UNAVAILABLE_LOG_LIMIT', stage)
               if config[4] == 'STUDENT_STATS_HTTP503':
                   return classify_projection(payload, config)
               frame = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
@@ -3220,10 +3371,18 @@ jobs:
               throwable = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
                                      r'((?:[A-Za-z_$][A-Za-z0-9_$]*\.)+'
                                      r'[A-Za-z_$][A-Za-z0-9_$]*(?:Exception|Error))(?::|$)')
-              matches, unusable = [], False
+              reported_header = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
+                                           r'((?:[A-Za-z_$][A-Za-z0-9_$]*\.)+'
+                                           r'(?:[A-Za-z_$][A-Za-z0-9_$]*)?(?:Exception|Error))(?::[^\r\n]*|$)')
+              stack_frame = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
+                                       r'(?:[A-Za-z_$][A-Za-z0-9_$]*\.)+[A-Za-z_$<>][A-Za-z0-9_$<>]*'
+                                       r'\((?:[A-Za-z0-9_$.-]+\.java:[1-9][0-9]{0,5}|Native Method|Unknown Source)\)[ \t]*$')
+              matches, fallback = [], []
+              unusable, invalid_stack, fallback_ambiguous = False, False, False
+              line_limit = controller_seen = False
               for line in payload.splitlines():
                   if len(line) > 131072:
-                      unusable = True
+                      unusable = line_limit = True
                       continue
                   try:
                       record = decode(line)
@@ -3237,25 +3396,55 @@ jobs:
                           or record.get('level') != 'ERROR'):
                       continue
                   stack = record.get('stack')
-                  if type(stack) is not str or len(stack.encode()) > 131072:
-                      unusable = True
+                  try:
+                      bounded_stack = type(stack) is str and 0 < len(stack.encode()) <= 131072
+                  except UnicodeError:
+                      bounded_stack = False
+                  if not bounded_stack:
+                      unusable = invalid_stack = True
                       continue
                   frames = frame.findall(stack)
-                  if not frames:
-                      continue
-                  if len(frames) != 1 or re.search(r'(?m)^[ \t]*Suppressed:', stack):
-                      return output('AMBIGUOUS', stage)
+                  suppressed = bool(re.search(r'(?m)^[ \t]*Suppressed:', stack))
                   kinds = throwable.findall(stack)
-                  matches.append(CLASSES.get(kinds[-1], 'UNKNOWN') if kinds else 'UNKNOWN')
-              if unusable:
-                  if len(matches) == 1:
-                      return output('REPORTED_PARTIAL_LOG_FORMAT', stage, matches[0])
-                  if matches:
+                  chain_kinds = reported_header.findall(stack)
+                  if frames:
+                      controller_seen = True
+                      if len(frames) != 1 or suppressed:
+                          return output('AMBIGUOUS', stage)
+                      if len(chain_kinds) > 16:
+                          unusable = invalid_stack = True
+                          continue
+                      chain = [CLASSES.get(kind, 'UNKNOWN') for kind in chain_kinds]
+                      # Retain the pre-existing exact-controller leaf-category meaning.
+                      category = CLASSES.get(kinds[-1], 'UNKNOWN') if kinds else 'UNKNOWN'
+                      matches.append((category, chain, reported_own_frame(stack, config)))
+                      continue
+                  if suppressed:
+                      fallback_ambiguous = True
+                      continue
+                  if (not 1 <= len(chain_kinds) <= 16 or not reported_header.match(stack)
+                          or not stack_frame.search(stack)):
+                      unusable = invalid_stack = True
+                      continue
+                  chain = [CLASSES.get(kind, 'UNKNOWN') for kind in chain_kinds]
+                  fallback.append((chain[-1], chain, reported_own_frame(stack, config)))
+              if matches:
+                  if len(matches) != 1:
                       return output('AMBIGUOUS', stage)
-                  return output('UNAVAILABLE_LOG_FORMAT', stage)
-              if len(matches) > 1:
+                  category, chain, own_frame = matches[0]
+                  return output('REPORTED_PARTIAL_LOG_FORMAT' if unusable else 'UNIQUE',
+                                stage, category, chain, own_frame)
+              if controller_seen:
+                  return output('UNAVAILABLE_EXCEPTION_STACK', stage)
+              # No request correlation is inferred from a Global-handler ERROR alone.
+              if fallback_ambiguous or len(fallback) > 1:
                   return output('AMBIGUOUS', stage)
-              return output('UNIQUE', stage, matches[0]) if matches else output('ABSENT', stage)
+              if fallback:
+                  category, chain, own_frame = fallback[0]
+                  return output('REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER' if unusable
+                                else 'REPORTED_NO_CONTROLLER', stage, category, chain, own_frame)
+              return output('UNAVAILABLE_EXCEPTION_STACK' if invalid_stack else
+                            'UNAVAILABLE_LOG_LIMIT' if line_limit else 'UNAVAILABLE_NO_ERROR_RECORD', stage)
 
           def load_failure(config):
               if (os.environ.get('GITHUB_ACTIONS') != 'true'
@@ -3269,6 +3458,8 @@ jobs:
                       if (not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 262144
                               or hashlib.sha256(path.read_bytes()).hexdigest() != digest):
                           raise ValueError('Projection diagnostic source changed')
+              else:
+                  verify_http_sources(config)
               run, attempt = os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT']
               if not re.fullmatch(r'[1-9][0-9]{0,19}', run) or not re.fullmatch(r'[1-9][0-9]{0,5}', attempt):
                   raise ValueError('Invalid diagnostic binding')

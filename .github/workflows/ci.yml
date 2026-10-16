@@ -447,6 +447,8 @@ jobs:
           progress = None
           subject_digest = None
           accepted_boundary = None
+          initial_membership = None
+          spring_completion = None
           proof = {'schemaVersion': 1, 'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'],
                    'checkoutSha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                    'service': service, 'state': 'UNEXPECTED_RED_RESULT', 'phase': 'SOURCE_ADMISSION'}
@@ -760,6 +762,81 @@ jobs:
                                  'productionSha': hashlib.sha256(student_current).hexdigest(),
                                  'negative': student_negative, 'counterexample': 'OMITTED_CURRENT_GROUP_CATALOGUE_MISMATCH'}
 
+              if service == 'attendance-service':
+                  backfill_source = app / 'src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java'
+                  backfill_test = backfill_source.read_bytes()
+                  assert hashlib.sha256(backfill_test).hexdigest() == 'dd786e8b1c04114712292ace449cbf0b618540e7f7c529c060d3774a981ee296'
+                  backfill_production = app / 'src/main/java/ru/rutcampustrack/attendance/event/InitialMembershipAttendanceBackfillService.java'
+                  backfill_current = backfill_production.read_bytes()
+                  assert hashlib.sha256(backfill_current).hexdigest() == 'd0336e7386142cbd15a15e9390b503b1e913981cce2f536fdc16150b75c665f1'
+                  for path in (backfill_source, backfill_production):
+                      assert path.read_bytes() == subprocess.check_output(['git', 'show', 'HEAD:' + path.as_posix()])
+                      assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
+                  backfill_lines = backfill_test.decode().splitlines()
+                  assert backfill_lines[735].strip() == 'void lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal()'
+                  assert backfill_lines[826].strip() == 'assertThat(inserted != null)'
+                  assert backfill_lines[827].strip() == '.as("late initial member must have a stored attendance record")'
+                  assert backfill_lines[828].strip() == '.isTrue();'
+                  backfill_anchor = b'                        lessons.applyInitialMembership(snapshot);'
+                  backfill_changed = b'                        // Deliberate sensitivity fault: omit the admitted target effect.'
+                  assert backfill_current.count(backfill_anchor) == 1
+                  backfill_negative = backfill_current.replace(backfill_anchor, backfill_changed, 1)
+                  assert hashlib.sha256(backfill_negative).hexdigest() == 'ba026e49b2c47eb6d6173ac1f30a85545bb58c746437c8a7804156e4050fd6a7'
+                  assert backfill_negative.replace(backfill_changed, backfill_anchor) == backfill_current
+                  initial_membership = {'package': 'ru.rutcampustrack.attendance.integration.EventConsumerIT',
+                                        'method': 'lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal',
+                                        'source': backfill_source, 'production': backfill_production}
+                  replacements[backfill_production] = backfill_negative
+                  proof['initialMembershipRule'] = {
+                      'counterexample': 'OMITTED_INITIAL_MEMBERSHIP_TARGET_EFFECT',
+                      'testMethod': initial_membership['package'] + '.' + initial_membership['method'],
+                      'testSourceSha256': hashlib.sha256(backfill_test).hexdigest(),
+                      'productionSourceSha256': hashlib.sha256(backfill_current).hexdigest(),
+                      'counterexampleSourceSha256': hashlib.sha256(backfill_negative).hexdigest(),
+                      'ruleFrame': initial_membership['package'] + '.' + initial_membership['method'] + '(EventConsumerIT.java:829)'}
+
+              if service == 'academic-service':
+                  spring_source = app / 'src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java'
+                  spring_test = spring_source.read_bytes()
+                  assert hashlib.sha256(spring_test).hexdigest() == '0ce360ecd435c35ab2d8ed22bcce91b1c5d47c8648b5684302f7f429fd3accfe'
+                  assert spring_test == subprocess.check_output(['git', 'show', 'HEAD:' + spring_source.as_posix()])
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(spring_source)]) == b''
+                  spring_lines = spring_test.decode().splitlines()
+                  assert spring_lines[903].strip() == 'void unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState()'
+                  assert spring_lines[981].strip() == '.andExpect(status().isConflict());'
+                  spring_service = app / 'src/main/java/ru/rutcampustrack/academic/group/GroupPromotionService.java'
+                  spring_repository = app / 'src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java'
+                  spring_faults = {
+                      spring_service: ('36fb5ffd1da101012ee658eae86b6a0e8bc589e2683fa73c37cc664be250da23',
+                          b'        if (requested.getSemesterType() != SemesterType.SPRING\n                || !cycleDateTo(requested).isBefore(LocalDate.now(clock))) {',
+                          b'        if (requested.getSemesterType() != SemesterType.SPRING) {',
+                          'a6d287c67a2ba9f1b5f78d3c93015964d3faffb82f97842e042a8c83733e295a'),
+                      spring_repository: ('e3e8606e43d49931184803eb73ed64a3a13eb1d8b128cc83db5a17839453a8d8',
+                          b'               AND COALESCE(promotion_cycle_date_to, date_to) < :today',
+                          b'               AND (COALESCE(promotion_cycle_date_to, date_to) < :today OR TRUE)',
+                          '64be6a9796d026f84aa93fc865e910836260e3a1c9d0873e46c52571c8aaef11'),
+                  }
+                  for path, (digest, anchor, changed, negative_digest) in spring_faults.items():
+                      source = path.read_bytes()
+                      assert hashlib.sha256(source).hexdigest() == digest
+                      assert source == subprocess.check_output(['git', 'show', 'HEAD:' + path.as_posix()])
+                      assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
+                      assert path not in replacements and source.count(anchor) == 1
+                      negative = source.replace(anchor, changed, 1)
+                      assert hashlib.sha256(negative).hexdigest() == negative_digest
+                      assert negative.replace(changed, anchor, 1) == source
+                      replacements[path] = negative
+                  spring_completion = {'package': 'ru.rutcampustrack.academic.group.GroupPromotionCycleIT',
+                                       'method': 'unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState',
+                                       'source': spring_source, 'production': spring_faults}
+                  proof['springCompletionRule'] = {
+                      'counterexample': 'OMITTED_SPRING_COMPLETION_VALIDATION',
+                      'testMethod': spring_completion['package'] + '.' + spring_completion['method'],
+                      'testSourceSha256': hashlib.sha256(spring_test).hexdigest(),
+                      'productionSourceSha256': {str(path): values[0] for path, values in spring_faults.items()},
+                      'counterexampleSourceSha256': {str(path): values[3] for path, values in spring_faults.items()},
+                      'ruleFrame': spring_completion['package'] + '.' + spring_completion['method'] + '(GroupPromotionCycleIT.java:982)'}
+
               # These four accepted boundary checks share the existing bounded RED/native gate.
               boundary_rules = {
                   'attendance-service': {
@@ -819,8 +896,8 @@ jobs:
                       'changed': '        return AdminPermission.validate(input.mode(), input.permissions().stream().filter(java.util.Objects::nonNull).filter(AdminPermission.allCodes()::contains).toList());',
                       'negativeSha': '06e0ff3c8d73a4f62ddc3541c916517d05a2d9c3e812143ca0d9f9cf12f78e23',
                       'counterexample': 'SILENTLY_FILTERED_UNKNOWN_AND_NULL_ADMIN_PERMISSION_ELEMENTS',
-                      'ruleLine': 393,
-                      'ruleSource': '.isBadRequest())',
+                      'ruleLine': 390,
+                      'ruleSource': '.andExpect(',
                       'messagePattern': 'Status expected:<400> but was:<200>',
                   },
               }
@@ -891,6 +968,10 @@ jobs:
                   selectors += ['--tests', subject_digest['package'] + '.' + subject_digest['method']]
               if accepted_boundary is not None:
                   selectors += ['--tests', accepted_boundary['package'] + '.' + accepted_boundary['method']]
+              if initial_membership is not None:
+                  selectors += ['--tests', initial_membership['package'] + '.' + initial_membership['method']]
+              if spring_completion is not None:
+                  selectors += ['--tests', spring_completion['package'] + '.' + spring_completion['method']]
               with (private / 'red.private.log').open('wb') as log:
                   run = subprocess.run(['./gradlew', ':services:' + service + ':' + app.name + ':integrationTest',
                                         '--no-daemon', *(['--no-build-cache'] if audit is not None or service == 'auth-service' or scoped_read is not None or progress is not None else []), *selectors],
@@ -1288,11 +1369,71 @@ jobs:
                       r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
                       + re.escape(accepted_boundary['package'] + '.' + accepted_boundary['method'])
                       + r'\(' + re.escape(accepted_boundary['source'].name) + r':([1-9][0-9]{0,5})\)[ \t]*$', boundary_failure.text or '')
+                  assert len(boundary_named_lines) <= 16
+                  proof['acceptedBoundaryRule']['observedRuleLines'] = [int(line) for line in boundary_named_lines]
                   assert boundary_named_lines == [str(accepted_boundary['ruleLine'])]
                   if 'helperLine' in accepted_boundary:
                       helper_frame = accepted_boundary['package'] + '.assertPrivate(' + accepted_boundary['source'].name + ':' + str(accepted_boundary['helperLine']) + ')'
                       assert len(re.findall(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?' + re.escape(helper_frame) + r'[ \t]*$', boundary_failure.text or '')) == 1
                   proof['acceptedBoundaryRule'].update(
+                      state='EXPECTED_RULE_FAILURE', namedMethodFrameCount=1, expectedRuleFrameMatched=True,
+                      tests=1, failures=1, errors=0, skipped=0,
+                      restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
+
+              if initial_membership is not None:
+                  assert run.returncode == 1
+                  backfill_result = results / ('TEST-' + initial_membership['package'] + '.xml')
+                  assert backfill_result.is_file() and not backfill_result.is_symlink() and 0 < backfill_result.stat().st_size <= 33554432
+                  backfill_data = backfill_result.read_bytes()
+                  assert b'<!DOCTYPE' not in backfill_data.upper() and b'<!ENTITY' not in backfill_data.upper()
+                  backfill_suite = ET.fromstring(backfill_data)
+                  assert backfill_suite.tag == 'testsuite' and backfill_suite.get('name') == initial_membership['package']
+                  assert {key: backfill_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                  backfill_cases = backfill_suite.findall('testcase')
+                  assert len(backfill_cases) == 1
+                  backfill_case = backfill_cases[0]
+                  assert backfill_case.get('classname') == initial_membership['package'] and backfill_case.get('name') == initial_membership['method'] + '()'
+                  assert not backfill_case.findall('error') and not backfill_case.findall('skipped') and len(backfill_case.findall('failure')) == 1
+                  backfill_failure = backfill_case.find('failure')
+                  assert backfill_failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
+                  backfill_message = backfill_failure.get('message', '').removeprefix(backfill_failure.get('type') + ': ')
+                  assert re.fullmatch(r'\s*\[late initial member must have a stored attendance record\]\s*Expecting value to be true but was false\s*', backfill_message)
+                  backfill_named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(initial_membership['package'] + '.' + initial_membership['method'])
+                      + r'\(EventConsumerIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', backfill_failure.text or '')
+                  assert backfill_named_lines == ['829']
+                  proof['initialMembershipRule'].update(
+                      state='EXPECTED_RULE_FAILURE', namedMethodFrameCount=1, expectedRuleFrameMatched=True,
+                      tests=1, failures=1, errors=0, skipped=0,
+                      restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
+
+              if spring_completion is not None:
+                  assert run.returncode == 1
+                  spring_result = results / ('TEST-' + spring_completion['package'] + '.xml')
+                  assert spring_result.is_file() and not spring_result.is_symlink() and 0 < spring_result.stat().st_size <= 33554432
+                  spring_data = spring_result.read_bytes()
+                  assert b'<!DOCTYPE' not in spring_data.upper() and b'<!ENTITY' not in spring_data.upper()
+                  spring_suite = ET.fromstring(spring_data)
+                  assert spring_suite.tag == 'testsuite' and spring_suite.get('name') == spring_completion['package']
+                  assert {key: spring_suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')} == {
+                      'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}
+                  spring_cases = spring_suite.findall('testcase')
+                  assert len(spring_cases) == 1
+                  spring_case = spring_cases[0]
+                  assert spring_case.get('classname') == spring_completion['package'] and spring_case.get('name') == spring_completion['method'] + '()'
+                  assert not spring_case.findall('error') and not spring_case.findall('skipped') and len(spring_case.findall('failure')) == 1
+                  spring_failure = spring_case.find('failure')
+                  assert spring_failure.get('type') in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}
+                  spring_message = spring_failure.get('message', '').removeprefix(spring_failure.get('type') + ': ')
+                  assert re.fullmatch(r'Status expected:<409> but was:<200>', spring_message)
+                  spring_named_lines = re.findall(
+                      r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+                      + re.escape(spring_completion['package'] + '.' + spring_completion['method'])
+                      + r'\(GroupPromotionCycleIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', spring_failure.text or '')
+                  assert spring_named_lines == ['982']
+                  proof['springCompletionRule'].update(
                       state='EXPECTED_RULE_FAILURE', namedMethodFrameCount=1, expectedRuleFrameMatched=True,
                       tests=1, failures=1, errors=0, skipped=0,
                       restoredGreen='REQUIRED_IN_FOLLOWING_ORDINARY_INTEGRATION_GATE')
@@ -1350,6 +1491,21 @@ jobs:
                   for path in (accepted_boundary['source'], accepted_boundary['production']):
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
                   proof['acceptedBoundaryRule']['sourceRestoredExact'] = True
+
+              if initial_membership is not None and current:
+                  assert hashlib.sha256(initial_membership['source'].read_bytes()).hexdigest() == 'dd786e8b1c04114712292ace449cbf0b618540e7f7c529c060d3774a981ee296'
+                  assert hashlib.sha256(initial_membership['production'].read_bytes()).hexdigest() == 'd0336e7386142cbd15a15e9390b503b1e913981cce2f536fdc16150b75c665f1'
+                  for path in (initial_membership['source'], initial_membership['production']):
+                      assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
+                  proof['initialMembershipRule']['sourceRestoredExact'] = True
+
+              if spring_completion is not None and current:
+                  assert hashlib.sha256(spring_completion['source'].read_bytes()).hexdigest() == '0ce360ecd435c35ab2d8ed22bcce91b1c5d47c8648b5684302f7f429fd3accfe'
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(spring_completion['source'])]) == b''
+                  for path, values in spring_completion['production'].items():
+                      assert hashlib.sha256(path.read_bytes()).hexdigest() == values[0]
+                      assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
+                  proof['springCompletionRule']['sourceRestoredExact'] = True
 
               for source, name in [(results, 'red-results'), (reports, 'red-reports')]:
                   if source.exists():
@@ -1610,6 +1766,55 @@ jobs:
           assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == source
                   and case['sourceSha256'] == digest and case['status'] == 'PASSED')
           print('PASS exact restored accepted-boundary method in the ordinary integration gate')
+          if service == 'academic-service':
+              package = 'ru.rutcampustrack.academic.group.GroupPromotionCycleIT'
+              method = 'unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState'
+              source = 'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java'
+              digest = '0ce360ecd435c35ab2d8ed22bcce91b1c5d47c8648b5684302f7f429fd3accfe'
+              assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
+              for target, target_digest in {
+                  source: digest,
+                  'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupPromotionService.java': '36fb5ffd1da101012ee658eae86b6a0e8bc589e2683fa73c37cc664be250da23',
+                  'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java': 'e3e8606e43d49931184803eb73ed64a3a13eb1d8b128cc83db5a17839453a8d8',
+              }.items():
+                  assert hashlib.sha256(pathlib.Path(target).read_bytes()).hexdigest() == target_digest
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', target]) == b''
+              selected = [case for case in value['cases'] if case.get('classname') == package and case.get('method') == method]
+              assert len(selected) == 1
+              case = selected[0]
+              assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == source
+                      and case['sourceSha256'] == digest and case['status'] == 'PASSED')
+              print('PASS exact restored pre-completion promotion method in the ordinary integration gate')
+          backfill_targets = {
+              'academic-service': ('ru.rutcampustrack.academic.integration.HistoricalMembershipIT',
+                  'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java',
+                  'a4dd36e2f09f22d11eb59c42501a4c54069e3902eb4f71b42fad45a30ae13025', (
+                      'initialEnrollmentAndEquivalentRoleAddAtomicallyAdmitPrivateBackfill',
+                      'refusedOutboxAndPostFenceEnrollmentRollbackUserHistoryWorkAndOutbox',
+                      'onlyExactBackfillAcknowledgementDrainsArchiveAndRetainsReplayIdentity',
+                      'v61IsAdditiveAndRestoresPendingAndAppliedReplayIdentities')),
+              'attendance-service': ('ru.rutcampustrack.attendance.integration.EventConsumerIT',
+                  'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java',
+                  'dd786e8b1c04114712292ace449cbf0b618540e7f7c529c060d3774a981ee296', (
+                      'lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal',
+                      'initialMembershipForeignUnknownAndOutboxFailureNeverPartiallyApply',
+                      'initialMembershipCannotResurrectSubjectOrSemesterTombstones')),
+          }
+          if service in backfill_targets:
+              package, source, digest, methods = backfill_targets[service]
+              assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
+              assert subprocess.check_output(['git', 'status', '--porcelain', '--', source]) == b''
+              if service == 'attendance-service':
+                  production = pathlib.Path('services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/InitialMembershipAttendanceBackfillService.java')
+                  assert hashlib.sha256(production.read_bytes()).hexdigest() == 'd0336e7386142cbd15a15e9390b503b1e913981cce2f536fdc16150b75c665f1'
+                  assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(production)]) == b''
+              for method in methods:
+                  selected = [case for case in value['cases'] if case.get('classname') == package and case.get('method') == method]
+                  assert len(selected) == 1
+                  case = selected[0]
+                  assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == source
+                          and case['sourceSha256'] == digest and case['status'] == 'PASSED')
+              print('PASS exact restored initial-membership methods in the ordinary integration gate')
           PY_SCOPED_RESTORED_GREEN
 
       - name: Upload safe integration outcomes
@@ -3359,6 +3564,12 @@ jobs:
           ORIGINS = {'attendance-service': 'ATTENDANCE_MVC', 'schedule-service': 'SCHEDULE_MVC',
                      'api-gateway': 'GATEWAY_WEBFLUX'}
           GATEWAY_LOGGER = 'org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler'
+          AMBIGUITY_REASONS = {
+              'MULTIPLE_CONTROLLER_FRAMES', 'UNQUALIFIED_SUPPRESSION', 'MULTIPLE_CONTROLLER_RECORDS',
+              'MULTIPLE_FALLBACK_RECORDS', 'CROSS_ORIGIN_CANDIDATES', 'MISSING_EXCEPTION_STACK',
+              'INVALID_EXCEPTION_STACK', 'STACK_LIMIT', 'LOG_LIMIT', 'MALFORMED_LOG_RECORD',
+              'UNMAPPED_EXCEPTION_CLASS', 'EVIDENCE_LIMIT', 'NO_ELIGIBLE_ERROR_RECORD',
+          }
           OWN_FRAME_SOURCES = {
               'ATTENDANCE_REPORT_SERVICE': ('attendance-service', 'ru.rutcampustrack.attendance.report.ReportService',
                   'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java',
@@ -3429,7 +3640,8 @@ jobs:
               if stage in HTTP500_STAGES:
                   value.update(reportedExceptionChain=[] if chain is None else chain,
                                reportedOwnFrame=own_frame, reportedOrigin=origin,
-                               reportedExceptionClassChain=[] if class_chain is None else class_chain)
+                               reportedExceptionClassChain=[] if class_chain is None else class_chain,
+                               reportedAmbiguityEvidence=[])
               return value
 
           def verify_http_sources(config):
@@ -3683,6 +3895,110 @@ jobs:
                       return output(state, config[6])
               return domain
 
+          def ambiguity_evidence(payloads, config, domain, gateway):
+              # Unkeyed facts from the verified captured streams; never request causality.
+              # Keep classify/combine unchanged so evidence cannot promote or veto their result.
+              header = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
+                                  r'((?:[A-Za-z_$][A-Za-z0-9_$]*\.)+'
+                                  r'(?:[A-Za-z_$][A-Za-z0-9_$]*)?(?:Exception|Error))(?::[^\r\n]*|$)')
+              stack_frame = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
+                                      r'(?:[A-Za-z_$][A-Za-z0-9_$]*\.)+[A-Za-z_$<>][A-Za-z0-9_$<>]*'
+                                      r'\((?:[A-Za-z0-9_$.-]+\.java:[1-9][0-9]{0,5}|Native Method|Unknown Source)\)[ \t]*$')
+              controller = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
+                                     + re.escape(config[7] + '(' + config[8] + ':') + r'[1-9][0-9]{0,5}\)')
+              cross_origin = all(value['reportedOrigin'] != 'UNKNOWN'
+                                 or value['state'] in {'AMBIGUOUS', 'UNAVAILABLE_EXCEPTION_STACK'}
+                                 for value in (domain, gateway))
+              evidence = []
+              for service in (config[5], 'api-gateway'):
+                  payload = payloads[service]
+                  reasons = {'CROSS_ORIGIN_CANDIDATES'} if cross_origin else set()
+                  classes, frames = set(), set()
+                  seen = False
+                  controller_records = fallback_records = 0
+                  lines = payload.splitlines()
+                  if len(payload) > LIMIT or len(lines) > 200:
+                      reasons.add('LOG_LIMIT')
+                  else:
+                      for line in lines:
+                          if len(line) > 131072:
+                              reasons.add('LOG_LIMIT')
+                              continue
+                          try:
+                              record = decode(line)
+                          except (ValueError, UnicodeError, RecursionError):
+                              reasons.add('MALFORMED_LOG_RECORD')
+                              continue
+                          if type(record) is not dict:
+                              reasons.add('MALFORMED_LOG_RECORD')
+                              continue
+                          is_gateway = service == 'api-gateway'
+                          logger = GATEWAY_LOGGER if is_gateway else 'ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler'
+                          if (record.get('logger') != logger or record.get('level') != 'ERROR'
+                                  or (is_gateway and record.get('service') != 'api-gateway')):
+                              continue
+                          seen = True
+                          stack = record.get('stack')
+                          if type(stack) is not str or not stack:
+                              reasons.add('MISSING_EXCEPTION_STACK')
+                              continue
+                          try:
+                              size = len(stack.encode())
+                          except UnicodeError:
+                              reasons.add('INVALID_EXCEPTION_STACK')
+                              continue
+                          if size > 131072:
+                              reasons.add('STACK_LIMIT')
+                              continue
+                          kinds = header.findall(stack)
+                          classes.update(kind for kind in kinds if kind in CLASSES)
+                          if any(kind not in CLASSES for kind in kinds):
+                              reasons.add('UNMAPPED_EXCEPTION_CLASS')
+                          own_frame = reported_own_frame(stack, config, service)
+                          if own_frame is not None:
+                              frames.add((own_frame['symbol'], own_frame['line']))
+                          suppressed_types = re.findall(r'(?m)^[ \t]*Suppressed: ([A-Za-z0-9_.$]+)(?::|$)', stack)
+                          suppressed_count = len(re.findall(r'(?m)^[ \t]*Suppressed:', stack))
+                          classes.update(kind for kind in suppressed_types if kind in CLASSES)
+                          assembly = 'reactor.core.publisher.FluxOnAssembly$OnAssemblyException'
+                          if any(kind not in CLASSES and not (is_gateway and kind == assembly)
+                                 for kind in suppressed_types):
+                              reasons.add('UNMAPPED_EXCEPTION_CLASS')
+                          suppressed = (bool(suppressed_count) and (not is_gateway
+                                        or len(suppressed_types) != suppressed_count
+                                        or any(kind != assembly for kind in suppressed_types)))
+                          if suppressed:
+                              reasons.add('UNQUALIFIED_SUPPRESSION')
+                          matches = controller.findall(stack)
+                          if matches and not is_gateway:
+                              controller_records += 1
+                              if len(matches) != 1:
+                                  reasons.add('MULTIPLE_CONTROLLER_FRAMES')
+                              if len(kinds) > 16:
+                                  reasons.add('STACK_LIMIT')
+                              continue
+                          if suppressed:
+                              continue
+                          if not 1 <= len(kinds) <= 16 or not header.match(stack) or not stack_frame.search(stack):
+                              reasons.add('STACK_LIMIT' if len(kinds) > 16 else 'INVALID_EXCEPTION_STACK')
+                              continue
+                          fallback_records += 1
+                  if not seen and 'LOG_LIMIT' not in reasons:
+                      reasons.add('NO_ELIGIBLE_ERROR_RECORD')
+                  if controller_records > 1:
+                      reasons.add('MULTIPLE_CONTROLLER_RECORDS')
+                  if fallback_records > 1:
+                      reasons.add('MULTIPLE_FALLBACK_RECORDS')
+                  if len(frames) > 16:
+                      reasons.add('EVIDENCE_LIMIT')
+                  assert reasons <= AMBIGUITY_REASONS
+                  evidence.append({'capturedOrigin': ORIGINS[service], 'reasons': sorted(reasons),
+                                   'exceptionClasses': sorted(classes),
+                                   'ownFrames': [{'symbol': symbol, 'line': line}
+                                                 for symbol, line in sorted(frames)[:16]]})
+              return evidence
+
+
           def load_failure(config):
               if (os.environ.get('GITHUB_ACTIONS') != 'true'
                       or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
@@ -3787,8 +4103,10 @@ jobs:
                   if config[4] == 'STUDENT_STATS_HTTP503':
                       result = classify(payloads[config[5]], config)
                   else:
-                      result = combine(classify(payloads[config[5]], config),
-                                       classify(payloads['api-gateway'], config, 'api-gateway'), config)
+                      domain = classify(payloads[config[5]], config)
+                      gateway = classify(payloads['api-gateway'], config, 'api-gateway')
+                      result = combine(domain, gateway, config)
+                      result['reportedAmbiguityEvidence'] = ambiguity_evidence(payloads, config, domain, gateway)
           except Exception:
               pass
           print(json.dumps(result, sort_keys=True))

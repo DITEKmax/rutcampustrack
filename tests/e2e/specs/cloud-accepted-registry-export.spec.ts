@@ -1013,8 +1013,14 @@ test('renderer outage terminates its PDF job safely and a fresh job downloads af
   // This is a local fixture budget, not a new product deadline or drain SLA.
   test.setTimeout(240000);
   const until = Date.now() + info.timeout - 5000;
-  const owner = await dataset.user('ADMIN');
-  const actor = await admit(dataset.request, owner, 'ADMIN');
+  // This failure/recovery journey reuses the fixture's admitted actor; a new login
+  // may legitimately spend 60s on Retry-After before the unchanged 190s reserve.
+  const actor = dataset.admin;
+  const actorId = Number(actor.session.userId);
+  registryRequire(
+    actor.session.activeRole === 'ADMIN' && Number.isSafeInteger(actorId) && actorId > 0,
+    'OUTAGE_FIXTURE_ACTOR',
+  );
   const prefix = `Эк${randomUUID().replace(/-/g, '').slice(0, 8)}`;
   const targets = [
     await registryPdfUser(dataset, prefix, 'А'),
@@ -1052,6 +1058,19 @@ test('renderer outage terminates its PDF job safely and a fresh job downloads af
       await response.dispose();
     }
   };
+  const access = await call(
+    'GET',
+    '/api/academic/admin-access/me',
+    undefined,
+    200,
+    Math.min(until, Date.now() + 5000),
+  );
+  registryRequire(
+    access.mode === 'FULL' &&
+      access.assigned === true &&
+      String(access.userId) === actor.session.userId,
+    'OUTAGE_CURRENT_FULL_ACTOR',
+  );
   const renderer = registryContainer(until, 'document-renderer-service');
   const initial = registryOutageRenderer(until, renderer);
   registryRequire(!initial.paused, 'OUTAGE_INITIAL_UNPAUSED');
@@ -1228,7 +1247,7 @@ test('renderer outage terminates its PDF job safely and a fresh job downloads af
       ),
       'OUTAGE_RECOVERED_ROWS',
     );
-    registryAudit(until, readyJob, owner.id, startedAt);
+    registryAudit(until, readyJob, actorId, startedAt);
   } finally {
     await response.dispose();
   }

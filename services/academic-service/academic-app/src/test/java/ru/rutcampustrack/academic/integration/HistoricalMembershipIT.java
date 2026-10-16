@@ -656,6 +656,418 @@ class HistoricalMembershipIT extends AbstractAcademicIntegrationTest {
                 .isInstanceOf(HistoricalMembershipException.class);
     }
 
+    @Autowired private com.fasterxml.jackson.databind.ObjectMapper backfillJson;
+
+    @Autowired
+    private ru.rutcampustrack.academic.event
+                    .InitialMembershipAttendanceBackfillAcknowledgementConsumer
+            backfillAcks;
+
+    @Autowired
+    private ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction
+            backfillBarrier;
+
+    @Test
+    void initialEnrollmentAndEquivalentRoleAddAtomicallyAdmitPrivateBackfill() throws Exception {
+        Group group = createGroup();
+        User student = createStudent(group.getId());
+        var first = assertPrivateBackfill(student.getId(), group.getId());
+        assertThat(first.get("state")).isEqualTo("PENDING");
+        // A non-initial status change must not create another enrollment work identity.
+        userService.updateRoleGrant(
+                student.getId(),
+                "STUDENT",
+                new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM academic_initial_membership_backfills WHERE student_id = ?",
+                                Long.class,
+                                student.getId()))
+                .isEqualTo(1);
+        var created =
+                userService.createUser(
+                        new CreateUserRequest(
+                                "L5B",
+                                "Teacher",
+                                null,
+                                UserRole.TEACHER,
+                                null,
+                                "B13-" + UUID.randomUUID().toString().substring(0, 16),
+                                null));
+        Long teacherId = created.getContent().getId();
+        try {
+            assertThat(
+                            jdbcTemplate.queryForObject(
+                                    "SELECT count(*) FROM academic_initial_membership_backfills WHERE student_id = ?",
+                                    Long.class,
+                                    teacherId))
+                    .isZero();
+            userService.updateRoleGrant(
+                    teacherId,
+                    "STUDENT",
+                    new RoleGrantUpdateRequest(
+                            RoleGrantStatus.ACTIVE,
+                            group.getId(),
+                            null,
+                            Math.floorMod(System.nanoTime(), 9_000_000_000L) + 100_000L));
+            assertPrivateBackfill(teacherId, group.getId());
+        } finally {
+            jdbcTemplate.update("DELETE FROM student_group_history WHERE user_id = ?", teacherId);
+            jdbcTemplate.update("DELETE FROM user_role_grants WHERE user_id = ?", teacherId);
+            jdbcTemplate.update("DELETE FROM users WHERE id = ?", teacherId);
+        }
+    }
+
+    @Test
+    void refusedOutboxAndPostFenceEnrollmentRollbackUserHistoryWorkAndOutbox() {
+        Group group = createGroup();
+        var before = backfillCounts();
+        String marker = "B13-refused-" + UUID.randomUUID();
+        jdbcTemplate.execute(
+                "ALTER TABLE academic_outbox ADD CONSTRAINT b13_refuse_initial CHECK (event_type <> 'student.initial-membership.recorded')");
+        try {
+            boolean refused = false;
+            try {
+                userService.createUser(
+                        new CreateUserRequest(
+                                "L5B",
+                                marker,
+                                null,
+                                UserRole.STUDENT,
+                                group.getId(),
+                                null,
+                                Math.floorMod(System.nanoTime(), 9_000_000_000L) + 100_000L));
+            } catch (RuntimeException failure) {
+                for (Throwable cause = failure; cause != null; cause = cause.getCause())
+                    if (cause instanceof java.sql.SQLException sql
+                            && "23514".equals(sql.getSQLState())) refused = true;
+            }
+            assertThat(refused)
+                    .as("owned outbox constraint must refuse initial enrollment")
+                    .isTrue();
+        } finally {
+            jdbcTemplate.execute("ALTER TABLE academic_outbox DROP CONSTRAINT b13_refuse_initial");
+        }
+        assertThat(backfillCounts().equals(before))
+                .as("refused outbox leaves all enrollment stores unchanged")
+                .isTrue();
+        UUID operation = UUID.randomUUID();
+        long version =
+                jdbcTemplate.queryForObject(
+                        "SELECT state_version FROM semesters WHERE id = ?",
+                        Long.class,
+                        testSemesterId);
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        tx ->
+                                backfillBarrier.install(
+                                        operation,
+                                        testSemesterId,
+                                        version,
+                                        ru.rutcampustrack.academic.contract.enums
+                                                .SemesterArchiveAction.ARCHIVE));
+        try {
+            assertThatThrownBy(
+                            () ->
+                                    userService.createUser(
+                                            new CreateUserRequest(
+                                                    "L5B",
+                                                    marker,
+                                                    null,
+                                                    UserRole.STUDENT,
+                                                    group.getId(),
+                                                    null,
+                                                    Math.floorMod(System.nanoTime(), 9_000_000_000L)
+                                                            + 100_000L)))
+                    .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
+            assertThat(backfillCounts().equals(before))
+                    .as("post-fence admission rolls back every enrollment store")
+                    .isTrue();
+        } finally {
+            jdbcTemplate.update(
+                    "DELETE FROM academic_semester_archive_barriers WHERE semester_id = ?",
+                    testSemesterId);
+        }
+    }
+
+    @Test
+    void onlyExactBackfillAcknowledgementDrainsArchiveAndRetainsReplayIdentity() throws Exception {
+        Group group = createGroup();
+        User student = createStudent(group.getId());
+        var work = assertPrivateBackfill(student.getId(), group.getId());
+        var payload = new java.util.LinkedHashMap<String, Object>();
+        payload.put("source_event_id", work.get("event_id").toString());
+        payload.put("history_id", ((Number) work.get("history_id")).longValue());
+        payload.put("semester_id", testSemesterId);
+        payload.put(
+                "payload_hash",
+                java.util.HexFormat.of().formatHex((byte[]) work.get("payload_hash")));
+        payload.put("result", "APPLIED");
+        var ack =
+                new java.util.LinkedHashMap<String, Object>(
+                        java.util.Map.of(
+                                "event_id",
+                                UUID.randomUUID().toString(),
+                                "occurred_at",
+                                java.time.Instant.now().toString(),
+                                "trace_id",
+                                "owned-backfill-ack",
+                                "event_type",
+                                "student.initial-membership.attendance-backfilled",
+                                "source",
+                                "attendance-service",
+                                "event_version",
+                                1,
+                                "payload",
+                                payload));
+        UUID operation = UUID.randomUUID();
+        long version =
+                jdbcTemplate.queryForObject(
+                        "SELECT state_version FROM semesters WHERE id = ?",
+                        Long.class,
+                        testSemesterId);
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        tx ->
+                                backfillBarrier.install(
+                                        operation,
+                                        testSemesterId,
+                                        version,
+                                        ru.rutcampustrack.academic.contract.enums
+                                                .SemesterArchiveAction.ARCHIVE));
+        jdbcTemplate.update(
+                "UPDATE semesters SET is_active = false, archive_transition = 'ARCHIVING' WHERE id = ?",
+                testSemesterId);
+        try {
+            assertThat(backfillBarrier.sealArchive(operation, testSemesterId, version)).isNotNull();
+            for (String field : List.of("history_id", "semester_id", "payload_hash")) {
+                var invalid = new java.util.LinkedHashMap<>(payload);
+                invalid.put(
+                        field,
+                        field.equals("payload_hash")
+                                ? "0".repeat(64)
+                                : ((Number) payload.get(field)).longValue() + 1);
+                var changed = new java.util.LinkedHashMap<>(ack);
+                changed.put("payload", invalid);
+                assertThatThrownBy(() -> backfillAcks.onEvent(changed))
+                        .isInstanceOf(IllegalArgumentException.class);
+            }
+            var spoof = new java.util.LinkedHashMap<>(ack);
+            spoof.put("source", "schedule-service");
+            assertThatThrownBy(() -> backfillAcks.onEvent(spoof))
+                    .isInstanceOf(IllegalArgumentException.class);
+            assertThat(
+                            jdbcTemplate.queryForObject(
+                                    "SELECT state FROM academic_initial_membership_backfills WHERE event_id = ?",
+                                    String.class,
+                                    work.get("event_id")))
+                    .isEqualTo("PENDING");
+            backfillAcks.onEvent(ack);
+            assertThat(backfillBarrier.sealArchive(operation, testSemesterId, version)).isNull();
+            var applied =
+                    jdbcTemplate.queryForMap(
+                            "SELECT * FROM academic_initial_membership_backfills WHERE event_id = ?",
+                            work.get("event_id"));
+            assertThat(applied.get("state")).isEqualTo("APPLIED");
+            backfillAcks.onEvent(ack);
+            assertThat(
+                            jdbcTemplate.queryForObject(
+                                    "SELECT applied_at = ? FROM academic_initial_membership_backfills WHERE event_id = ?",
+                                    Boolean.class,
+                                    applied.get("applied_at"),
+                                    work.get("event_id")))
+                    .isTrue();
+            payload.put("history_id", ((Number) payload.get("history_id")).longValue() + 1);
+            assertThatThrownBy(() -> backfillAcks.onEvent(ack))
+                    .isInstanceOf(IllegalArgumentException.class);
+            assertThat(
+                            jdbcTemplate.queryForObject(
+                                    "SELECT count(*) FROM pg_constraint WHERE conrelid = 'academic_initial_membership_backfills'::regclass AND contype = 'f'",
+                                    Long.class))
+                    .isZero();
+        } finally {
+            jdbcTemplate.update(
+                    "UPDATE semesters SET archive_transition = 'NONE', is_active = true WHERE id = ?",
+                    testSemesterId);
+            jdbcTemplate.update(
+                    "DELETE FROM academic_semester_archive_barriers WHERE semester_id = ?",
+                    testSemesterId);
+        }
+    }
+
+    @Test
+    void v61IsAdditiveAndRestoresPendingAndAppliedReplayIdentities() {
+        String schema = "backfill_" + UUID.randomUUID().toString().replace("-", "");
+        String restoredSchema = schema + "_restore";
+        jdbcTemplate.execute("CREATE SCHEMA " + schema);
+        jdbcTemplate.execute("CREATE SCHEMA " + restoredSchema);
+        String url = POSTGRES.getJdbcUrl();
+        var dataSource =
+                new org.springframework.jdbc.datasource.DriverManagerDataSource(
+                        url + (url.contains("?") ? "&" : "?") + "currentSchema=" + schema,
+                        POSTGRES.getUsername(),
+                        POSTGRES.getPassword());
+        var isolated = new JdbcTemplate(dataSource);
+        var prior =
+                org.flywaydb.core.Flyway.configure()
+                        .dataSource(dataSource)
+                        .schemas(schema)
+                        .locations("classpath:db/migration")
+                        .target("60")
+                        .load();
+        prior.migrate();
+        isolated.update(
+                "INSERT INTO users (login,last_name,first_name) VALUES ('b13-additive','Synthetic','Enrollment')");
+        String before =
+                isolated.queryForObject(
+                        "SELECT md5(string_agg(to_jsonb(u)::text, '' ORDER BY id)) FROM users u",
+                        String.class);
+        var history =
+                isolated.queryForList(
+                        "SELECT installed_rank, version, checksum FROM flyway_schema_history ORDER BY installed_rank");
+        var current =
+                org.flywaydb.core.Flyway.configure()
+                        .dataSource(dataSource)
+                        .schemas(schema)
+                        .locations("classpath:db/migration")
+                        .target("61")
+                        .load();
+        assertThat(current.migrate().migrationsExecuted).isEqualTo(1);
+        current.validate();
+        assertThat(
+                        before.equals(
+                                isolated.queryForObject(
+                                        "SELECT md5(string_agg(to_jsonb(u)::text, '' ORDER BY id)) FROM users u",
+                                        String.class)))
+                .as("V61 preserves existing business rows exactly")
+                .isTrue();
+        assertThat(
+                        history.equals(
+                                isolated.queryForList(
+                                        "SELECT installed_rank, version, checksum FROM flyway_schema_history ORDER BY installed_rank LIMIT ?",
+                                        history.size())))
+                .as("all prior migration identities are unchanged")
+                .isTrue();
+        UUID pendingId = UUID.randomUUID(), appliedId = UUID.randomUUID();
+        for (UUID id : List.of(pendingId, appliedId))
+            isolated.update(
+                    """
+                INSERT INTO academic_initial_membership_backfills
+                  (event_id,history_id,student_id,group_id,semester_id,joined_on,semester_ends_on,payload_hash,state,applied_at)
+                VALUES (?,?,?,?,?,'2026-09-01','2027-01-31',decode(repeat('ab',32),'hex'),?,?)
+                """,
+                    id,
+                    id.equals(pendingId) ? 1001L : 1002L,
+                    9001L,
+                    9002L,
+                    9003L,
+                    id.equals(pendingId) ? "PENDING" : "APPLIED",
+                    id.equals(pendingId) ? null : java.sql.Timestamp.from(java.time.Instant.now()));
+        // Development restore copies exact durable SQL rows into a separately owned V61 schema.
+        // It is not a claim about the production backup tool or a distributed transaction.
+        var restoredSource =
+                new org.springframework.jdbc.datasource.DriverManagerDataSource(
+                        url + (url.contains("?") ? "&" : "?") + "currentSchema=" + restoredSchema,
+                        POSTGRES.getUsername(),
+                        POSTGRES.getPassword());
+        org.flywaydb.core.Flyway.configure()
+                .dataSource(restoredSource)
+                .schemas(restoredSchema)
+                .locations("classpath:db/migration")
+                .target("61")
+                .load()
+                .migrate();
+        isolated.execute(
+                "INSERT INTO "
+                        + restoredSchema
+                        + ".academic_initial_membership_backfills SELECT * FROM academic_initial_membership_backfills");
+        assertThat(
+                        isolated.queryForObject(
+                                "SELECT NOT EXISTS((SELECT * FROM academic_initial_membership_backfills EXCEPT SELECT * FROM "
+                                        + restoredSchema
+                                        + ".academic_initial_membership_backfills) UNION ALL (SELECT * FROM "
+                                        + restoredSchema
+                                        + ".academic_initial_membership_backfills EXCEPT SELECT * FROM academic_initial_membership_backfills))",
+                                Boolean.class))
+                .as("pending/applied hashes, tuples and timestamps survive owned SQL restore")
+                .isTrue();
+        assertThat(current.migrate().migrationsExecuted).isZero();
+        // Disposable schemas remain in this fresh class-owned container until teardown.
+    }
+
+    private java.util.Map<String, Object> assertPrivateBackfill(long studentId, long groupId)
+            throws Exception {
+        var work =
+                jdbcTemplate.queryForMap(
+                        "SELECT * FROM academic_initial_membership_backfills WHERE student_id = ?",
+                        studentId);
+        var history =
+                jdbcTemplate.queryForMap(
+                        "SELECT id, joined_at FROM student_group_history WHERE user_id = ?",
+                        studentId);
+        assertThat(work.get("history_id")).isEqualTo(history.get("id"));
+        assertThat(((Number) work.get("group_id")).longValue()).isEqualTo(groupId);
+        assertThat(((Number) work.get("semester_id")).longValue()).isEqualTo(testSemesterId);
+        assertThat(work.get("joined_on")).isEqualTo(history.get("joined_at"));
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT semester_ends_on = s.date_to FROM academic_initial_membership_backfills w JOIN semesters s ON s.id = w.semester_id WHERE w.event_id = ?",
+                                Boolean.class,
+                                work.get("event_id")))
+                .isTrue();
+        String envelopeJson =
+                jdbcTemplate.queryForObject(
+                        "SELECT payload FROM academic_outbox WHERE event_type = 'student.initial-membership.recorded' AND payload::jsonb->>'event_id' = ?",
+                        String.class,
+                        work.get("event_id").toString());
+        assertThat(
+                        ru.rutcampustrack.academic.events.EventSchemaValidator.validate(
+                                "student.initial-membership.recorded.json", envelopeJson))
+                .isEmpty();
+        var envelope = backfillJson.readTree(envelopeJson);
+        assertThat(envelope.path("source").asText()).isEqualTo("academic-service");
+        assertThat(envelope.path("event_version").asInt()).isEqualTo(1);
+        var tuple =
+                backfillJson.convertValue(
+                        envelope.path("payload"),
+                        new com.fasterxml.jackson.core.type.TypeReference<
+                                java.util.TreeMap<String, Object>>() {});
+        assertThat(tuple.keySet())
+                .containsExactlyInAnyOrder(
+                        "history_id",
+                        "student_id",
+                        "group_id",
+                        "semester_id",
+                        "joined_on",
+                        "semester_ends_on");
+        assertThat(
+                        java.security.MessageDigest.isEqual(
+                                (byte[]) work.get("payload_hash"),
+                                java.security.MessageDigest.getInstance("SHA-256")
+                                        .digest(
+                                                new com.fasterxml.jackson.databind.ObjectMapper()
+                                                        .writeValueAsBytes(tuple))))
+                .as("private outbox and durable work bind the same canonical identity")
+                .isTrue();
+        return work;
+    }
+
+    private java.util.Map<String, Long> backfillCounts() {
+        return java.util.Map.of(
+                "users",
+                jdbcTemplate.queryForObject("SELECT count(*) FROM users", Long.class),
+                "grants",
+                jdbcTemplate.queryForObject("SELECT count(*) FROM user_role_grants", Long.class),
+                "history",
+                jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM student_group_history", Long.class),
+                "work",
+                jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM academic_initial_membership_backfills", Long.class),
+                "outbox",
+                jdbcTemplate.queryForObject("SELECT count(*) FROM academic_outbox", Long.class));
+    }
+
     private Group createGroup() {
         int number = (int) Math.floorMod(System.nanoTime(), 10);
         String prefix = createdGroupIds.isEmpty() ? "УИТ" : "УВП";

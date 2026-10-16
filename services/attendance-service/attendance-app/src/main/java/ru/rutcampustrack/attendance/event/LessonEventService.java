@@ -2,9 +2,13 @@ package ru.rutcampustrack.attendance.event;
 
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.dao.DuplicateKeyException;
@@ -15,7 +19,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -29,13 +32,6 @@ import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * Business logic for lesson lifecycle event processing.
@@ -126,6 +122,27 @@ public class LessonEventService {
     }
 
     /**
+     * Validates one supplied authoritative lesson and narrows its dated roster to the new member.
+     */
+    public LessonClosedSnapshot prepareInitialMembershipLesson(
+            LessonResponse lesson,
+            long groupId,
+            long semesterId,
+            long studentId,
+            GroupMembersResponse members) {
+        LocalDate date = validateLessonSnapshot(lesson, lesson.getId(), groupId, semesterId);
+        if (!"closed".equalsIgnoreCase(lesson.getStatus()))
+            throw new IllegalArgumentException("Initial membership requires a closed lesson");
+        validateRosterEcho(members, date, semesterId);
+        GroupMembersResponse.Builder target = members.toBuilder().clearStudents();
+        members.getStudentsList().stream()
+                .filter(student -> student.getUserId() == studentId)
+                .forEach(target::addStudents);
+        return new LessonClosedSnapshot(
+                lesson.getId(), groupId, semesterId, lesson, date, target.build());
+    }
+
+    /**
      * Applies only local Mongo state; called with the event claim and receipt transaction active.
      */
     @Transactional(transactionManager = "mongoTransactionManager")
@@ -173,6 +190,70 @@ public class LessonEventService {
             return;
         }
 
+        materializeAbsent(snapshot);
+        // Cancellation is terminal for this physical id.  Reapply it after
+        // materialization if the marker won the race between the pre-check and
+        // the bulk upsert.
+        if (isCancellationMarked(lessonId)) {
+            applyCancellation(lessonId, eventSemesterId);
+        }
+        log.info(
+                "lesson.closed: lessonId={}, processed {} students for auto-absent",
+                lessonId,
+                members.getStudentsCount());
+    }
+
+    /**
+     * Target-only backfill: never repairs legacy rows or changes another student's cancellation.
+     */
+    @Transactional(transactionManager = "mongoTransactionManager")
+    public void applyInitialMembership(LessonClosedSnapshot snapshot) {
+        if (pairWriteCoordinator.isSubjectDeleted(
+                snapshot.lessonId(), snapshot.semesterId(), snapshot.groupId())) return;
+        pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
+                snapshot.semesterId(),
+                List.of(snapshot.lessonId()),
+                snapshot.groupId(),
+                Instant.now());
+        Query unknownScope =
+                Query.query(
+                        new Criteria()
+                                .andOperator(
+                                        Criteria.where("lesson_id").is(snapshot.lessonId()),
+                                        new Criteria()
+                                                .orOperator(
+                                                        Criteria.where("semester_id")
+                                                                .ne(snapshot.semesterId()),
+                                                        Criteria.where("group_id")
+                                                                .ne(snapshot.groupId()),
+                                                        Criteria.where("subject_id")
+                                                                .ne(
+                                                                        snapshot.lesson()
+                                                                                .getSubjectId()))));
+        if (mongoTemplate.exists(unknownScope, AttendanceDocument.class))
+            throw new IllegalArgumentException(
+                    "Initial membership conflicts with unknown attendance scope");
+        LessonCancellationMarker marker =
+                mongoTemplate.findOne(
+                        Query.query(Criteria.where("lesson_id").is(snapshot.lessonId())),
+                        LessonCancellationMarker.class);
+        if (marker != null) {
+            if (!snapshot.semesterId().equals(marker.getSemesterId()))
+                throw new IllegalArgumentException(
+                        "Initial membership conflicts with unknown cancellation scope");
+            return;
+        }
+        if (snapshot.members().getStudentsCount() > 1
+                || !"closed".equals(snapshot.lesson().getStatus()))
+            throw new IllegalArgumentException("Initial membership requires one closed target");
+        if (snapshot.members().getStudentsCount() == 1) materializeAbsent(snapshot);
+    }
+
+    private void materializeAbsent(LessonClosedSnapshot snapshot) {
+        Long lessonId = snapshot.lessonId();
+        LessonResponse lesson = snapshot.lesson();
+        LocalDate lessonDate = snapshot.lessonDate();
+        GroupMembersResponse members = snapshot.members();
         Instant now = Instant.now();
         java.util.Set<Long> existed =
                 mongoTemplate
@@ -227,16 +308,6 @@ public class LessonEventService {
                 actions.mark("AUTO_ABSENT", null, inserted, null, null, null);
             }
         }
-        // Cancellation is terminal for this physical id.  Reapply it after
-        // materialization if the marker won the race between the pre-check and
-        // the bulk upsert.
-        if (isCancellationMarked(lessonId)) {
-            applyCancellation(lessonId, eventSemesterId);
-        }
-        log.info(
-                "lesson.closed: lessonId={}, processed {} students for auto-absent",
-                lessonId,
-                members.getStudentsCount());
     }
 
     /**

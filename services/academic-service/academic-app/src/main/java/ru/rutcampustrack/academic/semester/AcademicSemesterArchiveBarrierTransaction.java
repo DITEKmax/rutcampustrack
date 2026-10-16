@@ -1,21 +1,19 @@
 package ru.rutcampustrack.academic.semester;
 
-import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
-import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
-import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
-import ru.rutcampustrack.academic.exception.ConflictException;
-
 import java.sql.PreparedStatement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
+import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
+import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
+import ru.rutcampustrack.academic.exception.ConflictException;
 
 /** Academic's durable local write fence, publication admission and epoch release. */
 @Service
@@ -259,11 +257,11 @@ SELECT EXISTS (SELECT 1 FROM semester_archive_operations
         if (Boolean.TRUE.equals(
                 jdbc.queryForObject(
                         "SELECT EXISTS(SELECT 1 FROM assignments a JOIN subjects s ON"
-                            + " s.id=a.subject_id WHERE s.semester_id=? AND a.semester_id<>?) OR"
-                            + " EXISTS(SELECT 1 FROM homeworks h JOIN subjects s ON"
-                            + " s.id=h.subject_id WHERE s.semester_id=? AND h.semester_id<>?) OR"
-                            + " EXISTS(SELECT 1 FROM teacher_subject_groups t JOIN subjects s ON"
-                            + " s.id=t.subject_id WHERE s.semester_id=? AND t.semester_id<>?)",
+                                + " s.id=a.subject_id WHERE s.semester_id=? AND a.semester_id<>?) OR"
+                                + " EXISTS(SELECT 1 FROM homeworks h JOIN subjects s ON"
+                                + " s.id=h.subject_id WHERE s.semester_id=? AND h.semester_id<>?) OR"
+                                + " EXISTS(SELECT 1 FROM teacher_subject_groups t JOIN subjects s ON"
+                                + " s.id=t.subject_id WHERE s.semester_id=? AND t.semester_id<>?)",
                         Boolean.class,
                         semesterId,
                         semesterId,
@@ -1317,6 +1315,12 @@ ON CONFLICT (archive_operation_id, edit_operation_id) DO NOTHING
     }
 
     private String firstPendingReason(long semesterId) {
+        if (Boolean.TRUE.equals(
+                jdbc.queryForObject(
+                        "SELECT EXISTS(SELECT 1 FROM academic_initial_membership_backfills WHERE semester_id = ? AND state = 'PENDING')",
+                        Boolean.class,
+                        semesterId)))
+            return "Ожидается точный ACK ретроспективной посещаемости зачисленного студента";
         if (hasPendingHomeworkEdit(semesterId))
             return "Ожидается завершение принятого редактирования домашнего задания";
         Long pendingPublication =
@@ -1370,6 +1374,12 @@ SELECT count(*) FROM homework_binding_transfer_markers
     }
 
     private String firstPendingDeleteReason(UUID operationId, long semesterId, long stateVersion) {
+        if (Boolean.TRUE.equals(
+                jdbc.queryForObject(
+                        "SELECT EXISTS(SELECT 1 FROM academic_initial_membership_backfills WHERE semester_id = ? AND state = 'PENDING')",
+                        Boolean.class,
+                        semesterId)))
+            return "Ожидается точный ACK ретроспективной посещаемости зачисленного студента";
         if (hasPendingHomeworkEdit(semesterId))
             return "Ожидается завершение принятого редактирования домашнего задания";
         Long unownedPendingPublication =

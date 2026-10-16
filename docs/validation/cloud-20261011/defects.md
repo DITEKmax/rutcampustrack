@@ -579,3 +579,7 @@ Revision f148b9f2a9f1d70368715e9c3882188c9d85cec6 / actual checkout13afce8fd3668
 ## DEF-ADMIN-SEMESTER-HIDDEN-CALENDAR-BACK
 
 2026-10-16T12:16:26.127250+00:00 — S2 Source counterexample in AdminSemesterScreen successful-save path: form hides while calendarField remains; next Back consumes invisible calendar state. Published7d genuineAdminUI2351 failed waitingMore852, exactinternalfield notcaptured/uniquecauseUNKNOWN. Test-only manualpickerclose was rejected/undone; originalUIflow retained. c86 sole minimalproductfix afterdesignskill; nativeafter NOT_RUN. Exactscope/pin/review in central `current7d4df8bcPublication.adminSemesterHiddenCalendarProductFixGO`.
+
+## HTTP500-POST-RECON-01 — observed P2, RCA pending
+
+2026-10-16T13:41:15.626368+00:00: a721 ordinary push38902621885 and PR38902632964 both fail genuine Recon report after dependency restart/exact replay/archive completion; later fresh one-off creation also returns500 after finally restore+activate. Independent c91 verified immutable five Sources match prior RCA: explicit historical-semester HEADMAN report is valid readonly and expected200; later create has exact-one-active proof. Fixture/oracle defect not established. Approved7field diagnostics returned AMBIGUOUS with no cause/origin/class/frame; no productcause assigned. Cleanup passed in both runs. Rootcentral currenta721e64dPublication contains exact artifacts; new bounded8field diagnostics a59/66ed independentlyapproved/nativeNOT_RUN. This observable unexpected5xx remains OPEN until cause/correction/recheck.

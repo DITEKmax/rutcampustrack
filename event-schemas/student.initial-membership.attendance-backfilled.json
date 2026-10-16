@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "student.initial-membership.attendance-backfilled",
+  "description": "Private initial-membership attendance backfill; identity only, no credentials.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
+  "properties": {
+    "event_type": {
+      "const": "student.initial-membership.attendance-backfilled"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion",
+      "const": 1
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "const": "attendance-service"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_event_id",
+        "history_id",
+        "semester_id",
+        "payload_hash",
+        "result"
+      ],
+      "properties": {
+        "source_event_id": {
+          "$ref": "_common.json#/$defs/eventId"
+        },
+        "history_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "semester_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "result": {
+          "const": "APPLIED"
+        }
+      }
+    }
+  }
+}

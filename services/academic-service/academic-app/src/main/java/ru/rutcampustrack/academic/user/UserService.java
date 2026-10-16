@@ -44,6 +44,7 @@ import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.StudentGroupHistory;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
+import ru.rutcampustrack.academic.event.StudentInitialMembershipRecordedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService;
@@ -231,6 +232,9 @@ public class UserService {
             history.setCreatedAt(now);
             history.setReason("initial-enrollment");
             studentGroupHistoryRepository.save(history);
+            studentGroupHistoryRepository.flush();
+            eventPublisher.publishEvent(
+                    new StudentInitialMembershipRecordedEvent(history, enrollment.semester()));
             evictGroupMembersAfterCommit(enrollment.group().getId());
         }
         return userAssembler.toCreatedModel(user, plainPassword);
@@ -386,6 +390,7 @@ public class UserService {
             grantGroupId = user.getGroupId();
         }
         boolean createdStudentHistory = false;
+        StudentInitialMembershipRecordedEvent initialMembership = null;
         if (role == UserRole.STUDENT) {
             if (current.isPresent() && !freshAssignment) {
                 if (request.groupId() != null
@@ -433,6 +438,11 @@ public class UserService {
                 history.setCreatedAt(OffsetDateTime.now());
                 history.setReason(freshAssignment ? "role-reassignment" : "initial-enrollment");
                 studentGroupHistoryRepository.save(history);
+                studentGroupHistoryRepository.flush();
+                if (!freshAssignment)
+                    initialMembership =
+                            new StudentInitialMembershipRecordedEvent(
+                                    history, enrollment.semester());
                 createdStudentHistory = true;
             }
         } else if (role == UserRole.TEACHER) {
@@ -509,6 +519,7 @@ public class UserService {
                     id, status == RoleGrantStatus.ACTIVE && saved.isHeadman(), grantGroupId);
             evictGroupMembersAfterCommit(grantGroupId);
         }
+        if (initialMembership != null) eventPublisher.publishEvent(initialMembership);
         return saved;
     }
 

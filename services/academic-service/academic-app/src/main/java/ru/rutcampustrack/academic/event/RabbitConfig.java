@@ -47,6 +47,8 @@ public class RabbitConfig {
             "academic-service.semester-archive-participant-ack.events";
     private static final String SEMESTER_ARCHIVE_PARTICIPANT_ACK_DLQ =
             SEMESTER_ARCHIVE_PARTICIPANT_ACK_QUEUE + ".dlq";
+    public static final String INITIAL_MEMBERSHIP_BACKFILL_ACK_QUEUE =
+            "academic-service.initial-membership-backfill-ack.events";
     private static final int MAX_LISTENER_ATTEMPTS = 3;
     private static final long LISTENER_INITIAL_BACKOFF_MILLIS = 100L;
     private static final long LISTENER_MAX_BACKOFF_MILLIS = 500L;
@@ -151,6 +153,36 @@ public class RabbitConfig {
         return BindingBuilder.bind(semesterArchiveParticipantAcknowledgementsDeadLetterQueue)
                 .to(academicEventsDeadLetterExchange)
                 .with(SEMESTER_ARCHIVE_PARTICIPANT_ACK_DLQ);
+    }
+
+    @Bean
+    public Queue initialMembershipBackfillAcknowledgementsQueue() {
+        return QueueBuilder.durable(INITIAL_MEMBERSHIP_BACKFILL_ACK_QUEUE)
+                .withArgument("x-dead-letter-exchange", "rut-uit.events.dlq")
+                .withArgument(
+                        "x-dead-letter-routing-key", INITIAL_MEMBERSHIP_BACKFILL_ACK_QUEUE + ".dlq")
+                .build();
+    }
+
+    @Bean
+    public Queue initialMembershipBackfillAcknowledgementsDeadLetterQueue() {
+        return QueueBuilder.durable(INITIAL_MEMBERSHIP_BACKFILL_ACK_QUEUE + ".dlq").build();
+    }
+
+    @Bean
+    public Binding initialMembershipBackfillAcknowledgementsBinding(
+            FanoutExchange academicEventsExchange,
+            @Qualifier("initialMembershipBackfillAcknowledgementsQueue") Queue queue) {
+        return BindingBuilder.bind(queue).to(academicEventsExchange);
+    }
+
+    @Bean
+    public Binding initialMembershipBackfillAcknowledgementsDeadLetterBinding(
+            DirectExchange academicEventsDeadLetterExchange,
+            @Qualifier("initialMembershipBackfillAcknowledgementsDeadLetterQueue") Queue queue) {
+        return BindingBuilder.bind(queue)
+                .to(academicEventsDeadLetterExchange)
+                .with(INITIAL_MEMBERSHIP_BACKFILL_ACK_QUEUE + ".dlq");
     }
 
     @Bean

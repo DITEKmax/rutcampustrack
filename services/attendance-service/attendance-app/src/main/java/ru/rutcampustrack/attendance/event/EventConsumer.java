@@ -35,6 +35,13 @@ public class EventConsumer extends AbstractEventConsumer {
         this.actionEvents = handler;
     }
 
+    private InitialMembershipAttendanceBackfillService initialMembershipBackfills;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setInitialMembershipBackfills(InitialMembershipAttendanceBackfillService service) {
+        this.initialMembershipBackfills = service;
+    }
+
     public static final String CONSUMER_ID = "attendance";
 
     private final LessonEventService lessonEventService;
@@ -63,6 +70,11 @@ public class EventConsumer extends AbstractEventConsumer {
                 || "homework.action-recorded".equals(eventType)) {
             actionEvents.validate(
                     envelope); // malformed/source-spoofed replays never bypass validation
+        }
+
+        if (InitialMembershipAttendanceBackfillService.TYPE.equals(eventType)) {
+            withTraceContext(envelope, () -> initialMembershipBackfills.handle(envelope));
+            return;
         }
 
         if ("lesson.closed".equals(eventType)) {

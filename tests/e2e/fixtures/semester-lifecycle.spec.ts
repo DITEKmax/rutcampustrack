@@ -1793,6 +1793,7 @@ test('FULL admin archives and restores the disposable CI semester through real p
           initialMark = entry;
           return (
             initialMark.status === 'absent' &&
+            initialMark.source === 'auto_scheduler' &&
             typeof initialMark.markRevision === 'string' &&
             initialMark.markRevision.length > 0
           );
@@ -1805,6 +1806,81 @@ test('FULL admin archives and restores the disposable CI semester through real p
       expectedStatus: initialMark.status.toUpperCase(),
       expectedRevision: initialMark.markRevision,
     });
+    // This report exposes null status/source/revision for a missing stored mark. The old
+    // AUTO_SCHEDULER row above therefore precedes the new initial membership below.
+    const presentBeforeLateMember = (await headman.call('GET', reportPath)).entries.find(
+      (row: Row) => Number(row.userId) === dataset.student.id,
+    );
+    requireValue(
+      presentBeforeLateMember?.status === 'present' &&
+        typeof presentBeforeLateMember.markRevision === 'string' &&
+        presentBeforeLateMember.markRevision.length > 0 &&
+        presentBeforeLateMember.markRevision !== initialMark.markRevision,
+      'Explicit historical presence must precede the late initial member',
+    );
+    const lateMemberBudget = () => {
+      // Keep the original browser admission and archive/restore cutoff; no new case window.
+      const remaining = Math.floor(browserLoginCutoff - performance.now() - 95000);
+      requireValue(remaining > 0, 'Late initial membership must retain lifecycle admission time');
+      return Math.min(20000, remaining);
+    };
+    lateMemberBudget();
+    const lateMember = await dataset.user('STUDENT', Number(dataset.group.id));
+    const lateStudent = await admit(request, lateMember, 'STUDENT');
+    await expect
+      .poll(
+        async () => {
+          const report = await headman.call('GET', reportPath);
+          requireValue(
+            Number(report.lessonId) === lessonId &&
+              Number(report.groupId) === Number(dataset.group.id) &&
+              Number(report.semesterId) === ownSemesterId &&
+              Number(report.subjectId) === Number(dataset.subject.id),
+            'Late initial member report must retain the exact owned historical scope',
+          );
+          equal(
+            report.entries.find((row: Row) => Number(row.userId) === dataset.student.id),
+            presentBeforeLateMember,
+            'Late initial membership changed the explicit historical presence',
+          );
+          const entry = report.entries.find((row: Row) => Number(row.userId) === lateMember.id);
+          return (
+            entry?.status === 'absent' &&
+            entry.source === 'auto_scheduler' &&
+            typeof entry.markRevision === 'string' &&
+            entry.markRevision.length > 0
+          );
+        },
+        {
+          timeout: lateMemberBudget(),
+          message: 'Late initial member receives a stored historical automatic absence',
+        },
+      )
+      .toBe(true);
+    const lateHistoryLesson = (await lessonRows()).find((row) => Number(row.id) === lessonId);
+    requireValue(
+      lateHistoryLesson &&
+        Number.isSafeInteger(Number(lateHistoryLesson.occurrenceId)) &&
+        Number(lateHistoryLesson.occurrenceId) > 0,
+      'Late initial membership requires the same canonical historical occurrence',
+    );
+    const lateHistory = history(
+      await lateStudent.call('GET', `/api/v1/student/attendance?semesterId=${ownSemesterId}`),
+    );
+    requireValue(
+      lateHistory.some(
+        (subject: Row) =>
+          Number(subject.id) === Number(dataset.subject.id) &&
+          subject.typeCards.some((card: Row) =>
+            card.history.some(
+              (segment: Row) =>
+                segment.id === String(lateHistoryLesson.occurrenceId) &&
+                segment.status === 'ABSENT',
+            ),
+          ),
+      ),
+      'Late initial member reads the stored absence in the same historical occurrence',
+    );
     const future = await headman.call(
       'POST',
       '/api/schedule/one-off-lessons',

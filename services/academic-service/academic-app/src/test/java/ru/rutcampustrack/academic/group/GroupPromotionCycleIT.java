@@ -54,6 +54,8 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private org.springframework.test.context.event.ApplicationEvents applicationEvents;
 
+    @Autowired private ru.rutcampustrack.academic.event.DomainEventListener domainEventListener;
+
     @TestConfiguration
     static class PromotionTestClockConfig {
         @Bean
@@ -896,5 +898,117 @@ class GroupPromotionCycleIT extends AbstractAcademicIntegrationTest {
             throws Exception {
         MvcResult result = mockMvc.perform(request).andExpect(status().isOk()).andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString());
+    }
+
+    @Test
+    void unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState()
+            throws Exception {
+        Long completedCycle = prepareCompletedSpringCycle();
+        Long adminId = userId("admin");
+        Long priorGroup = addGroup("НСР-111", beforeCycleEnd());
+        Long studentId = addStudent(priorGroup, "before_spring_" + System.nanoTime());
+        jdbc.update(
+                "INSERT INTO student_group_history (user_id, group_id, joined_at, reason) "
+                        + "VALUES (?, ?, ?, ?)",
+                studentId,
+                priorGroup,
+                CYCLE_END.minusDays(20),
+                "before-spring-completion-it");
+        JsonNode completedPreview =
+                response(previewRequest(adminId, "ADMIN", "{\"groupId\":" + priorGroup + "}"));
+        response(
+                executeRequest(
+                        adminId,
+                        completedCycle,
+                        completedPreview.path("previewVersion").asText(),
+                        priorGroup));
+        // The test rolls back, so BEFORE_COMMIT listeners do not run automatically.
+        // Materialize the actual positive event through its real listener to retain a
+        // nonempty real-PG outbox baseline, rather than claiming a committed HTTP effect.
+        var priorRename =
+                applicationEvents.stream(ru.rutcampustrack.academic.event.GroupRenamedEvent.class)
+                        .filter(
+                                event ->
+                                        priorGroup.equals(
+                                                ((ru.rutcampustrack.academic.event.GroupRenamedEvent
+                                                                        .Payload)
+                                                                event.getPayload())
+                                                        .groupId()))
+                        .findFirst()
+                        .orElseThrow();
+        domainEventListener.onDomainEvent(priorRename);
+        entityManager.flush();
+
+        // Retain past ledger/history/outbox facts while isolating the only current
+        // SPRING candidate to one that has not ended on the existing September 1 clock.
+        jdbc.update("UPDATE semesters SET semester_type = 'AUTUMN' WHERE semester_type = 'SPRING'");
+        Long unfinishedCycle =
+                jdbc.queryForObject(
+                        "INSERT INTO semesters (name, date_from, date_to, is_active, semester_type, "
+                                + "academic_year, promotion_cycle_date_to) "
+                                + "VALUES (?, ?, ?, false, 'SPRING', 2026, ?) RETURNING id",
+                        Long.class,
+                        "unfinished-spring-" + System.nanoTime(),
+                        LocalDate.of(2027, 2, 1),
+                        CYCLE_END.plusYears(1),
+                        CYCLE_END.plusYears(1));
+        Long targetGroup = addGroup("РАН-111", beforeCycleEnd());
+        entityManager.clear();
+        var before = promotionDurableState();
+        assertThat(before.values()).allSatisfy(rows -> assertThat(rows).isNotEmpty());
+        long groupEventsBefore =
+                applicationEvents.stream(ru.rutcampustrack.academic.event.GroupRenamedEvent.class)
+                        .count();
+
+        MvcResult unfinishedPreview =
+                mockMvc.perform(
+                                previewRequest(
+                                        adminId, "ADMIN", "{\"groupId\":" + targetGroup + "}"))
+                        .andReturn();
+        assertThat(promotionDurableState().equals(before))
+                .as("unfinished spring preview must preserve durable promotion state")
+                .isTrue();
+        // Both responses must reject the unfinished cycle. If a faulty preview issues
+        // a version, exercise that real version so freshness cannot hide lost completion
+        // validation in execution; otherwise retain the real, well-formed older token.
+        String attemptedVersion =
+                unfinishedPreview.getResponse().getStatus() == 200
+                        ? objectMapper
+                                .readTree(unfinishedPreview.getResponse().getContentAsString())
+                                .path("previewVersion")
+                                .asText()
+                        : completedPreview.path("previewVersion").asText();
+        mockMvc.perform(executeRequest(adminId, unfinishedCycle, attemptedVersion, targetGroup))
+                .andExpect(status().isConflict());
+        assertThat(unfinishedPreview.getResponse().getStatus()).isEqualTo(409);
+        assertThat(promotionDurableState().equals(before))
+                .as("unfinished spring execution must preserve durable promotion state")
+                .isTrue();
+        assertThat(
+                        applicationEvents.stream(
+                                        ru.rutcampustrack.academic.event.GroupRenamedEvent.class)
+                                .count())
+                .isEqualTo(groupEventsBefore);
+        assertThat(
+                        applicationEvents.stream(
+                                        ru.rutcampustrack.academic.event.GroupArchivedEvent.class)
+                                .count())
+                .isZero();
+    }
+
+    private Map<String, List<Map<String, Object>>> promotionDurableState() {
+        Map<String, List<Map<String, Object>>> state = new LinkedHashMap<>();
+        for (String table :
+                List.of(
+                        "groups",
+                        "group_promotion_cycle_record",
+                        "student_group_history",
+                        "academic_outbox")) {
+            state.put(
+                    table,
+                    jdbc.queryForList(
+                            "SELECT to_jsonb(t)::text AS state FROM " + table + " t ORDER BY id"));
+        }
+        return state;
     }
 }

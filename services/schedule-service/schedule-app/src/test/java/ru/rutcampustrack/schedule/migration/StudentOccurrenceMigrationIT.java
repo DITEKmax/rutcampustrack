@@ -3,12 +3,6 @@ package ru.rutcampustrack.schedule.migration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.output.MigrateResult;
@@ -22,6 +16,14 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.sql.DataSource;
 
 /** PostgreSQL behavior checks for the schedule migration chain and retained B0 history. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -86,9 +88,10 @@ class StudentOccurrenceMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "lesson_occurrences")
-                                + " (schedule_item_id, occurrence_date, assignment_id, group_id, subject_id,"
-                                + " semester_id, assigned_teacher_id, lesson_type)"
-                                + " VALUES (?, DATE '2026-03-02', 700, 10, 20, 30, 40, 'lecture') RETURNING id",
+                                + " (schedule_item_id, occurrence_date, assignment_id, group_id,"
+                                + " subject_id, semester_id, assigned_teacher_id, lesson_type)"
+                                + " VALUES (?, DATE '2026-03-02', 700, 10, 20, 30, 40, 'lecture')"
+                                + " RETURNING id",
                         Long.class,
                         templateId);
         Long sourceLessonId =
@@ -168,8 +171,8 @@ class StudentOccurrenceMigrationIT {
         jdbc.update(
                 "INSERT INTO "
                         + table(schema, "lesson_homework_bindings")
-                        + " (occurrence_id, current_lesson_id, actor_id, request_key, payload_hash, state)"
-                        + " VALUES (?, ?, 2, ?, decode(repeat('11', 32), 'hex'), 'PENDING')",
+                        + " (occurrence_id, current_lesson_id, actor_id, request_key, payload_hash,"
+                        + " state) VALUES (?, ?, 2, ?, decode(repeat('11', 32), 'hex'), 'PENDING')",
                 occurrenceId,
                 targetLessonId,
                 pendingKey);
@@ -177,7 +180,8 @@ class StudentOccurrenceMigrationIT {
                 "INSERT INTO "
                         + table(schema, "lesson_homework_bindings")
                         + " (occurrence_id, current_lesson_id, homework_id, actor_id, request_key,"
-                        + " payload_hash, state) VALUES (?, ?, 501, 3, ?, decode(repeat('22', 32), 'hex'), 'ACTIVE')",
+                        + " payload_hash, state) VALUES (?, ?, 501, 3, ?, decode(repeat('22', 32),"
+                        + " 'hex'), 'ACTIVE')",
                 occurrenceId,
                 targetLessonId,
                 UUID.randomUUID());
@@ -185,8 +189,9 @@ class StudentOccurrenceMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "lesson_homework_bindings")
-                                + " (occurrence_id, current_lesson_id, actor_id, request_key, payload_hash, state)"
-                                + " VALUES (?, ?, 4, ?, decode(repeat('33', 32), 'hex'), 'ARCHIVED') RETURNING binding_id",
+                                + " (occurrence_id, current_lesson_id, actor_id, request_key,"
+                                + " payload_hash, state) VALUES (?, ?, 4, ?, decode(repeat('33',"
+                                + " 32), 'hex'), 'ARCHIVED') RETURNING binding_id",
                         Long.class,
                         occurrenceId,
                         targetLessonId,
@@ -205,8 +210,10 @@ class StudentOccurrenceMigrationIT {
                                 jdbc.update(
                                         "INSERT INTO "
                                                 + table(schema, "lesson_homework_bindings")
-                                                + " (occurrence_id, current_lesson_id, homework_id, actor_id, request_key,"
-                                                + " payload_hash, state) VALUES (?, ?, 501, 5, ?, decode(repeat('44', 32), 'hex'), 'ACTIVE')",
+                                                + " (occurrence_id, current_lesson_id, homework_id,"
+                                                + " actor_id, request_key, payload_hash, state)"
+                                                + " VALUES (?, ?, 501, 5, ?, decode(repeat('44',"
+                                                + " 32), 'hex'), 'ACTIVE')",
                                         occurrenceId,
                                         targetLessonId,
                                         UUID.randomUUID()))
@@ -222,7 +229,8 @@ class StudentOccurrenceMigrationIT {
         jdbc.update(
                 "UPDATE "
                         + table(schema, "lesson_homework_bindings")
-                        + " SET homework_id = 502, state = 'ACTIVE', revision = 2 WHERE binding_id = ?",
+                        + " SET homework_id = 502, state = 'ACTIVE', revision = 2 WHERE binding_id"
+                        + " = ?",
                 pendingBindingId);
         assertThatThrownBy(
                         () ->
@@ -266,9 +274,10 @@ class StudentOccurrenceMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "lesson_occurrences")
-                                + " (schedule_item_id, occurrence_date, assignment_id, group_id, subject_id,"
-                                + " semester_id, assigned_teacher_id, lesson_type)"
-                                + " VALUES (?, DATE '2026-03-02', 9004, 14, 24, 34, 44, 'lecture') RETURNING id",
+                                + " (schedule_item_id, occurrence_date, assignment_id, group_id,"
+                                + " subject_id, semester_id, assigned_teacher_id, lesson_type)"
+                                + " VALUES (?, DATE '2026-03-02', 9004, 14, 24, 34, 44, 'lecture')"
+                                + " RETURNING id",
                         Long.class,
                         templateId);
         Long lessonId =
@@ -299,9 +308,10 @@ class StudentOccurrenceMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "lesson_lifecycle_entries")
-                                + " (occurrence_id, revision, action, lesson_id, generation, reason, actor_id, occurred_at)"
-                                + " VALUES (?, 1, 'CANCELLED', ?, 1, 'historical cancellation', 2,"
-                                + " TIMESTAMPTZ '2026-03-01 06:00:00Z') RETURNING id",
+                                + " (occurrence_id, revision, action, lesson_id, generation,"
+                                + " reason, actor_id, occurred_at) VALUES (?, 1, 'CANCELLED', ?, 1,"
+                                + " 'historical cancellation', 2, TIMESTAMPTZ '2026-03-01"
+                                + " 06:00:00Z') RETURNING id",
                         Long.class,
                         occurrenceId,
                         lessonId);
@@ -413,13 +423,17 @@ class StudentOccurrenceMigrationIT {
                 .isEqualTo(occurrences);
         assertThat(
                         jdbc.queryForList(
-                                "SELECT to_jsonb(retained) - ARRAY['lifecycle_revision', 'deactivated_at', 'generation_not_before'] AS snapshot FROM "
+                                "SELECT to_jsonb(retained) - ARRAY['lifecycle_revision',"
+                                    + " 'deactivated_at', 'generation_not_before'] AS snapshot FROM"
+                                    + " "
                                         + table(schema, "schedule_items")
                                         + " retained ORDER BY id"))
                 .isEqualTo(templates);
         assertThat(
                         jdbc.queryForList(
-                                "SELECT to_jsonb(retained) - ARRAY['restore_operation_id', 'transfer_operation_id', 'one_off_restore_operation_id', 'template_operation_id'] AS snapshot FROM "
+                                "SELECT to_jsonb(retained) - ARRAY['restore_operation_id',"
+                                    + " 'transfer_operation_id', 'one_off_restore_operation_id',"
+                                    + " 'template_operation_id'] AS snapshot FROM "
                                         + table(schema, "lesson_lifecycle_entries")
                                         + " retained ORDER BY id"))
                 .isEqualTo(lifecycleHistory);
@@ -427,25 +441,30 @@ class StudentOccurrenceMigrationIT {
                         jdbc.queryForObject(
                                 "SELECT COUNT(*) FROM "
                                         + table(schema, "lesson_lifecycle_entries")
-                                        + " WHERE restore_operation_id IS NOT NULL OR transfer_operation_id IS NOT NULL"
-                                        + " OR one_off_restore_operation_id IS NOT NULL OR template_operation_id IS NOT NULL",
+                                        + " WHERE restore_operation_id IS NOT NULL OR"
+                                        + " transfer_operation_id IS NOT NULL OR"
+                                        + " one_off_restore_operation_id IS NOT NULL OR"
+                                        + " template_operation_id IS NOT NULL",
                                 Integer.class))
                 .isZero();
         assertThat(
                         jdbc.queryForObject(
                                 "SELECT COUNT(*) FROM "
                                         + table(schema, "schedule_items")
-                                        + " WHERE lifecycle_revision = 1 AND deactivated_at IS NULL AND generation_not_before IS NULL",
+                                        + " WHERE lifecycle_revision = 1 AND deactivated_at IS NULL"
+                                        + " AND generation_not_before IS NULL",
                                 Integer.class))
                 .isEqualTo(1);
         assertThat(retainedHistoryIndexes(schema)).isEqualTo(originalIndexes);
         assertThat(retainedHistorySequences(schema)).isEqualTo(sequences);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT COUNT(*) FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid"
-                                        + " JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = ?"
-                                        + " AND i.indisvalid AND i.indisready AND c.relname IN"
-                                        + " ('idx_lesson_transfer_pending', 'idx_recurring_lifecycle_item', 'homework_binding_semester_pending_idx')",
+                                "SELECT COUNT(*) FROM pg_index i JOIN pg_class c ON c.oid ="
+                                    + " i.indexrelid JOIN pg_namespace n ON n.oid = c.relnamespace"
+                                    + " WHERE n.nspname = ? AND i.indisvalid AND i.indisready AND"
+                                    + " c.relname IN ('idx_lesson_transfer_pending',"
+                                    + " 'idx_recurring_lifecycle_item',"
+                                    + " 'homework_binding_semester_pending_idx')",
                                 Integer.class,
                                 schema))
                 .isEqualTo(3);
@@ -478,9 +497,10 @@ class StudentOccurrenceMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "lesson_occurrences")
-                                + " (schedule_item_id, occurrence_date, assignment_id, group_id, subject_id,"
-                                + " semester_id, assigned_teacher_id, lesson_type)"
-                                + " VALUES (?, DATE '2026-03-05', 701, 11, 21, 31, 41, 'practice') RETURNING id",
+                                + " (schedule_item_id, occurrence_date, assignment_id, group_id,"
+                                + " subject_id, semester_id, assigned_teacher_id, lesson_type)"
+                                + " VALUES (?, DATE '2026-03-05', 701, 11, 21, 31, 41, 'practice')"
+                                + " RETURNING id",
                         Long.class,
                         templateId);
         Long lessonId =
@@ -507,9 +527,11 @@ class StudentOccurrenceMigrationIT {
                                 jdbc.update(
                                         "INSERT INTO "
                                                 + table(schema, "lesson_occurrences")
-                                                + " (schedule_item_id, occurrence_date, assignment_id, group_id, subject_id,"
+                                                + " (schedule_item_id, occurrence_date,"
+                                                + " assignment_id, group_id, subject_id,"
                                                 + " semester_id, assigned_teacher_id, lesson_type)"
-                                                + " VALUES (?, DATE '2026-03-05', 702, 11, 21, 31, 41, 'practice')",
+                                                + " VALUES (?, DATE '2026-03-05', 702, 11, 21, 31,"
+                                                + " 41, 'practice')",
                                         templateId))
                 .isInstanceOf(DataAccessException.class);
         assertThatThrownBy(
@@ -545,8 +567,8 @@ class StudentOccurrenceMigrationIT {
         jdbc.update(
                 "INSERT INTO "
                         + table(schema, "lesson_lifecycle_entries")
-                        + " (occurrence_id, revision, action, lesson_id, generation, actor_id, occurred_at)"
-                        + " VALUES (?, 1, 'CREATED', ?, 1, 2, NOW())",
+                        + " (occurrence_id, revision, action, lesson_id, generation, actor_id,"
+                        + " occurred_at) VALUES (?, 1, 'CREATED', ?, 1, 2, NOW())",
                 occurrenceId,
                 lessonId);
         assertThatThrownBy(
@@ -589,7 +611,8 @@ class StudentOccurrenceMigrationIT {
                 "INSERT INTO "
                         + table(schema, "schedule_transfer_replay")
                         + " (actor_id, request_key, occurrence_id, payload_hash, source_lesson_id,"
-                        + " target_lesson_id, accepted_revision) VALUES (2, ?, ?, decode(repeat('55', 32), 'hex'), ?, ?, 2)",
+                        + " target_lesson_id, accepted_revision) VALUES (2, ?, ?,"
+                        + " decode(repeat('55', 32), 'hex'), ?, ?, 2)",
                 replayKey,
                 occurrenceId,
                 lessonId,
@@ -599,7 +622,8 @@ class StudentOccurrenceMigrationIT {
                                 jdbc.update(
                                         "UPDATE "
                                                 + table(schema, "schedule_transfer_replay")
-                                                + " SET accepted_revision = 3 WHERE request_key = ?",
+                                                + " SET accepted_revision = 3 WHERE request_key ="
+                                                + " ?",
                                         replayKey))
                 .isInstanceOf(DataAccessException.class);
         assertThatThrownBy(
@@ -616,9 +640,10 @@ class StudentOccurrenceMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "lesson_occurrences")
-                                + " (schedule_item_id, occurrence_date, assignment_id, group_id, subject_id,"
-                                + " semester_id, assigned_teacher_id, lesson_type)"
-                                + " VALUES (?, DATE '2026-03-06', 703, 12, 22, 32, 42, 'lab') RETURNING id",
+                                + " (schedule_item_id, occurrence_date, assignment_id, group_id,"
+                                + " subject_id, semester_id, assigned_teacher_id, lesson_type)"
+                                + " VALUES (?, DATE '2026-03-06', 703, 12, 22, 32, 42, 'lab')"
+                                + " RETURNING id",
                         Long.class,
                         otherTemplateId);
         Long otherLessonId =
@@ -660,17 +685,19 @@ class StudentOccurrenceMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "schedule_items")
-                                + " (assignment_id, group_id, subject_id, semester_id, day_of_week, lesson_number,"
-                                + " start_time, end_time, week_type, room) VALUES (704, 13, 23, 33, 1, 5,"
-                                + " '15:00'::time, '16:00'::time, 'even'::week_type, 'A101') RETURNING id",
+                                + " (assignment_id, group_id, subject_id, semester_id, day_of_week,"
+                                + " lesson_number, start_time, end_time, week_type, room) VALUES"
+                                + " (704, 13, 23, 33, 1, 5, '15:00'::time, '16:00'::time,"
+                                + " 'even'::week_type, 'A101') RETURNING id",
                         Long.class);
         Long occurrenceId =
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "lesson_occurrences")
-                                + " (schedule_item_id, occurrence_date, assignment_id, group_id, subject_id,"
-                                + " semester_id, assigned_teacher_id, lesson_type)"
-                                + " VALUES (?, DATE '2026-03-16', 704, 13, 23, 33, 43, 'lecture') RETURNING id",
+                                + " (schedule_item_id, occurrence_date, assignment_id, group_id,"
+                                + " subject_id, semester_id, assigned_teacher_id, lesson_type)"
+                                + " VALUES (?, DATE '2026-03-16', 704, 13, 23, 33, 43, 'lecture')"
+                                + " RETURNING id",
                         Long.class,
                         templateA);
         Long validLessonId =
@@ -788,16 +815,18 @@ class StudentOccurrenceMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "schedule_one_off_lessons")
-                                + " (group_id, subject_id, semester_id, date, lesson_number, classroom, created_by)"
-                                + " VALUES (50, 60, 70, DATE '2026-03-10', 2, 'C101', 2) RETURNING id",
+                                + " (group_id, subject_id, semester_id, date, lesson_number,"
+                                + " classroom, created_by) VALUES (50, 60, 70, DATE '2026-03-10',"
+                                + " 2, 'C101', 2) RETURNING id",
                         Long.class);
         Long occurrenceId =
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "lesson_occurrences")
-                                + " (one_off_lesson_id, occurrence_date, assignment_id, group_id, subject_id,"
-                                + " semester_id, assigned_teacher_id, lesson_type)"
-                                + " VALUES (?, DATE '2026-03-10', 800, 50, 60, 70, 80, 'lecture') RETURNING id",
+                                + " (one_off_lesson_id, occurrence_date, assignment_id, group_id,"
+                                + " subject_id, semester_id, assigned_teacher_id, lesson_type)"
+                                + " VALUES (?, DATE '2026-03-10', 800, 50, 60, 70, 80, 'lecture')"
+                                + " RETURNING id",
                         Long.class,
                         oneOffId);
         Long sourceLessonId =
@@ -876,23 +905,26 @@ class StudentOccurrenceMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "schedule_one_off_lessons")
-                                + " (group_id, subject_id, semester_id, date, lesson_number, classroom, created_by)"
-                                + " VALUES (51, 61, 71, DATE '2026-03-20', 3, 'C101', 2) RETURNING id",
+                                + " (group_id, subject_id, semester_id, date, lesson_number,"
+                                + " classroom, created_by) VALUES (51, 61, 71, DATE '2026-03-20',"
+                                + " 3, 'C101', 2) RETURNING id",
                         Long.class);
         Long oneOffB =
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "schedule_one_off_lessons")
-                                + " (group_id, subject_id, semester_id, date, lesson_number, classroom, created_by)"
-                                + " VALUES (51, 61, 71, DATE '2026-03-21', 3, 'C102', 2) RETURNING id",
+                                + " (group_id, subject_id, semester_id, date, lesson_number,"
+                                + " classroom, created_by) VALUES (51, 61, 71, DATE '2026-03-21',"
+                                + " 3, 'C102', 2) RETURNING id",
                         Long.class);
         Long occurrenceId =
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "lesson_occurrences")
-                                + " (one_off_lesson_id, occurrence_date, assignment_id, group_id, subject_id,"
-                                + " semester_id, assigned_teacher_id, lesson_type)"
-                                + " VALUES (?, DATE '2026-03-20', 805, 51, 61, 71, 81, 'practice') RETURNING id",
+                                + " (one_off_lesson_id, occurrence_date, assignment_id, group_id,"
+                                + " subject_id, semester_id, assigned_teacher_id, lesson_type)"
+                                + " VALUES (?, DATE '2026-03-20', 805, 51, 61, 71, 81, 'practice')"
+                                + " RETURNING id",
                         Long.class,
                         oneOffA);
         Long validLessonId =
@@ -1012,19 +1044,22 @@ class StudentOccurrenceMigrationIT {
                                 jdbc.update(
                                         "INSERT INTO "
                                                 + table(schema, "schedule_items")
-                                                + " (assignment_id, group_id, subject_id, semester_id, day_of_week, lesson_number,"
-                                                + " start_time, end_time, week_type) VALUES (0, 1, 2, 3, 1, 1, '09:00', '10:00', 'all')"))
+                                                + " (assignment_id, group_id, subject_id,"
+                                                + " semester_id, day_of_week, lesson_number,"
+                                                + " start_time, end_time, week_type) VALUES (0, 1,"
+                                                + " 2, 3, 1, 1, '09:00', '10:00', 'all')"))
                 .isInstanceOf(DataAccessException.class);
     }
 
     private List<Map<String, Object>> retainedHistoryIndexes(String schema) {
         return jdbc.queryForList(
-                "SELECT c.relname, i.indisvalid, i.indisready, pg_get_indexdef(i.indexrelid) AS definition"
-                        + " FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid"
-                        + " JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = ?"
-                        + " AND c.relname IN ('uq_lesson_occurrences_recurring_origin', 'uq_lesson_occurrences_one_off_origin',"
-                        + " 'uq_lessons_included_occurrence', 'idx_lessons_occurrence_history', 'idx_lesson_lifecycle_entries_occurrence')"
-                        + " ORDER BY c.relname",
+                "SELECT c.relname, i.indisvalid, i.indisready, pg_get_indexdef(i.indexrelid) AS"
+                    + " definition FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid JOIN"
+                    + " pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = ? AND c.relname"
+                    + " IN ('uq_lesson_occurrences_recurring_origin',"
+                    + " 'uq_lesson_occurrences_one_off_origin', 'uq_lessons_included_occurrence',"
+                    + " 'idx_lessons_occurrence_history',"
+                    + " 'idx_lesson_lifecycle_entries_occurrence') ORDER BY c.relname",
                 schema);
     }
 
@@ -1058,9 +1093,9 @@ class StudentOccurrenceMigrationIT {
         return jdbc.queryForObject(
                 "INSERT INTO "
                         + table(schema, "schedule_items")
-                        + " (assignment_id, group_id, subject_id, semester_id, day_of_week, lesson_number,"
-                        + " start_time, end_time, week_type, room) VALUES (?, ?, ?, ?, 1, ?, ?::time, ?::time,"
-                        + " 'all', 'A101') RETURNING id",
+                        + " (assignment_id, group_id, subject_id, semester_id, day_of_week,"
+                        + " lesson_number, start_time, end_time, week_type, room) VALUES (?, ?, ?,"
+                        + " ?, 1, ?, ?::time, ?::time, 'all', 'A101') RETURNING id",
                 Long.class,
                 assignmentId,
                 groupId,
@@ -1091,9 +1126,10 @@ class StudentOccurrenceMigrationIT {
         return jdbc.queryForObject(
                 "INSERT INTO "
                         + table(schema, "lessons")
-                        + " (schedule_item_id, occurrence_id, assignment_id, group_id, subject_id, semester_id,"
-                        + " assigned_teacher_id, lesson_type, lesson_number, start_time, end_time, generation, revision,"
-                        + " date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::time, ?::time, ?, ?, ?::date, ?::lesson_status)"
+                        + " (schedule_item_id, occurrence_id, assignment_id, group_id, subject_id,"
+                        + " semester_id, assigned_teacher_id, lesson_type, lesson_number,"
+                        + " start_time, end_time, generation, revision, date, status) VALUES (?, ?,"
+                        + " ?, ?, ?, ?, ?, ?, ?, ?::time, ?::time, ?, ?, ?::date, ?::lesson_status)"
                         + " RETURNING id",
                 Long.class,
                 templateId,
@@ -1133,9 +1169,10 @@ class StudentOccurrenceMigrationIT {
         return jdbc.queryForObject(
                 "INSERT INTO "
                         + table(schema, "lessons")
-                        + " (one_off_lesson_id, occurrence_id, assignment_id, group_id, subject_id, semester_id,"
-                        + " assigned_teacher_id, lesson_type, lesson_number, start_time, end_time, generation, revision,"
-                        + " date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::time, ?::time, ?, ?, ?::date, ?::lesson_status)"
+                        + " (one_off_lesson_id, occurrence_id, assignment_id, group_id, subject_id,"
+                        + " semester_id, assigned_teacher_id, lesson_type, lesson_number,"
+                        + " start_time, end_time, generation, revision, date, status) VALUES (?, ?,"
+                        + " ?, ?, ?, ?, ?, ?, ?, ?::time, ?::time, ?, ?, ?::date, ?::lesson_status)"
                         + " RETURNING id",
                 Long.class,
                 oneOffId,

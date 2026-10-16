@@ -1,5 +1,26 @@
 package ru.rutcampustrack.attendance.report.studentprojection;
 
+import org.springframework.stereotype.Service;
+
+import ru.rutcampustrack.academic.grpc.AcademicSubjectInfo;
+import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.StudentInfo;
+import ru.rutcampustrack.academic.grpc.StudentProjectionMembershipSegment;
+import ru.rutcampustrack.academic.grpc.StudentProjectionRankVisibility;
+import ru.rutcampustrack.academic.grpc.StudentProjectionScopeResponse;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
+import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
+import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
+import ru.rutcampustrack.attendance.student.EffectiveAttendance;
+import ru.rutcampustrack.attendance.student.StudentCheckinException;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.DayOfWeek;
@@ -21,25 +42,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Service;
-import ru.rutcampustrack.academic.grpc.AcademicSubjectInfo;
-import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
-import ru.rutcampustrack.academic.grpc.StudentInfo;
-import ru.rutcampustrack.academic.grpc.StudentProjectionMembershipSegment;
-import ru.rutcampustrack.academic.grpc.StudentProjectionRankVisibility;
-import ru.rutcampustrack.academic.grpc.StudentProjectionScopeResponse;
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
-import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
-import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
-import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
-import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
-import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
-import ru.rutcampustrack.attendance.student.EffectiveAttendance;
-import ru.rutcampustrack.attendance.student.StudentCheckinException;
-import ru.rutcampustrack.schedule.grpc.LessonResponse;
-import ru.rutcampustrack.schedule.grpc.LessonsResponse;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 /**
  * Server-side student attendance read model.
@@ -209,7 +211,8 @@ public class StudentAttendanceProjectionService {
                                             || participant.position() == null
                                             || participant.percentage() == null) {
                                         throw StudentProjectionException.invalidRoster(
-                                                "available ranking contains an incomplete participant");
+                                                "available ranking contains an incomplete"
+                                                        + " participant");
                                     }
                                     return new RankingRow(
                                             participant.participantId(),

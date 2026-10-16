@@ -2742,6 +2742,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     'Synthetic CI configuration must be bounded and private',
   );
   const wanted = [
+    'POSTGRES_ACADEMIC_PASSWORD',
     'POSTGRES_SCHEDULE_PASSWORD',
     'MONGO_ROOT_PASSWORD',
     'RABBITMQ_USER',
@@ -3615,6 +3616,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       'schedule-service',
       'attendance-service',
       'postgres-schedule',
+      'postgres-academic',
       'mongo-attendance',
       'rabbitmq',
     ]) {
@@ -3689,6 +3691,92 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
         (row.validUntilExclusive == null || row.validUntilExclusive > shift(dataset.today, -1)),
     );
     requireValue(assignment, 'Own assignment must cover the historical close');
+    const expectedInitialMemberships = [
+      ...expectedRoster.map((studentId) => [Number(studentId), Number(scope.group)]),
+      [Number(dataset.foreignStudent.id), Number(dataset.otherGroup.id)],
+    ];
+    requireValue(
+      expectedInitialMemberships.length === 4 &&
+        new Set(expectedInitialMemberships.map(([studentId]) => studentId)).size === 4 &&
+        expectedInitialMemberships.every((tuple) =>
+          tuple.every((value) => Number.isSafeInteger(value) && value > 0),
+        ) &&
+        Number(dataset.otherGroup.id) !== Number(scope.group),
+      'Four exact owned initial memberships are required',
+    );
+    const initialReadinessEnd = performance.now() + budget(10000);
+    const initialMembershipsReady = (): {
+      expectedApplied: boolean;
+      noPendingWork: boolean;
+      producerSent: boolean;
+    } => {
+      const remaining = () => {
+        const value = Math.floor(initialReadinessEnd - performance.now());
+        requireValue(value > 0, 'Initial membership readiness deadline exhausted');
+        return Math.min(2000, value);
+      };
+      try {
+        const current = identity('postgres-academic', remaining());
+        const values = expectedInitialMemberships
+          .map(([studentId, groupId]) => `(${studentId},${groupId})`)
+          .join(',');
+        const sql = `SELECT json_build_object(
+'expectedApplied',(SELECT bool_and((SELECT count(*)=1 AND
+COALESCE(bool_and(w.group_id=e.group_id AND w.state='APPLIED'),false)
+FROM academic_initial_membership_backfills w
+WHERE w.student_id=e.student_id AND w.semester_id=${scope.semester}))
+FROM (VALUES ${values}) AS e(student_id,group_id)),
+'noPendingWork',NOT EXISTS(SELECT 1 FROM academic_initial_membership_backfills WHERE state='PENDING'),
+'producerSent',NOT EXISTS(SELECT 1 FROM academic_outbox
+WHERE event_type='student.initial-membership.recorded' AND status<>'sent'))`;
+        const raw = docker(
+          [
+            'exec',
+            '-i',
+            '-e',
+            'PGPASSWORD',
+            current.id,
+            'psql',
+            '-X',
+            '-qAt',
+            '-U',
+            'rct_user',
+            '-d',
+            'academic_db',
+            '-v',
+            'ON_ERROR_STOP=1',
+          ],
+          `BEGIN READ ONLY; SET LOCAL statement_timeout='2000ms'; ${sql}; ROLLBACK;`,
+          { PGPASSWORD: secret.POSTGRES_ACADEMIC_PASSWORD },
+          remaining(),
+        );
+        const lines = raw
+          .trim()
+          .split('\n')
+          .filter((line) => !['BEGIN', 'SET', 'ROLLBACK'].includes(line));
+        requireValue(
+          Buffer.byteLength(raw, 'utf8') <= 1024 && lines.length === 1,
+          'One bounded initial membership projection is required',
+        );
+        const projection: unknown = JSON.parse(lines[0]);
+        requireValue(
+          projection !== null &&
+            typeof projection === 'object' &&
+            !Array.isArray(projection) &&
+            Object.keys(projection).sort().join(',') ===
+              'expectedApplied,noPendingWork,producerSent' &&
+            Object.values(projection).every((value) => typeof value === 'boolean'),
+          'Initial membership projection must contain exact booleans',
+        );
+        return projection as {
+          expectedApplied: boolean;
+          noPendingWork: boolean;
+          producerSent: boolean;
+        };
+      } catch {
+        throw new Error('Owned initial membership readiness projection failed');
+      }
+    };
     const quiescence = {
       firstFailed: 'UNOBSERVED' as
         | 'UNOBSERVED'
@@ -3699,7 +3787,10 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
         | 'DLQ_UNACKED'
         | 'SCHEDULE_UNPROVEN'
         | 'SCHEDULE_LEGACY'
-        | 'SCHEDULE_DUE',
+        | 'SCHEDULE_DUE'
+        | 'INITIAL_EXPECTED'
+        | 'INITIAL_PENDING'
+        | 'INITIAL_PRODUCER',
     };
     try {
       await expect
@@ -3717,6 +3808,7 @@ AND NOT EXISTS(SELECT 1 FROM schedule_semester_archive_effect_ledger e
 WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
 'due',(SELECT count(*) FROM lessons WHERE status IN ('planned','active') AND date+end_time+interval '5 minutes'
 <=('${clock.instant.toISOString()}'::timestamptz AT TIME ZONE 'Europe/Moscow')))`);
+            const initial = initialMembershipsReady();
             if (q.main.messages_ready !== 0) quiescence.firstFailed = 'MAIN_READY';
             else if (q.main.messages_unacknowledged !== 0) quiescence.firstFailed = 'MAIN_UNACKED';
             else if (q.main.consumers !== 1) quiescence.firstFailed = 'MAIN_CONSUMER';
@@ -3725,6 +3817,9 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
             else if (state.unproven !== 0) quiescence.firstFailed = 'SCHEDULE_UNPROVEN';
             else if (state.legacy !== 0) quiescence.firstFailed = 'SCHEDULE_LEGACY';
             else if (state.due !== 0) quiescence.firstFailed = 'SCHEDULE_DUE';
+            else if (!initial.expectedApplied) quiescence.firstFailed = 'INITIAL_EXPECTED';
+            else if (!initial.noPendingWork) quiescence.firstFailed = 'INITIAL_PENDING';
+            else if (!initial.producerSent) quiescence.firstFailed = 'INITIAL_PRODUCER';
             return (
               q.main.messages_ready === 0 &&
               q.main.messages_unacknowledged === 0 &&
@@ -3733,10 +3828,16 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
               q.dead.messages_unacknowledged === 0 &&
               state.unproven === 0 &&
               state.legacy === 0 &&
-              state.due === 0
+              state.due === 0 &&
+              initial.expectedApplied &&
+              initial.noPendingWork &&
+              initial.producerSent
             );
           },
-          { timeout: budget(10000), message: 'Fresh synthetic namespace is quiescent' },
+          {
+            timeout: Math.max(1, Math.min(budget(10000), initialReadinessEnd - performance.now())),
+            message: 'Fresh synthetic namespace is quiescent',
+          },
         )
         .toBe(true);
     } catch (error) {
@@ -3764,6 +3865,15 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
           break;
         case 'SCHEDULE_DUE':
           expect.soft(false, 'D9_QUIESCENCE_SCHEDULE_DUE').toBe(true);
+          break;
+        case 'INITIAL_EXPECTED':
+          expect.soft(false, 'D9_QUIESCENCE_INITIAL_EXPECTED').toBe(true);
+          break;
+        case 'INITIAL_PENDING':
+          expect.soft(false, 'D9_QUIESCENCE_INITIAL_PENDING').toBe(true);
+          break;
+        case 'INITIAL_PRODUCER':
+          expect.soft(false, 'D9_QUIESCENCE_INITIAL_PRODUCER').toBe(true);
           break;
       }
       throw error;
@@ -4626,7 +4736,20 @@ function subjectCascadeReadback(deadline: number) {
     | 'DOCKER_EXEC'
     | 'AMBIGUOUS'
     | 'UNKNOWN';
-  const mongoFailureFamily = (error: unknown): MongoFailureFamily => {
+  type MongoFailureSite =
+    | 'CONNECT'
+    | 'TICKET'
+    | 'EPOCH'
+    | 'COUNT'
+    | 'CURSOR'
+    | 'HISTORY'
+    | 'BUDGET'
+    | 'OUTPUT'
+    | 'UNKNOWN';
+  const mongoFailureFamily = (
+    error: unknown,
+    site: { value: MongoFailureSite },
+  ): MongoFailureFamily => {
     try {
       if (error === null || typeof error !== 'object') return 'UNKNOWN';
       const text: string[] = [];
@@ -4671,6 +4794,14 @@ function subjectCascadeReadback(deadline: number) {
         })
       )
         return 'UNKNOWN';
+      const markers = lines.filter((line) => line.trim().startsWith('RCT_SUBJECT_READBACK_SITE:'));
+      if (markers.length === 1) {
+        const match =
+          /^RCT_SUBJECT_READBACK_SITE:(CONNECT|TICKET|EPOCH|COUNT|CURSOR|HISTORY|BUDGET|OUTPUT)$/.exec(
+            markers[0],
+          );
+        if (match) site.value = match[1] as MongoFailureSite;
+      }
       const families = new Set<MongoFailureFamily>();
       let bareServerParent = false;
       for (const entry of lines) {
@@ -4699,6 +4830,7 @@ function subjectCascadeReadback(deadline: number) {
         error: Error;
         reason: 'TIMEOUT' | 'OUTPUT_BOUND' | 'EXIT_NONZERO' | 'UNKNOWN';
         family: MongoFailureFamily;
+        site: MongoFailureSite;
       }
     | undefined;
   const docker = (args: string[], input?: string, extra: Record<string, string> = {}) => {
@@ -4749,6 +4881,7 @@ function subjectCascadeReadback(deadline: number) {
         '--file',
         '/dev/stdin',
       ];
+      const site: { value: MongoFailureSite } = { value: 'UNKNOWN' };
       readbackNativeFailure = {
         error: failure,
         reason,
@@ -4756,8 +4889,9 @@ function subjectCascadeReadback(deadline: number) {
           reason === 'EXIT_NONZERO' &&
           args.length === selectedMongo.length &&
           args.every((value, index) => value === selectedMongo[index])
-            ? mongoFailureFamily(error)
+            ? mongoFailureFamily(error, site)
             : 'UNKNOWN',
+        site: site.value,
       };
       throw failure;
     }
@@ -4902,20 +5036,30 @@ function subjectCascadeReadback(deadline: number) {
       'deletedEvents',(SELECT count(*) FROM schedule_outbox WHERE event_type='lesson.deleted' AND payload->'payload'->'lesson_ids' @> '[${scope.removed[0]}]'::jsonb))`,
     );
     const js = `const k=${JSON.stringify(scope)};
+let rctSubjectReadbackSite='CONNECT';
+try {
 const d=connect('mongodb://root:'+encodeURIComponent(process.env.RCT_MONGO_PASSWORD)+'@localhost:27017/attendance_db?authSource=admin&replicaSet=rs0');
-const count=(c,q)=>d.getCollection(c).countDocuments(q,{maxTimeMS:2000});
+const count=(c,q)=>(rctSubjectReadbackSite='COUNT',d.getCollection(c).countDocuments(q,{maxTimeMS:2000}));
+rctSubjectReadbackSite='TICKET';
 const t=d.excuse_tickets.findOne({_id:new ObjectId(k.mixed)},{data:0});
+rctSubjectReadbackSite='EPOCH';
 const e=d.subject_deletion_participants.findOne({_id:k.operation},{state:1,subject_id:1,semester_id:1,group_id:1});
+rctSubjectReadbackSite='HISTORY';
 const h=t?.subject_coverage_adjustments||[];
-print(JSON.stringify({epoch:e?{state:e.state,subject:Number(e.subject_id),semester:Number(e.semester_id),group:Number(e.group_id)}:null,
+print(JSON.stringify({epoch:(rctSubjectReadbackSite='EPOCH',e?{state:e.state,subject:Number(e.subject_id),semester:Number(e.semester_id),group:Number(e.group_id)}:null),
 epochCount:count('subject_deletion_participants',{subject_id:k.subject}),
 marks:count('attendances',{lesson_id:{$in:k.removed}}),
 sole:count('excuse_tickets',{_id:new ObjectId(k.sole)}),manual:count('late_checkin_requests',{_id:new ObjectId(k.manual)}),
 soleFiles:count('request_attachments',{request_id:k.sole}),mixedFiles:count('request_attachments',{request_id:k.mixed}),
-controlMarks:d.attendances.find({lesson_id:k.kept,user_id:k.student}).maxTimeMS(2000).limit(2).toArray(),
-originalCount:t?.lesson_snapshots?.length,effectiveIds:t?.effective_original_lesson_ids?.map(Number),
+controlMarks:(rctSubjectReadbackSite='CURSOR',d.attendances.find({lesson_id:k.kept,user_id:k.student}).maxTimeMS(2000).limit(2).toArray()),
+originalCount:(rctSubjectReadbackSite='HISTORY',t?.lesson_snapshots?.length),effectiveIds:t?.effective_original_lesson_ids?.map(Number),
 history:h.map(x=>({operation:x.operation_id,subject:Number(x.subject_id),actor:Number(x.actor_id),removed:x.removed_lesson_ids.map(Number),remaining:x.remaining_lesson_ids.map(Number)})),
-budget:d.student_late_checkin_budgets.findOne({student_id:k.student,semester_id:k.semester},{_id:0,limit:1,used:1})}));`;
+budget:(rctSubjectReadbackSite='BUDGET',d.student_late_checkin_budgets.findOne({student_id:k.student,semester_id:k.semester},{_id:0,limit:1,used:1})),
+...(rctSubjectReadbackSite='OUTPUT',{})}));
+} catch(error) {
+try { print('RCT_SUBJECT_READBACK_SITE:'+rctSubjectReadbackSite); } catch {}
+throw error;
+}`;
     let attendance: Row;
     let mongoStage: 'IDENTITY' | 'COMMAND' | 'PARSE' = 'IDENTITY';
     try {
@@ -4942,6 +5086,7 @@ budget:d.student_late_checkin_budgets.findOne({student_id:k.student,semester_id:
     } catch (error) {
       let failure: Error;
       let family: MongoFailureFamily | undefined;
+      let site: MongoFailureSite = 'UNKNOWN';
       if (mongoStage === 'IDENTITY') {
         failure = new Error('Subject deletion Mongo projection is invalid');
       } else if (mongoStage === 'PARSE') {
@@ -4964,6 +5109,7 @@ budget:d.student_late_checkin_budgets.findOne({student_id:k.student,semester_id:
         readbackNativeFailure.reason === 'EXIT_NONZERO'
       ) {
         family = readbackNativeFailure.family;
+        site = readbackNativeFailure.site;
         failure = new Error('Subject deletion Mongo projection is invalid');
       } else {
         failure = new Error('Subject deletion Mongo projection is invalid');
@@ -4998,6 +5144,35 @@ budget:d.student_late_checkin_budgets.findOne({student_id:k.student,semester_id:
               break;
             case 'JS_TYPE':
               expect.soft(false, 'SUBJECT_MONGO_JS_TYPE').toBe(true);
+              switch (site) {
+                case 'CONNECT':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_CONNECT').toBe(true);
+                  break;
+                case 'TICKET':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_TICKET').toBe(true);
+                  break;
+                case 'EPOCH':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_EPOCH').toBe(true);
+                  break;
+                case 'COUNT':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_COUNT').toBe(true);
+                  break;
+                case 'CURSOR':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_CURSOR').toBe(true);
+                  break;
+                case 'HISTORY':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_HISTORY').toBe(true);
+                  break;
+                case 'BUDGET':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_BUDGET').toBe(true);
+                  break;
+                case 'OUTPUT':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_OUTPUT').toBe(true);
+                  break;
+                case 'UNKNOWN':
+                  expect.soft(false, 'SUBJECT_MONGO_REPORTED_SITE_UNKNOWN').toBe(true);
+                  break;
+              }
               break;
             case 'JS_SYNTAX':
               expect.soft(false, 'SUBJECT_MONGO_JS_SYNTAX').toBe(true);

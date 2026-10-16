@@ -1743,7 +1743,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     'Synthetic CI credentials are required',
   );
   const diagnostic = {
-    schema: 'semester-reconciliation.v1',
+    schema: 'semester-reconciliation.v2',
     phase: 'SETUP',
     configuredListenerAttempts: 3,
     measuredListenerAttempts: 'UNKNOWN',
@@ -1758,6 +1758,11 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     restorationSucceeded: false,
     clockUnchanged: false,
     cleanupOutcome: 'PENDING',
+    firstRestartFailure: null as {
+      phase: 'MAIN' | 'CLEANUP';
+      service: 'ATTENDANCE' | 'SCHEDULE';
+      cause: 'NOT_RUNNING' | 'HEALTH_STARTING' | 'HEALTH_UNHEALTHY' | 'HEALTH_UNKNOWN';
+    } | null,
   };
   const stopped = new Set<string>();
   let eventAccepted = false,
@@ -2013,6 +2018,24 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
       45000,
     );
     const current = identity(service);
+    if (
+      !(current.running && current.health === 'healthy') &&
+      diagnostic.firstRestartFailure === null &&
+      (service === 'attendance-service' || service === 'schedule-service')
+    ) {
+      diagnostic.firstRestartFailure = {
+        phase: cleaning ? 'CLEANUP' : 'MAIN',
+        service: service === 'attendance-service' ? 'ATTENDANCE' : 'SCHEDULE',
+        cause:
+          current.running === false
+            ? 'NOT_RUNNING'
+            : current.running === true && current.health === 'starting'
+              ? 'HEALTH_STARTING'
+              : current.running === true && current.health === 'unhealthy'
+                ? 'HEALTH_UNHEALTHY'
+                : 'HEALTH_UNKNOWN',
+      };
+    }
     requireValue(
       current.running && current.health === 'healthy',
       'Same owned service must recover',

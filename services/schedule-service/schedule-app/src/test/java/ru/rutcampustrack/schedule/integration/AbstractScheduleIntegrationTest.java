@@ -150,6 +150,7 @@ ON CONFLICT (assignment_id) DO NOTHING
                 TRUNCATE TABLE
                     schedule_subject_deletion_participants,
                     schedule_outbox,
+                    schedule_semester_archive_effect_ledger,
                     schedule_semester_archive_barriers,
                     lesson_homework_bindings,
                     schedule_one_off_create_replay,

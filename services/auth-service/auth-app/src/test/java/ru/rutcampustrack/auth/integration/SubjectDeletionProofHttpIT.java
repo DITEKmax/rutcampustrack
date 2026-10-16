@@ -115,7 +115,20 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
         assertPrivate(challenge, 200);
         String id = json.readTree(challenge.getBody()).path("challengeId").asText();
         String code = ownCode(f.telegram(), id);
-        jdbc.update("UPDATE users SET telegram_id=telegram_id+1 WHERE id=?", f.user());
+        // Reserve a user identity gap so future formula fixtures cannot reuse this Telegram id.
+        long reservedUserId =
+                jdbc.queryForObject(
+                        "SELECT nextval(pg_get_serial_sequence('users','id'))", Long.class);
+        long replacementTelegram = f.telegram() - f.user() + reservedUserId;
+        assertThat(replacementTelegram > 0 && replacementTelegram != f.telegram()).isTrue();
+        assertThat(count("SELECT count(*) FROM users WHERE telegram_id=?", replacementTelegram))
+                .isZero();
+        assertThat(
+                        jdbc.update(
+                                "UPDATE users SET telegram_id=? WHERE id=?",
+                                replacementTelegram,
+                                f.user()))
+                .isEqualTo(1);
         assertPrivate(call("verify", new VerifyRequest(token, b, id, code)), 409);
         assertThat(
                         count(

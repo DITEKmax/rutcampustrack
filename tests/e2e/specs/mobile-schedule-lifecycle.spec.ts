@@ -1435,6 +1435,68 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
       (await semesterMetrics.textContent()) === stableSemesterMetrics,
       'Selecting a graph point does not replace semester totals',
     ).toBe(true);
+    const tableViewport = studentPage.viewportSize();
+    expect(tableViewport !== null, 'The table witness must restore the existing viewport').toBe(
+      true,
+    );
+    try {
+      await studentPage.setViewportSize({ width: 390, height: 844 });
+      // STUDENT19: the native table exposes every point in the already-read graph series.
+      const graphData = studentPage.locator('details.statistics-chart__data');
+      const graphDataSummary = graphData.locator(':scope > summary');
+      await expect(graphDataSummary).toHaveText('Данные графика');
+      await graphDataSummary.focus();
+      await expect(graphDataSummary).toBeFocused();
+      await graphDataSummary.press('Enter');
+      await expect(graphData).toHaveAttribute('open', '');
+      const graphDataRegion = graphData.getByRole('region', {
+        name: 'Табличные данные графика',
+        exact: true,
+      });
+      await expect(graphDataRegion).toBeVisible();
+      await expect(graphDataRegion).toHaveAttribute('tabindex', '0');
+      const graphTable = graphDataRegion.getByRole('table', {
+        name: 'Посещаемость по периодам',
+        exact: true,
+      });
+      await expect(graphTable.locator('caption')).toHaveText('Посещаемость по периодам');
+      await expect(graphTable.getByRole('columnheader')).toHaveText([
+        'Период',
+        'Моя посещаемость — был',
+        'Средняя своей группы — был',
+      ]);
+      const graphTableRows = graphTable.locator('tbody > tr');
+      await expect(graphTableRows).toHaveCount(overview.semesterSeries.length);
+      for (let index = 0; index < overview.semesterSeries.length; index++) {
+        const point = overview.semesterSeries[index];
+        const row = graphTableRows.nth(index);
+        await expect(row.getByRole('rowheader').locator('span').first()).toHaveText(point.label);
+        await expect(row.getByRole('cell')).toHaveText([
+          metricText(point.metrics.present),
+          metricText({ percent: point.groupPresent?.percent ?? null }),
+        ]);
+      }
+      await graphDataRegion.focus();
+      await expect(graphDataRegion).toBeFocused();
+      expect(
+        await graphDataRegion.evaluate((element) => {
+          const bounds = element.getBoundingClientRect();
+          return (
+            window.innerWidth === 390 &&
+            window.innerHeight === 844 &&
+            bounds.width > 0 &&
+            bounds.left >= 0 &&
+            bounds.right <= window.innerWidth + 1
+          );
+        }),
+        'The keyboard-accessible table region stays inside its 390px viewport',
+      ).toBe(true);
+      await graphDataSummary.focus();
+      await graphDataSummary.press('Enter');
+      await expect(graphData).not.toHaveAttribute('open', '');
+    } finally {
+      await studentPage.setViewportSize(tableViewport!);
+    }
     const rankingLoaded = studentPage.waitForResponse((response) => {
       const url = new URL(response.url());
       return (

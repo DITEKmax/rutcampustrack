@@ -2996,9 +2996,10 @@ jobs:
                           'sameArchiveCompleted', 'duplicateBusinessUnchanged', 'recoveryPublishAttempted',
                           'duplicateAttempted', 'restorationSucceeded', 'clockUnchanged'}
               keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
-                                 'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome'}
+                                 'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome',
+                                 'firstRestartFailure'}
               if (type(value) is not dict or set(value) != keys
-                      or value['schema'] != 'semester-reconciliation.v1'
+                      or value['schema'] != 'semester-reconciliation.v2'
                       or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
                       or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
                       or value['measuredListenerAttempts'] != 'UNKNOWN'
@@ -3007,6 +3008,14 @@ jobs:
                               or (type(value['retainedDlqCopies']) is int and value['retainedDlqCopies'] == 1))
                       or value['cleanupOutcome'] not in {'PENDING', 'PASSED', 'FAILED'}):
                   raise ValueError('Invalid closed reconciliation schema')
+              restart = value['firstRestartFailure']
+              if restart is not None and (
+                      type(restart) is not dict or set(restart) != {'phase', 'service', 'cause'}
+                      or not all(type(restart[key]) is str for key in ('phase', 'service', 'cause'))
+                      or restart['phase'] not in {'MAIN', 'CLEANUP'}
+                      or restart['service'] not in {'ATTENDANCE', 'SCHEDULE'}
+                      or restart['cause'] not in {'NOT_RUNNING', 'HEALTH_STARTING', 'HEALTH_UNHEALTHY', 'HEALTH_UNKNOWN'}):
+                  raise ValueError('Invalid closed reconciliation restart failure')
               restored = (value['restorationSucceeded'] is True
                           and value['clockUnchanged'] is True and value['cleanupOutcome'] == 'PASSED')
           except Exception:
@@ -3086,7 +3095,7 @@ jobs:
                                'LESSON_SNAPSHOT', 'RANK', 'UNKNOWN'}
           STATS_SOURCES = {
               'tests/e2e/specs/mobile-schedule-lifecycle.spec.ts':
-                  'cbe0122cdcd7f9ee73f50811f884accca1f9a6ed0f7776580755c6df52088eb3',
+                  '99692ef9eda26d27b0cf98b117669940886c598615a1fd59becff6ed42c9f3a9',
               'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java':
                   'f5a49c00d8cb1724830876994ac5d93a14b36375dc8180db3163537f2190b3f0',
           }
@@ -3110,7 +3119,7 @@ jobs:
               keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
                       'errorCount', 'diagnostics', 'errorLocations'}
               expected = {('mobile-attendance-requests.spec.ts', 9), ('mobile-lesson-lifecycle.spec.ts', 20),
-                          ('mobile-schedule-lifecycle.spec.ts', 390), ('mobile-schedule-lifecycle.spec.ts', 1771)}
+                          ('mobile-schedule-lifecycle.spec.ts', 390), ('mobile-schedule-lifecycle.spec.ts', 1833)}
               seen, target = set(), None
               for row in value['results']:
                   if type(row) is not dict or set(row) != keys:

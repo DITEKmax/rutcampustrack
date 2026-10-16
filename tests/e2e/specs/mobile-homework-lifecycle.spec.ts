@@ -116,7 +116,9 @@ isolated(
 
     const { user, grant } = await singleCapability(dataset, 'MANAGE_HOMEWORK');
     expect(user.id).not.toBe(original.publishedBy);
-    const admittedHelper = await loginPwa(page, user);
+    const admittedHelper = await loginPwa(page, user, {
+      retryUntilMs: Math.min(retryUntilMs, Date.now() + 65000),
+    });
     const helper = new Actor(dataset.request, admittedHelper.accessToken, admittedHelper.session);
     expect(admittedHelper.session.activeRole).toBe('STUDENT');
     expect(

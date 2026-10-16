@@ -353,6 +353,45 @@ function description(point: StatisticsSeriesPoint): string {
           :title="tick.date"
         >{{ tick.label }}</span>
       </div>
+      <details class="statistics-chart__data">
+        <summary>Данные графика</summary>
+        <div
+          class="statistics-chart__table-scroll"
+          role="region"
+          aria-label="Табличные данные графика"
+          tabindex="0"
+        >
+          <table class="statistics-chart__data-table">
+            <caption>Посещаемость по периодам</caption>
+            <thead>
+              <tr>
+                <th scope="col">
+                  Период
+                </th>
+                <th scope="col">
+                  Моя посещаемость — был
+                </th>
+                <th scope="col">
+                  Средняя своей группы — был
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="point in points"
+                :key="point.id"
+              >
+                <th scope="row">
+                  <span>{{ point.label }}</span>
+                  <span>{{ dateLabel(point) }}</span>
+                </th>
+                <td>{{ displayPercent(point.metrics.present.percent) }}</td>
+                <td>{{ displayPercent(point.groupPresent?.percent ?? null) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
     </template>
     <div
       v-if="showRange && !hiddenGraph"

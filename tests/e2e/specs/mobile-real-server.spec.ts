@@ -1018,6 +1018,105 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     );
     await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
     expect((await attachmentSaved).status()).toBe(200);
+    // HEADMAN06: change the existing own EXCUSED mark, then restore its original file and reason.
+    const headmanRow = page.locator(
+      `.headman-journal__roster-list [data-user-id="${dataset.headman.id}"]`,
+    );
+    const ownMarkPath = `/api/attendance/lessons/${id}/students/${dataset.headman.id}`;
+    const ownHeadmanMark = async () =>
+      (await dataset.headmanActor.call('GET', reportPath)).entries.find(
+        (row: { userId: number }) => Number(row.userId) === dataset.headman.id,
+      );
+    await expect(headmanRow).toHaveAttribute('data-status', 'excused');
+    const originalExcused = await ownHeadmanMark();
+    expect(originalExcused).toMatchObject({
+      status: 'excused',
+      source: 'headman',
+      excuseType: 'ILLNESS',
+      comment: 'Синтетическая причина',
+      attachmentContentType: 'image/png',
+      attachmentSize: expectedPng.length,
+    });
+    expect(
+      typeof originalExcused.markRevision === 'string' && originalExcused.markRevision.length > 0,
+    ).toBe(true);
+    await headmanRow
+      .getByRole('button', {
+        name: `Изменить отметку: ${dataset.headman.displayName}`,
+        exact: true,
+      })
+      .click();
+    const ownAbsentSaved = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === ownMarkPath && response.request().method() === 'PUT',
+    );
+    await headmanRow
+      .getByRole('button', {
+        name: `Не был: ${dataset.headman.displayName}`,
+        exact: true,
+      })
+      .click();
+    const ownAbsentResponse = await ownAbsentSaved;
+    expect(ownAbsentResponse.status()).toBe(200);
+    expect(ownAbsentResponse.request().postDataJSON()).toMatchObject({
+      status: 'ABSENT',
+      expectedStatus: 'EXCUSED',
+      expectedRevision: originalExcused.markRevision,
+    });
+    await expect(headmanRow).toHaveAttribute('data-status', 'absent');
+    const ownAbsent = await ownHeadmanMark();
+    expect(ownAbsent).toMatchObject({
+      userId: dataset.headman.id,
+      status: 'absent',
+      source: 'headman',
+    });
+    expect(
+      typeof ownAbsent.markRevision === 'string' &&
+        ownAbsent.markRevision.length > 0 &&
+        ownAbsent.markRevision !== originalExcused.markRevision,
+    ).toBe(true);
+    await headmanRow
+      .getByRole('button', {
+        name: `Изменить отметку: ${dataset.headman.displayName}`,
+        exact: true,
+      })
+      .click();
+    await headmanRow
+      .getByRole('button', {
+        name: `Уважительная причина: ${dataset.headman.displayName}`,
+        exact: true,
+      })
+      .click();
+    await page.locator('.headman-journal__excuse-form select').selectOption('ILLNESS');
+    await page.getByLabel('Комментарий', { exact: true }).fill('Синтетическая причина');
+    await page.locator('.headman-journal__excuse-form input[type="file"]').setInputFiles({
+      name: 'синтетическая-справка.png',
+      mimeType: 'image/png',
+      buffer: expectedPng,
+    });
+    const ownExcusedRestored = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === ownMarkPath && response.request().method() === 'PUT',
+    );
+    await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    expect((await ownExcusedRestored).status()).toBe(200);
+    await expect(headmanRow).toHaveAttribute('data-status', 'excused');
+    const restoredExcused = await ownHeadmanMark();
+    expect(restoredExcused).toMatchObject({
+      userId: dataset.headman.id,
+      status: 'excused',
+      source: 'headman',
+      excuseType: 'ILLNESS',
+      comment: 'Синтетическая причина',
+      attachmentContentType: 'image/png',
+      attachmentSize: expectedPng.length,
+    });
+    expect(
+      typeof restoredExcused.markRevision === 'string' &&
+        restoredExcused.markRevision.length > 0 &&
+        restoredExcused.markRevision !== ownAbsent.markRevision,
+    ).toBe(true);
+    // The unchanged popup-byte oracle below now verifies the restored SAME PNG before TEACHER admission.
     const attachmentPath = `/api/attendance/lessons/${dataset.lesson.physicalLessonId}/students/${dataset.headman.id}/attachment`;
     const opened = page.waitForResponse(
       (response) =>

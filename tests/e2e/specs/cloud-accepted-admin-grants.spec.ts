@@ -643,7 +643,7 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
     const unchangedTeacher = (user: typeof targetBefore) =>
       isDeepStrictEqual(
         user.roles.filter((grant: { role: string }) => grant.role !== 'STUDENT'),
-        targetBefore.roles.filter((grant: { role: string }) => grant.role !== 'STUDENT'),
+        retained.roles.filter((grant: { role: string }) => grant.role !== 'STUDENT'),
       );
     for (const status of ['SUSPENDED', 'ACTIVE'] as const) {
       await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();

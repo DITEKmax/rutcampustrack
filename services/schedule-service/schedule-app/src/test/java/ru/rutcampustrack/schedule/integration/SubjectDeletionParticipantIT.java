@@ -254,16 +254,28 @@ class SubjectDeletionParticipantIT extends AbstractScheduleIntegrationTest {
                         .setSemesterId(30)
                         .setStateVersion(7)
                         .setExpectedParticipantDigest(digest);
-        semesterArchive.set(
-                command.setCommand(
-                                ru.rutcampustrack.schedule.grpc.SemesterArchiveBarrierCommand
-                                        .SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE)
-                        .build());
-        semesterArchive.set(
-                command.setCommand(
-                                ru.rutcampustrack.schedule.grpc.SemesterArchiveBarrierCommand
-                                        .SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE)
-                        .build());
+        var prepared =
+                semesterArchive.set(
+                        command.setCommand(
+                                        ru.rutcampustrack.schedule.grpc
+                                                .SemesterArchiveBarrierCommand
+                                                .SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE)
+                                .build());
+        assertThat(prepared.getState())
+                .isEqualTo(
+                        ru.rutcampustrack.schedule.grpc.SemesterArchiveParticipantState
+                                .SEMESTER_ARCHIVE_PARTICIPANT_READY);
+        var sealed =
+                semesterArchive.set(
+                        command.setCommand(
+                                        ru.rutcampustrack.schedule.grpc
+                                                .SemesterArchiveBarrierCommand
+                                                .SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE)
+                                .build());
+        assertThat(sealed.getState())
+                .isEqualTo(
+                        ru.rutcampustrack.schedule.grpc.SemesterArchiveParticipantState
+                                .SEMESTER_ARCHIVE_PARTICIPANT_READY);
         org.mockito.Mockito.when(academic.getSemesterArchiveAuthorityState(30L))
                 .thenReturn(remote.setDeletionPhase("DELETING").build());
         var result =

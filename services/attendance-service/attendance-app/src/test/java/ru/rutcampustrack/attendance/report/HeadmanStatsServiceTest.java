@@ -8,14 +8,6 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanStatsExportRequest;
@@ -53,6 +46,15 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
 class HeadmanStatsServiceTest {

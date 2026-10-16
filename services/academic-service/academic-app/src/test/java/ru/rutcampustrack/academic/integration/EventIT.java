@@ -9,20 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.BindingBuilder;
@@ -39,6 +26,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.subject.CreateSubjectRequest;
@@ -67,6 +55,21 @@ import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.semester.SemesterService;
 import ru.rutcampustrack.academic.subject.SubjectService;
 import ru.rutcampustrack.academic.user.UserService;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Integration tests verifying end-to-end event publishing pipeline. M02 Группа 5: service -> Spring

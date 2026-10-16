@@ -1,20 +1,11 @@
 package ru.rutcampustrack.attendance.report;
 
-import java.time.Clock;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
@@ -51,6 +42,18 @@ import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  * Business logic for all 4 attendance report endpoints (RPRT-01..04).

@@ -1,23 +1,10 @@
 package ru.rutcampustrack.mobilebff.student;
 
-import java.net.URI;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.HomeworkInfo;
 import ru.rutcampustrack.academic.grpc.HomeworksForWeekResponse;
@@ -40,6 +27,21 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
+
+import java.net.URI;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentQueryService {

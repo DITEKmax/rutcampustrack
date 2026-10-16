@@ -2,28 +2,14 @@ package ru.rutcampustrack.attendance.report;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.DayOfWeek;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanStatsScopeResponse;
@@ -87,6 +73,24 @@ import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotD
 import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.DayOfWeek;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
 
 /** Server-owned semester stats for the authenticated headman's current group. */
 @Service
@@ -370,7 +374,8 @@ public class HeadmanStatsService {
                                             || subject.name() == null
                                             || subject.name().isBlank()) {
                                         throw new AcademicServiceUnavailableException(
-                                                "Academic returned no lesson-history subject details");
+                                                "Academic returned no lesson-history subject"
+                                                        + " details");
                                     }
                                     String blocked =
                                             editBlockedReason(
@@ -617,7 +622,8 @@ public class HeadmanStatsService {
                 byte[] docx = docxRenderer.render(model);
                 if (docx.length > MAX_RENDERER_INPUT_BYTES) {
                     throw new ReportExportTooLargeException(
-                            "DOCX превышает лимит сервиса преобразования. Уточни фильтры таблицы или выбери HTML/XLSX.");
+                            "DOCX превышает лимит сервиса преобразования. Уточни фильтры таблицы"
+                                    + " или выбери HTML/XLSX.");
                 }
                 TargetFormat target =
                         format == HeadmanStatsFormat.PDF
@@ -630,7 +636,8 @@ public class HeadmanStatsService {
                 } catch (StatusRuntimeException error) {
                     if (error.getStatus().getCode() == Status.Code.RESOURCE_EXHAUSTED) {
                         throw new ReportExportTooLargeException(
-                                "DOCX превышает лимит сервиса преобразования. Уточни фильтры таблицы.");
+                                "DOCX превышает лимит сервиса преобразования. Уточни фильтры"
+                                        + " таблицы.");
                     }
                     throw error;
                 }
@@ -1954,7 +1961,8 @@ public class HeadmanStatsService {
                         .orElseThrow(
                                 () ->
                                         new BadRequestException(
-                                                "Предмет не относится к активной группе и семестру"));
+                                                "Предмет не относится к активной группе и"
+                                                        + " семестру"));
         Set<String> available =
                 selected.lessonTypes().stream()
                         .map(LessonTypeOption::code)

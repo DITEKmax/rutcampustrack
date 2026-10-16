@@ -5,15 +5,12 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.academic.grpc.UserResponse;
@@ -27,6 +24,11 @@ import ru.rutcampustrack.mobilebff.grpc.MobileScheduleClient;
 import ru.rutcampustrack.mobilebff.security.MobileRequestContext;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
 class StudentSessionProjectionTest {

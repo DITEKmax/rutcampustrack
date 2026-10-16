@@ -9,8 +9,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
+
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.entity.Assignment;
 import ru.rutcampustrack.academic.entity.Semester;
@@ -24,6 +24,8 @@ import ru.rutcampustrack.academic.repository.SubjectLessonTypeRepository;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
+
+import java.time.LocalDate;
 
 /** Focused source tests for the V25 inclusive semester / exclusive assignment dates. */
 class AssignmentAuthorityContractTest {

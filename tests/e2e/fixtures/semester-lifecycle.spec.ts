@@ -76,6 +76,8 @@ function semesterReasonCode(reason: unknown) {
       return 'ACADEMIC_ADMISSION_PENDING';
     case 'Ожидается применение принятого переноса привязки домашнего задания':
       return 'ACADEMIC_TRANSFER_PENDING';
+    case 'Ожидается точный ACK ретроспективной посещаемости зачисленного студента':
+      return 'ACADEMIC_INITIAL_MEMBERSHIP_ACK_PENDING';
     case 'Ожидается точный ACK применения эффекта Schedule':
       return 'ACADEMIC_EFFECT_ACK_PENDING';
     case 'Ожидается применение отмены и точный ACK Schedule effect':

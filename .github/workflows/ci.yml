@@ -2837,7 +2837,7 @@ jobs:
         run: |
           umask 077
           python3 - <<'PY_ATTENDANCE_SERVICE_TOKEN'
-          import os, secrets
+          import os, secrets, stat
 
           tokens = {name: secrets.token_urlsafe(32) for name in (
               'ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN',
@@ -2846,10 +2846,119 @@ jobs:
           )}
           if len(set(tokens.values())) != len(tokens):
               raise SystemExit('Synthetic directed service tokens must be distinct')
+          for token in tokens.values():
+              print('::add-mask::' + token)
+          # Sanitized owned Compose children use this same dotenv, without inheriting tokens.
+          fds, temporary, temporary_identity = [], None, None
+          try:
+              try:
+                  if (os.environ.get('GITHUB_ACTIONS') != 'true'
+                          or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
+                          or os.environ.get('RCT_E2E_SYNTHETIC_SEED') != 'true'):
+                      raise ValueError('Disposable CI required')
+                  workspace = os.environ['GITHUB_WORKSPACE']
+                  if not os.path.isabs(workspace):
+                      raise ValueError('Owned workspace required')
+                  flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+                  fds.append(os.open('.', flags))
+                  root = os.fstat(fds[-1])
+                  expected = os.stat(workspace, follow_symlinks=False)
+                  if (root.st_dev, root.st_ino) != (expected.st_dev, expected.st_ino):
+                      raise ValueError('Workspace identity changed')
+                  for component in (None, 'tests', 'e2e'):
+                      if component is not None:
+                          fds.append(os.open(component, flags, dir_fd=fds[-1]))
+                      directory = os.fstat(fds[-1])
+                      if (not stat.S_ISDIR(directory.st_mode) or directory.st_uid != os.getuid()
+                              or stat.S_IMODE(directory.st_mode) & 0o022):
+                          raise ValueError('Unsafe owned directory')
+                  directory_fd = fds[-1]
+                  fds.append(os.open('.env.ci', os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
+                                     dir_fd=directory_fd))
+                  source = os.fstat(fds[-1])
+                  if (not stat.S_ISREG(source.st_mode) or source.st_uid != os.getuid()
+                          or source.st_nlink != 1 or stat.S_IMODE(source.st_mode) & 0o022
+                          or not 0 < source.st_size <= 65536):
+                      raise ValueError('Unsafe synthetic dotenv')
+                  identity = lambda value: (value.st_dev, value.st_ino, value.st_uid, value.st_nlink,
+                                            value.st_mode, value.st_size, value.st_mtime_ns, value.st_ctime_ns)
+                  raw = os.read(fds[-1], 65537)
+                  if len(raw) != source.st_size or identity(os.fstat(fds[-1])) != identity(source):
+                      raise ValueError('Synthetic dotenv changed')
+                  encoded = {name.encode(): token.encode() for name, token in tokens.items()}
+                  seen, lines = set(), []
+                  for line in raw.splitlines(keepends=True):
+                      content = line.rstrip(b'\r\n')
+                      active = content.lstrip()
+                      if active and not active.startswith(b'#') and b'=' in active:
+                          value = active.split(b'=', 1)[1].lstrip()
+                          if value[:1] in (b"'", b'"'):
+                              escaped = closed = False
+                              for symbol in value[1:]:
+                                  if symbol == value[0] and not escaped:
+                                      closed = True
+                                      break
+                                  escaped = symbol == 92 and not escaped
+                              if not closed:
+                                  raise ValueError('Synthetic dotenv requires closed single-line values')
+                      mentioned = [] if active.startswith(b'#') else [key for key in encoded if key in content]
+                      if not mentioned:
+                          lines.append(line)
+                          continue
+                      if (len(mentioned) != 1 or not content.startswith(mentioned[0] + b'=')
+                              or mentioned[0] in seen):
+                          raise ValueError('Malformed directed-token assignment')
+                      key = mentioned[0]
+                      seen.add(key)
+                      lines.append(key + b'=' + encoded[key] + line[len(content):])
+                  updated = b''.join(lines)
+                  missing = [key for key in encoded if key not in seen]
+                  if missing and updated and not updated.endswith(b'\n'):
+                      updated += b'\n'
+                  updated += b''.join(key + b'=' + encoded[key] + b'\n' for key in missing)
+                  if len(updated) > 65536:
+                      raise ValueError('Synthetic dotenv exceeds its bound')
+                  temporary = '.env.ci.' + secrets.token_hex(16) + '.tmp'
+                  temp_fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                                    0o600, dir_fd=directory_fd)
+                  temporary_identity = os.fstat(temp_fd)
+                  with os.fdopen(temp_fd, 'wb') as output:
+                      output.write(updated)
+                      output.flush()
+                      os.fsync(output.fileno())
+                  for parent_fd, name, held_fd in ((None, workspace, fds[0]),
+                                                        (fds[0], 'tests', fds[1]),
+                                                        (fds[1], 'e2e', fds[2])):
+                      linked = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+                      held = os.fstat(held_fd)
+                      if (linked.st_dev, linked.st_ino) != (held.st_dev, held.st_ino):
+                          raise ValueError('Owned directory identity changed before commit')
+                  current = os.stat('.env.ci', dir_fd=directory_fd, follow_symlinks=False)
+                  temp_current = os.stat(temporary, dir_fd=directory_fd, follow_symlinks=False)
+                  if (identity(current) != identity(source)
+                          or (temp_current.st_dev, temp_current.st_ino) !=
+                             (temporary_identity.st_dev, temporary_identity.st_ino)
+                          or not stat.S_ISREG(temp_current.st_mode) or temp_current.st_nlink != 1
+                          or temp_current.st_uid != os.getuid() or stat.S_IMODE(temp_current.st_mode) != 0o600
+                          or temp_current.st_size != len(updated)):
+                      raise ValueError('Synthetic dotenv identity changed before commit')
+                  os.replace(temporary, '.env.ci', src_dir_fd=directory_fd, dst_dir_fd=directory_fd)
+                  temporary = None
+                  os.fsync(directory_fd)
+              finally:
+                  try:
+                      if temporary is not None and temporary_identity is not None:
+                          remaining = os.stat(temporary, dir_fd=directory_fd, follow_symlinks=False)
+                          if (remaining.st_dev, remaining.st_ino) != (temporary_identity.st_dev, temporary_identity.st_ino):
+                              raise ValueError('Temporary dotenv ownership changed')
+                          os.unlink(temporary, dir_fd=directory_fd)
+                  finally:
+                      for fd in reversed(fds):
+                          os.close(fd)
+          except Exception:
+              raise SystemExit('Owned synthetic Compose environment preparation failed') from None
           with open(os.environ['GITHUB_ENV'], 'a') as output:
-              for name, token in tokens.items():
-                  print('::add-mask::' + token)
-                  output.write(name + '=' + token + '\n')
+              output.write(''.join(name + '=' + token + '\n' for name, token in tokens.items()))
           PY_ATTENDANCE_SERVICE_TOKEN
           {
             printf 'RCT_E2E_TEACHING_CLOCK_DIR=%s\n' "$RCT_E2E_TEACHING_CLOCK_DIR"

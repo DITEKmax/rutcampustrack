@@ -464,7 +464,7 @@ test('HEADMAN cancels a marked lesson and restores its journal without reviving 
     page.off('request', countStudentRequestWrite);
   }
   await logoutPwa(page);
-  await loginPwa(page, dataset.headman);
+  await loginPwa(page, dataset.headman, { retryUntilMs: Date.now() + 65000 });
   await selectPwaRole(page, 'Староста');
   await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
   await expect(

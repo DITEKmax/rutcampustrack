@@ -2768,7 +2768,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     sameNetworkAddresses: boolean | 'UNKNOWN';
   };
   const diagnostic = {
-    schema: 'semester-reconciliation.v4',
+    schema: 'semester-reconciliation.v5',
     phase: 'SETUP',
     configuredListenerAttempts: 3,
     measuredListenerAttempts: 'UNKNOWN',
@@ -2803,6 +2803,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       deadUnackedZero: boolean;
       mainReadyZero: boolean;
       mainUnackedZero: boolean;
+      deadReadyClass: 'ZERO' | 'ONE' | 'MANY' | 'UNKNOWN';
     } | null,
   };
   let strandedLastRead: typeof diagnostic.strandedLastRead = null;
@@ -3814,6 +3815,14 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
             deadUnackedZero: q.dead.messages_unacknowledged === 0,
             mainReadyZero: q.main.messages_ready === 0,
             mainUnackedZero: q.main.messages_unacknowledged === 0,
+            deadReadyClass:
+              Number.isSafeInteger(q.dead.messages_ready) && q.dead.messages_ready >= 0
+                ? q.dead.messages_ready === 0
+                  ? 'ZERO'
+                  : q.dead.messages_ready === 1
+                    ? 'ONE'
+                    : 'MANY'
+                : 'UNKNOWN',
           };
           return (
             q.dead.messages_ready === 1 &&
@@ -4605,6 +4614,9 @@ function subjectCascadeReadback(deadline: number) {
     wanted.every((name) => secret[name]),
     'Subject deletion CI credentials are required',
   );
+  let readbackNativeFailure:
+    | { error: Error; reason: 'TIMEOUT' | 'OUTPUT_BOUND' | 'EXIT_NONZERO' | 'UNKNOWN' }
+    | undefined;
   const docker = (args: string[], input?: string, extra: Record<string, string> = {}) => {
     const remaining = Math.floor(deadline - performance.now());
     requireValue(remaining > 0, 'Subject deletion readback deadline remains');
@@ -4618,8 +4630,33 @@ function subjectCascadeReadback(deadline: number) {
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe'],
       });
-    } catch {
-      throw new Error('Subject deletion owned readback failed');
+    } catch (error) {
+      let code: unknown;
+      let status: unknown;
+      try {
+        if (error !== null && typeof error === 'object') {
+          code = Object.getOwnPropertyDescriptor(error, 'code')?.value;
+          status = Object.getOwnPropertyDescriptor(error, 'status')?.value;
+        }
+      } catch {
+        // Uninspectable errors stay UNKNOWN; never read native output or accessors.
+      }
+      const failure = new Error('Subject deletion owned readback failed');
+      readbackNativeFailure = {
+        error: failure,
+        reason:
+          code === 'ETIMEDOUT'
+            ? 'TIMEOUT'
+            : code === 'ENOBUFS'
+              ? 'OUTPUT_BOUND'
+              : typeof status === 'number' &&
+                  Number.isSafeInteger(status) &&
+                  status > 0 &&
+                  status <= 255
+                ? 'EXIT_NONZERO'
+                : 'UNKNOWN',
+      };
+      throw failure;
     }
   };
   const compose = [
@@ -4710,19 +4747,22 @@ function subjectCascadeReadback(deadline: number) {
       throw new Error('Subject deletion SQL projection is invalid');
     }
   };
-  return (scope: {
-    operation: string;
-    subject: number;
-    control: number;
-    semester: number;
-    group: number;
-    student: number;
-    mixed: string;
-    sole: string;
-    manual: string;
-    removed: number[];
-    kept: number;
-  }) => {
+  return (
+    scope: {
+      operation: string;
+      subject: number;
+      control: number;
+      semester: number;
+      group: number;
+      student: number;
+      mixed: string;
+      sole: string;
+      manual: string;
+      removed: number[];
+      kept: number;
+    },
+    phase: 'BEFORE' | 'AFTER' | 'REPLAY',
+  ) => {
     requireValue(
       /^[0-9a-f-]{36}$/.test(scope.operation) &&
         /^[a-f0-9]{24}$/.test(scope.mixed) &&
@@ -4774,27 +4814,67 @@ originalCount:t?.lesson_snapshots?.length,effectiveIds:t?.effective_original_les
 history:h.map(x=>({operation:x.operation_id,subject:Number(x.subject_id),actor:Number(x.actor_id),removed:x.removed_lesson_ids.map(Number),remaining:x.remaining_lesson_ids.map(Number)})),
 budget:d.student_late_checkin_budgets.findOne({student_id:k.student,semester_id:k.semester},{_id:0,limit:1,used:1})}));`;
     let attendance: Row;
+    let mongoStage: 'IDENTITY' | 'COMMAND' | 'PARSE' = 'IDENTITY';
     try {
-      attendance = JSON.parse(
-        docker(
-          [
-            'exec',
-            '-i',
-            '-e',
-            'RCT_MONGO_PASSWORD',
-            identity('mongo-attendance'),
-            'mongosh',
-            '--quiet',
-            '--nodb',
-            '--file',
-            '/dev/stdin',
-          ],
-          js,
-          { RCT_MONGO_PASSWORD: secret.MONGO_ROOT_PASSWORD },
-        ),
+      const id = identity('mongo-attendance');
+      mongoStage = 'COMMAND';
+      const raw = docker(
+        [
+          'exec',
+          '-i',
+          '-e',
+          'RCT_MONGO_PASSWORD',
+          id,
+          'mongosh',
+          '--quiet',
+          '--nodb',
+          '--file',
+          '/dev/stdin',
+        ],
+        js,
+        { RCT_MONGO_PASSWORD: secret.MONGO_ROOT_PASSWORD },
       );
-    } catch {
-      throw new Error('Subject deletion Mongo projection is invalid');
+      mongoStage = 'PARSE';
+      attendance = JSON.parse(raw);
+    } catch (error) {
+      let failure: Error;
+      if (mongoStage === 'IDENTITY') {
+        failure = new Error('Subject deletion Mongo projection is invalid');
+      } else if (mongoStage === 'PARSE') {
+        failure = new Error('Subject deletion Mongo projection is invalid');
+      } else if (
+        readbackNativeFailure !== undefined &&
+        readbackNativeFailure.error === error &&
+        readbackNativeFailure.reason === 'TIMEOUT'
+      ) {
+        failure = new Error('Subject deletion Mongo projection is invalid');
+      } else if (
+        readbackNativeFailure !== undefined &&
+        readbackNativeFailure.error === error &&
+        readbackNativeFailure.reason === 'OUTPUT_BOUND'
+      ) {
+        failure = new Error('Subject deletion Mongo projection is invalid');
+      } else if (
+        readbackNativeFailure !== undefined &&
+        readbackNativeFailure.error === error &&
+        readbackNativeFailure.reason === 'EXIT_NONZERO'
+      ) {
+        failure = new Error('Subject deletion Mongo projection is invalid');
+      } else {
+        failure = new Error('Subject deletion Mongo projection is invalid');
+      }
+      try {
+        if (phase === 'BEFORE') {
+          expect.soft(false, 'SUBJECT_MONGO_BEFORE').toBe(true);
+        } else if (phase === 'AFTER') {
+          expect.soft(false, 'SUBJECT_MONGO_AFTER').toBe(true);
+        } else if (phase === 'REPLAY') {
+          expect.soft(false, 'SUBJECT_MONGO_REPLAY').toBe(true);
+        }
+      } catch {
+        // Diagnostic failure cannot replace this same fixed primary error.
+      }
+      throw failure;
     }
     return { academic, schedule, attendance };
   };
@@ -5061,7 +5141,7 @@ subjectCascadeTest.describe('full subject deletion through the owned stand', () 
         ),
         kept,
       };
-      const databaseBefore = readback(scope);
+      const databaseBefore = readback(scope, 'BEFORE');
       requireValue(
         databaseBefore.academic.operationCount === 0 &&
           databaseBefore.schedule.participantCount === 0 &&
@@ -5239,7 +5319,7 @@ subjectCascadeTest.describe('full subject deletion through the owned stand', () 
         beforeBudget,
         'Full subject deletion does not refund the used manual attempt',
       );
-      const databaseAfter = readback(scope);
+      const databaseAfter = readback(scope, 'AFTER');
       requireValue(
         databaseAfter.academic.operationCount === 1 &&
           databaseAfter.academic.operation?.phase === 'COMPLETED' &&
@@ -5292,7 +5372,7 @@ subjectCascadeTest.describe('full subject deletion through the owned stand', () 
         'Exact secret-bearing command replay returns the same completed operation',
       );
       equal(
-        readback(scope),
+        readback(scope, 'REPLAY'),
         databaseAfter,
         'Exact replay has no second operation, effect, history or outbox delta',
       );

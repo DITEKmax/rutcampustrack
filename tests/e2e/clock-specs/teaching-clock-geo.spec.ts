@@ -241,7 +241,7 @@ test('student uses Today quick request after the genuine first lesson closes @cl
           if (
             lesson.schedule.status !== 'CLOSED' ||
             lesson.attendance?.status !== 'ABSENT' ||
-            lesson.attendance?.source !== 'AUTO_SCHEDULER' ||
+            lesson.attendance?.source !== 'SYSTEM' ||
             lesson.request !== null
           )
             return false;

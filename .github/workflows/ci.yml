@@ -4602,10 +4602,10 @@ jobs:
               keys = booleans | {'schema', 'phase', 'configuredListenerAttempts',
                                  'measuredListenerAttempts', 'retainedDlqCopies', 'cleanupOutcome',
                                  'firstRestartFailure', 'mainCloseLastRead'}
-              if type(value) is dict and value.get('schema') == 'semester-reconciliation.v4':
+              if type(value) is dict and value.get('schema') in {'semester-reconciliation.v4', 'semester-reconciliation.v5'}:
                   keys |= {'firstHttp500OwnedServices', 'strandedLastRead'}
               if (type(value) is not dict or set(value) != keys
-                      or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4'}
+                      or value['schema'] not in {'semester-reconciliation.v3', 'semester-reconciliation.v4', 'semester-reconciliation.v5'}
                       or value['phase'] not in {'SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'}
                       or type(value['configuredListenerAttempts']) is not int or value['configuredListenerAttempts'] != 3
                       or value['measuredListenerAttempts'] != 'UNKNOWN'
@@ -4631,7 +4631,7 @@ jobs:
                       or type(last_read['status']) is not str
                       or last_read['status'] not in {'PLANNED', 'ACTIVE', 'CLOSED', 'OTHER_OR_ABSENT'}):
                   raise ValueError('Invalid closed reconciliation main close read')
-              if value['schema'] == 'semester-reconciliation.v4':
+              if value['schema'] in {'semester-reconciliation.v4', 'semester-reconciliation.v5'}:
                   services = value['firstHttp500OwnedServices']
                   if services is not None:
                       if type(services) is not dict or set(services) != {'ATTENDANCE', 'SCHEDULE'}:
@@ -4644,11 +4644,17 @@ jobs:
                                   or state['health'] not in {'HEALTHY', 'STARTING', 'UNHEALTHY', 'UNKNOWN'}):
                               raise ValueError('Invalid closed reconciliation service state')
                   stranded = value['strandedLastRead']
+                  stranded_flags = {'deadReadyOne', 'deadUnackedZero', 'mainReadyZero', 'mainUnackedZero'}
+                  stranded_keys = stranded_flags | ({'deadReadyClass'} if value['schema'] == 'semester-reconciliation.v5' else set())
                   if stranded is not None and (
-                          type(stranded) is not dict
-                          or set(stranded) != {'deadReadyOne', 'deadUnackedZero', 'mainReadyZero', 'mainUnackedZero'}
-                          or not all(type(flag) is bool for flag in stranded.values())):
+                          type(stranded) is not dict or set(stranded) != stranded_keys
+                          or not all(type(stranded[key]) is bool for key in stranded_flags)):
                       raise ValueError('Invalid closed reconciliation stranded read')
+                  if stranded is not None and value['schema'] == 'semester-reconciliation.v5' and (
+                          type(stranded['deadReadyClass']) is not str
+                          or stranded['deadReadyClass'] not in {'ZERO', 'ONE', 'MANY', 'UNKNOWN'}
+                          or stranded['deadReadyOne'] != (stranded['deadReadyClass'] == 'ONE')):
+                      raise ValueError('Invalid closed reconciliation dead-ready class')
               restored = (value['restorationSucceeded'] is True
                           and value['clockUnchanged'] is True and value['cleanupOutcome'] == 'PASSED')
           except Exception:

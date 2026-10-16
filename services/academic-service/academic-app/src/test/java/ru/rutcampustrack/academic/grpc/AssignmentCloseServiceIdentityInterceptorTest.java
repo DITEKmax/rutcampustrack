@@ -1,7 +1,9 @@
 package ru.rutcampustrack.academic.grpc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -94,12 +96,19 @@ class AssignmentCloseServiceIdentityInterceptorTest {
                                     "test-service-identity",
                                     java.util.Map.of(
                                             "grpc.service-identity.schedule-to-academic-token",
-                                            TOKEN)));
+                                            TOKEN,
+                                            "grpc.service-identity.attendance-to-academic-token",
+                                            token((byte) 0x67))));
             context.register(AssignmentCloseServiceAuthConfiguration.class);
             context.refresh();
 
             assertThat(context.getBean(AssignmentCloseServiceIdentityInterceptor.class))
                     .isNotNull();
+            assertPrincipal(
+                    context.getBean(AssignmentCloseServiceIdentityInterceptor.class),
+                    AssignmentCloseServiceIdentityInterceptor.SEMESTER_STATE_METHOD,
+                    token((byte) 0x67),
+                    new ServicePrincipal("attendance-service"));
         }
     }
 
@@ -144,6 +153,118 @@ class AssignmentCloseServiceIdentityInterceptorTest {
             assertThat(executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS))
                     .isTrue();
         }
+    }
+
+    @Test
+    void semesterStateAcceptsSeparateAttendanceAndScheduleProofsWithoutBroadeningPreparedLookup() {
+        String attendance = token((byte) 0x67);
+        var interceptor = new AssignmentCloseServiceIdentityInterceptor(TOKEN, attendance);
+        assertPrincipal(
+                interceptor,
+                AssignmentCloseServiceIdentityInterceptor.SEMESTER_STATE_METHOD,
+                attendance,
+                new ServicePrincipal("attendance-service"));
+        assertPrincipal(
+                interceptor,
+                AssignmentCloseServiceIdentityInterceptor.SEMESTER_STATE_METHOD,
+                TOKEN,
+                ServicePrincipal.SCHEDULE_SERVICE);
+        assertPrincipal(
+                interceptor,
+                AssignmentCloseServiceIdentityInterceptor.PROTECTED_METHOD,
+                TOKEN,
+                ServicePrincipal.SCHEDULE_SERVICE);
+        assertDenied(
+                interceptor,
+                AssignmentCloseServiceIdentityInterceptor.PROTECTED_METHOD,
+                tlsAttributes(),
+                headers(attendance));
+    }
+
+    @Test
+    void semesterStateRejectsMissingMalformedForeignDuplicateAndNonTlsCredentials() {
+        String attendance = token((byte) 0x67);
+        var interceptor = new AssignmentCloseServiceIdentityInterceptor(TOKEN, attendance);
+        String method = AssignmentCloseServiceIdentityInterceptor.SEMESTER_STATE_METHOD;
+        for (Metadata metadata :
+                java.util.List.of(
+                        new Metadata(), headers("malformed"), headers(token((byte) 0x68)))) {
+            assertDenied(interceptor, method, tlsAttributes(), metadata);
+        }
+        Metadata duplicated = headers(attendance);
+        duplicated.put(DirectedServiceCredential.TOKEN_METADATA_KEY, attendance);
+        assertDenied(interceptor, method, tlsAttributes(), duplicated);
+        Metadata mixed = headers(attendance);
+        mixed.put(DirectedServiceCredential.TOKEN_METADATA_KEY, TOKEN);
+        assertDenied(interceptor, method, tlsAttributes(), mixed);
+        assertDenied(interceptor, method, Attributes.EMPTY, headers(attendance));
+        assertDenied(interceptor, method, Attributes.EMPTY, headers(TOKEN));
+        assertDenied(
+                new AssignmentCloseServiceIdentityInterceptor(TOKEN),
+                method,
+                tlsAttributes(),
+                headers(attendance));
+        assertDenied(
+                new AssignmentCloseServiceIdentityInterceptor(TOKEN, "malformed"),
+                method,
+                tlsAttributes(),
+                headers(attendance));
+        assertDenied(
+                new AssignmentCloseServiceIdentityInterceptor("", attendance),
+                method,
+                tlsAttributes(),
+                headers(TOKEN));
+    }
+
+    @Test
+    void identicalValidDirectionTokensFailClosedWithoutLeakingConfiguration() {
+        assertThatThrownBy(() -> new AssignmentCloseServiceIdentityInterceptor(TOKEN, TOKEN))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Directed service credentials must be distinct");
+    }
+
+    private static void assertPrincipal(
+            AssignmentCloseServiceIdentityInterceptor interceptor,
+            String method,
+            String token,
+            ServicePrincipal expected) {
+        AtomicReference<ServicePrincipal> seen = new AtomicReference<>();
+        interceptor.interceptCall(
+                call(method, tlsAttributes()),
+                headers(token),
+                (nextCall, metadata) -> {
+                    seen.set(ServicePrincipal.CONTEXT_KEY.get());
+                    return new Listener<>() {};
+                });
+        assertThat(seen.get()).isEqualTo(expected);
+        assertThat(ServicePrincipal.CONTEXT_KEY.get()).isNull();
+    }
+
+    private static void assertDenied(
+            AssignmentCloseServiceIdentityInterceptor interceptor,
+            String method,
+            Attributes attributes,
+            Metadata headers) {
+        ServerCall<Object, Object> call = call(method, attributes);
+        AtomicReference<Status.Code> denied = new AtomicReference<>();
+        doAnswer(
+                        invocation -> {
+                            denied.set(((Status) invocation.getArgument(0)).getCode());
+                            return null;
+                        })
+                .when(call)
+                .close(any(Status.class), any(Metadata.class));
+        AtomicBoolean reached = new AtomicBoolean();
+        interceptor.interceptCall(
+                call,
+                headers,
+                (nextCall, metadata) -> {
+                    reached.set(true);
+                    return new Listener<>() {};
+                });
+        assertThat(reached.get()).isFalse();
+        assertThat(denied.get()).isEqualTo(Status.Code.UNAUTHENTICATED);
+        assertThat(ServicePrincipal.CONTEXT_KEY.get()).isNull();
     }
 
     private static ServicePrincipal invoke(

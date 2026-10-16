@@ -2839,10 +2839,17 @@ jobs:
           python3 - <<'PY_ATTENDANCE_SERVICE_TOKEN'
           import os, secrets
 
-          token = secrets.token_urlsafe(32)
-          print('::add-mask::' + token)
+          tokens = {name: secrets.token_urlsafe(32) for name in (
+              'ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN',
+              'SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN',
+              'ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN',
+          )}
+          if len(set(tokens.values())) != len(tokens):
+              raise SystemExit('Synthetic directed service tokens must be distinct')
           with open(os.environ['GITHUB_ENV'], 'a') as output:
-              output.write('ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN=' + token + '\n')
+              for name, token in tokens.items():
+                  print('::add-mask::' + token)
+                  output.write(name + '=' + token + '\n')
           PY_ATTENDANCE_SERVICE_TOKEN
           {
             printf 'RCT_E2E_TEACHING_CLOCK_DIR=%s\n' "$RCT_E2E_TEACHING_CLOCK_DIR"

@@ -37,6 +37,7 @@ grpc:
   auth:
     secret: ${GRPC_SECRET:}
   service-identity:
+    attendance-to-academic-token: ${ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN:}
     academic-to-attendance-token: ${ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN:}
   client:
     schedule-service:
@@ -59,7 +60,7 @@ rutcampustrack:
   security:
     # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
     # SPRING_DATA_MONGODB_URI содержит password в URI (mongodb://user:pass@host).
-    required-env-vars: SPRING_DATA_MONGODB_URI,REDIS_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET
+    required-env-vars: ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN,SPRING_DATA_MONGODB_URI,REDIS_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET
     internal-jwt:
       # M03a: pull RSA public key from auth-service /auth/public-key.
       auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}

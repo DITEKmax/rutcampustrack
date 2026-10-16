@@ -10,7 +10,9 @@ public class AssignmentCloseServiceAuthConfiguration {
 
     @GrpcGlobalServerInterceptor
     public AssignmentCloseServiceIdentityInterceptor assignmentCloseServiceIdentityInterceptor(
-            @Value("${grpc.service-identity.schedule-to-academic-token:}") String token) {
-        return new AssignmentCloseServiceIdentityInterceptor(token);
+            @Value("${grpc.service-identity.schedule-to-academic-token:}") String token,
+            @Value("${grpc.service-identity.attendance-to-academic-token:}")
+                    String attendanceToken) {
+        return new AssignmentCloseServiceIdentityInterceptor(token, attendanceToken);
     }
 }

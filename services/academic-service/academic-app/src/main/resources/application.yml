@@ -80,6 +80,7 @@ grpc:
   auth:
     secret: ${GRPC_SECRET:}
   service-identity:
+    attendance-to-academic-token: ${ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN:}
     academic-to-schedule-token: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:}
     academic-to-attendance-token: ${ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN:}
     attendance-authority: ${ATTENDANCE_GRPC_TLS_AUTHORITY:attendance-service}
@@ -101,7 +102,7 @@ grpc:
 rutcampustrack:
   security:
     # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
-    required-env-vars: POSTGRES_ACADEMIC_PASSWORD,REDIS_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET,ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN,SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
+    required-env-vars: ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN,POSTGRES_ACADEMIC_PASSWORD,REDIS_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET,ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN,SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
     internal-issuer-client:
       secret: ${INTERNAL_ISSUER_SECRET:}
     internal-jwt:

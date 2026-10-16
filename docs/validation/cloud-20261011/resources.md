@@ -1,11 +1,11 @@
 # Владельцы и ресурсы — IN_PROGRESS
 
-Root selected Sol6.1/ULTRA; дети Sol6.1/high/forknone; actual metadata UNKNOWN. Capacity7 с Root. Root sole Git/docs/canonical-pins. Remote=draftPR2 e69ae4e4, main3908 не merged. Local unpublished2c11 содержит7 reviewed Source; metadata-only amendment выполняет Root. Canonical327 совпадали перед amendment.
+Root selected Sol6.1/ULTRA; дети Sol6.1/high/forknone; actual metadata UNKNOWN. Capacity7 с Root. Root sole Git/docs/canonical-pins. Remote=draftPR2 e69ae4e4, main3908 не merged. Local unpublished8d509e4f содержит7 reviewed Source; coherent9backend+CI c93APPROVE/Rootintegrated, checks/commit/push pending. Canonical332 после exact10 integration совпадают.
 
-- c91 /workspace/rct-worktrees/request-enum-874-20261014: sole writer точного9-file исправления B13-SEMESTER-STATE-DIRECTED-IDENTITY-01. Отдельный Attendance→Academic token только GetSemesterState/TLS/authority; Schedule-only prepared-close guards сохранены. Cached compile/JUnit controls; без local Gradle/DB/Docker/browser.
-- c89 /tmp/rct-headman-hw-intent-6cdce-20261015: sole .github/workflows/ci.yml writer, preimage53ad. Только existing e2e-auth synthetic directed-token generation/injection; согласован с c91, один coherent package review.
-- c93 independent reviewer: backend9+CI после frozen authors/checks. Уже одобрены pairedAuth/Schedule codecs и quiescence9b90. Не пишет Source/Git/Actions/native.
-- c92 independent read-only: bounded BOUNDARY-21 existing-evidence acceptance; без новых запусков/источников. Ранее Registry09fd/mobileead418/Attendance9785 reviewed.
+- c91 /workspace/rct-worktrees/request-enum-874-20261014: sole writer точного9-file исправления B13-SEMESTER-STATE-DIRECTED-IDENTITY-01. Отдельный Attendance→Academic token только GetSemesterState/TLS/authority; Schedule-only prepared-close guards сохранены. Cached compile/JUnit27PASS; exact9 frozen/c93APPROVE/Rootintegrated; idle/corrections, без local Gradle/DB/Docker/browser.
+- c89 /tmp/rct-headman-hw-intent-6cdce-20261015: sole .github/workflows/ci.yml writer, preimage53ad. Только existing e2e-auth synthetic directed-token generation/injection; согласован с c91, один coherent package review c93APPROVE/Rootintegrated; idle/corrections.
+- c93 independent reviewer: backend9+CI APPROVE_SOURCE_ONLY без findings, reviewed10pins. Уже одобрены pairedAuth/Schedule codecs и quiescence9b90. Не пишет Source/Git/Actions/native.
+- c92 independent read-only: BOUNDARY-21 composed existing-evidence acceptance APPROVED/RootadoptedPASS; без новых запусков/источников. Ранее Registry09fd/mobileead418/Attendance9785 reviewed.
 - c86 /workspace/rct-worktrees/q09-client-remaining-20261014: mobile/registry/semester-fixture ownership retained; 09fd/ead418/9b90 Root integrated/reviewed; idle/corrections. Сохранить ignored c80Registry backup.
 - c80 /workspace/rct-worktrees/renderer-outage-874-20261014: sole Actions observer/reader. e69 PR/PUSH CI terminalFAIL, CoverageFAIL, Security/OpenAPISUCCESS, cleanup PASS/readers reaped/publicationSafePoint true. Own .agent/evidence/c80-f6b2-primary.safe.json содержит current namespaces. Новый native run только после real push/readback; не повторять уже прочитанные bodies.
 

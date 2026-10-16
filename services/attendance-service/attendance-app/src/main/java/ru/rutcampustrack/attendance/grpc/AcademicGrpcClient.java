@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
@@ -38,6 +39,10 @@ import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.student.StudentCheckinException;
+import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
+import ru.rutcampustrack.shared.security.grpc.ServiceIdentityServerInterceptor;
+import ru.rutcampustrack.shared.security.grpc.ServicePrincipal;
+import ru.rutcampustrack.shared.security.grpc.ServiceTokenCallCredentials;
 
 /**
  * gRPC client wrapper for Academic Service. All calls use a 3-second deadline to prevent cascading
@@ -47,11 +52,32 @@ import ru.rutcampustrack.attendance.student.StudentCheckinException;
 @Component
 public class AcademicGrpcClient {
 
+    @Value("${grpc.service-identity.attendance-to-academic-token:}")
+    private String attendanceToAcademicToken;
+
+    @Value("${grpc.client.academic-service.security.authority-override:academic-service}")
+    private String academicAuthority;
+
     /** Semester metadata after the report's existing actor/group admission. */
     public ru.rutcampustrack.academic.grpc.SemesterStateResponse getSemesterState(long semesterId) {
+        var credential =
+                DirectedServiceCredential.tryCreate(
+                                new ServicePrincipal("attendance-service"),
+                                ServicePrincipal.ACADEMIC_SERVICE,
+                                attendanceToAcademicToken)
+                        .orElseThrow(
+                                () ->
+                                        new AcademicServiceUnavailableException(
+                                                "Attendance semester authority has no directed service identity"));
+        var callCredentials =
+                ServiceTokenCallCredentials.forMethod(
+                        credential,
+                        academicAuthority,
+                        ServiceIdentityServerInterceptor.ACADEMIC_GET_SEMESTER_STATE);
         try {
             var response =
-                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    stub.withCallCredentials(callCredentials)
+                            .withDeadlineAfter(3, TimeUnit.SECONDS)
                             .getSemesterState(
                                     ru.rutcampustrack.academic.grpc.SemesterStateRequest
                                             .newBuilder()

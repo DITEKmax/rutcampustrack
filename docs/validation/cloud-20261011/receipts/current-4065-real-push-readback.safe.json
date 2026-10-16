@@ -76074,11 +76074,11 @@
       "currentPins": [
         {
           "sourceRef": ".github/workflows/ci.yml",
-          "sha256": "53ad8a3c3dd49a832082d6f67c534bb00321230cd3fbf24b40508e1a7d45b26e"
+          "sha256": "359dfd3e8bddb70dbd10a6239e2e433bd78085eafbd96888f62657c824e12541"
         },
         {
           "sourceRef": "docker-compose.e2e.yml",
-          "sha256": "a48904046749633f831fddeaf936d2bcd0ff387fd112122d047a4ae128169813"
+          "sha256": "fe8550d5651a14a0a617f273bf073f36ea856d3f05f650599c7c05947865b3f8"
         },
         {
           "sourceRef": "docs/openapi/academic.json",
@@ -76642,7 +76642,7 @@
         },
         {
           "sourceRef": "services/academic-service/academic-app/src/main/resources/application.yml",
-          "sha256": "c171ddc23a35353a8a7da0b13174104d32a89f686178c1aedcb5c29c313f7e8e"
+          "sha256": "abc30fe172ebf1fbb3adc384fea0f6a0987fcd82a104e2737d1e32b60c6af7c2"
         },
         {
           "sourceRef": "services/academic-service/academic-app/src/main/resources/db/migration/V59__headman_member_credential_origin.sql",
@@ -76810,7 +76810,7 @@
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/main/resources/application.yml",
-          "sha256": "c23eacaa240a9ddc7277f6a4e90a6e6058ae96e884d9c02293a537fad38c3425"
+          "sha256": "c3ae94eb78e11d6fc02d7d59e209393d877e5f9182d7dccd91d4b97585c70c64"
         },
         {
           "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseRepositoryIT.java",
@@ -77375,6 +77375,30 @@
         {
           "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java",
           "sha256": "059558fd21ab991ad6d0bbd31bc9b8744e2b5c2256b2fd7795459684146cdbf8"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+          "sha256": "1d8a62cc0330d8624aa735769b1eb0dc21503a0676a70c184561a2783b7252dd"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceAuthConfiguration.java",
+          "sha256": "023f3fbcbdfeddfee7e48309468d5a7f3dbdd4d2b1c8af11d7da80ab4ec0b5b0"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+          "sha256": "d9465a25cd3ef1fae291d77fa475409aa47540071791f33423519783553c5add"
+        },
+        {
+          "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+          "sha256": "76565b0b19fa2cabfe2868261b31596c8b6a4f67d96904709fda1c0f46960af2"
+        },
+        {
+          "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+          "sha256": "340b063b3b189d8d1b2ab2d8e147b9dacbdf050c6fab23e6a481430374c676aa"
+        },
+        {
+          "sourceRef": "docker-compose.prod.yml",
+          "sha256": "ecd84fd24fc5bd4c8d89c5192ffd7fd92ad658ecceba9514d4320d117b38e083"
         }
       ],
       "pendingIntegration": "Mechanical7only01b28421localunpublished; exactweek14+prior4+Academic3+unit2+Admin1=24semanticWIP. Recon31linereview/HeadmanStatsClock2authorpending; official261terminalCI/CovFAIL/cleanupSUCCESS. Rootintegratedchecks/normalhooks/coherentcommit/pushnext, thennewordinarygates/BFFofficialstock.",
@@ -165152,6 +165176,316 @@
             "writer": "c89",
             "backendWriter": "c91",
             "integration": "one coherent 9 backend/config files plus CI delta, independent c93 review before Root integration"
+          },
+          "frozenOutcome": {
+            "utc": "2026-10-16T14:57:41.034710+00:00",
+            "author": "c89",
+            "sourceRef": ".github/workflows/ci.yml",
+            "preimageSha256": "53ad8a3c3dd49a832082d6f67c534bb00321230cd3fbf24b40508e1a7d45b26e",
+            "sha256": "359dfd3e8bddb70dbd10a6239e2e433bd78085eafbd96888f62657c824e12541",
+            "checks": "ActualAST canonical43/decoded32/threeDistinct PASS; controlled collision before file/mask/export PASS; YAML/Prettier/exact-one-region inverse PASS; c91 effective compose/property mapping qualified; all reaped.",
+            "independentReview": "PENDING coherent9backend+CI",
+            "nativeAfter": "NOT_RUN"
+          }
+        },
+        "directedIdentityAuthorFrozen": {
+          "utc": "2026-10-16T14:57:48.506285+00:00",
+          "author": "c91",
+          "receipt": "/workspace/rutcampustrack/.agent/evidence/c91-system16-sensitivity.safe.json#e69B13DirectedSemesterStateIdentityCorrection.implementation",
+          "receiptSha256": "71a9e4503d1d0de54ef8b72003a746d04c54033dd03b594d324cbf62587629a8",
+          "implementation": {
+            "utc": "2026-10-16T14:57:09.457070+00:00",
+            "status": "FROZEN_READY_FOR_ONE_COHERENT_INDEPENDENT_REVIEW_NATIVE_NOT_RUN",
+            "rootScope": "currente69ae4e4Publication.lateInitialMembershipGenuineFailureGO.externalNineFileImplementationGO",
+            "worktree": "/workspace/rct-worktrees/request-enum-874-20261014",
+            "postimages": [
+              {
+                "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+                "sha256": "1d8a62cc0330d8624aa735769b1eb0dc21503a0676a70c184561a2783b7252dd"
+              },
+              {
+                "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceAuthConfiguration.java",
+                "sha256": "023f3fbcbdfeddfee7e48309468d5a7f3dbdd4d2b1c8af11d7da80ab4ec0b5b0"
+              },
+              {
+                "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+                "sha256": "d9465a25cd3ef1fae291d77fa475409aa47540071791f33423519783553c5add"
+              },
+              {
+                "sourceRef": "services/academic-service/academic-app/src/main/resources/application.yml",
+                "sha256": "abc30fe172ebf1fbb3adc384fea0f6a0987fcd82a104e2737d1e32b60c6af7c2"
+              },
+              {
+                "sourceRef": "services/attendance-service/attendance-app/src/main/resources/application.yml",
+                "sha256": "c3ae94eb78e11d6fc02d7d59e209393d877e5f9182d7dccd91d4b97585c70c64"
+              },
+              {
+                "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+                "sha256": "76565b0b19fa2cabfe2868261b31596c8b6a4f67d96904709fda1c0f46960af2"
+              },
+              {
+                "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+                "sha256": "340b063b3b189d8d1b2ab2d8e147b9dacbdf050c6fab23e6a481430374c676aa"
+              },
+              {
+                "sourceRef": "docker-compose.e2e.yml",
+                "sha256": "fe8550d5651a14a0a617f273bf073f36ea856d3f05f650599c7c05947865b3f8"
+              },
+              {
+                "sourceRef": "docker-compose.prod.yml",
+                "sha256": "ecd84fd24fc5bd4c8d89c5192ffd7fd92ad658ecceba9514d4320d117b38e083"
+              }
+            ],
+            "checks": {
+              "b13-boundary-corrected-compile": {
+                "safeLog": "/tmp/rct-c91-academic5-cause/b13-boundary-corrected-compile.safe.json",
+                "native_exit": 0,
+                "phase_success": true,
+                "all_owned_processes_reaped": true,
+                "heapMiB": 256,
+                "peakOwnedRssBytes": 299790336,
+                "elapsedSeconds": 5.537
+              },
+              "b13-boundary-corrected-junit": {
+                "safeLog": "/tmp/rct-c91-academic5-cause/b13-boundary-corrected-junit.safe.json",
+                "native_exit": 0,
+                "phase_success": true,
+                "all_owned_processes_reaped": true,
+                "heapMiB": 256,
+                "peakOwnedRssBytes": 230494208,
+                "elapsedSeconds": 5.934
+              },
+              "b13-boundary-final-format": {
+                "safeLog": "/tmp/rct-c91-academic5-cause/b13-boundary-final-format.safe.json",
+                "native_exit": 0,
+                "phase_success": true,
+                "all_owned_processes_reaped": true,
+                "heapMiB": 192,
+                "peakOwnedRssBytes": 146341888,
+                "elapsedSeconds": 2.105
+              },
+              "b13-boundary-final-ast": {
+                "safeLog": "/tmp/rct-c91-academic5-cause/b13-boundary-final-ast.safe.json",
+                "native_exit": 0,
+                "phase_success": true,
+                "all_owned_processes_reaped": true,
+                "heapMiB": 192,
+                "peakOwnedRssBytes": 185565184,
+                "elapsedSeconds": 2.693
+              },
+              "b13-boundary-final-yaml-format": {
+                "safeLog": "/tmp/rct-c91-academic5-cause/b13-boundary-final-yaml-format.safe.json",
+                "native_exit": 0,
+                "phase_success": true,
+                "all_owned_processes_reaped": true,
+                "heapMiB": 256,
+                "peakOwnedRssBytes": 84369408,
+                "elapsedSeconds": 0.782
+              }
+            },
+            "commands": [
+              "python3 /tmp/rct-c91-academic5-cause/guarded-check.py b13-boundary-corrected-compile /workspace/rct-cloud-setup/jdk21/bin/javac -J-Xmx256m @/tmp/rct-c91-b13-service-boundary/corrected-compile.args",
+              "python3 /tmp/rct-c91-academic5-cause/guarded-check.py b13-boundary-corrected-junit /workspace/rct-cloud-setup/jdk21/bin/java @/tmp/rct-c91-b13-service-boundary/corrected-runtime.args",
+              "actual configured Spotless7.0.4/GJF1.25.2/AOSP/reflow=false/reorder=false/javadoc=true CHECK5, format-check.args",
+              "JavacTask parser/old-method AST check5, ast.args",
+              "existing cached Prettier module API/Root resolveConfig exact4 YAML CHECK; config-format-check.cjs"
+            ],
+            "actualResult": "Existing AssignmentCloseServiceIdentityInterceptorTest + Attendance AcademicGrpcClientTest:27 FOUND/27PASS/0FAIL/0SKIP/0ABORT; changed main classes and shared primitives compiled from actual Source into own scratch, loaded origins asserted",
+            "securityControls": [
+              "New Attendance TLS proof binds attendance-service for exact GetSemesterState",
+              "Existing Schedule TLS proof retained for state AND prepared-assignment lookup",
+              "Attendance token rejected for prepared-assignment lookup",
+              "missing/malformed/unknown-direction/duplicate/mixed/nonTLS token refused with no handler",
+              "empty/malformed Attendance configuration cannot impersonate either known caller; existing one-String Schedule-only constructor remains compatible",
+              "equal canonical direction tokens fail closed with fixed no-secret message",
+              "actual client captured ServiceTokenCallCredentials releases only exact GetSemesterState/academic-service/PRIVACY_AND_INTEGRITY; plaintext/foreignauthority/preparedmethod emits no metadata",
+              "client invalid/missing/null credential refuses before RPC; existing mismatched response identity refusal retained"
+            ],
+            "invariants": {
+              "RootNinePreimagesUnchanged": true,
+              "oldMethodBodiesUnchanged": 45,
+              "allowedOldMethodChanges": [
+                "receiver constructor and interceptCall",
+                "Spring receiver factory parameter forwarding",
+                "Attendance getSemesterState credential admission only",
+                "existing Spring registration test now also proves Attendance property wiring"
+              ],
+              "yamlFourExactByteInverse": true,
+              "composeNewRecipientsOnly": [
+                "academic-service",
+                "attendance-service"
+              ],
+              "noSharedSecurityPublicApiProtoMigrationChanges": true,
+              "priorAuthBceAndAcademic317PinsUnchanged": true
+            },
+            "tokenContract": {
+              "environment": "ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN",
+              "property": "grpc.service-identity.attendance-to-academic-token",
+              "source": "attendance-service",
+              "target": "academic-service",
+              "method": "rutcampustrack.academic.AcademicGrpcService/GetSemesterState",
+              "authorityProperty": "grpc.client.academic-service.security.authority-override",
+              "defaultAuthority": "academic-service",
+              "format": "32byte base64url unpadded43characters; independent direction, collision rejected",
+              "requiredDeployment": true,
+              "unitTestExtraEnvNeeded": false,
+              "CIWriter": "c89; synthetic3direction generator separately approved by Root"
+            },
+            "qualifications": [
+              "No Gradle/local DB/real RPC server/broker/browser/network/Actions/dependency install executed.",
+              "All floor/memory/reap checks succeeded; all JVM heaps<=256MiB and measured RSS<300MiB; Node heap256MiB.",
+              "The deterministic old policy/client mismatch is proven; unique cause of historical genuine poll1830 remains unobserved.",
+              "Ordinary genuine late enrollment bridge after integration is still required; Source/unit PASS is not whole B13 acceptance."
+            ]
+          },
+          "independentReview": "PENDING c93 coherent9backend+CI"
+        },
+        "directedIdentityCoherentIndependentReview": {
+          "utc": "2026-10-16T15:01:50.725767+00:00",
+          "reviewer": "c93",
+          "receipt": ".agent/evidence/c93-gateway500-review.safe.json#e69AttendanceAcademicDirectedIdentityCoherentReview",
+          "receiptSha256": "8559f5a7aac7defb830a64da3fdbb1c9575cdc2688d0653990b43fd4ec8d6b5b",
+          "review": {
+            "utc": "2026-10-16T15:01:18.579324+00:00",
+            "outcome": "APPROVE_SOURCE_ONLY",
+            "importantFindings": [],
+            "scope": "One coherent frozen backend/config nine-file plus existing synthetic CI generator correction; independent read-only review, no author overlap.",
+            "requestedModel": "gpt-6.1-sol/high",
+            "actualModel": "UNKNOWN",
+            "pins": [
+              {
+                "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+                "sha256": "1d8a62cc0330d8624aa735769b1eb0dc21503a0676a70c184561a2783b7252dd"
+              },
+              {
+                "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceAuthConfiguration.java",
+                "sha256": "023f3fbcbdfeddfee7e48309468d5a7f3dbdd4d2b1c8af11d7da80ab4ec0b5b0"
+              },
+              {
+                "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+                "sha256": "d9465a25cd3ef1fae291d77fa475409aa47540071791f33423519783553c5add"
+              },
+              {
+                "sourceRef": "services/academic-service/academic-app/src/main/resources/application.yml",
+                "sha256": "abc30fe172ebf1fbb3adc384fea0f6a0987fcd82a104e2737d1e32b60c6af7c2"
+              },
+              {
+                "sourceRef": "services/attendance-service/attendance-app/src/main/resources/application.yml",
+                "sha256": "c3ae94eb78e11d6fc02d7d59e209393d877e5f9182d7dccd91d4b97585c70c64"
+              },
+              {
+                "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+                "sha256": "76565b0b19fa2cabfe2868261b31596c8b6a4f67d96904709fda1c0f46960af2"
+              },
+              {
+                "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+                "sha256": "340b063b3b189d8d1b2ab2d8e147b9dacbdf050c6fab23e6a481430374c676aa"
+              },
+              {
+                "sourceRef": "docker-compose.e2e.yml",
+                "sha256": "fe8550d5651a14a0a617f273bf073f36ea856d3f05f650599c7c05947865b3f8"
+              },
+              {
+                "sourceRef": "docker-compose.prod.yml",
+                "sha256": "ecd84fd24fc5bd4c8d89c5192ffd7fd92ad658ecceba9514d4320d117b38e083"
+              },
+              {
+                "sourceRef": ".github/workflows/ci.yml",
+                "sha256": "359dfd3e8bddb70dbd10a6239e2e433bd78085eafbd96888f62657c824e12541"
+              }
+            ],
+            "independentSourceReview": [
+              "Actual nine-file deltas and current bytes inspected; exact ten post hashes checked. CI only existing PY_ATTENDANCE_SERVICE_TOKEN region differs and region inverse is whole-file exact to Root 53ad8a3c3dd49a832082d6f67c534bb00321230cd3fbf24b40508e1a7d45b26e.",
+              "Receiver Attendance delegate targets Academic and allows only exact GetSemesterState; existing Schedule state/prepared map retained. Missing or malformed configured token, missing/foreign token, duplicate/mixed headers and absent TLS cannot admit Attendance. Equal canonical Schedule/Attendance tokens reject construction with fixed message. Locally configured token chooses principal; caller metadata never supplies principal.",
+              "Actual unchanged DirectedServiceCredential, ServiceIdentityServerInterceptor and ServiceTokenCallCredentials inspected. Client uses Attendance->Academic credential on only exact state RPC; real primitive requires exact authority and PRIVACY_AND_INTEGRITY before metadata release. Existing three-second deadline and response-id check retained, no cache or fallback.",
+              "Both application properties/required-env lists and both compose new-recipient scopes inspected. Existing prod profile supplies TLS trust and authority to Attendance client. New env var reaches Academic and Attendance only; Schedule direction remains paired Academic/Schedule.",
+              "CI generates three distinct canonical token_urlsafe(32) directions. Collision refusal occurs before opening GITHUB_ENV or printing mask commands; each value masked before export. No actual env/credential files read. Subsequent compose step inherits GITHUB_ENV; no other workflow bytes changed.",
+              "Actual added JUnit method/helper sources and old BackfillBoundaryControl.java inspected. Tests exercise real shared primitives and captured actual client credentials, assert denied handler not reached and context not leaked, retain Schedule and unrelated-read behavior. Old control demonstrates plain Attendance/independent unconfigured proof denied by old policy; this is a meaningful compatibility counterexample, not unique historical failure cause."
+            ],
+            "verificationQualification": {
+              "authorReported": "Cached actual changed-class javac0, targeted JUnit27PASS/0skip/0abort, Spotless5/YAML4/parser45 and CI extracted-AST collision/YAML/inverse PASS.",
+              "independentRerun": "NOT_RUN; existing passed checks not repeated. Review used Source, static hashes and exact CI inverse.",
+              "nativeOrGenuineBridge": "NOT_RUN; ordinary CI and genuine late-enrollment bridge after integrated revision remain required.",
+              "historicalUnique1830Cause": "UNKNOWN; no causal promotion from source/cached-unit evidence."
+            },
+            "writes": "Own existing review receipt entry only; no Source/Git/docs/Actions/native/network mutations."
+          }
+        },
+        "RootExactIntegration": {
+          "utc": "2026-10-16T15:02:24.143665+00:00",
+          "state": "LOCAL_INTEGRATED_REVIEWED_CONFIGURED_CHECKS_PASS_READY_COMMIT",
+          "localParent": "8d509e4f",
+          "files": [
+            {
+              "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+              "beforeSha256": "ddb426fb03a17d56e31d95f1b1735c706a1288de7446f9f2ca4f4a3a6277f79f",
+              "sha256": "1d8a62cc0330d8624aa735769b1eb0dc21503a0676a70c184561a2783b7252dd"
+            },
+            {
+              "sourceRef": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceAuthConfiguration.java",
+              "beforeSha256": "9a3cbab741ae3e86cf7a2721a4b7ccdf2ac62ea34f3dbec10546fad478bb6b1a",
+              "sha256": "023f3fbcbdfeddfee7e48309468d5a7f3dbdd4d2b1c8af11d7da80ab4ec0b5b0"
+            },
+            {
+              "sourceRef": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+              "beforeSha256": "de5280c787caa48245c2c882d303744006d4cf3735769154285de186aba1f741",
+              "sha256": "d9465a25cd3ef1fae291d77fa475409aa47540071791f33423519783553c5add"
+            },
+            {
+              "sourceRef": "services/academic-service/academic-app/src/main/resources/application.yml",
+              "beforeSha256": "c171ddc23a35353a8a7da0b13174104d32a89f686178c1aedcb5c29c313f7e8e",
+              "sha256": "abc30fe172ebf1fbb3adc384fea0f6a0987fcd82a104e2737d1e32b60c6af7c2"
+            },
+            {
+              "sourceRef": "services/attendance-service/attendance-app/src/main/resources/application.yml",
+              "beforeSha256": "c23eacaa240a9ddc7277f6a4e90a6e6058ae96e884d9c02293a537fad38c3425",
+              "sha256": "c3ae94eb78e11d6fc02d7d59e209393d877e5f9182d7dccd91d4b97585c70c64"
+            },
+            {
+              "sourceRef": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+              "beforeSha256": "1d218aaab64a506cbc1846ac399924f2c3e7483591edaa5d597b2b3616f00af9",
+              "sha256": "76565b0b19fa2cabfe2868261b31596c8b6a4f67d96904709fda1c0f46960af2"
+            },
+            {
+              "sourceRef": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+              "beforeSha256": "eea669177769a06c3607083aae08af0491280ab960595d0cdb1fc22a4d3dcf54",
+              "sha256": "340b063b3b189d8d1b2ab2d8e147b9dacbdf050c6fab23e6a481430374c676aa"
+            },
+            {
+              "sourceRef": "docker-compose.e2e.yml",
+              "beforeSha256": "a48904046749633f831fddeaf936d2bcd0ff387fd112122d047a4ae128169813",
+              "sha256": "fe8550d5651a14a0a617f273bf073f36ea856d3f05f650599c7c05947865b3f8"
+            },
+            {
+              "sourceRef": "docker-compose.prod.yml",
+              "beforeSha256": "45bc47ea0a2a9db96f136020b90bd5354cb098637f0c9cf815456d945b4496fa",
+              "sha256": "ecd84fd24fc5bd4c8d89c5192ffd7fd92ad658ecceba9514d4320d117b38e083"
+            },
+            {
+              "sourceRef": ".github/workflows/ci.yml",
+              "beforeSha256": "53ad8a3c3dd49a832082d6f67c534bb00321230cd3fbf24b40508e1a7d45b26e",
+              "sha256": "359dfd3e8bddb70dbd10a6239e2e433bd78085eafbd96888f62657c824e12541"
+            }
+          ],
+          "canonicalPinCount": 332,
+          "allCanonicalHashesMatch": true,
+          "reviewRef": "directedIdentityCoherentIndependentReview",
+          "nativeAfter": "NOT_RUN",
+          "uniqueHistorical1830Cause": "UNKNOWN",
+          "configuredChecks": {
+            "utc": "2026-10-16T15:04:00.656718+00:00",
+            "firstSession": 82086,
+            "firstCompletion": "8e8850",
+            "firstResult": "Gitleaks FAIL2, other5 configuredhooksPASS. Both findings are exact verified AuthConfiguration Source SHA displayed as path-key/value in newly copied review metadata.",
+            "correction": "Represent only two newly embedded display hash maps as existing sourceRef/sha256 record arrays, retaining every path/hash value and original author/reviewer receipts unmodified. No scanner/config/rule or Source bytes changed.",
+            "recheck": {
+              "session": 31125,
+              "completion": "e8cbca",
+              "exit": 0,
+              "Gitleaks": "PASS on nonempty staged changes",
+              "JSONAndFileGuards": "PASS",
+              "YAML": "previous fullpacket82086PASS; unchanged in metadata correction; not re-run"
+            }
           }
         }
       },
@@ -165298,7 +165632,52 @@
         "safeReport": "/tmp/rct-root-2c11-range-gitleaks-redacted.json",
         "verifiedIdentityCodecSource": "c80-f6b2-primary.safe.json#currente69ae4e4Primary.authBoundaryQualityReadPlan.consumerSourceText",
         "correction": "Rename only three new metadata keys; retain exact hash values, raw evidence, producer inputs and scanner rules. Amend only unpublished own checkpoint; scan actual nonempty range afterward.",
-        "resultAfter": "PENDING"
+        "resultAfter": {
+          "state": "PASS",
+          "revision": "8d509e4f",
+          "command": "GOMAXPROCS=1 cached gitleaks git --redact --no-banner --log-opts=e69ae4e413b51c1371b82f11316d0aad4c6006bd..HEAD",
+          "session": 48711,
+          "completionChunk": "c93fef",
+          "exit": 0,
+          "commits": 1,
+          "scannedBytes": 159599,
+          "durationMs": 564,
+          "findings": 0
+        }
+      },
+      "boundary21Adoption": {
+        "utc": "2026-10-16T14:59:18.277077+00:00",
+        "decision": "PASS_COMPOSED_EXISTING_SUFFICIENT_EVIDENCE",
+        "independentReviewer": "c92 read-only; personally opened exact current/source sections and retained proof joins; no new native/body reads",
+        "acceptedCriterion": "History/gap/same-series identity/cancelled-slot reuse, authoritative foreign-assignment/group/current-headman refusal, real Vue builder oneoff/readback, and distinct-key concurrent same-slot one durable winner/typed conflict. No additional same-group other-subject prohibition is accepted.",
+        "oldDb": "receipts/Q07-existing-finite-proof-reuse.safe.json#Required/Verification.S1aa; run38467301679 head1aa6c645 checkoutc13da959; SOURCE_METHOD PASS RecurringScheduleItemIT.deletingAndReturningSameSeriesNeverBackfillsAbsenceAndRoomIsNotIdentity and parityRemovalArchivesFutureHomeworkAndRestoresAsNewPhysicalGeneration (source1ca4ea6f8c02b9d32f329c7af879d68f1f7cf45184e9955fc9379789900907e9); OneOffLessonControllerIT.cancelledRecurringPhysical_releasesSlotAndRetainsBothHistories and create_rejectsForeignAuthorityAndHeadmanScope_atomically (c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c). Old assertions retained; later added RPC assertions not attributed to old run.",
+        "tupleQualification": "Current OneOffLessonWriter checks assignmentId/groupId/subjectId and date window; semester/type derive from authoritative assignment, not separate request equality comparisons.",
+        "actualVue": "current93c860a2Publication.currentChangedClientWholePassJoinGO.independentReview/currentPush run38883222547 artifact12041145602 wholeSchedule390 PASS sourcebbc225fdcd6bc8f1288a1c08a186fef2cd54b1785500330fb79038b066e2cb49; immutable93 hard sections720–791/894–972/1066–1148 reopened.",
+        "newRaceQuality": "currentScheduleAcceptedBoundaryQuality: e69 run38910548732 job117004986551 checkoutb440; artifact12050348726 digest53d24a5820fec863500f8eff37852186622de2be9c9a495a42883c12a3bd6109; semanticRED856 oneFailure0Error0Skip/nativeExit1; V17 exact restored8d02720f48b67e21c78373b214adb414a2f435a8016c35987839d330b6042fcc; samejob restored namedGREEN artifact12050696853 digestb4eb29ce3adf95c69460cb2ce539fc9ce6bf51933a9df4fc4658624a4bfe7981; OneOffLessonControllerIT.concurrentDifferentKeysForSamePhysicalSlot_haveOneDurableWinnerAndTypedConflict source9b86eb52b1b5111ba7f4243289a70c61bd92d1e64a87c1599ea366cdb4615123. Actual two threads/distinct keys/samepayload,201+typed409 and one durable physical/origin/occurrence/replay/lifecycle/outbox/winner replay. RED stops856; GREEN executes tail.",
+        "limits": "Only exact BOUNDARY-21; no blanket family/JS37/allroles/newRPC assertions/B015 bypass credit."
+      },
+      "nextRevisionObservationQueue": {
+        "utc": "2026-10-16T14:59:49.852655+00:00",
+        "owner": "c80 sole Actions observer",
+        "source": "existing c80-f6b2-primary.safe.json nextRevisionObservationQueue",
+        "state": "PREPARED_NO_ACTIONS_READ_LAUNCHED",
+        "order": [
+          "ordinary push/PR exacthead and actual checkout parents/tree",
+          "bind immutable Source/declarations; genuine matching retainedRootlstat for Auth",
+          "first actual native failure, Academic unit/migration/B13PG/Mongo",
+          "genuine Recon/original late-member/archive; hints only actual500signature",
+          "newly independent AdminUI/Subject/Today under retained safetyguards",
+          "terminal gates/cleanup/process reap"
+        ],
+        "readerTransportSchemaChanges": "NONE needed",
+        "old1830UniqueRuntimeCause": "UNKNOWN",
+        "preIntegrationInventory": {
+          "utc": "2026-10-16T15:00:02.720552+00:00",
+          "canonicalArray": "next_reviewed_integrations.b460bc2_current_Root_feature_Source_checkpoint.currentPins",
+          "records": 326,
+          "allCurrentHashesMatch": true,
+          "note": "Measured exact current array count; older display count327 corrected in active resources/CURRENT only. No Source bytes or historical records changed."
+        }
       }
     }
   }

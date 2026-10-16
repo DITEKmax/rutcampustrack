@@ -8,18 +8,7 @@ import static org.mockito.Mockito.when;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +22,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
 import ru.rutcampustrack.academic.contract.enums.*;
@@ -55,6 +45,19 @@ import ru.rutcampustrack.academic.semester.SemesterService;
 import ru.rutcampustrack.schedule.grpc.SemesterArchiveParticipantState;
 import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * PostgreSQL outcome checks and the real uncached gRPC handler's state/status mapping. Calls the
@@ -536,7 +539,8 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThatThrownBy(
                         () ->
                                 jdbcTemplate.update(
-                                        "UPDATE semesters SET deletion_phase = 'DELETING' WHERE id = ?",
+                                        "UPDATE semesters SET deletion_phase = 'DELETING' WHERE id"
+                                                + " = ?",
                                         semesterId))
                 .isInstanceOf(DataAccessException.class);
         assertThatThrownBy(
@@ -574,8 +578,8 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(deletionCommandCount(timeoutId, SemesterArchiveParticipantCommand.SEAL_DELETE))
                 .isEqualTo(1L);
         jdbcTemplate.update(
-                "UPDATE semester_archive_operations SET prepare_expires_at = now() - interval '1 second' "
-                        + "WHERE operation_id = ?",
+                "UPDATE semester_archive_operations SET prepare_expires_at = now() - interval '1"
+                        + " second' WHERE operation_id = ?",
                 timeoutId);
         deletionCoordinator.advance(timeoutId);
         assertThat(deletionCommands.find(timeoutId).getDeletePhase())
@@ -705,9 +709,9 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(completionEventCount(staleId)).isOne();
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT payload #>> '{payload,outcome}' "
-                                        + "FROM academic_outbox WHERE event_type='semester.operation.completed' "
-                                        + "AND payload #>> '{payload,operation_id}'=?",
+                                "SELECT payload #>> '{payload,outcome}' FROM academic_outbox WHERE"
+                                    + " event_type='semester.operation.completed' AND payload #>>"
+                                    + " '{payload,operation_id}'=?",
                                 String.class,
                                 staleId.toString()))
                 .isEqualTo("CANCELLED");
@@ -823,13 +827,14 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                                 status -> {
                                     long id =
                                             jdbcTemplate.queryForObject(
-                                                    "INSERT INTO subjects (name, type, group_id) "
-                                                            + "VALUES (?, 'lecture', ?) RETURNING id",
+                                                    "INSERT INTO subjects (name, type, group_id)"
+                                                        + " VALUES (?, 'lecture', ?) RETURNING id",
                                                     Long.class,
                                                     "delete-drain-" + UUID.randomUUID(),
                                                     groupId);
                                     jdbcTemplate.update(
-                                            "INSERT INTO subject_lesson_types (subject_id, lesson_type) VALUES (?, 'lecture')",
+                                            "INSERT INTO subject_lesson_types (subject_id,"
+                                                    + " lesson_type) VALUES (?, 'lecture')",
                                             id);
                                     return id;
                                 });
@@ -840,11 +845,11 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         long homeworkId =
                 jdbcTemplate.queryForObject(
                         """
-                INSERT INTO homeworks (group_id, subject_id, semester_id, lesson_date, lesson_number,
-                    title, published_by, binding_id, actor_id, request_key, payload_hash, publication_state,
-                    created_at, updated_at)
-                VALUES (?, ?, ?, ?, 1, 'delete-drain', ?, ?, ?, ?, ?, 'PENDING', now(), now()) RETURNING id
-                """,
+INSERT INTO homeworks (group_id, subject_id, semester_id, lesson_date, lesson_number,
+    title, published_by, binding_id, actor_id, request_key, payload_hash, publication_state,
+    created_at, updated_at)
+VALUES (?, ?, ?, ?, 1, 'delete-drain', ?, ?, ?, ?, ?, 'PENDING', now(), now()) RETURNING id
+""",
                         Long.class,
                         groupId,
                         subjectId,
@@ -870,7 +875,8 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThatThrownBy(
                         () ->
                                 jdbcTemplate.update(
-                                        "UPDATE homeworks SET title = 'ordinary write' WHERE id = ?",
+                                        "UPDATE homeworks SET title = 'ordinary write' WHERE id ="
+                                                + " ?",
                                         homeworkId))
                 .isInstanceOf(DataAccessException.class);
         UUID materializedEvent = UUID.randomUUID();
@@ -964,8 +970,9 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 .isEqualTo("CANCELLED_UNPUBLISHED");
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT resolution_state FROM academic_semester_archive_publication_admissions "
-                                        + "WHERE operation_id = ? AND binding_id = ?",
+                                "SELECT resolution_state FROM"
+                                        + " academic_semester_archive_publication_admissions WHERE"
+                                        + " operation_id = ? AND binding_id = ?",
                                 String.class,
                                 operationId,
                                 emptyBinding))
@@ -1077,8 +1084,9 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 .isEqualTo("APPLIED");
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT count(*) FROM academic_outbox "
-                                        + "WHERE event_type = 'semester.archive.effect.ack' AND payload #>> '{payload,source_event_id}' = ?",
+                                "SELECT count(*) FROM academic_outbox WHERE event_type ="
+                                        + " 'semester.archive.effect.ack' AND payload #>>"
+                                        + " '{payload,source_event_id}' = ?",
                                 Long.class,
                                 sourceEventId.toString()))
                 .isEqualTo(1L);
@@ -1286,9 +1294,10 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
                 .isTrue();
         UUID sessionId = UUID.randomUUID();
         jdbcTemplate.update(
-                "INSERT INTO auth_sessions(sid, user_id, active_role_grant_id, session_version, "
-                        + "current_refresh_jti, refresh_expires_at, created_at, last_seen_at, auth_method) "
-                        + "VALUES (?, ?, ?, 1, ?, NOW() + interval '1 day', NOW(), NOW(), 'PASSWORD')",
+                "INSERT INTO auth_sessions(sid, user_id, active_role_grant_id, session_version,"
+                    + " current_refresh_jti, refresh_expires_at, created_at, last_seen_at,"
+                    + " auth_method) VALUES (?, ?, ?, 1, ?, NOW() + interval '1 day', NOW(), NOW(),"
+                    + " 'PASSWORD')",
                 sessionId,
                 actorId,
                 grantId,
@@ -1371,9 +1380,9 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThat(completionEventCount(operationId)).isOne();
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT payload #>> '{payload,semester_name}' "
-                                        + "FROM academic_outbox WHERE event_type='semester.operation.completed' "
-                                        + "AND payload #>> '{payload,operation_id}'=?",
+                                "SELECT payload #>> '{payload,semester_name}' FROM academic_outbox"
+                                    + " WHERE event_type='semester.operation.completed' AND payload"
+                                    + " #>> '{payload,operation_id}'=?",
                                 String.class,
                                 operationId.toString()))
                 .isEqualTo(semester.getName());
@@ -1388,8 +1397,9 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
         assertThatThrownBy(
                         () ->
                                 jdbcTemplate.update(
-                                        "INSERT INTO teacher_subject_groups "
-                                                + "(teacher_id, subject_id, group_id, semester_id) VALUES (1, 1, 1, ?)",
+                                        "INSERT INTO teacher_subject_groups (teacher_id,"
+                                            + " subject_id, group_id, semester_id) VALUES (1, 1, 1,"
+                                            + " ?)",
                                         id))
                 .isInstanceOf(DataAccessException.class);
     }
@@ -1599,9 +1609,9 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
     private long dashboardInvalidationsAfter(long outboxId) {
         return jdbcTemplate.queryForObject(
                 """
-                SELECT COUNT(*) FROM academic_outbox
-                 WHERE id > ? AND event_type = 'dashboard.invalidated' AND payload -> 'payload' = '{}'::jsonb
-                """,
+SELECT COUNT(*) FROM academic_outbox
+ WHERE id > ? AND event_type = 'dashboard.invalidated' AND payload -> 'payload' = '{}'::jsonb
+""",
                 Long.class,
                 outboxId);
     }

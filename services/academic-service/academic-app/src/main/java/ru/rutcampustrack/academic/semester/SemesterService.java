@@ -1,13 +1,7 @@
 package ru.rutcampustrack.academic.semester;
 
 import jakarta.persistence.EntityManager;
-import java.sql.PreparedStatement;
-import java.time.Clock;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.Optional;
-import java.util.UUID;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -19,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
@@ -35,6 +30,14 @@ import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.AssignmentRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
+
+import java.sql.PreparedStatement;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.Optional;
+import java.util.UUID;
 
 /** Business logic for Semester domain: CRUD, atomic activation, and archive lifecycle state. */
 @Service
@@ -311,19 +314,20 @@ public class SemesterService {
         Boolean activeDeletionPending =
                 jdbcTemplate.queryForObject(
                         """
-                SELECT EXISTS (
-                    SELECT 1 FROM semester_archive_operations
-                     WHERE action = 'DELETE' AND prior_state = 'ACTIVE'
-                       AND delete_phase IN ('PREPARING', 'RELEASING')
-                       AND operation_state IN ('PENDING', 'ERROR')
-                )
-                """,
+                        SELECT EXISTS (
+                            SELECT 1 FROM semester_archive_operations
+                             WHERE action = 'DELETE' AND prior_state = 'ACTIVE'
+                               AND delete_phase IN ('PREPARING', 'RELEASING')
+                               AND operation_state IN ('PENDING', 'ERROR')
+                        )
+                        """,
                         Boolean.class);
         if (Boolean.TRUE.equals(activeDeletionPending)) {
             throw new ConflictException(
                     "status",
                     id,
-                    "Нельзя активировать другой семестр до завершения безопасной отмены удаления активного семестра");
+                    "Нельзя активировать другой семестр до завершения безопасной отмены удаления"
+                            + " активного семестра");
         }
 
         if (isWriteBlocked(target)) {

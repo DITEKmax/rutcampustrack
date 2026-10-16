@@ -1,19 +1,21 @@
 package ru.rutcampustrack.academic.semester;
 
-import java.sql.PreparedStatement;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
 import ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase;
 import ru.rutcampustrack.academic.contract.enums.SemesterTransition;
 import ru.rutcampustrack.academic.exception.ConflictException;
+
+import java.sql.PreparedStatement;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /** Academic's durable local write fence, publication admission and epoch release. */
 @Service
@@ -70,11 +72,11 @@ public class AcademicSemesterArchiveBarrierTransaction {
                         && Boolean.TRUE.equals(
                                 jdbc.queryForObject(
                                         """
-                    SELECT EXISTS (SELECT 1 FROM semester_archive_operations
-                     WHERE operation_id = ? AND semester_id = ? AND state_version = ?
-                       AND action = 'DELETE' AND delete_phase = 'CANCELLED' AND prior_state = 'ARCHIVED'
-                       AND NOT irreversible_intent)
-                    """,
+SELECT EXISTS (SELECT 1 FROM semester_archive_operations
+ WHERE operation_id = ? AND semester_id = ? AND state_version = ?
+   AND action = 'DELETE' AND delete_phase = 'CANCELLED' AND prior_state = 'ARCHIVED'
+   AND NOT irreversible_intent)
+""",
                                         Boolean.class,
                                         current.get("operation_id"),
                                         semesterId,
@@ -259,13 +261,13 @@ public class AcademicSemesterArchiveBarrierTransaction {
         int neutralized =
                 jdbc.update(
                         """
-                UPDATE semesters
-                   SET is_archived = FALSE, archive_transition = 'NONE',
-                       deletion_phase = NULL, transition_operation_id = NULL
-                 WHERE id = ? AND state_version = ?
-                   AND archive_transition = 'DELETING'
-                   AND transition_operation_id = ? AND deletion_phase = 'DELETING'
-                """,
+                        UPDATE semesters
+                           SET is_archived = FALSE, archive_transition = 'NONE',
+                               deletion_phase = NULL, transition_operation_id = NULL
+                         WHERE id = ? AND state_version = ?
+                           AND archive_transition = 'DELETING'
+                           AND transition_operation_id = ? AND deletion_phase = 'DELETING'
+                        """,
                         semesterId,
                         stateVersion,
                         operationId);
@@ -281,11 +283,11 @@ public class AcademicSemesterArchiveBarrierTransaction {
                 semesterId);
         jdbc.update(
                 """
-                UPDATE homework_binding_transfer_markers marker
-                   SET superseded_by_edit_operation_id = NULL
-                  FROM homework_edit_operations edit
-                 WHERE marker.superseded_by_edit_operation_id = edit.operation_id AND edit.semester_id = ?
-                """,
+UPDATE homework_binding_transfer_markers marker
+   SET superseded_by_edit_operation_id = NULL
+  FROM homework_edit_operations edit
+ WHERE marker.superseded_by_edit_operation_id = edit.operation_id AND edit.semester_id = ?
+""",
                 semesterId);
         jdbc.update(
                 """
@@ -319,7 +321,8 @@ public class AcademicSemesterArchiveBarrierTransaction {
         requireTransaction();
         Map<String, Object> edit =
                 jdbc.queryForMap(
-                        "SELECT semester_id, command_hash FROM homework_edit_operations WHERE operation_id = ?",
+                        "SELECT semester_id, command_hash FROM homework_edit_operations WHERE"
+                                + " operation_id = ?",
                         editOperationId);
         long semesterId = ((Number) edit.get("semester_id")).longValue();
         lockSemester(semesterId);
@@ -331,10 +334,10 @@ public class AcademicSemesterArchiveBarrierTransaction {
             Long admitted =
                     jdbc.queryForObject(
                             """
-                    SELECT count(*) FROM homework_edit_archive_admissions
-                     WHERE archive_operation_id = ? AND state_version = ? AND semester_id = ?
-                       AND edit_operation_id = ? AND command_hash = ?
-                    """,
+SELECT count(*) FROM homework_edit_archive_admissions
+ WHERE archive_operation_id = ? AND state_version = ? AND semester_id = ?
+   AND edit_operation_id = ? AND command_hash = ?
+""",
                             Long.class,
                             current.get("operation_id"),
                             current.get("state_version"),
@@ -367,13 +370,13 @@ public class AcademicSemesterArchiveBarrierTransaction {
         int updated =
                 jdbc.update(
                         """
-                UPDATE academic_semester_archive_publication_admissions
-                   SET payload_hash = coalesce(payload_hash, ?)
-                 WHERE operation_id = ? AND state_version = ? AND semester_id = ?
-                   AND binding_id = ? AND actor_id = ? AND request_key = ?
-                   AND (payload_hash IS NULL OR payload_hash = ?) AND consumed_at IS NULL
-                   AND resolution_state = 'ADMITTED'
-                """,
+                        UPDATE academic_semester_archive_publication_admissions
+                           SET payload_hash = coalesce(payload_hash, ?)
+                         WHERE operation_id = ? AND state_version = ? AND semester_id = ?
+                           AND binding_id = ? AND actor_id = ? AND request_key = ?
+                           AND (payload_hash IS NULL OR payload_hash = ?) AND consumed_at IS NULL
+                           AND resolution_state = 'ADMITTED'
+                        """,
                         payloadHash,
                         current.get("operation_id"),
                         current.get("state_version"),
@@ -465,9 +468,9 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Map<String, Object> homework =
                 jdbc.query(
                         """
-                SELECT id, semester_id, binding_id, actor_id, request_key, payload_hash, publication_state
-                  FROM homeworks WHERE binding_id = ? FOR UPDATE
-                """,
+SELECT id, semester_id, binding_id, actor_id, request_key, payload_hash, publication_state
+  FROM homeworks WHERE binding_id = ? FOR UPDATE
+""",
                         resultSet ->
                                 resultSet.next()
                                         ? Map.of(
@@ -496,12 +499,12 @@ public class AcademicSemesterArchiveBarrierTransaction {
         List<Map<String, Object>> admissionRows =
                 jdbc.queryForList(
                         """
-                SELECT actor_id, request_key, payload_hash, source_event_id, admitted_homework_id, consumed_at,
-                       resolution_state, terminal_event_id, schedule_occurrence_id, schedule_revision
-                  FROM academic_semester_archive_publication_admissions
-                 WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
-                 FOR UPDATE
-                """,
+SELECT actor_id, request_key, payload_hash, source_event_id, admitted_homework_id, consumed_at,
+       resolution_state, terminal_event_id, schedule_occurrence_id, schedule_revision
+  FROM academic_semester_archive_publication_admissions
+ WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
+ FOR UPDATE
+""",
                         operationId,
                         stateVersion,
                         semesterId,
@@ -528,12 +531,12 @@ public class AcademicSemesterArchiveBarrierTransaction {
             admission =
                     jdbc.queryForMap(
                             """
-                    SELECT actor_id, request_key, payload_hash, source_event_id, admitted_homework_id, consumed_at,
-                           resolution_state, terminal_event_id, schedule_occurrence_id, schedule_revision
-                      FROM academic_semester_archive_publication_admissions
-                     WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
-                     FOR UPDATE
-                    """,
+SELECT actor_id, request_key, payload_hash, source_event_id, admitted_homework_id, consumed_at,
+       resolution_state, terminal_event_id, schedule_occurrence_id, schedule_revision
+  FROM academic_semester_archive_publication_admissions
+ WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
+ FOR UPDATE
+""",
                             operationId,
                             stateVersion,
                             semesterId,
@@ -547,7 +550,8 @@ public class AcademicSemesterArchiveBarrierTransaction {
         if (number(admission.get("actor_id")) != actorId
                 || !requestKey.equals(admission.get("request_key"))) {
             throw new ConflictException(
-                    "Schedule archive binding actor or request key conflicts with Academic admission");
+                    "Schedule archive binding actor or request key conflicts with Academic"
+                            + " admission");
         }
         if (admission.get("admitted_homework_id") != null
                 && !admission.get("admitted_homework_id").equals(homeworkId)) {
@@ -566,7 +570,8 @@ public class AcademicSemesterArchiveBarrierTransaction {
                     || savedRevision != revision
                     || savedEvent == null) {
                 throw new ConflictException(
-                        "Schedule terminal cancellation replay has a different reservation identity");
+                        "Schedule terminal cancellation replay has a different reservation"
+                                + " identity");
             }
             return new BindingResolution(
                     BindingResolutionKind.TERMINAL,
@@ -607,12 +612,12 @@ public class AcademicSemesterArchiveBarrierTransaction {
                 int admitted =
                         jdbc.update(
                                 """
-                        UPDATE academic_semester_archive_publication_admissions
-                           SET admitted_homework_id = ?, payload_hash = coalesce(payload_hash, ?)
-                         WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
-                           AND resolution_state = 'ADMITTED' AND consumed_at IS NULL
-                           AND admitted_homework_id IS NULL
-                        """,
+UPDATE academic_semester_archive_publication_admissions
+   SET admitted_homework_id = ?, payload_hash = coalesce(payload_hash, ?)
+ WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
+   AND resolution_state = 'ADMITTED' AND consumed_at IS NULL
+   AND admitted_homework_id IS NULL
+""",
                                 homeworkId,
                                 payloadHash,
                                 operationId,
@@ -655,14 +660,14 @@ public class AcademicSemesterArchiveBarrierTransaction {
         int requested =
                 jdbc.update(
                         """
-                UPDATE academic_semester_archive_publication_admissions
-                   SET payload_hash = coalesce(payload_hash, ?), resolution_state = 'CANCEL_REQUESTED',
-                       schedule_occurrence_id = ?, schedule_revision = ?
-                 WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
-                   AND actor_id = ? AND request_key = ? AND (payload_hash IS NULL OR payload_hash = ?)
-                   AND resolution_state = 'ADMITTED' AND admitted_homework_id IS NULL
-                   AND consumed_at IS NULL
-                """,
+UPDATE academic_semester_archive_publication_admissions
+   SET payload_hash = coalesce(payload_hash, ?), resolution_state = 'CANCEL_REQUESTED',
+       schedule_occurrence_id = ?, schedule_revision = ?
+ WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
+   AND actor_id = ? AND request_key = ? AND (payload_hash IS NULL OR payload_hash = ?)
+   AND resolution_state = 'ADMITTED' AND admitted_homework_id IS NULL
+   AND consumed_at IS NULL
+""",
                         payloadHash,
                         occurrenceId,
                         revision,
@@ -757,21 +762,21 @@ public class AcademicSemesterArchiveBarrierTransaction {
         int updated =
                 jdbc.update(
                         """
-                UPDATE academic_semester_archive_publication_admissions admission
-                   SET consumed_at = coalesce(consumed_at, now())
-                  FROM homeworks homework
-                 WHERE admission.operation_id = ? AND admission.state_version = ?
-                   AND admission.semester_id = ? AND admission.binding_id = ?
-                   AND admission.actor_id = ? AND admission.request_key = ?
-                   AND admission.payload_hash = ? AND admission.admitted_homework_id = homework.id
-                   AND homework.id = ? AND homework.semester_id = ?
-                   AND homework.binding_id = admission.binding_id
-                   AND homework.actor_id = admission.actor_id
-                   AND homework.request_key = admission.request_key
-                   AND homework.payload_hash = admission.payload_hash
-                   AND homework.publication_state = 'PENDING'
-                   AND admission.resolution_state = 'ADMITTED'
-                """,
+UPDATE academic_semester_archive_publication_admissions admission
+   SET consumed_at = coalesce(consumed_at, now())
+  FROM homeworks homework
+ WHERE admission.operation_id = ? AND admission.state_version = ?
+   AND admission.semester_id = ? AND admission.binding_id = ?
+   AND admission.actor_id = ? AND admission.request_key = ?
+   AND admission.payload_hash = ? AND admission.admitted_homework_id = homework.id
+   AND homework.id = ? AND homework.semester_id = ?
+   AND homework.binding_id = admission.binding_id
+   AND homework.actor_id = admission.actor_id
+   AND homework.request_key = admission.request_key
+   AND homework.payload_hash = admission.payload_hash
+   AND homework.publication_state = 'PENDING'
+   AND admission.resolution_state = 'ADMITTED'
+""",
                         operationId,
                         stateVersion,
                         semesterId,
@@ -785,17 +790,17 @@ public class AcademicSemesterArchiveBarrierTransaction {
             Boolean exactReplay =
                     jdbc.queryForObject(
                             """
-                    SELECT EXISTS (
-                        SELECT 1 FROM academic_semester_archive_publication_admissions admission
-                        JOIN homeworks homework ON homework.id = admission.admitted_homework_id
-                         WHERE admission.operation_id = ? AND admission.state_version = ?
-                           AND admission.semester_id = ? AND admission.binding_id = ?
-                           AND admission.actor_id = ? AND admission.request_key = ?
-                           AND admission.payload_hash = ? AND admission.admitted_homework_id = ?
-                           AND admission.resolution_state = 'ADMITTED' AND admission.consumed_at IS NOT NULL
-                           AND homework.semester_id = ? AND homework.publication_state = 'PENDING'
-                    )
-                    """,
+SELECT EXISTS (
+    SELECT 1 FROM academic_semester_archive_publication_admissions admission
+    JOIN homeworks homework ON homework.id = admission.admitted_homework_id
+     WHERE admission.operation_id = ? AND admission.state_version = ?
+       AND admission.semester_id = ? AND admission.binding_id = ?
+       AND admission.actor_id = ? AND admission.request_key = ?
+       AND admission.payload_hash = ? AND admission.admitted_homework_id = ?
+       AND admission.resolution_state = 'ADMITTED' AND admission.consumed_at IS NOT NULL
+       AND homework.semester_id = ? AND homework.publication_state = 'PENDING'
+)
+""",
                             Boolean.class,
                             operationId,
                             stateVersion,
@@ -859,13 +864,13 @@ public class AcademicSemesterArchiveBarrierTransaction {
         int updated =
                 jdbc.update(
                         """
-                UPDATE academic_semester_archive_publication_admissions
-                   SET terminal_event_id = coalesce(terminal_event_id, ?)
-                 WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
-                   AND request_key = ? AND schedule_occurrence_id = ? AND schedule_revision = ?
-                   AND resolution_state IN ('CANCEL_REQUESTED', 'CANCELLED_UNPUBLISHED')
-                   AND (terminal_event_id IS NULL OR terminal_event_id = ?)
-                """,
+UPDATE academic_semester_archive_publication_admissions
+   SET terminal_event_id = coalesce(terminal_event_id, ?)
+ WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
+   AND request_key = ? AND schedule_occurrence_id = ? AND schedule_revision = ?
+   AND resolution_state IN ('CANCEL_REQUESTED', 'CANCELLED_UNPUBLISHED')
+   AND (terminal_event_id IS NULL OR terminal_event_id = ?)
+""",
                         terminalEventId,
                         operationId,
                         stateVersion,
@@ -911,11 +916,11 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Integer exactEffect =
                 jdbc.queryForObject(
                         """
-                SELECT count(*) FROM academic_semester_archive_effect_receipts
-                 WHERE source_event_id = ? AND event_type = 'homework.binding.archived'
-                   AND semester_id = ? AND binding_id = ? AND payload_hash = ?
-                   AND state = 'PENDING'
-                """,
+                        SELECT count(*) FROM academic_semester_archive_effect_receipts
+                         WHERE source_event_id = ? AND event_type = 'homework.binding.archived'
+                           AND semester_id = ? AND binding_id = ? AND payload_hash = ?
+                           AND state = 'PENDING'
+                        """,
                         Integer.class,
                         terminalEventId,
                         semesterId,
@@ -929,8 +934,8 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Map<String, Object> homework =
                 jdbc.query(
                         """
-                SELECT actor_id, request_key FROM homeworks WHERE binding_id = ? FOR UPDATE
-                """,
+                        SELECT actor_id, request_key FROM homeworks WHERE binding_id = ? FOR UPDATE
+                        """,
                         resultSet ->
                                 resultSet.next()
                                         ? Map.of(
@@ -952,13 +957,13 @@ public class AcademicSemesterArchiveBarrierTransaction {
         List<Map<String, Object>> rows =
                 jdbc.queryForList(
                         """
-                SELECT actor_id, request_key, payload_hash, source_event_id, admitted_homework_id,
-                       consumed_at, resolution_state, terminal_event_id,
-                       schedule_occurrence_id, schedule_revision
-                  FROM academic_semester_archive_publication_admissions
-                 WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
-                 FOR UPDATE
-                """,
+SELECT actor_id, request_key, payload_hash, source_event_id, admitted_homework_id,
+       consumed_at, resolution_state, terminal_event_id,
+       schedule_occurrence_id, schedule_revision
+  FROM academic_semester_archive_publication_admissions
+ WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
+ FOR UPDATE
+""",
                         current.get("operation_id"),
                         stateVersion,
                         semesterId,
@@ -994,11 +999,11 @@ public class AcademicSemesterArchiveBarrierTransaction {
                 int recorded =
                         jdbc.update(
                                 """
-                        UPDATE academic_semester_archive_publication_admissions
-                           SET terminal_event_id = ?
-                         WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
-                           AND resolution_state = 'CANCEL_REQUESTED' AND terminal_event_id IS NULL
-                        """,
+UPDATE academic_semester_archive_publication_admissions
+   SET terminal_event_id = ?
+ WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
+   AND resolution_state = 'CANCEL_REQUESTED' AND terminal_event_id IS NULL
+""",
                                 terminalEventId,
                                 current.get("operation_id"),
                                 stateVersion,
@@ -1039,14 +1044,14 @@ public class AcademicSemesterArchiveBarrierTransaction {
         int requested =
                 jdbc.update(
                         """
-                UPDATE academic_semester_archive_publication_admissions
-                   SET resolution_state = 'CANCEL_REQUESTED', terminal_event_id = ?,
-                       schedule_occurrence_id = ?, schedule_revision = ?
-                 WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
-                   AND actor_id = ? AND request_key = ? AND payload_hash = ?
-                   AND resolution_state = 'ADMITTED' AND admitted_homework_id IS NULL
-                   AND consumed_at IS NULL
-                """,
+UPDATE academic_semester_archive_publication_admissions
+   SET resolution_state = 'CANCEL_REQUESTED', terminal_event_id = ?,
+       schedule_occurrence_id = ?, schedule_revision = ?
+ WHERE operation_id = ? AND state_version = ? AND semester_id = ? AND binding_id = ?
+   AND actor_id = ? AND request_key = ? AND payload_hash = ?
+   AND resolution_state = 'ADMITTED' AND admitted_homework_id IS NULL
+   AND consumed_at IS NULL
+""",
                         terminalEventId,
                         occurrenceId,
                         originalRevision,
@@ -1073,14 +1078,14 @@ public class AcademicSemesterArchiveBarrierTransaction {
         int updated =
                 jdbc.update(
                         """
-                UPDATE academic_semester_archive_publication_admissions
-                   SET resolution_state = 'CANCELLED_UNPUBLISHED', consumed_at = now()
-                 WHERE operation_id = ? AND state_version = ? AND semester_id = ?
-                   AND binding_id = ? AND actor_id = ? AND request_key = ?
-                   AND admitted_homework_id IS NULL AND consumed_at IS NULL
-                   AND resolution_state = 'CANCEL_REQUESTED'
-                   AND terminal_event_id = ?
-                """,
+                        UPDATE academic_semester_archive_publication_admissions
+                           SET resolution_state = 'CANCELLED_UNPUBLISHED', consumed_at = now()
+                         WHERE operation_id = ? AND state_version = ? AND semester_id = ?
+                           AND binding_id = ? AND actor_id = ? AND request_key = ?
+                           AND admitted_homework_id IS NULL AND consumed_at IS NULL
+                           AND resolution_state = 'CANCEL_REQUESTED'
+                           AND terminal_event_id = ?
+                        """,
                         current.get("operation_id"),
                         current.get("state_version"),
                         semesterId,
@@ -1171,12 +1176,12 @@ public class AcademicSemesterArchiveBarrierTransaction {
         int inserted =
                 jdbc.update(
                         """
-                INSERT INTO academic_semester_archive_publication_admissions
-                    (operation_id, state_version, semester_id, binding_id, actor_id,
-                     request_key, payload_hash, source_event_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (operation_id, state_version, binding_id) DO NOTHING
-                """,
+                        INSERT INTO academic_semester_archive_publication_admissions
+                            (operation_id, state_version, semester_id, binding_id, actor_id,
+                             request_key, payload_hash, source_event_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (operation_id, state_version, binding_id) DO NOTHING
+                        """,
                         current.get("operation_id"),
                         current.get("state_version"),
                         semesterId,
@@ -1189,11 +1194,11 @@ public class AcademicSemesterArchiveBarrierTransaction {
             Integer exact =
                     jdbc.queryForObject(
                             """
-                    SELECT COUNT(*) FROM academic_semester_archive_publication_admissions
-                     WHERE operation_id = ? AND state_version = ? AND semester_id = ?
-                       AND binding_id = ? AND actor_id = ? AND request_key = ?
-                       AND payload_hash = ? AND source_event_id = ?
-                    """,
+                            SELECT COUNT(*) FROM academic_semester_archive_publication_admissions
+                             WHERE operation_id = ? AND state_version = ? AND semester_id = ?
+                               AND binding_id = ? AND actor_id = ? AND request_key = ?
+                               AND payload_hash = ? AND source_event_id = ?
+                            """,
                             Integer.class,
                             current.get("operation_id"),
                             current.get("state_version"),
@@ -1242,12 +1247,12 @@ public class AcademicSemesterArchiveBarrierTransaction {
     private void capturePendingPublications(UUID operationId, long semesterId, long stateVersion) {
         jdbc.update(
                 """
-                INSERT INTO homework_edit_archive_admissions
-                    (archive_operation_id, state_version, semester_id, edit_operation_id, command_hash)
-                SELECT ?, ?, semester_id, operation_id, command_hash FROM homework_edit_operations
-                 WHERE semester_id = ? AND state IN ('PREPARED', 'FINALIZED')
-                ON CONFLICT (archive_operation_id, edit_operation_id) DO NOTHING
-                """,
+INSERT INTO homework_edit_archive_admissions
+    (archive_operation_id, state_version, semester_id, edit_operation_id, command_hash)
+SELECT ?, ?, semester_id, operation_id, command_hash FROM homework_edit_operations
+ WHERE semester_id = ? AND state IN ('PREPARED', 'FINALIZED')
+ON CONFLICT (archive_operation_id, edit_operation_id) DO NOTHING
+""",
                 operationId,
                 stateVersion,
                 semesterId);
@@ -1291,9 +1296,9 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Long pendingPublication =
                 jdbc.queryForObject(
                         """
-                SELECT count(*) FROM homeworks
-                 WHERE semester_id = ? AND publication_state = 'PENDING'
-                """,
+                        SELECT count(*) FROM homeworks
+                         WHERE semester_id = ? AND publication_state = 'PENDING'
+                        """,
                         Long.class,
                         semesterId);
         if (pendingPublication != null && pendingPublication > 0) {
@@ -1302,10 +1307,10 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Long pendingAdmission =
                 jdbc.queryForObject(
                         """
-                SELECT count(*) FROM academic_semester_archive_publication_admissions
-                 WHERE semester_id = ? AND consumed_at IS NULL
-                   AND resolution_state IN ('ADMITTED', 'CANCEL_REQUESTED')
-                """,
+                        SELECT count(*) FROM academic_semester_archive_publication_admissions
+                         WHERE semester_id = ? AND consumed_at IS NULL
+                           AND resolution_state IN ('ADMITTED', 'CANCEL_REQUESTED')
+                        """,
                         Long.class,
                         semesterId);
         if (pendingAdmission != null && pendingAdmission > 0) {
@@ -1314,11 +1319,11 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Long pendingTransfer =
                 jdbc.queryForObject(
                         """
-                SELECT count(*) FROM homework_binding_transfer_markers
-                 WHERE semester_id = ? AND state = 'PENDING'
-                   AND NOT EXISTS (SELECT 1 FROM homework_binding_archives archived
-                                    WHERE archived.binding_id = homework_binding_transfer_markers.binding_id)
-                """,
+SELECT count(*) FROM homework_binding_transfer_markers
+ WHERE semester_id = ? AND state = 'PENDING'
+   AND NOT EXISTS (SELECT 1 FROM homework_binding_archives archived
+                    WHERE archived.binding_id = homework_binding_transfer_markers.binding_id)
+""",
                         Long.class,
                         semesterId);
         if (pendingTransfer != null && pendingTransfer > 0) {
@@ -1327,9 +1332,9 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Long pendingEffect =
                 jdbc.queryForObject(
                         """
-                SELECT count(*) FROM academic_semester_archive_effect_receipts
-                 WHERE semester_id = ? AND state <> 'APPLIED'
-                """,
+                        SELECT count(*) FROM academic_semester_archive_effect_receipts
+                         WHERE semester_id = ? AND state <> 'APPLIED'
+                        """,
                         Long.class,
                         semesterId);
         if (pendingEffect != null && pendingEffect > 0) {
@@ -1344,20 +1349,20 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Long unownedPendingPublication =
                 jdbc.queryForObject(
                         """
-                SELECT count(*) FROM homeworks homework
-                 WHERE homework.semester_id = ? AND homework.publication_state = 'PENDING'
-                   AND NOT EXISTS (
-                       SELECT 1 FROM academic_semester_archive_publication_admissions admission
-                        WHERE admission.operation_id = ? AND admission.state_version = ?
-                          AND admission.semester_id = homework.semester_id
-                          AND admission.binding_id = homework.binding_id
-                          AND admission.actor_id = homework.actor_id
-                          AND admission.request_key = homework.request_key
-                          AND admission.payload_hash = homework.payload_hash
-                          AND admission.admitted_homework_id = homework.id
-                          AND admission.resolution_state = 'ADMITTED'
-                          AND admission.consumed_at IS NOT NULL)
-                """,
+SELECT count(*) FROM homeworks homework
+ WHERE homework.semester_id = ? AND homework.publication_state = 'PENDING'
+   AND NOT EXISTS (
+       SELECT 1 FROM academic_semester_archive_publication_admissions admission
+        WHERE admission.operation_id = ? AND admission.state_version = ?
+          AND admission.semester_id = homework.semester_id
+          AND admission.binding_id = homework.binding_id
+          AND admission.actor_id = homework.actor_id
+          AND admission.request_key = homework.request_key
+          AND admission.payload_hash = homework.payload_hash
+          AND admission.admitted_homework_id = homework.id
+          AND admission.resolution_state = 'ADMITTED'
+          AND admission.consumed_at IS NOT NULL)
+""",
                         Long.class,
                         semesterId,
                         operationId,
@@ -1368,10 +1373,10 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Long pendingAdmission =
                 jdbc.queryForObject(
                         """
-                SELECT count(*) FROM academic_semester_archive_publication_admissions
-                 WHERE operation_id = ? AND state_version = ? AND semester_id = ?
-                   AND consumed_at IS NULL AND resolution_state IN ('ADMITTED', 'CANCEL_REQUESTED')
-                """,
+SELECT count(*) FROM academic_semester_archive_publication_admissions
+ WHERE operation_id = ? AND state_version = ? AND semester_id = ?
+   AND consumed_at IS NULL AND resolution_state IN ('ADMITTED', 'CANCEL_REQUESTED')
+""",
                         Long.class,
                         operationId,
                         stateVersion,
@@ -1382,11 +1387,11 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Long pendingTransfer =
                 jdbc.queryForObject(
                         """
-                SELECT count(*) FROM homework_binding_transfer_markers
-                 WHERE semester_id = ? AND state = 'PENDING'
-                   AND NOT EXISTS (SELECT 1 FROM homework_binding_archives archived
-                                    WHERE archived.binding_id = homework_binding_transfer_markers.binding_id)
-                """,
+SELECT count(*) FROM homework_binding_transfer_markers
+ WHERE semester_id = ? AND state = 'PENDING'
+   AND NOT EXISTS (SELECT 1 FROM homework_binding_archives archived
+                    WHERE archived.binding_id = homework_binding_transfer_markers.binding_id)
+""",
                         Long.class,
                         semesterId);
         if (pendingTransfer != null && pendingTransfer > 0) {
@@ -1395,9 +1400,9 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Long pendingEffect =
                 jdbc.queryForObject(
                         """
-                SELECT count(*) FROM academic_semester_archive_effect_receipts
-                 WHERE semester_id = ? AND state <> 'APPLIED'
-                """,
+                        SELECT count(*) FROM academic_semester_archive_effect_receipts
+                         WHERE semester_id = ? AND state <> 'APPLIED'
+                        """,
                         Long.class,
                         semesterId);
         if (pendingEffect != null && pendingEffect > 0) {
@@ -1409,7 +1414,8 @@ public class AcademicSemesterArchiveBarrierTransaction {
     private boolean hasPendingHomeworkEdit(long semesterId) {
         Long count =
                 jdbc.queryForObject(
-                        "SELECT count(*) FROM homework_edit_operations WHERE semester_id = ? AND state IN ('PREPARED', 'FINALIZED')",
+                        "SELECT count(*) FROM homework_edit_operations WHERE semester_id = ? AND"
+                                + " state IN ('PREPARED', 'FINALIZED')",
                         Long.class,
                         semesterId);
         return count != null && count > 0;
@@ -1426,8 +1432,8 @@ public class AcademicSemesterArchiveBarrierTransaction {
             Boolean hasMarker =
                     jdbc.queryForObject(
                             """
-                    SELECT EXISTS(SELECT 1 FROM homework_binding_transfer_markers WHERE binding_id = ?)
-                    """,
+SELECT EXISTS(SELECT 1 FROM homework_binding_transfer_markers WHERE binding_id = ?)
+""",
                             Boolean.class,
                             bindingId);
             return !Boolean.TRUE.equals(hasMarker);
@@ -1435,34 +1441,34 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Boolean exact =
                 jdbc.queryForObject(
                         """
-                SELECT EXISTS (
-                    SELECT 1
-                      FROM homework_binding_transfer_markers marker
-                      JOIN lesson_transfer_receipts receipt
-                        ON receipt.source_event_id = marker.source_event_id
-                       AND receipt.operation_id = marker.operation_id
-                       AND receipt.batch_index = marker.batch_index
-                       AND receipt.operation_hash = marker.operation_hash
-                      JOIN homework_binding_transfer_history history
-                        ON history.source_event_id = marker.source_event_id
-                       AND history.batch_index = marker.batch_index
-                       AND history.operation_id = marker.operation_id
-                       AND history.operation_hash = marker.operation_hash
-                       AND history.binding_id = marker.binding_id
-                       AND history.binding_payload_hash = marker.binding_payload_hash
-                     WHERE marker.binding_id = ? AND marker.actor_id = ?
-                       AND marker.request_key = ? AND marker.binding_payload_hash = ?
-                       AND marker.semester_id = ? AND marker.source_event_id = ?
-                       AND marker.source_event_id IS NOT NULL AND marker.batch_index IS NOT NULL
-                       AND marker.state = 'PENDING' AND marker.homework_id IS NULL
-                       AND receipt.result = 'APPLIED' AND receipt.error_code IS NULL
-                       AND history.actor_id = marker.actor_id
-                       AND history.request_key = marker.request_key
-                       AND history.semester_id = marker.semester_id
-                       AND history.homework_id IS NULL
-                       AND history.result_state = 'PENDING_PUBLICATION'
-                )
-                """,
+SELECT EXISTS (
+    SELECT 1
+      FROM homework_binding_transfer_markers marker
+      JOIN lesson_transfer_receipts receipt
+        ON receipt.source_event_id = marker.source_event_id
+       AND receipt.operation_id = marker.operation_id
+       AND receipt.batch_index = marker.batch_index
+       AND receipt.operation_hash = marker.operation_hash
+      JOIN homework_binding_transfer_history history
+        ON history.source_event_id = marker.source_event_id
+       AND history.batch_index = marker.batch_index
+       AND history.operation_id = marker.operation_id
+       AND history.operation_hash = marker.operation_hash
+       AND history.binding_id = marker.binding_id
+       AND history.binding_payload_hash = marker.binding_payload_hash
+     WHERE marker.binding_id = ? AND marker.actor_id = ?
+       AND marker.request_key = ? AND marker.binding_payload_hash = ?
+       AND marker.semester_id = ? AND marker.source_event_id = ?
+       AND marker.source_event_id IS NOT NULL AND marker.batch_index IS NOT NULL
+       AND marker.state = 'PENDING' AND marker.homework_id IS NULL
+       AND receipt.result = 'APPLIED' AND receipt.error_code IS NULL
+       AND history.actor_id = marker.actor_id
+       AND history.request_key = marker.request_key
+       AND history.semester_id = marker.semester_id
+       AND history.homework_id IS NULL
+       AND history.result_state = 'PENDING_PUBLICATION'
+)
+""",
                         Boolean.class,
                         bindingId,
                         actorId,
@@ -1520,15 +1526,15 @@ public class AcademicSemesterArchiveBarrierTransaction {
         Boolean exact =
                 jdbc.queryForObject(
                         """
-                SELECT EXISTS (
-                    SELECT 1 FROM semester_archive_operations
-                     WHERE operation_id = ? AND semester_id = ? AND action = 'DELETE'
-                       AND state_version = ? AND delete_phase = 'DELETING'
-                       AND irreversible_intent
-                       AND academic_participant_digest = ?
-                       AND schedule_status = 'DELETED' AND attendance_status = 'DELETED'
-                )
-                """,
+                        SELECT EXISTS (
+                            SELECT 1 FROM semester_archive_operations
+                             WHERE operation_id = ? AND semester_id = ? AND action = 'DELETE'
+                               AND state_version = ? AND delete_phase = 'DELETING'
+                               AND irreversible_intent
+                               AND academic_participant_digest = ?
+                               AND schedule_status = 'DELETED' AND attendance_status = 'DELETED'
+                        )
+                        """,
                         Boolean.class,
                         operationId,
                         semesterId,
@@ -1611,11 +1617,11 @@ public class AcademicSemesterArchiveBarrierTransaction {
         int updated =
                 jdbc.update(
                         """
-                UPDATE academic_semester_archive_barriers
-                   SET operation_id = ?, state_version = ?, participant_state = ?,
-                       blocking_reason = ?, updated_at = now()
-                 WHERE semester_id = ?
-                """,
+                        UPDATE academic_semester_archive_barriers
+                           SET operation_id = ?, state_version = ?, participant_state = ?,
+                               blocking_reason = ?, updated_at = now()
+                         WHERE semester_id = ?
+                        """,
                         operationId,
                         stateVersion,
                         state,
@@ -1629,10 +1635,10 @@ public class AcademicSemesterArchiveBarrierTransaction {
         int updated =
                 jdbc.update(
                         """
-                UPDATE academic_semester_archive_barriers
-                   SET participant_state = ?, blocking_reason = ?, updated_at = now()
-                 WHERE semester_id = ? AND operation_id = ? AND state_version = ?
-                """,
+                        UPDATE academic_semester_archive_barriers
+                           SET participant_state = ?, blocking_reason = ?, updated_at = now()
+                         WHERE semester_id = ? AND operation_id = ? AND state_version = ?
+                        """,
                         state,
                         reason,
                         semesterId,

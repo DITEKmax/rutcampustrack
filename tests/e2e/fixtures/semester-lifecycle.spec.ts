@@ -878,6 +878,16 @@ async function ownedHistoricalPromotion(
       executed.previewVersion === first.previewVersion,
       'Row command must execute the exact shown preview',
     );
+    const promotionGroups = page.locator('main.admin-groups-screen');
+    await expect(promotionGroups.locator('.admin-groups-promotion__result')).toBeVisible({
+      timeout: budget(10000),
+    });
+    await promotionGroups
+      .getByRole('button', { name: 'Назад', exact: true })
+      .click({ timeout: budget(10000) });
+    await expect(
+      promotionGroups.getByRole('region', { name: 'Реестр групп', exact: true }),
+    ).toBeVisible({ timeout: budget(10000) });
     await expect(row.getByText(aPrefix + '-210', { exact: true })).toBeVisible({
       timeout: budget(10000),
     });
@@ -2478,11 +2488,22 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     restart('attendance-service');
     diagnostic.phase = 'STRANDED';
     await expect
-      .poll(async () => (await queues()).dead.messages_ready, {
-        timeout: budget(15000),
-        message: 'Configured three-attempt policy rejects own close',
-      })
-      .toBe(1);
+      .poll(
+        async () => {
+          const q = await queues();
+          return (
+            q.dead.messages_ready === 1 &&
+            q.dead.messages_unacknowledged === 0 &&
+            q.main.messages_ready === 0 &&
+            q.main.messages_unacknowledged === 0
+          );
+        },
+        {
+          timeout: budget(15000),
+          message: 'Configured three-attempt policy rejects own close',
+        },
+      )
+      .toBe(true);
     await stranded();
     restart('schedule-service');
     diagnostic.phase = 'PENDING_ARCHIVE';

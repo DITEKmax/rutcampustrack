@@ -4,7 +4,7 @@ import { test, expect, admit, selectPwaRole } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { sanitizeTestErrors } from '../fixtures/artifact-privacy';
 
-test.afterEach(async ({}, info) => sanitizeTestErrors(info));
+test.afterEach(async () => sanitizeTestErrors(test.info()));
 
 test('exhausted manual budget still permits a failed-geo AUTO request that the headman approves', async ({
   page,
@@ -1016,12 +1016,12 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   await subjectCard.locator('summary').click();
   await expect(subjectCard.locator('summary')).toHaveText(detailSubject.subjectName);
   const lecture = detailSubject.lessonTypes.find(
-    (type: { code: string }) => type.code === 'LECTURE',
+    (type: { code: string }) => type.code === 'lecture',
   );
   expect(lecture !== undefined && lecture.metrics.present.denominator > 0).toBe(true);
   for (const [scope, metrics] of [
     [subjectCard.locator(':scope > dl'), detailSubject.metrics],
-    [subjectCard.locator('[data-lesson-type="LECTURE"] > dl'), lecture.metrics],
+    [subjectCard.locator('[data-lesson-type="lecture"] > dl'), lecture.metrics],
   ] as const) {
     const counts = await scope.locator('dd').allTextContents();
     expect(counts.map((value) => value.trim().split(' · ')[0])).toEqual(
@@ -1048,7 +1048,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     return (
       query.semesterId === dataset.semester.id &&
       query.subjectId === dataset.subject.id &&
-      JSON.stringify(query.lessonTypes) === JSON.stringify(['LECTURE'])
+      JSON.stringify(query.lessonTypes) === JSON.stringify(['lecture'])
     );
   };
   await page.getByRole('button', { name: 'По предметам', exact: true }).click();
@@ -1067,9 +1067,18 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     exact: true,
   });
   await expect(subjectTable).toBeVisible();
+  const advertisedLecture = statsSubject.lessonTypes.find(
+    (type: { code: string }) => type.code === 'lecture',
+  );
+  expect(
+    typeof advertisedLecture?.label === 'string' && advertisedLecture.label.trim().length > 0,
+  ).toBe(true);
   const lectureType = page
     .getByRole('group', { name: 'Типы занятий', exact: true })
-    .getByRole('button', { name: 'ЛК', exact: true });
+    .getByRole('button', {
+      name: advertisedLecture.label,
+      exact: true,
+    });
   await expect(lectureType).toHaveAttribute('aria-pressed', 'true');
   await lectureType.click();
   await expect(page.getByText('Выбери хотя бы один тип занятия.', { exact: true })).toBeVisible();
@@ -1083,7 +1092,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     groupId: dataset.group.id,
     semesterId: dataset.semester.id,
     subjectId: dataset.subject.id,
-    lessonTypes: ['LECTURE'],
+    lessonTypes: ['lecture'],
   });
   const filteredStudent = filteredStats.rows.find(
     (row: { studentId: number }) => row.studentId === dataset.student.id,
@@ -1102,6 +1111,241 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
     ),
     String(filteredStudent.lateCheckin.submitted),
   ]);
+
+  // JS-HEADMAN-30/19: the advertised column filter changes the real slice before export.
+  const nameColumn = filteredStats.columns.find(
+    (column: { field: string; filterKind: string }) =>
+      column.field === 'displayName' && column.filterKind === 'TEXT',
+  );
+  expect(typeof nameColumn?.label === 'string' && nameColumn.label.trim().length > 0).toBe(true);
+  const applyStatsName = async (contains: string) => {
+    await page.getByRole('button', { name: 'Фильтры', exact: true }).click();
+    const sheet = page.getByRole('dialog', { name: 'Фильтры статистики', exact: true });
+    await sheet.getByLabel(`Фильтр: ${nameColumn.label}`, { exact: true }).fill(contains);
+    const [reply] = await Promise.all([
+      page.waitForResponse(matchesSubjectStats),
+      sheet.getByRole('button', { name: 'Применить', exact: true }).click(),
+    ]);
+    expect(reply.status()).toBe(200);
+    expect(reply.request().postDataJSON().filters).toEqual(
+      contains ? [{ field: nameColumn.field, contains }] : [],
+    );
+    return reply.json();
+  };
+  const noMemberName = randomUUID();
+  expect(
+    filteredStats.rows.every(
+      (row: { displayName: string }) => !row.displayName.includes(noMemberName),
+    ),
+  ).toBe(true);
+  const noStats = await applyStatsName(noMemberName);
+  expect(noStats.emptyState).toBe('FILTERED_EMPTY');
+  expect(noStats.totalElements).toBe(0);
+  expect(noStats.rows).toEqual([]);
+  await expect(subjectTable.locator('tbody > tr')).toHaveCount(0);
+  const namedStats = await applyStatsName(dataset.student.displayName);
+  expect(namedStats.emptyState).toBe('NONE');
+  expect(
+    namedStats.rows.length > 0 &&
+      namedStats.totalElements === namedStats.rows.length &&
+      namedStats.rows.some((row: { studentId: number }) => row.studentId === dataset.student.id) &&
+      namedStats.rows.every((row: { displayName: string }) =>
+        row.displayName.includes(dataset.student.displayName),
+      ),
+  ).toBe(true);
+  await expect(subjectTable.locator('tbody > tr > th')).toHaveText(
+    namedStats.rows.map((row: { displayName: string }) => row.displayName),
+  );
+
+  // Auth tickets use real time; restore the unchanged educational browser clock even on failure.
+  await page.clock.setSystemTime(new Date());
+  try {
+    await page.getByRole('button', { name: 'Выгрузка', exact: true }).click();
+    const exportSheet = page.getByRole('dialog', { name: 'Выгрузка', exact: true });
+    const htmlFormat = namedStats.formats.find(
+      (format: { code: string }) => format.code === 'html',
+    );
+    expect(typeof htmlFormat?.label === 'string' && htmlFormat.label.length > 0).toBe(true);
+    await exportSheet.getByRole('button', { name: 'Формат выгрузки', exact: true }).click();
+    await exportSheet.getByRole('option', { name: htmlFormat.label, exact: true }).click();
+    const created = page.waitForResponse(
+      (reply) =>
+        reply.request().method() === 'POST' &&
+        new URL(reply.url()).pathname === '/api/auth/export-jobs',
+    );
+    const issued = page.waitForResponse(
+      (reply) =>
+        reply.request().method() === 'POST' &&
+        /^\/api\/auth\/export-jobs\/[0-9a-f-]+\/ticket$/.test(new URL(reply.url()).pathname),
+    );
+    const saved = page.waitForEvent('download');
+    await exportSheet.getByRole('button', { name: 'Скачать статистику', exact: true }).click();
+    const job = await created;
+    expect(job.status()).toBe(202);
+    const selector = job.request().postDataJSON().report;
+    expect(
+      selector.kind === 'HEADMAN_STATS' &&
+        selector.headmanStats.semesterId === dataset.semester.id &&
+        selector.headmanStats.subjectId === dataset.subject.id &&
+        JSON.stringify(selector.headmanStats.lessonTypes) === JSON.stringify(['lecture']) &&
+        JSON.stringify(selector.headmanStats.filters) ===
+          JSON.stringify([{ field: nameColumn.field, contains: dataset.student.displayName }]) &&
+        JSON.stringify(selector.headmanStats.sorts) ===
+          JSON.stringify(filteredStatsReply.request().postDataJSON().sorts) &&
+        selector.headmanStats.format === 'html' &&
+        !Object.hasOwn(selector.headmanStats, 'page') &&
+        !Object.hasOwn(selector.headmanStats, 'size'),
+      'The actual button exports the complete current subject/type/name-filtered slice',
+    ).toBe(true);
+    const jobId = (await job.json()).jobId;
+    const ticket = await issued;
+    expect(ticket.status()).toBe(200);
+    expect(new URL(ticket.url()).pathname === `/api/auth/export-jobs/${jobId}/ticket`).toBe(true);
+    const download = await saved;
+    expect(await download.failure()).toBeNull();
+    expect(download.suggestedFilename().endsWith('.html')).toBe(true);
+    const stream = await download.createReadStream();
+    expect(stream !== null).toBe(true);
+    const chunks: Buffer[] = [];
+    let size = 0;
+    for await (const part of stream!) {
+      const bytes = Buffer.from(part);
+      size += bytes.length;
+      expect(size <= 20 * 1024 * 1024).toBe(true);
+      chunks.push(bytes);
+    }
+    expect(size > 0).toBe(true);
+    const html = Buffer.concat(chunks).toString('utf8');
+    const exported = await page.evaluate((markup) => {
+      const document = new DOMParser().parseFromString(markup, 'text/html');
+      const context = Object.fromEntries(
+        Array.from(document.querySelectorAll('body > dl > dt'), (term) => [
+          term.textContent,
+          term.nextElementSibling?.textContent,
+        ]),
+      );
+      const table = document.querySelectorAll('table')[1];
+      return {
+        context,
+        rows: Array.from(table?.querySelectorAll('tbody > tr') ?? [], (row) =>
+          Array.from(row.querySelectorAll('th,td'), (cell) => cell.textContent),
+        ),
+      };
+    }, html);
+    expect(
+      exported.context['Группа'] === dataset.group.name &&
+        exported.context['Разрез'] === statsSubject.label &&
+        exported.context['Типы занятий'] === 'lecture' &&
+        exported.context['Студентов после фильтра'] === String(namedStats.totalElements) &&
+        exported.context['Фильтры']?.includes(dataset.student.displayName),
+      'Downloaded HTML retains the exact own filtered report context',
+    ).toBe(true);
+    const expectedRows = namedStats.rows.map(
+      (row: {
+        displayName: string;
+        metrics: Record<
+          string,
+          {
+            numerator: number;
+            denominator: number;
+            percent: number;
+          }
+        >;
+      }) => [
+        row.displayName,
+        ...['present', 'presentOrExcused', 'excused', 'absent'].map((kind) => {
+          const metric = row.metrics[kind];
+          return metric.denominator === 0
+            ? '— (0/0)'
+            : `${metric.numerator} / ${metric.denominator} / ${metric.percent.toFixed(1)}%`;
+        }),
+      ],
+    );
+    expect(JSON.stringify(exported.rows) === JSON.stringify(expectedRows)).toBe(true);
+    expect(
+      !html.includes(dataset.student.password) && !html.includes(dataset.foreignStudent.login),
+    ).toBe(true);
+    await exportSheet.getByRole('button', { name: 'Закрыть настройки', exact: true }).click();
+  } finally {
+    await page.clock.setFixedTime(teachingInstant);
+  }
+
+  await applyStatsName('');
+  await expect(subjectTable.locator('tbody > tr')).toHaveCount(filteredStats.rows.length);
+
+  // JS-HEADMAN-31: a real period/scope switch renders both authoritative series anew.
+  const trendPath = '/api/attendance/reports/headman/stats/trend';
+  const isTrend = (reply: Response, mode: 'SEMESTER' | 'SUBJECT') =>
+    reply.request().method() === 'POST' &&
+    new URL(reply.url()).pathname === trendPath &&
+    reply.request().postDataJSON().mode === mode;
+  const [semesterTrendReply] = await Promise.all([
+    page.waitForResponse((reply) => isTrend(reply, 'SEMESTER')),
+    page.getByRole('button', { name: 'Динамика', exact: true }).click(),
+  ]);
+  expect(semesterTrendReply.status()).toBe(200);
+  expect(semesterTrendReply.request().postDataJSON().mode).toBe('SEMESTER');
+  expect((await semesterTrendReply.json()).mode).toBe('SEMESTER');
+  const dynamics = page.getByRole('region', { name: 'Динамика посещаемости', exact: true });
+  const [subjectTrendReply] = await Promise.all([
+    page.waitForResponse((reply) => isTrend(reply, 'SUBJECT')),
+    dynamics
+      .getByRole('navigation', { name: 'Период динамики', exact: true })
+      .getByRole('button', { name: 'Предмет', exact: true })
+      .click(),
+  ]);
+  expect(subjectTrendReply.status()).toBe(200);
+  expect(subjectTrendReply.request().postDataJSON()).toMatchObject({
+    mode: 'SUBJECT',
+    semesterId: dataset.semester.id,
+    subjectId: dataset.subject.id,
+  });
+  const subjectTrend = await subjectTrendReply.json();
+  expect(
+    subjectTrend.mode === 'SUBJECT' &&
+      subjectTrend.context.groupId === dataset.group.id &&
+      subjectTrend.context.semesterId === dataset.semester.id &&
+      subjectTrend.context.subjectId === dataset.subject.id &&
+      subjectTrend.emptyState === 'NONE',
+  ).toBe(true);
+  type TrendMetric = {
+    percent: number | null;
+    numerator: number;
+    denominator: number;
+  };
+  type TrendPoint = {
+    label: string;
+    present: TrendMetric;
+    presentOrExcused: TrendMetric;
+  };
+  const trendMetricText = (metric: TrendMetric) =>
+    metric.percent === null
+      ? 'Нет данных'
+      : `${metric.percent.toFixed(1)}% (${metric.numerator} из ${metric.denominator})`;
+  for (const [metric, suffix, label] of [
+    ['present', 'present', 'Присутствовал'],
+    ['presentOrExcused', 'excused', 'Присутствовал или отсутствовал по уважительной причине'],
+  ] as const) {
+    const points: TrendPoint[] = subjectTrend.points.filter(
+      (point: TrendPoint) => point[metric].percent !== null,
+    );
+    expect(points.length > 0).toBe(true);
+    const circles = dynamics.locator(`circle.headman-stats-trend__point--${suffix}`);
+    await expect(circles).toHaveCount(points.length);
+    expect(
+      await circles.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('aria-label'))),
+    ).toEqual(points.map((point) => `${point.label}, ${label}: ${trendMetricText(point[metric])}`));
+  }
+  const firstPoint = subjectTrend.points.find(
+    (point: { present: { percent: number | null } }) => point.present.percent !== null,
+  );
+  await dynamics.locator('circle.headman-stats-trend__point--present').first().focus();
+  const readout = dynamics.locator('.headman-stats-trend__readout');
+  await expect(readout).toContainText(`«+» ${trendMetricText(firstPoint.present)}`);
+  await expect(readout).toContainText(`«+ и у» ${trendMetricText(firstPoint.presentOrExcused)}`);
+  await dynamics.getByRole('button', { name: 'Назад', exact: true }).click();
+  await expect(subjectTable).toBeVisible();
+  // End bounded column/export/dynamics witnesses; all original following checks remain.
   await page.getByRole('button', { name: 'Индивидуально', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Студенты группы', exact: true })).toBeVisible();
   // End subject/type witness; the original group overview and Back path are restored.

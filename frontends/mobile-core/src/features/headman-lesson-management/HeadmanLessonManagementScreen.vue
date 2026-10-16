@@ -449,17 +449,16 @@ async function recover(): Promise<void> {
   if (current === model.value) await afterWrite();
 }
 watch(
-  () =>
-    [
-      props.journalApi,
-      props.scheduleApi,
-      props.groupId,
-      props.owner?.userId,
-      props.owner?.sessionId,
-      props.offline,
-      props.readOnly,
-      props.assistantPermissions,
-    ] as const,
+  [
+    () => props.journalApi,
+    () => props.scheduleApi,
+    () => props.groupId,
+    () => props.owner?.userId,
+    () => props.owner?.sessionId,
+    () => props.offline,
+    () => props.readOnly,
+    () => props.assistantPermissions,
+  ],
   () => {
     model.value?.dispose();
     selected.value = null;

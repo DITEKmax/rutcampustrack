@@ -520,3 +520,25 @@ GAP-STUDENT-GRAPH-TABLE — P2 accepted JS-STUDENT19:766–769 samepoints table 
 DEF-AUTH-SUBJECT-PROOF-CLOCK-BEAN is CLOSED_FINITE_CURRENT_NATIVE: currentB2c actual Auth context runs allthree named positive/expiry/concurrency SubjectProof HTTP methods PASS plus genuine FIRST3 live server logins PASS. Remaining negative-case Telegram uniqueness failure is the separately tracked fixture correction, not a startup defect.
 
 DEF-SUBJECT-OPERATION-STATUS-PATH is CLOSED_FINITE_CURRENT_HTTP_NATIVE: exact B2c SubjectDeletionHttpIT.durableRemoteFailureResumesExactlyOneOwnSubjectAndKeepsOtherSemester PASS includes Source241 real HTTP operation-status GET→200; retained cached400→200 and independent review support the same correction. This closes path binding, not the skipped genuine three-service subject cascade. Evidence: currentB2c68265Publication.twoPreviouslyFixedProductDefectNativeClosures/currentNativePrimary.academicOrdinaryCurrentCause.
+
+
+## 2026-10-16T04:45:30.862463+00:00 — schedule fixture correction verified on current revision
+
+CHECK-SCHEDULE-EFFECT-LEDGER-RESET is CLOSED_FINITE_CURRENT_NATIVE on f88f8167: actual219PASS/0FAIL/0ERROR/0SKIP, allfive named SubjectDeletionParticipantIT methods PASS including the formerly failing sealed-barrier case. The private fixture ledger reset and explicit READY preconditions fixed the checking failure; production guards remain unchanged. Full public three-service deletion is a separate pending scenario. Evidence: currentF88f8167Publication.currentNativePrimary.scheduleOrdinaryCurrentCause.
+
+
+## 2026-10-16T04:54:38.892369+00:00 — Auth fixture and genuine EXCUSED transition verified
+
+CHECK-AUTH-REBIND-TELEGRAM-UNIQUE is CLOSED_FINITE_CURRENT_NATIVE on f88f8167: all191Auth integration cases and all13 named Credentials/SubjectProof targets PASS, including the formerly failing stale-binding negative case. Accepted natural binding-generation and refusal assertions remain unchanged.
+
+JS-HEADMAN-06 is PASS from genuine current HEADMAN735 EXCUSED→ABSENT→restoredEXCUSED/samePNG; wholeFIRST3 is3/3PASS. Droppedobserver73 means no fulltraceclaim. Public three-service deletion and other client tails remain separate. Evidence currentF88f8167Publication.currentNativePrimary/authBindingFixtureCurrentClosure/headman06CurrentGenuineClosure.
+
+
+## 2026-10-16T05:00:59.116803+00:00 — current administrative and homework checks pass
+
+CHECK-ADMIN-INDEPENDENT-ROLE-BASELINE and CHECK-HW-HELPER-LOGIN-429 are CLOSED_FINITE_CURRENT_NATIVE on f88f8167. Admin111 wholePASS retains all nine fields of every independent role and verifies real transfer; HW42 wholePASS uses only the existing bounded server-advertised retry within the unchanged deadline. All seven ROLE and all four HW cases PASS. The precise historical429bucket/header remain UNKNOWN; no production limiter defect or rule change claimed. CLIENT-FE-ADMIN-02 is qualified PASS_COMPOSED by independently reviewed currentUI and existing exactPG reason/date history proof.
+
+
+## DEF-HEADMAN-MANAGEMENT-OWNER-RESET — разовая пара закрывается при собственном переключении формы
+
+2026-10-16T05:27:39.512691+00:00; severity P2; JS-HEADMAN-41/CLIENT-FE-HEADMAN-03. CONFIRMED_PRODUCT_DEFECT, FIXED_SOURCE_PENDING_REVIEW_AND_NATIVE. Текущий настоящий recurring390 упал1068 после клика свободного слота. Отдельный actual-SFC control воспроизводит причину: child view-change вызывает parent rerender с новым эквивалентным owner; FUNCTION watch возвращает новый массив и сбрасывает oneoff в agenda. Старый actual SFC RED(expectedoneoff/actualagenda) → исправленный GREEN; всего27релевантных controls, включая реальные uid/sid changes и поздний ответ старого владельца. Правка меняет только форму Vue multi-source watcher: все8dependencies/callback/options сохранены; права/контракты/разметка прежние. Sourceec4e+новыйFocusedTeste3e5 готовы независимому c86 review; Root и genuine-after ещё не обновлены. Единственность исторической причины1068 не утверждается. Evidence: currentF88f8167Publication.managementOwnerActualSfcSourceReady.

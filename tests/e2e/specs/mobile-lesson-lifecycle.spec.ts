@@ -346,6 +346,46 @@ test('HEADMAN cancels a marked lesson and restores its journal without reviving 
         })
         .click();
     } catch (error) {
+      try {
+        const observed = await page
+          .getByRole('button', {
+            name: direction === 1 ? 'Следующая неделя' : 'Предыдущая неделя',
+            exact: true,
+          })
+          .evaluateAll(
+            (buttons, expectedMetadata) => ({
+              unique: buttons.length === 1,
+              disabled: buttons.length === 1 ? (buttons[0] as HTMLButtonElement).disabled : null,
+              headerStillCurrent:
+                document.querySelector('.attendance-week-pager__metadata')?.textContent?.trim() ===
+                expectedMetadata,
+            }),
+            `Неделя ${weeks[currentWeekIndex]!.weekOfSemester} · Чётность ${weeks[currentWeekIndex]!.parityLabel}`,
+          );
+        if (observed.unique) expect.soft(false, 'LESSON_WEEK_FAILURE_UNIQUE').toBe(true);
+        else expect.soft(false, 'LESSON_WEEK_FAILURE_NOT_UNIQUE').toBe(true);
+        if (observed.headerStillCurrent)
+          expect.soft(false, 'LESSON_WEEK_FAILURE_HEADER_CURRENT').toBe(true);
+        else expect.soft(false, 'LESSON_WEEK_FAILURE_HEADER_CHANGED').toBe(true);
+        if (observed.disabled === null)
+          expect.soft(false, 'LESSON_WEEK_FAILURE_DISABLED_UNKNOWN').toBe(true);
+        else if (observed.disabled) expect.soft(false, 'LESSON_WEEK_FAILURE_DISABLED').toBe(true);
+        else expect.soft(false, 'LESSON_WEEK_FAILURE_ENABLED').toBe(true);
+        const neighbor = weeks[currentWeekIndex + direction]!;
+        if (
+          typeof attendanceBody.semester.dateFrom !== 'string' ||
+          typeof attendanceBody.semester.dateTo !== 'string'
+        )
+          expect.soft(false, 'LESSON_WEEK_FAILURE_NEIGHBOR_BOUNDS_UNKNOWN').toBe(true);
+        else if (
+          neighbor.dateFrom <= attendanceBody.semester.dateTo &&
+          neighbor.dateTo >= attendanceBody.semester.dateFrom
+        )
+          expect.soft(false, 'LESSON_WEEK_FAILURE_NEIGHBOR_IN_RESPONSE_BOUNDS').toBe(true);
+        else expect.soft(false, 'LESSON_WEEK_FAILURE_NEIGHBOR_OUTSIDE_RESPONSE_BOUNDS').toBe(true);
+      } catch {
+        expect.soft(false, 'LESSON_WEEK_FAILURE_DIAGNOSTIC_READ_UNKNOWN').toBe(true);
+      }
       // Classify in RAM only; never report the private Playwright text.
       const message = error instanceof Error ? error.message : '';
       if (/strict mode violation/i.test(message))

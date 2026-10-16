@@ -21,8 +21,8 @@ registerPrivateSuite();
 // Charge requested fixtures and body setup to this caller's monotonic budget.
 // Earlier runner/auto-fixture overhead is unmeasured; the original timeout applies.
 const retryStartedAt = new WeakMap<TestInfo, number>();
-test.beforeEach(async ({}, info) => {
-  retryStartedAt.set(info, performance.now());
+test.beforeEach(async () => {
+  retryStartedAt.set(test.info(), performance.now());
 });
 
 // CLIENT-HEADMAN / CLIENT-FE-HEADMAN-06 / JS-HEADMAN-14,15 / BOUNDARY-49.
@@ -193,6 +193,104 @@ test('VIEW_STATS renders own group but grants neither marking, roster export nor
   await expect(page.getByRole('region', { name: 'Дополнительные права', exact: true })).toHaveCount(
     0,
   );
+
+  // CLIENT-FE-HEADMAN-09: the real own-roster button completes the existing file proof.
+  await logoutPwa(page);
+  await loginPwa(page, dataset.headman, { retryUntilMs });
+  const headmanRole = await selectRole(page, 'Староста');
+  expect(headmanRole.session.activeRole).toBe('HEADMAN');
+  await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+  const [formatsReply] = await Promise.all([
+    http(page, '/api/attendance/reports/headman/group-composition/formats', 'GET'),
+    page.getByRole('button', { name: 'Группа', exact: true }).click(),
+  ]);
+  expect(formatsReply.status()).toBe(200);
+  const htmlFormat = (await formatsReply.json()).formats.find(
+    (format: { code: string }) => format.code === 'html',
+  );
+  expect(typeof htmlFormat?.label === 'string' && htmlFormat.label.length > 0).toBe(true);
+  await page.getByRole('button', { name: 'Скачать состав группы', exact: true }).click();
+  const rosterSheet = page.getByRole('dialog', { name: 'Состав группы', exact: true });
+  await rosterSheet.getByLabel('Формат файла', { exact: true }).selectOption('html');
+  const uiDateBefore = realMoscowDate.format(new Date());
+  const created = http(page, '/api/auth/export-jobs', 'POST');
+  const issued = page.waitForResponse(
+    (reply) =>
+      reply.request().method() === 'POST' &&
+      /^\/api\/auth\/export-jobs\/[0-9a-f-]+\/ticket$/.test(new URL(reply.url()).pathname),
+  );
+  const saved = page.waitForEvent('download');
+  await rosterSheet.getByRole('button', { name: 'Скачать', exact: true }).click();
+  const job = await created;
+  expect(job.status()).toBe(202);
+  const selector = job.request().postDataJSON().report;
+  expect(
+    selector.kind === 'HEADMAN_GROUP_COMPOSITION' &&
+      JSON.stringify(selector.headmanGroupComposition) === JSON.stringify({ format: 'html' }),
+    'The own-roster UI button uses the existing complete roster selector',
+  ).toBe(true);
+  const jobId = (await job.json()).jobId;
+  const ticket = await issued;
+  expect(ticket.status()).toBe(200);
+  expect(new URL(ticket.url()).pathname === `/api/auth/export-jobs/${jobId}/ticket`).toBe(true);
+  const download = await saved;
+  expect(await download.failure()).toBeNull();
+  expect(download.suggestedFilename().endsWith('.html')).toBe(true);
+  const stream = await download.createReadStream();
+  expect(stream !== null).toBe(true);
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const part of stream!) {
+    const bytes = Buffer.from(part);
+    size += bytes.length;
+    expect(size <= 20 * 1024 * 1024).toBe(true);
+    chunks.push(bytes);
+  }
+  expect(size > 0).toBe(true);
+  const uiDateAfter = realMoscowDate.format(new Date());
+  const uiHtml = Buffer.concat(chunks).toString('utf8');
+  const uiRoster = await page.evaluate((markup) => {
+    const document = new DOMParser().parseFromString(markup, 'text/html');
+    return {
+      heading: document.querySelector('h1')?.textContent,
+      context: Array.from(document.querySelectorAll('body > p'), (row) => row.textContent),
+      headers: Array.from(document.querySelectorAll('thead th'), (cell) => cell.textContent),
+      rows: Array.from(document.querySelectorAll('tbody tr'), (row) =>
+        Array.from(row.querySelectorAll('td'), (cell) => cell.textContent),
+      ),
+    };
+  }, uiHtml);
+  // The revoked helper is now an ordinary student; every other member and column stays exact.
+  const currentRows = [...expectedRoster]
+    .sort(([left], [right]) => left.displayName.localeCompare(right.displayName, 'ru'))
+    .map(([member, role], index) => [
+      String(index + 1),
+      member.displayName,
+      member.login,
+      member.id === user.id ? 'Студент' : role,
+    ]);
+  expect(
+    uiRoster.heading === downloadedRoster.heading &&
+      [uiDateBefore, uiDateAfter].some(
+        (date) =>
+          JSON.stringify(uiRoster.context) ===
+          JSON.stringify([`Группа: ${dataset.group.name}`, `Дата выгрузки: ${date}`]),
+      ) &&
+      JSON.stringify(uiRoster.headers) === JSON.stringify(downloadedRoster.headers) &&
+      JSON.stringify(uiRoster.rows) === JSON.stringify(currentRows),
+    'The real UI download preserves exact current own members, order, roles and minimal columns',
+  ).toBe(true);
+  expect(
+    expectedRoster.every(
+      ([member]) =>
+        !uiHtml.includes(member.password) && !uiHtml.includes(String(member.telegramId)),
+    ) &&
+      !uiHtml.includes(dataset.foreignStudent.login) &&
+      !/telegram|password|recovery/i.test(uiHtml),
+    'The UI-downloaded roster retains the original private-field and foreign-member exclusions',
+  ).toBe(true);
+  await rosterSheet.getByRole('button', { name: 'Закрыть настройки', exact: true }).click();
+  // End one roster UI witness; all prior helper denial/revocation assertions remain unchanged.
 });
 
 // CLIENT-HOMEWORK / CLIENT-FE-HEADMAN-07 / BOUNDARY-36:
@@ -590,7 +688,7 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
   let homeHomeworkId: number | undefined;
   let homeStudent: Awaited<ReturnType<typeof admit>> | undefined;
   const homeHomeworkTitle = `${dataset.marker} Home Today`;
-  let homeExpectedCounts: readonly number[] = [];
+  let homeExpectedCounts: readonly number[];
   try {
     const before = await dataset.headmanActor.call('GET', reportPath);
     for (const [user, status] of [
@@ -883,7 +981,10 @@ test('HEADMAN reads ongoing VIEW_STATS counters and scoped action history @cloud
           'POST',
           `/api/v1/student/requests/${homeRequestId}/cancel`,
         );
-        if (cancelled.summary.status !== 'CANCELLED') throw new Error('Owned ticket cleanup state');
+        if (cancelled.summary.status !== 'CANCELLED') {
+          cleanupFailed = true;
+          expect.soft(false, 'Owned Home request cleanup failed').toBe(true);
+        }
       } catch {
         cleanupFailed = true;
         expect.soft(false, 'Owned Home request cleanup failed').toBe(true);
@@ -982,8 +1083,8 @@ test('HEADMAN resets own member access and issues one-use recovery link @cloud-a
   expect((await dataset.request.get('/api/auth/session', { headers: oldHeaders })).status()).toBe(
     200,
   );
-  let generatedPassword = '',
-    recoveryUrl = '';
+  let generatedPassword = '';
+  const recovery = { url: '' };
   let commands = 0;
   const observe = (request: Request) => {
     if (
@@ -1135,15 +1236,16 @@ test('HEADMAN resets own member access and issues one-use recovery link @cloud-a
         Number.isFinite(Date.parse(link.expiresAt)),
       'Existing trusted link contract is genuine',
     ).toBe(true);
-    recoveryUrl = link.url;
+    recovery.url = link.url;
     expect(
-      (await group.getByLabel('Ссылка для студента', { exact: true }).inputValue()) === recoveryUrl,
+      (await group.getByLabel('Ссылка для студента', { exact: true }).inputValue()) ===
+        recovery.url,
       'Owned recovery link stays in RAM',
     ).toBe(true);
     await group.getByRole('button', { name: 'Назад', exact: true }).click();
     await group.getByRole('button', { name: 'Назад', exact: true }).click();
     await logoutPwa(page);
-    await page.goto(recoveryUrl);
+    await page.goto(recovery.url);
     await expect(
       page.getByRole('heading', { name: 'Задай новый пароль', exact: true }),
     ).toBeVisible();
@@ -1166,7 +1268,7 @@ test('HEADMAN resets own member access and issues one-use recovery link @cloud-a
   } finally {
     page.off('request', observe);
     generatedPassword = '';
-    recoveryUrl = '';
+    recovery.url = '';
     // All synthetic rows/history remain in the already-owned fixture stand until its normal teardown.
   }
 });

@@ -814,6 +814,92 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
     }
 
     @Test
+    void finalSemesterDeletionRemovesOnlyItsNewBoundSubjectsAndRetainsLegacyAndOtherIdentity() {
+        long group =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM groups ORDER BY id LIMIT 1", Long.class);
+        long otherSemester = insertInactiveFixture("subject-control-" + UUID.randomUUID());
+        long[] subjects =
+                new TransactionTemplate(transactionManager)
+                        .execute(
+                                status -> {
+                                    long own =
+                                            jdbcTemplate.queryForObject(
+                                                    "INSERT INTO"
+                                                        + " subjects(name,type,group_id,semester_id)"
+                                                        + " VALUES('Own semester"
+                                                        + " subject','lecture',?,?) RETURNING id",
+                                                    Long.class,
+                                                    group,
+                                                    semesterId);
+                                    long control =
+                                            jdbcTemplate.queryForObject(
+                                                    "INSERT INTO"
+                                                        + " subjects(name,type,group_id,semester_id)"
+                                                        + " VALUES('Other semester"
+                                                        + " subject','lecture',?,?) RETURNING id",
+                                                    Long.class,
+                                                    group,
+                                                    otherSemester);
+                                    long legacy =
+                                            jdbcTemplate.queryForObject(
+                                                    "INSERT INTO subjects(name,type,group_id)"
+                                                            + " VALUES('Unresolved legacy"
+                                                            + " subject','lecture',?) RETURNING id",
+                                                    Long.class,
+                                                    group);
+                                    for (long id : new long[] {own, control, legacy})
+                                        jdbcTemplate.update(
+                                                "INSERT INTO"
+                                                    + " subject_lesson_types(subject_id,lesson_type)"
+                                                    + " VALUES(?,'lecture')",
+                                                id);
+                                    return new long[] {own, control, legacy};
+                                });
+        fixtureSubjectIds.add(subjects[0]);
+        fixtureSubjectIds.add(subjects[1]);
+        fixtureSubjectIds.add(subjects[2]);
+        var previewBefore = deletionSnapshots.read(semesterId);
+        jdbcTemplate.update(
+                "UPDATE subjects SET name='Own renamed before preview' WHERE id=?", subjects[0]);
+        assertThat(deletionSnapshots.read(semesterId).participantDigest())
+                .isNotEqualTo(previewBefore.participantDigest());
+        deleteEmptyFixtureThroughProtocol(semesterId);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM subjects WHERE id=?",
+                                Long.class,
+                                subjects[0]))
+                .isZero();
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM subject_lesson_types WHERE subject_id=?",
+                                Long.class,
+                                subjects[0]))
+                .isZero();
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT semester_id FROM subjects WHERE id=?",
+                                Long.class,
+                                subjects[1]))
+                .isEqualTo(otherSemester);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT semester_id IS NULL FROM subjects WHERE id=?",
+                                Boolean.class,
+                                subjects[2]))
+                .isTrue();
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM subject_lesson_types WHERE subject_id IN"
+                                        + " (?,?)",
+                                Long.class,
+                                subjects[1],
+                                subjects[2]))
+                .isEqualTo(2);
+    }
+
+    @Test
     void deletePreparingDrainsExactHomeworkEffectsAndRejectsOrdinaryWrites() {
         long actorId =
                 jdbcTemplate.queryForObject(

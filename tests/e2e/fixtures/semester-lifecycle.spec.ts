@@ -2,7 +2,9 @@ import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
-import { expect, type APIRequestContext, type Response } from '@playwright/test';
+import { isIP } from 'node:net';
+import { setTimeout as delay } from 'node:timers/promises';
+import { expect, type APIRequestContext, type Response, type TestInfo } from '@playwright/test';
 import { test, requirePrivateArtifacts } from './artifact-privacy';
 import { Actor, MobileDataset, admit, selectPwaRole } from './mobile-dataset';
 import { loginPwa } from './pwa-auth';
@@ -2743,4 +2745,1138 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     if (originalFailure) throw originalFailure.error;
     if (cleanupFailure) throw cleanupFailure.error;
   }
+});
+
+// Subject deletion has its own test/fixture slot; the two existing semester scenarios are unchanged.
+function subjectCascadeOtpReceiver(info: TestInfo) {
+  const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(run && isAbsolute(run), 'OTP receiver requires a private run directory');
+  for (const directory of [run, join(run, 'artifacts')]) {
+    const stat = lstatSync(directory);
+    requireValue(
+      stat.isDirectory() && !stat.isSymbolicLink() && (stat.mode & 0o777) === 0o700,
+      'OTP receiver directories must be private',
+    );
+  }
+  requireValue(
+    process.env.CI === 'true' &&
+      process.env.RCT_E2E_SYNTHETIC_SEED === 'true' &&
+      info.project.outputDir === join(run, 'artifacts') &&
+      info.project.use.baseURL === 'https://localhost:8443',
+    'OTP receiver requires the exact disposable CI lane',
+  );
+  const root = resolve(__dirname, '../../..');
+  const envFile = join(root, 'tests/e2e/.env.ci');
+  const envStat = lstatSync(envFile);
+  requireValue(
+    envStat.isFile() &&
+      !envStat.isSymbolicLink() &&
+      envStat.size <= 65536 &&
+      (envStat.mode & 0o022) === 0,
+    'Synthetic CI configuration must be bounded',
+  );
+  const secret: Record<string, string> = {};
+  for (const line of readFileSync(envFile, 'utf8').split(/\r?\n/)) {
+    const match = /^(RABBITMQ_USER|RABBITMQ_PASSWORD)=(.*)$/.exec(line);
+    if (!match) continue;
+    let value = match[2];
+    if (value.length >= 2 && ['"', "'"].includes(value[0]) && value.at(-1) === value[0])
+      value = value.slice(1, -1);
+    requireValue(
+      value.length > 0 && value.length <= 1024 && secret[match[1]] === undefined,
+      'Synthetic broker credential shape is invalid',
+    );
+    secret[match[1]] = value;
+  }
+  requireValue(
+    secret.RABBITMQ_USER && secret.RABBITMQ_PASSWORD,
+    'Synthetic broker credentials are required',
+  );
+  const docker = (args: string[], timeout = 4000) => {
+    try {
+      return execFileSync('docker', args, {
+        cwd: root,
+        env: { PATH: process.env.PATH ?? '/usr/bin:/bin', LANG: 'C.UTF-8' },
+        timeout: Math.max(1, Math.floor(Math.min(4000, timeout))),
+        maxBuffer: 65536,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+    } catch {
+      throw new Error('Owned OTP container lookup failed');
+    }
+  };
+  const ids = docker([
+    'compose',
+    '--env-file',
+    envFile,
+    '-p',
+    'rct-e2e',
+    '-f',
+    join(root, 'docker-compose.e2e.yml'),
+    'ps',
+    '-q',
+    'rabbitmq',
+  ])
+    .trim()
+    .split(/\s+/);
+  requireValue(
+    ids.length === 1 && /^[0-9a-f]{12,64}$/.test(ids[0]),
+    'Exactly one owned OTP broker is required',
+  );
+  const inspect = (timeout = 4000) => {
+    try {
+      return JSON.parse(
+        docker(
+          [
+            'inspect',
+            '--format',
+            '{"id":{{json .Id}},"image":{{json .Image}},"imageName":{{json .Config.Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}',
+            ids[0],
+          ],
+          timeout,
+        ),
+      ) as Record<string, any>;
+    } catch {
+      throw new Error('Owned OTP broker inspection failed');
+    }
+  };
+  const pin = inspect();
+  requireValue(
+    /^[0-9a-f]{64}$/.test(pin.id) &&
+      /^sha256:[0-9a-f]{64}$/.test(pin.image) &&
+      pin.imageName === 'rabbitmq:3.13-management-alpine' &&
+      pin.labels?.['com.docker.compose.project'] === 'rct-e2e' &&
+      pin.labels?.['com.docker.compose.service'] === 'rabbitmq' &&
+      pin.running === true &&
+      pin.health === 'healthy',
+    'Owned OTP broker identity is invalid',
+  );
+  const network = pin.networks?.rct_e2e_private_net ?? pin.networks?.['rct-e2e_private_net'];
+  const ip = network?.IPAddress;
+  requireValue(
+    typeof ip === 'string' &&
+      isIP(ip) === 4 &&
+      /^(?:10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.)\d/.test(ip),
+    'Owned private OTP broker address is required',
+  );
+  const identity = (timeout = 4000) => {
+    const current = inspect(timeout);
+    requireValue(
+      current.id === pin.id &&
+        current.image === pin.image &&
+        current.imageName === pin.imageName &&
+        current.running === true &&
+        current.health === 'healthy' &&
+        JSON.stringify(current.labels) === JSON.stringify(pin.labels) &&
+        JSON.stringify(current.mounts) === JSON.stringify(pin.mounts) &&
+        JSON.stringify(current.networks) === JSON.stringify(pin.networks),
+      'Owned OTP broker identity changed',
+    );
+  };
+  const queue = `rct-subject-delete-${randomUUID()}`;
+  const queuePath = `queues/%2F/${encodeURIComponent(queue)}`;
+  let attempted = false;
+  let closing = false;
+  let inFlight: Promise<{ status: number; body: any }> | null = null;
+  let totalBytes = 0;
+  let cleanupBytes = 0;
+  const request = async (
+    method: string,
+    path: string,
+    statuses: number[],
+    data?: unknown,
+    timeout = 4000,
+    cleaning = false,
+  ): Promise<{ status: number; body: any }> => {
+    const end = performance.now() + Math.max(1, Math.min(4000, timeout));
+    identity(end - performance.now());
+    const remaining = Math.floor(end - performance.now());
+    requireValue(remaining > 0, 'Owned OTP broker control deadline expired');
+    let response: globalThis.Response;
+    try {
+      response = await fetch(`http://${ip}:15672/api/${path}`, {
+        method,
+        redirect: 'error',
+        signal: AbortSignal.timeout(remaining),
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${secret.RABBITMQ_USER}:${secret.RABBITMQ_PASSWORD}`).toString('base64')}`,
+          'Content-Type': 'application/json',
+        },
+        ...(data === undefined ? {} : { body: JSON.stringify(data) }),
+      });
+    } catch {
+      throw new Error('Owned OTP broker control unavailable');
+    }
+    requireValue(statuses.includes(response.status), 'Owned OTP broker control rejected');
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    const reader = response.body?.getReader();
+    if (reader) {
+      try {
+        for (;;) {
+          const part = await reader.read();
+          if (part.done) break;
+          size += part.value.length;
+          if (cleaning) cleanupBytes += part.value.length;
+          else totalBytes += part.value.length;
+          requireValue(
+            size <= 16384 && (cleaning ? cleanupBytes <= 32768 : totalBytes <= 262144),
+            'Owned OTP broker response exceeds its bound',
+          );
+          chunks.push(part.value);
+        }
+      } finally {
+        await reader.cancel().catch(() => {});
+      }
+    }
+    try {
+      return {
+        status: response.status,
+        body: size === 0 ? null : JSON.parse(Buffer.concat(chunks).toString('utf8')),
+      };
+    } catch {
+      throw new Error('Owned OTP broker returned an invalid response');
+    }
+  };
+  const call = (...args: Parameters<typeof request>) => {
+    requireValue(args[5] === true || !closing, 'Owned OTP receiver is closing');
+    requireValue(inFlight === null, 'Owned OTP broker calls must remain serial');
+    const operation = request(...args);
+    inFlight = operation;
+    const settled = () => {
+      if (inFlight === operation) inFlight = null;
+    };
+    void operation.then(settled, settled);
+    return operation;
+  };
+  return {
+    async bind() {
+      await call('GET', queuePath, [404]);
+      requireValue(!closing, 'Owned OTP receiver is closing');
+      attempted = true;
+      await call('PUT', queuePath, [201], { durable: false, auto_delete: false, arguments: {} });
+      await call('POST', `bindings/%2F/e/rut-uit.events/q/${encodeURIComponent(queue)}`, [201], {
+        routing_key: '',
+        arguments: {},
+      });
+    },
+    async receive(telegramId: number, challengeId: string, attempts: number, deadline: number) {
+      const end = Math.min(performance.now() + 30000, deadline);
+      let messages = 0;
+      for (let polls = 0; polls < 120 && performance.now() < end; polls += 1) {
+        const result = await call(
+          'POST',
+          `${queuePath}/get`,
+          [200],
+          { count: 1, ackmode: 'ack_requeue_false', encoding: 'auto', truncate: 8192 },
+          end - performance.now(),
+        );
+        requireValue(!closing, 'Owned OTP receiver is closing');
+        requireValue(
+          Array.isArray(result.body) && result.body.length <= 1,
+          'Owned OTP queue response shape is invalid',
+        );
+        for (const message of result.body) {
+          messages += 1;
+          requireValue(
+            messages <= 64 &&
+              message.payload_encoding === 'string' &&
+              typeof message.payload === 'string' &&
+              Buffer.byteLength(message.payload) <= 8192,
+            'Owned OTP queue delivery exceeds its bound',
+          );
+          let event: Record<string, any>;
+          try {
+            event = JSON.parse(message.payload);
+          } catch {
+            throw new Error('Owned OTP event is malformed');
+          }
+          requireValue(
+            event !== null && typeof event === 'object' && !Array.isArray(event),
+            'Owned OTP event shape is invalid',
+          );
+          if (
+            event.event_type !== 'otp.requested' ||
+            event.source !== 'auth-service' ||
+            event.payload?.purpose !== 'subject_delete' ||
+            event.payload?.challenge_id !== challengeId ||
+            event.payload?.telegram_id !== telegramId
+          )
+            continue;
+          requireValue(
+            Number.isSafeInteger(event.payload.ttl_seconds) &&
+              event.payload.ttl_seconds > 0 &&
+              event.payload.attempts_remaining === attempts &&
+              Number.isSafeInteger(event.payload.attempts_remaining) &&
+              event.payload.attempts_remaining > 0 &&
+              typeof event.payload.code === 'string' &&
+              /^[0-9]{6}$/.test(event.payload.code),
+            'Owned subject-deletion OTP contract is invalid',
+          );
+          return {
+            code: event.payload.code as string,
+            attemptsRemaining: event.payload.attempts_remaining as number,
+          };
+        }
+        const remaining = end - performance.now();
+        if (remaining > 0) await delay(Math.min(250, remaining));
+      }
+      throw new Error('Own subject-deletion OTP was not delivered within its bound');
+    },
+    async close() {
+      closing = true;
+      // Leave teardown overhead inside the existing separately awaited 30s fixture slot.
+      const end = performance.now() + 25000;
+      // The original caller still owns its result; cleanup independently settles its I/O.
+      if (inFlight) await Promise.allSettled([inFlight]);
+      if (!attempted) return;
+      for (;;) {
+        const remaining = Math.floor(end - performance.now());
+        requireValue(remaining > 0, 'Owned OTP queue cleanup deadline expired');
+        const existing = await call('GET', queuePath, [200, 404], undefined, remaining, true);
+        if (existing.status === 404) return;
+        requireValue(existing.body?.name === queue, 'Owned OTP queue name must match');
+        requireValue(existing.body.durable === false, 'Owned OTP queue must be non-durable');
+        requireValue(existing.body.auto_delete === false, 'Owned OTP queue must not auto-delete');
+        requireValue(existing.body.exclusive === false, 'Owned OTP queue must not be exclusive');
+        requireValue(
+          existing.body.arguments !== null &&
+            typeof existing.body.arguments === 'object' &&
+            !Array.isArray(existing.body.arguments) &&
+            Object.keys(existing.body.arguments).length === 0,
+          'Owned OTP queue declared arguments must remain empty',
+        );
+        // Management counts are sampled: wait only for absence, never infer zero.
+        if (!Object.hasOwn(existing.body, 'consumers')) {
+          const waitRemaining = Math.floor(end - performance.now());
+          requireValue(waitRemaining > 0, 'Owned OTP queue consumer count is absent');
+          await delay(Math.min(250, waitRemaining));
+          continue;
+        }
+        requireValue(
+          Object.hasOwn(existing.body, 'consumers'),
+          'Owned OTP queue consumer count is absent',
+        );
+        requireValue(
+          typeof existing.body.consumers === 'number',
+          'Owned OTP queue consumer count is not numeric',
+        );
+        requireValue(
+          Number.isSafeInteger(existing.body.consumers) && existing.body.consumers >= 0,
+          'Owned OTP queue consumer count is not a nonnegative safe integer',
+        );
+        requireValue(existing.body.consumers === 0, 'Owned OTP queue must have no consumers');
+        const deleteRemaining = Math.floor(end - performance.now());
+        requireValue(deleteRemaining > 0, 'Owned OTP queue cleanup deadline expired');
+        await call(
+          'DELETE',
+          `${queuePath}?if-unused=true`,
+          [204, 404],
+          undefined,
+          deleteRemaining,
+          true,
+        );
+        return;
+      }
+    },
+  };
+}
+
+const subjectCascadeTest = test.extend<{
+  subjectCascade: {
+    request: APIRequestContext;
+    otp: ReturnType<typeof subjectCascadeOtpReceiver>;
+  };
+}>({
+  subjectCascade: [
+    async ({ playwright }, use, info) => {
+      requirePrivateArtifacts(info);
+      const otp = subjectCascadeOtpReceiver(info);
+      const request = await playwright.request.newContext({
+        baseURL: 'https://localhost:8443',
+        ignoreHTTPSErrors: false,
+        timeout: 10000,
+      });
+      try {
+        await use({ request, otp });
+      } finally {
+        // The separate fixture slot is awaited after a body timeout as well.
+        // Independent resources settle together: a slow protocol disposal cannot consume the
+        // queue's separately awaited ownership/if-unused cleanup slot.
+        const [requestCleanup, queueCleanup] = await Promise.allSettled([
+          request.dispose(),
+          otp.close(),
+        ]);
+        expect
+          .soft(
+            requestCleanup.status === 'fulfilled',
+            'Subject deletion request context cleanup succeeds',
+          )
+          .toBe(true);
+        expect
+          .soft(queueCleanup.status === 'fulfilled', 'Subject deletion owned OTP cleanup succeeds')
+          .toBe(true);
+      }
+    },
+    { timeout: 30000 },
+  ],
+});
+
+/** Read-only, exact owned-container projections; no SQL/Mongo domain seeding or cleanup. */
+function subjectCascadeReadback(deadline: number) {
+  const root = resolve(__dirname, '../../..');
+  const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(run && isAbsolute(run), 'Subject deletion requires the private semester lane');
+  for (const directory of [run, join(run, 'artifacts')]) {
+    const stat = lstatSync(directory);
+    requireValue(
+      stat.isDirectory() && !stat.isSymbolicLink() && (stat.mode & 0o777) === 0o700,
+      'Subject deletion directories must be private',
+    );
+  }
+  const marker = join(run, 'disposable-target');
+  requireValue(
+    lstatSync(marker).isFile() &&
+      !lstatSync(marker).isSymbolicLink() &&
+      (lstatSync(marker).mode & 0o777) === 0o600 &&
+      lstatSync(marker).size <= 64 &&
+      readFileSync(marker, 'utf8').trim() === 'RCT_SEMESTER_DISPOSABLE',
+    'Subject deletion stand ownership must match',
+  );
+  const envFile = join(root, 'tests/e2e/.env.ci');
+  const stat = lstatSync(envFile);
+  requireValue(
+    stat.isFile() && !stat.isSymbolicLink() && stat.size <= 65536 && (stat.mode & 0o022) === 0,
+    'Subject deletion CI configuration must be bounded',
+  );
+  const wanted = [
+    'POSTGRES_ACADEMIC_PASSWORD',
+    'POSTGRES_SCHEDULE_PASSWORD',
+    'MONGO_ROOT_PASSWORD',
+  ];
+  const secret: Record<string, string> = {};
+  for (const line of readFileSync(envFile, 'utf8').split(/\r?\n/)) {
+    const match = /^([A-Z_]+)=(.*)$/.exec(line);
+    if (!match || !wanted.includes(match[1])) continue;
+    let value = match[2];
+    if (value.length >= 2 && ['"', "'"].includes(value[0]) && value.at(-1) === value[0])
+      value = value.slice(1, -1);
+    requireValue(
+      value.length > 0 && value.length <= 1024 && secret[match[1]] === undefined,
+      'Subject deletion CI credential shape must match',
+    );
+    secret[match[1]] = value;
+  }
+  requireValue(
+    wanted.every((name) => secret[name]),
+    'Subject deletion CI credentials are required',
+  );
+  const docker = (args: string[], input?: string, extra: Record<string, string> = {}) => {
+    const remaining = Math.floor(deadline - performance.now());
+    requireValue(remaining > 0, 'Subject deletion readback deadline remains');
+    try {
+      return execFileSync('docker', args, {
+        cwd: root,
+        env: { PATH: process.env.PATH ?? '/usr/bin:/bin', LANG: 'C.UTF-8', ...extra },
+        input,
+        timeout: Math.min(4000, remaining),
+        maxBuffer: 65536,
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+    } catch {
+      throw new Error('Subject deletion owned readback failed');
+    }
+  };
+  const compose = [
+    'compose',
+    '--env-file',
+    envFile,
+    '-p',
+    'rct-e2e',
+    '-f',
+    join(root, 'docker-compose.e2e.yml'),
+  ];
+  const pins: Record<string, Row> = {};
+  const inspect = (id: string): Row => {
+    try {
+      return JSON.parse(
+        docker([
+          'inspect',
+          '--format',
+          '{"id":{{json .Id}},"image":{{json .Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}',
+          id,
+        ]),
+      );
+    } catch {
+      throw new Error('Subject deletion container inspection failed');
+    }
+  };
+  for (const service of ['postgres-academic', 'postgres-schedule', 'mongo-attendance']) {
+    const ids = docker([...compose, 'ps', '-q', service])
+      .trim()
+      .split(/\s+/);
+    requireValue(
+      ids.length === 1 && /^[0-9a-f]{12,64}$/.test(ids[0]),
+      'Subject deletion requires one owned database',
+    );
+    const pin = inspect(ids[0]);
+    requireValue(
+      /^[0-9a-f]{64}$/.test(pin.id) &&
+        /^sha256:[0-9a-f]{64}$/.test(pin.image) &&
+        pin.labels?.['com.docker.compose.project'] === 'rct-e2e' &&
+        pin.labels?.['com.docker.compose.service'] === service &&
+        pin.running === true &&
+        pin.health === 'healthy',
+      'Subject deletion database identity must match',
+    );
+    pins[service] = pin;
+  }
+  const identity = (service: string) => {
+    const pin = pins[service];
+    requireValue(
+      JSON.stringify(inspect(pin.id)) === JSON.stringify(pin),
+      'Subject deletion database identity changed',
+    );
+    return pin.id as string;
+  };
+  const pg = (kind: 'academic' | 'schedule', sql: string): Row => {
+    const service = `postgres-${kind}`;
+    const raw = docker(
+      [
+        'exec',
+        '-i',
+        '-e',
+        'PGPASSWORD',
+        identity(service),
+        'psql',
+        '-X',
+        '-qAt',
+        '-U',
+        'rct_user',
+        '-d',
+        `${kind}_db`,
+        '-v',
+        'ON_ERROR_STOP=1',
+      ],
+      `BEGIN READ ONLY; SET LOCAL statement_timeout='2000ms'; ${sql}; ROLLBACK;`,
+      {
+        PGPASSWORD:
+          secret[kind === 'academic' ? 'POSTGRES_ACADEMIC_PASSWORD' : 'POSTGRES_SCHEDULE_PASSWORD'],
+      },
+    );
+    const lines = raw
+      .trim()
+      .split('\n')
+      .filter((line) => !['BEGIN', 'SET', 'ROLLBACK'].includes(line));
+    requireValue(lines.length === 1, 'Subject deletion needs one bounded SQL projection');
+    try {
+      return JSON.parse(lines[0]);
+    } catch {
+      throw new Error('Subject deletion SQL projection is invalid');
+    }
+  };
+  return (scope: {
+    operation: string;
+    subject: number;
+    control: number;
+    semester: number;
+    group: number;
+    student: number;
+    mixed: string;
+    sole: string;
+    manual: string;
+    removed: number[];
+    kept: number;
+  }) => {
+    requireValue(
+      /^[0-9a-f-]{36}$/.test(scope.operation) &&
+        /^[a-f0-9]{24}$/.test(scope.mixed) &&
+        /^[a-f0-9]{24}$/.test(scope.sole) &&
+        /^[a-f0-9]{24}$/.test(scope.manual) &&
+        [
+          scope.subject,
+          scope.control,
+          scope.semester,
+          scope.group,
+          scope.student,
+          scope.kept,
+          ...scope.removed,
+        ].every((id) => Number.isSafeInteger(id) && id > 0),
+      'Subject deletion readback scope is exact',
+    );
+    const academic = pg(
+      'academic',
+      `SELECT json_build_object(
+      'operationCount',(SELECT count(*) FROM subject_deletion_operations WHERE subject_id=${scope.subject}),
+      'operation',(SELECT json_build_object('phase',phase,'schedule',schedule_state,'attendance',attendance_state) FROM subject_deletion_operations WHERE operation_id='${scope.operation}'::uuid),
+      'subjectRows',(SELECT count(*) FROM subjects WHERE id=${scope.subject}),
+      'homeworkRows',(SELECT count(*) FROM homeworks WHERE subject_id=${scope.subject}),
+      'controlRows',(SELECT count(*) FROM subjects WHERE id=${scope.control} AND group_id=${scope.group} AND semester_id=${scope.semester}),
+      'deletedEvents',(SELECT count(*) FROM academic_outbox WHERE event_type='subject.deleted' AND payload->'payload'->>'subject_id'='${scope.subject}'))`,
+    );
+    const schedule = pg(
+      'schedule',
+      `SELECT json_build_object(
+      'participantCount',(SELECT count(*) FROM schedule_subject_deletion_participants WHERE subject_id=${scope.subject}),
+      'state',(SELECT state FROM schedule_subject_deletion_participants WHERE operation_id='${scope.operation}'::uuid),
+      'lessonRows',(SELECT count(*) FROM lessons WHERE subject_id=${scope.subject}),
+      'controlRows',(SELECT count(*) FROM lessons WHERE id=${scope.kept} AND subject_id=${scope.control} AND semester_id=${scope.semester} AND group_id=${scope.group}),
+      'deletedEvents',(SELECT count(*) FROM schedule_outbox WHERE event_type='lesson.deleted' AND payload->'payload'->'lesson_ids' @> '[${scope.removed[0]}]'::jsonb))`,
+    );
+    const js = `const k=${JSON.stringify(scope)};
+const d=connect('mongodb://root:'+encodeURIComponent(process.env.RCT_MONGO_PASSWORD)+'@localhost:27017/attendance_db?authSource=admin&replicaSet=rs0');
+const count=(c,q)=>d.getCollection(c).countDocuments(q,{maxTimeMS:2000});
+const t=d.excuse_tickets.findOne({_id:new ObjectId(k.mixed)},{data:0});
+const e=d.subject_deletion_participants.findOne({_id:k.operation},{state:1,subject_id:1,semester_id:1,group_id:1});
+const h=t?.subject_coverage_adjustments||[];
+print(JSON.stringify({epoch:e?{state:e.state,subject:Number(e.subject_id),semester:Number(e.semester_id),group:Number(e.group_id)}:null,
+epochCount:count('subject_deletion_participants',{subject_id:k.subject}),
+marks:count('attendances',{lesson_id:{$in:k.removed}}),
+sole:count('excuse_tickets',{_id:new ObjectId(k.sole)}),manual:count('late_checkin_requests',{_id:new ObjectId(k.manual)}),
+soleFiles:count('request_attachments',{request_id:k.sole}),mixedFiles:count('request_attachments',{request_id:k.mixed}),
+controlMarks:d.attendances.find({lesson_id:k.kept,user_id:k.student}).maxTimeMS(2000).limit(2).toArray(),
+originalCount:t?.lesson_snapshots?.length,effectiveIds:t?.effective_original_lesson_ids?.map(Number),
+history:h.map(x=>({operation:x.operation_id,subject:Number(x.subject_id),actor:Number(x.actor_id),removed:x.removed_lesson_ids.map(Number),remaining:x.remaining_lesson_ids.map(Number)})),
+budget:d.student_late_checkin_budgets.findOne({student_id:k.student,semester_id:k.semester},{_id:0,limit:1,used:1})}));`;
+    let attendance: Row;
+    try {
+      attendance = JSON.parse(
+        docker(
+          [
+            'exec',
+            '-i',
+            '-e',
+            'RCT_MONGO_PASSWORD',
+            identity('mongo-attendance'),
+            'mongosh',
+            '--quiet',
+            '--nodb',
+            '--file',
+            '/dev/stdin',
+          ],
+          js,
+          { RCT_MONGO_PASSWORD: secret.MONGO_ROOT_PASSWORD },
+        ),
+      );
+    } catch {
+      throw new Error('Subject deletion Mongo projection is invalid');
+    }
+    return { academic, schedule, attendance };
+  };
+}
+
+subjectCascadeTest.describe('full subject deletion through the owned stand', () => {
+  const test = subjectCascadeTest;
+  // New separate slot; neither existing semester test changes its 420s budget.
+  test.setTimeout(420000);
+  test('HEADMAN deletes one subject through real proof and participants while mixed EXCUSE keeps the control subject', async ({
+    subjectCascade,
+  }, info) => {
+    const { request, otp } = subjectCascade;
+    const mainEnd = performance.now() + 330000;
+    const remaining = (cap = 10000) => {
+      const left = Math.floor(mainEnd - performance.now());
+      requireValue(left > 0, 'Subject deletion main-work deadline remains');
+      return Math.min(left, cap);
+    };
+    const clock = unchangedClock();
+    let primaryFailed = false;
+    try {
+      const admin = await admit(request, TEST_USERS.admin, 'ADMIN');
+      const access = await admin.call('GET', '/api/academic/admin-access/me');
+      requireValue(
+        access.mode === 'FULL' &&
+          access.assigned === true &&
+          String(access.userId) === admin.session.userId,
+        'Subject deletion requires actual FULL synthetic fixture admission',
+      );
+      const originalSemesters = await semesters(admin);
+      requireValue(
+        originalSemesters.length < 100 &&
+          originalSemesters.every(
+            (row) =>
+              row.transition === 'NONE' &&
+              row.releasePending === false &&
+              row.activationScheduled === false,
+          ),
+        'Subject deletion requires quiescent known semester authority',
+      );
+      const datasetAdmin = new (class extends Actor {
+        override async call(...args: Parameters<Actor['call']>) {
+          requireValue(
+            !(args[0] === 'POST' && args[1] === '/api/academic/semesters') &&
+              !(
+                args[0] === 'PATCH' && /^\/api\/academic\/semesters\/[^/]+\/activate$/.test(args[1])
+              ),
+            'Subject deletion cannot create or activate a fallback semester',
+          );
+          remaining();
+          return super.call(...args);
+        }
+      })(request, admin.token, admin.session);
+      const dataset = new MobileDataset(request, datasetAdmin, clock.instant);
+      const pastDate = shift(dataset.today, -1);
+      const active = originalSemesters.filter((row) => row.active === true);
+      requireValue(
+        active.length === 1 &&
+          active[0].archived === false &&
+          active[0].dateFrom <= pastDate &&
+          active[0].dateTo >= dataset.tomorrow,
+        'Subject deletion current semester covers the owned past and future lessons',
+      );
+      const readback = subjectCascadeReadback(mainEnd);
+      await dataset.initialize();
+      requireValue(
+        Number(dataset.semester.id) === Number(active[0].id),
+        'Subject deletion retains original semester',
+      );
+      const headman = dataset.headmanActor;
+      const student = await admit(request, dataset.student, 'STUDENT');
+      const subjectPath = `/api/academic/subjects/${dataset.subject.id}`;
+      const control = await headman.call(
+        'POST',
+        '/api/academic/subjects',
+        {
+          name: `${dataset.marker} контроль`,
+          type: 'LECTURE',
+          lessonTypes: ['LECTURE'],
+          initialAssignments: [
+            {
+              teacherId: dataset.teacher.id,
+              semesterId: dataset.semester.id,
+              lessonType: 'LECTURE',
+              validFrom: dataset.semester.dateFrom,
+              validUntilExclusive: null,
+            },
+          ],
+        },
+        [201],
+      );
+      let controlSubject: Row = {};
+      await expect
+        .poll(
+          async () => {
+            controlSubject = await headman.call('GET', `/api/academic/subjects/${control.id}`);
+            return (
+              controlSubject.assignments?.some(
+                (row: Row) => Number(row.semesterId) === Number(dataset.semester.id),
+              ) === true
+            );
+          },
+          { timeout: remaining(60000), message: 'Control subject assignment becomes published' },
+        )
+        .toBe(true);
+      const createLesson = async (subject: Row, date: string, lessonNumber: number) => {
+        remaining();
+        const row = await headman.call(
+          'POST',
+          '/api/schedule/one-off-lessons',
+          {
+            groupId: dataset.group.id,
+            subjectId: subject.id,
+            assignmentId: subject.assignments[0].id,
+            date,
+            lessonNumber,
+            classroom: 'Синтетическая проверка удаления',
+          },
+          [200, 201],
+          { 'Idempotency-Key': randomUUID() },
+        );
+        const id = Number(row.physicalLessonId);
+        requireValue(
+          Number.isSafeInteger(id) && id > 0,
+          'Subject deletion needs a genuine physical lesson',
+        );
+        return id;
+      };
+      const past = await createLesson(dataset.subject, pastDate, 1);
+      const future = await createLesson(dataset.subject, dataset.tomorrow, 1);
+      const soleLesson = await createLesson(dataset.subject, dataset.tomorrow, 3);
+      const kept = await createLesson(controlSubject, dataset.tomorrow, 2);
+      const reportPath = `/api/attendance/reports/lesson/${past}`;
+      await expect
+        .poll(
+          async () => {
+            const body = await headman.call('GET', reportPath);
+            return (
+              body.editable === true &&
+              body.entries.some(
+                (row: Row) =>
+                  Number(row.userId) === dataset.student.id &&
+                  row.status === 'absent' &&
+                  typeof row.markRevision === 'string',
+              )
+            );
+          },
+          {
+            timeout: remaining(90000),
+            message: 'Own past lesson materializes through real lifecycle and attendance',
+          },
+        )
+        .toBe(true);
+      const manual = await student.call(
+        'POST',
+        '/api/v1/student/requests/late-checkin',
+        { lessonId: String(past) },
+        [200],
+        { 'Idempotency-Key': randomUUID() },
+      );
+      requireValue(
+        manual.summary.kind === 'LATE_CHECKIN' &&
+          manual.summary.origin === 'MANUAL' &&
+          manual.summary.status === 'PENDING',
+        'Own manual request spends a real attempt',
+      );
+      const approvedManual = await headman.call(
+        'POST',
+        `/api/attendance/requests/${manual.summary.id}/decision`,
+        { decision: 'APPROVED', reason: null },
+      );
+      requireValue(
+        approvedManual.summary.status === 'APPROVED' &&
+          approvedManual.summary.decisionBy === dataset.headman.id,
+        'Own manual approval creates the accepted present mark',
+      );
+      const png = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF5kAAAAASUVORK5CYII=',
+        'base64',
+      );
+      const submit = async (ids: number[]) => {
+        const response = await request.post('/api/v1/student/requests/excuse', {
+          headers: { ...student.headers(), 'Idempotency-Key': randomUUID() },
+          timeout: remaining(),
+          multipart: {
+            request: {
+              name: 'request.json',
+              mimeType: 'application/json',
+              buffer: Buffer.from(
+                JSON.stringify({
+                  lessonIds: ids.map(String),
+                  reason: 'ILLNESS',
+                  comment: dataset.marker,
+                }),
+              ),
+            },
+            files: { name: 'subject-proof.png', mimeType: 'image/png', buffer: png },
+          },
+        });
+        requireValue(response.status() === 200, 'Own real multipart EXCUSE is accepted');
+        const body = await response.json();
+        await response.dispose();
+        requireValue(
+          /^[a-f0-9]{24}$/.test(body.summary.id) &&
+            body.summary.status === 'PENDING' &&
+            body.summary.lessons.length === ids.length &&
+            Array.isArray(body.attachments) &&
+            body.attachments.length === 1,
+          'Own EXCUSE retains its exact lessons and attachment',
+        );
+        return body;
+      };
+      const mixed = await submit([future, kept]);
+      const sole = await submit([soleLesson]);
+      const mixedPath = `/api/attendance/requests/${mixed.summary.id}`;
+      const mixedBefore = await headman.call('GET', mixedPath);
+      requireValue(
+        typeof mixedBefore.decisionRevision === 'string' && mixedBefore.decisionRevision.length > 0,
+        'Mixed request has a genuine decision revision',
+      );
+      const decided = await headman.call('POST', `${mixedPath}/decision`, {
+        decision: 'APPROVED',
+        reason: null,
+        expectedRevision: mixedBefore.decisionRevision,
+        excludedOccurrenceIds: [],
+        requestKey: randomUUID(),
+      });
+      requireValue(
+        decided.summary.status === 'APPROVED' &&
+          decided.summary.decisionBy === dataset.headman.id &&
+          decided.lessons.length === 2,
+        'Mixed EXCUSE has one actual decision for both subjects',
+      );
+      const beforeBudget = (await student.call('GET', '/api/v1/student/requests/options')).budget;
+      requireValue(
+        beforeBudget.used === 1 && beforeBudget.limit === 5 && beforeBudget.remaining === 4,
+        'Before deletion the manual attempt is durably charged',
+      );
+      const controlBefore = fields(
+        await headman.call('GET', `/api/academic/subjects/${control.id}`),
+        ['id', 'name', 'type', 'lessonTypes', 'assignments'],
+      );
+      const beforeMark = await headman.call('GET', reportPath);
+      requireValue(
+        beforeMark.entries.some(
+          (row: Row) => Number(row.userId) === dataset.student.id && row.status === 'present',
+        ),
+        'Subject deletion starts with a genuine owned PRESENT mark',
+      );
+      const operation = randomUUID();
+      const scope = {
+        operation,
+        subject: Number(dataset.subject.id),
+        control: Number(control.id),
+        semester: Number(dataset.semester.id),
+        group: Number(dataset.group.id),
+        student: dataset.student.id,
+        mixed: mixed.summary.id as string,
+        sole: sole.summary.id as string,
+        manual: manual.summary.id as string,
+        removed: [past, future, soleLesson, Number(dataset.lesson.physicalLessonId)].sort(
+          (a, b) => a - b,
+        ),
+        kept,
+      };
+      const databaseBefore = readback(scope);
+      requireValue(
+        databaseBefore.academic.operationCount === 0 &&
+          databaseBefore.schedule.participantCount === 0 &&
+          databaseBefore.attendance.epochCount === 0 &&
+          databaseBefore.attendance.controlMarks.length === 1,
+        'Exact owned scope is unclaimed and control attendance exists before deletion',
+      );
+      await otp.bind();
+      const preview = await headman.call('GET', `${subjectPath}/deletion-preview`);
+      requireValue(
+        preview.subjectId === String(scope.subject) &&
+          preview.semesterId === String(scope.semester) &&
+          preview.groupId === String(scope.group) &&
+          /^[0-9a-f]{64}$/.test(preview.previewDigest) &&
+          preview.academicRows > 0 &&
+          preview.scheduleRows > 0 &&
+          preview.attendanceRows > 0 &&
+          preview.mixedTickets === 1,
+        'Real three-service preview resolves the exact subject and mixed ticket',
+      );
+      const challengeResponse = await request.post(`${subjectPath}/deletion-challenge`, {
+        headers: headman.headers(),
+        timeout: remaining(),
+        data: {
+          operationId: operation,
+          previewDigest: preview.previewDigest,
+          password: dataset.headman.password,
+        },
+      });
+      requireValue(
+        challengeResponse.status() === 200 &&
+          /(?:^|,)\s*no-store\s*(?:,|$)/i.test(challengeResponse.headers()['cache-control'] ?? ''),
+        'Real password challenge is accepted privately',
+      );
+      const challenge = await challengeResponse.json();
+      await challengeResponse.dispose();
+      requireValue(
+        /^[A-Za-z0-9_-]{32}$/.test(challenge.challengeId) &&
+          Number.isSafeInteger(challenge.attemptsRemaining) &&
+          challenge.attemptsRemaining > 0 &&
+          challenge.attemptsRemaining <= 3 &&
+          Date.parse(challenge.expiresAt) > Date.now(),
+        'Own subject challenge has a valid bounded lifetime',
+      );
+      const delivered = await otp.receive(
+        dataset.headman.telegramId,
+        challenge.challengeId,
+        challenge.attemptsRemaining,
+        mainEnd,
+      );
+      const key = randomUUID();
+      const confirmation = {
+        operationId: operation,
+        previewDigest: preview.previewDigest,
+        challengeId: challenge.challengeId,
+        code: delivered.code,
+      };
+      const confirm = async () => {
+        const response = await request.post(`${subjectPath}/deletion`, {
+          headers: { ...headman.headers(), 'Idempotency-Key': key },
+          data: confirmation,
+          timeout: remaining(),
+        });
+        requireValue(
+          [200, 202].includes(response.status()) &&
+            /(?:^|,)\s*no-store\s*(?:,|$)/i.test(response.headers()['cache-control'] ?? ''),
+          'Real subject command is accepted privately',
+        );
+        const body = await response.json();
+        await response.dispose();
+        requireValue(
+          body.operationId === operation &&
+            body.subjectId === String(scope.subject) &&
+            body.semesterId === String(scope.semester),
+          'Accepted operation retains exact subject and semester',
+        );
+        return body;
+      };
+      await confirm();
+      await expect
+        .poll(
+          async () => {
+            remaining();
+            const status = await headman.call(
+              'GET',
+              `/api/academic/subject-deletion-operations/${operation}`,
+            );
+            requireValue(
+              status.operationId === operation &&
+                status.subjectId === String(scope.subject) &&
+                status.semesterId === String(scope.semester),
+              'Durable status remains in the exact own scope',
+            );
+            requireValue(
+              status.phase !== 'CANCELLED' && status.phase !== 'RELEASING',
+              'Accepted delete cannot silently cancel',
+            );
+            return status.phase;
+          },
+          {
+            timeout: remaining(90000),
+            intervals: [1000],
+            message: 'Real participants finish the durable subject command',
+          },
+        )
+        .toBe('COMPLETED');
+      const absent = async (actor: Actor, path: string) => {
+        const response = await request.get(path, {
+          headers: actor.headers(),
+          timeout: remaining(),
+        });
+        requireValue(response.status() === 404, 'Deleted own data is authoritatively absent');
+        await response.dispose();
+      };
+      await absent(headman, subjectPath);
+      await absent(headman, `/api/academic/homeworks/${dataset.homework.id}`);
+      await absent(student, `/api/v1/student/requests/${sole.summary.id}`);
+      await absent(student, `/api/v1/student/requests/${manual.summary.id}`);
+      const after = await headman.call('GET', mixedPath);
+      requireValue(
+        after.summary.id === mixed.summary.id &&
+          after.summary.status === decided.summary.status &&
+          after.summary.decisionBy === decided.summary.decisionBy &&
+          after.summary.decisionAt === decided.summary.decisionAt &&
+          after.lessons.length === 1 &&
+          Number(after.lessons[0].lessonId) === kept &&
+          after.attachments.length === 1 &&
+          after.attachments[0].id === decided.attachments[0].id,
+        'Mixed EXCUSE retains one ticket decision, control coverage and attachment',
+      );
+      const ownAfter = await student.call('GET', `/api/v1/student/requests/${mixed.summary.id}`);
+      requireValue(
+        ownAfter.summary.id === mixed.summary.id &&
+          ownAfter.summary.status === 'APPROVED' &&
+          ownAfter.summary.lessons.length === 1 &&
+          String(ownAfter.summary.lessons[0].id) === String(kept),
+        'Student authoritative projection retains only control coverage',
+      );
+      const attachment = await request.get(
+        `/api/v1/student/requests/${mixed.summary.id}/attachments/${ownAfter.attachments[0].id}`,
+        {
+          headers: student.headers(),
+          timeout: remaining(),
+        },
+      );
+      requireValue(
+        attachment.status() === 200 && (await attachment.body()).equals(png),
+        'Mixed attachment bytes remain owned and unchanged',
+      );
+      await attachment.dispose();
+      equal(
+        fields(await headman.call('GET', `/api/academic/subjects/${control.id}`), [
+          'id',
+          'name',
+          'type',
+          'lessonTypes',
+          'assignments',
+        ]),
+        controlBefore,
+        'Control subject and assignment remain unchanged',
+      );
+      const scheduleBody = await headman.call(
+        'GET',
+        `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${pastDate}&dateTo=${shift(dataset.tomorrow, 1)}&semesterId=${dataset.semester.id}&size=200`,
+      );
+      const scheduleRows = Object.values(scheduleBody._embedded ?? {}).flat() as Row[];
+      requireValue(
+        scheduleRows.some(
+          (row) => Number(row.id) === kept && Number(row.subjectId) === scope.control,
+        ) && !scheduleRows.some((row) => Number(row.subjectId) === scope.subject),
+        'Public schedule keeps B and removes all A lessons',
+      );
+      equal(
+        (await student.call('GET', '/api/v1/student/requests/options')).budget,
+        beforeBudget,
+        'Full subject deletion does not refund the used manual attempt',
+      );
+      const databaseAfter = readback(scope);
+      requireValue(
+        databaseAfter.academic.operationCount === 1 &&
+          databaseAfter.academic.operation?.phase === 'COMPLETED' &&
+          databaseAfter.academic.operation.schedule === 'DELETED' &&
+          databaseAfter.academic.operation.attendance === 'DELETED' &&
+          databaseAfter.academic.subjectRows === 0 &&
+          databaseAfter.academic.homeworkRows === 0 &&
+          databaseAfter.academic.controlRows === 1 &&
+          databaseAfter.academic.deletedEvents === 1 &&
+          databaseAfter.schedule.participantCount === 1 &&
+          databaseAfter.schedule.state === 'DELETED' &&
+          databaseAfter.schedule.lessonRows === 0 &&
+          databaseAfter.schedule.controlRows === 1 &&
+          databaseAfter.schedule.deletedEvents === 1,
+        'Real PG operation, participant and cascade/outbox complete exactly once',
+      );
+      const mongo = databaseAfter.attendance;
+      requireValue(
+        mongo.epochCount === 1 &&
+          mongo.epoch?.state === 'DELETED' &&
+          mongo.epoch.subject === scope.subject &&
+          mongo.epoch.semester === scope.semester &&
+          mongo.epoch.group === scope.group &&
+          mongo.marks === 0 &&
+          mongo.sole === 0 &&
+          mongo.manual === 0 &&
+          mongo.soleFiles === 0 &&
+          mongo.mixedFiles === 1 &&
+          mongo.originalCount === 2 &&
+          mongo.effectiveIds.length === 1 &&
+          Number(mongo.effectiveIds[0]) === kept &&
+          mongo.history.length === 1 &&
+          mongo.history[0].operation === operation &&
+          mongo.history[0].subject === scope.subject &&
+          mongo.history[0].actor === dataset.headman.id &&
+          mongo.history[0].removed.length === 1 &&
+          mongo.history[0].removed[0] === future &&
+          mongo.history[0].remaining.length === 1 &&
+          mongo.history[0].remaining[0] === kept,
+        'Real Mongo retains immutable mixed evidence and one exact coverage adjustment',
+      );
+      equal(
+        mongo.controlMarks,
+        databaseBefore.attendance.controlMarks,
+        'Control attendance is byte-equivalent after A deletion',
+      );
+      equal(mongo.budget, databaseBefore.attendance.budget, 'Stored used budget is unchanged');
+      requireValue(
+        (await confirm()).phase === 'COMPLETED',
+        'Exact secret-bearing command replay returns the same completed operation',
+      );
+      equal(
+        readback(scope),
+        databaseAfter,
+        'Exact replay has no second operation, effect, history or outbox delta',
+      );
+      equal(await semesters(admin), originalSemesters, 'No semester or active context changes');
+    } catch (error) {
+      primaryFailed = true;
+      retainFirstDatasetHttpFailure(info.annotations, error);
+      throw error;
+    } finally {
+      // Domain data and immutable receipts stay until the ordinary owned stand teardown.
+      // No force-delete or foreign ledger/clock mutation is used to tidy a failed operation.
+      try {
+        clock.assertUnchanged();
+      } catch (error) {
+        if (!primaryFailed) throw error;
+        expect.soft(false, 'Subject deletion leaves educational clock unchanged').toBe(true);
+      }
+    }
+  });
 });

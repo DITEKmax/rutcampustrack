@@ -89,4 +89,36 @@ public class ExcuseTicket {
 
     @Field("updated_at")
     private Instant updatedAt;
+
+    /**
+     * Current projection after an explicit destructive operation; original evidence stays above.
+     */
+    @Field("effective_lesson_snapshots")
+    private List<StudentLessonSnapshotDocument> effectiveLessonSnapshots;
+
+    @Field("effective_original_lesson_ids")
+    private List<Long> effectiveOriginalLessonIds;
+
+    @Field("effective_decision_selection")
+    private ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument
+            effectiveDecisionSelection;
+
+    @Field("subject_coverage_adjustments")
+    private List<
+                    ru.rutcampustrack.attendance.studentrequest.entity
+                            .SubjectCoverageAdjustmentDocument>
+            subjectCoverageAdjustments;
+
+    public List<StudentLessonSnapshotDocument> getLessonSnapshots() {
+        return effectiveLessonSnapshots == null ? lessonSnapshots : effectiveLessonSnapshots;
+    }
+
+    public List<Long> getOriginalLessonIds() {
+        return effectiveOriginalLessonIds == null ? originalLessonIds : effectiveOriginalLessonIds;
+    }
+
+    public ru.rutcampustrack.attendance.studentrequest.entity.ExcuseDecisionSelectionDocument
+            getDecisionSelection() {
+        return effectiveDecisionSelection == null ? decisionSelection : effectiveDecisionSelection;
+    }
 }

@@ -36,6 +36,7 @@ async def handle_otp_requested(
     telegram_id = payload.get("telegram_id")
     code = payload.get("code")
     purpose = payload.get("purpose", "login")
+    tracking_purpose = purpose
     try:
         telegram_id = int(telegram_id)
         ttl_seconds = max(1, int(payload.get("ttl_seconds") or 300))
@@ -79,8 +80,30 @@ async def handle_otp_requested(
             f"Осталось попыток: {attempts_remaining}\n\n"
             f'<a href="{html.escape(reset_url, quote=True)}">Открыть форму сброса пароля</a>'
         )
+    elif purpose == "subject_delete":
+        challenge_id = payload.get("challenge_id")
+        attempts_remaining = payload.get("attempts_remaining")
+        if (
+            type(payload.get("telegram_id")) is not int
+            or payload["telegram_id"] <= 0
+            or not isinstance(challenge_id, str)
+            or re.fullmatch(r"[A-Za-z0-9_-]{32}", challenge_id) is None
+            or isinstance(attempts_remaining, bool)
+            or not isinstance(attempts_remaining, int)
+            or not 1 <= attempts_remaining <= 3
+        ):
+            logger.warning("Subject deletion OTP event malformed")
+            return
+        text = (
+            "⚠️ <b>Подтверждение удаления предмета</b>\n\n"
+            "Это действие необратимо. Вводи код только для удаления выбранного предмета.\n"
+            f"Код: <code>{code}</code>\n"
+            f"Действует: {_ttl_text(ttl_seconds)}\n"
+            f"Осталось попыток: {attempts_remaining}"
+        )
+        tracking_purpose = f"subject_delete:{challenge_id}"
     else:
-        logger.warning("otp.requested event has unsupported purpose=%s", purpose)
+        logger.warning("otp.requested event has unsupported purpose")
         return
 
     try:
@@ -96,9 +119,9 @@ async def handle_otp_requested(
         # Provider exceptions may contain the OTP or request body; suppress their cause.
         raise RuntimeError("OTP Telegram delivery failed") from None
 
-    await tracker.finalize_with_bot_msg(telegram_id, bot_message.message_id, purpose=purpose)
+    await tracker.finalize_with_bot_msg(telegram_id, bot_message.message_id, purpose=tracking_purpose)
     asyncio.create_task(
-        _cleanup_after_expiry(telegram_id, ttl_seconds=ttl_seconds, purpose=purpose, bot=bot, tracker=tracker)
+        _cleanup_after_expiry(telegram_id, ttl_seconds=ttl_seconds, purpose=tracking_purpose, bot=bot, tracker=tracker)
     )
 
 
@@ -122,4 +145,8 @@ async def _cleanup_after_expiry(
     except asyncio.CancelledError:
         raise
     except Exception as error:
-        logger.warning("OTP expiry cleanup failed: purpose=%s error_type=%s", purpose, type(error).__name__)
+        logger.warning(
+            "OTP expiry cleanup failed: purpose=%s error_type=%s",
+            "subject_delete" if purpose.startswith("subject_delete:") else purpose,
+            type(error).__name__,
+        )

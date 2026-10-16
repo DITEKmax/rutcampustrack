@@ -109,6 +109,8 @@ public class LessonEventService {
         requirePositive(lessonId, "lessonId");
         requirePositive(groupId, "groupId");
         requirePositive(eventSemesterId, "semesterId");
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, eventSemesterId, groupId))
+            return new LessonClosedSnapshot(lessonId, groupId, eventSemesterId, null, null, null);
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
         LocalDate lessonDate = validateLessonSnapshot(lesson, lessonId, groupId, eventSemesterId);
         GroupMembersResponse members = null;
@@ -131,6 +133,7 @@ public class LessonEventService {
         Long lessonId = snapshot.lessonId();
         Long groupId = snapshot.groupId();
         Long eventSemesterId = snapshot.semesterId();
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, eventSemesterId, groupId)) return;
         LessonResponse lesson = snapshot.lesson();
         LocalDate lessonDate = snapshot.lessonDate();
         GroupMembersResponse members = snapshot.members();
@@ -263,6 +266,8 @@ public class LessonEventService {
 
     /** Validate the local scope for a tracked close before entering its nested transaction. */
     public void preflightLessonClosed(LessonClosedSnapshot snapshot) {
+        if (pairWriteCoordinator.isSubjectDeleted(
+                snapshot.lessonId(), snapshot.semesterId(), snapshot.groupId())) return;
         if (snapshot == null || snapshot.lesson() == null) {
             throw new IllegalArgumentException("lesson.closed snapshot is required");
         }
@@ -368,6 +373,9 @@ public class LessonEventService {
     public void processLessonCancelled(Long lessonId, Long semesterId) {
         requirePositive(lessonId, "lessonId");
         requirePositive(semesterId, "semesterId");
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, semesterId, null)) return;
+        requirePositive(lessonId, "lessonId");
+        requirePositive(semesterId, "semesterId");
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                 semesterId, java.util.List.of(lessonId), null, Instant.now());
         if (pairWriteCoordinator.isTransferredSource(lessonId)) {
@@ -391,6 +399,9 @@ public class LessonEventService {
      * transaction runs.
      */
     public void preflightLessonCancelled(Long lessonId, Long semesterId) {
+        requirePositive(lessonId, "lessonId");
+        requirePositive(semesterId, "semesterId");
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, semesterId, null)) return;
         requirePositive(lessonId, "lessonId");
         requirePositive(semesterId, "semesterId");
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
@@ -569,6 +580,11 @@ public class LessonEventService {
         if (lessonIds.stream().anyMatch(id -> id == null || id <= 0)) {
             throw new IllegalArgumentException("lesson.deleted contains invalid lesson ids");
         }
+        lessonIds =
+                lessonIds.stream()
+                        .filter(id -> !pairWriteCoordinator.isSubjectDeleted(id, semesterId, null))
+                        .toList();
+        if (lessonIds.isEmpty()) return;
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                 semesterId, lessonIds, null, Instant.now());
         validateDeletedAttendanceSemesterScopes(lessonIds, semesterId);
@@ -594,6 +610,11 @@ public class LessonEventService {
         if (lessonIds.stream().anyMatch(id -> id == null || id <= 0)) {
             throw new IllegalArgumentException("lesson.deleted contains invalid lesson ids");
         }
+        lessonIds =
+                lessonIds.stream()
+                        .filter(id -> !pairWriteCoordinator.isSubjectDeleted(id, semesterId, null))
+                        .toList();
+        if (lessonIds.isEmpty()) return;
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                 semesterId, lessonIds, null, Instant.now());
         validateDeletedAttendanceSemesterScopes(lessonIds, semesterId);

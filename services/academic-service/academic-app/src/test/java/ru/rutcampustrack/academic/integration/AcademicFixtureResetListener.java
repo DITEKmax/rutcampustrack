@@ -78,6 +78,8 @@ public final class AcademicFixtureResetListener extends AbstractTestExecutionLis
                     "semesters",
                     "shedlock",
                     "student_group_history",
+                    "subject_deletion_operations",
+                    "subject_deletion_proofs",
                     "subject_lesson_types",
                     "subjects",
                     "teacher_subject_groups",

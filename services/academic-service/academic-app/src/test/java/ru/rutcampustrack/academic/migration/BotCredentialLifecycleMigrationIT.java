@@ -11,7 +11,9 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.sql.Connection;
@@ -53,7 +55,7 @@ class BotCredentialLifecycleMigrationIT {
         fresh(null);
         Flyway f = flyway(null);
         f.validate();
-        assertThat(f.info().current().getVersion().getVersion()).isEqualTo("59");
+        assertThat(f.info().current().getVersion().getVersion()).isEqualTo("60");
         assertThat(f.info().pending()).isEmpty();
         assertThat(f.migrate().migrationsExecuted).isZero();
         assertThat(
@@ -92,7 +94,7 @@ class BotCredentialLifecycleMigrationIT {
                 jdbc.queryForList(
                         "SELECT installed_rank,version,checksum FROM flyway_schema_history ORDER BY"
                                 + " installed_rank");
-        assertThat(flyway(null).migrate().migrationsExecuted).isEqualTo(3);
+        assertThat(flyway(null).migrate().migrationsExecuted).isEqualTo(4);
         flyway(null).validate();
         assertThat(
                         jdbc.queryForObject(
@@ -545,6 +547,167 @@ class BotCredentialLifecycleMigrationIT {
                                 Long.class,
                                 r))
                 .isEqualTo(1);
+    }
+
+    private long seedSubjectWithType(long group, Long semester) {
+        return new TransactionTemplate(new DataSourceTransactionManager(ds))
+                .execute(
+                        status -> {
+                            long id =
+                                    semester == null
+                                            ? jdbc.queryForObject(
+                                                    "INSERT INTO subjects(name,type,group_id)"
+                                                        + " VALUES('Unresolved legacy','lecture',?)"
+                                                        + " RETURNING id",
+                                                    Long.class,
+                                                    group)
+                                            : jdbc.queryForObject(
+                                                    "INSERT INTO"
+                                                        + " subjects(name,type,group_id,semester_id)"
+                                                        + " VALUES('Bound new','lecture',?,?)"
+                                                        + " RETURNING id",
+                                                    Long.class,
+                                                    group,
+                                                    semester);
+                            jdbc.update(
+                                    "INSERT INTO subject_lesson_types(subject_id,lesson_type)"
+                                            + " VALUES(?,'lecture')",
+                                    id);
+                            return id;
+                        });
+    }
+
+    @Test
+    void subjectDeletionV60UpgradeKeepsLegacyUnresolvedAndNewIdentityImmutable() {
+        fresh("59");
+        long group =
+                jdbc.queryForObject(
+                        "INSERT INTO groups(name) VALUES('subject-upgrade') RETURNING id",
+                        Long.class);
+        long legacy = seedSubjectWithType(group, null);
+        var before =
+                jdbc.queryForList(
+                        "SELECT installed_rank,version,checksum FROM flyway_schema_history ORDER BY"
+                                + " installed_rank");
+        var guards = new java.util.LinkedHashMap<String, String>();
+        for (String name :
+                java.util.List.of(
+                        "protect_assignment_identity",
+                        "retain_homework_edit_evidence",
+                        "protect_homework_edit_operation",
+                        "protect_homework_binding_archive_identity",
+                        "protect_homework_transfer_edit_supersession"))
+            guards.put(
+                    name,
+                    jdbc.queryForObject(
+                            "SELECT pg_get_functiondef((?||'()')::REGPROCEDURE)",
+                            String.class,
+                            name));
+        assertThat(flyway(null).migrate().migrationsExecuted).isEqualTo(1);
+        flyway(null).validate();
+        for (var guard : guards.entrySet()) {
+            String after =
+                    jdbc.queryForObject(
+                            "SELECT pg_get_functiondef((?||'()')::REGPROCEDURE)",
+                            String.class,
+                            guard.getKey());
+            String withoutAdmission =
+                    after.replaceAll(
+                            "(?m)^    IF TG_OP[^\\n"
+                                    + "]+academic_subject_delete_row_authorized[^\\n"
+                                    + "]+\\n",
+                            "");
+            assertThat(withoutAdmission.equals(guard.getValue()))
+                    .as("current legacy guard retained except exact subject admission")
+                    .isTrue();
+        }
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT semester_id IS NULL FROM subjects WHERE id=?",
+                                Boolean.class,
+                                legacy))
+                .isTrue();
+        long semester = jdbc.queryForObject("SELECT id FROM semesters WHERE is_active", Long.class);
+        assertThatThrownBy(
+                        () ->
+                                jdbc.update(
+                                        "UPDATE subjects SET semester_id=? WHERE id=?",
+                                        semester,
+                                        legacy))
+                .isInstanceOf(RuntimeException.class);
+        long bound = seedSubjectWithType(group, semester);
+        assertThatThrownBy(
+                        () -> jdbc.update("UPDATE subjects SET semester_id=NULL WHERE id=?", bound))
+                .isInstanceOf(RuntimeException.class);
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT installed_rank,version,checksum FROM flyway_schema_history"
+                                        + " ORDER BY installed_rank LIMIT ?",
+                                before.size()))
+                .isEqualTo(before);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM subject_deletion_operations", Long.class))
+                .isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM subject_deletion_proofs", Long.class))
+                .isZero();
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT column_name FROM information_schema.columns WHERE"
+                                    + " table_schema=? AND table_name='subject_deletion_proofs'",
+                                String.class,
+                                schema))
+                .doesNotContain("password", "code", "token", "body");
+        assertThat(flyway(null).migrate().migrationsExecuted).isZero();
+    }
+
+    @Test
+    void subjectDeletionV60DdlRollbackLeavesV59IdentityAndChecksumsIntact() throws Exception {
+        fresh("59");
+        var before =
+                jdbc.queryForList(
+                        "SELECT installed_rank,version,checksum FROM flyway_schema_history ORDER BY"
+                                + " installed_rank");
+        try (Connection connection = ds.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                var ddl =
+                        new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(
+                                new org.springframework.core.io.ClassPathResource(
+                                        "db/migration/V60__subject_semester_and_deletion.sql"));
+                ddl.setSeparator(
+                        org.springframework.jdbc.datasource.init.ScriptUtils
+                                .EOF_STATEMENT_SEPARATOR);
+                ddl.populate(connection);
+                connection.rollback();
+            } catch (Exception failure) {
+                connection.rollback();
+                throw failure;
+            }
+        }
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM information_schema.columns WHERE"
+                                        + " table_schema=? AND table_name='subjects' AND"
+                                        + " column_name='semester_id'",
+                                Long.class,
+                                schema))
+                .isZero();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM information_schema.tables WHERE"
+                                    + " table_schema=? AND table_name IN"
+                                    + " ('subject_deletion_proofs','subject_deletion_operations')",
+                                Long.class,
+                                schema))
+                .isZero();
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT installed_rank,version,checksum FROM flyway_schema_history"
+                                        + " ORDER BY installed_rank"))
+                .isEqualTo(before);
+        assertThat(flyway(null).migrate().migrationsExecuted).isEqualTo(1);
+        flyway(null).validate();
     }
 
     private void fresh(String target) {

@@ -32,6 +32,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,7 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
     @Autowired SessionLifecycleService sessions;
     @Autowired AuthSessionQueryPort queries;
     @Autowired JwtService jwt;
+    @Autowired org.springframework.transaction.PlatformTransactionManager transactions;
     @MockitoSpyBean PasswordChangedOutbox outbox;
 
     @AfterEach
@@ -220,9 +222,25 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
         long foreign = user(foreignGroup, false, f.initial);
         assertForbidden(headman, foreign);
         assertForbidden(student, f.student);
-        jdbc.update(
-                "INSERT INTO user_role_grants(user_id,role,status) VALUES (?,'admin','active')",
-                f.student);
+        new org.springframework.transaction.support.TransactionTemplate(transactions)
+                .executeWithoutResult(
+                        status -> {
+                            jdbc.queryForObject(
+                                    "SELECT id FROM users WHERE id=? FOR UPDATE",
+                                    Long.class,
+                                    f.student);
+                            jdbc.update(
+                                    "INSERT INTO"
+                                        + " admin_access_profiles(user_id,assigned,mode,permissions,version)"
+                                        + " VALUES (?,TRUE,'FULL','{}',1)",
+                                    f.student);
+                            jdbc.update(
+                                    "INSERT INTO"
+                                        + " user_role_grants(user_id,role,status,created_at,updated_at)"
+                                        + " VALUES"
+                                        + " (?,'admin','active',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)",
+                                    f.student);
+                        });
         assertForbidden(headman, f.student);
         jdbc.update(
                 "UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='admin'",
@@ -306,7 +324,7 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
         ResponseEntity<String> revoked =
                 call(actor, f.student, "/initial-password", HttpMethod.GET, null);
         assertThat(revoked.getStatusCode().value()).isEqualTo(401);
-        assertThat(revoked.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertNoStore(revoked);
         assertThat(revoked.getBody() == null || !revoked.getBody().contains(f.initial)).isTrue();
     }
 
@@ -420,7 +438,7 @@ VALUES ('consistent','Synthetic','Legacy',?,'synthetic-initial',FALSE),
                         HttpMethod.POST,
                         Map.of("expectedCredentialsVersion", marker));
         assertThat(invalid.getStatusCode().value()).isEqualTo(400);
-        assertThat(invalid.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertNoStore(invalid);
         assertThat(invalid.getBody() == null || !invalid.getBody().contains(marker)).isTrue();
         assertThat(matches(f.student, f.initial)).isTrue();
     }
@@ -619,7 +637,7 @@ VALUES ('consistent','Synthetic','Legacy',?,'synthetic-initial',FALSE),
                                     f.student,
                                     password))
                     .isEqualTo(1);
-            assertThat(loser.getHeaders().getCacheControl()).isEqualTo("no-store");
+            assertNoStore(loser);
             assertThat(loser.getBody() == null || !loser.getBody().contains(password))
                     .as("losing response discloses no winner credential")
                     .isTrue();
@@ -859,9 +877,20 @@ VALUES (?,?,'Credential','Synthetic',?,?,?) RETURNING id
         return rest.exchange(path, method, new HttpEntity<>(body, headers), String.class);
     }
 
+    private static void assertNoStore(ResponseEntity<?> response) {
+        String policy = response.getHeaders().getCacheControl();
+        assertThat(policy).isNotNull();
+        assertThat(
+                        Arrays.stream(policy.split(",", -1))
+                                .map(String::trim)
+                                .anyMatch("no-store"::equalsIgnoreCase))
+                .as("Credential response requires the exact no-store cache directive")
+                .isTrue();
+    }
+
     private JsonNode body(ResponseEntity<String> response, int status) throws Exception {
         assertThat(response.getStatusCode().value()).isEqualTo(status);
-        assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertNoStore(response);
         return json.readTree(response.getBody());
     }
 

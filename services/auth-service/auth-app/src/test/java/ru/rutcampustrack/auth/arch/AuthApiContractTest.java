@@ -102,6 +102,8 @@ class AuthApiContractTest {
                     .implement(ru.rutcampustrack.auth.api.AdminPasswordResetApi.class)
                     .orShould()
                     .implement(ru.rutcampustrack.auth.api.HeadmanCredentialsApi.class)
+                    .orShould()
+                    .implement(ru.rutcampustrack.auth.api.InternalSubjectDeletionProofApi.class)
                     .because(
                             "M12 01 P0-1: каждый @RestController реализует interface из"
                                     + " auth-api-contract");

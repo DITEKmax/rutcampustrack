@@ -114,17 +114,31 @@ jobs:
 
           def native_case(failed):
               result = results / ('TEST-' + package + '.xml')
+              if failed:
+                  proof['phase'] = 'RED_XML_FILE'
               assert result.is_file() and not result.is_symlink() and 0 < result.stat().st_size <= 33554432
               raw = result.read_bytes()
+              if failed:
+                  proof['phase'] = 'RED_XML_DTD'
               assert b'<!DOCTYPE' not in raw.upper() and b'<!ENTITY' not in raw.upper()
               suite = ET.fromstring(raw)
               expected = {'tests': '1', 'failures': '1' if failed else '0', 'errors': '0', 'skipped': '0'}
+              if failed:
+                  proof['phase'] = 'RED_XML_SUITE'
               assert suite.tag == 'testsuite' and suite.get('name') == package
+              if failed:
+                  proof['phase'] = 'RED_XML_COUNTS'
               assert {key: suite.get(key) for key in expected} == expected
               cases = suite.findall('testcase')
+              if failed:
+                  proof['phase'] = 'RED_XML_CASE_IDENTITY'
               assert len(cases) == 1 and cases[0].get('classname') == package and cases[0].get('name') == method + '()'
               case = cases[0]
+              if failed:
+                  proof['phase'] = 'RED_XML_ERRORS'
               assert not case.findall('error') and not case.findall('skipped')
+              if failed:
+                  proof['phase'] = 'RED_XML_FAILURE_COUNT'
               assert len(case.findall('failure')) == int(failed)
               return case
 
@@ -3909,6 +3923,36 @@ jobs:
             ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/lifecycle.safe.json
             ${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/effect.safe.json
           if-no-files-found: warn
+          retention-days: 7
+
+      - name: Verify exact subject deletion through real proof and participants
+        id: subject-deletion-cascade
+        timeout-minutes: 12
+        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && steps.application-recovery.outcome == 'success' && steps.semester-reconciliation.outputs.restorationSucceeded == 'true' && steps.semester-lifecycle.outcome == 'success' }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_SEMESTER_LIFECYCLE_RUN: ${{ runner.temp }}/rct-subject-deletion-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_SUBJECT_DELETE_RUN=%s\n' "$RCT_SEMESTER_LIFECYCLE_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN"
+          mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
+          printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
+          npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'HEADMAN deletes one subject through real proof and participants while mixed EXCUSE keeps the control subject$'
+
+      - name: Upload closed subject deletion cascade outcome
+        if: always() && steps.subject-deletion-cascade.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: subject-deletion-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_SUBJECT_DELETE_RUN }}/artifacts/safe-results.json
+          if-no-files-found: error
           retention-days: 7
 
       - name: Stop owned fresh recovery targets

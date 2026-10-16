@@ -130,6 +130,12 @@ public class SubjectService {
                         .distinct()
                         .sorted()
                         .toList();
+        if (semesterIds.size() > 1) {
+            throw new ConflictException("Предмет должен принадлежать одному семестру");
+        }
+        if (semesterIds.isEmpty()) {
+            semesterIds = List.of(requireActiveSemester().getId());
+        }
         java.util.Map<Long, Semester> lockedSemesters = new java.util.LinkedHashMap<>();
         for (Long semesterId : semesterIds) {
             lockedSemesters.put(semesterId, assignmentAuthority.lockSemester(semesterId));
@@ -139,6 +145,7 @@ public class SubjectService {
         subject.setName(request.name());
         subject.setType(request.type());
         subject.setGroupId(groupId);
+        subject.setSemesterId(semesterIds.getFirst());
         Subject saved = subjectRepository.save(subject);
         lessonTypeRepository.saveAll(
                 lessonTypes.stream()
@@ -285,9 +292,9 @@ public class SubjectService {
     @Transactional
     public Assignment addTeacher(Long subjectId, Long teacherId, AddSubjectTeacherRequest request) {
         Long groupId = requireHeadmanGroupId();
+        Semester semester = assignmentAuthority.lockSemester(request.semesterId());
         Subject subject = lockSubject(subjectId);
         assertSubjectBelongsToHeadmanGroup(subject, groupId);
-        Semester semester = assignmentAuthority.lockSemester(request.semesterId());
         if (!Objects.equals(subjectId, subject.getId())) {
             throw new ResourceNotFoundException("Subject", "id", subjectId);
         }

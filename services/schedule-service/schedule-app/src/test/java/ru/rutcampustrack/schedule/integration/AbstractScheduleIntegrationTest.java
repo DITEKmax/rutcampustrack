@@ -147,6 +147,7 @@ ON CONFLICT (assignment_id) DO NOTHING
         jdbcTemplate.execute(
                 """
                 TRUNCATE TABLE
+                    schedule_subject_deletion_participants,
                     schedule_outbox,
                     schedule_semester_archive_barriers,
                     lesson_homework_bindings,

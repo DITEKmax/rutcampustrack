@@ -144,7 +144,35 @@ public class PairWriteCoordinator {
                                     update,
                                     FindAndModifyOptions.options().upsert(true).returnNew(true),
                                     CheckinPairStateDocument.class);
+                            if (mongoTemplate.exists(
+                                    Query.query(
+                                            Criteria.where("_id")
+                                                    .is(lessonFenceId(lessonId))
+                                                    .and("subject_delete_operation")
+                                                    .exists(true)),
+                                    CheckinPairStateDocument.class)) {
+                                throw new ConflictException(
+                                        "Предмет закрыт для удаления; обнови данные");
+                            }
                         });
+    }
+
+    /** Only a committed, exact lesson tombstone can turn a delayed Schedule effect into a no-op. */
+    public boolean isSubjectDeleted(long lessonId, long semesterId, Long groupId) {
+        org.bson.Document row =
+                mongoTemplate.findById(
+                        lessonFenceId(lessonId), org.bson.Document.class, "student_checkin_pairs");
+        if (row == null || !Boolean.TRUE.equals(row.getBoolean("subject_delete_committed")))
+            return false;
+        Object semester = row.get("subject_delete_semester_id");
+        Object group = row.get("group_id");
+        if (!(semester instanceof Number value)
+                || value.longValue() != semesterId
+                || groupId != null
+                        && (!(group instanceof Number owner) || owner.longValue() != groupId)) {
+            throw new ConflictException("Удалённая пара принадлежит другому scope");
+        }
+        return true;
     }
 
     public boolean isTransferredSource(long lessonId) {

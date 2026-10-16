@@ -40,6 +40,14 @@ WITH domain_rows AS (
     SELECT 'homework_edit_command', e.operation_id::TEXT,
            (to_jsonb(e) - ARRAY['state','attempts','next_attempt_at','last_failure','finalized_at'])::TEXT
       FROM homework_edit_operations e WHERE e.semester_id = ?
+    UNION ALL
+    SELECT 'subject', s.id::TEXT, to_jsonb(s)::TEXT FROM subjects s WHERE s.semester_id = ?
+    UNION ALL
+    SELECT 'subject_type', t.subject_id || ':' || t.lesson_type, to_jsonb(t)::TEXT
+      FROM subject_lesson_types t JOIN subjects s ON s.id=t.subject_id WHERE s.semester_id = ?
+    UNION ALL
+    SELECT 'subject_threshold', t.id::TEXT, to_jsonb(t)::TEXT
+      FROM attendance_thresholds t JOIN subjects s ON s.id=t.subject_id WHERE s.semester_id = ?
 )
 SELECT count(*) FILTER (WHERE kind = 'assignment') AS assignments,
        count(*) FILTER (WHERE kind = 'homework') AS homeworks,
@@ -58,6 +66,9 @@ SELECT count(*) FILTER (WHERE kind = 'assignment') AS assignments,
                             rs.getLong("homeworks"),
                             rs.getString("participant_digest"));
                 },
+                semesterId,
+                semesterId,
+                semesterId,
                 semesterId,
                 semesterId,
                 semesterId,

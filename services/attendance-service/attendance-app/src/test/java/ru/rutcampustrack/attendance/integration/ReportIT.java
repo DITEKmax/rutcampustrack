@@ -358,23 +358,58 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
                 LESSON_ID, 101L, SUBJECT_ID, AttendanceStatus.ABSENT, LocalDate.of(2026, 4, 1));
         insertAttendance(2L, 100L, SUBJECT_ID, AttendanceStatus.PRESENT, LocalDate.of(2026, 4, 2));
         insertAttendance(2L, 101L, SUBJECT_ID, AttendanceStatus.EXCUSED, LocalDate.of(2026, 4, 2));
+        // Same-week controls must not become cells in the selected subject/date interval.
+        insertAttendance(3L, 100L, SUBJECT_ID_2, AttendanceStatus.ABSENT, LocalDate.of(2026, 4, 1));
+        insertAttendance(4L, 100L, SUBJECT_ID, AttendanceStatus.ABSENT, LocalDate.of(2026, 3, 31));
+        insertAttendance(5L, 101L, SUBJECT_ID, AttendanceStatus.PRESENT, LocalDate.of(2026, 4, 3));
 
-        mockMvc.perform(
-                        get("/attendance/reports/journal")
-                                .param("groupId", GROUP_ID.toString())
-                                .param("subjectId", SUBJECT_ID.toString())
-                                .param("dateFrom", "2026-04-01")
-                                .param("dateTo", "2026-04-02")
-                                .header("X-User-Id", HEADMAN_USER_ID.toString())
-                                .header("X-User-Role", "STUDENT")
-                                .header("X-Group-Id", GROUP_ID.toString())
-                                .header("X-Is-Headman", "true"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.dates").isArray())
-                .andExpect(jsonPath("$.dates.length()").value(2))
-                .andExpect(jsonPath("$.students").isArray())
-                .andExpect(jsonPath("$.students.length()").value(3))
-                .andExpect(jsonPath("$.students[0].records[0].symbol").isString());
+        var result =
+                mockMvc.perform(
+                                get("/attendance/reports/journal")
+                                        .param("groupId", GROUP_ID.toString())
+                                        .param("subjectId", SUBJECT_ID.toString())
+                                        .param("dateFrom", "2026-04-01")
+                                        .param("dateTo", "2026-04-02")
+                                        .header("X-User-Id", HEADMAN_USER_ID.toString())
+                                        .header("X-User-Role", "STUDENT")
+                                        .header("X-Group-Id", GROUP_ID.toString())
+                                        .header("X-Is-Headman", "true"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.dates").isArray())
+                        .andExpect(jsonPath("$.dates.length()").value(2))
+                        .andExpect(jsonPath("$.students").isArray())
+                        .andExpect(jsonPath("$.students.length()").value(3))
+                        .andExpect(jsonPath("$.students[0].records[0].symbol").isString())
+                        .andReturn();
+
+        JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
+        assertThat(body.path("groupId").asLong()).isEqualTo(GROUP_ID);
+        assertThat(body.path("subjectId").asLong()).isEqualTo(SUBJECT_ID);
+        assertThat(body.path("dates"))
+                .isEqualTo(objectMapper.valueToTree(List.of("2026-04-01", "2026-04-02")));
+        Map<Long, List<List<String>>> recordsByStudent = new HashMap<>();
+        for (JsonNode student : body.path("students")) {
+            List<List<String>> cells = new ArrayList<>();
+            for (JsonNode cell : student.path("records")) {
+                cells.add(
+                        List.of(
+                                cell.path("lessonId").asText(),
+                                cell.path("date").asText(),
+                                cell.path("status").asText(),
+                                cell.path("symbol").asText()));
+            }
+            assertThat(recordsByStudent.put(student.path("userId").asLong(), cells)).isNull();
+        }
+        assertThat(recordsByStudent).containsOnlyKeys(100L, 101L, 102L);
+        assertThat(recordsByStudent.get(100L))
+                .containsExactlyInAnyOrder(
+                        List.of("1", "2026-04-01", "present", "+"),
+                        List.of("2", "2026-04-02", "present", "+"));
+        assertThat(recordsByStudent.get(101L))
+                .containsExactlyInAnyOrder(
+                        List.of("1", "2026-04-01", "absent", "н"),
+                        List.of("2", "2026-04-02", "excused", "у"));
+        assertThat(recordsByStudent.get(102L)).isEmpty();
     }
 
     // -------------------------------------------------------------------------

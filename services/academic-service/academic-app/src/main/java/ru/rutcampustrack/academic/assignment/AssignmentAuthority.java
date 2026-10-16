@@ -190,6 +190,13 @@ public class AssignmentAuthority {
         if (!Objects.equals(subject.getGroupId(), groupId)) {
             throw new AccessDeniedException("Предмет не принадлежит указанной группе");
         }
+        // Unresolved legacy rows keep the existing ordinary-write contract. They are never
+        // eligible for irreversible subject deletion; new subjects always have a binding.
+        if (subject.getSemesterId() != null
+                && !Objects.equals(subject.getSemesterId(), semester.getId())) {
+            throw new ru.rutcampustrack.academic.exception.ConflictException(
+                    "Предмет не привязан к этому семестру; создайте новый предмет");
+        }
         if (!lessonTypeRepository.existsBySubjectIdAndLessonType(subjectId, lessonType)) {
             throw new BadRequestException("lessonType", "Тип занятия не разрешён для предмета");
         }

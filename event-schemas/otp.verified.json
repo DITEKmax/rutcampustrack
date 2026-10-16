@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "otp.verified",
-  "description": "OTP-код успешно использован пользователем для входа в веб-панель. Генерируется Auth Service. Потребляется notification-bot для очистки Telegram-сообщений с кодом.",
+  "description": "Auth reports consumed OTP. Existing login cleanup remains compatible; subject_delete cleanup is bound to the exact challenge.",
   "type": "object",
   "required": [
     "event_type",
@@ -24,14 +24,35 @@
     },
     "payload": {
       "type": "object",
-      "required": [
-        "telegram_id"
-      ],
+      "required": ["telegram_id"],
       "properties": {
         "telegram_id": {
           "type": "integer"
+        },
+        "purpose": {
+          "type": "string",
+          "enum": ["login", "subject_delete"]
+        },
+        "challenge_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{32}$"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "purpose": {
+                "const": "subject_delete"
+              }
+            },
+            "required": ["purpose"]
+          },
+          "then": {
+            "required": ["challenge_id"]
+          }
+        }
+      ]
     },
     "event_version": {
       "$ref": "_common.json#/$defs/eventVersion"

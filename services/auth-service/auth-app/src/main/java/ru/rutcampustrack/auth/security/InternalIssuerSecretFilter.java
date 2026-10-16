@@ -52,7 +52,8 @@ public class InternalIssuerSecretFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        if (isPasswordConfirmationRequest(request)) {
+        if (isPasswordConfirmationRequest(request)
+                || request.getServletPath().startsWith("/internal/auth/subject-deletion/")) {
             response.setHeader("Cache-Control", "no-store");
         }
         String provided = request.getHeader(HEADER);

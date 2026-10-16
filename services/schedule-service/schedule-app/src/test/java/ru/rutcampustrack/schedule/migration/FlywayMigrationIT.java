@@ -236,6 +236,84 @@ SELECT jsonb_build_object('origin',to_jsonb(origin),'occurrence',to_jsonb(occurr
         assertThat(historyCount(schema, "17")).isZero();
     }
 
+    @Test
+    void v31ToV32KeepsExactPlacementReceiptGuardAndOldMigrationChecksums() {
+        String schema = newSchema();
+        flyway(schema, "31").migrate();
+        String before =
+                jdbc.queryForObject(
+                        "SELECT"
+                            + " pg_get_functiondef('protect_lesson_homework_binding_identity()'::REGPROCEDURE)",
+                        String.class);
+        var checksums =
+                jdbc.queryForList(
+                        "SELECT installed_rank,version,checksum FROM flyway_schema_history ORDER BY"
+                                + " installed_rank");
+        var upgraded = flyway(schema, null);
+        assertThat(upgraded.migrate().migrationsExecuted).isEqualTo(1);
+        upgraded.validate();
+        String after =
+                jdbc.queryForObject(
+                        "SELECT"
+                            + " pg_get_functiondef('protect_lesson_homework_binding_identity()'::REGPROCEDURE)",
+                        String.class);
+        assertThat(
+                        after.replace(
+                                        "    IF TG_OP = 'UPDATE' AND"
+                                            + " schedule_subject_delete_binding_authorized(to_jsonb(OLD),to_jsonb(NEW))"
+                                            + " THEN RETURN NEW; END IF;\n",
+                                        "")
+                                .equals(before))
+                .as("V24 durable placement identity and acknowledgement guard retained")
+                .isTrue();
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT installed_rank,version,checksum FROM flyway_schema_history"
+                                        + " ORDER BY installed_rank LIMIT ?",
+                                checksums.size()))
+                .isEqualTo(checksums);
+        assertThat(tableCount(schema, "schedule_subject_deletion_participants")).isEqualTo(1);
+        assertThat(upgraded.migrate().migrationsExecuted).isZero();
+    }
+
+    @Test
+    void v32DdlRollbackRetainsV31GuardAndAllowsCleanUpgrade() throws Exception {
+        String schema = newSchema();
+        flyway(schema, "31").migrate();
+        String before =
+                jdbc.queryForObject(
+                        "SELECT"
+                            + " pg_get_functiondef('protect_lesson_homework_binding_identity()'::REGPROCEDURE)",
+                        String.class);
+        try (var connection = dataSource.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                var ddl =
+                        new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(
+                                new org.springframework.core.io.ClassPathResource(
+                                        "db/migration/V32__subject_deletion_participant.sql"));
+                ddl.setSeparator(
+                        org.springframework.jdbc.datasource.init.ScriptUtils
+                                .EOF_STATEMENT_SEPARATOR);
+                ddl.populate(connection);
+                connection.rollback();
+            } catch (Exception failure) {
+                connection.rollback();
+                throw failure;
+            }
+        }
+        assertThat(tableCount(schema, "schedule_subject_deletion_participants")).isZero();
+        assertThat(
+                        jdbc.queryForObject(
+                                        "SELECT"
+                                            + " pg_get_functiondef('protect_lesson_homework_binding_identity()'::REGPROCEDURE)",
+                                        String.class)
+                                .equals(before))
+                .isTrue();
+        assertThat(flyway(schema, null).migrate().migrationsExecuted).isEqualTo(1);
+        flyway(schema, null).validate();
+    }
+
     private String newSchema() {
         String schema = "rct_b0_flyway_" + SCHEMA_SEQUENCE.incrementAndGet();
         adminJdbc.execute("CREATE SCHEMA " + quote(schema));

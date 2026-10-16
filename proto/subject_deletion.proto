@@ -1,0 +1,49 @@
+syntax = "proto3";
+package rutcampustrack.subjectdeletion;
+option java_package = "ru.rutcampustrack.subjectdeletion.grpc";
+option java_multiple_files = true;
+
+// Called only by Academic with the existing authenticated service channel.
+service SubjectDeletionParticipant {
+  rpc Apply(SubjectDeletionCommand) returns (SubjectDeletionReceipt);
+}
+enum SubjectDeletionAction {
+  SUBJECT_DELETION_ACTION_UNSPECIFIED = 0;
+  PREVIEW = 1;
+  PREPARE = 2;
+  SEAL = 3;
+  COMMIT = 4;
+  RELEASE = 5;
+}
+message SubjectDeletionLesson {
+  int64 lesson_id = 1;
+  string occurrence_id = 2;
+  int64 current_lesson_id = 3;
+  int64 subject_id = 4;
+  int64 semester_id = 5;
+  int64 group_id = 6;
+}
+message SubjectDeletionCommand {
+  string operation_id = 1;
+  int64 subject_id = 2;
+  int64 semester_id = 3;
+  int64 group_id = 4;
+  int64 actor_id = 5;
+  string participant_digest = 6;
+  SubjectDeletionAction action = 7;
+  repeated SubjectDeletionLesson lessons = 8;
+  string manifest_digest = 9;
+}
+message SubjectDeletionReceipt {
+  string operation_id = 1;
+  int64 subject_id = 2;
+  int64 semester_id = 3;
+  int64 group_id = 4;
+  string participant_digest = 5;
+  SubjectDeletionAction action = 6;
+  repeated SubjectDeletionLesson lessons = 7;
+  int64 affected_rows = 8;
+  int64 mixed_tickets = 9;
+  string manifest_digest = 10;
+  int64 actor_id = 11;
+}

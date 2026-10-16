@@ -256,6 +256,24 @@ SELECT EXISTS (SELECT 1 FROM semester_archive_operations
         setLocal("rutcampustrack.semester_delete_state_version", Long.toString(stateVersion));
         setLocal("rutcampustrack.semester_delete_academic_digest", expectedAcademicDigest);
 
+        if (Boolean.TRUE.equals(
+                jdbc.queryForObject(
+                        "SELECT EXISTS(SELECT 1 FROM assignments a JOIN subjects s ON"
+                            + " s.id=a.subject_id WHERE s.semester_id=? AND a.semester_id<>?) OR"
+                            + " EXISTS(SELECT 1 FROM homeworks h JOIN subjects s ON"
+                            + " s.id=h.subject_id WHERE s.semester_id=? AND h.semester_id<>?) OR"
+                            + " EXISTS(SELECT 1 FROM teacher_subject_groups t JOIN subjects s ON"
+                            + " s.id=t.subject_id WHERE s.semester_id=? AND t.semester_id<>?)",
+                        Boolean.class,
+                        semesterId,
+                        semesterId,
+                        semesterId,
+                        semesterId,
+                        semesterId,
+                        semesterId)))
+            throw new ConflictException(
+                    "Bound subject has inconsistent foreign-semester references");
+
         // The row-level delete guards admit this unobservable in-transaction state change only
         // for the exact operation above. Every other writer serializes on this same semester lock.
         int neutralized =
@@ -298,6 +316,14 @@ UPDATE homework_binding_transfer_markers marker
                 semesterId);
         jdbc.update("DELETE FROM homeworks WHERE semester_id = ?", semesterId);
         jdbc.update("DELETE FROM assignments WHERE semester_id = ?", semesterId);
+        // New immutable semester-local subjects belong to this already-authorized final cascade.
+        // Nullable legacy identities and every other semester remain untouched. Existing FKs
+        // cascade only their own threshold/teacher-group rows after the scope check above.
+        jdbc.update(
+                "DELETE FROM subject_lesson_types t USING subjects s WHERE t.subject_id=s.id AND"
+                        + " s.semester_id=?",
+                semesterId);
+        jdbc.update("DELETE FROM subjects WHERE semester_id = ?", semesterId);
         updateState(operationId, semesterId, stateVersion, "DELETED", null);
         int deleted = jdbc.update("DELETE FROM semesters WHERE id = ?", semesterId);
         requireOne(deleted, "Academic semester disappeared before final deletion");

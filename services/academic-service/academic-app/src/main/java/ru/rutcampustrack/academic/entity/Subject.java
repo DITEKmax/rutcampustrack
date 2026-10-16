@@ -32,6 +32,11 @@ public class Subject {
     @Column(name = "group_id", nullable = false)
     private Long groupId;
 
+    /** Immutable for new rows; null identifies unresolved legacy semester scope. */
+    @Setter
+    @Column(name = "semester_id", updatable = false)
+    private Long semesterId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 

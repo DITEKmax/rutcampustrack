@@ -738,7 +738,10 @@ public class HeadmanRequestService {
         List<HeadmanRequestLessonResponse> lessons = new ArrayList<>();
         Long studentId = nullableLong(document.get("student_id"));
         if (kind == StudentRequestKind.EXCUSE) {
-            Object raw = document.get("lesson_snapshots");
+            Object raw =
+                    document.get("effective_lesson_snapshots") == null
+                            ? document.get("lesson_snapshots")
+                            : document.get("effective_lesson_snapshots");
             if (raw instanceof Collection<?> collection) {
                 for (Object item : collection) {
                     Document snapshot = asDocument(item);
@@ -761,9 +764,11 @@ public class HeadmanRequestService {
                 }
             }
             Object originalIds =
-                    document.get("original_lesson_ids") == null
-                            ? document.get("lesson_ids")
-                            : document.get("original_lesson_ids");
+                    document.get("effective_original_lesson_ids") != null
+                            ? document.get("effective_original_lesson_ids")
+                            : document.get("original_lesson_ids") == null
+                                    ? document.get("lesson_ids")
+                                    : document.get("original_lesson_ids");
             if (lessons.isEmpty() && originalIds instanceof Collection<?> ids) {
                 for (Object id : ids) {
                     lessons.add(
@@ -866,6 +871,8 @@ public class HeadmanRequestService {
                                 .append("excuse_type", 1)
                                 .append("comment", 1)
                                 .append("lesson_snapshots", 1)
+                                .append("effective_lesson_snapshots", 1)
+                                .append("effective_original_lesson_ids", 1)
                                 .append("lesson_ids", 1)
                                 .append("original_lesson_ids", 1)
                                 .append("group_id", 1)
@@ -998,7 +1005,13 @@ public class HeadmanRequestService {
                 "$reduce",
                 new Document(
                                 "input",
-                                new Document("$ifNull", List.of("$lesson_snapshots", List.of())))
+                                new Document(
+                                        "$ifNull",
+                                        List.of(
+                                                "$effective_lesson_snapshots",
+                                                new Document(
+                                                        "$ifNull",
+                                                        List.of("$lesson_snapshots", List.of())))))
                         .append("initialValue", null)
                         .append(
                                 "in",

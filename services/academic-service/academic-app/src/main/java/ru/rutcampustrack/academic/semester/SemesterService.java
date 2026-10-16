@@ -307,6 +307,7 @@ public class SemesterService {
 
     private Semester activateLocked(Long id, boolean scheduledOnly) {
         Semester target = findSemesterForUpdate(id);
+        requireNoPendingSubjectDeletion(id, true);
         if (scheduledOnly && !target.isActivationScheduled()) {
             return target;
         }
@@ -423,6 +424,7 @@ public class SemesterService {
     public Semester beginArchiveTransition(Long id) {
         lockSemesterStateTransition();
         Semester semester = findSemesterForUpdate(id);
+        requireNoPendingSubjectDeletion(id, false);
 
         if (semester.isReleasePending()) {
             throw new ConflictException(
@@ -747,6 +749,23 @@ public class SemesterService {
     private void invalidateDashboard() {
         eventPublisher.publishEvent(
                 new ru.rutcampustrack.academic.event.DashboardInvalidatedEvent(this));
+    }
+
+    private void requireNoPendingSubjectDeletion(Long semesterId, boolean includeActive) {
+        Boolean pending =
+                jdbcTemplate.queryForObject(
+                        "SELECT EXISTS(SELECT 1 FROM subject_deletion_operations operation JOIN"
+                                + " semesters semester ON semester.id=operation.semester_id WHERE"
+                                + " operation.phase NOT IN ('COMPLETED','CANCELLED') AND"
+                                + " (operation.semester_id=? OR (? AND semester.is_active)))",
+                        Boolean.class,
+                        semesterId,
+                        includeActive);
+        if (Boolean.TRUE.equals(pending))
+            throw new ConflictException(
+                    "status",
+                    semesterId,
+                    "Сначала заверши или безопасно отмени принятое удаление предмета");
     }
 
     private void lockSemesterStateTransition() {

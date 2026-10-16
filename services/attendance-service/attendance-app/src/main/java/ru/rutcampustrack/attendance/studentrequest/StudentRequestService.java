@@ -1946,6 +1946,8 @@ public class StudentRequestService {
                                                                 new Document(
                                                                         "$toUpper", "$status"))))
                                 .append("lesson_snapshots", 1)
+                                .append("effective_lesson_snapshots", 1)
+                                .append("effective_original_lesson_ids", 1)
                                 .append("lesson_ids", 1)
                                 .append("original_lesson_ids", 1)
                                 .append("semester_id", 1)
@@ -2033,7 +2035,10 @@ public class StudentRequestService {
                 StudentRequestOrigin.valueOf(valueAsString(document.get("origin")));
         List<LessonSnapshot> lessons = new ArrayList<>();
         if (kind == StudentRequestKind.EXCUSE) {
-            Object raw = document.get("lesson_snapshots");
+            Object raw =
+                    document.get("effective_lesson_snapshots") == null
+                            ? document.get("lesson_snapshots")
+                            : document.get("effective_lesson_snapshots");
             if (raw instanceof Collection<?> collection) {
                 for (Object item : collection) {
                     if (item instanceof Document nested) {
@@ -2042,9 +2047,11 @@ public class StudentRequestService {
                 }
             }
             Object originalIds =
-                    document.get("original_lesson_ids") == null
-                            ? document.get("lesson_ids")
-                            : document.get("original_lesson_ids");
+                    document.get("effective_original_lesson_ids") != null
+                            ? document.get("effective_original_lesson_ids")
+                            : document.get("original_lesson_ids") == null
+                                    ? document.get("lesson_ids")
+                                    : document.get("original_lesson_ids");
             if (lessons.isEmpty() && originalIds instanceof Collection<?> ids) {
                 for (Object idValue : ids) {
                     lessons.add(

@@ -647,7 +647,7 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
     for (const status of ['SUSPENDED', 'ACTIVE'] as const) {
       await users.getByRole('button', { name: 'Редактировать данные', exact: true }).click();
       const studentRole = users.locator('.admin-users-role').filter({
-        has: users.locator('.admin-users-role-heading').filter({ hasText: /^Студент$/ }),
+        has: page.locator('.admin-users-role-heading').filter({ hasText: /^Студент$/ }),
       });
       await studentRole.getByRole('button', { name: 'Изменить статус', exact: true }).click();
       await users.getByLabel('Статус роли', { exact: true }).selectOption(status);

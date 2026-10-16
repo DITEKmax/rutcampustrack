@@ -8,9 +8,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class OtpVerifiedEvent extends DomainEvent {
 
-    public record Payload(@JsonProperty("telegram_id") Long telegramId) {}
+    @com.fasterxml.jackson.annotation.JsonInclude(
+            com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    public record Payload(
+            @JsonProperty("telegram_id") Long telegramId,
+            @JsonProperty("purpose") String purpose,
+            @JsonProperty("challenge_id") String challengeId) {
+        public Payload(Long telegramId) {
+            this(telegramId, null, null);
+        }
+    }
 
     public OtpVerifiedEvent(Object source, Long telegramId) {
-        super(source, "otp.verified", new Payload(telegramId));
+        this(source, telegramId, null, null);
+    }
+
+    public OtpVerifiedEvent(Object source, Long telegramId, String purpose, String challengeId) {
+        super(source, "otp.verified", new Payload(telegramId, purpose, challengeId));
     }
 }

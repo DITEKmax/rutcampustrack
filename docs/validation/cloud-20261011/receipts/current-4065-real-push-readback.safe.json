@@ -77459,10 +77459,10 @@
       ],
       "pendingIntegration": "None; currentnormalCI/genuineafter pending",
       "rootActiveProcess": null,
-      "published": false,
-      "localHead": "75affdad731cde3db111b28e64a9feeeb8c41c73",
-      "currentHead": "75affdad731cde3db111b28e64a9feeeb8c41c73",
-      "workingTreeQualification": "Reviewed two-test diagnostic package after75aff; currentPins matchRootworking, currentHEAD75aff unchanged until normalcommit; no newproductSource"
+      "published": true,
+      "localHead": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+      "currentHead": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+      "workingTreeQualification": "All346 exactimmutableHEAD Sourcepins verified after normalpublicationf8a17; RootWIP docsevidenceonly/indexEMPTY"
     },
     "Admin_directed_TLS_Bot_fourteen_Root_integration": {
       "utc": "2026-10-15T14:49:34.116547+00:00",
@@ -176126,10 +176126,10 @@
       }
     },
     "wholeBranchInventory": {
-      "utc": "2026-10-17T00:45:48.279783+00:00",
+      "utc": "2026-10-17T01:55:13.658872+00:00",
       "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
-      "sourceRevision": "75affdad731cde3db111b28e64a9feeeb8c41c73",
-      "state": "EXACT_BASELINE_TO_CURRENT_PUBLISHED75AFF_PATH_INVENTORY_FINAL_PENDING",
+      "sourceRevision": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+      "state": "EXACT_BASELINE_TO_TESTED_F8A17_PATH_INVENTORY_WITH_DOCUMENTATION_ONLY_CHECKPOINT",
       "command": "git diff --name-status --no-renames -z BASELINE SOURCE_REVISION",
       "nulOutputSha256": "33c368967cbaf6e0ed74d0a3455e913e2d365d6b527644eefed3c716cdc00e9c",
       "pathCount": 7025,
@@ -183227,9 +183227,9 @@
         ],
         "qualification": "Existing scoped historical formatter inventories and accepted review/current mandatory format gates retain attribution. This name-status inventory does not label every modified file as a semantic or pure-format change; no token/whitespace inference. Angular excluded by D010, exact net zero."
       },
-      "qualification": "One baseline-to-committed-Source inventory maintained here; task-doc working changes/final D009 doc commit are not included until their exact final revision is known. Counts are files, not functions/readiness. Update this same inventory after a new Source revision; no duplicate copied inventory.",
+      "qualification": "Same7025path/status inventory; only two alreadyModifiedtest files changed since75aff, no inventory/path/type growth. Per-Source346hashes updatedexactly. Formatting attribution overlaps purpose categories, not independentfunctions. Final task-doc-only delta keeps same path inventory; its exact source complement is in currentF8a17ef4Publication.partialDocumentationCheckpoint.",
       "previousCheckpointReference": "37aa02fe0420929b88d85c66dfa66caf15502b03:docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json#next_reviewed_integrations.wholeBranchInventory contains immutable prior37inventory",
-      "currentSourceRevision": "75affdad731cde3db111b28e64a9feeeb8c41c73"
+      "currentSourceRevision": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0"
     },
     "current6ffadb48Publication": {
       "utc": "2026-10-16T19:41:35.272358+00:00",
@@ -206284,6 +206284,4083 @@
           "rootIntegrity": "all346workingSourcepins/8exactownedpaths/indexEMPTY/TASKhash/CSVbyteexactroundtrip/appendonlypublishedprefix+53historicblanklines/NDJSONparse/whitespacePASS",
           "sourceNativeAfter": "NOT_RUN",
           "next": "One normal designatedbranch commit, actualnonemptyrange scan, normalpush/readbacks, ordinaryCI"
+        }
+      }
+    },
+    "currentF8a17ef4Publication": {
+      "utc": "2026-10-17T01:52:05.251112+00:00",
+      "state": "TESTED_SOURCE_ALL_CURRENT_GATES_SUCCESS_PARTIAL_HANDOFF_B013_PLATFORM_BLOCKED",
+      "head": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+      "parent": "75affdad731cde3db111b28e64a9feeeb8c41c73",
+      "tree": "987ed769e95b0311c629de46ce259a9249de3526",
+      "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "branch": "codex/server-validation-20261011",
+      "PR": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+      "scope": "ONLY two reviewed checking diagnostics +sixexistingtaskdocs; no product/API/proto/migration/config/CI/lock/Angular delta from75aff",
+      "files": [
+        {
+          "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "beforeSha256": "7a9bc9ec138225de32d82975767b7f6e8b96264875df4ad9af4c1963a4d25d3b",
+          "afterSha256": "b029a4ead90329801ca2f3c4ba67bc3b85b4c178b9daa640d72a2d9fdee797c3",
+          "writerWorktree": "/tmp/rct-headman-hw-intent-6cdce-20261015",
+          "exactReviewedBytes": true
+        },
+        {
+          "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+          "beforeSha256": "bbd8da0f8937a8cca1b4a71425e9730c58b08e661b1a5941699d49b243386e92",
+          "afterSha256": "0ac49e766c449b63c44eec00ebe4d876d720f4f4aa42aecd2aa705c2eda4e3ab",
+          "writerWorktree": "/workspace/rct-worktrees/q09-client-remaining-20261014",
+          "exactReviewedBytes": true
+        }
+      ],
+      "sourceCount": 346,
+      "workflowSha256": "797eb4bb502f8caa0eb8d01ba66d97e9f97c92a2ef2be622c82eb26fab03566c",
+      "reviewRef": "current75affdadPublication.currentFailureRCAOwners.review.finalOutcome",
+      "authorRef": "current75affdadPublication.currentFailureRCAOwners worker/reconciliation.writerOutcome",
+      "rootChecksRef": "current75affdadPublication.diagnosticPackageIntegration.rootApplicableChecks",
+      "commit": {
+        "chunk": "3521f8",
+        "exit": 0,
+        "sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+        "files": 8,
+        "created": 0,
+        "modified": 8,
+        "deleted": 0,
+        "subject": "test: distinguish worker and reconciliation failures"
+      },
+      "actualRangeGitleaks": {
+        "chunk": "ba4bd0",
+        "exit": 0,
+        "actualNonemptyCommitCount": 1,
+        "parent": "75affdad731cde3db111b28e64a9feeeb8c41c73",
+        "head": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+        "findings": 0,
+        "rulesWeakened": false
+      },
+      "push": {
+        "chunk": "db15f0",
+        "session": 19762,
+        "completion": "fdf821",
+        "exit": 0,
+        "mode": "NORMAL_FAST_FORWARD_DESIGNATED_BRANCH_ONLY"
+      },
+      "readback": {
+        "gitChunk": "a0b48f",
+        "gitBranchHead": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+        "officialPR": {
+          "head": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+          "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "draft": true,
+          "merged": false,
+          "mergeCandidate": "4205268d05bed12f93656610be6b1f92b98e036d",
+          "runs": [
+            {
+              "id": 38992575916,
+              "name": "Security",
+              "status": "queued",
+              "conclusion": null
+            },
+            {
+              "id": 38992576002,
+              "name": "Coverage",
+              "status": "queued",
+              "conclusion": null
+            },
+            {
+              "id": 38992575959,
+              "name": "OpenAPI Drift Guard",
+              "status": "queued",
+              "conclusion": null
+            },
+            {
+              "id": 38992576328,
+              "name": "CI",
+              "status": "queued",
+              "conclusion": null
+            }
+          ]
+        },
+        "localRemotePRHeadEqual": true,
+        "PRMergeCandidateNotActualCheckout": "4205268d05bed12f93656610be6b1f92b98e036d"
+      },
+      "initialRuns": [
+        {
+          "id": 38992575916,
+          "name": "Security",
+          "status": "queued",
+          "conclusion": null
+        },
+        {
+          "id": 38992576002,
+          "name": "Coverage",
+          "status": "queued",
+          "conclusion": null
+        },
+        {
+          "id": 38992575959,
+          "name": "OpenAPI Drift Guard",
+          "status": "queued",
+          "conclusion": null
+        },
+        {
+          "id": 38992576328,
+          "name": "CI",
+          "status": "queued",
+          "conclusion": null
+        }
+      ],
+      "nativeAfter": "EXACT_CURRENT_REPRESENTATIVE_WORKER3_AND_RECON_V5_PASS_WHOLE_GATES_PENDING",
+      "qualification": "Original75Worker/Recon causesUNKNOWN; revieweddiagnostics only, Sourceapproval not productfix/genuineafter. Current75fullLesson4 passed and nativeowner/frozenB013 scopes retained. No oldreceiptscertifynewrevision.",
+      "next": "Publish documentation/evidence-only partial checkpoint with exact source equivalence and real push/readback; then WAITING_ENV solely for mandatory B013, no equivalent bypass.",
+      "observerGO": {
+        "utc": "2026-10-17T01:52:37.835057+00:00",
+        "owner": "/root/c94_current75_primary_reader",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "actualMetadata": "UNKNOWN",
+        "worktree": "/workspace/rct-worktrees/renderer-outage-874-20261014",
+        "ownReceipt": ".agent/evidence/c80-f6b2-primary.safe.json",
+        "mode": "SOLE_CURRENT_F8A17_ORDINARY_ACTIONS_OBSERVER_AND_STRICT_PRIMARY_CONSUMER",
+        "scope": "Find exactPUSH+PR currentruns and bothclient/lifecycleproducerjobs/aggregate; bind ALL4actualcheckoutartifacts via officialGitparents/tree, immutablef8a17 same20purposes53decl fromrealSource; reuse same8approvedreadersemantics/2namevariants with inverse+compile newparameteronly data. Prioritize genuineWorker23/Recon53; currentLesson4 after if relevant and mandatory fullcurrentgates. Read available exactprimaries as needed for finalcurrent acceptance, no duplicate unchangedhistoricalsuites.",
+        "delegation": "Fresh safe per-read SDKartifact/time/resource/normaltoolnetworkpermissions delegated within exactsameexistingguard/closedreader/caps/CRC/digest/privacy/identities; direct SDKdownload refs remainRAM. No oldgrantsreuse; if existingmechanism needs separatelyRootwrittengrant return exactplan, noforge.",
+        "constraints": "No Source/sharedDocs/Git/config/testchanges; no native/browser/Docker/Gradle/testlaunch/rerun/dispatch/cancel/Sourcepush/credentials/rawlogs/privateURLoutput/B013–15equivalents. Preserve4GiBfloor/processcleanup; currentRootWIP docsonly/canonical346exactHEAD. Official PR candidate4205268... is NOTactualcheckout until strictartifact+Gitjoin. Ordinaryusefulruns mustnotbe interrupted.",
+        "output": "Save own existingnamespace currentF8a17ef4Primary/PushPrimary and safepoints; preserve previousdata. Promptlysend newactualFAIL/after/cleanup/gates. Metadataonlyfreshparams no newsemanticreviewcampaign. AllreadersreapedbeforeoperationalSafePoint; gateSUCCESS notproofalone, oldreceiptsnotnewSHA."
+      },
+      "initialCurrentOrdinaryCICheckpoint": {
+        "utc": "2026-10-17T01:55:13.658872+00:00",
+        "source": "c94 officialSDK currentf8a17 observation/sameownreceipt",
+        "push": {
+          "run": 38992571332,
+          "event": "push",
+          "head": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+          "attempt": 1,
+          "groups": {
+            "client": 117277948217,
+            "lifecycle": 117277948144
+          }
+        },
+        "pull_request": {
+          "run": 38992576328,
+          "groups": {
+            "client": 117277964463,
+            "lifecycle": 117277964567
+          }
+        },
+        "security": {
+          "run": 38992575916,
+          "conclusion": "success"
+        },
+        "openapi": {
+          "run": 38992575959,
+          "conclusion": "success"
+        },
+        "sourceBinding": "All20purposes53declarations immutableGitf8a17 verified; all8existingconsumer parameterinverse+compilePASS; MobileafterWorker+81/Subject5287",
+        "checkouts": "Uploads available PUSHboth+PRclient, PRlife initiallyqueued; actualstrictartifact/officialGitjoin pending, candidate notactual",
+        "acceptance": "No currentprimary/nativePASS yet; usefulruns preserved, no Sourcepublication/rerun/cancel"
+      },
+      "currentGroupCheckoutCheckpoint": {
+        "utc": "2026-10-17T01:57:03.374637+00:00",
+        "state": "ALL4_ACTUAL_STRICT_ARTIFACT_OFFICIAL_GIT_PARENT_TREE_JOIN_VERIFIED",
+        "events": {
+          "push": {
+            "run": 38992571332,
+            "groupProducerJobs": {
+              "client": {
+                "id": 117277948217,
+                "name": "Playwright E2E auth flow (client)",
+                "run": 38992571332
+              },
+              "lifecycle": {
+                "id": 117277948144,
+                "name": "Playwright E2E auth flow (lifecycle)",
+                "run": 38992571332
+              }
+            },
+            "actualCheckoutsByGroup": {
+              "client": {
+                "state": "STRICT_CHECKOUT_ARTIFACT_VERIFIED",
+                "artifact": 12085633108,
+                "run": 38992571332,
+                "digest": "sha256:efb06e38ffa97986dd4644cb0d6053378def110aea5fd4083ea647f82c89448a",
+                "bytes": 273,
+                "checkout": {
+                  "checkout_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "tree_sha": "987ed769e95b0311c629de46ce259a9249de3526",
+                  "producer_head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0"
+                },
+                "officialParentAndTreeJoin": "VERIFIED",
+                "officialGitCommit": {
+                  "sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "tree": "987ed769e95b0311c629de46ce259a9249de3526",
+                  "parents": [
+                    "75affdad731cde3db111b28e64a9feeeb8c41c73"
+                  ]
+                },
+                "producerGroup": "client",
+                "producerJobId": 117277948217
+              },
+              "lifecycle": {
+                "state": "STRICT_CHECKOUT_ARTIFACT_VERIFIED",
+                "artifact": 12085184993,
+                "run": 38992571332,
+                "digest": "sha256:4971c15c32ce9c4c78ccfd100eec7beeb60989b6d20d47687d9d159669c3b05c",
+                "bytes": 273,
+                "checkout": {
+                  "checkout_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "tree_sha": "987ed769e95b0311c629de46ce259a9249de3526",
+                  "producer_head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0"
+                },
+                "officialParentAndTreeJoin": "VERIFIED",
+                "officialGitCommit": {
+                  "sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "tree": "987ed769e95b0311c629de46ce259a9249de3526",
+                  "parents": [
+                    "75affdad731cde3db111b28e64a9feeeb8c41c73"
+                  ]
+                },
+                "producerGroup": "lifecycle",
+                "producerJobId": 117277948144
+              }
+            },
+            "sourceBindingState": "EXACT_IMMUTABLE_GIT_SOURCE_ALL53_DECLARATIONS_AND_BOTH_GROUP_CHECKOUTS_BOUND"
+          },
+          "pull_request": {
+            "run": 38992576328,
+            "groupProducerJobs": {
+              "client": {
+                "id": 117277964463,
+                "name": "Playwright E2E auth flow (client)",
+                "run": 38992576328
+              },
+              "lifecycle": {
+                "id": 117277964567,
+                "name": "Playwright E2E auth flow (lifecycle)",
+                "run": 38992576328
+              }
+            },
+            "actualCheckoutsByGroup": {
+              "client": {
+                "state": "STRICT_CHECKOUT_ARTIFACT_VERIFIED",
+                "artifact": 12085741173,
+                "run": 38992576328,
+                "digest": "sha256:5046f461aa0e9621285b99f3a68818a3ade437f34531223bbda675e211e81f0b",
+                "bytes": 293,
+                "checkout": {
+                  "checkout_sha": "4205268d05bed12f93656610be6b1f92b98e036d",
+                  "tree_sha": "987ed769e95b0311c629de46ce259a9249de3526",
+                  "producer_head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0"
+                },
+                "officialParentAndTreeJoin": "VERIFIED",
+                "officialGitCommit": {
+                  "sha": "4205268d05bed12f93656610be6b1f92b98e036d",
+                  "tree": "987ed769e95b0311c629de46ce259a9249de3526",
+                  "parents": [
+                    "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+                    "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0"
+                  ]
+                },
+                "producerGroup": "client",
+                "producerJobId": 117277964463
+              },
+              "lifecycle": {
+                "state": "STRICT_CHECKOUT_ARTIFACT_VERIFIED",
+                "artifact": 12085976025,
+                "run": 38992576328,
+                "digest": "sha256:189d66e1be8b67685b8826043e5112275c7977b50bed9cc79111064113b5c5d2",
+                "bytes": 293,
+                "checkout": {
+                  "checkout_sha": "4205268d05bed12f93656610be6b1f92b98e036d",
+                  "tree_sha": "987ed769e95b0311c629de46ce259a9249de3526",
+                  "producer_head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0"
+                },
+                "officialParentAndTreeJoin": "VERIFIED",
+                "officialGitCommit": {
+                  "sha": "4205268d05bed12f93656610be6b1f92b98e036d",
+                  "tree": "987ed769e95b0311c629de46ce259a9249de3526",
+                  "parents": [
+                    "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+                    "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0"
+                  ]
+                },
+                "producerGroup": "lifecycle",
+                "producerJobId": 117277964567
+              }
+            },
+            "sourceBindingState": "EXACT_IMMUTABLE_GIT_SOURCE_ALL53_DECLARATIONS_AND_BOTH_GROUP_CHECKOUTS_BOUND"
+          }
+        },
+        "qualification": "BothPUSHf8a17/parent75aff and bothPR4205268/parents3908+f8a17, alltree987ed769. Not APIcandidate or oldreceipt substitution. Eightparameterinversecompile/all20purposes53decl verified; no currentnativeafteryet/globalSafePointFALSE whileCIactive."
+      },
+      "publicCacheArchiveCapacityPreservation": {
+        "utc": "2026-10-17T01:58:17.407740+00:00",
+        "source": "/workspace/.cache/go-mod/cache/download/github.com/h2non/filetype/@v/v1.1.3.zip",
+        "retainedByteExactCopy": "/tmp/rct-public-tool-archive-20261016/filetype-v1.1.3.zip",
+        "sha256": "7ed1f569442848fb3f6bc43592da0b14797057cd60a0c9833ceb15ddb8c118e9",
+        "bytes": 9063029,
+        "allocatedRecovered": 9064448,
+        "mode": "0o600",
+        "members": 47,
+        "publicDependency": "github.com/h2non/filetype@v1.1.3, acceptedcachedGitleaks go.sum/ziphash pinned h1 agrees; no newlydownloaded/executed code",
+        "guards": "Exclusivecopy/nofollow/ownUID/nlink1/stabledev-inode-mode-owner-size-mtime-ctime/fullSHA/allmembersprefix+CRC/mode/fsync beforecachecopyremoved; sourceatime excludedonlybecauseordinaryreads updateit. Extractedmodules/binary/source/data/evidence untouched. Restorecopyifneeded.",
+        "reason": "Measuredworkspacefloorheadroom3.4MiB cannot stage eventualreviewedhandoff (priorstage~6MiB); preservescapacity for currentstrictreader receipts and onefinaldocumentationcheckpoint withoutlowering4GiBfloor or movingtaskdata.",
+        "freeAfter": {
+          "/workspace": 4307480576,
+          "/tmp": 4845735936
+        }
+      },
+      "docOnlySourceEquivalencePreparation": {
+        "utc": "2026-10-17T02:02:56.089512+00:00",
+        "state": "PREPARED_ONLY_NOT_FINAL_D009_OR_ACCEPTANCE",
+        "producerSourceRevision": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+        "producerTree": "987ed769e95b0311c629de46ce259a9249de3526",
+        "allowedDocumentationEvidenceOnlyPaths": [
+          "docs/validation/cloud-20261011/CURRENT.md",
+          "docs/validation/cloud-20261011/resources.md",
+          "docs/validation/cloud-20261011/morning-handoff.md",
+          "docs/validation/cloud-20261011/defects.md",
+          "docs/validation/cloud-20261011/attempts.ndjson",
+          "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json"
+        ],
+        "allTrackedTreeEntries": 11245,
+        "complementEntries": 11239,
+        "gitModeTypeBlobPathNulManifestSha256": "69c1d749d0cefe7e94f4b2baab6a1fd22eba3ac605a08564fcd75131cc0f9bb2",
+        "manifestSemantics": "Exact ordered Git mode/type/blob-object-ID/path tuples for EVERY tracked entry outside exactsixdocoutputs; SHA256 covers that complete manifest. This is not per-fileSHA256 for all11239 entries or proof of ignored/private/runtime data. All346 featureSource byteSHA256 separately verified immutableHEAD at publication.",
+        "workingComplementChangedPaths": [],
+        "workingOwnedDocPaths": [
+          "docs/validation/cloud-20261011/CURRENT.md",
+          "docs/validation/cloud-20261011/attempts.ndjson",
+          "docs/validation/cloud-20261011/morning-handoff.md",
+          "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+          "docs/validation/cloud-20261011/resources.md"
+        ],
+        "inputReadQualification": "CurrentCI/scripts/tests/build searched for task-directory references; only unchanged scripts/format-authored.mjs references OTHER exacthistorical receipt manifests, all inside the unchangedcomplement. None of these sixcurrentdocoutputs are application/test/CI/build selection inputs; their JSON/Markdown/NDJSON format and secrets checks still required.",
+        "finalConditions": "After actualcurrentrequiredgates/finiteacceptance sufficient, compare REAL finaldocumentationcommit complementmanifest EXACTLY, restrict actualdiff to theseownedoutputpaths (reassessifscopechanges), preserve producer/newdocSHAs+run/event/actualcheckout IDs, normalrangeGitleaks/parser/hooks+push/readback. B013 remainsFROZEN/missingrequiredquality and ordinaryCIactive; this preparation closes no gate/criterion and is not DONE. No newSourcepublication whileCIuseful."
+      },
+      "currentWorkerActual": {
+        "utc": "2026-10-17T02:08:32.891610+00:00",
+        "outcome": {
+          "state": "EXACT_STRICT_PRIMARY_READ",
+          "producer": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+          "run": 38992571332,
+          "artifact": 12086073010,
+          "digest": "sha256:fb1c8d38069117cb167917c2dae7e7df04085b091fc3723385a76e6404df44a8",
+          "bytes": 399,
+          "members": {
+            "safe-results.json": {
+              "status": "passed",
+              "runnerErrors": 0,
+              "unsafeArtifact": false,
+              "suppressedStdoutBytes": 0,
+              "suppressedStderrBytes": 0,
+              "results": [
+                {
+                  "file": "mobile-real-server.spec.ts",
+                  "line": 2887,
+                  "project": "chromium",
+                  "status": "passed",
+                  "expectedStatus": "passed",
+                  "durationMs": 4271,
+                  "errorCount": 0,
+                  "diagnostics": [],
+                  "errorLocations": []
+                },
+                {
+                  "file": "mobile-real-server.spec.ts",
+                  "line": 3390,
+                  "project": "chromium",
+                  "status": "passed",
+                  "expectedStatus": "passed",
+                  "durationMs": 1034,
+                  "errorCount": 0,
+                  "diagnostics": [],
+                  "errorLocations": []
+                },
+                {
+                  "file": "mobile-real-server.spec.ts",
+                  "line": 3431,
+                  "project": "chromium",
+                  "status": "passed",
+                  "expectedStatus": "passed",
+                  "durationMs": 1251,
+                  "errorCount": 0,
+                  "diagnostics": [],
+                  "errorLocations": []
+                }
+              ]
+            }
+          },
+          "diagnosticSchema": {
+            "safe-results.json": [
+              {
+                "caseCode": "production worker update activates through the update gate and retains a warm launch",
+                "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+              },
+              {
+                "caseCode": "synthetic installation prompt handles dismissed unavailable and accepted outcomes",
+                "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+              },
+              {
+                "caseCode": "synthetic iOS installation instructions dismiss persistently without a native prompt",
+                "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+              }
+            ]
+          },
+          "sourcePins": [
+            {
+              "path": ".github/workflows/ci.yml",
+              "sourceRef": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "sha256": "797eb4bb502f8caa0eb8d01ba66d97e9f97c92a2ef2be622c82eb26fab03566c"
+            },
+            {
+              "path": "tests/e2e/fixtures/artifact-privacy.ts",
+              "sourceRef": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
+            },
+            {
+              "path": "tests/e2e/fixtures/safe-reporter.ts",
+              "sourceRef": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
+            },
+            {
+              "path": "tests/e2e/playwright.real-mobile.config.ts",
+              "sourceRef": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "sha256": "831fdde574a459a895e4c0b90bb53672025d1c3499dcf9da4987a7e9512ece9a"
+            },
+            {
+              "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+              "sourceRef": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "sha256": "b029a4ead90329801ca2f3c4ba67bc3b85b4c178b9daa640d72a2d9fdee797c3"
+            }
+          ],
+          "exactDeclarations": [
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 2887,
+              "title": "production worker update activates through the update gate and retains a warm launch",
+              "project": "chromium",
+              "call": "test",
+              "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 3390,
+              "title": "synthetic installation prompt handles dismissed unavailable and accepted outcomes",
+              "project": "chromium",
+              "call": "test",
+              "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+            },
+            {
+              "file": "mobile-real-server.spec.ts",
+              "line": 3431,
+              "title": "synthetic iOS installation instructions dismiss persistently without a native prompt",
+              "project": "chromium",
+              "call": "test",
+              "sourcePath": "tests/e2e/specs/mobile-real-server.spec.ts"
+            }
+          ],
+          "schemaSource": "/workspace/scratch/rct-validation/ci_493_remaining/homework/strict-browser-schema.py",
+          "schemaOriginalSha256": "bb021efbdc4af9bafe5102321e3cef94bd972481677ce3889246449ea79a9520",
+          "schemaSpecializedSha256": "50622e3940045966629a3ed9848f3152c94ecedcf51ed24c8a051fdd2fcff7a3",
+          "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
+          "cause": "UNKNOWN"
+        },
+        "qualification": "GenuinecurrentPUSH fullWorker3 strictPASS: realupdate2887 activation/oldcache-retirement/ownwarmoffline tail and syntheticinstall3390/iOS3431 separated. Native0/reaped; currentPASS doesnotprove unique75failurecause or nativeOSinstallation. No product/SWfix wasintroduced. Wholegates/Reconstillpending."
+      },
+      "currentNonBrowserAndRequiredGateCheckpoint": {
+        "utc": "2026-10-17T02:11:47.210012+00:00",
+        "source": "c94 scheduledofficialSDK checkpoint02:11/sameown currentF8 namespaces",
+        "pushNonBrowser": {
+          "run": 38992571332,
+          "passed": 20,
+          "required": 20,
+          "status": "SUCCESS"
+        },
+        "PRNonBrowser": {
+          "run": 38992576328,
+          "passed": 20,
+          "required": 20,
+          "status": "SUCCESS"
+        },
+        "coverage": {
+          "run": 38992576002,
+          "status": "completed",
+          "conclusion": "success",
+          "producerHead": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0"
+        },
+        "security": {
+          "run": 38992575916,
+          "status": "completed",
+          "conclusion": "success",
+          "producerHead": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0"
+        },
+        "openapi": {
+          "run": 38992575959,
+          "status": "completed",
+          "conclusion": "success",
+          "producerHead": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0"
+        },
+        "browser": "PUSHlifeLesson50/client31; PRlifeFIRST3_16/client29, noFAIL. PRWorker23 officialSUCCESS; representativePUSHWorker3strictPASS sufficient, no duplicatebody. Reconnotyetstarted.",
+        "qualification": "WholeCI/aggregate stillactive/globalSafePointFALSE; no CIgreen/DONE claim; no test reruns/Sourcechanges."
+      },
+      "currentReconciliationActual": {
+        "utc": "2026-10-17T02:18:42.121883+00:00",
+        "outcome": {
+          "state": "EXACT_STRICT_PRIMARY_READ",
+          "producer": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+          "run": 38992571332,
+          "artifact": 12086228209,
+          "digest": "sha256:34a980eea6dcc8cfbe0bf098a88b4adad993dcd5b3dbae815b59311c5a9dd1a3",
+          "bytes": 874,
+          "members": {
+            "artifacts/safe-results.json": {
+              "status": "passed",
+              "runnerErrors": 0,
+              "unsafeArtifact": false,
+              "suppressedStdoutBytes": 0,
+              "suppressedStderrBytes": 0,
+              "results": [
+                {
+                  "file": "semester-lifecycle.spec.ts",
+                  "line": 2705,
+                  "project": "chromium",
+                  "status": "passed",
+                  "expectedStatus": "passed",
+                  "durationMs": 144181,
+                  "errorCount": 0,
+                  "diagnostics": [],
+                  "errorLocations": []
+                }
+              ]
+            },
+            "reconciliation.safe.json": {
+              "schema": "semester-reconciliation.v5",
+              "phase": "DUPLICATE",
+              "configuredListenerAttempts": 3,
+              "measuredListenerAttempts": "UNKNOWN",
+              "exactDlqEnvelope": true,
+              "pendingBeforeReplay": true,
+              "appliedAfterReplay": true,
+              "sameArchiveCompleted": true,
+              "duplicateBusinessUnchanged": true,
+              "recoveryPublishAttempted": true,
+              "duplicateAttempted": true,
+              "retainedDlqCopies": 1,
+              "restorationSucceeded": true,
+              "clockUnchanged": true,
+              "cleanupOutcome": "PASSED",
+              "firstRestartFailure": null,
+              "mainCloseLastRead": {
+                "targetPresent": true,
+                "groupMatches": true,
+                "semesterMatches": true,
+                "status": "CLOSED"
+              },
+              "firstHttp500OwnedServices": null,
+              "strandedLastRead": null
+            }
+          },
+          "diagnosticSchema": {
+            "artifacts/safe-results.json": [
+              {
+                "caseCode": "FULL admin reconciles one exact stranded close before archive completion",
+                "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+              }
+            ],
+            "reconciliation.safe.json": "EXACT_PUBLISHED_CLOSED_V5_NO_PRIVATE_FIELDS"
+          },
+          "sourcePins": [
+            {
+              "path": ".github/workflows/ci.yml",
+              "sourceRef": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "sha256": "797eb4bb502f8caa0eb8d01ba66d97e9f97c92a2ef2be622c82eb26fab03566c"
+            },
+            {
+              "path": "tests/e2e/fixtures/artifact-privacy.ts",
+              "sourceRef": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "sha256": "7bbe4386d294c1589c3017e9d2fb494160607b5a8d92facd715c4d4b447ea5ec"
+            },
+            {
+              "path": "tests/e2e/fixtures/safe-reporter.ts",
+              "sourceRef": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "sha256": "8c6389044b899f9179ba157bc725c54d10035be35ecef8ed9c903cbdf6fb0635"
+            },
+            {
+              "path": "tests/e2e/playwright.semester-lifecycle.config.ts",
+              "sourceRef": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "sha256": "68ab83bb146db745fd39fc0d033a1db9a03b33a4ea5077f4edb6d11560484bce"
+            },
+            {
+              "path": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+              "sourceRef": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "sha256": "0ac49e766c449b63c44eec00ebe4d876d720f4f4aa42aecd2aa705c2eda4e3ab"
+            }
+          ],
+          "exactDeclarations": [
+            {
+              "sourcePath": "tests/e2e/fixtures/semester-lifecycle.spec.ts",
+              "file": "semester-lifecycle.spec.ts",
+              "title": "FULL admin reconciles one exact stranded close before archive completion",
+              "project": "chromium",
+              "line": 2705,
+              "call": "test"
+            }
+          ],
+          "schemaSource": "/workspace/scratch/rct-validation/ci_493_remaining/semester-three-member/strict-browser-schema.py",
+          "schemaOriginalSha256": "54b7db32cb86dd028113a6e77992975841e908371c6e99731f4050ef8c8acf84",
+          "schemaSpecializedSha256": "e01c65d5a77097d09da03195fd986e2050ef53756193fd58452c2e304f8ab6b5",
+          "qualification": "Same existing exact full Source title/declaration/project identities and accepted finite purpose; unchanged closed schema/caps/digestCRC/privacy; reported frames not unique causality.",
+          "cause": "UNKNOWN"
+        },
+        "qualification": "GenuinecurrentPUSH fullRecon2705/v5 STRICTPASS144181ms/0errors; pending→applied/samearchivecompleted/duplicatebusinessunchanged/DLQenvelope/recoverypublish/duplicate alltrue; retained1/configuredAttempts3/measuredUNKNOWN; exactmaincloseCLOSED/restoration+clocktrue/cleanupPASSED. Native0/reaped. Doesnotresolveuniqueoriginal75SETUPcause, no productfixintroduced. Othercurrentwholegroups/aggregates stillactive."
+      },
+      "currentTerminalPushCheckpoint": {
+        "utc": "2026-10-17T02:26:05.816220+00:00",
+        "observerRef": ".agent/evidence/c80-f6b2-primary.safe.json#currentF8a17ef4PushPrimary",
+        "terminalRun": {
+          "id": 38992571332,
+          "name": "CI",
+          "event": "push",
+          "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+          "run_attempt": 1,
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-17T01:51:00Z",
+          "run_started_at": "2026-10-17T01:51:00Z",
+          "updated_at": "2026-10-17T02:24:08Z"
+        },
+        "cleanup": {
+          "event": "push",
+          "allApplicableSuccess": true,
+          "uninitializedSkipQualified": true,
+          "groups": [
+            {
+              "group": "client",
+              "job": 117277948217,
+              "steps": [
+                {
+                  "name": "Stop owned fresh recovery targets",
+                  "number": 61,
+                  "status": "completed",
+                  "conclusion": "skipped",
+                  "started_at": "2026-10-17T02:20:13Z",
+                  "completed_at": "2026-10-17T02:20:13Z"
+                },
+                {
+                  "name": "Remove only this job's test certificate trust",
+                  "number": 62,
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T02:20:13Z",
+                  "completed_at": "2026-10-17T02:20:13Z"
+                },
+                {
+                  "name": "Remove only this job's WebKit test certificate trust",
+                  "number": 63,
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T02:20:13Z",
+                  "completed_at": "2026-10-17T02:20:13Z"
+                },
+                {
+                  "name": "Stop isolated e2e containers",
+                  "number": 64,
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T02:20:13Z",
+                  "completed_at": "2026-10-17T02:20:55Z"
+                },
+                {
+                  "name": "Complete job",
+                  "number": 129,
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T02:21:09Z",
+                  "completed_at": "2026-10-17T02:21:09Z"
+                }
+              ],
+              "durationSeconds": 1809
+            },
+            {
+              "group": "lifecycle",
+              "job": 117277948144,
+              "steps": [
+                {
+                  "name": "Stop owned fresh recovery targets",
+                  "number": 61,
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T02:23:03Z",
+                  "completed_at": "2026-10-17T02:23:04Z"
+                },
+                {
+                  "name": "Remove only this job's test certificate trust",
+                  "number": 62,
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T02:23:04Z",
+                  "completed_at": "2026-10-17T02:23:04Z"
+                },
+                {
+                  "name": "Remove only this job's WebKit test certificate trust",
+                  "number": 63,
+                  "status": "completed",
+                  "conclusion": "skipped",
+                  "started_at": "2026-10-17T02:23:04Z",
+                  "completed_at": "2026-10-17T02:23:04Z"
+                },
+                {
+                  "name": "Stop isolated e2e containers",
+                  "number": 64,
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T02:23:04Z",
+                  "completed_at": "2026-10-17T02:23:45Z"
+                },
+                {
+                  "name": "Complete job",
+                  "number": 129,
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T02:23:58Z",
+                  "completed_at": "2026-10-17T02:23:58Z"
+                }
+              ],
+              "durationSeconds": 1978
+            }
+          ]
+        },
+        "requiredGateRuns": [
+          {
+            "id": 38992575959,
+            "name": "OpenAPI Drift Guard",
+            "event": "pull_request",
+            "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-17T01:51:04Z",
+            "run_started_at": "2026-10-17T01:51:04Z",
+            "updated_at": "2026-10-17T01:52:01Z"
+          },
+          {
+            "id": 38992576002,
+            "name": "Coverage",
+            "event": "pull_request",
+            "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-17T01:51:04Z",
+            "run_started_at": "2026-10-17T01:51:04Z",
+            "updated_at": "2026-10-17T02:08:47Z"
+          },
+          {
+            "id": 38992575916,
+            "name": "Security",
+            "event": "pull_request",
+            "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-17T01:51:04Z",
+            "run_started_at": "2026-10-17T01:51:04Z",
+            "updated_at": "2026-10-17T01:53:01Z"
+          }
+        ],
+        "qualification": "PUSH terminal success; PR lifecycle and aggregate still observed by sole c94. Not final acceptance."
+      },
+      "latestPRLifecycleCheckpoint": {
+        "utc": "2026-10-17T02:28:28.479466+00:00",
+        "source": "c94 scheduled02:28 PR-only official metadata",
+        "state": "LIFECYCLE_ORIGINAL_ARCHIVE_RESTORE_STEP58_ACTIVE_NO_FAIL_CLIENT_SUCCESS",
+        "nativeReaderState": "all6reaped/no nativeactive",
+        "next": "soleobserver completes PR lifecycle+aggregate+cleanup then freeze; no bodies/PUSHpolls"
+      },
+      "terminalCurrentCIEvidence": {
+        "utc": "2026-10-17T02:32:55.056939+00:00",
+        "observerReceipt": "/workspace/rct-worktrees/renderer-outage-874-20261014/.agent/evidence/c80-f6b2-primary.safe.json",
+        "observerReceiptSha256": "68b4b18c0552e8034029aa9fa041f7b8990e8ff2d0b3715073e8d89118070124",
+        "events": {
+          "push": {
+            "terminalRun": {
+              "id": 38992571332,
+              "name": "CI",
+              "event": "push",
+              "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "run_attempt": 1,
+              "status": "completed",
+              "conclusion": "success",
+              "created_at": "2026-10-17T01:51:00Z",
+              "run_started_at": "2026-10-17T01:51:00Z",
+              "updated_at": "2026-10-17T02:24:08Z"
+            },
+            "officialJobMetadata": {
+              "observedAt": "2026-10-17T02:30:51.395242+00:00",
+              "transport": "Supported normal SDK workflow-run jobs GET, closed metadata only",
+              "jobs": [
+                {
+                  "id": 117277947945,
+                  "name": "Mobile Vue workspace",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:52:35Z"
+                },
+                {
+                  "id": 117277948083,
+                  "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:51:41Z"
+                },
+                {
+                  "id": 117277948104,
+                  "name": "Grafana dashboards structure",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T01:51:24Z"
+                },
+                {
+                  "id": 117277948123,
+                  "name": "Python Lint & Test",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T01:52:23Z"
+                },
+                {
+                  "id": 117277948142,
+                  "name": "Java unit — schedule-service",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T01:53:11Z"
+                },
+                {
+                  "id": 117277948144,
+                  "name": "Playwright E2E auth flow (lifecycle)",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T02:24:01Z",
+                  "steps": [
+                    {
+                      "name": "Set up job",
+                      "number": 1,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:04Z",
+                      "completed_at": "2026-10-17T01:51:07Z"
+                    },
+                    {
+                      "name": "Run actions/checkout@v4",
+                      "number": 2,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:07Z",
+                      "completed_at": "2026-10-17T01:51:20Z"
+                    },
+                    {
+                      "name": "Record the actual PR checkout revision",
+                      "number": 3,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:20Z",
+                      "completed_at": "2026-10-17T01:51:20Z"
+                    },
+                    {
+                      "name": "Upload the closed checkout revision",
+                      "number": 4,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:20Z",
+                      "completed_at": "2026-10-17T01:51:21Z"
+                    },
+                    {
+                      "name": "Run actions/setup-node@v4",
+                      "number": 5,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:21Z",
+                      "completed_at": "2026-10-17T01:51:26Z"
+                    },
+                    {
+                      "name": "Run actions/setup-java@v4",
+                      "number": 6,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:26Z",
+                      "completed_at": "2026-10-17T01:51:30Z"
+                    },
+                    {
+                      "name": "Setup Gradle",
+                      "number": 7,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:30Z",
+                      "completed_at": "2026-10-17T01:51:31Z"
+                    },
+                    {
+                      "name": "Prepare disposable FIRST3 clock and private artifacts",
+                      "number": 8,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:31Z",
+                      "completed_at": "2026-10-17T01:51:51Z"
+                    },
+                    {
+                      "name": "Set up Docker Buildx",
+                      "number": 9,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:51Z",
+                      "completed_at": "2026-10-17T01:51:55Z"
+                    },
+                    {
+                      "name": "Generate self-signed TLS cert",
+                      "number": 10,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:55Z",
+                      "completed_at": "2026-10-17T01:51:56Z"
+                    },
+                    {
+                      "name": "Boot isolated Vue auth stack",
+                      "number": 11,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:56Z",
+                      "completed_at": "2026-10-17T02:04:51Z"
+                    },
+                    {
+                      "name": "Link synthetic Telegram teacher in the ephemeral database",
+                      "number": 12,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:04:51Z",
+                      "completed_at": "2026-10-17T02:04:52Z"
+                    },
+                    {
+                      "name": "Install Playwright + browsers",
+                      "number": 13,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:04:52Z",
+                      "completed_at": "2026-10-17T02:05:38Z"
+                    },
+                    {
+                      "name": "Trust the disposable localhost certificate for Chromium workers",
+                      "number": 14,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:05:38Z",
+                      "completed_at": "2026-10-17T02:05:40Z"
+                    },
+                    {
+                      "name": "Run auth-flow @smoke specs (chromium only)",
+                      "number": 15,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:05:40Z",
+                      "completed_at": "2026-10-17T02:05:40Z"
+                    },
+                    {
+                      "name": "Run accepted FIRST3 with closed diagnostics (chromium only)",
+                      "number": 16,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:05:40Z",
+                      "completed_at": "2026-10-17T02:07:35Z"
+                    },
+                    {
+                      "name": "Upload safe FIRST3 outcomes and observations",
+                      "number": 17,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:35Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Run remaining five accepted mobile scenarios (chromium only)",
+                      "number": 18,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Upload safe remaining five outcomes",
+                      "number": 19,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Trust the disposable localhost certificate for WebKit workers",
+                      "number": 20,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Run accepted online session revocation and recovery in actual WebKit",
+                      "number": 21,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Upload closed WebKit outcomes",
+                      "number": 22,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Run the real production worker update and install logic",
+                      "number": 23,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Upload closed worker lifecycle and install logic outcomes",
+                      "number": 24,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Run real Vue administrator account lifecycle",
+                      "number": 25,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Upload closed administrator lifecycle outcome",
+                      "number": 26,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Run real Vue role transition and logout-all",
+                      "number": 27,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Upload closed role transition and logout-all outcome",
+                      "number": 28,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Verify real student geolocation and manual absence prohibition",
+                      "number": 29,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Upload closed student geolocation outcome",
+                      "number": 30,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Verify real Vue helper homework edit and retained completion",
+                      "number": 31,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Upload closed homework lifecycle outcome",
+                      "number": 32,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Verify real Vue map viewing and download after API replacement",
+                      "number": 33,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Upload closed map lifecycle outcome",
+                      "number": 34,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Verify real Vue FULL and LIMITED registry downloads",
+                      "number": 35,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Upload closed registry export outcomes",
+                      "number": 36,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Verify real Vue helper statistics cancellation and request decisions",
+                      "number": 37,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Upload closed helper capability outcomes",
+                      "number": 38,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Check the real homework notification target against a controlled navigation fault",
+                      "number": 39,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Upload closed homework notification sensitivity outcomes",
+                      "number": 40,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:36Z"
+                    },
+                    {
+                      "name": "Verify owned semester metadata and historical promotion through the ready UI",
+                      "number": 41,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:36Z",
+                      "completed_at": "2026-10-17T02:07:56Z"
+                    },
+                    {
+                      "name": "Upload closed admin semester UI outcome",
+                      "number": 42,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:56Z",
+                      "completed_at": "2026-10-17T02:07:57Z"
+                    },
+                    {
+                      "name": "Verify exact subject deletion through real proof and participants",
+                      "number": 43,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:57Z",
+                      "completed_at": "2026-10-17T02:08:25Z"
+                    },
+                    {
+                      "name": "Upload closed subject deletion cascade outcome",
+                      "number": 44,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:08:25Z",
+                      "completed_at": "2026-10-17T02:08:26Z"
+                    },
+                    {
+                      "name": "Verify interrupted assignment closure and next-day replacement",
+                      "number": 45,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:08:26Z",
+                      "completed_at": "2026-10-17T02:09:49Z"
+                    },
+                    {
+                      "name": "Upload closed assignment lifecycle outcomes",
+                      "number": 46,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:49Z",
+                      "completed_at": "2026-10-17T02:09:50Z"
+                    },
+                    {
+                      "name": "Record a closed exception hint after the failed lesson creation",
+                      "number": 47,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:09:50Z",
+                      "completed_at": "2026-10-17T02:09:50Z"
+                    },
+                    {
+                      "name": "Verify Today quick request after the genuine first lesson closes",
+                      "number": 48,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:50Z",
+                      "completed_at": "2026-10-17T02:10:41Z"
+                    },
+                    {
+                      "name": "Upload closed Today quick request outcome",
+                      "number": 49,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:10:41Z",
+                      "completed_at": "2026-10-17T02:10:42Z"
+                    },
+                    {
+                      "name": "Verify real Vue schedule lifecycle and attendance requests",
+                      "number": 50,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:10:42Z",
+                      "completed_at": "2026-10-17T02:14:41Z"
+                    },
+                    {
+                      "name": "Upload closed lesson lifecycle outcome",
+                      "number": 51,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:14:41Z",
+                      "completed_at": "2026-10-17T02:14:42Z"
+                    },
+                    {
+                      "name": "Record a reported projection hint after failed Student statistics",
+                      "number": 52,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:14:42Z",
+                      "completed_at": "2026-10-17T02:14:42Z"
+                    },
+                    {
+                      "name": "Verify exact stranded semester effect reconciliation",
+                      "number": 53,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:14:42Z",
+                      "completed_at": "2026-10-17T02:17:08Z"
+                    },
+                    {
+                      "name": "Upload closed semester reconciliation outcome",
+                      "number": 54,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:17:08Z",
+                      "completed_at": "2026-10-17T02:17:09Z"
+                    },
+                    {
+                      "name": "Record a closed exception hint after the failed archived lesson report",
+                      "number": 55,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:17:09Z",
+                      "completed_at": "2026-10-17T02:17:09Z"
+                    },
+                    {
+                      "name": "Restore a real application checkpoint into fresh disposable databases",
+                      "number": 56,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:17:09Z",
+                      "completed_at": "2026-10-17T02:21:26Z"
+                    },
+                    {
+                      "name": "Upload closed application recovery API outcomes",
+                      "number": 57,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:26Z",
+                      "completed_at": "2026-10-17T02:21:27Z"
+                    },
+                    {
+                      "name": "Verify real semester archive and restore participants",
+                      "number": 58,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:27Z",
+                      "completed_at": "2026-10-17T02:23:02Z"
+                    },
+                    {
+                      "name": "Locate the pending semester effect without exposing event data",
+                      "number": 59,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:23:02Z",
+                      "completed_at": "2026-10-17T02:23:02Z"
+                    },
+                    {
+                      "name": "Upload closed semester lifecycle outcome",
+                      "number": 60,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:02Z",
+                      "completed_at": "2026-10-17T02:23:03Z"
+                    },
+                    {
+                      "name": "Stop owned fresh recovery targets",
+                      "number": 61,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:03Z",
+                      "completed_at": "2026-10-17T02:23:04Z"
+                    },
+                    {
+                      "name": "Remove only this job's test certificate trust",
+                      "number": 62,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:04Z",
+                      "completed_at": "2026-10-17T02:23:04Z"
+                    },
+                    {
+                      "name": "Remove only this job's WebKit test certificate trust",
+                      "number": 63,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:23:04Z",
+                      "completed_at": "2026-10-17T02:23:04Z"
+                    },
+                    {
+                      "name": "Stop isolated e2e containers",
+                      "number": 64,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:04Z",
+                      "completed_at": "2026-10-17T02:23:45Z"
+                    },
+                    {
+                      "name": "Post Set up Docker Buildx",
+                      "number": 124,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:45Z",
+                      "completed_at": "2026-10-17T02:23:57Z"
+                    },
+                    {
+                      "name": "Post Setup Gradle",
+                      "number": 125,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:57Z",
+                      "completed_at": "2026-10-17T02:23:58Z"
+                    },
+                    {
+                      "name": "Post Run actions/setup-java@v4",
+                      "number": 126,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:58Z",
+                      "completed_at": "2026-10-17T02:23:58Z"
+                    },
+                    {
+                      "name": "Post Run actions/setup-node@v4",
+                      "number": 127,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:58Z",
+                      "completed_at": "2026-10-17T02:23:58Z"
+                    },
+                    {
+                      "name": "Post Run actions/checkout@v4",
+                      "number": 128,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:58Z",
+                      "completed_at": "2026-10-17T02:23:58Z"
+                    },
+                    {
+                      "name": "Complete job",
+                      "number": 129,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:58Z",
+                      "completed_at": "2026-10-17T02:23:58Z"
+                    }
+                  ]
+                },
+                {
+                  "id": 117277948145,
+                  "name": "Java unit — api-gateway",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:52:34Z"
+                },
+                {
+                  "id": 117277948156,
+                  "name": "Java unit — attendance-service",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:54:16Z"
+                },
+                {
+                  "id": 117277948158,
+                  "name": "Synthetic database and file recovery",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:52:04Z"
+                },
+                {
+                  "id": 117277948165,
+                  "name": "Java unit — notification-service",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:52:57Z"
+                },
+                {
+                  "id": 117277948176,
+                  "name": "Java unit — academic-service",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:53:10Z"
+                },
+                {
+                  "id": 117277948179,
+                  "name": "ShellCheck scripts",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T01:51:28Z"
+                },
+                {
+                  "id": 117277948182,
+                  "name": "Java unit — mobile-bff",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:53:00Z"
+                },
+                {
+                  "id": 117277948185,
+                  "name": "Java IT — auth-service",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:59:58Z"
+                },
+                {
+                  "id": 117277948187,
+                  "name": "Java IT — schedule-service",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:55:25Z"
+                },
+                {
+                  "id": 117277948217,
+                  "name": "Playwright E2E auth flow (client)",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T02:21:12Z",
+                  "steps": [
+                    {
+                      "name": "Set up job",
+                      "number": 1,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:04Z",
+                      "completed_at": "2026-10-17T01:51:07Z"
+                    },
+                    {
+                      "name": "Run actions/checkout@v4",
+                      "number": 2,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:07Z",
+                      "completed_at": "2026-10-17T01:51:18Z"
+                    },
+                    {
+                      "name": "Record the actual PR checkout revision",
+                      "number": 3,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:18Z",
+                      "completed_at": "2026-10-17T01:51:18Z"
+                    },
+                    {
+                      "name": "Upload the closed checkout revision",
+                      "number": 4,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:18Z",
+                      "completed_at": "2026-10-17T01:51:19Z"
+                    },
+                    {
+                      "name": "Run actions/setup-node@v4",
+                      "number": 5,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:19Z",
+                      "completed_at": "2026-10-17T01:51:24Z"
+                    },
+                    {
+                      "name": "Run actions/setup-java@v4",
+                      "number": 6,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:24Z",
+                      "completed_at": "2026-10-17T01:51:28Z"
+                    },
+                    {
+                      "name": "Setup Gradle",
+                      "number": 7,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:28Z",
+                      "completed_at": "2026-10-17T01:51:29Z"
+                    },
+                    {
+                      "name": "Prepare disposable FIRST3 clock and private artifacts",
+                      "number": 8,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:29Z",
+                      "completed_at": "2026-10-17T01:51:51Z"
+                    },
+                    {
+                      "name": "Set up Docker Buildx",
+                      "number": 9,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:51Z",
+                      "completed_at": "2026-10-17T01:51:56Z"
+                    },
+                    {
+                      "name": "Generate self-signed TLS cert",
+                      "number": 10,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:56Z",
+                      "completed_at": "2026-10-17T01:51:57Z"
+                    },
+                    {
+                      "name": "Boot isolated Vue auth stack",
+                      "number": 11,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:51:57Z",
+                      "completed_at": "2026-10-17T02:05:17Z"
+                    },
+                    {
+                      "name": "Link synthetic Telegram teacher in the ephemeral database",
+                      "number": 12,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:05:17Z",
+                      "completed_at": "2026-10-17T02:05:18Z"
+                    },
+                    {
+                      "name": "Install Playwright + browsers",
+                      "number": 13,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:05:18Z",
+                      "completed_at": "2026-10-17T02:06:01Z"
+                    },
+                    {
+                      "name": "Trust the disposable localhost certificate for Chromium workers",
+                      "number": 14,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:06:01Z",
+                      "completed_at": "2026-10-17T02:06:03Z"
+                    },
+                    {
+                      "name": "Run auth-flow @smoke specs (chromium only)",
+                      "number": 15,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:06:03Z",
+                      "completed_at": "2026-10-17T02:06:19Z"
+                    },
+                    {
+                      "name": "Run accepted FIRST3 with closed diagnostics (chromium only)",
+                      "number": 16,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:06:19Z",
+                      "completed_at": "2026-10-17T02:06:19Z"
+                    },
+                    {
+                      "name": "Upload safe FIRST3 outcomes and observations",
+                      "number": 17,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:06:19Z",
+                      "completed_at": "2026-10-17T02:06:19Z"
+                    },
+                    {
+                      "name": "Run remaining five accepted mobile scenarios (chromium only)",
+                      "number": 18,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:06:19Z",
+                      "completed_at": "2026-10-17T02:07:00Z"
+                    },
+                    {
+                      "name": "Upload safe remaining five outcomes",
+                      "number": 19,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:00Z",
+                      "completed_at": "2026-10-17T02:07:02Z"
+                    },
+                    {
+                      "name": "Trust the disposable localhost certificate for WebKit workers",
+                      "number": 20,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:02Z",
+                      "completed_at": "2026-10-17T02:07:02Z"
+                    },
+                    {
+                      "name": "Run accepted online session revocation and recovery in actual WebKit",
+                      "number": 21,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:02Z",
+                      "completed_at": "2026-10-17T02:07:12Z"
+                    },
+                    {
+                      "name": "Upload closed WebKit outcomes",
+                      "number": 22,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:12Z",
+                      "completed_at": "2026-10-17T02:07:13Z"
+                    },
+                    {
+                      "name": "Run the real production worker update and install logic",
+                      "number": 23,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:13Z",
+                      "completed_at": "2026-10-17T02:07:23Z"
+                    },
+                    {
+                      "name": "Upload closed worker lifecycle and install logic outcomes",
+                      "number": 24,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:23Z",
+                      "completed_at": "2026-10-17T02:07:24Z"
+                    },
+                    {
+                      "name": "Run real Vue administrator account lifecycle",
+                      "number": 25,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:24Z",
+                      "completed_at": "2026-10-17T02:07:34Z"
+                    },
+                    {
+                      "name": "Upload closed administrator lifecycle outcome",
+                      "number": 26,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:34Z",
+                      "completed_at": "2026-10-17T02:07:35Z"
+                    },
+                    {
+                      "name": "Run real Vue role transition and logout-all",
+                      "number": 27,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:35Z",
+                      "completed_at": "2026-10-17T02:08:42Z"
+                    },
+                    {
+                      "name": "Upload closed role transition and logout-all outcome",
+                      "number": 28,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:08:42Z",
+                      "completed_at": "2026-10-17T02:08:43Z"
+                    },
+                    {
+                      "name": "Verify real student geolocation and manual absence prohibition",
+                      "number": 29,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:08:43Z",
+                      "completed_at": "2026-10-17T02:09:42Z"
+                    },
+                    {
+                      "name": "Upload closed student geolocation outcome",
+                      "number": 30,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:42Z",
+                      "completed_at": "2026-10-17T02:09:43Z"
+                    },
+                    {
+                      "name": "Verify real Vue helper homework edit and retained completion",
+                      "number": 31,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:43Z",
+                      "completed_at": "2026-10-17T02:11:23Z"
+                    },
+                    {
+                      "name": "Upload closed homework lifecycle outcome",
+                      "number": 32,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:11:23Z",
+                      "completed_at": "2026-10-17T02:11:24Z"
+                    },
+                    {
+                      "name": "Verify real Vue map viewing and download after API replacement",
+                      "number": 33,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:11:24Z",
+                      "completed_at": "2026-10-17T02:12:34Z"
+                    },
+                    {
+                      "name": "Upload closed map lifecycle outcome",
+                      "number": 34,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:12:34Z",
+                      "completed_at": "2026-10-17T02:12:35Z"
+                    },
+                    {
+                      "name": "Verify real Vue FULL and LIMITED registry downloads",
+                      "number": 35,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:12:35Z",
+                      "completed_at": "2026-10-17T02:16:37Z"
+                    },
+                    {
+                      "name": "Upload closed registry export outcomes",
+                      "number": 36,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:16:37Z",
+                      "completed_at": "2026-10-17T02:16:38Z"
+                    },
+                    {
+                      "name": "Verify real Vue helper statistics cancellation and request decisions",
+                      "number": 37,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:16:38Z",
+                      "completed_at": "2026-10-17T02:18:18Z"
+                    },
+                    {
+                      "name": "Upload closed helper capability outcomes",
+                      "number": 38,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:18:18Z",
+                      "completed_at": "2026-10-17T02:18:19Z"
+                    },
+                    {
+                      "name": "Check the real homework notification target against a controlled navigation fault",
+                      "number": 39,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:18:19Z",
+                      "completed_at": "2026-10-17T02:20:12Z"
+                    },
+                    {
+                      "name": "Upload closed homework notification sensitivity outcomes",
+                      "number": 40,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:20:12Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Verify owned semester metadata and historical promotion through the ready UI",
+                      "number": 41,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Upload closed admin semester UI outcome",
+                      "number": 42,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Verify exact subject deletion through real proof and participants",
+                      "number": 43,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Upload closed subject deletion cascade outcome",
+                      "number": 44,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Verify interrupted assignment closure and next-day replacement",
+                      "number": 45,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Upload closed assignment lifecycle outcomes",
+                      "number": 46,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Record a closed exception hint after the failed lesson creation",
+                      "number": 47,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Verify Today quick request after the genuine first lesson closes",
+                      "number": 48,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Upload closed Today quick request outcome",
+                      "number": 49,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Verify real Vue schedule lifecycle and attendance requests",
+                      "number": 50,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Upload closed lesson lifecycle outcome",
+                      "number": 51,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Record a reported projection hint after failed Student statistics",
+                      "number": 52,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Verify exact stranded semester effect reconciliation",
+                      "number": 53,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Upload closed semester reconciliation outcome",
+                      "number": 54,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Record a closed exception hint after the failed archived lesson report",
+                      "number": 55,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Restore a real application checkpoint into fresh disposable databases",
+                      "number": 56,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Upload closed application recovery API outcomes",
+                      "number": 57,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Verify real semester archive and restore participants",
+                      "number": 58,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Locate the pending semester effect without exposing event data",
+                      "number": 59,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Upload closed semester lifecycle outcome",
+                      "number": 60,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Stop owned fresh recovery targets",
+                      "number": 61,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Remove only this job's test certificate trust",
+                      "number": 62,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Remove only this job's WebKit test certificate trust",
+                      "number": 63,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Stop isolated e2e containers",
+                      "number": 64,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:55Z"
+                    },
+                    {
+                      "name": "Post Set up Docker Buildx",
+                      "number": 124,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:20:55Z",
+                      "completed_at": "2026-10-17T02:21:08Z"
+                    },
+                    {
+                      "name": "Post Setup Gradle",
+                      "number": 125,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:08Z",
+                      "completed_at": "2026-10-17T02:21:09Z"
+                    },
+                    {
+                      "name": "Post Run actions/setup-java@v4",
+                      "number": 126,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:09Z",
+                      "completed_at": "2026-10-17T02:21:09Z"
+                    },
+                    {
+                      "name": "Post Run actions/setup-node@v4",
+                      "number": 127,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:09Z",
+                      "completed_at": "2026-10-17T02:21:09Z"
+                    },
+                    {
+                      "name": "Post Run actions/checkout@v4",
+                      "number": 128,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:09Z",
+                      "completed_at": "2026-10-17T02:21:09Z"
+                    },
+                    {
+                      "name": "Complete job",
+                      "number": 129,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:09Z",
+                      "completed_at": "2026-10-17T02:21:09Z"
+                    }
+                  ]
+                },
+                {
+                  "id": 117277948264,
+                  "name": "Java IT — attendance-service",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:55:14Z"
+                },
+                {
+                  "id": 117277948274,
+                  "name": "Java IT — notification-service",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:02Z",
+                  "completed_at": "2026-10-17T01:54:50Z"
+                },
+                {
+                  "id": 117277948277,
+                  "name": "Java unit — auth-service",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:52:24Z",
+                  "completed_at": "2026-10-17T01:54:41Z"
+                },
+                {
+                  "id": 117277948332,
+                  "name": "Java IT — academic-service",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T02:07:10Z"
+                },
+                {
+                  "id": 117277948364,
+                  "name": "Java IT — mobile-bff",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T01:53:05Z"
+                },
+                {
+                  "id": 117277948390,
+                  "name": "Java IT — api-gateway",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:51:26Z",
+                  "completed_at": "2026-10-17T01:53:13Z"
+                },
+                {
+                  "id": 117284772444,
+                  "name": "Playwright E2E auth flow",
+                  "run_id": 38992571332,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T02:24:03Z",
+                  "completed_at": "2026-10-17T02:24:07Z",
+                  "steps": [
+                    {
+                      "name": "Set up job",
+                      "number": 1,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:24:04Z",
+                      "completed_at": "2026-10-17T02:24:04Z"
+                    },
+                    {
+                      "name": "Require both isolated browser groups to succeed",
+                      "number": 2,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:24:04Z",
+                      "completed_at": "2026-10-17T02:24:04Z"
+                    },
+                    {
+                      "name": "Complete job",
+                      "number": 3,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:24:04Z",
+                      "completed_at": "2026-10-17T02:24:04Z"
+                    }
+                  ]
+                }
+              ]
+            },
+            "cleanup": {
+              "event": "push",
+              "allApplicableSuccess": true,
+              "uninitializedSkipQualified": true,
+              "groups": [
+                {
+                  "event": "push",
+                  "group": "client",
+                  "job": 117277948217,
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T02:21:12Z",
+                  "durationSeconds": 1809,
+                  "cleanup": [
+                    {
+                      "name": "Stop owned fresh recovery targets",
+                      "number": 61,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Remove only this job's test certificate trust",
+                      "number": 62,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Remove only this job's WebKit test certificate trust",
+                      "number": 63,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:13Z"
+                    },
+                    {
+                      "name": "Stop isolated e2e containers",
+                      "number": 64,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:20:13Z",
+                      "completed_at": "2026-10-17T02:20:55Z"
+                    },
+                    {
+                      "name": "Complete job",
+                      "number": 129,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:09Z",
+                      "completed_at": "2026-10-17T02:21:09Z"
+                    }
+                  ]
+                },
+                {
+                  "event": "push",
+                  "group": "lifecycle",
+                  "job": 117277948144,
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T02:24:01Z",
+                  "durationSeconds": 1978,
+                  "cleanup": [
+                    {
+                      "name": "Stop owned fresh recovery targets",
+                      "number": 61,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:03Z",
+                      "completed_at": "2026-10-17T02:23:04Z"
+                    },
+                    {
+                      "name": "Remove only this job's test certificate trust",
+                      "number": 62,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:04Z",
+                      "completed_at": "2026-10-17T02:23:04Z"
+                    },
+                    {
+                      "name": "Remove only this job's WebKit test certificate trust",
+                      "number": 63,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:23:04Z",
+                      "completed_at": "2026-10-17T02:23:04Z"
+                    },
+                    {
+                      "name": "Stop isolated e2e containers",
+                      "number": 64,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:04Z",
+                      "completed_at": "2026-10-17T02:23:45Z"
+                    },
+                    {
+                      "name": "Complete job",
+                      "number": 129,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:23:58Z",
+                      "completed_at": "2026-10-17T02:23:58Z"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "pull_request": {
+            "terminalRun": {
+              "id": 38992576328,
+              "name": "CI",
+              "event": "pull_request",
+              "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+              "run_attempt": 1,
+              "status": "completed",
+              "conclusion": "success",
+              "created_at": "2026-10-17T01:51:04Z",
+              "run_started_at": "2026-10-17T01:51:04Z",
+              "updated_at": "2026-10-17T02:29:35Z"
+            },
+            "officialJobMetadata": {
+              "observedAt": "2026-10-17T02:30:51.395242+00:00",
+              "transport": "Supported normal SDK workflow-run jobs GET, closed metadata only",
+              "jobs": [
+                {
+                  "id": 117277964426,
+                  "name": "Mobile Vue workspace",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:55:34Z",
+                  "completed_at": "2026-10-17T01:57:25Z"
+                },
+                {
+                  "id": 117277964463,
+                  "name": "Playwright E2E auth flow (client)",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:52:36Z",
+                  "completed_at": "2026-10-17T02:22:21Z",
+                  "steps": [
+                    {
+                      "name": "Set up job",
+                      "number": 1,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:52:37Z",
+                      "completed_at": "2026-10-17T01:52:39Z"
+                    },
+                    {
+                      "name": "Run actions/checkout@v4",
+                      "number": 2,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:52:39Z",
+                      "completed_at": "2026-10-17T01:52:46Z"
+                    },
+                    {
+                      "name": "Record the actual PR checkout revision",
+                      "number": 3,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:52:46Z",
+                      "completed_at": "2026-10-17T01:52:46Z"
+                    },
+                    {
+                      "name": "Upload the closed checkout revision",
+                      "number": 4,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:52:46Z",
+                      "completed_at": "2026-10-17T01:52:47Z"
+                    },
+                    {
+                      "name": "Run actions/setup-node@v4",
+                      "number": 5,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:52:47Z",
+                      "completed_at": "2026-10-17T01:52:52Z"
+                    },
+                    {
+                      "name": "Run actions/setup-java@v4",
+                      "number": 6,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:52:52Z",
+                      "completed_at": "2026-10-17T01:52:55Z"
+                    },
+                    {
+                      "name": "Setup Gradle",
+                      "number": 7,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:52:55Z",
+                      "completed_at": "2026-10-17T01:52:57Z"
+                    },
+                    {
+                      "name": "Prepare disposable FIRST3 clock and private artifacts",
+                      "number": 8,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:52:57Z",
+                      "completed_at": "2026-10-17T01:53:16Z"
+                    },
+                    {
+                      "name": "Set up Docker Buildx",
+                      "number": 9,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:53:16Z",
+                      "completed_at": "2026-10-17T01:53:21Z"
+                    },
+                    {
+                      "name": "Generate self-signed TLS cert",
+                      "number": 10,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:53:21Z",
+                      "completed_at": "2026-10-17T01:53:22Z"
+                    },
+                    {
+                      "name": "Boot isolated Vue auth stack",
+                      "number": 11,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:53:22Z",
+                      "completed_at": "2026-10-17T02:06:23Z"
+                    },
+                    {
+                      "name": "Link synthetic Telegram teacher in the ephemeral database",
+                      "number": 12,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:06:23Z",
+                      "completed_at": "2026-10-17T02:06:23Z"
+                    },
+                    {
+                      "name": "Install Playwright + browsers",
+                      "number": 13,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:06:23Z",
+                      "completed_at": "2026-10-17T02:07:17Z"
+                    },
+                    {
+                      "name": "Trust the disposable localhost certificate for Chromium workers",
+                      "number": 14,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:17Z",
+                      "completed_at": "2026-10-17T02:07:19Z"
+                    },
+                    {
+                      "name": "Run auth-flow @smoke specs (chromium only)",
+                      "number": 15,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:19Z",
+                      "completed_at": "2026-10-17T02:07:38Z"
+                    },
+                    {
+                      "name": "Run accepted FIRST3 with closed diagnostics (chromium only)",
+                      "number": 16,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:38Z",
+                      "completed_at": "2026-10-17T02:07:38Z"
+                    },
+                    {
+                      "name": "Upload safe FIRST3 outcomes and observations",
+                      "number": 17,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:07:38Z",
+                      "completed_at": "2026-10-17T02:07:38Z"
+                    },
+                    {
+                      "name": "Run remaining five accepted mobile scenarios (chromium only)",
+                      "number": 18,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:07:38Z",
+                      "completed_at": "2026-10-17T02:09:04Z"
+                    },
+                    {
+                      "name": "Upload safe remaining five outcomes",
+                      "number": 19,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:04Z",
+                      "completed_at": "2026-10-17T02:09:05Z"
+                    },
+                    {
+                      "name": "Trust the disposable localhost certificate for WebKit workers",
+                      "number": 20,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:05Z",
+                      "completed_at": "2026-10-17T02:09:06Z"
+                    },
+                    {
+                      "name": "Run accepted online session revocation and recovery in actual WebKit",
+                      "number": 21,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:06Z",
+                      "completed_at": "2026-10-17T02:09:16Z"
+                    },
+                    {
+                      "name": "Upload closed WebKit outcomes",
+                      "number": 22,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:16Z",
+                      "completed_at": "2026-10-17T02:09:17Z"
+                    },
+                    {
+                      "name": "Run the real production worker update and install logic",
+                      "number": 23,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:17Z",
+                      "completed_at": "2026-10-17T02:09:30Z"
+                    },
+                    {
+                      "name": "Upload closed worker lifecycle and install logic outcomes",
+                      "number": 24,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:30Z",
+                      "completed_at": "2026-10-17T02:09:31Z"
+                    },
+                    {
+                      "name": "Run real Vue administrator account lifecycle",
+                      "number": 25,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:31Z",
+                      "completed_at": "2026-10-17T02:09:44Z"
+                    },
+                    {
+                      "name": "Upload closed administrator lifecycle outcome",
+                      "number": 26,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:44Z",
+                      "completed_at": "2026-10-17T02:09:45Z"
+                    },
+                    {
+                      "name": "Run real Vue role transition and logout-all",
+                      "number": 27,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:45Z",
+                      "completed_at": "2026-10-17T02:10:44Z"
+                    },
+                    {
+                      "name": "Upload closed role transition and logout-all outcome",
+                      "number": 28,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:10:44Z",
+                      "completed_at": "2026-10-17T02:10:45Z"
+                    },
+                    {
+                      "name": "Verify real student geolocation and manual absence prohibition",
+                      "number": 29,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:10:45Z",
+                      "completed_at": "2026-10-17T02:11:45Z"
+                    },
+                    {
+                      "name": "Upload closed student geolocation outcome",
+                      "number": 30,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:11:45Z",
+                      "completed_at": "2026-10-17T02:11:46Z"
+                    },
+                    {
+                      "name": "Verify real Vue helper homework edit and retained completion",
+                      "number": 31,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:11:46Z",
+                      "completed_at": "2026-10-17T02:13:27Z"
+                    },
+                    {
+                      "name": "Upload closed homework lifecycle outcome",
+                      "number": 32,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:13:27Z",
+                      "completed_at": "2026-10-17T02:13:27Z"
+                    },
+                    {
+                      "name": "Verify real Vue map viewing and download after API replacement",
+                      "number": 33,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:13:27Z",
+                      "completed_at": "2026-10-17T02:14:40Z"
+                    },
+                    {
+                      "name": "Upload closed map lifecycle outcome",
+                      "number": 34,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:14:40Z",
+                      "completed_at": "2026-10-17T02:14:40Z"
+                    },
+                    {
+                      "name": "Verify real Vue FULL and LIMITED registry downloads",
+                      "number": 35,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:14:40Z",
+                      "completed_at": "2026-10-17T02:17:46Z"
+                    },
+                    {
+                      "name": "Upload closed registry export outcomes",
+                      "number": 36,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:17:46Z",
+                      "completed_at": "2026-10-17T02:17:47Z"
+                    },
+                    {
+                      "name": "Verify real Vue helper statistics cancellation and request decisions",
+                      "number": 37,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:17:47Z",
+                      "completed_at": "2026-10-17T02:19:21Z"
+                    },
+                    {
+                      "name": "Upload closed helper capability outcomes",
+                      "number": 38,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:19:21Z",
+                      "completed_at": "2026-10-17T02:19:22Z"
+                    },
+                    {
+                      "name": "Check the real homework notification target against a controlled navigation fault",
+                      "number": 39,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:19:22Z",
+                      "completed_at": "2026-10-17T02:21:24Z"
+                    },
+                    {
+                      "name": "Upload closed homework notification sensitivity outcomes",
+                      "number": 40,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:24Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Verify owned semester metadata and historical promotion through the ready UI",
+                      "number": 41,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Upload closed admin semester UI outcome",
+                      "number": 42,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Verify exact subject deletion through real proof and participants",
+                      "number": 43,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Upload closed subject deletion cascade outcome",
+                      "number": 44,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Verify interrupted assignment closure and next-day replacement",
+                      "number": 45,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Upload closed assignment lifecycle outcomes",
+                      "number": 46,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Record a closed exception hint after the failed lesson creation",
+                      "number": 47,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Verify Today quick request after the genuine first lesson closes",
+                      "number": 48,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Upload closed Today quick request outcome",
+                      "number": 49,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Verify real Vue schedule lifecycle and attendance requests",
+                      "number": 50,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Upload closed lesson lifecycle outcome",
+                      "number": 51,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Record a reported projection hint after failed Student statistics",
+                      "number": 52,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Verify exact stranded semester effect reconciliation",
+                      "number": 53,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Upload closed semester reconciliation outcome",
+                      "number": 54,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Record a closed exception hint after the failed archived lesson report",
+                      "number": 55,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Restore a real application checkpoint into fresh disposable databases",
+                      "number": 56,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Upload closed application recovery API outcomes",
+                      "number": 57,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Verify real semester archive and restore participants",
+                      "number": 58,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Locate the pending semester effect without exposing event data",
+                      "number": 59,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Upload closed semester lifecycle outcome",
+                      "number": 60,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Stop owned fresh recovery targets",
+                      "number": 61,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Remove only this job's test certificate trust",
+                      "number": 62,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Remove only this job's WebKit test certificate trust",
+                      "number": 63,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Stop isolated e2e containers",
+                      "number": 64,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:22:07Z"
+                    },
+                    {
+                      "name": "Post Set up Docker Buildx",
+                      "number": 124,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:22:07Z",
+                      "completed_at": "2026-10-17T02:22:19Z"
+                    },
+                    {
+                      "name": "Post Setup Gradle",
+                      "number": 125,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:22:19Z",
+                      "completed_at": "2026-10-17T02:22:19Z"
+                    },
+                    {
+                      "name": "Post Run actions/setup-java@v4",
+                      "number": 126,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:22:19Z",
+                      "completed_at": "2026-10-17T02:22:20Z"
+                    },
+                    {
+                      "name": "Post Run actions/setup-node@v4",
+                      "number": 127,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:22:20Z",
+                      "completed_at": "2026-10-17T02:22:20Z"
+                    },
+                    {
+                      "name": "Post Run actions/checkout@v4",
+                      "number": 128,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:22:20Z",
+                      "completed_at": "2026-10-17T02:22:20Z"
+                    },
+                    {
+                      "name": "Complete job",
+                      "number": 129,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:22:20Z",
+                      "completed_at": "2026-10-17T02:22:20Z"
+                    }
+                  ]
+                },
+                {
+                  "id": 117277964484,
+                  "name": "Python Lint & Test",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:54:11Z",
+                  "completed_at": "2026-10-17T01:55:33Z"
+                },
+                {
+                  "id": 117277964495,
+                  "name": "Synthetic database and file recovery",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:53:02Z",
+                  "completed_at": "2026-10-17T01:53:59Z"
+                },
+                {
+                  "id": 117277964497,
+                  "name": "ShellCheck scripts",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:53:31Z",
+                  "completed_at": "2026-10-17T01:54:09Z"
+                },
+                {
+                  "id": 117277964504,
+                  "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:53:01Z",
+                  "completed_at": "2026-10-17T01:53:29Z"
+                },
+                {
+                  "id": 117277964525,
+                  "name": "Java unit — notification-service",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:53:13Z",
+                  "completed_at": "2026-10-17T01:55:31Z"
+                },
+                {
+                  "id": 117277964527,
+                  "name": "Java IT — schedule-service",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:55:15Z",
+                  "completed_at": "2026-10-17T02:00:20Z"
+                },
+                {
+                  "id": 117277964530,
+                  "name": "Grafana dashboards structure",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:55:33Z",
+                  "completed_at": "2026-10-17T01:55:51Z"
+                },
+                {
+                  "id": 117277964532,
+                  "name": "Java unit — mobile-bff",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:54:42Z",
+                  "completed_at": "2026-10-17T01:56:33Z"
+                },
+                {
+                  "id": 117277964544,
+                  "name": "Java IT — academic-service",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:54:52Z",
+                  "completed_at": "2026-10-17T02:10:49Z"
+                },
+                {
+                  "id": 117277964548,
+                  "name": "Java unit — schedule-service",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:56:48Z",
+                  "completed_at": "2026-10-17T01:59:09Z"
+                },
+                {
+                  "id": 117277964550,
+                  "name": "Java IT — mobile-bff",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:54:10Z",
+                  "completed_at": "2026-10-17T01:56:46Z"
+                },
+                {
+                  "id": 117277964562,
+                  "name": "Java IT — auth-service",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:56:35Z",
+                  "completed_at": "2026-10-17T02:05:07Z"
+                },
+                {
+                  "id": 117277964567,
+                  "name": "Playwright E2E auth flow (lifecycle)",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:55:20Z",
+                  "completed_at": "2026-10-17T02:29:30Z",
+                  "steps": [
+                    {
+                      "name": "Set up job",
+                      "number": 1,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:55:20Z",
+                      "completed_at": "2026-10-17T01:55:23Z"
+                    },
+                    {
+                      "name": "Run actions/checkout@v4",
+                      "number": 2,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:55:23Z",
+                      "completed_at": "2026-10-17T01:55:36Z"
+                    },
+                    {
+                      "name": "Record the actual PR checkout revision",
+                      "number": 3,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:55:36Z",
+                      "completed_at": "2026-10-17T01:55:36Z"
+                    },
+                    {
+                      "name": "Upload the closed checkout revision",
+                      "number": 4,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:55:36Z",
+                      "completed_at": "2026-10-17T01:55:37Z"
+                    },
+                    {
+                      "name": "Run actions/setup-node@v4",
+                      "number": 5,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:55:37Z",
+                      "completed_at": "2026-10-17T01:55:41Z"
+                    },
+                    {
+                      "name": "Run actions/setup-java@v4",
+                      "number": 6,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:55:41Z",
+                      "completed_at": "2026-10-17T01:55:45Z"
+                    },
+                    {
+                      "name": "Setup Gradle",
+                      "number": 7,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:55:45Z",
+                      "completed_at": "2026-10-17T01:55:46Z"
+                    },
+                    {
+                      "name": "Prepare disposable FIRST3 clock and private artifacts",
+                      "number": 8,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:55:46Z",
+                      "completed_at": "2026-10-17T01:56:06Z"
+                    },
+                    {
+                      "name": "Set up Docker Buildx",
+                      "number": 9,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:56:06Z",
+                      "completed_at": "2026-10-17T01:56:10Z"
+                    },
+                    {
+                      "name": "Generate self-signed TLS cert",
+                      "number": 10,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:56:10Z",
+                      "completed_at": "2026-10-17T01:56:11Z"
+                    },
+                    {
+                      "name": "Boot isolated Vue auth stack",
+                      "number": 11,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T01:56:11Z",
+                      "completed_at": "2026-10-17T02:09:27Z"
+                    },
+                    {
+                      "name": "Link synthetic Telegram teacher in the ephemeral database",
+                      "number": 12,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:27Z",
+                      "completed_at": "2026-10-17T02:09:27Z"
+                    },
+                    {
+                      "name": "Install Playwright + browsers",
+                      "number": 13,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:09:27Z",
+                      "completed_at": "2026-10-17T02:10:30Z"
+                    },
+                    {
+                      "name": "Trust the disposable localhost certificate for Chromium workers",
+                      "number": 14,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:10:30Z",
+                      "completed_at": "2026-10-17T02:10:32Z"
+                    },
+                    {
+                      "name": "Run auth-flow @smoke specs (chromium only)",
+                      "number": 15,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:10:32Z",
+                      "completed_at": "2026-10-17T02:10:32Z"
+                    },
+                    {
+                      "name": "Run accepted FIRST3 with closed diagnostics (chromium only)",
+                      "number": 16,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:10:32Z",
+                      "completed_at": "2026-10-17T02:13:07Z"
+                    },
+                    {
+                      "name": "Upload safe FIRST3 outcomes and observations",
+                      "number": 17,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:13:07Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Run remaining five accepted mobile scenarios (chromium only)",
+                      "number": 18,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Upload safe remaining five outcomes",
+                      "number": 19,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Trust the disposable localhost certificate for WebKit workers",
+                      "number": 20,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Run accepted online session revocation and recovery in actual WebKit",
+                      "number": 21,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Upload closed WebKit outcomes",
+                      "number": 22,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Run the real production worker update and install logic",
+                      "number": 23,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Upload closed worker lifecycle and install logic outcomes",
+                      "number": 24,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Run real Vue administrator account lifecycle",
+                      "number": 25,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Upload closed administrator lifecycle outcome",
+                      "number": 26,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Run real Vue role transition and logout-all",
+                      "number": 27,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Upload closed role transition and logout-all outcome",
+                      "number": 28,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Verify real student geolocation and manual absence prohibition",
+                      "number": 29,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Upload closed student geolocation outcome",
+                      "number": 30,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Verify real Vue helper homework edit and retained completion",
+                      "number": 31,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Upload closed homework lifecycle outcome",
+                      "number": 32,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Verify real Vue map viewing and download after API replacement",
+                      "number": 33,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Upload closed map lifecycle outcome",
+                      "number": 34,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Verify real Vue FULL and LIMITED registry downloads",
+                      "number": 35,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Upload closed registry export outcomes",
+                      "number": 36,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Verify real Vue helper statistics cancellation and request decisions",
+                      "number": 37,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Upload closed helper capability outcomes",
+                      "number": 38,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Check the real homework notification target against a controlled navigation fault",
+                      "number": 39,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Upload closed homework notification sensitivity outcomes",
+                      "number": 40,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:08Z"
+                    },
+                    {
+                      "name": "Verify owned semester metadata and historical promotion through the ready UI",
+                      "number": 41,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:13:08Z",
+                      "completed_at": "2026-10-17T02:13:30Z"
+                    },
+                    {
+                      "name": "Upload closed admin semester UI outcome",
+                      "number": 42,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:13:30Z",
+                      "completed_at": "2026-10-17T02:13:31Z"
+                    },
+                    {
+                      "name": "Verify exact subject deletion through real proof and participants",
+                      "number": 43,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:13:31Z",
+                      "completed_at": "2026-10-17T02:13:53Z"
+                    },
+                    {
+                      "name": "Upload closed subject deletion cascade outcome",
+                      "number": 44,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:13:53Z",
+                      "completed_at": "2026-10-17T02:13:54Z"
+                    },
+                    {
+                      "name": "Verify interrupted assignment closure and next-day replacement",
+                      "number": 45,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:13:54Z",
+                      "completed_at": "2026-10-17T02:15:28Z"
+                    },
+                    {
+                      "name": "Upload closed assignment lifecycle outcomes",
+                      "number": 46,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:15:28Z",
+                      "completed_at": "2026-10-17T02:15:29Z"
+                    },
+                    {
+                      "name": "Record a closed exception hint after the failed lesson creation",
+                      "number": 47,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:15:29Z",
+                      "completed_at": "2026-10-17T02:15:29Z"
+                    },
+                    {
+                      "name": "Verify Today quick request after the genuine first lesson closes",
+                      "number": 48,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:15:29Z",
+                      "completed_at": "2026-10-17T02:16:16Z"
+                    },
+                    {
+                      "name": "Upload closed Today quick request outcome",
+                      "number": 49,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:16:16Z",
+                      "completed_at": "2026-10-17T02:16:17Z"
+                    },
+                    {
+                      "name": "Verify real Vue schedule lifecycle and attendance requests",
+                      "number": 50,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:16:17Z",
+                      "completed_at": "2026-10-17T02:20:16Z"
+                    },
+                    {
+                      "name": "Upload closed lesson lifecycle outcome",
+                      "number": 51,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:20:16Z",
+                      "completed_at": "2026-10-17T02:20:17Z"
+                    },
+                    {
+                      "name": "Record a reported projection hint after failed Student statistics",
+                      "number": 52,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:20:17Z",
+                      "completed_at": "2026-10-17T02:20:17Z"
+                    },
+                    {
+                      "name": "Verify exact stranded semester effect reconciliation",
+                      "number": 53,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:20:17Z",
+                      "completed_at": "2026-10-17T02:22:38Z"
+                    },
+                    {
+                      "name": "Upload closed semester reconciliation outcome",
+                      "number": 54,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:22:38Z",
+                      "completed_at": "2026-10-17T02:22:38Z"
+                    },
+                    {
+                      "name": "Record a closed exception hint after the failed archived lesson report",
+                      "number": 55,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:22:38Z",
+                      "completed_at": "2026-10-17T02:22:38Z"
+                    },
+                    {
+                      "name": "Restore a real application checkpoint into fresh disposable databases",
+                      "number": 56,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:22:38Z",
+                      "completed_at": "2026-10-17T02:27:04Z"
+                    },
+                    {
+                      "name": "Upload closed application recovery API outcomes",
+                      "number": 57,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:27:04Z",
+                      "completed_at": "2026-10-17T02:27:05Z"
+                    },
+                    {
+                      "name": "Verify real semester archive and restore participants",
+                      "number": 58,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:27:05Z",
+                      "completed_at": "2026-10-17T02:28:31Z"
+                    },
+                    {
+                      "name": "Locate the pending semester effect without exposing event data",
+                      "number": 59,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:28:31Z",
+                      "completed_at": "2026-10-17T02:28:31Z"
+                    },
+                    {
+                      "name": "Upload closed semester lifecycle outcome",
+                      "number": 60,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:28:31Z",
+                      "completed_at": "2026-10-17T02:28:32Z"
+                    },
+                    {
+                      "name": "Stop owned fresh recovery targets",
+                      "number": 61,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:28:32Z",
+                      "completed_at": "2026-10-17T02:28:33Z"
+                    },
+                    {
+                      "name": "Remove only this job's test certificate trust",
+                      "number": 62,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:28:33Z",
+                      "completed_at": "2026-10-17T02:28:33Z"
+                    },
+                    {
+                      "name": "Remove only this job's WebKit test certificate trust",
+                      "number": 63,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:28:33Z",
+                      "completed_at": "2026-10-17T02:28:33Z"
+                    },
+                    {
+                      "name": "Stop isolated e2e containers",
+                      "number": 64,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:28:33Z",
+                      "completed_at": "2026-10-17T02:29:15Z"
+                    },
+                    {
+                      "name": "Post Set up Docker Buildx",
+                      "number": 124,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:29:15Z",
+                      "completed_at": "2026-10-17T02:29:27Z"
+                    },
+                    {
+                      "name": "Post Setup Gradle",
+                      "number": 125,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:29:27Z",
+                      "completed_at": "2026-10-17T02:29:28Z"
+                    },
+                    {
+                      "name": "Post Run actions/setup-java@v4",
+                      "number": 126,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:29:28Z",
+                      "completed_at": "2026-10-17T02:29:28Z"
+                    },
+                    {
+                      "name": "Post Run actions/setup-node@v4",
+                      "number": 127,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:29:28Z",
+                      "completed_at": "2026-10-17T02:29:28Z"
+                    },
+                    {
+                      "name": "Post Run actions/checkout@v4",
+                      "number": 128,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:29:28Z",
+                      "completed_at": "2026-10-17T02:29:28Z"
+                    },
+                    {
+                      "name": "Complete job",
+                      "number": 129,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:29:28Z",
+                      "completed_at": "2026-10-17T02:29:28Z"
+                    }
+                  ]
+                },
+                {
+                  "id": 117277964579,
+                  "name": "Java unit — attendance-service",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:54:18Z",
+                  "completed_at": "2026-10-17T01:56:58Z"
+                },
+                {
+                  "id": 117277964600,
+                  "name": "Java IT — api-gateway",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:55:27Z",
+                  "completed_at": "2026-10-17T01:57:15Z"
+                },
+                {
+                  "id": 117277964614,
+                  "name": "Java IT — attendance-service",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:55:53Z",
+                  "completed_at": "2026-10-17T02:02:10Z"
+                },
+                {
+                  "id": 117277964619,
+                  "name": "Java unit — api-gateway",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:57:25Z",
+                  "completed_at": "2026-10-17T01:58:44Z"
+                },
+                {
+                  "id": 117277964621,
+                  "name": "Java IT — notification-service",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:56:21Z",
+                  "completed_at": "2026-10-17T02:00:16Z"
+                },
+                {
+                  "id": 117277964636,
+                  "name": "Java unit — auth-service",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:57:00Z",
+                  "completed_at": "2026-10-17T01:59:17Z"
+                },
+                {
+                  "id": 117277964654,
+                  "name": "Java unit — academic-service",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T01:57:17Z",
+                  "completed_at": "2026-10-17T01:59:56Z"
+                },
+                {
+                  "id": 117285869984,
+                  "name": "Playwright E2E auth flow",
+                  "run_id": 38992576328,
+                  "run_attempt": 1,
+                  "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "started_at": "2026-10-17T02:29:32Z",
+                  "completed_at": "2026-10-17T02:29:35Z",
+                  "steps": [
+                    {
+                      "name": "Set up job",
+                      "number": 1,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:29:33Z",
+                      "completed_at": "2026-10-17T02:29:33Z"
+                    },
+                    {
+                      "name": "Require both isolated browser groups to succeed",
+                      "number": 2,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:29:33Z",
+                      "completed_at": "2026-10-17T02:29:33Z"
+                    },
+                    {
+                      "name": "Complete job",
+                      "number": 3,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:29:33Z",
+                      "completed_at": "2026-10-17T02:29:33Z"
+                    }
+                  ]
+                }
+              ]
+            },
+            "cleanup": {
+              "event": "pull_request",
+              "allApplicableSuccess": true,
+              "uninitializedSkipQualified": true,
+              "groups": [
+                {
+                  "event": "pull_request",
+                  "group": "client",
+                  "job": 117277964463,
+                  "started_at": "2026-10-17T01:52:36Z",
+                  "completed_at": "2026-10-17T02:22:21Z",
+                  "durationSeconds": 1785,
+                  "cleanup": [
+                    {
+                      "name": "Stop owned fresh recovery targets",
+                      "number": 61,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Remove only this job's test certificate trust",
+                      "number": 62,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Remove only this job's WebKit test certificate trust",
+                      "number": 63,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:21:25Z"
+                    },
+                    {
+                      "name": "Stop isolated e2e containers",
+                      "number": 64,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:21:25Z",
+                      "completed_at": "2026-10-17T02:22:07Z"
+                    },
+                    {
+                      "name": "Complete job",
+                      "number": 129,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:22:20Z",
+                      "completed_at": "2026-10-17T02:22:20Z"
+                    }
+                  ]
+                },
+                {
+                  "event": "pull_request",
+                  "group": "lifecycle",
+                  "job": 117277964567,
+                  "started_at": "2026-10-17T01:55:20Z",
+                  "completed_at": "2026-10-17T02:29:30Z",
+                  "durationSeconds": 2050,
+                  "cleanup": [
+                    {
+                      "name": "Stop owned fresh recovery targets",
+                      "number": 61,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:28:32Z",
+                      "completed_at": "2026-10-17T02:28:33Z"
+                    },
+                    {
+                      "name": "Remove only this job's test certificate trust",
+                      "number": 62,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:28:33Z",
+                      "completed_at": "2026-10-17T02:28:33Z"
+                    },
+                    {
+                      "name": "Remove only this job's WebKit test certificate trust",
+                      "number": 63,
+                      "status": "completed",
+                      "conclusion": "skipped",
+                      "started_at": "2026-10-17T02:28:33Z",
+                      "completed_at": "2026-10-17T02:28:33Z"
+                    },
+                    {
+                      "name": "Stop isolated e2e containers",
+                      "number": 64,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:28:33Z",
+                      "completed_at": "2026-10-17T02:29:15Z"
+                    },
+                    {
+                      "name": "Complete job",
+                      "number": 129,
+                      "status": "completed",
+                      "conclusion": "success",
+                      "started_at": "2026-10-17T02:29:28Z",
+                      "completed_at": "2026-10-17T02:29:28Z"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "requiredGateRuns": [
+          {
+            "id": 38992575959,
+            "name": "OpenAPI Drift Guard",
+            "event": "pull_request",
+            "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-17T01:51:04Z",
+            "run_started_at": "2026-10-17T01:51:04Z",
+            "updated_at": "2026-10-17T01:52:01Z"
+          },
+          {
+            "id": 38992576002,
+            "name": "Coverage",
+            "event": "pull_request",
+            "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-17T01:51:04Z",
+            "run_started_at": "2026-10-17T01:51:04Z",
+            "updated_at": "2026-10-17T02:08:47Z"
+          },
+          {
+            "id": 38992575916,
+            "name": "Security",
+            "event": "pull_request",
+            "head_sha": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+            "run_attempt": 1,
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-17T01:51:04Z",
+            "run_started_at": "2026-10-17T01:51:04Z",
+            "updated_at": "2026-10-17T01:53:01Z"
+          }
+        ],
+        "finalObserverCompletion": {
+          "utc": "2026-10-17T02:30:52.354114+00:00",
+          "agent": "c94_current75_primary_reader",
+          "state": "COMPLETED_FROZEN_NO_FURTHER_ACTIONS",
+          "head": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+          "events": [
+            {
+              "event": "push",
+              "run": 38992571332,
+              "conclusion": "success",
+              "nonBrowserJobsSuccess": 20,
+              "groupJobs": [
+                {
+                  "event": "push",
+                  "group": "client",
+                  "job": 117277948217,
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T02:21:12Z",
+                  "durationSeconds": 1809
+                },
+                {
+                  "event": "push",
+                  "group": "lifecycle",
+                  "job": 117277948144,
+                  "started_at": "2026-10-17T01:51:03Z",
+                  "completed_at": "2026-10-17T02:24:01Z",
+                  "durationSeconds": 1978
+                }
+              ],
+              "aggregate": {
+                "id": 117284772444,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-10-17T02:24:03Z",
+                "completed_at": "2026-10-17T02:24:07Z"
+              }
+            },
+            {
+              "event": "pull_request",
+              "run": 38992576328,
+              "conclusion": "success",
+              "nonBrowserJobsSuccess": 20,
+              "groupJobs": [
+                {
+                  "event": "pull_request",
+                  "group": "client",
+                  "job": 117277964463,
+                  "started_at": "2026-10-17T01:52:36Z",
+                  "completed_at": "2026-10-17T02:22:21Z",
+                  "durationSeconds": 1785
+                },
+                {
+                  "event": "pull_request",
+                  "group": "lifecycle",
+                  "job": 117277964567,
+                  "started_at": "2026-10-17T01:55:20Z",
+                  "completed_at": "2026-10-17T02:29:30Z",
+                  "durationSeconds": 2050
+                }
+              ],
+              "aggregate": {
+                "id": 117285869984,
+                "status": "completed",
+                "conclusion": "success",
+                "started_at": "2026-10-17T02:29:32Z",
+                "completed_at": "2026-10-17T02:29:35Z"
+              }
+            }
+          ],
+          "requiredGates": "CURRENT_COVERAGE_SECURITY_OPENAPI_SUCCESS_EXACT_HEAD_PR_ATTEMPT1",
+          "representativeDecodedPrimary": "CURRENT_PUSH_WORKER3_AND_RECON1_PLUS_FULL_V5_ALL_PASS",
+          "currentDecodedCaseCount": 4,
+          "sourceOnlyDeclarationCount": 53,
+          "officialPurposeCommandSuccessPerEvent": 20,
+          "notClaimed": "No53decodedcase/all20decodedbody/original75uniquecause/productfix/strictTASKDONE claim",
+          "priorFiniteProofReuse": "Existing75/9c with Root narrow diagnostic-test-only source equivalence plus currentmandatorywholeCI gates",
+          "currentReaders": [
+            {
+              "namespace": "currentF8a17ef4PushPrimary",
+              "kind": "checkout-client",
+              "nativeExit": 0,
+              "allOwnedProcessesReaped": true,
+              "sameBirthIdentitiesStillPresent": []
+            },
+            {
+              "namespace": "currentF8a17ef4PushPrimary",
+              "kind": "checkout-lifecycle",
+              "nativeExit": 0,
+              "allOwnedProcessesReaped": true,
+              "sameBirthIdentitiesStillPresent": []
+            },
+            {
+              "namespace": "currentF8a17ef4PushPrimary",
+              "kind": "currentWorker",
+              "nativeExit": 0,
+              "allOwnedProcessesReaped": true,
+              "sameBirthIdentitiesStillPresent": []
+            },
+            {
+              "namespace": "currentF8a17ef4PushPrimary",
+              "kind": "currentReconciliation",
+              "nativeExit": 0,
+              "allOwnedProcessesReaped": true,
+              "sameBirthIdentitiesStillPresent": []
+            },
+            {
+              "namespace": "currentF8a17ef4Primary",
+              "kind": "checkout-client",
+              "nativeExit": 0,
+              "allOwnedProcessesReaped": true,
+              "sameBirthIdentitiesStillPresent": []
+            },
+            {
+              "namespace": "currentF8a17ef4Primary",
+              "kind": "checkout-lifecycle",
+              "nativeExit": 0,
+              "allOwnedProcessesReaped": true,
+              "sameBirthIdentitiesStillPresent": []
+            }
+          ],
+          "allReadersReaped": true,
+          "activeBoundedReader": false,
+          "SDKAllocationUnmeasured": true,
+          "allApplicableCleanupSuccess": true,
+          "uninitializedCleanupSkipQualified": true,
+          "globalPublicationSafePoint": true,
+          "operationalSafePointIsNotWholeTaskAcceptance": true,
+          "frozenB013B014B015Preserved": true,
+          "noNativeTestsRerunsOrSourceWrites": true
+        },
+        "actualCheckoutRef": "currentGroupCheckoutCheckpoint",
+        "qualification": "Both ordinary current runs and all applicable cleanup completed success, exact head/event/attempt and actual PR checkout parents/tree verified. Four current primary cases decoded, not all53 source declarations. Prior finite acceptance reused only for unchanged risks. Original75 causes remain UNKNOWN; mandatory B013 C/D still FROZEN, not strictDONE."
+      },
+      "partialDocumentationCheckpoint": {
+        "utc": "2026-10-17T02:32:55.056939+00:00",
+        "state": "SOURCE_EQUIVALENT_PARTIAL_CHECKPOINT_NOT_DONE_NOT_FINAL_D009_ACCEPTANCE",
+        "producerSourceRevision": "f8a17ef400690e7b87a98fa6e300bb8fdf1936b0",
+        "producerSourceTree": "987ed769e95b0311c629de46ce259a9249de3526",
+        "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+        "branch": "codex/server-validation-20261011",
+        "allowedDocumentationEvidenceOnlyPaths": [
+          "docs/validation/cloud-20261011/CURRENT.md",
+          "docs/validation/cloud-20261011/resources.md",
+          "docs/validation/cloud-20261011/morning-handoff.md",
+          "docs/validation/cloud-20261011/defects.md",
+          "docs/validation/cloud-20261011/attempts.ndjson",
+          "docs/validation/cloud-20261011/receipts/current-4065-real-push-readback.safe.json",
+          "docs/validation/cloud-20261011/boundary-scenarios.csv",
+          "docs/validation/cloud-20261011/matrix-state.md"
+        ],
+        "allTrackedTreeEntries": 11245,
+        "complementEntries": 11237,
+        "gitModeTypeBlobPathNulManifestSha256": "2673cf7734c9f99a59a9a035168cd6fdc1074ef3ee57257440e257a1a0370fec",
+        "manifestSemantics": "SHA256 of exact ordered Git mode/type/blob-object-ID/path NUL tuples for all tracked entries outside these8 task-document outputs. This is not per-file SHA256 for all entries. All346 feature source SHA256 checked separately. Compare actual committed complement byte-exact after commit. Current doc outputs are not execution/gate-selection inputs; historical immutable formatter manifests stay in complement.",
+        "currentGates": "terminalCurrentCIEvidence",
+        "formalBlocker": "B013 required C/D rights-denial sensitivity platform-frozen; B52 is BLOCKED, current gates are PASS. D009 does not waive this remaining quality criterion.",
+        "finalDocumentationRevision": "Resolve Git HEAD of this documentation-only checkpoint and separate real remote/PR readback recorded in PR; cannot self-embed own commit SHA. Prior CI executed at producer Source SHA only.",
+        "remainingIndependentWork": "Before publication: documentation/parser/hooks, actual commit-range secrets scan, ordinary designated-branch push, separate Git+PR head readbacks and PR update. After these complete, no executable independent mandatory work remains; WAITING_ENV for B013.",
+        "ownerNativeDisposition": "D015/D021 four finite device/provider checks OWNER_MANUAL_PENDING, not Cloud PASS/not a Cloud completion blocker.",
+        "rootDocumentationChecks": {
+          "utc": "2026-10-17T02:33:30.323243+00:00",
+          "configuredHooks": "a69ee8/session47782→edbd07 exit0;5applicablePASS/YAMLnotapplicable",
+          "checks": "all8ownedpaths/indexEMPTY/TASKsha/all346currentHEADbytehashes/exact11237complementmanifest/Angularnet0/CSVbyteexactroundtrip+onlyB52changed/attemptspublishedprefix+53historicblanks+JSONparse/whitespacePASS",
+          "counts": {
+            "scenarios.csv": {
+              "PASS": 209,
+              "EXCLUDED": 5,
+              "OWNER_MANUAL_PENDING": 4
+            },
+            "boundary-scenarios.csv": {
+              "PASS": 50,
+              "OWNER_MANUAL_PENDING": 1,
+              "BLOCKED": 1
+            },
+            "verified-cases.csv": {
+              "PASS": 166
+            }
+          },
+          "sourceInputsChanged": false,
+          "runtime": "N/A documentation-only; current real CI retained at Sourcef8 only",
+          "next": "normalstage/commit/actualrangeGitleaks/push/separateGitandPRreadback"
         }
       }
     }

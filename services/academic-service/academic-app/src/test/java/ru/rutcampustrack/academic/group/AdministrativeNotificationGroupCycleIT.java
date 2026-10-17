@@ -23,6 +23,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
+import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 
 /** Actual committed outbox/marker proof in a database owned only by this test. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -59,6 +60,8 @@ class AdministrativeNotificationGroupCycleIT {
     }
 
     @MockitoBean RabbitTemplate rabbitTemplate;
+
+    @MockitoBean OutboxEventSender outboxEventSender;
     @Autowired JdbcTemplate jdbc;
     @Autowired GroupPromotionService service;
     @Autowired PlatformTransactionManager transactions;

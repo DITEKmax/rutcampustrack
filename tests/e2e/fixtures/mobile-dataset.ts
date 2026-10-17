@@ -128,6 +128,7 @@ export class MobileDataset {
     readonly request: APIRequestContext,
     readonly admin: Actor,
     teachingInstant?: Date,
+    readonly minimumWeeklyReportWeeks: 0 | 18 = 0,
   ) {
     this.today = moscowDate(teachingInstant);
     this.tomorrow = shifted(this.today, 1);
@@ -172,6 +173,11 @@ export class MobileDataset {
   }
 
   async initialize() {
+    const currentMonday = shifted(
+      this.today,
+      -((new Date(`${this.today}T12:00:00Z`).getUTCDay() + 6) % 7),
+    );
+    const reportStart = shifted(currentMonday, -17 * 7);
     const semesters = items(
       await this.admin.call('GET', '/api/academic/semesters?size=100'),
       'semesterResponseList',
@@ -190,7 +196,12 @@ export class MobileDataset {
           name: this.marker,
           // Historical fixtures must precede both educational jobs and real SQL/
           // membership cutoffs. Notification audiences also retain their real date.
-          dateFrom: teachingYesterday < realYesterday ? teachingYesterday : realYesterday,
+          dateFrom:
+            this.minimumWeeklyReportWeeks === 18
+              ? reportStart
+              : teachingYesterday < realYesterday
+                ? teachingYesterday
+                : realYesterday,
           dateTo: shifted(this.today, 30),
           semesterType: month >= 7 ? 'AUTUMN' : 'SPRING',
           academicYear: Number(this.today.slice(0, 4)) - (month >= 7 ? 0 : 1),
@@ -198,6 +209,17 @@ export class MobileDataset {
         [201],
       );
       await this.admin.call('PATCH', `/api/academic/semesters/${this.semester.id}/activate`);
+    }
+    if (this.minimumWeeklyReportWeeks === 18 && this.semester.dateFrom > reportStart) {
+      // Explicit serial disposable lane only. Preserve ordinary overlap validation;
+      // an incompatible stand fails here rather than bypassing the domain with SQL.
+      this.semester = await this.admin.call('PUT', `/api/academic/semesters/${this.semester.id}`, {
+        name: this.semester.name,
+        dateFrom: reportStart,
+        dateTo: this.semester.dateTo,
+        semesterType: this.semester.semesterType,
+        academicYear: this.semester.academicYear,
+      });
     }
     const group = () =>
       this.admin.call(
@@ -328,9 +350,15 @@ export async function selectPwaRole(page: Page, label: string) {
 
 export const test = base.extend<
   {},
-  { dataset: MobileDataset; activeHeadmanDataset: MobileDataset; teachingInstant: Date | undefined }
+  {
+    dataset: MobileDataset;
+    activeHeadmanDataset: MobileDataset;
+    teachingInstant: Date | undefined;
+    minimumWeeklyReportWeeks: 0 | 18;
+  }
 >({
   teachingInstant: [undefined, { scope: 'worker', option: true }],
+  minimumWeeklyReportWeeks: [0, { scope: 'worker', option: true }],
   page: async ({ page, teachingInstant }, use) => {
     // Account archive previews expire against real time, so their browser keeps that clock.
     if (
@@ -345,7 +373,7 @@ export const test = base.extend<
     await use(page);
   },
   dataset: [
-    async ({ playwright, teachingInstant }, use, workerInfo) => {
+    async ({ playwright, teachingInstant, minimumWeeklyReportWeeks }, use, workerInfo) => {
       requirePrivateArtifacts(workerInfo);
       const baseURL = String(workerInfo.project.use.baseURL ?? 'https://localhost:8443');
       const url = new URL(baseURL);
@@ -365,6 +393,7 @@ export const test = base.extend<
           request,
           await admit(request, TEST_USERS.admin, 'ADMIN'),
           teachingInstant,
+          minimumWeeklyReportWeeks,
         );
         await dataset.initialize();
         await use(dataset);

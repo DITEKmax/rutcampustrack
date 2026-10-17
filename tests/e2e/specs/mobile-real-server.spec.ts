@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { createServer } from 'node:http';
 import { execFileSync } from 'node:child_process';
-import type { BrowserContext, Page, Request, Response, TestInfo } from '@playwright/test';
+import type { BrowserContext, Download, Page, Request, Response, TestInfo } from '@playwright/test';
 import {
   test as mobileTest,
   expect,
@@ -5296,4 +5296,333 @@ self.addEventListener('fetch', event => {
   expect.soft(handlerFailed, 'DIRECT_CACHE_CONTROL_HTTP_HANDLER_FAILED').toBe(false);
   expect.soft(cleanupErrors.length === 0, 'DIRECT_CACHE_CONTROL_CLEANUP_FAILED').toBe(true);
   if (bodyFailed) throw bodyError;
+});
+
+// This opt-in reuses the ordinary serial/private mobile lane and real API fixture.
+// Run it before other dataset fixtures if the initial active semester needs widening.
+const asyncExportTest = test.extend<{ weeklyExportSeed: { weeks: string[] } }>({
+  weeklyExportSeed: [
+    async ({ dataset }, use) => {
+      const options = await dataset.headmanActor.call(
+        'GET',
+        '/api/attendance/reports/headman-weekly/weeks',
+      );
+      expect(options.weeks.length >= 18).toBe(true);
+      const weeks: string[] = options.weeks
+        .slice(-18)
+        .map((week: { weekStart: string }) => week.weekStart);
+      const first = await dataset.headmanActor.call(
+        'POST',
+        '/api/schedule/one-off-lessons',
+        {
+          groupId: dataset.group.id,
+          subjectId: dataset.subject.id,
+          assignmentId: dataset.subject.assignments[0].id,
+          date: weeks[0],
+          lessonNumber: 2,
+          classroom: 'Синтетическое начало 18 недель',
+        },
+        [201, 200],
+        { 'Idempotency-Key': randomUUID() },
+      );
+      const ends = [
+        { lessonId: first.physicalLessonId, status: 'PRESENT', expected: 'CLOSED' },
+        { lessonId: dataset.lesson.physicalLessonId, status: 'EXCUSED', expected: 'ACTIVE' },
+      ];
+      for (const endpoint of ends) {
+        let report: any;
+        await expect
+          .poll(
+            async () => {
+              report = await dataset.headmanActor.call(
+                'GET',
+                `/api/attendance/reports/lesson/${endpoint.lessonId}`,
+              );
+              const row = report.entries.find(
+                (entry: any) => Number(entry.userId) === dataset.student.id,
+              );
+              return (
+                (report.lessonStatus === endpoint.expected || report.lessonStatus === 'CLOSED') &&
+                row != null &&
+                (endpoint.expected !== 'CLOSED' || typeof row.markRevision === 'string')
+              );
+            },
+            {
+              timeout: 150000,
+              intervals: [1000],
+              message: 'Synthetic boundary lesson reaches markable journal state',
+            },
+          )
+          .toBe(true);
+        const row = report.entries.find(
+          (entry: any) => Number(entry.userId) === dataset.student.id,
+        );
+        await dataset.headmanActor.call(
+          'PUT',
+          `/api/attendance/lessons/${endpoint.lessonId}/students/${dataset.student.id}`,
+          {
+            status: endpoint.status,
+            expectedStatus: row.status?.toUpperCase() ?? 'EMPTY',
+            expectedRevision: row.markRevision ?? 'EMPTY',
+            ...(endpoint.status === 'EXCUSED'
+              ? { excuseType: 'ILLNESS', comment: 'Синтетический конец 18 недель' }
+              : {}),
+          },
+        );
+        const stored = await dataset.headmanActor.call(
+          'GET',
+          `/api/attendance/reports/lesson/${endpoint.lessonId}`,
+        );
+        expect(
+          stored.entries
+            .find((entry: any) => Number(entry.userId) === dataset.student.id)
+            .status.toUpperCase(),
+        ).toBe(endpoint.status);
+      }
+      await use({ weeks });
+    },
+    { timeout: 180000 },
+  ],
+});
+
+async function assertWeeklyDocx(
+  download: Download,
+  weeks: string[],
+  student: string,
+  group: string,
+): Promise<void> {
+  expect(download.suggestedFilename().endsWith('.docx')).toBe(true);
+  const stream = await download.createReadStream();
+  if (!stream) throw new Error('Async DOCX download stream unavailable');
+  const chunks: Buffer[] = [];
+  let length = 0;
+  for await (const chunk of stream) {
+    const bytes = Buffer.from(chunk);
+    length += bytes.length;
+    expect(length > 0 && length <= 20 * 1024 * 1024).toBe(true);
+    chunks.push(bytes);
+  }
+  expect(length > 0).toBe(true);
+  // Same bounded in-memory Python stdlib ZIP pattern used by registry export.
+  // Assert real rows/marks in both boundary weeks; never print XML or file bytes.
+  const script = String.raw`import base64, datetime, io, json, sys, zipfile, xml.etree.ElementTree as ET
+v=json.load(sys.stdin)
+data=base64.b64decode(v['docx'], validate=True)
+assert 0<len(data)<=20*1024*1024
+with zipfile.ZipFile(io.BytesIO(data)) as z:
+ info=z.getinfo('word/document.xml')
+ assert 0<info.file_size<=20*1024*1024 and not info.flag_bits&1
+ root=ET.fromstring(z.read(info))
+w='{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+segments=[]; current=[]
+for node in root.find(w+'body'):
+ if any(br.get(w+'type')=='page' for br in node.iter(w+'br')):
+  segments.append(current); current=[]
+ else: current.append(node)
+segments.append(current)
+assert len(segments)==18
+for i,(week,segment) in enumerate(zip(v['weeks'],segments)):
+ start=datetime.date.fromisoformat(week); end=start+datetime.timedelta(days=6)
+ text=''.join(t.text or '' for n in segment for t in n.iter(w+'t'))
+ assert start.strftime('%d.%m.%Y')+'–'+end.strftime('%d.%m.%Y') in text
+ assert v['group'] in text
+ if i in (0,17):
+  rows=[[''.join(t.text or '' for t in cell.iter(w+'t')) for cell in row.findall(w+'tc')] for n in segment for row in n.iter(w+'tr')]
+  assert any(v['student'] in cells and ('+' if i==0 else 'у') in cells for cells in rows)
+print('OK')`;
+  try {
+    const result = execFileSync('python3', ['-I', '-c', script], {
+      input: JSON.stringify({
+        docx: Buffer.concat(chunks).toString('base64'),
+        weeks,
+        student,
+        group,
+      }),
+      timeout: 10000,
+      maxBuffer: 1024,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    expect(result.toString('utf8').trim()).toBe('OK');
+  } catch {
+    throw new Error('Async DOCX boundary content verification failed');
+  }
+}
+
+asyncExportTest.describe('stage17 durable weekly export', () => {
+  asyncExportTest.skip(
+    process.env.RCT_E2E_ASYNC_REPORT !== 'true',
+    'Explicit disposable async report lane only',
+  );
+  asyncExportTest(
+    'HEADMAN resumes real eighteen-week DOCX after navigation and lost acceptance @stage17-async',
+    async ({ page, dataset, weeklyExportSeed }, info) => {
+      requirePrivateArtifacts(info);
+      const { weeks } = weeklyExportSeed;
+      await loginPwa(page, dataset.headman);
+      const roleSelected = page.waitForResponse(
+        (r) =>
+          new URL(r.url()).pathname === '/api/auth/session/active-role' &&
+          r.request().method() === 'PUT',
+      );
+      await selectPwaRole(page, 'Староста');
+      const browserToken: string = (await (await roleSelected).json()).accessToken;
+      await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+      await page.clock.setFixedTime(new Date());
+      const creations: { requestId: string; report: unknown }[] = [];
+      let dropAcceptance = false;
+      let droppedJobId = '';
+      let releaseFirstHandoff!: () => void;
+      const firstHandoff = new Promise<void>((resolve) => {
+        releaseFirstHandoff = resolve;
+      });
+      let holdFirstHandoff = true;
+      await page.route('**/api/auth/export-jobs/*/ticket', async (route) => {
+        if (holdFirstHandoff) await firstHandoff;
+        await route.continue();
+      });
+      await page.route('**/api/auth/export-jobs', async (route) => {
+        if (route.request().method() !== 'POST') return route.continue();
+        creations.push(route.request().postDataJSON());
+        if (!dropAcceptance) return route.continue();
+        dropAcceptance = false;
+        const actual = await route.fetch();
+        if (actual.status() !== 202)
+          throw new Error('Async acceptance failed before response loss');
+        droppedJobId = (await actual.json()).jobId;
+        await route.abort('failed');
+      });
+      const open = async () => {
+        await page.getByRole('button', { name: 'Скачать журнал', exact: true }).click();
+        const sheet = page.getByRole('dialog', { name: 'Скачать недельный журнал', exact: true });
+        await sheet.locator('summary').click();
+        const boxes = sheet.getByRole('checkbox');
+        for (const box of await boxes.all()) await box.uncheck();
+        for (let index = (await boxes.count()) - 18; index < (await boxes.count()); index++)
+          await boxes.nth(index).check();
+        await sheet.getByLabel('Формат файла', { exact: true }).selectOption('docx');
+        return sheet;
+      };
+      try {
+        const sheet = await open();
+        const accepted = page.waitForResponse(
+          (r) =>
+            new URL(r.url()).pathname === '/api/auth/export-jobs' &&
+            r.request().method() === 'POST',
+        );
+        await sheet.getByRole('button', { name: 'Скачать', exact: true }).click();
+        const created = await accepted;
+        expect(created.status()).toBe(202);
+        const firstJob = (await created.json()).jobId as string;
+        expect(created.request().postDataJSON().report).toEqual({
+          kind: 'HEADMAN_WEEKLY_SELECTED',
+          headmanWeeklySelected: { weekStarts: weeks, format: 'docx' },
+        });
+        await expect
+          .poll(() =>
+            page.evaluate(
+              (jobId) =>
+                Object.entries(sessionStorage).some(
+                  ([key, raw]) =>
+                    key.startsWith('rct:weekly-export:') &&
+                    JSON.parse(raw).some((entry: { jobId: string }) => entry.jobId === jobId),
+                ),
+              firstJob,
+            ),
+          )
+          .toBe(true);
+        await sheet.getByRole('button', { name: 'Закрыть настройки', exact: true }).click();
+        await expect(page.locator('.headman-journal')).toHaveAttribute('aria-busy', 'false');
+        const schedule = page.waitForResponse(
+          (r) => new URL(r.url()).pathname.includes('/schedule') && r.request().method() === 'GET',
+        );
+        await page.getByRole('button', { name: 'Расписание', exact: true }).click();
+        expect((await schedule).status()).toBe(200);
+        holdFirstHandoff = false;
+        releaseFirstHandoff();
+        const restored = page.waitForResponse(
+          (r) =>
+            new URL(r.url()).pathname === `/api/auth/export-jobs/${firstJob}` &&
+            r.request().method() === 'GET',
+        );
+        const firstDownload = page.waitForEvent('download');
+        await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+        expect((await restored).status()).toBe(200);
+        await assertWeeklyDocx(
+          await firstDownload,
+          weeks,
+          dataset.student.displayName,
+          dataset.group.name,
+        );
+        expect(creations).toHaveLength(1);
+        await expect
+          .poll(() =>
+            page.evaluate(
+              () =>
+                Object.keys(sessionStorage).filter((key) => key.startsWith('rct:weekly-export:'))
+                  .length,
+            ),
+          )
+          .toBe(0);
+
+        const retrySheet = await open();
+        dropAcceptance = true;
+        await retrySheet.getByRole('button', { name: 'Скачать', exact: true }).click();
+        await expect.poll(() => droppedJobId.length > 0).toBe(true);
+        await expect(retrySheet.getByRole('alert')).toBeVisible();
+        await retrySheet.getByRole('button', { name: 'Закрыть настройки', exact: true }).click();
+        await page.getByRole('button', { name: 'Расписание', exact: true }).click();
+        await page.context().setOffline(true);
+        await page.context().setOffline(false);
+        const replay = page.waitForResponse(
+          (r) =>
+            new URL(r.url()).pathname === '/api/auth/export-jobs' &&
+            r.request().method() === 'POST',
+        );
+        const recoveredDownload = page.waitForEvent('download');
+        await page.getByRole('button', { name: 'Посещаемость', exact: true }).click();
+        const replayed = await replay;
+        expect(replayed.status()).toBe(202);
+        expect((await replayed.json()).jobId).toBe(droppedJobId);
+        expect(creations).toHaveLength(3);
+        expect(creations[2]).toEqual(creations[1]);
+        expect(creations[1].requestId === creations[0].requestId).toBe(false);
+        await assertWeeklyDocx(
+          await recoveredDownload,
+          weeks,
+          dataset.student.displayName,
+          dataset.group.name,
+        );
+        const foreign = await admit(dataset.request, dataset.foreignStudent, 'STUDENT');
+        for (const suffix of ['', '/file', '/ticket']) {
+          const denied = await dataset.request.fetch(
+            `/api/auth/export-jobs/${droppedJobId}${suffix}`,
+            {
+              method: suffix === '/ticket' ? 'POST' : 'GET',
+              headers: foreign.headers(),
+            },
+          );
+          expect([403, 404].includes(denied.status())).toBe(true);
+        }
+        await dataset.admin.call('PUT', `/api/academic/groups/${dataset.group.id}/headman`, {
+          studentId: dataset.assistant.id,
+          expectedHeadmanId: dataset.headman.id,
+        });
+        for (const suffix of ['', '/file', '/ticket']) {
+          const denied = await dataset.request.fetch(
+            `/api/auth/export-jobs/${droppedJobId}${suffix}`,
+            {
+              method: suffix === '/ticket' ? 'POST' : 'GET',
+              headers: { Authorization: `Bearer ${browserToken}` },
+            },
+          );
+          expect([401, 403, 404].includes(denied.status())).toBe(true);
+        }
+      } finally {
+        holdFirstHandoff = false;
+        releaseFirstHandoff();
+        await page.unroute('**/api/auth/export-jobs/*/ticket');
+        await page.unroute('**/api/auth/export-jobs');
+      }
+    },
+  );
 });

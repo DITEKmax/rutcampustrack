@@ -10,6 +10,8 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import ru.rutcampustrack.shared.outbox.OutboxEventSender;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Import(InternalJwtTestConfig.class)
@@ -31,6 +33,8 @@ public abstract class AbstractAcademicIntegrationTest {
     }
 
     @MockitoBean RabbitTemplate rabbitTemplate;
+
+    @MockitoBean OutboxEventSender outboxEventSender;
 
     static final PostgreSQLContainer<?> POSTGRES;
 

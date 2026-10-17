@@ -49,6 +49,7 @@ import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction;
 import ru.rutcampustrack.schedule.grpc.*;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
+import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 
 /** One owned PostgreSQL boundary: committed edit/history/outbox and durable RPC recovery. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -112,6 +113,8 @@ class HomeworkEditLifecycleIT {
     }
 
     @MockitoBean RabbitTemplate rabbit;
+
+    @MockitoBean OutboxEventSender outboxEventSender;
     @MockitoBean ScheduleGrpcClient schedule;
     @MockitoBean RequestContext context;
     @MockitoBean HomeworkEditRecoveryJob recoveryJob;

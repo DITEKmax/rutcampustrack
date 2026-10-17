@@ -3,6 +3,10 @@ package ru.rutcampustrack.auth.export;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.*;
 import java.util.*;
+import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,6 +27,11 @@ import ru.rutcampustrack.shared.events.AbstractEventPublisher;
 /** Durable queue and completed-file owner; no caller credentials are persisted. */
 @Service
 public class ExportJobService extends AbstractEventPublisher {
+    private static final Logger log = LoggerFactory.getLogger(ExportJobService.class);
+    private static final Pattern REQUEST_ID =
+            Pattern.compile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
+    private static final Pattern TRACE_ID = Pattern.compile("[0-9a-f]{32}");
+    private static final Pattern SPAN_ID = Pattern.compile("[0-9a-f]{16}");
     private static final Duration JOB_WINDOW = Duration.ofMinutes(10);
     private static final Duration LEASE = Duration.ofSeconds(90);
     private static final int MAX_ACTIVE_JOBS = 2;
@@ -102,6 +111,7 @@ public class ExportJobService extends AbstractEventPublisher {
                 expires.atOffset(ZoneOffset.UTC));
         event(id, identity, State.QUEUED);
         committed(() -> metrics.accepted(request.report().kind()));
+        lifecycle("accepted", id, request.requestId(), 0, State.QUEUED, "NONE");
         return new Status(id, State.QUEUED, request.report().suggestedFilename(), expires, null);
     }
 
@@ -199,6 +209,13 @@ public class ExportJobService extends AbstractEventPublisher {
                 full,
                 job.id);
         event(job.id, job.identity, State.PREPARING);
+        lifecycle(
+                "claimed",
+                job.id,
+                job.operationRequestId,
+                job.attempts + 1,
+                State.PREPARING,
+                "NONE");
         return Optional.of(new Claim(job.id, lease, identity));
     }
 
@@ -259,6 +276,7 @@ public class ExportJobService extends AbstractEventPublisher {
         }
         event(id, job.identity, State.READY);
         committed(() -> metrics.terminal(job.identity.report().kind(), null, job.createdAt));
+        lifecycle("completed", job.id, job.operationRequestId, job.attempts, State.READY, "NONE");
         return response(load(id));
     }
 
@@ -283,6 +301,13 @@ public class ExportJobService extends AbstractEventPublisher {
                     id);
             event(id, job.identity, State.QUEUED);
             committed(() -> metrics.retried(job.identity.report().kind()));
+            lifecycle(
+                    "retry_scheduled",
+                    job.id,
+                    job.operationRequestId,
+                    job.attempts,
+                    State.QUEUED,
+                    "GENERATION_FAILED");
         }
     }
 
@@ -295,7 +320,7 @@ public class ExportJobService extends AbstractEventPublisher {
 
     private void expire(int limit) {
         jdbc.query(
-                "DELETE FROM auth_export_jobs WHERE job_id IN (SELECT job_id FROM auth_export_jobs WHERE expires_at<=NOW() ORDER BY expires_at,job_id LIMIT ? FOR UPDATE SKIP LOCKED) RETURNING identity->'report'->>'kind' AS kind,state,created_at",
+                "DELETE FROM auth_export_jobs WHERE job_id IN (SELECT job_id FROM auth_export_jobs WHERE expires_at<=NOW() ORDER BY expires_at,job_id LIMIT ? FOR UPDATE SKIP LOCKED) RETURNING job_id,request_id,attempts,identity->'report'->>'kind' AS kind,state,created_at",
                 rs -> {
                     if ("queued".equals(rs.getString("state"))
                             || "preparing".equals(rs.getString("state"))) {
@@ -303,6 +328,13 @@ public class ExportJobService extends AbstractEventPublisher {
                         Instant createdAt =
                                 rs.getObject("created_at", OffsetDateTime.class).toInstant();
                         committed(() -> metrics.expired(kind, createdAt));
+                        lifecycle(
+                                "expired",
+                                rs.getObject("job_id", UUID.class),
+                                rs.getObject("request_id", UUID.class),
+                                rs.getInt("attempts"),
+                                State.from(rs.getString("state")),
+                                "EXPIRED");
                     }
                 },
                 limit);
@@ -326,7 +358,7 @@ public class ExportJobService extends AbstractEventPublisher {
     private Job load(UUID id) {
         var rows =
                 jdbc.query(
-                        "SELECT job_id,identity,state,lease_id,lease_until,attempts,requires_full,content_type,error_code,created_at FROM auth_export_jobs WHERE job_id=? AND expires_at>NOW()",
+                        "SELECT job_id,identity,state,lease_id,lease_until,attempts,requires_full,content_type,error_code,created_at,request_id FROM auth_export_jobs WHERE job_id=? AND expires_at>NOW()",
                         (rs, n) -> {
                             StoredReportDownloadTicket identity;
                             try {
@@ -349,7 +381,8 @@ public class ExportJobService extends AbstractEventPublisher {
                                     rs.getBoolean("requires_full"),
                                     rs.getString("content_type"),
                                     rs.getString("error_code"),
-                                    rs.getObject("created_at", OffsetDateTime.class).toInstant());
+                                    rs.getObject("created_at", OffsetDateTime.class).toInstant(),
+                                    rs.getObject("request_id", UUID.class));
                         },
                         id);
         if (rows.isEmpty()) throw error(HttpStatus.NOT_FOUND, "Выгрузка не найдена");
@@ -376,6 +409,52 @@ public class ExportJobService extends AbstractEventPublisher {
                 job.id);
         event(job.id, job.identity, State.ERROR);
         committed(() -> metrics.terminal(job.identity.report().kind(), code, job.createdAt));
+        lifecycle(
+                "failed",
+                job.id,
+                job.operationRequestId,
+                job.attempts,
+                State.ERROR,
+                safeCode(code));
+    }
+
+    private void lifecycle(
+            String stage,
+            UUID jobId,
+            UUID operationRequestId,
+            int attempt,
+            State state,
+            String code) {
+        // Capture only validated diagnostic IDs while the HTTP/worker context is still current.
+        // The operation request ID is an idempotency key; it never substitutes for an HTTP/trace
+        // ID.
+        String httpRequestId = diagnosticId(MDC.get("requestId"), REQUEST_ID);
+        String traceId = diagnosticId(MDC.get("traceId"), TRACE_ID);
+        String spanId = diagnosticId(MDC.get("spanId"), SPAN_ID);
+        committed(
+                () ->
+                        log.info(
+                                "Export job stage={} jobId={} operationRequestId={} attempt={} state={} code={} httpRequestId={} traceId={} spanId={}",
+                                stage,
+                                jobId,
+                                operationRequestId,
+                                attempt,
+                                state.code(),
+                                code,
+                                httpRequestId,
+                                traceId,
+                                spanId));
+    }
+
+    private static String diagnosticId(String value, Pattern pattern) {
+        return value != null && pattern.matcher(value).matches() ? value : "none";
+    }
+
+    private static String safeCode(String code) {
+        return switch (code) {
+            case "AUTHORITY_DENIED", "GENERATION_FAILED", "EXPORT_TOO_LARGE" -> code;
+            default -> "GENERATION_FAILED";
+        };
     }
 
     private static void committed(Runnable action) {
@@ -434,7 +513,8 @@ public class ExportJobService extends AbstractEventPublisher {
             boolean requiresFull,
             String contentType,
             String errorCode,
-            Instant createdAt) {}
+            Instant createdAt,
+            UUID operationRequestId) {}
 
     public record Download(String filename, String contentType, byte[] content) {
         @Override

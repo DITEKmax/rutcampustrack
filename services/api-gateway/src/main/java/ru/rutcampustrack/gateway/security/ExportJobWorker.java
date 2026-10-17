@@ -52,28 +52,47 @@ public class ExportJobWorker {
     }
 
     private Mono<Void> generate(ExportJobModels.Claim claim) {
+        log.info("Export worker stage=dispatch jobId={}", claim.jobId());
         return reports.generate(claim.authority(), claim.jobId(), claim.leaseId())
                 .flatMap(
                         file ->
                                 auth.completeExport(
-                                        claim.jobId(),
-                                        new ExportJobModels.Complete(
-                                                claim.leaseId(),
-                                                file.content(),
-                                                file.contentType(),
-                                                file.rowCount(),
-                                                file.requiresFull(),
-                                                file.teacherScopeHash())))
+                                                claim.jobId(),
+                                                new ExportJobModels.Complete(
+                                                        claim.leaseId(),
+                                                        file.content(),
+                                                        file.contentType(),
+                                                        file.rowCount(),
+                                                        file.requiresFull(),
+                                                        file.teacherScopeHash()))
+                                        .doOnSuccess(
+                                                ignored ->
+                                                        log.info(
+                                                                "Export worker stage=commit_ack jobId={}",
+                                                                claim.jobId())))
                 // Include generation and completion; cancellation precedes Auth's 90-second lease.
                 .timeout(WORK_TIMEOUT)
                 .onErrorResume(
-                        failure ->
-                                auth.failExport(
-                                        claim.jobId(),
-                                        new ExportJobModels.Fail(
-                                                claim.leaseId(),
-                                                ReportDownloadTicketDownloadFilter.failureCode(
-                                                        failure))));
+                        failure -> {
+                            String code = ReportDownloadTicketDownloadFilter.failureCode(failure);
+                            return auth.failExport(
+                                            claim.jobId(),
+                                            new ExportJobModels.Fail(claim.leaseId(), code))
+                                    .doOnSuccess(
+                                            ignored ->
+                                                    log.info(
+                                                            "Export worker stage=fail_ack jobId={} code={}",
+                                                            claim.jobId(),
+                                                            code))
+                                    .doOnError(
+                                            ignored ->
+                                                    log.warn(
+                                                            "Export worker stage=callback_failed jobId={} code={}",
+                                                            claim.jobId(),
+                                                            code));
+                        })
+                .doOnCancel(
+                        () -> log.info("Export worker stage=cancelled jobId={}", claim.jobId()));
     }
 
     @PreDestroy

@@ -4,6 +4,9 @@ server:
   forward-headers-strategy: none
 
 spring:
+  main:
+    # Gateway remains a WebFlux server when servlet libraries are on the classpath.
+    web-application-type: reactive
   reactor:
     context-propagation: auto
   application:

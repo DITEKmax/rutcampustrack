@@ -2,26 +2,54 @@ package ru.rutcampustrack.attendance.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
+import ru.rutcampustrack.shared.events.EventTraceContext;
+import ru.rutcampustrack.shared.outbox.ConfirmedRabbitOutboxSender;
 
 import java.time.Duration;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Real RabbitMQ proof for the decision-event retry and DLQ boundary.
@@ -30,6 +58,8 @@ import java.util.UUID;
  * retried three times, then rejected to the queue's configured dead-letter exchange. Both cases use
  * the application listener container, not a direct EventConsumer invocation.
  */
+@AutoConfigureObservability
+@Import(RabbitDecisionRetryIT.TelemetryCaptureConfiguration.class)
 class RabbitDecisionRetryIT extends AbstractAttendanceIntegrationTest {
 
     private static final String DLQ = "attendance-service.events.dlq";
@@ -43,10 +73,24 @@ class RabbitDecisionRetryIT extends AbstractAttendanceIntegrationTest {
 
     @Autowired private AmqpAdmin amqpAdmin;
 
+    @Autowired private OpenTelemetry telemetry;
+
+    @Autowired private SdkTracerProvider tracerProvider;
+
+    @Autowired private CapturedSpans capturedSpans;
+
     @org.springframework.test.context.DynamicPropertySource
     static void overrideRabbitVhost(
             org.springframework.test.context.DynamicPropertyRegistry registry) {
         registry.add("spring.rabbitmq.virtual-host", () -> RABBIT_VHOST);
+        // Keep actual application sampling/baggage defaults. Standalone CI captures the real
+        // SDK exporter locally; the existing collector cohort may provide its owned endpoint.
+        String endpoint = collectorEndpoint();
+        if (endpoint == null) {
+            registry.add("management.otlp.tracing.export.enabled", () -> false);
+        } else {
+            registry.add("management.otlp.tracing.endpoint", () -> endpoint);
+        }
     }
 
     @MockitoBean private StudentRequestService studentRequestService;
@@ -210,7 +254,7 @@ class RabbitDecisionRetryIT extends AbstractAttendanceIntegrationTest {
                         new AcademicServiceUnavailableException(
                                 "synthetic transient dependency outage",
                                 io.grpc.Status.Code.UNAVAILABLE))
-                .doNothing()
+                .doReturn(null)
                 .when(studentRequestService)
                 .decideLateCheckinFromBot(requestId, actorId, true);
         String eventId = UUID.randomUUID().toString();
@@ -267,7 +311,7 @@ class RabbitDecisionRetryIT extends AbstractAttendanceIntegrationTest {
         rabbitTemplate.send("", DLQ, deadLetter);
 
         String requestId = "507f1f77bcf86cd799439014";
-        doNothing().when(studentRequestService).decideLateCheckinFromBot(requestId, 42L, true);
+        doReturn(null).when(studentRequestService).decideLateCheckinFromBot(requestId, 42L, true);
         publish(decision(UUID.randomUUID().toString(), requestId, 42L));
 
         Awaitility.await()
@@ -302,34 +346,145 @@ class RabbitDecisionRetryIT extends AbstractAttendanceIntegrationTest {
                         "30000",
                         "x-dead-letter-routing-key",
                         "attendance-service.events");
-        String requestId = "507f1f77bcf86cd799439016";
-        doThrow(
-                        new AcademicServiceUnavailableException(
-                                "synthetic transient outage", io.grpc.Status.Code.UNAVAILABLE))
-                .doThrow(
-                        new AcademicServiceUnavailableException(
-                                "synthetic transient outage", io.grpc.Status.Code.UNAVAILABLE))
-                .doThrow(
-                        new AcademicServiceUnavailableException(
-                                "synthetic transient outage", io.grpc.Status.Code.UNAVAILABLE))
-                .doNothing()
+        String businessRequest = "507f1f77bcf86cd799439016";
+        String ordinaryRequest = "507f1f77bcf86cd799439017";
+        String eventId = UUID.randomUUID().toString();
+        String ordinaryEventId = UUID.randomUUID().toString();
+        String requestId = UUID.randomUUID().toString();
+        String ordinaryRequestId = UUID.randomUUID().toString();
+        List<WorkerAttempt> attempts = new CopyOnWriteArrayList<>();
+        AtomicInteger failures = new AtomicInteger();
+        doAnswer(
+                        invocation -> {
+                            attempts.add(workerAttempt(businessRequest));
+                            if (failures.incrementAndGet() <= 3) {
+                                throw new AcademicServiceUnavailableException(
+                                        "synthetic transient outage",
+                                        io.grpc.Status.Code.UNAVAILABLE);
+                            }
+                            return null;
+                        })
                 .when(studentRequestService)
-                .decideLateCheckinFromBot(requestId, 42L, true);
-        long started = System.nanoTime();
-        publish(decision(UUID.randomUUID().toString(), requestId, 42L));
+                .decideLateCheckinFromBot(businessRequest, 42L, true);
+        doAnswer(
+                        invocation -> {
+                            attempts.add(workerAttempt(ordinaryRequest));
+                            return null;
+                        })
+                .when(studentRequestService)
+                .decideLateCheckinFromBot(ordinaryRequest, 42L, true);
 
-        Awaitility.await()
-                .atMost(Duration.ofSeconds(45))
-                .untilAsserted(
-                        () ->
-                                verify(studentRequestService, org.mockito.Mockito.times(4))
-                                        .decideLateCheckinFromBot(requestId, 42L, true));
+        var previousSpan = Span.current().getSpanContext();
+        String previousRequest = Baggage.current().getEntryValue("requestId");
+        TraceOrigin origin = acceptedOrigin(eventId, businessRequest, requestId, true);
+        TraceOrigin ordinary =
+                acceptedOrigin(ordinaryEventId, ordinaryRequest, ordinaryRequestId, false);
+        assertThat(ordinary.traceId()).isNotEqualTo(origin.traceId());
+        // The origin request has ended before the outbox publisher executes on a background
+        // context. The sender must use durable metadata, rather than the test thread's span.
+        assertThat(Span.current().getSpanContext()).isEqualTo(previousSpan);
+        assertThat(Baggage.current().getEntryValue("requestId")).isEqualTo(previousRequest);
+        var sender = new ConfirmedRabbitOutboxSender(rabbitTemplate);
+        List<Message> published = new CopyOnWriteArrayList<>();
+        MessagePostProcessor wireCapture =
+                message -> {
+                    // RabbitTemplate injects observation headers after this callback into this
+                    // same Message. Inspect the actual sent carrier after confirms/worker receipt.
+                    published.add(message);
+                    return message;
+                };
+        rabbitTemplate.addBeforePublishPostProcessors(wireCapture);
+        try {
+            String payload = new ObjectMapper().writeValueAsString(origin.envelope());
+            long started = System.nanoTime();
+            sender.send("late_checkin.decision", payload);
+            Awaitility.await()
+                    .atMost(Duration.ofSeconds(45))
+                    .untilAsserted(
+                            () ->
+                                    verify(studentRequestService, org.mockito.Mockito.times(4))
+                                            .decideLateCheckinFromBot(businessRequest, 42L, true));
+            assertThat(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started))
+                    .isGreaterThanOrEqualTo(30_000);
 
-        assertThat(java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started))
-                .isGreaterThanOrEqualTo(30_000);
-        assertThat(rabbitTemplate.receive(DLQ, 500)).isNull();
-        assertThat(amqpAdmin.getQueueInfo("attendance-service.events.retry").getMessageCount())
-                .isZero();
+            // Replay the same durable command, then a distinct command on the same single
+            // listener/prefetch=1. This checks the real Mongo dedup boundary and worker cleanup.
+            sender.send("late_checkin.decision", payload);
+            sender.send(
+                    "late_checkin.decision",
+                    new ObjectMapper().writeValueAsString(ordinary.envelope()));
+            Awaitility.await()
+                    .atMost(Duration.ofSeconds(10))
+                    .untilAsserted(
+                            () -> {
+                                verify(studentRequestService)
+                                        .decideLateCheckinFromBot(ordinaryRequest, 42L, true);
+                                assertThat(
+                                                tracerProvider
+                                                        .forceFlush()
+                                                        .join(5, TimeUnit.SECONDS)
+                                                        .isSuccess())
+                                        .isTrue();
+                                assertThat(attempts).hasSize(5);
+                                assertExportedWorker(attempts.get(4));
+                            });
+            verify(studentRequestService, org.mockito.Mockito.times(4))
+                    .decideLateCheckinFromBot(businessRequest, 42L, true);
+
+            List<Message> originalCopies =
+                    published.stream()
+                            .filter(m -> eventId.equals(m.getMessageProperties().getMessageId()))
+                            .toList();
+            assertThat(originalCopies).hasSize(3); // original, delayed redrive, duplicate replay
+            for (Message copy : originalCopies) {
+                assertThat(copy.getBody())
+                        .isEqualTo(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                assertThat(copy.getMessageProperties().getHeaders())
+                        .containsEntry("requestId", requestId)
+                        .containsEntry("request_id", requestId);
+            }
+            assertThat(originalCopies.get(1).getMessageProperties().getTimestamp())
+                    .isEqualTo(originalCopies.get(0).getMessageProperties().getTimestamp())
+                    .isNotNull();
+            assertThat(originalCopies.get(1).getMessageProperties().getHeaders())
+                    .containsEntry("rct_redrive_count", 1);
+            SpanData initialProducer = producer(originalCopies.get(0), origin, origin.spanId());
+            assertThat(exportedSpan(origin.spanId()).getKind()).isEqualTo(SpanKind.INTERNAL);
+            SpanData firstWorker = assertExportedWorker(attempts.get(0));
+            assertThat(firstWorker.getParentSpanId()).isEqualTo(initialProducer.getSpanId());
+            for (int i = 0; i < 3; i++) {
+                assertWorkerCorrelation(
+                        attempts.get(i), origin, eventId, requestId, origin.traceId());
+                assertThat(attempts.get(i).spanId()).isEqualTo(firstWorker.getSpanId());
+            }
+            SpanData retryProducer =
+                    producer(originalCopies.get(1), origin, firstWorker.getSpanId());
+            SpanData recoveredWorker = assertExportedWorker(attempts.get(3));
+            assertThat(recoveredWorker.getParentSpanId()).isEqualTo(retryProducer.getSpanId());
+            assertWorkerCorrelation(attempts.get(3), origin, eventId, requestId, origin.traceId());
+
+            Message ordinaryMessage =
+                    published.stream()
+                            .filter(
+                                    m ->
+                                            ordinaryEventId.equals(
+                                                    m.getMessageProperties().getMessageId()))
+                            .findFirst()
+                            .orElseThrow();
+            SpanData ordinaryProducer = producer(ordinaryMessage, ordinary, ordinary.spanId());
+            SpanData ordinaryWorker = assertExportedWorker(attempts.get(4));
+            assertThat(ordinaryWorker.getParentSpanId()).isEqualTo(ordinaryProducer.getSpanId());
+            assertWorkerCorrelation(
+                    attempts.get(4), ordinary, ordinaryEventId, ordinaryRequestId, null);
+            assertThat(Span.current().getSpanContext()).isEqualTo(previousSpan);
+            assertThat(Baggage.current().getEntryValue("requestId")).isEqualTo(previousRequest);
+            assertThat(rabbitTemplate.receive(DLQ, 500)).isNull();
+            assertThat(amqpAdmin.getQueueInfo("attendance-service.events.retry").getMessageCount())
+                    .isZero();
+            writeCollectorReceipt(origin, ordinary, attempts.get(3), attempts.get(4));
+        } finally {
+            assertThat(rabbitTemplate.removeBeforePublishPostProcessor(wireCapture)).isTrue();
+        }
     }
 
     @Test
@@ -393,6 +548,235 @@ class RabbitDecisionRetryIT extends AbstractAttendanceIntegrationTest {
         assertThat(deadLetter.getMessageProperties().getHeaders())
                 .containsEntry("rct_redrive_count", 1);
         assertThat(deadLetter.getMessageProperties().getMessageId()).isEqualTo(eventId);
+    }
+
+    private TraceOrigin acceptedOrigin(
+            String eventId, String businessRequest, String requestId, boolean legacyTrace) {
+        Span span =
+                telemetry
+                        .getTracer("rct.synthetic.accepted-intent")
+                        .spanBuilder("synthetic.accepted-intent")
+                        .startSpan();
+        assertThat(span.isRecording()).as("actual application SDK sampling").isTrue();
+        Map<String, Object> envelope = new HashMap<>(decision(eventId, businessRequest, 42L));
+        try (var ignored =
+                Baggage.builder()
+                        .put("requestId", requestId)
+                        .build()
+                        .storeInContext(Context.current().with(span))
+                        .makeCurrent()) {
+            EventTraceContext.capture(envelope);
+            if (legacyTrace) {
+                envelope.put("trace_id", span.getSpanContext().getTraceId());
+            }
+        } finally {
+            span.end();
+        }
+        return new TraceOrigin(
+                span.getSpanContext().getTraceId(), span.getSpanContext().getSpanId(), envelope);
+    }
+
+    private static WorkerAttempt workerAttempt(String businessRequest) {
+        var active = Span.current().getSpanContext();
+        return new WorkerAttempt(
+                businessRequest,
+                active.getTraceId(),
+                active.getSpanId(),
+                Baggage.current().getEntryValue("requestId"),
+                MDC.get("requestId"),
+                MDC.get("eventId"),
+                MDC.get("traceId"),
+                MDC.get("spanId"),
+                MDC.get("originTraceId"));
+    }
+
+    private SpanData assertExportedWorker(WorkerAttempt attempt) {
+        SpanData worker = exportedSpan(attempt.spanId());
+        assertThat(worker.getKind()).isEqualTo(SpanKind.CONSUMER);
+        assertThat(worker.getResource().getAttribute(AttributeKey.stringKey("service.name")))
+                .isEqualTo("attendance-service");
+        assertThat(worker.getTraceId()).isEqualTo(attempt.traceId());
+        assertThat(worker.getAttributes().get(AttributeKey.stringKey("requestId")))
+                .isEqualTo(attempt.requestId());
+        return worker;
+    }
+
+    private SpanData producer(Message carrier, TraceOrigin origin, String parentSpanId) {
+        Object header = carrier.getMessageProperties().getHeaders().get("traceparent");
+        assertThat(header).isInstanceOf(String.class);
+        String traceparent = (String) header;
+        assertThat(traceparent).matches("00-" + origin.traceId() + "-[0-9a-f]{16}-01");
+        SpanData producer = exportedSpan(traceparent.split("-")[2]);
+        assertThat(producer.getKind()).isEqualTo(SpanKind.PRODUCER);
+        assertThat(producer.getTraceId()).isEqualTo(origin.traceId());
+        assertThat(producer.getParentSpanId()).isEqualTo(parentSpanId);
+        assertThat(producer.getAttributes().get(AttributeKey.stringKey("requestId")))
+                .isEqualTo(origin.envelope().get("request_id"));
+        return producer;
+    }
+
+    private SpanData exportedSpan(String spanId) {
+        return capturedSpans.spans.stream()
+                .filter(span -> span.getSpanId().equals(spanId))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("SDK did not export actual span " + spanId));
+    }
+
+    private static void assertWorkerCorrelation(
+            WorkerAttempt attempt,
+            TraceOrigin origin,
+            String eventId,
+            String requestId,
+            String legacyTrace) {
+        assertThat(attempt.traceId()).isEqualTo(origin.traceId());
+        assertThat(attempt.requestId()).isEqualTo(requestId);
+        assertThat(attempt.mdcRequestId()).isEqualTo(requestId);
+        assertThat(attempt.eventId()).isEqualTo(eventId);
+        assertThat(attempt.mdcTraceId()).isEqualTo(attempt.traceId());
+        assertThat(attempt.mdcSpanId()).isEqualTo(attempt.spanId());
+        assertThat(attempt.originTraceId()).isEqualTo(legacyTrace);
+    }
+
+    private static String collectorEndpoint() {
+        String endpoint = System.getenv("RCT_TEST_OTLP_ENDPOINT");
+        String receipt = System.getenv("RCT_TEST_TELEMETRY_RECEIPT");
+        if (endpoint == null && receipt == null) return null;
+        assertThat(endpoint != null && receipt != null)
+                .as("owned collector endpoint and distinct private receipt are provided together")
+                .isTrue();
+        var target = java.net.URI.create(endpoint);
+        assertThat(
+                        "http".equals(target.getScheme())
+                                && "127.0.0.1".equals(target.getHost())
+                                && target.getPort() > 0
+                                && target.getPort() <= 65535
+                                && "/v1/traces".equals(target.getPath())
+                                && target.getUserInfo() == null
+                                && target.getRawQuery() == null
+                                && target.getRawFragment() == null)
+                .as("owned loopback OTLP endpoint")
+                .isTrue();
+        return endpoint;
+    }
+
+    private void writeCollectorReceipt(
+            TraceOrigin recovered,
+            TraceOrigin ordinary,
+            WorkerAttempt recoveredWorker,
+            WorkerAttempt ordinaryWorker)
+            throws java.io.IOException {
+        if (collectorEndpoint() == null) return;
+        String source = System.getenv("GITHUB_SHA");
+        assertThat(source).as("exact executable CI revision").matches("[0-9a-f]{40}");
+        var output = java.nio.file.Path.of(System.getenv("RCT_TEST_TELEMETRY_RECEIPT"));
+        assertThat(output.isAbsolute()).isTrue();
+        assertThat(java.nio.file.Files.exists(output))
+                .as("never overwrite a prior receipt")
+                .isFalse();
+        List<String> traces = List.of(recovered.traceId(), ordinary.traceId());
+        var graph =
+                capturedSpans.spans.stream()
+                        .filter(span -> traces.contains(span.getTraceId()))
+                        .map(
+                                span ->
+                                        Map.of(
+                                                "service",
+                                                span.getResource()
+                                                        .getAttribute(
+                                                                AttributeKey.stringKey(
+                                                                        "service.name")),
+                                                "kind",
+                                                span.getKind().name(),
+                                                "traceId",
+                                                span.getTraceId(),
+                                                "spanId",
+                                                span.getSpanId(),
+                                                "parentSpanId",
+                                                span.getParentSpanId()))
+                        .toList();
+        var receipt =
+                Map.of(
+                        "schema",
+                        1,
+                        "kind",
+                        "actual_application_background",
+                        "source_sha",
+                        source,
+                        "cases",
+                        List.of(
+                                Map.of(
+                                        "outcome",
+                                        "recovered",
+                                        "requestId",
+                                        recoveredWorker.requestId(),
+                                        "traceId",
+                                        recoveredWorker.traceId(),
+                                        "workerSpanId",
+                                        recoveredWorker.spanId()),
+                                Map.of(
+                                        "outcome",
+                                        "ordinary",
+                                        "requestId",
+                                        ordinaryWorker.requestId(),
+                                        "traceId",
+                                        ordinaryWorker.traceId(),
+                                        "workerSpanId",
+                                        ordinaryWorker.spanId())),
+                        "spans",
+                        graph,
+                        "qualification",
+                        "Real application RabbitTemplate/listener and Mongo dedup; synthetic origin"
+                                + " and mocked StudentRequestService boundary, not business PASS");
+        java.nio.file.Files.createDirectories(output.getParent());
+        java.nio.file.Files.createFile(
+                output,
+                java.nio.file.attribute.PosixFilePermissions.asFileAttribute(
+                        java.nio.file.attribute.PosixFilePermissions.fromString("rw-------")));
+        java.nio.file.Files.writeString(
+                output,
+                new ObjectMapper().writeValueAsString(receipt) + "\n",
+                java.nio.file.StandardOpenOption.WRITE);
+    }
+
+    private record TraceOrigin(String traceId, String spanId, Map<String, Object> envelope) {}
+
+    private record WorkerAttempt(
+            String businessRequest,
+            String traceId,
+            String spanId,
+            String requestId,
+            String mdcRequestId,
+            String eventId,
+            String mdcTraceId,
+            String mdcSpanId,
+            String originTraceId) {}
+
+    @TestConfiguration(proxyBeanMethods = false)
+    static class TelemetryCaptureConfiguration {
+        @Bean
+        CapturedSpans capturedRabbitSpans() {
+            return new CapturedSpans();
+        }
+    }
+
+    static final class CapturedSpans implements SpanExporter {
+        final List<SpanData> spans = new CopyOnWriteArrayList<>();
+
+        @Override
+        public CompletableResultCode export(Collection<SpanData> batch) {
+            spans.addAll(batch);
+            return CompletableResultCode.ofSuccess();
+        }
+
+        @Override
+        public CompletableResultCode flush() {
+            return CompletableResultCode.ofSuccess();
+        }
+
+        @Override
+        public CompletableResultCode shutdown() {
+            return CompletableResultCode.ofSuccess();
+        }
     }
 
     private void publish(Map<String, Object> envelope) {

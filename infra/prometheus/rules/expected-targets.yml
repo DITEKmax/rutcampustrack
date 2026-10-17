@@ -1,0 +1,252 @@
+groups:
+- name: expected-targets
+  rules:
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: alertmanager
+      instance: alertmanager:9093
+      environment: production
+      service: alertmanager
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: node-exporter
+      instance: node-exporter:9100
+      environment: production
+      service: node-exporter
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: cadvisor
+      instance: cadvisor:8080
+      environment: production
+      service: cadvisor
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: auth-service
+      instance: auth-service:9090
+      environment: production
+      service: auth-service
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: academic-service
+      instance: academic-service:9091
+      environment: production
+      service: academic-service
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: schedule-service
+      instance: schedule-service:9092
+      environment: production
+      service: schedule-service
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: attendance-service
+      instance: attendance-service:9093
+      environment: production
+      service: attendance-service
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: notification-web
+      instance: notification-web:9094
+      environment: production
+      service: notification-web
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: mobile-bff
+      instance: mobile-bff:9080
+      environment: production
+      service: mobile-bff
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: rabbitmq
+      instance: rabbitmq:15692
+      environment: production
+      service: rabbitmq
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: blackbox-https
+      instance: https://ruttrack.site
+      environment: production
+      service: blackbox-https
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: api-gateway
+      instance: api-gateway:8080
+      environment: production
+      service: api-gateway
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: document-renderer-service
+      instance: document-renderer-service:9095
+      environment: production
+      service: document-renderer-service
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: prometheus
+      instance: prometheus:9090
+      environment: production
+      service: prometheus
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: grafana
+      instance: grafana:3000
+      environment: production
+      service: grafana
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: loki
+      instance: loki:3100
+      environment: production
+      service: loki
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: tempo
+      instance: tempo:3200
+      environment: production
+      service: tempo
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: promtail
+      instance: promtail:9080
+      environment: production
+      service: promtail
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: blackbox-exporter
+      instance: blackbox-exporter:9115
+      environment: production
+      service: blackbox-exporter
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: rabbitmq-queues
+      instance: rabbitmq:15692
+      environment: production
+      service: rabbitmq
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: blackbox-readiness
+      instance: http://auth-service:9090/actuator/health
+      environment: production
+      service: auth-service
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: blackbox-readiness
+      instance: http://academic-service:9091/actuator/health
+      environment: production
+      service: academic-service
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: blackbox-readiness
+      instance: http://schedule-service:9092/actuator/health
+      environment: production
+      service: schedule-service
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: blackbox-readiness
+      instance: http://attendance-service:9093/actuator/health
+      environment: production
+      service: attendance-service
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: blackbox-readiness
+      instance: http://document-renderer-service:9095/actuator/health
+      environment: production
+      service: document-renderer-service
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: blackbox-readiness
+      instance: http://notification-web:9094/actuator/health
+      environment: production
+      service: notification-web
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: blackbox-readiness
+      instance: http://mobile-bff:9080/actuator/health
+      environment: production
+      service: mobile-bff
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: blackbox-readiness
+      instance: http://api-gateway:8080/actuator/health
+      environment: production
+      service: api-gateway
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: postgres-academic-exporter
+      instance: postgres-academic-exporter:9187
+      environment: production
+      service: postgres-academic
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: postgres-schedule-exporter
+      instance: postgres-schedule-exporter:9187
+      environment: production
+      service: postgres-schedule
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: mongodb-exporter
+      instance: mongodb-exporter:9216
+      environment: production
+      service: mongo-attendance
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: redis-exporter
+      instance: redis-exporter:9121
+      environment: production
+      service: redis
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: blackbox-readiness
+      instance: http://notification-bot:8081/health
+      environment: production
+      service: notification-bot
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: notification-bot
+      instance: notification-bot:8081
+      environment: production
+      service: notification-bot
+  - alert: ExpectedTargetMissing
+    expr: rct_expected_target unless on (job, instance, environment) up
+    for: 2m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: Expected target {{ $labels.job }} / {{ $labels.instance }} disappeared
+      description: Scrape discovery/configuration or staleness removed an expected series. Restore target; zero traffic does
+        not remove up.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md

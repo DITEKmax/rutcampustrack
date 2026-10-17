@@ -12,6 +12,13 @@ const adminLifecycle = process.env.RCT_E2E_ADMIN_LIFECYCLE === 'true';
 const roleLogout = process.env.RCT_E2E_ROLE_LOGOUT === 'true';
 const webkitSubset = process.env.RCT_E2E_WEBKIT_SUBSET === 'true';
 const workerLifecycle = process.env.RCT_E2E_SW_LIFECYCLE === 'true';
+const asyncReport = process.env.RCT_E2E_ASYNC_REPORT === 'true';
+if (
+  asyncReport &&
+  (!remaining5 || adminLifecycle || roleLogout || webkitSubset || workerLifecycle)
+) {
+  throw new Error('Async report acceptance requires its private serial mobile lane');
+}
 if ((adminLifecycle || roleLogout || webkitSubset || workerLifecycle) && !remaining5) {
   throw new Error('Extended mobile scenarios require the private serial mobile lane');
 }
@@ -34,7 +41,10 @@ if (remaining5) {
 }
 
 /** One shared active semester and task-owned disposable dataset; never run in parallel with another seed writer. */
-export default defineConfig<{}, { teachingInstant: Date | undefined }>({
+export default defineConfig<
+  {},
+  { teachingInstant: Date | undefined; minimumWeeklyReportWeeks: 0 | 18 }
+>({
   ...existing,
   outputDir: remaining5 ? join(run!, 'artifacts') : './test-results/real-mobile',
   reporter: [['./fixtures/safe-reporter.ts']],
@@ -44,6 +54,7 @@ export default defineConfig<{}, { teachingInstant: Date | undefined }>({
     video: 'off',
     screenshot: 'off',
     ...(remaining5 ? { timezoneId: 'Europe/Moscow', teachingInstant } : {}),
+    minimumWeeklyReportWeeks: asyncReport ? 18 : 0,
   },
   testMatch: roleLogout
     ? [
@@ -57,19 +68,21 @@ export default defineConfig<{}, { teachingInstant: Date | undefined }>({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  timeout: roleLogout ? 120000 : 60000,
+  timeout: asyncReport ? 180000 : roleLogout ? 120000 : 60000,
   ...(remaining5
     ? {
         forbidOnly: true,
-        grep: workerLifecycle
-          ? /(?:production worker update activates through the update gate and retains a warm launch|synthetic installation prompt handles dismissed unavailable and accepted outcomes|synthetic iOS installation instructions dismiss persistently without a native prompt)$/
-          : webkitSubset
-            ? /another live session revokes the browser session and recovery exposes login only$/
-            : roleLogout
-              ? /(?:SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions|four durable grants default to STUDENT; explicit role survives reload and stale version cannot switch @cloud-accepted|unconfirmed UI logout clears its owner and rejects a late real feed through reload @cloud-accepted|FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted|own profile security changes password and replacement login rejects old authority @cloud-accepted|password recovery consumes its own delivered OTP and admits the replacement password @cloud-accepted|FULL exports five group attendance formats; dashboard-only LIMITED reads until revocation @cloud-accepted)$/
-              : adminLifecycle
-                ? /ADMIN creates a multirole headman and restores the archived account without old authority$/
-                : /(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account|D002 TMA stays online-only beside a warm PWA snapshot)$/,
+        grep: asyncReport
+          ? /HEADMAN resumes real eighteen-week DOCX after navigation and lost acceptance @stage17-async$/
+          : workerLifecycle
+            ? /(?:production worker update activates through the update gate and retains a warm launch|synthetic installation prompt handles dismissed unavailable and accepted outcomes|synthetic iOS installation instructions dismiss persistently without a native prompt)$/
+            : webkitSubset
+              ? /another live session revokes the browser session and recovery exposes login only$/
+              : roleLogout
+                ? /(?:SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions|four durable grants default to STUDENT; explicit role survives reload and stale version cannot switch @cloud-accepted|unconfirmed UI logout clears its owner and rejects a late real feed through reload @cloud-accepted|FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted|own profile security changes password and replacement login rejects old authority @cloud-accepted|password recovery consumes its own delivered OTP and admits the replacement password @cloud-accepted|FULL exports five group attendance formats; dashboard-only LIMITED reads until revocation @cloud-accepted)$/
+                : adminLifecycle
+                  ? /ADMIN creates a multirole headman and restores the archived account without old authority$/
+                  : /(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account|D002 TMA stays online-only beside a warm PWA snapshot)$/,
       }
     : {}),
   projects: existing.projects

@@ -10,6 +10,7 @@ import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import ru.rutcampustrack.shared.events.EventTraceContext;
@@ -99,7 +100,17 @@ public final class ConfirmedRabbitOutboxSender implements OutboxEventSender {
                                         // channel. RabbitMQ emits
                                         // basic.return before basic.ack, so confirm alone
                                         // cannot hide NO_ROUTE.
-                                        operations.send(exchange, routingKey, message);
+                                        // Spring 3.2 requires a nonempty CorrelationData ID to
+                                        // put mandatory on the wire without a global callback.
+                                        // Legacy carriers keep their original message identity;
+                                        // the fallback ID belongs only to this publication.
+                                        String messageId =
+                                                message.getMessageProperties().getMessageId();
+                                        CorrelationData correlation =
+                                                messageId == null || messageId.isBlank()
+                                                        ? new CorrelationData()
+                                                        : new CorrelationData(messageId);
+                                        operations.send(exchange, routingKey, message, correlation);
                                         if (!operations.waitForConfirms(5000)) {
                                             throw new OutboxDeliveryException(
                                                     OutboxDeliveryException.Reason.BROKER_NACK);

@@ -11,6 +11,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
+import ru.rutcampustrack.shared.outbox.OutboxEventSender;
+
 /**
  * Base class for cache integration tests. Starts Testcontainers PostgreSQL + Redis. Redis
  * autoconfiguration is NOT excluded so that Spring Cache is wired to a real Redis instance.
@@ -29,6 +31,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public abstract class AbstractAcademicCacheIntegrationTest {
 
     @MockitoBean RabbitTemplate rabbitTemplate;
+
+    @MockitoBean OutboxEventSender outboxEventSender;
 
     static final PostgreSQLContainer<?> POSTGRES;
     static final GenericContainer<?> REDIS;

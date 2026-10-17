@@ -1,48 +1,34 @@
-# M09 Группа 7 (NEW-157) — resource-limits alerts.
-#
-# Срабатывает когда container использует > 90% своего mem_limit 5 мин.
-# Это warning-уровня: cadvisor видит spike из-за GC collection или
-# кратковременного запроса, for=5m фильтрует ложные.
-#
-# Critical-версии пока нет — если сервис идёт к OOMKill, restart через
-# docker автоматически восстанавливает (healthcheck failed → graceful
-# restart), alert ServiceDown (service-health.yml) срабатывает
-# параллельно.
 groups:
-  - name: resource-limits
-    rules:
-      - alert: ContainerMemoryHigh
-        # M09 G9 hot-patch (BH-M4) — excluded container_spec_memory_limit_bytes=0
-        # guard иначе деление на 0 даёт +Inf, +Inf > 0.9 = true → false-positive
-        # firing для контейнеров без mem_limit (nginx/certbot/node-exporter/
-        # cadvisor/promtail). Alert ContainerWithoutMemoryLimit ниже ловит их
-        # отдельно, не шумит на bot-alert canal.
-        expr: |
-          (container_memory_usage_bytes{name=~"rct-.*"}
-            / container_spec_memory_limit_bytes{name=~"rct-.*"}) > 0.9
-          and on (name) container_spec_memory_limit_bytes{name=~"rct-.*"} > 0
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: 'Контейнер {{ $labels.name }} > 90% memory'
-          description: |
-            {{ $labels.name }} использует более 90% своего mem_limit уже 5 минут.
-            Возможна утечка, cache overgrowth или недооценённый budget —
-            проверить docs/resource-limits.md.
-            Текущее использование: {{ $value | humanizePercentage }}.
+- name: resource-limits
+  rules:
+  - alert: ContainerMemoryHigh
+    expr: (container_memory_working_set_bytes{name=~"rct-.*"} / container_spec_memory_limit_bytes{name=~"rct-.*"} > 0.9) and
+      container_spec_memory_limit_bytes{name=~"rct-.*"} > 0
+    for: 5m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: "\u041A\u043E\u043D\u0442\u0435\u0439\u043D\u0435\u0440 {{ $labels.name }} > 90% memory"
+      description: "{{ $labels.name }} \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0435\u0442 \u0431\u043E\u043B\u0435\
+        \u0435 90% \u0441\u0432\u043E\u0435\u0433\u043E mem_limit \u0443\u0436\u0435 5 \u043C\u0438\u043D\u0443\u0442.\n\u0412\
+        \u043E\u0437\u043C\u043E\u0436\u043D\u0430 \u0443\u0442\u0435\u0447\u043A\u0430, cache overgrowth \u0438\u043B\u0438\
+        \ \u043D\u0435\u0434\u043E\u043E\u0446\u0435\u043D\u0451\u043D\u043D\u044B\u0439 budget \u2014\n\u043F\u0440\u043E\
+        \u0432\u0435\u0440\u0438\u0442\u044C docs/operations/deploy/resource-limits.md.\n\u0422\u0435\u043A\u0443\u0449\u0435\u0435 \u0438\u0441\
+        \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u043D\u0438\u0435: {{ $value | humanizePercentage }}.\n"
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/deploy/resource-limits.md
+  - alert: ContainerWithoutMemoryLimit
+    expr: 'container_spec_memory_limit_bytes{name=~"rct-.*"} == 0
 
-      # Защита от container_spec_memory_limit_bytes=0 (если mem_limit
-      # не указан — не хотим division-by-zero или false-negative).
-      - alert: ContainerWithoutMemoryLimit
-        expr: |
-          container_spec_memory_limit_bytes{name=~"rct-.*"} == 0
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: 'Контейнер {{ $labels.name }} без mem_limit'
-          description: |
-            {{ $labels.name }} запущен без mem_limit — может занять всю RAM
-            VPS при утечке. Добавить лимит в docker-compose.prod.yml
-            (см. docs/resource-limits.md).
+      '
+    for: 10m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: "\u041A\u043E\u043D\u0442\u0435\u0439\u043D\u0435\u0440 {{ $labels.name }} \u0431\u0435\u0437 mem_limit"
+      description: "{{ $labels.name }} \u0437\u0430\u043F\u0443\u0449\u0435\u043D \u0431\u0435\u0437 mem_limit \u2014 \u043C\
+        \u043E\u0436\u0435\u0442 \u0437\u0430\u043D\u044F\u0442\u044C \u0432\u0441\u044E RAM\nVPS \u043F\u0440\u0438 \u0443\
+        \u0442\u0435\u0447\u043A\u0435. \u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043B\u0438\u043C\u0438\u0442 \u0432\
+        \ docker-compose.prod.yml\n(\u0441\u043C. docs/operations/deploy/resource-limits.md).\n"
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/deploy/resource-limits.md

@@ -60,6 +60,7 @@ import ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter;
 import ru.rutcampustrack.gateway.security.ReportDownloadAttemptRateLimiter;
 import ru.rutcampustrack.gateway.security.ReportDownloadBackendProperties;
 import ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilter;
+import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 
 /**
  * Real Auth HTTP/PG/Redis/RSA and real Gateway worker/verifier; only file backend and Rabbit
@@ -84,6 +85,7 @@ class ExportCrossLayerBoundaryIT extends AbstractIntegrationTest {
     @MockitoSpyBean JdbcTemplate jdbc;
     @MockitoSpyBean ExportReportAuthority authority;
     @MockitoBean RabbitTemplate rabbit;
+    @MockitoBean OutboxEventSender outboxSender;
 
     @DynamicPropertySource
     static void ownProperties(DynamicPropertyRegistry properties) {
@@ -488,7 +490,8 @@ class ExportCrossLayerBoundaryIT extends AbstractIntegrationTest {
         properties.setAuthServiceUrl(origin);
         properties.setSecret(SECRET);
         properties.setTimeoutMillis(5000);
-        return new InternalJwtIssuerClient(properties);
+        return new InternalJwtIssuerClient(
+                properties, org.springframework.web.reactive.function.client.WebClient.builder());
     }
 
     private ReportDownloadTicketDownloadFilter reports(

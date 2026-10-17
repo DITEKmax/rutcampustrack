@@ -373,6 +373,56 @@ jobs:
           ./gradlew :services:schedule-service:schedule-app:integrationTest --no-daemon --tests 'ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT.oneOffCloseAdoptThenNextDayReplacementPreservesHistoryAndReplay' > "$private/red.private.log" 2>&1
           red_exit=$?
           set -e
+          python3 - "$private" "$red_exit" <<'PY_ONEOFF_DIAGNOSTICS'
+          import json, os, pathlib, re, subprocess, sys, xml.etree.ElementTree as ET
+          private = pathlib.Path(sys.argv[1])
+          proof = {'schemaVersion':1,'state':'UNEXPECTED_ONEOFF_RED','redExit':int(sys.argv[2]),
+                   'producerHeadSha':os.environ['RCT_CI_PR_HEAD_SHA'],
+                   'checkoutSha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+                   'diagnosticKind':'NO_JUNIT','failureType':'NONE','causeClasses':[],'stackMethods':[]}
+          allowed_types = {
+              'org.opentest4j.AssertionFailedError','java.lang.AssertionError','java.lang.IllegalStateException',
+              'org.springframework.beans.factory.BeanCreationException','org.springframework.beans.factory.UnsatisfiedDependencyException',
+              'org.springframework.beans.factory.BeanDefinitionStoreException','org.springframework.beans.factory.NoSuchBeanDefinitionException',
+              'org.springframework.context.ApplicationContextException','org.springframework.boot.context.properties.bind.BindException',
+              'org.springframework.boot.context.properties.ConfigurationPropertiesBindException',
+              'org.springframework.boot.context.properties.bind.validation.BindValidationException',
+              'org.springframework.jdbc.BadSqlGrammarException','org.springframework.jdbc.CannotGetJdbcConnectionException',
+              'org.springframework.jdbc.UncategorizedSQLException','org.flywaydb.core.api.FlywayException',
+              'org.flywaydb.core.internal.exception.FlywayMigrateException','org.postgresql.util.PSQLException',
+              'org.testcontainers.containers.ContainerLaunchException','org.testcontainers.shaded.org.awaitility.core.ConditionTimeoutException',
+              'java.net.ConnectException','java.net.UnknownHostException','java.lang.NoSuchMethodError',
+              'java.lang.ClassNotFoundException','java.lang.NoClassDefFoundError'}
+          allowed_methods = {
+              'ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT.oneOffCloseAdoptThenNextDayReplacementPreservesHistoryAndReplay',
+              'org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean',
+              'org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor',
+              'org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency',
+              'org.flywaydb.core.Flyway.migrate','org.testcontainers.containers.GenericContainer.start',
+              'org.testcontainers.containers.GenericContainer.tryStart','org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse'}
+          text = ''
+          try:
+              result = pathlib.Path('services/schedule-service/schedule-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT.xml')
+              if result.is_file() and not result.is_symlink() and result.stat().st_size <= 33554432:
+                  data = result.read_bytes()
+                  assert b'<!DOCTYPE' not in data.upper() and b'<!ENTITY' not in data.upper()
+                  suite = ET.fromstring(data)
+                  failures = suite.findall('.//failure') + suite.findall('.//error')
+                  proof['diagnosticKind'] = 'JUNIT_TYPES_ONLY'
+                  if failures:
+                      kind = failures[0].get('type','')
+                      proof['failureType'] = kind if kind in allowed_types else 'OTHER'
+                      text = '\n'.join((node.text or '') for node in failures)
+              elif (private/'red.private.log').is_file():
+                  with (private/'red.private.log').open('rb') as log:
+                      log.seek(max(0,(private/'red.private.log').stat().st_size-1048576))
+                      text = log.read(1048576).decode('utf-8',errors='replace')
+              proof['causeClasses'] = sorted({value for value in re.findall(r'(?m)^\s*Caused by:\s+([A-Za-z0-9_.$]+)',text) if value in allowed_types})
+              proof['stackMethods'] = sorted({value for value in re.findall(r'(?m)^\s*at\s+(?:[^\s/]+/)?([A-Za-z0-9_.$]+)\(',text) if value in allowed_methods})
+          except (OSError,ValueError,AssertionError,ET.ParseError):
+              proof['diagnosticKind'] = 'UNREADABLE_JUNIT'
+          (private/'verified.safe.json').write_text(json.dumps(proof,indent=2)+'\n')
+          PY_ONEOFF_DIAGNOSTICS
           python3 - "$private" "$red_exit" <<'PY'
           import hashlib, json, os, pathlib, re, subprocess, sys, xml.etree.ElementTree as ET
           private = pathlib.Path(sys.argv[1])
@@ -547,11 +597,11 @@ jobs:
 
                   audit_source = app / 'src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java'
                   audit_test = audit_source.read_bytes()
-                  assert hashlib.sha256(audit_test).hexdigest() == '2a48d8fb0c270b67ab397d5bd28025ef356ada522ce8b2d4059c2bbb69636fcd'
+                  assert hashlib.sha256(audit_test).hexdigest() == 'b9e054d160023203ee25a553057fcb8a152d03422a4b1cd9e9be3223809beb95'
                   audit_oracle = b'        assertThat(payload.path("actor").path("user_id").asLong()).isEqualTo(actor);\n'
                   assert audit_test.count(audit_oracle) == 1
                   audit_line = audit_test[:audit_test.index(audit_oracle)].count(b'\n') + 1
-                  assert audit_line == 1265
+                  assert audit_line == 1268
                   audit_production = app / 'src/main/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveCoordinator.java'
                   audit_current = audit_production.read_bytes()
                   assert hashlib.sha256(audit_current).hexdigest() == '682a47e0f7c570fccbc253b20dbc8070e60f7e8a3b30746bb8add44afbd38253'
@@ -647,7 +697,7 @@ jobs:
                                ruleFrame=package + '.' + method + '(AuthOtpFlowIT.java:' + str(rule_line) + ')')
                   teacher_source = app / 'src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java'
                   teacher_test = teacher_source.read_bytes()
-                  assert hashlib.sha256(teacher_test).hexdigest() == 'c3dd908b07ecadae50569cac484bb3fdc15d8b93c997a1c7a13ab91e6a264929'
+                  assert hashlib.sha256(teacher_test).hexdigest() == 'a2054ff23929b519d908a62017f86da69ae53f558502de52ea0951aea5847f16'
                   teacher_production = app / 'src/main/java/ru/rutcampustrack/auth/export/TeacherReportAuthorityJdbc.java'
                   teacher_current = teacher_production.read_bytes()
                   assert hashlib.sha256(teacher_current).hexdigest() == '7dbf890d1ea4ba58eab89b26bd1090f29105e66d10e15d987d9b38685ae90027'
@@ -660,14 +710,14 @@ jobs:
                   assert hashlib.sha256(teacher_negative).hexdigest() == 'f0b9933928ccb406b7df86d14673f71c35c039a0e6414d1eeb5e40dc472243ee'
                   assert teacher_negative.replace(teacher_changed, teacher_anchor) == teacher_current
                   teacher_lines = teacher_test.decode().splitlines()
-                  assert teacher_lines[204].strip() == 'void readyTeacherFilesRequireEveryCapturedCurrentPairWhileIndependentPairRemainsUsable()'
-                  assert teacher_lines[405].strip() == 'for (var denied : List.of(a, ab)) {'
-                  assert teacher_lines[406].strip() == 'teacherScopeDenied('
-                  assert teacher_lines[617].strip() == 'assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);'
+                  assert teacher_lines[206].strip() == 'void readyTeacherFilesRequireEveryCapturedCurrentPairWhileIndependentPairRemainsUsable()'
+                  assert teacher_lines[407].strip() == 'for (var denied : List.of(a, ab)) {'
+                  assert teacher_lines[408].strip() == 'teacherScopeDenied('
+                  assert teacher_lines[619].strip() == 'assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);'
                   scoped_read = {'package': 'ru.rutcampustrack.auth.integration.ExportJobHttpIT',
                                  'method': 'readyTeacherFilesRequireEveryCapturedCurrentPairWhileIndependentPairRemainsUsable',
                                  'source': teacher_source, 'production': teacher_production, 'file': 'ExportJobHttpIT.java',
-                                 'proofKey': 'teacherReadyRule', 'ruleLine': 407,
+                                 'proofKey': 'teacherReadyRule', 'ruleLine': 409,
                                  'testSha': hashlib.sha256(teacher_test).hexdigest(),
                                  'productionSha': hashlib.sha256(teacher_current).hexdigest(),
                                  'negative': teacher_negative, 'counterexample': 'OMITTED_CAPTURED_TEACHER_PAIRS_REAUTHORIZATION'}
@@ -1240,7 +1290,7 @@ jobs:
                   else:
                       assert re.fullmatch(r'\s*expected:\s*403 FORBIDDEN\s+but was:\s*200 OK\s*', scoped_message)
                       assert len(re.findall(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
-                                            + re.escape(scoped_read['package'] + '.teacherScopeDenied(ExportJobHttpIT.java:618)')
+                                            + re.escape(scoped_read['package'] + '.teacherScopeDenied(ExportJobHttpIT.java:620)')
                                             + r'[ \t]*$', scoped_failure.text or '')) == 1
                   scoped_named_lines = re.findall(
                       r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
@@ -1441,7 +1491,7 @@ jobs:
                   assert hashlib.sha256(additional['source'].read_bytes()).hexdigest() == '1224df554a337875ef33384e850cd58d2d79c2e825f701ee83938444b111cac2'
                   proof['additionalRule']['sourceRestoredExact'] = True
               if audit is not None and current:
-                  assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == '2a48d8fb0c270b67ab397d5bd28025ef356ada522ce8b2d4059c2bbb69636fcd'
+                  assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == 'b9e054d160023203ee25a553057fcb8a152d03422a4b1cd9e9be3223809beb95'
                   assert hashlib.sha256(audit['production'].read_bytes()).hexdigest() == '682a47e0f7c570fccbc253b20dbc8070e60f7e8a3b30746bb8add44afbd38253'
                   proof['auditRule']['sourceRestoredExact'] = True
               if admin_rights is not None and current:
@@ -1640,6 +1690,118 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Verify cache commit regression against exact old semantics and restored source
+        if: matrix.service.name == 'academic-service'
+        timeout-minutes: 15
+        run: |
+          umask 077
+          python3 - <<'PY_CACHE_COMMIT'
+          import hashlib, json, os, pathlib, re, shutil, subprocess, tempfile
+          import xml.etree.ElementTree as ET
+          app = pathlib.Path('services/academic-service/academic-app')
+          group = app / 'src/main/java/ru/rutcampustrack/academic/group/GroupService.java'
+          listener = app / 'src/main/java/ru/rutcampustrack/academic/group/GroupCacheInvalidationListener.java'
+          test = app / 'src/test/java/ru/rutcampustrack/academic/group/GroupCacheCommitIT.java'
+          fixed_sha = {group: 'f494fce724d60e908a77fd409b5ace23a4fdc96f7b6ddf7a1559604e03642f59',
+                       listener: '793de84ed45cb798c13ff72a4e49ada7f6d3a9000bbcc2495a315bf89feb1ef4'}
+          package = 'ru.rutcampustrack.academic.group.GroupCacheCommitIT'
+          commit = 'concurrentReadBeforeOuterCommitCannotLeaveAnOldCachedGroupAfterCommit'
+          rollback = 'outerRollbackRetainsValidCachedGroupAndRoster'
+          private = pathlib.Path(tempfile.mkdtemp(prefix='rct-cache-commit-', dir=os.environ['RUNNER_TEMP']))
+          output = pathlib.Path('build/ci-test-outcomes/academic-service/cache-commit-safe.json')
+          output.parent.mkdir(parents=True, exist_ok=True)
+          proof = {'schema': 1, 'source_sha': subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+                   'counterexample': 'ORIGINAL_IMMEDIATE_CACHE_EVICTION_WITHOUT_AFTER_COMMIT_LISTENER',
+                   'state': 'SOURCE_ADMISSION', 'source_restored_exact': False}
+          original = {}
+          primary = None
+          def suite():
+              path = app / 'build/test-results/integrationTest' / ('TEST-' + package + '.xml')
+              assert path.is_file() and not path.is_symlink() and 0 < path.stat().st_size <= 2*1024*1024
+              data = path.read_bytes()
+              assert b'<!DOCTYPE' not in data.upper() and b'<!ENTITY' not in data.upper()
+              result = ET.fromstring(data)
+              assert result.tag == 'testsuite' and result.get('name') == package
+              return result
+          def clear_results():
+              for relative in ['build/test-results/integrationTest','build/reports/integrationTest']:
+                  directory = app / relative
+                  if directory.exists(): shutil.rmtree(directory)
+          def run_case(selection, filename):
+              clear_results()
+              with (private/filename).open('wb') as log:
+                  return subprocess.run(['./gradlew',':services:academic-service:academic-app:integrationTest',
+                      '--tests',selection,'--rerun-tasks','--max-workers=1','--no-daemon'],
+                      stdout=log,stderr=subprocess.STDOUT,timeout=360).returncode
+          try:
+              for path, expected in fixed_sha.items():
+                  data = path.read_bytes()
+                  assert hashlib.sha256(data).hexdigest() == expected
+                  assert data == subprocess.check_output(['git','show','HEAD:'+path.as_posix()])
+                  original[path] = data
+              assert hashlib.sha256(test.read_bytes()).hexdigest() == '2cedf03d4da81ea330f05a72b9d5f77011b0c4250692d71ea81c07c178c83d1c'
+              assert test.read_bytes() == subprocess.check_output(['git','show','HEAD:'+test.as_posix()])
+              assert test.read_text().splitlines()[86].strip() == '.isEqualTo("УИТ-311");'
+              previous = '753173688d633ca07991f4dd73bdcd2698f45d96'
+              with (private/'fetch.private.log').open('wb') as log:
+                  subprocess.run(['git','fetch','--quiet','--no-tags','--depth=1','origin',previous],
+                                 stdout=log,stderr=subprocess.STDOUT,timeout=60,check=True)
+              old_group = subprocess.check_output(['git','show',previous+':'+group.as_posix()])
+              assert hashlib.sha256(old_group).hexdigest() == 'd277bccc120a16aabae16a994f15e7170ac5e500ed15c581407559bc213df2d5'
+              anchor = (b'        Long groupId = ((GroupUpdatedEvent.Payload) event.getPayload()).groupId();\n'
+                        b'        evict(caches.getCache("groups"), groupId);\n'
+                        b'        evict(caches.getCache("group_members"), groupId);\n')
+              assert original[listener].count(anchor) == 1
+              old_listener = original[listener].replace(anchor,
+                  b'        // Controlled pre-correction semantics: no post-commit cache invalidation.\n')
+              assert hashlib.sha256(old_listener).hexdigest() == '4132368a730525b79ac443f0dbe20d56639393106bc85d1e2b041fbc29cc4a95'
+              proof['state'] = 'RED_EXECUTION'
+              group.write_bytes(old_group); listener.write_bytes(old_listener)
+              assert run_case(package+'.'+commit, 'red.private.log') == 1
+              red = suite()
+              assert {k:red.get(k) for k in ['tests','failures','errors','skipped']} == {'tests':'1','failures':'1','errors':'0','skipped':'0'}
+              cases = red.findall('testcase')
+              assert len(cases) == 1 and cases[0].get('classname') == package and cases[0].get('name') == commit+'()'
+              assert not cases[0].findall('error') and not cases[0].findall('skipped')
+              failures = cases[0].findall('failure'); assert len(failures) == 1
+              failure = failures[0]
+              assert failure.get('type') in {'org.opentest4j.AssertionFailedError','java.lang.AssertionError'}
+              message = failure.get('message','').removeprefix(failure.get('type')+': ')
+              assert re.fullmatch(r'\s*\[group read after outer commit returns the committed name\]\s*expected:\s*"УИТ-311"\s+but was:\s*"ИВТ-211"\s*', message)
+              frame = package+'.'+commit+'(GroupCacheCommitIT.java:87)'
+              assert len(re.findall(r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'+re.escape(frame)+r'[ \t]*$',failure.text or '')) == 1
+              proof['red'] = {'state':'EXPECTED_COMMITTED_DB_NEW_CACHED_OLD_ASSERTION','tests':1,'failures':1,'errors':0,'skipped':0}
+          except BaseException as error:
+              primary = error
+          finally:
+              for path, data in original.items(): path.write_bytes(data)
+              proof['source_restored_exact'] = len(original) == 2 and all(hashlib.sha256(p.read_bytes()).hexdigest() == h for p,h in fixed_sha.items())
+          try:
+              assert proof['source_restored_exact']
+              green_code = run_case(package, 'green.private.log')
+              green = suite()
+              assert green_code == 0 and {k:green.get(k) for k in ['tests','failures','errors','skipped']} == {'tests':'2','failures':'0','errors':'0','skipped':'0'}
+              assert {c.get('name') for c in green.findall('testcase')} == {commit+'()',rollback+'()'}
+              proof['green'] = {'state':'COMMIT_AND_ROLLBACK_PASS','tests':2,'failures':0,'errors':0,'skipped':0}
+          except BaseException as error:
+              if primary is None: primary = error
+          finally:
+              clear_results()
+              proof['state'] = 'PASS' if primary is None else 'CONTROL_OR_GREEN_FAILURE'
+              output.write_text(json.dumps(proof,indent=2)+'\n')
+              shutil.rmtree(private)
+          if primary is not None: raise primary
+          PY_CACHE_COMMIT
+
+      - name: Upload safe cache commit regression proof
+        if: always() && matrix.service.name == 'academic-service'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cache-commit-safe-${{ github.run_attempt }}
+          path: build/ci-test-outcomes/academic-service/cache-commit-safe.json
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Integration tests ${{ matrix.service.name }}
         id: java-tests
         # Auth failed before tests while resolving compileProtoPath dependencies.
@@ -1669,7 +1831,7 @@ jobs:
               'auth-service': ('ru.rutcampustrack.auth.integration.ExportJobHttpIT',
                                'readyTeacherFilesRequireEveryCapturedCurrentPairWhileIndependentPairRemainsUsable',
                                'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java',
-                               'c3dd908b07ecadae50569cac484bb3fdc15d8b93c997a1c7a13ab91e6a264929'),
+                               'a2054ff23929b519d908a62017f86da69ae53f558502de52ea0951aea5847f16'),
               'attendance-service': ('ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT',
                                      'studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue',
                                      'services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java',
@@ -2991,8 +3153,12 @@ jobs:
 
       - name: Boot isolated Vue auth stack
         run: |
-          docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml -f tests/e2e/infra/docker-compose.clock-fixture.yml config --quiet
-          docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml -f tests/e2e/infra/docker-compose.clock-fixture.yml up -d --build --wait --wait-timeout 480
+          identity=()
+          if [ '${{ matrix.group }}' = client ]; then
+            identity=(-f tests/e2e/infra/docker-compose.monitoring-identity.yml)
+          fi
+          docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml -f tests/e2e/infra/docker-compose.clock-fixture.yml "${identity[@]}" config --quiet
+          docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml -f tests/e2e/infra/docker-compose.clock-fixture.yml "${identity[@]}" up -d --build --wait --wait-timeout 480
           docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml exec -T notification-web \
             sh -c 'test ! -e /keys/private.key && test ! -L /keys/private.key'
           printf '%s\n' 'PASS disposable Notification consumer has no signing private-key file'
@@ -3050,6 +3216,46 @@ jobs:
               output.write('RCT_E2E_NSS_DB=' + str(database) + '\nRCT_E2E_NSS_NICKNAME=' + nickname + '\n')
           print('PASS exact disposable localhost peer certificate trusted; TLS validation retained')
           PY_TRUST
+
+      - uses: actions/setup-python@v5
+        if: matrix.group == 'client'
+        with:
+          python-version: '3.12'
+
+      # Must precede every client dataset fixture: the disposable active semester
+      # can be widened through the normal API only before assignments exist.
+      - name: Resume actual eighteen-week async DOCX after navigation and lost response
+        id: stage17-async
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        timeout-minutes: 10
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_ASYNC_REPORT: 'true'
+          RCT_E2E_REMAINING5: 'true'
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-stage17-async-${{ github.run_id }}-${{ github.run_attempt }}
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          mkdir -m 700 "$RCT_REMAINING5_RUN" "$RCT_REMAINING5_RUN/artifacts"
+          python3 -m venv "$RCT_REMAINING5_RUN/metrics-python"
+          "$RCT_REMAINING5_RUN/metrics-python/bin/python" -m pip install --quiet PyYAML==6.0.3
+          "$RCT_REMAINING5_RUN/metrics-python/bin/python" "$GITHUB_WORKSPACE/infra/prometheus/tests/check_pipeline.py" --e2e-async-browser
+
+      - name: Upload only safe async report browser outcomes
+        if: always() && matrix.group == 'client' && steps.stage17-async.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage17-async-safe-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/rct-stage17-async-${{ github.run_id }}-${{ github.run_attempt }}/artifacts/safe-results.json
+            ${{ runner.temp }}/rct-stage17-async-${{ github.run_id }}-${{ github.run_attempt }}/artifacts/metrics.safe.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Run auth-flow @smoke specs (chromium only)
         if: ${{ matrix.group == 'client' }}
@@ -5104,3 +5310,93 @@ jobs:
             printf '%s\n' 'Required browser groups did not both succeed'
             exit 1
           fi
+
+  monitoring-contract:
+    name: Monitoring — formulas, delivery, stores and Grafana pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      RCT_MONITORING_RUNTIME: isolated-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+      - name: Setup Gradle for the existing application transport IT
+        uses: gradle/actions/setup-gradle@v6
+      - name: Install bounded config parser and exact telemetry tools
+        id: tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install PyYAML==6.0.3
+          mkdir -p "$RUNNER_TEMP/rct-monitoring-tools" build/monitoring
+          python - <<'PY'
+          import hashlib, os, pathlib, tarfile, urllib.request
+          out=pathlib.Path(os.environ['RUNNER_TEMP'])/'rct-monitoring-tools'
+          for project,version,binaries in [('prometheus','2.55.1',['prometheus','promtool']),('alertmanager','0.27.0',['alertmanager','amtool'])]:
+              filename=f'{project}-{version}.linux-amd64.tar.gz'
+              base=f'https://github.com/prometheus/{project}/releases/download/v{version}/'
+              sums=urllib.request.urlopen(base+'sha256sums.txt',timeout=30).read().decode()
+              expected=next(line.split()[0] for line in sums.splitlines() if line.endswith(filename))
+              archive=out/filename
+              with urllib.request.urlopen(base+filename,timeout=60) as response, archive.open('wb') as output:
+                  while chunk:=response.read(1024*1024):output.write(chunk)
+              assert hashlib.sha256(archive.read_bytes()).hexdigest()==expected
+              with tarfile.open(archive) as tar:
+                  for binary in binaries:
+                      data=tar.extractfile(f'{project}-{version}.linux-amd64/{binary}').read()
+                      (out/binary).write_bytes(data);(out/binary).chmod(0o700)
+          PY
+          echo "$RUNNER_TEMP/rct-monitoring-tools" >> "$GITHUB_PATH"
+          echo "PROMTOOL=$RUNNER_TEMP/rct-monitoring-tools/promtool" >> "$GITHUB_ENV"
+          echo "PROMETHEUS_BIN=$RUNNER_TEMP/rct-monitoring-tools/prometheus" >> "$GITHUB_ENV"
+          echo "ALERTMANAGER_BIN=$RUNNER_TEMP/rct-monitoring-tools/alertmanager" >> "$GITHUB_ENV"
+      - name: Validate actual rule/config syntax and diagnostic formulas
+        id: formulas
+        run: |
+          promtool check config --syntax-only infra/prometheus/prometheus.yml
+          promtool check rules infra/prometheus/rules/*.yml
+          amtool check-config infra/alertmanager/alertmanager.yml
+          python infra/prometheus/tests/check_formulas.py
+      - name: Real firing and resolved delivery to isolated authenticated receiver
+        id: delivery
+        run: python infra/prometheus/tests/check_delivery.py | tee build/monitoring/delivery.json
+      - name: Datastores and official exporters with least privilege
+        id: exporters
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: python infra/prometheus/tests/check_exporters.py | tee build/monitoring/exporters.json
+      - name: Grafana queries, log-trace links and persisted checkpoints
+        id: pipeline
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: python infra/prometheus/tests/check_pipeline.py | tee build/monitoring/pipeline.json
+      - name: Record only safe source and check outcomes
+        if: always()
+        env:
+          TOOLS_OUTCOME: ${{ steps.tools.outcome }}
+          FORMULAS_OUTCOME: ${{ steps.formulas.outcome }}
+          DELIVERY_OUTCOME: ${{ steps.delivery.outcome }}
+          EXPORTERS_OUTCOME: ${{ steps.exporters.outcome }}
+          PIPELINE_OUTCOME: ${{ steps.pipeline.outcome }}
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,pathlib
+          out=pathlib.Path('build/monitoring');out.mkdir(parents=True,exist_ok=True)
+          paths=[pathlib.Path('docker-compose.prod.yml'),pathlib.Path('nginx/conf.d/default.conf')]
+          paths.extend(p for root in ['infra/prometheus','infra/grafana','infra/alertmanager','infra/loki','infra/tempo','infra/promtail','infra/blackbox','infra/postgres'] for p in pathlib.Path(root).rglob('*') if p.is_file() and p.suffix in ['.yml','.json','.ini','.py','.sh','.sql'])
+          result={'source_sha':os.environ['GITHUB_SHA'],'checks':{k.lower():os.environ[k+'_OUTCOME'] for k in ['TOOLS','FORMULAS','DELIVERY','EXPORTERS','PIPELINE']},'file_sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths if p.is_file()},'qualification':'Isolated telemetry, actual Gateway/BFF transport and controlled fixtures; report/business broker acceptance remains separate.'}
+          (out/'manifest.json').write_text(json.dumps(result,indent=2)+'\n')
+          PY
+      - name: Upload safe monitoring outcomes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: safe-monitoring-outcomes-${{ github.run_attempt }}
+          path: build/monitoring/*.json
+          if-no-files-found: error
+          retention-days: 7

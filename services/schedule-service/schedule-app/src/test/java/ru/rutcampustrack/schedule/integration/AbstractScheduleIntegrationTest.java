@@ -20,6 +20,7 @@ import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
+import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -43,6 +44,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class AbstractScheduleIntegrationTest {
 
     @MockitoBean protected RabbitTemplate rabbitTemplate;
+
+    @MockitoBean protected OutboxEventSender outboxEventSender;
 
     @Autowired(required = false)
     protected OutboxStorage outboxStorage;

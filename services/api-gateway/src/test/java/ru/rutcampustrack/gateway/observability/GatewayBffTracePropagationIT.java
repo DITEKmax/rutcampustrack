@@ -8,6 +8,12 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.FileAppender;
+import ch.qos.logback.core.OutputStreamAppender;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 
@@ -27,6 +33,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -36,9 +43,13 @@ import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.web.context.WebServerApplicationContext;
+import org.springframework.boot.web.reactive.context.ReactiveWebServerApplicationContext;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.Ordered;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mock.env.MockEnvironment;
+import org.springframework.web.server.WebFilter;
 
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.UserRequest;
@@ -49,6 +60,7 @@ import ru.rutcampustrack.shared.events.EventTraceContext;
 import ru.rutcampustrack.shared.observability.RequestCorrelation;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -57,6 +69,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -64,14 +79,17 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * Real Gateway and servlet BFF contexts plus a TCP generated Academic gRPC contract fixture. Auth
@@ -99,6 +117,8 @@ class GatewayBffTracePropagationIT {
     void gatewayBffGrpcParentsAndCorrelationRemainIndependentAfterErrorAndHttpCancellation()
             throws Exception {
         assertActualServiceBaggageDefaults();
+        var collector = CollectorSettings.fromEnvironment();
+        CollectorLogs applicationLogs = null;
         var capture = new CapturedExporter();
         var signer = new InternalJwtTestFactory();
         var auth = new WireMockServer(wireMockConfig().dynamicPort());
@@ -170,6 +190,7 @@ class GatewayBffTracePropagationIT {
                             AcademicTelemetryConfiguration.class,
                             WebApplicationType.NONE,
                             capture,
+                            collector,
                             "--spring.cloud.gateway.server.webflux.enabled=false",
                             "--spring.cloud.gateway.enabled=false");
             contexts.add(service);
@@ -235,6 +256,7 @@ class GatewayBffTracePropagationIT {
                             MobileBffApplication.class,
                             WebApplicationType.SERVLET,
                             capture,
+                            collector,
                             "--spring.cloud.gateway.server.webflux.enabled=false",
                             "--spring.cloud.gateway.enabled=false",
                             "--rutcampustrack.security.internal-jwt.auth-service-url=" + authority,
@@ -252,6 +274,7 @@ class GatewayBffTracePropagationIT {
                             GatewayApplication.class,
                             WebApplicationType.REACTIVE,
                             capture,
+                            collector,
                             "--MOBILE_BFF_URL=http://127.0.0.1:" + bffPort,
                             "--gateway.auth-service-url=" + authority,
                             "--rutcampustrack.security.internal-issuer-client.auth-service-url="
@@ -262,7 +285,9 @@ class GatewayBffTracePropagationIT {
                             "--spring.data.redis.timeout=50ms",
                             "--rutcampustrack.export-worker.enabled=false");
             contexts.add(gateway);
+            assertThat(gateway).isInstanceOf(ReactiveWebServerApplicationContext.class);
             int gatewayPort = ((WebServerApplicationContext) gateway).getWebServer().getPort();
+            applicationLogs = CollectorLogs.open(collector);
             Instant now = Instant.now();
             String access =
                     Jwts.builder()
@@ -406,7 +431,11 @@ class GatewayBffTracePropagationIT {
             assertThat(Span.current().getSpanContext().isValid()).isFalse();
             assertThat(MDC.get("traceId")).isNull();
             assertThat(MDC.get("requestId")).isNull();
+            applicationLogs.close();
+            applicationLogs.verifyAndRecord(capture.spans, seen, access, internal);
         } finally {
+            if (applicationLogs != null) applicationLogs.close();
+            collector.cleanLocalLogs();
             release.countDown();
             for (int i = contexts.size() - 1; i >= 0; i--) contexts.get(i).close();
             if (grpc != null) grpc.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
@@ -468,6 +497,7 @@ class GatewayBffTracePropagationIT {
             Class<?> source,
             WebApplicationType type,
             CapturedExporter capture,
+            CollectorSettings collector,
             String... properties) {
         var args = new ArrayList<>(List.of(properties));
         String module =
@@ -482,23 +512,63 @@ class GatewayBffTracePropagationIT {
                 List.of(
                         "--server.port=0",
                         "--server.address=127.0.0.1",
-                        "--spring.main.web-application-type="
-                                + type.name().toLowerCase(java.util.Locale.ROOT),
                         "--spring.main.banner-mode=off",
-                        "--management.otlp.tracing.export.enabled=false",
                         "--spring.jmx.enabled=false"));
+        if (collector.endpoint() == null) {
+            args.add("--management.otlp.tracing.export.enabled=false");
+        } else {
+            // Collector address is test I/O; all tracing/baggage defaults still come from app YAML.
+            args.add("--management.otlp.tracing.endpoint=" + collector.endpoint());
+        }
         if (type != WebApplicationType.REACTIVE) {
+            args.add(
+                    "--spring.main.web-application-type="
+                            + type.name().toLowerCase(java.util.Locale.ROOT));
             // The test-only Gateway dependency is absent from the standalone BFF/Academic
             // classpaths.
             args.add("--spring.cloud.gateway.server.webflux.redis.enabled=false");
         }
-        return new SpringApplicationBuilder(source)
-                .web(type)
-                .profiles("test")
+        var application = new SpringApplicationBuilder(source).profiles("test");
+        if (type != WebApplicationType.REACTIVE) {
+            application.web(type);
+        }
+        // Gateway must select its reactive stack from its shipped application YAML, even
+        // though this fixture also has servlet BFF classes on the test classpath.
+        return application
                 .initializers(
-                        context ->
+                        context -> {
+                            context.getBeanFactory().registerSingleton("captureExporter", capture);
+                            // Fixed messages execute inside the real framework observation scope;
+                            // IDs are supplied solely by the existing tracing/MDC integration.
+                            if (type == WebApplicationType.REACTIVE) {
+                                WebFilter probe =
+                                        (exchange, chain) ->
+                                                reactor.core.publisher.Mono.defer(
+                                                        () -> {
+                                                            LoggerFactory.getLogger(
+                                                                            "ru.rutcampustrack.gateway.observability.CollectorProof")
+                                                                    .info(
+                                                                            "Application request"
+                                                                                    + " reached"
+                                                                                    + " Gateway");
+                                                            return chain.filter(exchange);
+                                                        });
                                 context.getBeanFactory()
-                                        .registerSingleton("captureExporter", capture))
+                                        .registerSingleton("collectorLogProbe", probe);
+                            } else if (type == WebApplicationType.SERVLET) {
+                                var probe = new FilterRegistrationBean<jakarta.servlet.Filter>();
+                                probe.setFilter(
+                                        (request, response, chain) -> {
+                                            LoggerFactory.getLogger(
+                                                            "ru.rutcampustrack.mobilebff.observability.CollectorProof")
+                                                    .info("Application request reached BFF");
+                                            chain.doFilter(request, response);
+                                        });
+                                probe.setOrder(Ordered.LOWEST_PRECEDENCE - 100);
+                                context.getBeanFactory()
+                                        .registerSingleton("collectorLogProbe", probe);
+                            }
+                        })
                 .run(args.toArray(String[]::new));
     }
 
@@ -640,6 +710,258 @@ class GatewayBffTracePropagationIT {
                     || line.contains("le=\"30.0\"")) {
                 System.out.println("M02_GATEWAY_METRIC " + line);
             }
+        }
+    }
+
+    /**
+     * Optional private CI collector I/O; the ordinary IT also verifies actual JSON log encoding.
+     */
+    private record CollectorSettings(URI endpoint, Path logDir, Path receipt, String sourceSha) {
+        static CollectorSettings fromEnvironment() throws IOException {
+            String endpoint = System.getenv("RCT_TEST_OTLP_ENDPOINT");
+            String logs = System.getenv("RCT_TEST_APP_LOG_DIR");
+            String receipt = System.getenv("RCT_TEST_TELEMETRY_RECEIPT");
+            if (endpoint == null && logs == null && receipt == null) {
+                return new CollectorSettings(
+                        null, Files.createTempDirectory("rct-app-logs-"), null, null);
+            }
+            assertThat(endpoint != null && logs != null && receipt != null)
+                    .as("all three private collector I/O settings are required together")
+                    .isTrue();
+            URI target = URI.create(endpoint);
+            assertThat(
+                            "http".equals(target.getScheme())
+                                    && Set.of("127.0.0.1", "localhost", "[::1]")
+                                            .contains(target.getHost())
+                                    && target.getPort() > 0
+                                    && "/v1/traces".equals(target.getPath())
+                                    && target.getRawUserInfo() == null
+                                    && target.getRawQuery() == null
+                                    && target.getRawFragment() == null)
+                    .as("owned loopback OTLP endpoint")
+                    .isTrue();
+            Path directory = Path.of(logs);
+            Path output = Path.of(receipt);
+            assertThat(directory.isAbsolute() && output.isAbsolute()).isTrue();
+            assertThat(Files.exists(output))
+                    .as("private receipt must not overwrite existing data")
+                    .isFalse();
+            String source = System.getenv("GITHUB_SHA");
+            assertThat(source != null && source.matches("[0-9a-f]{40}"))
+                    .as("collector proof requires exact CI executable source SHA")
+                    .isTrue();
+            Files.createDirectories(directory);
+            return new CollectorSettings(target, directory, output, source);
+        }
+
+        void cleanLocalLogs() throws IOException {
+            if (receipt == null) {
+                Files.deleteIfExists(logDir.resolve("api-gateway.log"));
+                Files.deleteIfExists(logDir.resolve("mobile-bff.log"));
+                Files.deleteIfExists(logDir);
+            }
+        }
+    }
+
+    /** Actual logging events use encoders loaded from the existing application/shared config. */
+    private static final class CollectorLogs implements AutoCloseable {
+        private final CollectorSettings settings;
+        private final List<LoggerContext> encodingContexts = new ArrayList<>();
+        private final List<ch.qos.logback.classic.Logger> loggers = new ArrayList<>();
+        private final List<FileAppender<ILoggingEvent>> appenders = new ArrayList<>();
+        private boolean closed;
+
+        private CollectorLogs(CollectorSettings settings) {
+            this.settings = settings;
+        }
+
+        static CollectorLogs open(CollectorSettings settings) throws Exception {
+            var logs = new CollectorLogs(settings);
+            try {
+                logs.attach("api-gateway", "api-gateway", "ru.rutcampustrack.gateway");
+                logs.attach(
+                        "mobile-bff", "mobile-bff/mobile-bff-app", "ru.rutcampustrack.mobilebff");
+                return logs;
+            } catch (Exception failure) {
+                logs.close();
+                throw failure;
+            }
+        }
+
+        private void attach(String service, String module, String namespace) throws Exception {
+            Path file = settings.logDir().resolve(service + ".log");
+            Files.createFile(
+                    file,
+                    PosixFilePermissions.asFileAttribute(
+                            PosixFilePermissions.fromString("rw-------")));
+            var encoding = new LoggerContext();
+            encoding.setName("application-proof-" + service);
+            encodingContexts.add(encoding);
+            var configurator = new JoranConfigurator();
+            configurator.setContext(encoding);
+            configurator.doConfigure(
+                    applicationConfig(module, "logback-spring.xml").toUri().toURL());
+            var console =
+                    (OutputStreamAppender<ILoggingEvent>)
+                            encoding.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)
+                                    .getAppender("SHARED_JSON_STDOUT");
+            assertThat(console).as("actual shared production JSON appender").isNotNull();
+            var appender = new FileAppender<ILoggingEvent>();
+            appender.setContext(encoding);
+            appender.setName("application-proof-" + service);
+            appender.setFile(file.toString());
+            appender.setAppend(true);
+            appender.setEncoder(console.getEncoder());
+            appender.start();
+            assertThat(appender.isStarted()).isTrue();
+            var logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(namespace);
+            logger.addAppender(appender);
+            loggers.add(logger);
+            appenders.add(appender);
+        }
+
+        @Override
+        public void close() {
+            if (closed) return;
+            closed = true;
+            for (int i = 0; i < appenders.size(); i++) {
+                loggers.get(i).detachAppender(appenders.get(i));
+                appenders.get(i).stop();
+            }
+            encodingContexts.forEach(LoggerContext::stop);
+        }
+
+        void verifyAndRecord(List<SpanData> spans, List<Seen> calls, String access, String internal)
+                throws Exception {
+            var logReceipts = new ArrayList<Map<String, Object>>();
+            for (String service : List.of("api-gateway", "mobile-bff")) {
+                Path path = settings.logDir().resolve(service + ".log");
+                byte[] bytes = Files.readAllBytes(path);
+                String text = new String(bytes, StandardCharsets.UTF_8);
+                assertThat(
+                                text.contains(MARKER)
+                                        || text.contains(access)
+                                        || text.contains(internal))
+                        .as("actual JSON application logs exclude synthetic credential content")
+                        .isFalse();
+                var entries = new ArrayList<com.fasterxml.jackson.databind.JsonNode>();
+                for (String line : text.lines().toList()) entries.add(JSON.readTree(line));
+                for (Seen call : List.of(calls.get(0), calls.get(1), calls.get(3))) {
+                    assertThat(
+                                    entries.stream()
+                                            .anyMatch(
+                                                    entry ->
+                                                            service.equals(
+                                                                            entry.path("service")
+                                                                                    .asText())
+                                                                    && call.requestId()
+                                                                            .equals(
+                                                                                    entry.path(
+                                                                                                    "requestId")
+                                                                                            .asText())
+                                                                    && call.traceId()
+                                                                            .equals(
+                                                                                    entry.path(
+                                                                                                    "traceId")
+                                                                                            .asText())
+                                                                    && spans.stream()
+                                                                            .anyMatch(
+                                                                                    span ->
+                                                                                            identity(
+                                                                                                                    span)
+                                                                                                            .equals(
+                                                                                                                    service)
+                                                                                                    && span.getTraceId()
+                                                                                                            .equals(
+                                                                                                                    call
+                                                                                                                            .traceId())
+                                                                                                    && span.getSpanId()
+                                                                                                            .equals(
+                                                                                                                    entry.path(
+                                                                                                                                    "spanId")
+                                                                                                                            .asText()))))
+                            .as(
+                                    "actual %s log has observed request/trace/span correlation",
+                                    service)
+                            .isTrue();
+                }
+                logReceipts.add(
+                        Map.of(
+                                "service",
+                                service,
+                                "file",
+                                path.getFileName().toString(),
+                                "sha256",
+                                HexFormat.of()
+                                        .formatHex(
+                                                MessageDigest.getInstance("SHA-256").digest(bytes)),
+                                "correlatedEntries",
+                                entries.stream()
+                                        .filter(
+                                                entry ->
+                                                        RequestCorrelation.isCanonical(
+                                                                entry.path("requestId").asText()))
+                                        .count()));
+            }
+            if (settings.receipt() == null) return;
+            Set<String> traceIds = calls.stream().map(Seen::traceId).collect(Collectors.toSet());
+            var cases = new ArrayList<Map<String, String>>();
+            List<String> outcomes = List.of("success", "error", "cancelled", "recovery");
+            for (int i = 0; i < calls.size(); i++) {
+                Seen call = calls.get(i);
+                cases.add(
+                        Map.of(
+                                "outcome",
+                                outcomes.get(i),
+                                "requestId",
+                                call.requestId(),
+                                "traceId",
+                                call.traceId(),
+                                "academicSpanId",
+                                call.spanId()));
+            }
+            var graph =
+                    spans.stream()
+                            .filter(span -> traceIds.contains(span.getTraceId()))
+                            .map(
+                                    span ->
+                                            Map.of(
+                                                    "service",
+                                                    identity(span),
+                                                    "kind",
+                                                    span.getKind().name(),
+                                                    "traceId",
+                                                    span.getTraceId(),
+                                                    "spanId",
+                                                    span.getSpanId(),
+                                                    "parentSpanId",
+                                                    span.getParentSpanId()))
+                            .toList();
+            var receipt =
+                    Map.of(
+                            "schema",
+                            1,
+                            "kind",
+                            "actual_application_transport",
+                            "source_sha",
+                            settings.sourceSha(),
+                            "cases",
+                            cases,
+                            "spans",
+                            graph,
+                            "logs",
+                            logReceipts,
+                            "qualification",
+                            "Single-JVM real Gateway/BFF with synthetic auth and generated Academic"
+                                    + " contract fixture");
+            Files.createFile(
+                    settings.receipt(),
+                    PosixFilePermissions.asFileAttribute(
+                            PosixFilePermissions.fromString("rw-------")));
+            Files.writeString(
+                    settings.receipt(),
+                    JSON.writeValueAsString(receipt) + "\n",
+                    StandardOpenOption.WRITE);
         }
     }
 

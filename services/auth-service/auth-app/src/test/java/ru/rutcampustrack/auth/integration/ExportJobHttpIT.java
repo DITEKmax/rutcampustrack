@@ -16,6 +16,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import ru.rutcampustrack.auth.dto.*;
+import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -29,6 +30,7 @@ class ExportJobHttpIT extends AbstractIntegrationTest {
     @Autowired ObjectMapper mapper;
     @Autowired JdbcTemplate jdbc;
     @MockitoBean RabbitTemplate rabbit;
+    @MockitoBean OutboxEventSender outboxSender;
 
     @DynamicPropertySource
     static void ownKeysAndIssuer(DynamicPropertyRegistry properties) {

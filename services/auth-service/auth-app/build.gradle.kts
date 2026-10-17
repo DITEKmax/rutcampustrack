@@ -63,6 +63,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation(project(":services:api-gateway"))
+    testImplementation("org.springframework:spring-webflux")
     // Real Auth logout -> already-open Notification socket, without Notification data stores.
     testImplementation(project(":services:notification-service:notification-app")) {
         isTransitive = false

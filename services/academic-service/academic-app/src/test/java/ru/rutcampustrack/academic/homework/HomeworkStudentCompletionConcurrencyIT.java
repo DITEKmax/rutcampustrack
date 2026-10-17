@@ -49,6 +49,7 @@ import ru.rutcampustrack.academic.grpc.StudentHomeworkTestIdentity;
 import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 
 /**
  * Real PostgreSQL proof for the student desired-state completion commands.
@@ -92,6 +93,8 @@ class HomeworkStudentCompletionConcurrencyIT {
     }
 
     @MockitoBean RabbitTemplate rabbitTemplate;
+
+    @MockitoBean OutboxEventSender outboxEventSender;
 
     @Autowired private JdbcTemplate jdbc;
 

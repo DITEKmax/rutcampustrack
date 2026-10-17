@@ -11,112 +11,246 @@
   "liveNow": false,
   "panels": [
     {
+      "id": 20,
+      "type": "timeseries",
+      "title": "Expected targets absent",
+      "description": "NO DATA / query error is not zero traffic or healthy. HTTP excludes actuator; ratio is diagnostic, not owner-approved SLO.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "rct_expected_target{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} unless on(job,instance,environment) up{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "{{job}} {{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "NO DATA"
+        }
+      }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Scrape availability by target",
+      "description": "NO DATA / query error is not zero traffic or healthy. HTTP excludes actuator; ratio is diagnostic, not owner-approved SLO.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "up{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
+          "refId": "A",
+          "legendFormat": "{{job}} {{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "NO DATA"
+        }
+      }
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "HTTP request rate",
+      "description": "NO DATA / query error is not zero traffic or healthy. HTTP excludes actuator; ratio is diagnostic, not owner-approved SLO.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by (job,instance,environment) (rate(http_server_requests_seconds_count{uri!~\"/actuator.*\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "refId": "A",
+          "legendFormat": "{{job}} {{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "noValue": "NO DATA"
+        }
+      }
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "HTTP5xx fraction of eligible requests",
+      "description": "Eligible completed2xx/3xx/5xx, expected4xx and cancelled termination excluded. Healthy traffic with no5xx is0; idle isNaN and missing telemetry isNO DATA.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "(sum by (job,instance,environment) (rate(http_server_requests_seconds_count{status=~\"5..\",termination!=\"cancelled\",uri!~\"/actuator.*|/api-docs.*|/swagger.*\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])) or on(job,instance,environment) (0 * sum by (job,instance,environment) (rate(http_server_requests_seconds_count{status=~\"2..|3..|5..\",termination!=\"cancelled\",uri!~\"/actuator.*|/api-docs.*|/swagger.*\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))) / sum by (job,instance,environment) (rate(http_server_requests_seconds_count{status=~\"2..|3..|5..\",termination!=\"cancelled\",uri!~\"/actuator.*|/api-docs.*|/swagger.*\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "refId": "A",
+          "legendFormat": "{{job}} {{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "NO DATA"
+        }
+      }
+    },
+    {
       "type": "timeseries",
       "title": "Гео-отметки (checkin rate)",
       "description": "rate(attendance.checkin_total[5m]) по статусам. Пик в 09:10 / 10:20 / 11:30 MSK = нормальный паттерн начала пар.",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
       "id": 1,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "sum by (status) (rate(attendance_checkin_total[5m]))",
+          "expr": "sum by (status) (rate(attendance_checkin_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
           "legendFormat": "{{status}}",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
-          "unit": "reqps"
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "reqps",
+          "noValue": "NO DATA"
         }
       },
       "options": {
-        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
       }
     },
     {
       "type": "timeseries",
       "title": "Логины / OTP verify rate",
       "description": "rate(auth_login_total) + rate(otp_verify_total). Пик утром (OTP login session) — норма. Обрыв днём = Gateway / auth-service проблема.",
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
       "id": 2,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "sum by (role) (rate(auth_login_total[5m]))",
+          "expr": "sum by (role) (rate(auth_login_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
           "legendFormat": "login {{role}}",
           "refId": "A"
         },
         {
-          "expr": "sum by (outcome) (rate(otp_verify_total[5m]))",
+          "expr": "sum by (outcome) (rate(otp_verify_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
           "legendFormat": "otp {{outcome}}",
           "refId": "B"
         }
       ],
       "fieldConfig": {
-        "defaults": {"color": {"mode": "palette-classic"}, "unit": "reqps"}
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Студентов в красной зоне",
-      "description": "attendance.students_in_red_zone — упрощённое определение: >= 3 absent за 30 дней. Обновляется каждые 5 мин (RedZoneGauge).",
-      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 8},
-      "id": 3,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
-      "targets": [
-        {
-          "expr": "max(attendance_students_in_red_zone)",
-          "refId": "A"
-        }
-      ],
-      "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 20},
-              {"color": "red", "value": 50}
-            ]
+          "color": {
+            "mode": "palette-classic"
           },
-          "unit": "short"
+          "unit": "reqps",
+          "noValue": "NO DATA"
         }
-      },
-      "options": {
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
-        "colorMode": "background",
-        "graphMode": "area"
       }
     },
     {
       "type": "stat",
       "title": "Active WebSocket sessions",
       "description": "notification.active_ws_sessions — STOMP sessions, tracked через SessionConnected/DisconnectEvent.",
-      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 8},
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 24
+      },
       "id": 4,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "max(notification_active_ws_sessions)",
-          "refId": "A"
+          "expr": "sum by (job, environment) (notification_active_ws_sessions{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"})",
+          "refId": "A",
+          "instant": true,
+          "range": false
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null}
+              {
+                "color": "green",
+                "value": null
+              }
             ]
           },
-          "unit": "short"
+          "unit": "short",
+          "noValue": "NO DATA"
         }
       },
       "options": {
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
         "graphMode": "area"
       }
     },
@@ -124,97 +258,809 @@
       "type": "timeseries",
       "title": "Outbox lag (seconds)",
       "description": "max(now - oldest pending.created_at) per service. > 300с = alert OutboxLagHigh.",
-      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 8},
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
       "id": 5,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "max by (job) (outbox_lag_seconds)",
-          "legendFormat": "{{job}}",
+          "expr": "outbox_lag_seconds{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
+          "legendFormat": "{{job}} {{instance}}",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "unit": "s",
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 60},
-              {"color": "red", "value": 300}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 60
+              },
+              {
+                "color": "red",
+                "value": 300
+              }
             ]
-          }
+          },
+          "noValue": "NO DATA"
         }
       }
     },
     {
       "type": "timeseries",
       "title": "JVM heap usage",
-      "description": "jvm.memory.used / max(area=heap). > 90% = JvmHeapPressure alert. Tracking heap trend полезен для утечек.",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+      "description": "All heap pools count in used bytes; denominator sums only positive configured maxima. G1 Eden/Survivor max=-1 is not a negative capacity. Each instance remains separate; no positive heap max is NO DATA.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 30
+      },
       "id": 6,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "sum by (application) (jvm_memory_used_bytes{area=\"heap\"}) / sum by (application) (jvm_memory_max_bytes{area=\"heap\"})",
-          "legendFormat": "{{application}}",
+          "expr": "sum by (job, instance, environment) (jvm_memory_used_bytes{area=\"heap\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}) / sum by (job, instance, environment) (jvm_memory_max_bytes{area=\"heap\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} > 0)",
+          "legendFormat": "{{job}} {{instance}}",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "unit": "percentunit",
           "min": 0,
-          "max": 1
+          "max": 1,
+          "noValue": "NO DATA"
         }
       }
     },
     {
       "type": "timeseries",
-      "title": "RabbitMQ queue depth",
-      "description": "rabbitmq_queue_messages — если consumer отстаёт, depth растёт. .dlq queues особенно показательны.",
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+      "title": "RabbitMQ queue depth: ready / unacknowledged / total",
+      "description": "Selective RabbitMQ3.13 /metrics/detailed queue_coarse_metrics; missing queue series remains NO DATA.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 30
+      },
       "id": 7,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "sum by (queue) (rabbitmq_queue_messages)",
-          "legendFormat": "{{queue}}",
+          "expr": "sum by (environment,vhost,queue) (rabbitmq_detailed_queue_messages_ready{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"})",
+          "legendFormat": "{{queue}} ready",
           "refId": "A"
+        },
+        {
+          "expr": "sum by (environment,vhost,queue) (rabbitmq_detailed_queue_messages_unacked{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"})",
+          "legendFormat": "{{queue}} unacknowledged",
+          "refId": "B"
+        },
+        {
+          "expr": "sum by (environment,vhost,queue) (rabbitmq_detailed_queue_messages{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"})",
+          "legendFormat": "{{queue}} total",
+          "refId": "C"
         }
       ],
       "fieldConfig": {
-        "defaults": {"color": {"mode": "palette-classic"}, "unit": "short"}
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "noValue": "NO DATA"
+        }
       }
     },
     {
       "type": "timeseries",
       "title": "KI-2 internal JWT fallback rate",
       "description": "rate(internal_jwt_fallback_total) — silent downgrade на legacy X-User-* headers. Должно быть близко к 0 в M03a+. Ненулевое значение = регрессия внедрения Internal JWT.",
-      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 22},
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 38
+      },
       "id": 8,
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "targets": [
         {
-          "expr": "sum by (job, from, to) (rate(internal_jwt_fallback_total[5m]))",
+          "expr": "sum by (job, from, to) (rate(internal_jwt_fallback_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
           "legendFormat": "{{job}} {{from}}→{{to}}",
           "refId": "A"
         }
       ],
       "fieldConfig": {
-        "defaults": {"color": {"mode": "palette-classic"}, "unit": "reqps"}
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "reqps",
+          "noValue": "NO DATA"
+        }
       }
+    },
+    {
+      "id": 30,
+      "title": "Datastore query availability",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 44,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "pg_up or mongodb_up or redis_up",
+          "refId": "A",
+          "legendFormat": "{{service}} {{instance}} {{report}} {{format}} {{outcome}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "No data/query failure is not healthy zero. Verify producer and monitoring identity; attempts are not the denominator for final business outcomes."
+    },
+    {
+      "id": 31,
+      "title": "Redis memory used / configured max",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 44,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "redis_memory_used_bytes / redis_memory_max_bytes > 0 and redis_memory_max_bytes > 0",
+          "refId": "A",
+          "legendFormat": "{{service}} {{instance}} {{report}} {{format}} {{outcome}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "No data/query failure is not healthy zero. Verify producer and monitoring identity; attempts are not the denominator for final business outcomes."
+    },
+    {
+      "id": 32,
+      "title": "Redis evictions per second",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 52,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "rate(redis_evicted_keys_total[5m])",
+          "refId": "A",
+          "legendFormat": "{{service}} {{instance}} {{report}} {{format}} {{outcome}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "No data/query failure is not healthy zero. Verify producer and monitoring identity; attempts are not the denominator for final business outcomes."
+    },
+    {
+      "id": 33,
+      "title": "Report attempts by outcome (not business availability)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 52,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by (report,format,outcome,instance) (rate(attendance_report_duration_seconds_count[5m]))",
+          "refId": "A",
+          "legendFormat": "{{service}} {{instance}} {{report}} {{format}} {{outcome}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "No data/query failure is not healthy zero. Verify producer and monitoring identity; attempts are not the denominator for final business outcomes."
+    },
+    {
+      "id": 34,
+      "title": "Report render duration p95",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 60,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95,sum by(report,format,instance,le)(rate(attendance_report_duration_seconds_bucket[5m])))",
+          "refId": "A",
+          "legendFormat": "{{service}} {{instance}} {{report}} {{format}} {{outcome}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "No data/query failure is not healthy zero. Verify producer and monitoring identity; attempts are not the denominator for final business outcomes."
+    },
+    {
+      "id": 40,
+      "title": "Observed service/operation HTTP availability (30d,99.9%)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 68,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "rct_sli:http_availability30d",
+          "refId": "A",
+          "legendFormat": "{{job}} {{operation}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "Finite operation classes use nonoverlapping30min event rollups;30d needs1440 complete windows, successful scrapes and actual counter coverage. No traffic remainsNaN; missing/incomplete/pruned history isNO DATA. Gateway broad routes are ingress availability only; backend templates classify latency."
+    },
+    {
+      "id": 41,
+      "title": "Complete HTTP operation coverage (30d window)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 68,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "rct_sli:http_source_coverage_seconds30d",
+          "refId": "A",
+          "legendFormat": "{{job}} {{operation}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "Age of oldest retained complete30min operation window. A complete window requires120 successful15s scrapes, the expected target count, and120 actual eligible-counter samples. Availability also requires all1440 windows; this age alone is not a completeness verdict."
+    },
+    {
+      "id": 42,
+      "title": "HTTP error-budget burn (5m/1h)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 76,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "rct_sli:http_error_ratio5m / 0.001",
+          "refId": "A",
+          "legendFormat": "{{job}} {{instance}} {{routeId}} {{method}} {{uri}} {{report}} {{format}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "D033: expected4xx/cancel/actuator/docs excluded; server-observed eligible requests. No eligible traffic, missing telemetry, query error and less than30d source coverage remain unavailable. Off-host availability is DEFERRED_LOCAL, not measured here."
+    },
+    {
+      "id": 43,
+      "title": "Eligible DOCX report p95 (30s objective)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 76,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "rct_sli:report_p95_seconds5m{format=\"docx\"}",
+          "refId": "A",
+          "legendFormat": "{{job}} {{instance}} {{routeId}} {{method}} {{uri}} {{report}} {{format}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "D033: expected4xx/cancel/actuator/docs excluded; server-observed eligible requests. No eligible traffic, missing telemetry, query error and less than30d source coverage remain unavailable. Off-host availability is DEFERRED_LOCAL, not measured here."
+    },
+    {
+      "id": 44,
+      "title": "DLQ head age since AMQP publisher timestamp",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 84,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "clamp_min(time() - (rabbitmq_detailed_queue_head_message_timestamp{queue=~\".*[.]dlq\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} > 0),0) and on(environment,vhost,queue,job,instance) (rabbitmq_detailed_queue_messages{queue=~\".*[.]dlq\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} > 0)",
+          "refId": "A",
+          "legendFormat": "{{queue}} {{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "Rabbit3.13 queue_metrics head_message_timestamp is seconds from message property, not DLQ residence or business occurred_at. Covers RAM head/read and pending ack heads; disk-only head may be unavailable. Republish can reset timestamp. Missing/legacy unstamped heads remainNO DATA, never0."
+    },
+    {
+      "id": 45,
+      "title": "Attendance retry / terminal deadletter rate",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 84,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by (job,instance,environment,reason) (rate(attendance_events_deadletter_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "refId": "A",
+          "legendFormat": "{{job}} {{instance}} terminal {{reason}}"
+        },
+        {
+          "expr": "sum by (job,instance,environment) (rate(attendance_events_retry_scheduled_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "refId": "B",
+          "legendFormat": "{{job}} {{instance}} confirmed retry"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "Actual confirmed delayed retry publication versus terminal reject/deadletter boundary; rates are diagnostic attempts, not completed business effects."
+    },
+    {
+      "id": 46,
+      "title": "Outbox publish outcomes",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 92,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by (job,instance,environment) (rate(outbox_published_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "refId": "A",
+          "legendFormat": "{{job}} {{instance}} confirmed"
+        },
+        {
+          "expr": "sum by (job,instance,environment) (rate(outbox_failed_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "refId": "B",
+          "legendFormat": "{{job}} {{instance}} failed"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "Broker-confirmed publish outcomes are not downstream business completion."
+    },
+    {
+      "id": 50,
+      "title": "Durable export job states / due / waiting",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 100,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by(job,environment,kind,state)(rct_export_jobs_queue{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} and on(job,instance,environment) (rct_export_jobs_snapshot_timestamp_seconds{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} > time() - 30))",
+          "legendFormat": "{{kind}} {{state}}"
+        },
+        {
+          "refId": "B",
+          "expr": "max by(job,environment,kind)(rct_export_jobs_due{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} and on(job,instance,environment) (rct_export_jobs_snapshot_timestamp_seconds{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} > time() - 30))",
+          "legendFormat": "{{kind}} due"
+        },
+        {
+          "refId": "C",
+          "expr": "max by(job,environment,kind)(rct_export_jobs_waiting{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} and on(job,instance,environment) (rct_export_jobs_snapshot_timestamp_seconds{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} > time() - 30))",
+          "legendFormat": "{{kind}} waiting"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "Shared DB snapshots max across fresh replicas; stale/never-collected isNO DATA. READY is durable generated result, not downloaded receipt."
+    },
+    {
+      "id": 51,
+      "title": "Accepted / running / retry-due export age",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 100,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by(job,environment,kind)(rct_export_jobs_oldest_nonterminal_age_seconds{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} and on(job,instance,environment) (rct_export_jobs_snapshot_timestamp_seconds{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} > time() - 30))",
+          "legendFormat": "{{kind}} admission age"
+        },
+        {
+          "refId": "B",
+          "expr": "max by(job,environment,kind)(rct_export_jobs_oldest_running_age_seconds{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} and on(job,instance,environment) (rct_export_jobs_snapshot_timestamp_seconds{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} > time() - 30))",
+          "legendFormat": "{{kind}} running age"
+        },
+        {
+          "refId": "C",
+          "expr": "max by(job,environment,kind)(rct_export_jobs_oldest_due_age_seconds{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} and on(job,instance,environment) (rct_export_jobs_snapshot_timestamp_seconds{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} > time() - 30))",
+          "legendFormat": "{{kind}} worker due age"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "Admission age includes queued retry wait and defines60s deadline; worker due age is separate. Stale snapshots areNO DATA."
+    },
+    {
+      "id": 52,
+      "title": "Export committed terminal outcomes / internal retry rate",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 108,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(job,environment,kind,outcome,reason)(rate(rct_export_jobs_terminal_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "legendFormat": "{{kind}} {{outcome}} {{reason}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by(job,environment,kind,reason)(rate(rct_export_jobs_retries_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "legendFormat": "{{kind}} internal retry {{reason}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "Once-only committed terminal success/failure versus expected denied/rejected. Retry attempts are diagnostic and never the business denominator."
+    },
+    {
+      "id": 53,
+      "title": "Export completed≤60s fraction (30d,99.5%)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 108,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rct_sli:export_good_fraction30d",
+          "legendFormat": "{{kind}} good≤60s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "Actual SDK le=60.0 verified. Good=committed successful result within60s from admission; eligible=terminal success/failure. No trafficNaN, incomplete1440windowsNO DATA; denied/rejected excluded.12finitekinds includingunknown fallback bound30d6array budget103680<500000."
+    },
+    {
+      "id": 54,
+      "title": "Business notification processing / send task outcomes",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 116,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(job,environment,outcome)(rate(notification_bot_event_transactions_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "legendFormat": "event {{outcome}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by(job,environment)(rate(notification_bot_send_tasks_completed_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "legendFormat": "send coroutine returned"
+        },
+        {
+          "refId": "C",
+          "expr": "sum by(job,environment)(rate(notification_bot_send_tasks_exhausted_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "legendFormat": "send exhausted"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "Actual finite process counters. Send coroutine returned is not a Telegram/user delivery receipt. Counters reset on restart; zero traffic is not missing target."
+    },
+    {
+      "id": 55,
+      "title": "Business notification consumer / workers / queue",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 116,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "notification_bot_consumer_connected{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
+          "legendFormat": "{{instance}} consumer"
+        },
+        {
+          "refId": "B",
+          "expr": "notification_bot_task_alive{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
+          "legendFormat": "{{instance}} {{task}} alive"
+        },
+        {
+          "refId": "C",
+          "expr": "notification_bot_send_workers_alive{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
+          "legendFormat": "{{instance}} send workers"
+        },
+        {
+          "refId": "D",
+          "expr": "notification_bot_send_queue_depth{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
+          "legendFormat": "{{instance}} queued sends"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "NO DATA"
+        }
+      },
+      "description": "Private existing8081/metrics endpoint; consumer/task/worker state is process observation. Queue depth is work pending, not completed notification. Missing target has independent alert."
     }
   ],
   "refresh": "30s",
   "schemaVersion": 39,
   "style": "dark",
-  "tags": ["business", "m04", "observability"],
-  "templating": {"list": []},
-  "time": {"from": "now-6h", "to": "now"},
+  "tags": [
+    "business",
+    "m04",
+    "observability"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "environment",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "query": "label_values(up, environment)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "job",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "query": "label_values(up{environment=~\"$environment\"}, job)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "instance",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "query": "label_values(up{environment=~\"$environment\",job=~\"$job\"}, instance)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
   "timepicker": {},
   "timezone": "browser",
   "title": "Business KPIs & Health (M04)",

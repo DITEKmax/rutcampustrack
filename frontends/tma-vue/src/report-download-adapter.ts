@@ -20,8 +20,8 @@ export interface TelegramReportDownloadHost {
 }
 
 export class TelegramReportDownloadHostError extends Error {
-  constructor() {
-    super('Telegram не удалось передать файл для скачивания.')
+  constructor(message = 'Telegram не удалось передать файл для скачивания.') {
+    super(message)
     this.name = 'TelegramReportDownloadHostError'
   }
 }
@@ -33,6 +33,7 @@ export function createTelegramReportDownloadPort(
 ): ReportDownloadPort {
   return {
     carrier: 'telegram',
+    ...(tickets.pendingRequests ? { pendingRequests: () => tickets.pendingRequests!() } : {}),
     async download(request, isCurrent, onState) {
       if (!isCurrent()) return 'stale'
       tickets.assertCurrent()
@@ -49,21 +50,55 @@ export function createTelegramReportDownloadPort(
       tickets.assertCurrent()
       if (!isCurrent()) return 'stale'
 
-      const result = await new Promise<'accepted' | 'cancelled' | 'unsupported'>(
+      const result = await new Promise<'accepted' | 'cancelled' | 'unsupported' | 'stale'>(
         (resolve, reject) => {
+          let settled = false
+          const finish = (action: () => void): void => {
+            if (settled) return
+            settled = true
+            clearTimeout(timeout)
+            action()
+          }
+          const timeout = setTimeout(
+            () =>
+              finish(() => {
+                try {
+                  tickets.assertCurrent()
+                  if (!isCurrent()) resolve('stale')
+                  else
+                    reject(
+                      new TelegramReportDownloadHostError(
+                        'Telegram не подтвердил скачивание. Попробуй ещё раз.',
+                      ),
+                    )
+                } catch (failure) {
+                  reject(failure)
+                }
+              }),
+            60_000,
+          )
           try {
             const submitted = host.requestFileDownload(params, (accepted) => {
-              resolve(accepted ? 'accepted' : 'cancelled')
+              finish(() => {
+                try {
+                  tickets.assertCurrent()
+                  resolve(!isCurrent() ? 'stale' : accepted ? 'accepted' : 'cancelled')
+                } catch (failure) {
+                  reject(failure)
+                }
+              })
             })
-            if (!submitted) resolve('unsupported')
+            if (!submitted) finish(() => resolve('unsupported'))
           } catch {
-            reject(new TelegramReportDownloadHostError())
+            finish(() => reject(new TelegramReportDownloadHostError()))
           }
         },
       )
 
       tickets.assertCurrent()
-      return isCurrent() ? result : 'stale'
+      if (!isCurrent()) return 'stale'
+      if (result === 'accepted') tickets.markDelivered?.(request)
+      return result
     },
   }
 }

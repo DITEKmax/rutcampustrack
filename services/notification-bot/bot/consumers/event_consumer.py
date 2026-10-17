@@ -5,7 +5,14 @@ import logging
 import aio_pika
 import grpc
 
-from bot.observability import bind_trace_context
+from bot.observability import (
+    CONSUMER_CONNECTED,
+    EVENT_OUTCOMES,
+    bind_trace_context,
+    event_trace_context,
+    telemetry_event_type,
+    telemetry_id,
+)
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
 
 logger = logging.getLogger(__name__)
@@ -108,7 +115,9 @@ async def start_consumer(
                     async with asyncio.timeout(min(8, budget)):
                         await idempotency_guard.release(event_id, claim_token)
                 except Exception:
-                    logger.warning("Processing lease retained until expiry event_id=%s", event_id)
+                    logger.warning(
+                        "Processing lease retained until expiry event_id=%s", telemetry_id(event_id) or "unknown"
+                    )
 
         async def renew():
             nonlocal lease_lost
@@ -121,7 +130,7 @@ async def start_consumer(
                 raise
             except Exception:
                 lease_lost = True
-                logger.warning("Lease loss defers original event_id=%s", event_id)
+                logger.warning("Lease loss defers original event_id=%s", telemetry_id(event_id) or "unknown")
                 owner.cancel()
 
         async with message.process(requeue=False, ignore_processed=True):
@@ -131,17 +140,20 @@ async def start_consumer(
                 async with asyncio.timeout(budget):
                     body = json.loads(message.body)
                     event_id = body.get("event_id")
-                    event_type = body.get("event_type", "unknown")
+                    event_type = telemetry_event_type(body.get("event_type"))
                     with bind_trace_context(body.get("trace_id"), event_type=event_type, event_id=event_id):
                         if idempotency_guard is not None:
                             claim = getattr(idempotency_guard, "claim", None)
                             if claim is None:
                                 if not await idempotency_guard.try_claim(event_id):
+                                    preparation["outcome"] = "duplicate"
                                     return
                             else:
                                 claim_token = await claim(event_id)
                                 if claim_token is None:
+                                    preparation["outcome"] = "duplicate"
                                     if not await idempotency_guard.is_completed(event_id):
+                                        preparation["outcome"] = "deferred"
                                         await requeue(message)
                                     return
                                 if getattr(idempotency_guard, "renew", None) is not None:
@@ -170,6 +182,7 @@ async def start_consumer(
                                     mandatory=True,
                                 )
                                 # message.process ACK and persistent publish share the outer TX commit.
+                                preparation["outcome"] = "prepared"
                                 return release  # Keep event lease through the atomic broker commit.
                         logger.info("[notification-bot] Received event: %s", event_type)
                         if dispatcher:
@@ -182,6 +195,7 @@ async def start_consumer(
                             if not await idempotency_guard.complete(event_id, claim_token):
                                 raise NotificationPreferencesUnavailable("Event lease lost at completion")
             except (NotificationPreferencesUnavailable, TimeoutError):
+                preparation["outcome"] = "deferred"
                 if preparation["publish_started"]:
                     raise  # Rollback whole prepare TX; never combine projection with raw NACK.
                 if batch is not None:
@@ -189,6 +203,7 @@ async def start_consumer(
                 await release()
                 await requeue(message)
             except asyncio.CancelledError:
+                preparation["outcome"] = "cancelled"
                 if preparation["publish_started"]:
                     raise
                 if batch is not None:
@@ -212,10 +227,13 @@ async def start_consumer(
                     grpc.StatusCode.RESOURCE_EXHAUSTED,
                     grpc.StatusCode.ABORTED,
                 }:
+                    preparation["outcome"] = "deferred"
                     await requeue(message)
                 else:
+                    preparation["outcome"] = "rejected"
                     raise
             except BaseException:
+                preparation["outcome"] = "rejected"
                 if preparation["publish_started"]:
                     raise
                 if batch is not None:
@@ -228,11 +246,11 @@ async def start_consumer(
                     heartbeat.cancel()
                     await asyncio.gather(heartbeat, return_exceptions=True)
 
-    async def process(message):
+    async def process_transaction(message):
         transaction = channel.transaction()
         processing_error = None
         post_commit = None
-        preparation = {"publish_started": False}
+        preparation = {"publish_started": False, "outcome": "processed"}
         try:
             await transaction.select(timeout=min(8, budget))
             try:
@@ -243,7 +261,9 @@ async def start_consumer(
                 processing_error = error
             # Includes process-context ACK/NACK/DLQ. None escapes the commit boundary.
             await transaction.commit(timeout=min(8, budget))
+            EVENT_OUTCOMES.labels(preparation["outcome"]).inc()
         except BaseException:
+            EVENT_OUTCOMES.labels("uncertain").inc()
             # A failed/uncertain commit never permits another delivery on this channel.
             # Closing returns every uncommitted original to Rabbit; committed replacement
             # is already persistent. Transactional atomicity leaves one of these two states.
@@ -259,6 +279,14 @@ async def start_consumer(
         if processing_error is not None:
             raise processing_error
 
+    async def process(message):
+        try:
+            envelope = json.loads(message.body)
+        except (ValueError, UnicodeError):
+            envelope = {}
+        with event_trace_context(envelope if isinstance(envelope, dict) else {}):
+            return await process_transaction(message)
+
     def finished(task):
         processors.discard(task)
         slots.release()
@@ -267,12 +295,14 @@ async def start_consumer(
 
     try:
         async with queue.iterator() as queue_iter:
+            CONSUMER_CONNECTED.set(1)
             async for message in queue_iter:
                 await slots.acquire()
                 task = asyncio.create_task(process(message))
                 processors.add(task)
                 task.add_done_callback(finished)
     finally:
+        CONSUMER_CONNECTED.set(0)
         for task in list(processors):
             task.cancel()
         # Close broker transport before awaiting owner cleanup: pending messages

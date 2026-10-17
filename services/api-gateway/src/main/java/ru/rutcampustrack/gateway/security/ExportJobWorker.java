@@ -1,6 +1,7 @@
 package ru.rutcampustrack.gateway.security;
 
 import jakarta.annotation.PreDestroy;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import ru.rutcampustrack.auth.dto.ExportJobModels;
         matchIfMissing = true)
 public class ExportJobWorker {
     private static final Logger log = LoggerFactory.getLogger(ExportJobWorker.class);
+    private static final Duration WORK_TIMEOUT = Duration.ofSeconds(60);
     private final InternalJwtIssuerClient auth;
     private final ReportDownloadTicketDownloadFilter reports;
     private final AtomicBoolean busy = new AtomicBoolean();
@@ -62,6 +64,8 @@ public class ExportJobWorker {
                                                 file.rowCount(),
                                                 file.requiresFull(),
                                                 file.teacherScopeHash())))
+                // Include generation and completion; cancellation precedes Auth's 90-second lease.
+                .timeout(WORK_TIMEOUT)
                 .onErrorResume(
                         failure ->
                                 auth.failExport(

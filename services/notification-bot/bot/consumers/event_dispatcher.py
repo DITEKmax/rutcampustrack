@@ -472,7 +472,7 @@ class EventDispatcher:
         handler = self._handlers.get(event_type)
 
         if handler is None:
-            logger.debug("Unhandled event type: %s", event_type)
+            logger.debug("Unhandled event type: unknown")
             return
 
         async with self._send_queue.staged() as batch:

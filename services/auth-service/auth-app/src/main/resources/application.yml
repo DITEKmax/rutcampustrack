@@ -144,6 +144,11 @@ management:
   # (SpanExportingPredicate в shared-observability) до OTLP экспорта —
   # health/prometheus probes больше не spam'ят Tempo.
   tracing:
+    baggage:
+      remote-fields: requestId
+      tag-fields: requestId
+      correlation:
+        fields: requestId
     sampling:
       probability: 1.0
   otlp:

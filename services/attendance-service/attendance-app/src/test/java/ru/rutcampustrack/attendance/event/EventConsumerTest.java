@@ -10,10 +10,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,10 +18,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  * Unit tests for EventConsumer routing logic.
@@ -264,8 +266,10 @@ class EventConsumerTest {
     }
 
     @Test
-    void missingEventType_isIgnored() {
-        eventConsumer.onEvent(Map.of("event_id", "x", "payload", Map.of()));
+    void missingEventType_isRejectedForDlq() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> eventConsumer.onEvent(Map.of("event_id", "x", "payload", Map.of())));
         verifyNoInteractions(lessonEventService, semesterCacheService);
     }
 

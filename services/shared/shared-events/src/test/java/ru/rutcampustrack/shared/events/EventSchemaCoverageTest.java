@@ -8,6 +8,12 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,10 +22,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * M08 G9 (P1-5 / NEW-164) — параметризованный coverage / sanity test над {@code
@@ -68,16 +70,26 @@ class EventSchemaCoverageTest {
     private static final Set<String> EXPECTED_EVENT_SCHEMAS =
             new TreeSet<>(
                     List.of(
+                            "admin.access.changed",
+                            "assistant.access.changed",
                             "attendance.marked",
                             "excuse.decided",
+                            "excuse.decision",
                             "excuse.requested",
+                            "export.state.changed",
                             "group.archived",
+                            "group.membership.changed",
+                            "group.promotion.completed",
                             "group.renamed",
                             "group.updated",
+                            "headman.access.changed",
+                            "homework.action-recorded",
+                            "homework.binding.archived",
                             "homework.due_reminder",
                             "homework.published",
                             "homework.updated",
                             "homework.weekly_digest",
+                            "homework.withdrawn",
                             "late_checkin.decided",
                             "late_checkin.decision",
                             "late_checkin.requested",
@@ -88,11 +100,19 @@ class EventSchemaCoverageTest {
                             "lesson.one_off.cancelled",
                             "lesson.one_off.created",
                             "lesson.reminder",
+                            "lesson.restored",
                             "lesson.started",
+                            "lesson.transferred",
+                            "lesson.updated",
                             "otp.requested",
                             "otp.verified",
                             "password.changed",
-                            "semester.archived"));
+                            "schedule.action-recorded",
+                            "semester.activated",
+                            "semester.archived",
+                            "semester.operation.completed",
+                            "student.initial-membership.attendance-backfilled",
+                            "student.initial-membership.recorded"));
 
     private static Path schemasDir() {
         // services/shared/shared-events → ../../../event-schemas
@@ -128,7 +148,8 @@ class EventSchemaCoverageTest {
         assertThat(missing).as("schemas объявлены в whitelist, но отсутствуют на диске").isEmpty();
         assertThat(unexpected)
                 .as(
-                        "schemas на диске без whitelist-entry — добавь в EXPECTED_EVENT_SCHEMAS + *ContractIT в сервисе-источнике")
+                        "schemas на диске без whitelist-entry — добавь в EXPECTED_EVENT_SCHEMAS +"
+                                + " *ContractIT в сервисе-источнике")
                 .isEmpty();
     }
 
@@ -141,7 +162,8 @@ class EventSchemaCoverageTest {
         JsonNode tree = MAPPER.readTree(Files.readString(common));
         assertThat(tree.get("$defs"))
                 .as(
-                        "_common.json должен содержать $defs блок, на который ссылаются envelope-schemas")
+                        "_common.json должен содержать $defs блок, на который ссылаются"
+                                + " envelope-schemas")
                 .isNotNull();
         assertThat(tree.get("$defs").has("eventId")).isTrue();
         assertThat(tree.get("$defs").has("occurredAt")).isTrue();
@@ -193,8 +215,17 @@ class EventSchemaCoverageTest {
         assertRefsResolveToCommon(properties.get("event_id"), "_common.json#/$defs/eventId");
         assertRefsResolveToCommon(properties.get("occurred_at"), "_common.json#/$defs/occurredAt");
         assertRefsResolveToCommon(properties.get("trace_id"), "_common.json#/$defs/traceId");
-        assertRefsResolveToCommon(
-                properties.get("event_version"), "_common.json#/$defs/eventVersion");
+        assertRefsResolveToCommon(properties.get("traceparent"), "_common.json#/$defs/traceparent");
+        assertRefsResolveToCommon(properties.get("request_id"), "_common.json#/$defs/requestId");
+        assertThat(requiredList).doesNotContain("traceparent", "request_id");
+        JsonNode version = properties.get("event_version");
+        if (version.has("const")) {
+            assertThat(version.get("const").asInt()).isEqualTo(1);
+        } else if (version.has("type")) {
+            assertThat(version.get("type").asText()).isEqualTo("integer");
+        } else {
+            assertRefsResolveToCommon(version, "_common.json#/$defs/eventVersion");
+        }
     }
 
     @ParameterizedTest(name = "{0}")
@@ -220,7 +251,27 @@ class EventSchemaCoverageTest {
                         .formatted(expectedEventType);
 
         JsonSchema schema = SCHEMA_FACTORY.getSchema(schemaFile.toUri());
-        Set<ValidationMessage> errors = schema.validate(MAPPER.readTree(envelope));
+        var input = (com.fasterxml.jackson.databind.node.ObjectNode) MAPPER.readTree(envelope);
+        JsonNode source =
+                MAPPER.readTree(Files.readString(schemaFile)).path("properties").path("source");
+        if (source.has("const")) {
+            input.put("source", source.get("const").asText());
+        }
+        if ("password.changed".equals(expectedEventType)) {
+            input.withObject("payload").put("telegram_id", 1L);
+        }
+        Set<ValidationMessage> errors = schema.validate(input);
+        var linked = input.deepCopy();
+        linked.put("traceparent", "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01");
+        linked.put("request_id", "11111111-1111-4111-8111-111111111111");
+        assertThat(schema.validate(linked)).containsExactlyInAnyOrderElementsOf(errors);
+        linked.put("traceparent", "00-00000000000000000000000000000000-bbbbbbbbbbbbbbbb-01");
+        assertThat(schema.validate(linked))
+                .anyMatch(error -> error.getInstanceLocation().toString().contains("traceparent"));
+        linked.put("traceparent", "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01");
+        linked.put("request_id", "SYNTHETIC_INVALID_REQUEST_ID");
+        assertThat(schema.validate(linked))
+                .anyMatch(error -> error.getInstanceLocation().toString().contains("request_id"));
 
         // Что ОЖИДАЕМО проходит: envelope shape (event_type/event_id/envelope_version/trace_id).
         // Что ОЖИДАЕМО фейлится: payload.required — зависит от domain.
@@ -241,12 +292,30 @@ class EventSchemaCoverageTest {
                 .isEmpty();
     }
 
-    private static void assertRefsResolveToCommon(JsonNode propertyNode, String expectedRef) {
+    private static void assertRefsResolveToCommon(JsonNode propertyNode, String expectedRef)
+            throws IOException {
         assertThat(propertyNode)
                 .as(
-                        "property schema must exist — envelope field referenced from _common.json missing")
+                        "property schema must exist — envelope field referenced from _common.json"
+                                + " missing")
                 .isNotNull();
         JsonNode ref = propertyNode.get("$ref");
+        if (ref == null) {
+            String definition = expectedRef.substring(expectedRef.lastIndexOf('/') + 1);
+            if ("traceparent".equals(definition) || "requestId".equals(definition)) {
+                // The password schema has an HTTPS $id; keep new definitions local and equivalent.
+                JsonNode common =
+                        MAPPER.readTree(Files.readString(schemasDir().resolve("_common.json")));
+                assertThat(propertyNode).isEqualTo(common.path("$defs").path(definition));
+            } else {
+                // Accepted action/password contracts already define their legacy fields inline.
+                assertThat(propertyNode.path("type").asText()).isEqualTo("string");
+                if ("occurredAt".equals(definition)) {
+                    assertThat(propertyNode.path("format").asText()).isEqualTo("date-time");
+                }
+            }
+            return;
+        }
         assertThat(ref)
                 .as("envelope field must be $ref'd from _common.json, found: " + propertyNode)
                 .isNotNull();

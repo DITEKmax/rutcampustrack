@@ -1,14 +1,13 @@
 package ru.rutcampustrack.mobilebff.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URI;
-import java.time.Clock;
-import java.time.Instant;
+
+import org.slf4j.MDC;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,12 +17,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
+
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.MobileProblemDetails;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
+import ru.rutcampustrack.shared.observability.MdcKeys;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.InternalJwtException;
 import ru.rutcampustrack.shared.security.InternalJwtProperties;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
+
+import java.io.IOException;
+import java.net.URI;
+import java.time.Clock;
+import java.time.Instant;
 
 @Component
 public class MobileIdentityFilter extends OncePerRequestFilter {
@@ -100,7 +106,7 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
                             "Требуется повторная аутентификация",
                             URI.create(request.getRequestURI()),
                             Instant.now(clock),
-                            null,
+                            MDC.get(MdcKeys.TRACE_ID),
                             ProblemCode.INVALID_SESSION,
                             null,
                             null);
@@ -121,7 +127,7 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
                         "Терминальная student-сессия доступна только для чтения",
                         URI.create(request.getRequestURI()),
                         clock.instant(),
-                        null,
+                        MDC.get(MdcKeys.TRACE_ID),
                         ProblemCode.ROLE_READ_ONLY,
                         null,
                         null);

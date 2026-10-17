@@ -1,1 +1,2 @@
 ru.rutcampustrack.shared.observability.SharedObservabilityAutoConfiguration
+ru.rutcampustrack.shared.observability.TracePrivacyAutoConfiguration

@@ -9,17 +9,106 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.jupiter.api.Test;
 
 /**
  * M02 Группа 4 — unit-тесты {@link OutboxPublisherJob} с mock Storage и Sender. Проверяется только
  * логика tick'а (read → send → mark), без Spring-контекста.
  */
 class OutboxPublisherJobTest {
+
+    @Test
+    void elapsedBatchBudgetCommitsOnlyTheConfirmedFifoPrefixAndLeavesRemainderPending() {
+        OutboxStorage storage = mock(OutboxStorage.class);
+        List<OutboxRecord> rows =
+                java.util.stream.LongStream.rangeClosed(1, 5)
+                        .mapToObj(id -> new OutboxRecord(id, "lesson.closed", "{}", Instant.now()))
+                        .toList();
+        when(storage.findPending(OutboxPublisherJob.BATCH_SIZE)).thenReturn(rows);
+        java.util.concurrent.atomic.AtomicLong elapsed =
+                new java.util.concurrent.atomic.AtomicLong();
+        List<Object> published = new ArrayList<>();
+        OutboxPublisherJob job =
+                new OutboxPublisherJob(
+                        storage,
+                        (type, payload) -> {
+                            published.add(rows.get(published.size()).id());
+                            elapsed.addAndGet(java.util.concurrent.TimeUnit.SECONDS.toNanos(6));
+                        },
+                        null,
+                        elapsed::get);
+
+        assertThat(job.publishBatch()).isEqualTo(2);
+
+        assertThat(published).containsExactly(1L, 2L);
+        verify(storage).markSent(1L);
+        verify(storage).markSent(2L);
+        verify(storage, never()).markSent(3L);
+        verify(storage, never()).markSent(4L);
+        verify(storage, never()).markSent(5L);
+        verify(storage, never()).markFailed(any(), any());
+    }
+
+    @Test
+    void brokerConfirmIsCountedSeparatelyAndRollbackDoesNotCountAsCommittedPublication() {
+        OutboxStorage storage = mock(OutboxStorage.class);
+        when(storage.findPending(OutboxPublisherJob.BATCH_SIZE))
+                .thenReturn(List.of(new OutboxRecord(1L, "lesson.closed", "{}", Instant.now())));
+        SimpleMeterRegistry registry = new SimpleMeterRegistry();
+        OutboxPublisherJob job = new OutboxPublisherJob(storage, (type, payload) -> {}, registry);
+        TransactionTemplate tx =
+                new TransactionTemplate(
+                        new AbstractPlatformTransactionManager() {
+                            @Override
+                            protected Object doGetTransaction() {
+                                return new Object();
+                            }
+
+                            @Override
+                            protected void doBegin(
+                                    Object transaction, TransactionDefinition definition) {}
+
+                            @Override
+                            protected void doCommit(DefaultTransactionStatus status) {}
+
+                            @Override
+                            protected void doRollback(DefaultTransactionStatus status) {}
+                        });
+
+        tx.executeWithoutResult(
+                status -> {
+                    job.publishBatch();
+                    assertThat(registry.find("outbox.published.total").counter()).isNull();
+                    status.setRollbackOnly();
+                });
+        assertThat(registry.find("outbox.published.total").counter()).isNull();
+        assertThat(
+                        registry.get("outbox.publish.attempts.total")
+                                .tag("outcome", "confirmed")
+                                .counter()
+                                .count())
+                .isEqualTo(1);
+
+        tx.executeWithoutResult(status -> job.publishBatch());
+        assertThat(registry.get("outbox.published.total").counter().count()).isEqualTo(1);
+        assertThat(
+                        registry.get("outbox.publish.attempts.total")
+                                .tag("outcome", "confirmed")
+                                .counter()
+                                .count())
+                .isEqualTo(2);
+    }
 
     @Test
     void emptyBatch_doesNothing() {

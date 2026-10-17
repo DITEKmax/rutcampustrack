@@ -3,17 +3,15 @@ package ru.rutcampustrack.attendance.grpc;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+
 import net.devh.boot.grpc.client.inject.GrpcClient;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
+
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.AssistantPermissionCheckRequest;
 import ru.rutcampustrack.academic.grpc.Empty;
@@ -44,6 +42,12 @@ import ru.rutcampustrack.shared.security.grpc.ServiceIdentityServerInterceptor;
 import ru.rutcampustrack.shared.security.grpc.ServicePrincipal;
 import ru.rutcampustrack.shared.security.grpc.ServiceTokenCallCredentials;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 /**
  * gRPC client wrapper for Academic Service. All calls use a 3-second deadline to prevent cascading
  * timeouts. StatusRuntimeException is translated to domain exceptions which are then mapped to HTTP
@@ -68,7 +72,8 @@ public class AcademicGrpcClient {
                         .orElseThrow(
                                 () ->
                                         new AcademicServiceUnavailableException(
-                                                "Attendance semester authority has no directed service identity"));
+                                                "Attendance semester authority has no directed"
+                                                        + " service identity"));
         var callCredentials =
                 ServiceTokenCallCredentials.forMethod(
                         credential,
@@ -91,7 +96,8 @@ public class AcademicGrpcClient {
                 throw new ResourceNotFoundException("Semester", "id", semesterId);
             }
             throw new AcademicServiceUnavailableException(
-                    "Academic Service unavailable: " + error.getStatus());
+                    "Academic Service unavailable: " + error.getStatus().getCode(),
+                    error.getStatus().getCode());
         }
     }
 
@@ -134,7 +140,8 @@ public class AcademicGrpcClient {
                                 "Academic Service отклонил internal-сессию");
                 default ->
                         throw new AcademicServiceUnavailableException(
-                                "Academic Service unavailable: " + error.getStatus());
+                                "Academic Service unavailable: " + error.getStatus().getCode(),
+                                error.getStatus().getCode());
             }
         }
     }
@@ -180,7 +187,8 @@ public class AcademicGrpcClient {
                                 "Academic Service отклонил internal-сессию");
                 default ->
                         throw new AcademicServiceUnavailableException(
-                                "Academic Service unavailable: " + error.getStatus());
+                                "Academic Service unavailable: " + error.getStatus().getCode(),
+                                error.getStatus().getCode());
             }
         }
     }
@@ -202,7 +210,8 @@ public class AcademicGrpcClient {
                 throw new ResourceNotFoundException("Group", "id", groupId);
             }
             throw new AcademicServiceUnavailableException(
-                    "Academic Service unavailable: " + e.getStatus());
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -215,7 +224,8 @@ public class AcademicGrpcClient {
                 throw new ResourceNotFoundException("Group", "id", groupId);
             }
             throw new AcademicServiceUnavailableException(
-                    "Academic Service unavailable: " + e.getStatus());
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -244,7 +254,8 @@ public class AcademicGrpcClient {
                 throw new ResourceNotFoundException("Group", "id", groupId);
             }
             throw new AcademicServiceUnavailableException(
-                    "Academic Service unavailable: " + e.getStatus());
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -254,7 +265,8 @@ public class AcademicGrpcClient {
                     .getCampusGeofence(Empty.getDefaultInstance());
         } catch (StatusRuntimeException e) {
             throw new AcademicServiceUnavailableException(
-                    "Academic Service unavailable: " + e.getStatus());
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -267,7 +279,8 @@ public class AcademicGrpcClient {
                 throw new ResourceNotFoundException("Semester", "status", "active");
             }
             throw new AcademicServiceUnavailableException(
-                    "Academic Service unavailable: " + e.getStatus());
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -281,7 +294,8 @@ public class AcademicGrpcClient {
                                     .build());
         } catch (StatusRuntimeException e) {
             throw new AcademicServiceUnavailableException(
-                    "Academic Service unavailable: " + e.getStatus());
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -321,7 +335,8 @@ public class AcademicGrpcClient {
                                 "Academic Service отклонил internal-сессию");
                 default ->
                         throw new AcademicServiceUnavailableException(
-                                "Academic Service unavailable: " + error.getStatus());
+                                "Academic Service unavailable: " + error.getStatus().getCode(),
+                                error.getStatus().getCode());
             }
         }
     }
@@ -351,7 +366,8 @@ public class AcademicGrpcClient {
                                 "Academic Service отклонил internal-сессию");
                 default ->
                         throw new AcademicServiceUnavailableException(
-                                "Academic Service unavailable: " + error.getStatus());
+                                "Academic Service unavailable: " + error.getStatus().getCode(),
+                                error.getStatus().getCode());
             }
         }
     }
@@ -366,7 +382,8 @@ public class AcademicGrpcClient {
                                     .build());
         } catch (StatusRuntimeException e) {
             throw new AcademicServiceUnavailableException(
-                    "Academic Service unavailable: " + e.getStatus());
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -400,7 +417,8 @@ public class AcademicGrpcClient {
                 throw new ResourceNotFoundException("User", "id", userId);
             }
             throw new AcademicServiceUnavailableException(
-                    "Academic Service unavailable: " + e.getStatus());
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -454,7 +472,8 @@ public class AcademicGrpcClient {
                                     (a, b) -> a));
         } catch (StatusRuntimeException e) {
             throw new AcademicServiceUnavailableException(
-                    "Academic Service unavailable: " + e.getStatus());
+                    "Academic Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -500,7 +519,8 @@ public class AcademicGrpcClient {
                                 "Academic Service отклонил semester_id");
                 default ->
                         throw new AcademicServiceUnavailableException(
-                                "Academic Service unavailable: " + error.getStatus());
+                                "Academic Service unavailable: " + error.getStatus().getCode(),
+                                error.getStatus().getCode());
             }
         }
     }

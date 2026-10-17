@@ -1,59 +1,61 @@
 package ru.rutcampustrack.shared.events;
 
-import java.util.Map;
-import java.util.function.Consumer;
 import org.slf4j.MDC;
 
-/**
- * Базовый consumer (NEW-60): извлекает {@code trace_id} из прилетевшего {@link DomainEvent}, кладёт
- * в MDC перед вызовом handler'а и гарантированно очищает MDC после (даже при исключении).
- *
- * <p>Без привязки к AMQP — подключение к Rabbit listener будет сделано в M02.
- */
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
+
+/** Preserves origin IDs without replacing the active worker's framework-managed trace/span IDs. */
 public abstract class AbstractEventConsumer {
-
     public static final String MDC_TRACE_ID = AbstractEventPublisher.MDC_TRACE_ID;
+    public static final String MDC_ORIGIN_TRACE_ID = "originTraceId";
+    private static final Pattern LEGACY_TRACE = Pattern.compile("[0-9a-f]{16}|[0-9a-f]{32}");
 
-    /**
-     * Выполняет handler в MDC-контексте события. Если {@code trace_id} события null — MDC не
-     * трогается вообще (чтобы не затереть существующий контекст).
-     *
-     * @param event прилетевшее событие.
-     * @param handler действие, которое надо выполнить в MDC-контексте.
-     * @param <T> тип события.
-     */
     protected <T extends DomainEvent> void withTraceContext(T event, Consumer<T> handler) {
-        runInTraceContext(event.getTraceId(), () -> handler.accept(event));
+        runInEventContext(
+                event.getTraceId(),
+                event.getRequestId(),
+                event.getEventId() == null ? null : event.getEventId().toString(),
+                () -> handler.accept(event));
     }
 
-    /**
-     * Map-based вариант для consumer'ов, которые принимают envelope как {@code Map<String,Object>}
-     * (исторически — все 3 RabbitListener'а в сервисах). Извлекает {@code trace_id} из envelope,
-     * выполняет runnable, восстанавливает MDC.
-     */
     protected void withTraceContext(Map<String, Object> envelope, Runnable handler) {
-        String traceId = envelope == null ? null : (String) envelope.get("trace_id");
-        runInTraceContext(traceId, handler);
+        runInEventContext(
+                envelope == null ? null : envelope.get("trace_id"),
+                envelope == null ? null : envelope.get("request_id"),
+                envelope == null ? null : envelope.get("event_id"),
+                handler);
     }
 
-    private void runInTraceContext(String traceId, Runnable handler) {
-        String previous = null;
-        boolean replaced = false;
-        if (traceId != null) {
-            previous = MDC.get(MDC_TRACE_ID);
-            MDC.put(MDC_TRACE_ID, traceId);
-            replaced = true;
-        }
+    private void runInEventContext(
+            Object originTrace, Object requestId, Object eventId, Runnable handler) {
+        String previousOrigin = MDC.get(MDC_ORIGIN_TRACE_ID);
+        String previousRequest = MDC.get("requestId");
+        String previousEvent = MDC.get("eventId");
+        String origin =
+                originTrace instanceof String value
+                                && (LEGACY_TRACE.matcher(value).matches()
+                                        || EventTraceContext.validRequestId(value) != null)
+                        ? value
+                        : null;
+        replace(MDC_ORIGIN_TRACE_ID, origin);
+        replace("requestId", EventTraceContext.validRequestId(requestId));
+        replace("eventId", EventTraceContext.validRequestId(eventId));
         try {
             handler.run();
         } finally {
-            if (replaced) {
-                if (previous == null) {
-                    MDC.remove(MDC_TRACE_ID);
-                } else {
-                    MDC.put(MDC_TRACE_ID, previous);
-                }
-            }
+            replace("eventId", previousEvent);
+            replace("requestId", previousRequest);
+            replace(MDC_ORIGIN_TRACE_ID, previousOrigin);
+        }
+    }
+
+    private static void replace(String key, String value) {
+        if (value == null) {
+            MDC.remove(key);
+        } else {
+            MDC.put(key, value);
         }
     }
 }

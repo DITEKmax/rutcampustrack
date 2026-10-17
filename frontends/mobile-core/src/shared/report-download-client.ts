@@ -257,6 +257,7 @@ export type ReportDownloadRequestIsCurrent = () => boolean
 
 export interface ReportDownloadPort {
   readonly carrier?: 'browser' | 'telegram'
+  pendingRequests?(): readonly ReportDownloadTicketRequest[]
   download(
     request: ReportDownloadTicketRequest,
     isCurrent: ReportDownloadRequestIsCurrent,
@@ -266,6 +267,8 @@ export interface ReportDownloadPort {
 
 export interface ReportDownloadTicketIssuer {
   assertCurrent(): void
+  pendingRequests?(): readonly ReportDownloadTicketRequest[]
+  markDelivered?(request: ReportDownloadTicketRequest): void
   issueTicket(
     request: ReportDownloadTicketRequest,
     onState?: ExportStateListener,
@@ -278,6 +281,9 @@ export interface ReportDownloadClientOptions {
   readonly assertCurrent: () => void
   readonly onUnauthorized?: () => Promise<void>
   readonly fetcher?: typeof fetch
+  /** A durable user/session/role identity, never a bearer or refresh token. */
+  readonly recoveryScope?: () => string | null
+  readonly recoveryStorage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 }
 
 export interface ReportDownloadGenerationOwner {
@@ -300,8 +306,53 @@ export class ReportDownloadResponseError extends Error {
   }
 }
 
+interface PendingExport {
+  readonly requestId: string
+  readonly request: ReportDownloadTicketRequest
+  readonly jobId: string | null
+  readonly expiresAt: number
+}
+
+function isWeeklyReport(request: ReportDownloadTicketRequest): boolean {
+  return request.kind === 'HEADMAN_WEEKLY_CURRENT' || request.kind === 'HEADMAN_WEEKLY_SELECTED'
+}
+
+function sameReport(
+  left: ReportDownloadTicketRequest,
+  right: ReportDownloadTicketRequest,
+): boolean {
+  return JSON.stringify(left) === JSON.stringify(right)
+}
+
+function isPendingExport(value: unknown): value is PendingExport {
+  if (
+    !isRecord(value) ||
+    Object.keys(value).some((key) => !['requestId', 'request', 'jobId', 'expiresAt'].includes(key))
+  )
+    return false
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+  if (
+    typeof value.requestId !== 'string' ||
+    !uuid.test(value.requestId) ||
+    !(value.jobId === null || (typeof value.jobId === 'string' && uuid.test(value.jobId))) ||
+    typeof value.expiresAt !== 'number' ||
+    !Number.isFinite(value.expiresAt) ||
+    !isRecord(value.request)
+  )
+    return false
+  try {
+    const request = value.request as unknown as ReportDownloadTicketRequest
+    validateTicketRequest(request)
+    return isWeeklyReport(request)
+  } catch {
+    return false
+  }
+}
+
 export class ReportDownloadClient implements ReportDownloadTicketIssuer {
   private readonly fetcher: typeof fetch
+  private readonly pending = new Map<string, PendingExport[]>()
+  private readonly responseTimeouts = new WeakMap<Response, ReturnType<typeof setTimeout>>()
 
   constructor(private readonly options: ReportDownloadClientOptions) {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
@@ -311,79 +362,196 @@ export class ReportDownloadClient implements ReportDownloadTicketIssuer {
     this.options.assertCurrent()
   }
 
+  pendingRequests(): readonly ReportDownloadTicketRequest[] {
+    this.assertCurrent()
+    return this.readPending().map((entry) => structuredClone(entry.request))
+  }
+
+  markDelivered(request: ReportDownloadTicketRequest): void {
+    this.assertCurrent()
+    this.removePending(request)
+  }
+
+  private storage(): ReportDownloadClientOptions['recoveryStorage'] {
+    try {
+      return this.options.recoveryStorage ?? globalThis.sessionStorage
+    } catch {
+      return undefined
+    }
+  }
+
+  private recoveryKey(): string | null {
+    const scope = this.options.recoveryScope?.()
+    return scope ? `rct:weekly-export:v1:${scope}` : null
+  }
+
+  private readPending(): PendingExport[] {
+    const key = this.recoveryKey()
+    if (!key) return []
+    try {
+      const raw = this.storage()?.getItem(key)
+      if (raw) {
+        const values: unknown = JSON.parse(raw)
+        if (Array.isArray(values) && values.length <= 20) {
+          const entries = values.filter(isPendingExport)
+          this.pending.set(key, entries)
+          return entries
+        }
+      }
+    } catch {
+      // Restricted browser storage still permits recovery during this app lifetime.
+    }
+    return this.pending.get(key) ?? []
+  }
+
+  private writePending(entries: PendingExport[]): void {
+    const key = this.recoveryKey()
+    if (!key) return
+    this.pending.set(key, entries)
+    try {
+      if (entries.length) this.storage()?.setItem(key, JSON.stringify(entries))
+      else this.storage()?.removeItem(key)
+    } catch {
+      // The server remains the source of truth; never store a download capability.
+    }
+  }
+
+  private removePending(request: ReportDownloadTicketRequest): void {
+    this.writePending(this.readPending().filter((entry) => !sameReport(entry.request, request)))
+  }
+
   async issueTicket(
     request: ReportDownloadTicketRequest,
     onState?: ExportStateListener,
     isCurrent: ReportDownloadRequestIsCurrent = () => true,
   ): Promise<ReportDownloadTicket> {
+    const recoveryKey = this.recoveryKey()
     const current = (): void => {
       this.assertCurrent()
-      if (!isCurrent()) throw new StaleSessionGenerationError()
+      if (!isCurrent() || recoveryKey !== this.recoveryKey())
+        throw new StaleSessionGenerationError()
     }
     current()
+    request = structuredClone(request)
     validateTicketRequest(request)
-    const requestId = globalThis.crypto.randomUUID()
-    const created = await this.authenticated(
-      '/api/auth/export-jobs',
-      'POST',
-      { requestId, report: request },
-      current,
-    )
-    let job = parseExportJob(await this.json(created, current), request)
-    current()
-    const jobId = job.jobId
-    let lastState: ExportJobState | undefined
-    let wake: (() => void) | undefined
-    const unsubscribe = listenExportJob(jobId, () => wake?.())
+    const recoverable = isWeeklyReport(request) && this.recoveryKey() !== null
+    let saved = recoverable
+      ? this.readPending().find((entry) => sameReport(entry.request, request))
+      : undefined
+    if (saved && saved.expiresAt <= Date.now()) {
+      this.removePending(request)
+      throw new ReportDownloadTicketError(410)
+    }
+    if (!saved) {
+      saved = {
+        requestId: globalThis.crypto.randomUUID(),
+        request: structuredClone(request),
+        jobId: null,
+        expiresAt: Date.now() + 10 * 60_000,
+      }
+      if (recoverable) {
+        const entries = this.readPending()
+        if (entries.length >= 20) throw new Error('Сначала проверь ранее запрошенные выгрузки.')
+        // Persist before POST: a lost acceptance response must reuse the same identity.
+        this.writePending([...entries, saved])
+      }
+    }
+    const savedRequest = saved
     try {
-      while (true) {
-        current()
-        if (lastState !== job.state) {
-          onState?.(job.state)
-          lastState = job.state
-        }
-        if (job.state === 'error')
-          throw new Error(
-            job.errorCode === 'AUTHORITY_DENIED'
-              ? 'Доступ к выгрузке изменился.'
-              : 'Не удалось подготовить файл. Попробуй ещё раз.',
+      const created = saved.jobId
+        ? await this.authenticated(
+            `/api/auth/export-jobs/${saved.jobId}`,
+            'GET',
+            undefined,
+            current,
           )
-        if (job.state === 'ready') break
-        if (Date.parse(job.expiresAt) <= Date.now()) throw new ReportDownloadTicketError(409)
-        await new Promise<void>((resolve) => {
-          const timer = setTimeout(() => {
-            wake = undefined
-            resolve()
-          }, 1500)
-          wake = () => {
-            clearTimeout(timer)
-            wake = undefined
-            resolve()
+        : await this.authenticated(
+            '/api/auth/export-jobs',
+            'POST',
+            { requestId: saved.requestId, report: request },
+            current,
+          )
+      let job = parseExportJob(await this.json(created, current), request)
+      current()
+      if (saved.jobId && saved.jobId !== job.jobId) throw new ReportDownloadResponseError()
+      if (recoverable) {
+        saved = { ...saved, jobId: job.jobId, expiresAt: Date.parse(job.expiresAt) }
+        this.writePending(
+          this.readPending().map((entry) =>
+            entry.requestId === savedRequest.requestId ? saved! : entry,
+          ),
+        )
+      }
+      const jobId = job.jobId
+      let lastReadAt = Date.now()
+      let lastState: ExportJobState | undefined
+      let wake: (() => void) | undefined
+      const unsubscribe = listenExportJob(jobId, () => {
+        if (Date.now() - lastReadAt >= 2000) wake?.()
+      })
+      try {
+        while (true) {
+          current()
+          if (lastState !== job.state) {
+            onState?.(job.state)
+            lastState = job.state
           }
-        })
-        current()
+          if (Date.parse(job.expiresAt) <= Date.now()) throw new ReportDownloadTicketError(410)
+          if (job.state === 'error') {
+            if (recoverable) this.removePending(request)
+            throw new Error(
+              job.errorCode === 'AUTHORITY_DENIED'
+                ? 'Доступ к выгрузке изменился.'
+                : 'Не удалось подготовить файл. Попробуй ещё раз.',
+            )
+          }
+          if (job.state === 'ready') break
+          await new Promise<void>((resolve) => {
+            const timer = setTimeout(() => {
+              wake = undefined
+              resolve()
+            }, 2000)
+            wake = () => {
+              clearTimeout(timer)
+              wake = undefined
+              resolve()
+            }
+          })
+          current()
+          const response = await this.authenticated(
+            `/api/auth/export-jobs/${jobId}`,
+            'GET',
+            undefined,
+            current,
+          )
+          const next = parseExportJob(await this.json(response, current), request)
+          if (next.jobId !== jobId) throw new ReportDownloadResponseError()
+          job = next
+          lastReadAt = Date.now()
+        }
         const response = await this.authenticated(
-          `/api/auth/export-jobs/${jobId}`,
-          'GET',
+          `/api/auth/export-jobs/${jobId}/ticket`,
+          'POST',
           undefined,
           current,
         )
-        const next = parseExportJob(await this.json(response, current), request)
-        if (next.jobId !== jobId) throw new ReportDownloadResponseError()
-        job = next
+        const ticket = parseTicketResponse(await this.json(response, current), request)
+        current()
+        return ticket
+      } finally {
+        unsubscribe()
+        wake = undefined
       }
-      const response = await this.authenticated(
-        `/api/auth/export-jobs/${jobId}/ticket`,
-        'POST',
-        undefined,
-        current,
-      )
-      const ticket = parseTicketResponse(await this.json(response, current), request)
-      current()
-      return ticket
-    } finally {
-      unsubscribe()
-      wake = undefined
+    } catch (failure) {
+      if (
+        recoverable &&
+        failure instanceof ReportDownloadTicketError &&
+        [401, 403, 404, 409, 410].includes(failure.status)
+      ) {
+        current()
+        this.removePending(request)
+      }
+      throw failure
     }
   }
 
@@ -399,19 +567,38 @@ export class ReportDownloadClient implements ReportDownloadTicketIssuer {
     if (body !== undefined) headers.set('Content-Type', 'application/json')
     const token = this.options.accessToken()
     if (token) headers.set('Authorization', `Bearer ${token}`)
-    const response = await this.fetcher(path, {
-      method,
-      headers,
-      credentials: 'include',
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    })
-    current()
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15_000)
+    let response: Response
+    try {
+      response = await this.fetcher(path, {
+        method,
+        headers,
+        credentials: 'include',
+        signal: controller.signal,
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      })
+    } catch (failure) {
+      clearTimeout(timeout)
+      throw failure
+    }
+    try {
+      current()
+    } catch (failure) {
+      clearTimeout(timeout)
+      throw failure
+    }
     if (response.status === 401 && this.options.onUnauthorized && !retried) {
+      clearTimeout(timeout)
       await this.options.onUnauthorized()
       current()
       return this.authenticated(path, method, body, current, true)
     }
-    if (!response.ok) throw new ReportDownloadTicketError(response.status)
+    if (!response.ok) {
+      clearTimeout(timeout)
+      throw new ReportDownloadTicketError(response.status)
+    }
+    this.responseTimeouts.set(response, timeout)
     return response
   }
 
@@ -425,6 +612,9 @@ export class ReportDownloadClient implements ReportDownloadTicketIssuer {
       throw failure instanceof StaleSessionGenerationError
         ? failure
         : new ReportDownloadResponseError()
+    } finally {
+      clearTimeout(this.responseTimeouts.get(response))
+      this.responseTimeouts.delete(response)
     }
   }
 }
@@ -432,6 +622,7 @@ export class ReportDownloadClient implements ReportDownloadTicketIssuer {
 export function createGenerationBoundReportDownloadClient(
   owner: ReportDownloadGenerationOwner,
   fetcher?: typeof fetch,
+  recoveryScope?: () => string | null,
 ): ReportDownloadClient {
   const generation = owner.currentGeneration()
   const assertCurrent = (): void => {
@@ -449,6 +640,7 @@ export function createGenerationBoundReportDownloadClient(
       assertCurrent()
     },
     ...(fetcher ? { fetcher } : {}),
+    ...(recoveryScope ? { recoveryScope } : {}),
   })
 }
 
@@ -827,6 +1019,9 @@ function ticketErrorMessage(status: number): string {
       return 'У тебя нет права скачать этот отчёт.'
     case 409:
       return 'Отчёт стал недоступен. Обнови данные и выбери его снова.'
+    case 404:
+    case 410:
+      return 'Срок хранения выгрузки истёк. Запроси отчёт снова.'
     case 429:
       return 'Слишком много запросов на скачивание. Попробуй позже.'
     case 503:

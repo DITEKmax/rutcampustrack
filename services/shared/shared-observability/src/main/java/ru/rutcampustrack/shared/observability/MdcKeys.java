@@ -10,6 +10,8 @@ package ru.rutcampustrack.shared.observability;
 public final class MdcKeys {
 
     public static final String TRACE_ID = "traceId";
+    public static final String SPAN_ID = "spanId";
+    public static final String REQUEST_ID = "requestId";
     public static final String USER_ID = "userId";
     public static final String EVENT_TYPE = "eventType";
     public static final String INTERNAL_JWT_FALLBACK = "internalJwtFallback";

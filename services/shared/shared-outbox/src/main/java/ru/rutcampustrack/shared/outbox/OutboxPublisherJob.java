@@ -2,12 +2,20 @@ package ru.rutcampustrack.shared.outbox;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import java.util.List;
+
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.LongSupplier;
 
 /**
  * Публикует pending outbox-записи во внешний транспорт.
@@ -37,12 +45,19 @@ public class OutboxPublisherJob {
     /** Максимальный размер batch'а за один tick. Защищает от OOM при backlog'е. */
     static final int BATCH_SIZE = 100;
 
+    // Preserve fast-broker throughput while preventing 100 sequential 5s confirms from outliving
+    // the 40s transaction / 60s scheduler lease. Stop starting sends after 10s, leaving room for
+    // one bounded connect/handshake/channel/confirm/close and database completion. This is a wait
+    // budget, not a wall-clock promise under thread suspension or host failure.
+    static final long BATCH_BUDGET_NANOS = TimeUnit.SECONDS.toNanos(10);
+
     /** Имя lock'а в ShedLock-таблице. См. javadoc класса — константа by design. */
     public static final String LOCK_NAME = "outbox-publisher";
 
     private final OutboxStorage storage;
     private final OutboxEventSender sender;
     private final MeterRegistry meterRegistry;
+    private final LongSupplier monotonicClock;
 
     /**
      * @param storage storage-реализация (JpaOutboxStorage / MongoOutboxStorage)
@@ -59,14 +74,23 @@ public class OutboxPublisherJob {
      */
     public OutboxPublisherJob(
             OutboxStorage storage, OutboxEventSender sender, MeterRegistry meterRegistry) {
+        this(storage, sender, meterRegistry, System::nanoTime);
+    }
+
+    OutboxPublisherJob(
+            OutboxStorage storage,
+            OutboxEventSender sender,
+            MeterRegistry meterRegistry,
+            LongSupplier monotonicClock) {
         this.storage = storage;
         this.sender = sender;
         this.meterRegistry = meterRegistry;
+        this.monotonicClock = monotonicClock;
     }
 
     @Scheduled(fixedDelayString = "${rutcampustrack.outbox.publisher.fixed-delay-ms:5000}")
     @SchedulerLock(name = LOCK_NAME, lockAtMostFor = "PT1M", lockAtLeastFor = "PT5S")
-    @Transactional
+    @Transactional(timeout = 40)
     public void tick() {
         publishBatch();
     }
@@ -76,44 +100,69 @@ public class OutboxPublisherJob {
      * здесь не применяется — caller должен обеспечить tx.
      */
     public int publishBatch() {
+        long started = monotonicClock.getAsLong();
         List<OutboxRecord> batch = storage.findPending(BATCH_SIZE);
         if (batch.isEmpty()) {
             return 0;
         }
         // Keep transport failures retryable: do not mark a row FAILED after a
         // single RabbitMQ outage. Consumers deduplicate repeated sends by event_id.
+        List<OutboxRecord> confirmed = new ArrayList<>();
         for (OutboxRecord record : batch) {
+            if (confirmed.size() >= BATCH_SIZE
+                    || monotonicClock.getAsLong() - started >= BATCH_BUDGET_NANOS) {
+                break;
+            }
             try {
                 sender.send(record.eventType(), record.payload());
+                incrementAttempt("confirmed");
+                confirmed.add(record);
             } catch (Exception e) {
-                log.error(
-                        "Outbox publish failed: id={}, eventType={}, error={}",
-                        record.id(),
-                        record.eventType(),
-                        e.getMessage());
+                log.error("Outbox publish failed: id={}, category=transport", record.id());
+                incrementAttempt("failed");
                 incrementFailed(record.eventType());
                 throw new IllegalStateException(
-                        "Outbox publish failed: id="
-                                + record.id()
-                                + ", eventType="
-                                + record.eventType(),
-                        e);
+                        "Outbox publish failed; original event remains pending");
             }
         }
-        for (OutboxRecord record : batch) {
+        for (OutboxRecord record : confirmed) {
             storage.markSent(record.id());
-            incrementPublished(record.eventType());
         }
-        if (!batch.isEmpty()) {
-            log.debug("Outbox tick: published={}, failed=0", batch.size());
+        afterCommit(() -> confirmed.forEach(record -> incrementPublished(record.eventType())));
+        if (!confirmed.isEmpty()) {
+            log.debug("Outbox tick: published={}, failed=0", confirmed.size());
         }
-        return batch.size();
+        return confirmed.size();
+    }
+
+    private static void afterCommit(Runnable committed) {
+        if (TransactionSynchronizationManager.isActualTransactionActive()
+                && TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            committed.run();
+                        }
+                    });
+        } else {
+            committed.run();
+        }
+    }
+
+    private void incrementAttempt(String outcome) {
+        if (meterRegistry == null) return;
+        Counter.builder("outbox.publish.attempts.total")
+                .description("Transport attempts; confirmed does not imply local SENT commit")
+                .tag("outcome", outcome)
+                .register(meterRegistry)
+                .increment();
     }
 
     private void incrementPublished(String eventType) {
         if (meterRegistry == null) return;
         Counter.builder("outbox.published.total")
-                .description("Количество outbox-событий, успешно опубликованных в транспорт")
+                .description("Outbox SENT transitions committed after transport acceptance")
                 .tag("event_type", eventType)
                 .register(meterRegistry)
                 .increment();

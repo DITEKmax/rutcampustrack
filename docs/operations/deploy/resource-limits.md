@@ -1,169 +1,79 @@
-# Resource Limits (NEW-157, M09 G7)
+# Resource Limits (NEW-157, актуализация stage17)
 
-> Memory budget для VPS 4GB + документация per-service лимитов.
-> Цель: избежать OOMKilled при пиковых нагрузках (сбор отчётов,
-> массовое начало пары) и не дать утечке в одном контейнере убить
-> остальные.
+Единственный источник значений — `docker-compose.prod.yml`. Таблица ниже соответствует подготовленной конфигурации 17.10.2026; она не подтверждает production deploy или измеренную пропускную способность. Конкретный VPS ещё не выбран.
 
-## VPS environment
+## Общий бюджет
 
-- **Total RAM:** 4GB.
-- **Host OS overhead:** ~400MB (kernel, systemd, sshd, logrotate).
-- **Docker daemon + networking:** ~200MB.
-- **Доступно для контейнеров:** ~3.4GB. Ставим бюджет **3.2GB**
-  (200MB headroom для spikes).
+- Сумма жёстких container limits: **8448 MiB (8,25 GiB)** для 33 сервисов.
+- Сумма `mem_reservation`: **4768 MiB**. Это мягкие reservations, а не гарантия физически выделенной RAM.
+- Telemetry: девять компонентов 1664 MiB hard / 784 MiB reservation; четыре DB/cache exporters — ещё 320/80 MiB. Всего monitoring/exporters: **1984/864 MiB**.
+- Планировать для этой совместной раскладки **от 12 GiB RAM**: лимиты контейнеров + ориентировочно 2 GiB для OS/Docker/файлового кэша оставляют около 1,75 GiB запаса. Старое утверждение о достаточности 4 GiB больше не применяется. Это бюджет памяти, не доказательство выдерживания нагрузки.
+- Каждый exporter ограничен также 0,25 CPU. CPU и storage выбирать после проверки реальной смеси операций; число пользователей само по себе не переводится в число vCPU.
 
-## Budget table (per-service)
+Ориентир владельца: 300–400 одновременно отмечающихся, около 200 других активных пользователей, уведомления и 3–7 семестровых отчётов. Приёмка должна подтвердить несколько очередных отчётов с ограниченным исполнением и продолжающейся обычной операцией. Изолированный функциональный PASS не является benchmark на 600 пользователей.
 
-### Business services (Java Spring Boot)
+## Лимиты из Compose
 
-| Service | `mem_limit` | `mem_reservation` | JVM RAM% | Обоснование |
-|---------|-------------|-------------------|----------|-------------|
-| `auth-service` | 256M | 192M | `-XX:MaxRAMPercentage=75.0` | Stateless, 1 SELECT/login. Hikari 10 connections, Redis cache только OTP. |
-| `academic-service` | 512M | 384M | 75.0 | Самый горячий gRPC-сервер + Caffeine cache (subjects/groups/RBAC). Batch endpoints потребляют больше. |
-| `schedule-service` | 512M | 384M | 75.0 | LessonGeneration job держит `ScheduleItem`-кэш в памяти на период генерации (~пиковые 300MB при semester import). |
-| `attendance-service` | 768M | 384M | 60.0 | MongoDB driver + report aggregations + DOCX export. M18: 512M/75% heap was killed during headman weekly DOCX download; lower heap leaves native headroom. |
-| `notification-web` | 256M | 192M | 75.0 | WebSocket STOMP + Web Push; event consumer. Без БД кэша. |
-| `api-gateway` | 256M | 192M | 75.0 | Spring Cloud Gateway reactive + Caffeine token exchange cache. |
-| **Subtotal Java** | **2560M** | **1728M** | | |
+| Сервис | Hard limit, MiB | Reservation, MiB |
+| --- | ---: | ---: |
+| postgres-academic | 192 | 128 |
+| postgres-schedule | 256 | 192 |
+| mongo-attendance | 512 | 320 |
+| redis | 128 | 64 |
+| rabbitmq | 384 | 256 |
+| auth-service | 384 | 256 |
+| academic-service | 512 | 384 |
+| schedule-service | 512 | 384 |
+| attendance-service | 768 | 384 |
+| document-renderer-service | 768 | 512 |
+| notification-web | 384 | 256 |
+| notification-bot | 256 | 128 |
+| mobile-bff | 384 | 256 |
+| api-gateway | 384 | 256 |
+| postgres-academic-exporter | 64 | 16 |
+| postgres-schedule-exporter | 64 | 16 |
+| mongodb-exporter | 128 | 32 |
+| redis-exporter | 64 | 16 |
+| node-exporter | 128 | 32 |
+| cadvisor | 256 | 64 |
+| blackbox-exporter | 64 | 16 |
+| prometheus | 192 | 128 |
+| alertmanager | 64 | 32 |
+| tempo | 256 | 192 |
+| grafana | 256 | 128 |
+| loki | 192 | 128 |
+| promtail | 256 | 64 |
+| nginx | 256 | 32 |
+| certbot | 128 | 32 |
+| pwa-nginx | 64 | 16 |
+| mini-app-nginx | 64 | 16 |
+| web-panel-nginx | 64 | 16 |
+| landing-nginx | 64 | 16 |
+| **Всего** | **8448** | **4768** |
 
-### Bot (Python)
+Ограничение Java heap не равно лимиту контейнера: metaspace, stacks, direct buffers и driver/native memory входят в тот же container budget. Attendance и renderer требуют отдельного наблюдения; native renderer memory не включается в Java heap gauge. `JAVA_TOOL_OPTIONS` брать из Compose конкретного сервиса. Рост лимитов без установленной причины не заменяет исправление отказа.
 
-| Service | `mem_limit` | `mem_reservation` | Обоснование |
-|---------|-------------|-------------------|-------------|
-| `notification-bot` | 256M | 128M | Aiogram async, без heavy deps. Реальный RSS в prod ~80-120MB. |
-| **Subtotal Python** | **256M** | **128M** | |
+## Диск, retention и свежесть
 
-### Infra (stateful + stateless)
+Prometheus сохраняет до 35 дней при size cap 4 GB. Size cap может удалить данные раньше; 30-дневная SLO-панель тогда обязана показать недостаточную историю, а не здоровые 100%. Loki/Tempo retention — 14 дней. Positions Promtail и Loki WAL имеют отдельное persistent состояние.
 
-| Service | `mem_limit` | `mem_reservation` | Обоснование |
-|---------|-------------|-------------------|-------------|
-| `postgres-academic` | 192M | 128M | Small DB (≤10k users + small ref tables). `shared_buffers=48M`, `effective_cache_size=144M`. |
-| `postgres-schedule` | 256M | 192M | Большие таблицы (lessons up to 100k + schedule_items). `shared_buffers=64M`. |
-| `mongo-attendance` | 384M | 256M | WiredTiger cache 192M + connections + index pages. Attendance самая hot БД (insertpath из PWA). |
-| `redis` | 128M | 64M | OTP + RBAC cache (<10k keys, avg 100B). `maxmemory 96M`, `maxmemory-policy allkeys-lru`. |
-| `rabbitmq` | 256M | 192M | Queue backlogs + 7-day retention; watermark `0.6`. |
-| **Subtotal DB/MQ** | **1216M** | **832M** | |
+Для telemetry предварительно выделить около **16 GiB**: 4 GiB Prometheus, ориентир 8 GiB logs/traces и 4 GiB WAL/headroom. Фактические ingest rate, compression и inode расход пока UNKNOWN: размер уточняется по измерению, alerts на диск/inodes/headroom обязательны. Этот запас не включает PostgreSQL/MongoDB/RabbitMQ, файлы отчётов или backups.
 
-### Observability stack
+У всех 33 контейнеров JSON log rotation `10m × 3`: номинально около 990 MB суммарно при заполнении всех файлов; это не квота всего Docker filesystem. Images, writable layers, volumes, journal и transient files считаются отдельно. Rotation не заменяет retention Loki и не очищает чужие данные.
 
-| Service | `mem_limit` | `mem_reservation` | Обоснование |
-|---------|-------------|-------------------|-------------|
-| `prometheus` | 192M | 128M | 14d retention, scrape interval 15s. |
-| `grafana` | 96M | 64M | Read-only dashboards, no alerting logic. |
-| `loki` | 192M | 128M | 14d log retention (~500MB/day). |
-| `promtail` | 64M | 32M | Tail-only, без buffer'а. |
-| `tempo` | 128M | 96M | Sampling 1.0 (пока traffic мал). |
-| `alertmanager` | 64M | 32M | |
-| `cadvisor` | 96M | 64M | Metric exporter, per-container. |
-| `node-exporter` | 32M | 16M | Minimal host metrics. |
-| **Subtotal obs** | **864M** | **560M** | |
+## Проверка при разрешённом развёртывании
 
-### Nginx / frontends
+1. Сверить доступную RAM/CPU/диск/inodes с суммой лимитов и запасом; проверить реальные container limits, а не только Compose reservations.
+2. Измерить обычную операцию одновременно с 3–7 заданиями отчёта; проверить очередь, лимит активных leases/render slots, retry/recovery и отсутствие OOM/restart. Истечение HTTP ожидания не доказывает остановку удалённого servlet render.
+3. Проверить container RSS/working set, JVM heap/GC/native headroom, renderer RSS, DB pools и Rabbit ready/unacked/DLQ. Перегруженная replica не должна скрываться усреднением со свободными.
+4. После адресного recreate проверить Promtail positions, Loki/Tempo/Prometheus storage, provisioned Grafana UID и permissions. Изменения существующих volumes/roles выполняются только по отдельно разрешённому плану.
+5. Настроить независимый off-host probe и проверить потерю всей машины; владелец передал это в deploy backlog (D034, DEFERRED_LOCAL). Same-host Blackbox не подтверждает этот сценарий. Реального будущего alert-бота подключить отдельно; бизнес notification-bot является действующей частью системы.
 
-| Service | `mem_limit` | `mem_reservation` | Обоснование |
-|---------|-------------|-------------------|-------------|
-| `nginx` (reverse-proxy) | 64M | 32M | 4 vhosts routing. |
-| `pwa-nginx` + `mini-app-nginx` + `web-panel-nginx` + `landing-nginx` | 32M × 4 = 128M | 16M × 4 = 64M | Static-only. |
-| `certbot` | 32M | 16M | Run раз в сутки, idle остальное время. |
-| **Subtotal nginx** | **224M** | **112M** | |
+Ожидаемый отказ доступа/валидации, отсутствие трафика, сбой telemetry и отказ полезной операции показываются раздельно. Алёрт требует конкретного действия по причине; автоматический restart всех зависимых сервисов не является общим восстановлением.
 
-### Summary
+## Связанные документы
 
-- **Total `mem_limit`:** 2560 + 256 + 1216 + 864 + 224 = **5120M**
-- **Total `mem_reservation`:** 1728 + 128 + 832 + 560 + 112 = **3360M**
-
-**Overcommit:** limits > RAM. Это OK т.к. normal-case RSS ниже лимитов,
-пики разных сервисов статистически не совпадают. `mem_reservation`
-(гарантированное) = 3360M — под физический budget 3.4GB.
-
-Если OOM всё-таки случится — контейнер с превышением лимита будет убит
-первым (не вся система). Alert ниже срабатывает до этого (>90% usage).
-
-## JVM opts
-
-Single-source-of-truth в `docker-compose.prod.yml` через env var
-`JAVA_TOOL_OPTIONS`. Большинство Java-сервисов используют 75/50; report-heavy
-сервисы могут снижать heap до 60/30, когда важнее native headroom.
-
-```yaml
-environment:
-  JAVA_TOOL_OPTIONS: >
-    -XX:MaxRAMPercentage=75.0
-    -XX:InitialRAMPercentage=50.0
-    -XX:+UseG1GC
-    -XX:+HeapDumpOnOutOfMemoryError
-    -XX:HeapDumpPath=/tmp
-    -Djava.security.egd=file:/dev/./urandom
-```
-
-- default `MaxRAMPercentage=75.0`: heap = 0.75 × mem_limit. Для
-  `mem_limit=512M` → heap=384M, остальное — Metaspace, code cache,
-  stacks (~128M).
-- `attendance-service` после M18 использует `MaxRAMPercentage=60.0` и
-  `InitialRAMPercentage=30.0`: DOCX export и драйверы требуют больше native
-  headroom, чем baseline 512M/75% оставлял.
-- default `InitialRAMPercentage=50.0`: сразу аллоцируем 50% чтобы G1GC не
-  крутил expansion cycles на первые запросы.
-- `UseG1GC`: default в JDK 21, пишем явно для читаемости.
-- `HeapDumpOnOutOfMemoryError`: если всё-таки OOM — дамп в `/tmp` для
-  post-mortem (volume сохраняется между restart'ами если tmpfs=/tmp
-  не монтируется; иначе нужен `/var/lib/dumps` volume).
-
-## Prometheus alert rule
-
-Добавлено в `infra/prometheus/rules/resource-limits.yml`:
-
-```yaml
-groups:
-  - name: resource-limits
-    rules:
-      - alert: ContainerMemoryHigh
-        expr: |
-          (container_memory_usage_bytes{name=~"rct-.*"}
-          / container_spec_memory_limit_bytes{name=~"rct-.*"}) > 0.9
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Контейнер {{ $labels.name }} > 90% memory"
-          description: "{{ $labels.name }} использует более 90% mem_limit уже 5 минут. Возможна утечка или недооценённый budget."
-```
-
-Cadvisor exportит `container_memory_usage_bytes` + `container_spec_memory_limit_bytes`. 
-`for: 5m` фильтрует GC-пики (G1GC может на секунды подскочить к лимиту).
-
-## Validation после deploy
-
-1. `docker stats --no-stream | grep rct-` — `MEM %` < 70% для каждого
-   контейнера в idle.
-2. `docker compose ps` — все `healthy`, нет `OOMKilled` restart'ов.
-   `docker inspect rct-<name> | grep OOMKilled` должен быть `false`.
-3. Prometheus query `max(container_memory_usage_bytes{name=~"rct-.*"}
-   / container_spec_memory_limit_bytes{name=~"rct-.*"})` — ниже 0.8 в
-   нормальном режиме.
-4. Для Java-сервисов: Grafana dashboard `JVM` — `Heap Used` не
-   упирается в `Heap Max` (GC handles).
-
-## Если alert сработал
-
-1. Найти какой контейнер: `ContainerMemoryHigh{name="rct-X"}`.
-2. Если Java:
-   - `docker exec rct-X jcmd 1 GC.heap_info` — Eden/Old/Metaspace
-     usage.
-   - Если Old вырос + не снижается → утечка. `jcmd 1 VM.native_memory
-     summary` (если включён NMT).
-   - Temporary: `docker compose restart rct-X` → ждём повторного
-     alert (обычно утечка даёт alert снова за 2-6 часов).
-3. Если Mongo/Redis/Postgres:
-   - Лимит мал? Проверить prod traffic vs baseline.
-   - Увеличить `mem_limit` + соответствующий internal buffer
-     (`shared_buffers`, `maxmemory`, `wiredTigerCacheSizeGB`) в
-     следующем релизе. Обновить таблицу выше.
-
-## Связанные доки
-
-- [prod-deploy-checklist.md](prod-deploy-checklist.md) — step 2.2
-  healthcheck после применения лимитов.
-- [observability.md](observability.md) — как устроены метрики
-  cadvisor/prometheus.
+- [Мониторинг](../monitoring/observability.md)
+- [Deploy checklist](prod-deploy-checklist.md)
+- [Актуальная карта stores/owners/auth](../../architecture/architecture.md#6-хранилища-данных)
+- [Stage17 CURRENT и реальные receipts](../../validation/cloud-20261011/CURRENT.md)

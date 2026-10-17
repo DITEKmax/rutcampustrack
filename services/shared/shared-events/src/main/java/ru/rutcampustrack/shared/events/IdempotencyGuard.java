@@ -1,9 +1,10 @@
 package ru.rutcampustrack.shared.events;
 
-import java.util.Map;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Helper для consumer-side dedup по {@code event_id} (M13 G8).
@@ -55,27 +56,16 @@ public class IdempotencyGuard {
     public boolean tryClaim(String consumerId, Map<String, Object> envelope) {
         UUID eventId = extractEventId(envelope);
         if (eventId == null) {
-            String eventType = envelope == null ? null : (String) envelope.get("event_type");
             log.error(
-                    "Idempotency: rejecting event без event_id (fail-closed) — "
-                            + "consumer={}, event_type={}. После M13 G8 все publisher'ы "
-                            + "обязаны заполнять event_id (AbstractEventPublisher.fillDefaults).",
-                    consumerId,
-                    eventType);
+                    "Idempotency: rejecting event with missing or invalid event_id (fail-closed)");
             throw new IllegalStateException(
-                    "Event без event_id rejected (fail-closed, M13 G24-fix-6): "
-                            + "consumer="
-                            + consumerId
-                            + ", event_type="
-                            + eventType);
+                    "Event with missing or invalid event_id rejected (fail-closed)");
         }
         boolean claimed = store.tryClaim(consumerId, eventId);
         if (!claimed) {
-            String eventType = (String) envelope.get("event_type");
             log.info(
-                    "Idempotency: duplicate event skipped (consumer={}, event_type={}, event_id={})",
+                    "Idempotency: duplicate event skipped (consumer={}, event_id={})",
                     consumerId,
-                    eventType,
                     eventId);
         }
         return claimed;
@@ -96,10 +86,13 @@ public class IdempotencyGuard {
         if (raw instanceof UUID uuid) {
             return uuid;
         }
+        if (!(raw instanceof String value) || value.length() != 36) {
+            return null;
+        }
         try {
-            return UUID.fromString(raw.toString());
+            UUID id = UUID.fromString(value);
+            return id.toString().equalsIgnoreCase(value) ? id : null;
         } catch (IllegalArgumentException ex) {
-            log.warn("Idempotency: malformed event_id '{}', processing without dedup", raw);
             return null;
         }
     }

@@ -5,11 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +17,21 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
+
 import reactor.core.publisher.Mono;
+
 import ru.rutcampustrack.auth.dto.AuthAdmissionRequest;
 import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
 import ru.rutcampustrack.auth.dto.ExportJobModels;
 import ru.rutcampustrack.auth.dto.RedeemReportDownloadTicketRequest;
 import ru.rutcampustrack.auth.dto.ReportDownloadTicketRedemptionResponse;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
+
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Per-request client for the auth authority's live session admission endpoint. The access token is
@@ -49,8 +53,9 @@ public class InternalJwtIssuerClient {
     private final ObjectMapper reportTicketObjectMapper;
 
     @Autowired
-    public InternalJwtIssuerClient(InternalIssuerClientProperties properties) {
-        this(properties, WebClient.builder().baseUrl(properties.getAuthServiceUrl()).build());
+    public InternalJwtIssuerClient(
+            InternalIssuerClientProperties properties, WebClient.Builder builder) {
+        this(properties, builder.baseUrl(properties.getAuthServiceUrl()).build());
     }
 
     InternalJwtIssuerClient(InternalIssuerClientProperties properties, WebClient webClient) {

@@ -12,14 +12,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.micrometer.core.instrument.Counter;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
@@ -48,6 +42,15 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Unit tests for {@link LateCheckinService} — M09 G3.1 (14 P0-1).
@@ -101,6 +104,7 @@ class LateCheckinServiceTest {
         lenient()
                 .when(businessMetrics.lateCheckinCreatedCounter())
                 .thenReturn(lateCheckinCreatedCounter);
+        lenient().doCallRealMethod().when(businessMetrics).incrementAfterCommit(any(Counter.class));
         lenient()
                 .when(scheduleGrpcClient.requireAttendanceMutationReady(anyLong(), anyLong()))
                 .thenAnswer(inv -> scheduleGrpcClient.getLessonById(inv.getArgument(0)));

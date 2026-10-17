@@ -4,8 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 
 class BusinessMetricsTest {
 
@@ -74,5 +79,46 @@ class BusinessMetricsTest {
         metrics.loginCounter("student").increment();
 
         assertThat(registry.find(MetricNames.AUTH_LOGIN).counters()).hasSize(1);
+    }
+
+    @Test
+    void committedCounterCountsOnlySuccessfulCommitAndImmediateNonTransactionalOutcome() {
+        var counter = metrics.checkinCounter("present");
+        var transactions =
+                new TransactionTemplate(
+                        new AbstractPlatformTransactionManager() {
+                            @Override
+                            protected Object doGetTransaction() {
+                                return new Object();
+                            }
+
+                            @Override
+                            protected void doBegin(
+                                    Object transaction, TransactionDefinition definition) {}
+
+                            @Override
+                            protected void doCommit(DefaultTransactionStatus status) {}
+
+                            @Override
+                            protected void doRollback(DefaultTransactionStatus status) {}
+                        });
+
+        transactions.executeWithoutResult(
+                status -> {
+                    metrics.incrementAfterCommit(counter);
+                    assertThat(counter.count()).isZero();
+                    status.setRollbackOnly();
+                });
+        assertThat(counter.count()).isZero();
+
+        transactions.executeWithoutResult(
+                status -> {
+                    metrics.incrementAfterCommit(counter);
+                    assertThat(counter.count()).isZero();
+                });
+        assertThat(counter.count()).isEqualTo(1);
+
+        metrics.incrementAfterCommit(counter);
+        assertThat(counter.count()).isEqualTo(2);
     }
 }

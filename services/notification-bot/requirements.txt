@@ -14,6 +14,7 @@ redis[hiredis]==5.2.1
 # OTel 1.41+ обязателен: более ранние версии требуют protobuf<5, а
 # grpcio-tools 1.73 тянет protobuf 6.31.
 structlog==24.4.0
+prometheus-client==0.22.1
 opentelemetry-api==1.41.0
 opentelemetry-sdk==1.41.0
 opentelemetry-exporter-otlp-proto-grpc==1.41.0

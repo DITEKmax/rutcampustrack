@@ -1,17 +1,18 @@
 # Stage17 current ownership/resources
 
-Root soleGit-integrator/sharedDocs; selectedSol6.1ULTRA/actualUNKNOWN. ChildrenSol6.1high/forknone; capacity7 inclRoot. All detached own sparse worktrees base753173688d633ca07991f4dd73bdcd2698f45d96. No newbranch/PR/reset/prune; olddata/WIP/stoppedstand preserved.
+Root sole Git integrator/shared-docs writer; selected Sol6.1 ULTRA, actual UNKNOWN. Children Sol6.1 high/fork none, actual UNKNOWN; runtime capacity7 including Root. Seven detached sparse worktrees base753173688d633ca07991f4dd73bdcd2698f45d96; no new branch/PR/reset/prune. Historical resource transitions are in attempts.ndjson and Git history.
 
-| Owner | Worktree | Solewriter boundary / current state |
+| Owner | Worktree | Current exclusive scope |
 | --- | --- | --- |
-| s17_academic | /tmp/rct-stage17-academic | Academic A01/A02/A04, related tests, C01testonly;36files source/unit approved; no activeprocess |
-| s17_auth | /tmp/rct-stage17-auth | Auth DTO/JWT + C02guard;14files frozen,31tests PASS; lease RELEASED; no CI writes |
-| s17_propagation | /tmp/rct-stage17-propagation | Sharedobservability/logback/events, Gateway/BFF context/builds,3admissionmeterclasses; owns Gateway application-prod.yml; session98397 actualchecks RUNNING |
-| s17_reports | /tmp/rct-stage17-reports | Report/retry/DLQ/4senders/sharedoutbox;19files beforefindings; sameauthor R1–R3 corrections; no runtimelease yet |
-| s17_infra | /tmp/rct-stage17-infra | Monitoring/nginx/compose/exporters/harness + ci.yml solewriter from reviewedb1917ad baseline, preserveauthprivacy/C02; nativecohort ended; sourceCI pending |
-| s17_review_auth | read-only | Auth narrow correctedparser independent recheck; Academic review complete; /tmp/rct-stage17-review-{auth,academic}.json |
-| s17_review_reports | read-only | Reports initial3findings complete; available changed-risk recheck /tmp/rct-stage17-review-reports.json |
+| s17_cache | /tmp/rct-stage17-academic | C01 three files frozen/source reviewed/compile PASS; prior35 Academic files published080f; realPG control pending |
+| s17_auth | /tmp/rct-stage17-auth | A03/C02 fourteen published080f; async backend five frozen/reviewed/compiled, Root integrated; no active process |
+| s17_propagation | /tmp/rct-stage17-propagation | M01 ninety files frozen/reviewed/Root integrated; narrow actual collector proof in existing Gateway transport IT next; no CI writes |
+| s17_reports | /tmp/rct-stage17-reports | Reports26 plus timestamp2 reviewed/Root integrated; owns existing RabbitDecisionRetryIT; real background correlation delta pending assignment |
+| s17_infra | /tmp/rct-stage17-infra | Sole monitoring/Compose/nginx/exporter/CI writer; I1 query-budget correction; actual collector CI coordination; no local Docker |
+| s17_client_async | /tmp/rct-stage17-client | Vue8 frozen/reviewed/Root integrated; existing real-mobile E2E+minimal isolated18week seed delta only |
+| s17_bot | /tmp/rct-stage17-bot | Python10 frozen/reviewed/Root integrated; no active process |
+| Independent reviewers | read-only | Auth/Academic/Reports/M01/Bot/async UI/C01 source approvals retained; Infra I1-only changed-risk recheck pending |
 
-Nativeleases: max2 measured independent compiles; current only propagation uses /tmp/rct-stage17-gradle-home, ownprojectcache,1GiBdaemon+1GiBtests,maxworkers2,≤3GiBRSS. Auth /tmp/rct-stage17-auth-gradle-home released; reports next after source/dependencycomposition. No localDocker/DB/broker/pull lease. CPU5/RAM16GiB, filesystemfloor4GiB on workspace andtmp; workspaceonly~6MBheadroom, tmp~7.35GB. NativeProm+AM+receiver fullyreaped. Preserve proxy/CA; networkadditional needed for Java daemon/loopback. ExistingB013/B014/B015 FROZEN, no equivalenttries.
+No active native heavy lease/session. Max2 independent measured Gradle leases only after new resource check/grant; prior actual builds reaped. Shared offline homes /tmp/rct-stage17-gradle-home and /tmp/rct-stage17-auth-gradle-home released; project caches remain isolated. Source/cheap formula/E2E static work may proceed. No local Docker/DB/broker/pull lease: workspace floor4GiB with approximately3MB headroom, tmp free6.99GB, CPU5/cgroup RAM16GiB. Existing stopped stand/volumes/keys/oldWIP preserved. No deletion/prune/lowered floor. Future CI uses its own disposable projects/resources and retains overall failure.
 
-2026-10-17T19:23:26.521516+00:00: Reports secondcompile/unit lease GRANTED afterAuthreaped; userhome/tmp/rct-stage17-auth-gradle-home, ownprojectcache/tmp/rct-stage17-reports-project-cache,768MiBGradle/1GiBtest/max1worker≤2.5GiBRSS/512MiBextra; M01existing≤3GiB concurrent. Exact5frozenM01shared-events API files copiedtoReportsbyRoot forcompile only, excludedReportauthorship. NoDB/Docker/nativebroker. Sixth detachedclientWT /tmp/rct-stage17-client base753, soleVuewriter s17_client_async; designskill required, noheavyclientlease. Authnewasyncbackend ownsGatewayExportJobWorker+test/AuthExportJobService+IT only; noM01fileoverlap.
+Preserve proxy/CA; additional network permission needed for Java daemon/loopback. B013/B014/B015 remain FROZEN, no equivalent attempts. No production/deploy/main/Angular/new web or real credentials.

@@ -1,14 +1,20 @@
 """Atomic same-queue prepare projection transaction boundaries with a broker model."""
 
 import asyncio
+import io
 import json
+import logging
 from contextlib import asynccontextmanager
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
+import structlog
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
 
 from bot.consumers.event_consumer import QUEUE_NAME, start_consumer
+from bot.observability import EVENT_OUTCOMES, setup_observability
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
 
 EVENT = {
@@ -151,7 +157,9 @@ def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=Fal
 async def test_atomic_prepare_publish_ack_commit_preserves_facts_and_minimal_roles(monkeypatch):
     state, operations, connection, channel, guard = broker(monkeypatch)
     dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=PREPARED), dispatch=AsyncMock())
+    before = EVENT_OUTCOMES.labels("prepared")._value.get()
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert EVENT_OUTCOMES.labels("prepared")._value.get() == before + 1
     assert operations[:4] == ["select", "publish", "ack", "commit"]
     assert state.acked and state.published == [PREPARED]
     assert state.published[0]["trace_id"] == EVENT["trace_id"]
@@ -165,7 +173,11 @@ async def test_atomic_prepare_publish_ack_commit_preserves_facts_and_minimal_rol
 async def test_commit_unavailable_retains_original_without_partial_replacement(monkeypatch):
     state, operations, _, _, guard = broker(monkeypatch, fail_commit=True)
     dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=PREPARED), dispatch=AsyncMock())
+    prepared_before = EVENT_OUTCOMES.labels("prepared")._value.get()
+    uncertain_before = EVENT_OUTCOMES.labels("uncertain")._value.get()
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert EVENT_OUTCOMES.labels("prepared")._value.get() == prepared_before
+    assert EVENT_OUTCOMES.labels("uncertain")._value.get() == uncertain_before + 1
     assert operations[:6] == ["select", "publish", "ack", "commit", "rollback", "close"]
     assert not state.acked and not state.published and state.requeued
     dispatcher.dispatch.assert_not_awaited()
@@ -224,3 +236,115 @@ async def test_abort_during_automatic_ack_after_staging_never_commits_projection
     assert "commit" not in operations and "nack" not in operations
     assert not state.acked and not state.published and state.requeued
     guard.release.assert_not_awaited()
+
+
+@pytest.mark.parametrize("prepared", [False, True])
+@pytest.mark.parametrize("parent", [None, "malformed", "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"])
+async def test_real_consumer_restores_context_and_uses_only_durable_w3c_parent(monkeypatch, prepared, parent):
+    with monkeypatch.context() as env:
+        env.setenv("OTEL_SDK_DISABLED", "false")
+        provider = TracerProvider()
+    monkeypatch.setattr(trace, "get_tracer", provider.get_tracer)
+    request_id = "11111111-2222-3333-4444-555555555555"
+    event = {**(PREPARED if prepared else EVENT), "traceparent": parent, "request_id": request_id}
+    state, _, _, _, guard = broker(monkeypatch, event=event, prepared_transport=prepared)
+    captured = {}
+
+    async def dispatch(body):
+        captured.update(structlog.contextvars.get_contextvars())
+        captured["span"] = trace.get_current_span().get_span_context()
+
+    dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=None), dispatch=dispatch)
+    before = EVENT_OUTCOMES.labels("processed")._value.get()
+    structlog.contextvars.bind_contextvars(requestId="outer")
+    try:
+        await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+        assert captured["requestId"] == request_id
+        assert "trace_id" not in captured  # Noncanonical business correlation is not telemetry.
+        assert captured["span"].is_valid
+        actual_trace = format(captured["span"].trace_id, "032x")
+        if parent and parent != "malformed":
+            assert actual_trace == "0123456789abcdef0123456789abcdef"
+            assert captured["span"].span_id != int("0123456789abcdef", 16)
+        else:
+            assert actual_trace != "0123456789abcdef0123456789abcdef"
+        assert EVENT_OUTCOMES.labels("processed")._value.get() == before + 1
+        assert state.acked
+        assert structlog.contextvars.get_contextvars() == {"requestId": "outer"}
+        assert not trace.get_current_span().get_span_context().is_valid
+    finally:
+        structlog.contextvars.clear_contextvars()
+        provider.shutdown()
+
+
+@pytest.mark.parametrize(
+    "field,cancel",
+    [(field, False) for field in ("trace_id", "event_id", "event_type", "request_id", "traceparent")]
+    + [(None, False), ("trace_id", True)],
+)
+async def test_consumer_json_never_copies_malformed_envelope_metadata(monkeypatch, field, cancel):
+    marker = "SYNTHETIC_PRIVATE_MARKER"
+    canonical_id = "11111111-2222-3333-4444-555555555555"
+    event = {**EVENT, "trace_id": canonical_id, "request_id": canonical_id}
+    if field:
+        event[field] = marker
+    state, _, _, _, guard = broker(monkeypatch, event=event)
+    with monkeypatch.context() as env:
+        env.setenv("OTEL_SDK_DISABLED", "false")
+        provider = TracerProvider()
+    monkeypatch.setattr(trace, "get_tracer", provider.get_tracer)
+    original_handlers = list(logging.getLogger().handlers)
+    setup_observability()
+    output = io.StringIO()
+    handler = logging.StreamHandler(output)
+    handler.setFormatter(logging.getLogger().handlers[0].formatter)
+    logging.getLogger().handlers = [handler]
+    received = []
+    if field == "event_type":
+        monkeypatch.setattr(logging.getLogger("bot.consumers.event_dispatcher"), "level", logging.DEBUG)
+
+    async def dispatch(body):
+        received.append(body)
+        structlog.get_logger("test").info("handler")
+        if field == "event_type":
+            from bot.consumers.event_dispatcher import EventDispatcher
+
+            actual_dispatcher = EventDispatcher.__new__(EventDispatcher)
+            actual_dispatcher._handlers = {}
+            await actual_dispatcher.dispatch(body)
+        if cancel:
+            raise asyncio.CancelledError
+
+    dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=None), dispatch=dispatch)
+    structlog.contextvars.clear_contextvars()
+    structlog.contextvars.bind_contextvars(requestId="outer-request")
+    try:
+        await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+        assert received == [event]  # Telemetry does not rewrite or reject the business envelope.
+        assert state.requeued if cancel else state.acked
+        captured = output.getvalue()
+        assert marker not in captured
+        lines = [json.loads(line) for line in captured.splitlines()]
+        if field == "event_type":
+            assert any(line["level"] == "debug" and line["msg"] == "Unhandled event type: unknown" for line in lines)
+        inside = next(line for line in lines if line["msg"] == "handler")
+        assert inside["event_type"] == ("unknown" if field == "event_type" else EVENT["event_type"])
+        if field == "trace_id":
+            assert "trace_id" not in inside
+        else:
+            assert inside["trace_id"] == canonical_id
+        if field == "event_id":
+            assert "event_id" not in inside
+        else:
+            assert inside["event_id"] == EVENT["event_id"]
+        if field == "request_id":
+            assert "requestId" not in inside
+        else:
+            assert inside["requestId"] == canonical_id
+        assert len(inside["traceId"]) == 32 and len(inside["spanId"]) == 16
+        assert structlog.contextvars.get_contextvars() == {"requestId": "outer-request"}
+        assert not trace.get_current_span().get_span_context().is_valid
+    finally:
+        logging.getLogger().handlers = original_handlers
+        structlog.contextvars.clear_contextvars()
+        provider.shutdown()

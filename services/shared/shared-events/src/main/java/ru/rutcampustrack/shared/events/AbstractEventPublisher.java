@@ -1,8 +1,9 @@
 package ru.rutcampustrack.shared.events;
 
+import org.slf4j.MDC;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
-import org.slf4j.MDC;
 
 /**
  * Базовый publisher (NEW-60): заполняет стандартные поля {@link DomainEvent} из MDC/reflection
@@ -41,6 +42,7 @@ public abstract class AbstractEventPublisher {
      * @return тот же event (fluent-использование).
      */
     protected <T extends DomainEvent> T fillDefaults(T event) {
+        EventTraceContext.capture(event);
         if (event.getEventVersion() == null) {
             event.setEventVersion(resolveEventVersion(event.getClass()));
         }

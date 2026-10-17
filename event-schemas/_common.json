@@ -4,6 +4,16 @@
   "title": "Shared $defs for rut-uit event envelopes",
   "description": "M02 / P2-11/7 — общие определения, используемые по $ref из всех event-schemas/*.json. Держит envelope согласованным и сокращает drift при добавлении новых событий.",
   "$defs": {
+    "traceparent": {
+      "description": "Optional standard W3C parent captured before durable outbox serialization.",
+      "type": "string",
+      "pattern": "^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$"
+    },
+    "requestId": {
+      "description": "Optional canonical request correlation, independent of event and trace IDs.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
     "eventId": {
       "description": "UUID event-идентификатора (envelope.event_id).",
       "type": "string",

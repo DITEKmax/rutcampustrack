@@ -1,10 +1,11 @@
 package ru.rutcampustrack.attendance.grpc;
 
 import io.grpc.StatusRuntimeException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+
 import net.devh.boot.grpc.client.inject.GrpcClient;
+
 import org.springframework.stereotype.Component;
+
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
@@ -17,6 +18,9 @@ import ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest;
 import ru.rutcampustrack.schedule.grpc.LessonsByIdsRequest;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * gRPC client wrapper for Schedule Service. All calls use a 3-second deadline to prevent cascading
@@ -46,7 +50,8 @@ public class ScheduleGrpcClient {
                         "Lesson", "groupId/timestamp", groupId + "/" + timestamp);
             }
             throw new ScheduleServiceUnavailableException(
-                    "Schedule Service unavailable: " + e.getStatus());
+                    "Schedule Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -63,7 +68,8 @@ public class ScheduleGrpcClient {
                 throw new ResourceNotFoundException("Lesson", "id", lessonId);
             }
             throw new ScheduleServiceUnavailableException(
-                    "Schedule Service unavailable: " + e.getStatus());
+                    "Schedule Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -94,7 +100,8 @@ public class ScheduleGrpcClient {
                         throw new ConflictException("Schedule отклонил чтение пары заявки");
                 default ->
                         throw new ScheduleServiceUnavailableException(
-                                "Schedule Service unavailable: " + e.getStatus());
+                                "Schedule Service unavailable: " + e.getStatus().getCode(),
+                                e.getStatus().getCode());
             }
         }
     }
@@ -115,7 +122,8 @@ public class ScheduleGrpcClient {
             return response;
         } catch (StatusRuntimeException e) {
             throw new ScheduleServiceUnavailableException(
-                    "Schedule Service unavailable: " + e.getStatus());
+                    "Schedule Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -143,7 +151,8 @@ public class ScheduleGrpcClient {
             return lessons;
         } catch (StatusRuntimeException e) {
             throw new ScheduleServiceUnavailableException(
-                    "Schedule Service unavailable: " + e.getStatus());
+                    "Schedule Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 

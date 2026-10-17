@@ -2,10 +2,8 @@ package ru.rutcampustrack.mobilebff.error;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
-import java.net.URI;
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
+
+import org.slf4j.MDC;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.CacheControl;
@@ -26,9 +24,16 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
+
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.MobileProblemDetails;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
+import ru.rutcampustrack.shared.observability.MdcKeys;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
+
+import java.net.URI;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 
 @RestControllerAdvice
 public class MobileProblemHandler {
@@ -168,7 +173,7 @@ public class MobileProblemHandler {
                 detail,
                 URI.create(request.getRequestURI()),
                 clock.instant(),
-                null,
+                MDC.get(MdcKeys.TRACE_ID),
                 code,
                 retryAt,
                 null);

@@ -1,22 +1,14 @@
 package ru.rutcampustrack.attendance.student;
 
 import com.mongodb.MongoException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.HexFormat;
-import java.util.List;
-import java.util.Objects;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.attendance.audit.RejectedAttendanceActionService;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
@@ -46,6 +38,17 @@ import ru.rutcampustrack.attendance.student.StudentCheckinModels.Request;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Resolution;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class StudentCheckinService {
@@ -494,7 +497,7 @@ public class StudentCheckinService {
                         });
 
         attendanceEventPublisher.publishMarked(saved);
-        businessMetrics.checkinCounter("present").increment();
+        businessMetrics.incrementAfterCommit(businessMetrics.checkinCounter("present"));
         return presentAck(saved, lesson.id(), now);
     }
 
@@ -529,7 +532,7 @@ public class StudentCheckinService {
             request = lateCheckinRepository.save(request);
             lateCheckinEventPublisher.publishRequested(
                     request, lesson.date(), lesson.lessonNumber(), lesson.subjectId(), null);
-            businessMetrics.lateCheckinCreatedCounter().increment();
+            businessMetrics.incrementAfterCommit(businessMetrics.lateCheckinCreatedCounter());
         }
         Request projection = new Request(request.getId(), request.getStatus(), null);
         return new Ack(Outcome.PENDING_CONFIRMATION, lesson.id(), null, projection, retryAt, now);

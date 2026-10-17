@@ -4,6 +4,8 @@ server:
   forward-headers-strategy: none
 
 spring:
+  reactor:
+    context-propagation: auto
   application:
     name: api-gateway
   codec:
@@ -525,6 +527,11 @@ management:
       enabled: true
   # M04 QA2 (NEW-58/59) — distributed tracing OTel → Tempo.
   tracing:
+    baggage:
+      remote-fields: requestId
+      tag-fields: requestId
+      correlation:
+        fields: requestId
     sampling:
       probability: 1.0
   otlp:
@@ -536,6 +543,10 @@ management:
     distribution:
       percentiles-histogram:
         http.server.requests: true
+        spring.cloud.gateway.requests: true
+      slo:
+        http.server.requests: 2s,3s,30s
+        spring.cloud.gateway.requests: 2s,3s,30s
 
 # M04 QA1: INFO-default для secure-by-default. DEBUG включается через
 # application-dev.yml (SPRING_PROFILES_ACTIVE=dev) или env-override.

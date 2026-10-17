@@ -9,19 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
@@ -52,6 +40,21 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.IntStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 @ExtendWith(MockitoExtension.class)
 class HeadmanWeeklyReportServiceTest {
@@ -83,11 +86,74 @@ class HeadmanWeeklyReportServiceTest {
                         new HeadmanWeeklyTabularRenderer(),
                         documentRendererGrpcClient,
                         requestContext,
-                        CLOCK);
+                        CLOCK,
+                        new ReportExecution(
+                                new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
         lenient().when(requestContext.getGroupId()).thenReturn(10L);
         lenient()
                 .when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS"))
                 .thenReturn(true);
+    }
+
+    @Test
+    void malformedSemesterMetadataFailsOnceInsteadOfRepeatingTheSameRead() {
+        when(academicGrpcClient.getActiveSemester())
+                .thenReturn(semester("2026-06-01", "2026-05-31"));
+
+        assertThatThrownBy(() -> service.exportSingleWeek(WEEK_START, "docx"))
+                .isInstanceOf(
+                        ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException
+                                .class);
+
+        verify(academicGrpcClient).getActiveSemester();
+        verifyNoInteractions(scheduleGrpcClient, attendanceReadPort, documentRendererGrpcClient);
+    }
+
+    @Test
+    void originalExportRecoversTransientReadAndRechecksAuthorityOnRetry() throws Exception {
+        stubBase(semester("2026-04-01", "2026-05-31"));
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, "2026-04-27", "2026-05-03"))
+                .thenThrow(
+                        new ru.rutcampustrack.attendance.exception
+                                .ScheduleServiceUnavailableException(
+                                "synthetic outage", io.grpc.Status.Code.UNAVAILABLE))
+                .thenReturn(LessonsResponse.getDefaultInstance());
+        when(attendanceReadPort.findByGroupAndDateRange(10L, WEEK_START, WEEK_START.plusDays(6)))
+                .thenReturn(List.of());
+
+        HeadmanWeeklyExportResult result =
+                service.exportSelectedWeeks(
+                        new HeadmanWeeklyExportRequest(List.of(WEEK_START), "docx"));
+
+        assertThat(zipText(result.content(), "word/document.xml"))
+                .contains("UVPV511", "27.04.2026", "03.05.2026");
+        verify(academicGrpcClient, org.mockito.Mockito.times(2))
+                .hasAssistantPermission(10L, "VIEW_STATS");
+        verify(scheduleGrpcClient, org.mockito.Mockito.times(2))
+                .getLessonsByGroup(10L, 1L, "2026-04-27", "2026-05-03");
+    }
+
+    @Test
+    void permissionRevokedDuringRecoveryTerminatesTheOriginalExport() {
+        stubBase(semester("2026-04-01", "2026-05-31"));
+        when(academicGrpcClient.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true, false);
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, "2026-04-27", "2026-05-03"))
+                .thenThrow(
+                        new ru.rutcampustrack.attendance.exception
+                                .ScheduleServiceUnavailableException(
+                                "synthetic outage", io.grpc.Status.Code.UNAVAILABLE));
+
+        assertThatThrownBy(
+                        () ->
+                                service.exportSelectedWeeks(
+                                        new HeadmanWeeklyExportRequest(
+                                                List.of(WEEK_START), "docx")))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(academicGrpcClient, org.mockito.Mockito.times(2))
+                .hasAssistantPermission(10L, "VIEW_STATS");
+        verify(scheduleGrpcClient).getLessonsByGroup(10L, 1L, "2026-04-27", "2026-05-03");
+        verifyNoInteractions(attendanceReadPort, documentRendererGrpcClient);
     }
 
     @Test

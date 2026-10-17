@@ -14,17 +14,14 @@ import io.grpc.MethodDescriptor;
 import io.grpc.SecurityLevel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.lang.reflect.Field;
-import java.time.LocalDate;
-import java.util.Base64;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GeofenceResponse;
@@ -42,6 +39,12 @@ import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
 import ru.rutcampustrack.shared.security.grpc.ServiceIdentityServerInterceptor;
+
+import java.lang.reflect.Field;
+import java.time.LocalDate;
+import java.util.Base64;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @ExtendWith(MockitoExtension.class)
 class AcademicGrpcClientTest {
@@ -73,6 +76,30 @@ class AcademicGrpcClientTest {
         when(mockStub.getGroup(any())).thenThrow(new StatusRuntimeException(Status.NOT_FOUND));
 
         assertThrows(ResourceNotFoundException.class, () -> client.getGroup(7L));
+    }
+
+    @Test
+    void academicFailureClassificationDoesNotRetryPermanentStatusesOrIncludeServerDetail() {
+        for (Status status :
+                java.util.List.of(
+                        Status.UNAVAILABLE,
+                        Status.DEADLINE_EXCEEDED,
+                        Status.INVALID_ARGUMENT,
+                        Status.PERMISSION_DENIED)) {
+            org.mockito.Mockito.doThrow(
+                            status.withDescription("SYNTHETIC_PRIVATE_DETAIL").asRuntimeException())
+                    .when(mockStub)
+                    .getGroup(any());
+            var failure =
+                    assertThrows(
+                            AcademicServiceUnavailableException.class, () -> client.getGroup(7L));
+            org.assertj.core.api.Assertions.assertThat(failure.isRetryable())
+                    .isEqualTo(
+                            status.getCode() == Status.Code.UNAVAILABLE
+                                    || status.getCode() == Status.Code.DEADLINE_EXCEEDED);
+            org.assertj.core.api.Assertions.assertThat(failure.getMessage())
+                    .doesNotContain("SYNTHETIC_PRIVATE_DETAIL");
+        }
     }
 
     @Test

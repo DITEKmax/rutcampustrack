@@ -14,14 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.ByteArrayInputStream;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -31,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MvcResult;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
@@ -45,6 +39,15 @@ import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTes
 import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+
+import java.io.ByteArrayInputStream;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Full Spring MVC + Testcontainers coverage for M18 headman weekly export.
@@ -65,6 +68,7 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
     private static final byte[] PNG_ZIP_BYTES = pngPageZip();
 
     @Autowired private ObjectMapper objectMapper;
+    @Autowired private io.micrometer.core.instrument.MeterRegistry meters;
 
     @MockitoBean private DocumentRendererGrpcClient documentRendererGrpcClient;
 
@@ -76,6 +80,176 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
         stubAcademic();
         stubSchedule();
         seedAttendance();
+    }
+
+    @Test
+    void eighteenWeekOriginalRequestRecoversAndKeepsEveryHistoricalMarkAndNextRequestWorks()
+            throws Exception {
+        LocalDate first = LocalDate.of(2026, 1, 5);
+        List<LocalDate> weeks =
+                java.util.stream.IntStream.range(0, 18).mapToObj(first::plusWeeks).toList();
+        when(academicGrpcClient.getActiveSemester())
+                .thenReturn(
+                        SemesterResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .setName("18 week synthetic semester")
+                                .setDateFrom(first.toString())
+                                .setDateTo(weeks.get(17).plusDays(6).toString())
+                                .build());
+        List<StudentInfo> students =
+                java.util.stream.LongStream.range(100, 130)
+                        .mapToObj(id -> student(id, "Semester Student " + id))
+                        .toList();
+        List<AttendanceFixture> records = new ArrayList<>();
+        LessonsResponse.Builder allLessons = LessonsResponse.newBuilder();
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(SUBJECT_ID)))
+                .thenReturn(
+                        Map.of(
+                                SUBJECT_ID,
+                                new AcademicGrpcClient.SubjectDetails(
+                                        "Semester subject",
+                                        "lecture",
+                                        GROUP_ID,
+                                        List.of("lecture"))));
+        for (int weekIndex = 0; weekIndex < weeks.size(); weekIndex++) {
+            LocalDate week = weeks.get(weekIndex);
+            LessonsResponse.Builder lessons = LessonsResponse.newBuilder();
+            for (int day = 0; day < 6; day++) {
+                LocalDate date = week.plusDays(day);
+                long lessonId = 10_000L + weekIndex * 6L + day;
+                lessons.addLessons(lesson(lessonId, date.toString(), 1));
+                allLessons.addLessons(lesson(lessonId, date.toString(), 1));
+                when(academicGrpcClient.getGroupMembers(GROUP_ID, date, SEMESTER_ID))
+                        .thenReturn(
+                                GroupMembersResponse.newBuilder()
+                                        .setAsOfDate(date.toString())
+                                        .setSemesterId(SEMESTER_ID)
+                                        .addAllStudents(students)
+                                        .build());
+                for (StudentInfo student : students) {
+                    records.add(
+                            attendance(
+                                    lessonId,
+                                    student.getUserId(),
+                                    date,
+                                    weekIndex == 17
+                                            ? AttendanceStatus.EXCUSED
+                                            : AttendanceStatus.PRESENT));
+                }
+            }
+            when(scheduleGrpcClient.getLessonsByGroup(
+                            GROUP_ID, SEMESTER_ID, week.toString(), week.plusDays(6).toString()))
+                    .thenReturn(lessons.build());
+        }
+        mongoTemplate.insert(records, "attendances");
+        when(scheduleGrpcClient.getLessonsByGroup(
+                        GROUP_ID, SEMESTER_ID, first.toString(), first.plusDays(6).toString()))
+                .thenThrow(
+                        new ru.rutcampustrack.attendance.exception
+                                .ScheduleServiceUnavailableException(
+                                "synthetic transient read failure",
+                                io.grpc.Status.Code.UNAVAILABLE))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addAllLessons(allLessons.getLessonsList().subList(0, 6))
+                                .build());
+        double retriesBefore =
+                meters.counter(
+                                "attendance.report.retries.total",
+                                "report",
+                                "weekly",
+                                "format",
+                                "docx")
+                        .count();
+
+        MvcResult result =
+                mockMvc.perform(
+                                post("/attendance/reports/headman-weekly/export")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(
+                                                objectMapper.writeValueAsBytes(
+                                                        new HeadmanWeeklyExportRequest(
+                                                                weeks, "docx")))
+                                        .headers(headmanHeaders()))
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType(ReportApi.DOCX_MEDIA_TYPE))
+                        .andReturn();
+
+        byte[] docx = result.getResponse().getContentAsByteArray();
+        assertThat(
+                        meters.counter(
+                                                "attendance.report.retries.total",
+                                                "report",
+                                                "weekly",
+                                                "format",
+                                                "docx")
+                                        .count()
+                                - retriesBefore)
+                .isEqualTo(1);
+        String xml = documentXml(docx);
+        javax.xml.parsers.DocumentBuilderFactory factory =
+                javax.xml.parsers.DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        var document =
+                factory.newDocumentBuilder()
+                        .parse(
+                                new ByteArrayInputStream(
+                                        xml.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        var tables =
+                document.getElementsByTagNameNS(
+                        "http://schemas.openxmlformats.org/wordprocessingml/2006/main", "tbl");
+        assertThat(tables.getLength()).isEqualTo(18);
+        assertThat(xml).doesNotContain("${");
+        assertThat(document.getDocumentElement().getTextContent())
+                .contains("Посещаемость за неделю", "Semester subject", "05.01.2026");
+        for (int weekIndex = 0; weekIndex < 18; weekIndex++) {
+            org.w3c.dom.Element table = (org.w3c.dom.Element) tables.item(weekIndex);
+            var rows =
+                    table.getElementsByTagNameNS(
+                            "http://schemas.openxmlformats.org/wordprocessingml/2006/main", "tr");
+            assertThat(rows.getLength()).isEqualTo(31);
+            assertThat(table.getTextContent())
+                    .contains("Semester Student 100", "Semester Student 129");
+            for (int studentIndex = 1; studentIndex <= 30; studentIndex++) {
+                var cells =
+                        ((org.w3c.dom.Element) rows.item(studentIndex))
+                                .getElementsByTagNameNS(
+                                        "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+                                        "tc");
+                assertThat(cells.getLength()).isEqualTo(8);
+                for (int lessonIndex = 2; lessonIndex < 8; lessonIndex++) {
+                    assertThat(cells.item(lessonIndex).getTextContent())
+                            .isEqualTo(weekIndex == 17 ? "у" : "+");
+                }
+            }
+        }
+        System.out.printf(
+                "report18week proof weeks=18 lessons=108 students=30 cells=3240 docxBytes=%d%n",
+                docx.length);
+        verifyNoInteractions(documentRendererGrpcClient);
+
+        mockMvc.perform(
+                        post("/attendance/reports/headman-weekly/export")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsBytes(
+                                                new HeadmanWeeklyExportRequest(
+                                                        java.util.Collections.nCopies(65, first),
+                                                        "docx")))
+                                .headers(headmanHeaders()))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(
+                        post("/attendance/reports/headman-weekly/export")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsBytes(
+                                                new HeadmanWeeklyExportRequest(
+                                                        List.of(first), "docx")))
+                                .headers(headmanHeaders()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(ReportApi.DOCX_MEDIA_TYPE));
     }
 
     @Test
@@ -358,6 +532,18 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
             }
             return entries;
         }
+    }
+
+    private static String documentXml(byte[] docx) throws Exception {
+        try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(docx))) {
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                if ("word/document.xml".equals(entry.getName())) {
+                    return new String(zip.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                }
+            }
+        }
+        throw new IllegalArgumentException("Generated DOCX has no document.xml");
     }
 
     @org.springframework.data.mongodb.core.mapping.Document(collection = "attendances")

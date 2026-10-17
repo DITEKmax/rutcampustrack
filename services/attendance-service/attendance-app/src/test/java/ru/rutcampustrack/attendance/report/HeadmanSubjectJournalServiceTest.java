@@ -3,14 +3,12 @@ package ru.rutcampustrack.attendance.report;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.nio.charset.StandardCharsets;
-import java.time.*;
-import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import ru.rutcampustrack.academic.grpc.*;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanSubjectJournalExportRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -21,6 +19,10 @@ import ru.rutcampustrack.attendance.report.teacher.*;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.shared.port.*;
 import ru.rutcampustrack.schedule.grpc.*;
+
+import java.nio.charset.StandardCharsets;
+import java.time.*;
+import java.util.*;
 
 @ExtendWith(MockitoExtension.class)
 class HeadmanSubjectJournalServiceTest {
@@ -44,7 +46,9 @@ class HeadmanSubjectJournalServiceTest {
                         documents,
                         context,
                         Clock.fixed(
-                                Instant.parse("2026-05-02T09:00:00Z"), ZoneId.of("Europe/Moscow")));
+                                Instant.parse("2026-05-02T09:00:00Z"), ZoneId.of("Europe/Moscow")),
+                        new ReportExecution(
+                                new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
         lenient().when(context.getGroupId()).thenReturn(10L);
         lenient().when(academic.hasAssistantPermission(10L, "VIEW_STATS")).thenReturn(true);
         lenient()

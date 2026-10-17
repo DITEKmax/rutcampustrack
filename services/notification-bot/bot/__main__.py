@@ -4,6 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiohttp import web
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from bot.config import config, validate_startup_config
 from bot.consumers.event_consumer import start_consumer
@@ -24,7 +25,7 @@ from bot.handlers import (
 )
 from bot.handlers.prefs import keyboard_signature, main_keyboard
 from bot.middlewares import ObservabilityMiddleware
-from bot.observability import setup_observability
+from bot.observability import METRICS_REGISTRY, TASK_ALIVE, SendQueueCollector, setup_observability
 from bot.services.academic_http_client import AcademicHttpClient
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
@@ -63,11 +64,18 @@ async def health_handler(request: web.Request) -> web.Response:
 async def run_health_server() -> None:
     app = web.Application()
     app.router.add_get("/health", health_handler)
+    app.router.add_get("/metrics", metrics_handler)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", config.health_port)
     await site.start()
     logger.info("Health server started on port %d", config.health_port)
+
+
+async def metrics_handler(request: web.Request) -> web.Response:
+    for name, task in (("watchdog", _consumer_task), ("polling", _bot_task), ("keyboard_sync", _keyboard_sync_task)):
+        TASK_ALIVE.labels(name).set(int(task is not None and not task.done()))
+    return web.Response(body=generate_latest(METRICS_REGISTRY), headers={"Content-Type": CONTENT_TYPE_LATEST})
 
 
 async def run_with_watchdog(rabbitmq_url: str, dispatcher=None, idempotency_guard=None) -> None:
@@ -243,6 +251,7 @@ async def main() -> None:
 
     # Create send queue and reminder redis client
     send_queue = TelegramSendQueue(prefs_client=prefs_client)
+    METRICS_REGISTRY.register(SendQueueCollector(send_queue))
     send_queue.start()
     redis_client = ReminderRedisClient(
         key_template=config.reminder_key_template,

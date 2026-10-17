@@ -3,6 +3,10 @@ package ru.rutcampustrack.shared.observability;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
+
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import java.util.Objects;
 
 /**
@@ -67,6 +71,23 @@ public class BusinessMetrics {
 
     public Counter lateCheckinCreatedCounter() {
         return Counter.builder(MetricNames.LATE_CHECKIN_CREATED).register(registry);
+    }
+
+    /** Records committed business outcomes; a rolled-back transaction contributes no success. */
+    public void incrementAfterCommit(Counter counter) {
+        Objects.requireNonNull(counter, "counter");
+        if (TransactionSynchronizationManager.isActualTransactionActive()
+                && TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            counter.increment();
+                        }
+                    });
+        } else {
+            counter.increment();
+        }
     }
 
     /**

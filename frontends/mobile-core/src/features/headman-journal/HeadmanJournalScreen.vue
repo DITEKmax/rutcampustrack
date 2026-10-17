@@ -2,12 +2,14 @@
 import {
   exportStateLabel,
   reportDownloadAcceptedMessage,
+  validateTicketRequest,
 } from '../../shared/report-download-client';
 import {
   defineAsyncComponent,
   computed,
   nextTick,
   onBeforeUnmount,
+  onMounted,
   ref,
   shallowRef,
   watch,
@@ -24,7 +26,10 @@ import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { journalScopeCurrent, type JournalMutationScope } from './headman-journal-operation';
 import { moscowDate } from '../../domain/homework';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
-import type { ReportDownloadPort } from '../../shared/report-download-client';
+import type {
+  ReportDownloadPort,
+  ReportDownloadTicketRequest,
+} from '../../shared/report-download-client';
 import {
   openRequestAttachmentPopup,
   runRequestAttachmentOpen,
@@ -229,6 +234,7 @@ const weeklyExportOptions = shallowRef<HeadmanWeeklyExportOptions | null>(null);
 const weeklyExportFormatCode = ref('');
 const selectedWeeklyStarts = ref<readonly string[]>([]);
 const loadingWeeklyOptions = ref(false);
+const weeklyOptionsError = ref<string | null>(null);
 const weeklyExportBusy = ref(false);
 const weeklyExportError = ref<string | null>(null);
 const weeklyExportStatus = ref<string | null>(null);
@@ -241,6 +247,7 @@ const transferRunRevisions = new Map<string, number>();
 let weeklyOptionsRevision = 0;
 let weeklyExportRevision = 0;
 let weeklyExportAbort: AbortController | null = null;
+let weeklyOptionsOwner: { api: HeadmanJournalApi; groupId: number | null } | null = null;
 let activeLessonsLoad: Promise<void> = Promise.resolve();
 let preferredLessonAfterDateChange: number | null = null;
 let disposed = false;
@@ -301,13 +308,7 @@ const selectedLesson = computed(
   () => lessons.value.find((lesson) => lesson.id === selectedLessonId.value) ?? null,
 );
 const entries = computed(() => report.value?.entries ?? []);
-const busy = computed(
-  () =>
-    loadingLessons.value ||
-    loadingReport.value ||
-    loadingWeeklyOptions.value ||
-    weeklyExportBusy.value,
-);
+const busy = computed(() => loadingLessons.value || loadingReport.value);
 const selectedWeeklyFormat = computed(
   () =>
     weeklyExportOptions.value?.formats.find(
@@ -485,23 +486,34 @@ function invalidateWeeklyExport(message?: string): void {
 async function loadWeeklyExportOptions(): Promise<void> {
   const revision = ++weeklyOptionsRevision;
   invalidateWeeklyExport();
-  weeklyExportOptions.value = null;
-  weeklyExportFormatCode.value = '';
-  selectedWeeklyStarts.value = [];
+  const api = props.api;
+  const sameOwner =
+    weeklyOptionsOwner?.api === api && weeklyOptionsOwner?.groupId === props.groupId;
+  if (!sameOwner || !canExportWeekly()) {
+    weeklyExportOptions.value = null;
+    weeklyExportFormatCode.value = '';
+    selectedWeeklyStarts.value = [];
+  }
+  weeklyOptionsOwner = api ? { api, groupId: props.groupId } : null;
+  weeklyOptionsError.value = null;
   if (!canExportWeekly()) {
     loadingWeeklyOptions.value = false;
     return;
   }
-  const api = props.api;
   loadingWeeklyOptions.value = true;
   weeklyExportError.value = null;
+  // The durable accepted intent needs no fresh format/week catalogue to resume.
   try {
+    resumePendingWeeklyExport();
     const options = await api!.getWeeklyExportOptions();
     if (disposed || revision !== weeklyOptionsRevision || api !== props.api || !canExportWeekly())
       return;
+    const initializeSelection = weeklyExportOptions.value === null;
     weeklyExportOptions.value = options;
-    weeklyExportFormatCode.value = options.formats[0]?.code ?? '';
-    resetWeeklySelectionForDate();
+    if (initializeSelection) {
+      weeklyExportFormatCode.value = options.formats[0]?.code ?? '';
+      resetWeeklySelectionForDate();
+    }
   } catch (cause) {
     if (
       disposed ||
@@ -509,7 +521,7 @@ async function loadWeeklyExportOptions(): Promise<void> {
       cause instanceof StaleSessionGenerationError
     )
       return;
-    weeklyExportError.value =
+    weeklyOptionsError.value =
       cause instanceof Error ? cause.message : 'Не удалось загрузить список недель и форматов.';
     emit('error', cause);
   } finally {
@@ -517,16 +529,45 @@ async function loadWeeklyExportOptions(): Promise<void> {
   }
 }
 
-async function downloadWeeklyExport(): Promise<void> {
+function resumePendingWeeklyExport(): void {
+  if (disposed || weeklyExportBusy.value || !canExportWeekly()) return;
+  const request = props.reportDownload
+    ?.pendingRequests?.()
+    .find(
+      (entry) =>
+        entry.kind === 'HEADMAN_WEEKLY_CURRENT' || entry.kind === 'HEADMAN_WEEKLY_SELECTED',
+    );
+  if (!request) return;
+  weeklyExportStatus.value = 'Проверяем ранее запрошенную выгрузку…';
+  void downloadWeeklyExport(request);
+}
+
+function reconnectWeeklyExport(): void {
+  if (!disposed && !weeklyExportBusy.value) void loadWeeklyExportOptions();
+}
+
+onMounted(() => {
+  if (typeof window !== 'undefined') window.addEventListener('online', reconnectWeeklyExport);
+});
+
+async function downloadWeeklyExport(resumedRequest?: ReportDownloadTicketRequest): Promise<void> {
   const api = props.api;
   const reportDownload = props.reportDownload;
   const options = weeklyExportOptions.value;
   const format = selectedWeeklyFormat.value;
-  if (!api || !options || !format || !canExportWeekly() || weeklyExportBusy.value) return;
-  const weekStarts = options.weeks
-    .filter((week) => selectedWeeklyStarts.value.includes(week.weekStart))
-    .map((week) => week.weekStart);
-  if (weekStarts.length === 0) {
+  if (!api || !canExportWeekly() || weeklyExportBusy.value) return;
+  if (resumedRequest) {
+    if (
+      !reportDownload ||
+      !['HEADMAN_WEEKLY_CURRENT', 'HEADMAN_WEEKLY_SELECTED'].includes(resumedRequest.kind)
+    )
+      return;
+  } else if (!options || !format) return;
+  const weekStarts =
+    options?.weeks
+      .filter((week) => selectedWeeklyStarts.value.includes(week.weekStart))
+      .map((week) => week.weekStart) ?? [];
+  if (!resumedRequest && weekStarts.length === 0) {
     weeklyExportError.value = 'Выбери хотя бы одну неделю.';
     weeklyExportStatus.value = null;
     return;
@@ -537,17 +578,23 @@ async function downloadWeeklyExport(): Promise<void> {
   weeklyExportAbort = controller;
   weeklyExportBusy.value = true;
   try {
+    if (resumedRequest) {
+      validateTicketRequest(resumedRequest);
+      resumedRequest = structuredClone(resumedRequest);
+    }
     if (reportDownload) {
-      const request = toHeadmanWeeklyReportRequest(options.weeks, weekStarts, format);
+      const request =
+        resumedRequest ?? toHeadmanWeeklyReportRequest(options!.weeks, weekStarts, format!);
       const isCurrent = (): boolean =>
         !disposed &&
         revision === weeklyExportRevision &&
         api === props.api &&
         reportDownload === props.reportDownload &&
-        options === weeklyExportOptions.value &&
         canExportWeekly() &&
-        selectedWeeklyFormat.value?.code === format.code &&
-        JSON.stringify(selectedWeeklyStarts.value) === JSON.stringify(weekStarts);
+        (resumedRequest !== undefined ||
+          (options === weeklyExportOptions.value &&
+            selectedWeeklyFormat.value?.code === format!.code &&
+            JSON.stringify(selectedWeeklyStarts.value) === JSON.stringify(weekStarts)));
       const result = await reportDownload.download(request, isCurrent, (state) => {
         if (isCurrent()) weeklyExportStatus.value = exportStateLabel(state);
       });
@@ -564,7 +611,7 @@ async function downloadWeeklyExport(): Promise<void> {
       return;
     }
 
-    const downloaded = await api.downloadWeeklyExport(weekStarts, format, controller.signal);
+    const downloaded = await api.downloadWeeklyExport(weekStarts, format!, controller.signal);
     if (disposed || revision !== weeklyExportRevision || api !== props.api || !canExportWeekly())
       return;
     if (
@@ -590,12 +637,21 @@ async function downloadWeeklyExport(): Promise<void> {
       disposed ||
       revision !== weeklyExportRevision ||
       cause instanceof StaleSessionGenerationError ||
-      (typeof DOMException !== 'undefined' &&
+      (controller.signal.aborted &&
+        typeof DOMException !== 'undefined' &&
         cause instanceof DOMException &&
         cause.name === 'AbortError')
     )
       return;
-    if (cause instanceof HeadmanJournalApiError && cause.response.status === 403) {
+    if (
+      cause instanceof TypeError ||
+      (typeof DOMException !== 'undefined' &&
+        cause instanceof DOMException &&
+        cause.name === 'AbortError')
+    ) {
+      weeklyExportError.value =
+        'Не удалось связаться с сервером. Проверь подключение и повтори скачивание.';
+    } else if (cause instanceof HeadmanJournalApiError && cause.response.status === 403) {
       weeklyExportError.value = 'Для выгрузки требуется действующее право VIEW_STATS.';
     } else if (cause instanceof HeadmanJournalApiError && cause.response.status === 413) {
       weeklyExportError.value =
@@ -2286,6 +2342,7 @@ watch(
 );
 
 onBeforeUnmount(() => {
+  if (typeof window !== 'undefined') window.removeEventListener('online', reconnectWeeklyExport);
   manualPreviewOwner.dispose();
   disposed = true;
   mutationGeneration += 1;
@@ -2415,6 +2472,14 @@ onBeforeUnmount(() => {
         Скачать журнал
       </button>
     </nav>
+    <p
+      v-if="!weeklyOpen && (weeklyExportStatus || weeklyExportError)"
+      class="headman-journal__state"
+      :class="{ 'headman-journal__state--error': weeklyExportError }"
+      :role="weeklyExportError ? 'alert' : 'status'"
+    >
+      {{ weeklyExportError || weeklyExportStatus }}
+    </p>
     <section
       v-if="selectedLesson"
       class="headman-journal__context"
@@ -3027,11 +3092,11 @@ onBeforeUnmount(() => {
           Загружаем серверный список недель и форматов…
         </p>
         <p
-          v-else-if="weeklyExportError && !weeklyExportOptions"
+          v-else-if="weeklyOptionsError && !weeklyExportOptions"
           class="headman-journal__state headman-journal__state--error"
           role="alert"
         >
-          {{ weeklyExportError }}
+          {{ weeklyOptionsError }}
         </p>
         <div
           v-else-if="weeklyExportOptions"
@@ -3087,7 +3152,7 @@ onBeforeUnmount(() => {
             type="button"
             :disabled="weeklyExportBusy || selectedWeeklyCount === 0 || !selectedWeeklyFormat"
             :aria-busy="weeklyExportBusy"
-            @click="downloadWeeklyExport"
+            @click="downloadWeeklyExport()"
           >
             {{ weeklyExportBusy ? 'Готовим файл…' : 'Скачать' }}
           </button>

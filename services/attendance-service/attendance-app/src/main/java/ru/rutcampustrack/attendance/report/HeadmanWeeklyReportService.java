@@ -2,25 +2,11 @@ package ru.rutcampustrack.attendance.report;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.time.Clock;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.temporal.WeekFields;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
@@ -52,6 +38,24 @@ import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 
+import java.time.Clock;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.WeekFields;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class HeadmanWeeklyReportService {
@@ -73,6 +77,7 @@ public class HeadmanWeeklyReportService {
     private final DocumentRendererGrpcClient documentRendererGrpcClient;
     private final RequestContext requestContext;
     private final Clock clock;
+    private final ReportExecution reportExecution;
 
     public HeadmanWeeklyWeeksResponse getActiveSemesterWeeks() {
         ensureHeadman();
@@ -81,7 +86,10 @@ public class HeadmanWeeklyReportService {
 
     public HeadmanWeeklyExportResult exportSingleWeek(LocalDate weekStart, String rawFormat) {
         HeadmanWeeklyReportFormat format = HeadmanWeeklyReportFormat.from(rawFormat);
-        return export(buildReportModels(List.of(weekStart)), format);
+        return reportExecution.execute(
+                ReportExecution.Report.WEEKLY,
+                format,
+                () -> export(buildReportModels(List.of(weekStart)), format));
     }
 
     public HeadmanWeeklyExportResult exportSelectedWeeks(HeadmanWeeklyExportRequest request) {
@@ -92,7 +100,10 @@ public class HeadmanWeeklyReportService {
             throw new ReportValidationException("Можно выбрать не более 64 недель за один раз");
         }
         HeadmanWeeklyReportFormat format = HeadmanWeeklyReportFormat.from(request.format());
-        return export(buildReportModels(request.weekStarts()), format);
+        return reportExecution.execute(
+                ReportExecution.Report.WEEKLY,
+                format,
+                () -> export(buildReportModels(request.weekStarts()), format));
     }
 
     private HeadmanWeeklyExportResult export(
@@ -123,7 +134,8 @@ public class HeadmanWeeklyReportService {
                 } catch (StatusRuntimeException ex) {
                     if (ex.getStatus().getCode() == Status.Code.RESOURCE_EXHAUSTED) {
                         throw new ReportExportTooLargeException(
-                                "Экспорт превышает лимит передачи сервиса преобразования. Попробуй скачать меньше недель или выбери HTML/XLSX.");
+                                "Экспорт превышает лимит передачи сервиса преобразования. Попробуй"
+                                        + " скачать меньше недель или выбери HTML/XLSX.");
                     }
                     throw ex;
                 }
@@ -137,7 +149,8 @@ public class HeadmanWeeklyReportService {
         }
         if (content.length > MAX_EXPORT_RESPONSE_BYTES) {
             throw new ReportExportTooLargeException(
-                    "Экспорт превышает общий лимит ответа 20 МиБ. Выбери меньше недель или формат HTML/XLSX.");
+                    "Экспорт превышает общий лимит ответа 20 МиБ. Выбери меньше недель или формат"
+                            + " HTML/XLSX.");
         }
         return new HeadmanWeeklyExportResult(fileName, format.contentType(), content);
     }
@@ -233,6 +246,16 @@ public class HeadmanWeeklyReportService {
                     request) {
         HeadmanWeeklyReportFormat format =
                 HeadmanWeeklyReportFormat.from(request == null ? null : request.format());
+        return reportExecution.execute(
+                ReportExecution.Report.SUBJECT_JOURNAL,
+                format,
+                () -> exportSubjectJournalOnce(request, format));
+    }
+
+    private HeadmanWeeklyExportResult exportSubjectJournalOnce(
+            ru.rutcampustrack.attendance.contract.dto.report.HeadmanSubjectJournalExportRequest
+                    request,
+            HeadmanWeeklyReportFormat format) {
         TeacherAttendanceExportModel model = buildSubjectJournalModel(request);
         byte[] bytes =
                 switch (format) {
@@ -445,7 +468,8 @@ public class HeadmanWeeklyReportService {
                                             || subject.name() == null
                                             || subject.name().isBlank()) {
                                         throw new AcademicServiceUnavailableException(
-                                                "Academic returned missing subject display metadata");
+                                                "Academic returned missing subject display"
+                                                        + " metadata");
                                     }
                                     String lessonType = normalize(lesson.lesson().getLessonType());
                                     return new Column(
@@ -481,7 +505,8 @@ public class HeadmanWeeklyReportService {
                         || student.getDisplayName().isBlank()
                         || !memberIds.add(student.getUserId())) {
                     throw new AcademicServiceUnavailableException(
-                            "Academic returned an invalid historical group member for the attendance journal");
+                            "Academic returned an invalid historical group member for the"
+                                    + " attendance journal");
                 }
                 WeeklyStudent row =
                         rowsById.computeIfAbsent(

@@ -1,12 +1,15 @@
 package ru.rutcampustrack.attendance.event;
 
+import org.slf4j.MDC;
+
+import ru.rutcampustrack.shared.events.AbstractEventPublisher;
+import ru.rutcampustrack.shared.events.EventTraceContext;
+
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.MDC;
-import ru.rutcampustrack.shared.events.AbstractEventPublisher;
 
 /**
  * Helper для построения envelope для attendance-publisher'ов (M04 QA3 / D5(a)).
@@ -40,6 +43,7 @@ public final class EventEnvelope {
                         .orElseGet(() -> UUID.randomUUID().toString());
         envelope.put("trace_id", traceId);
         envelope.put("payload", payload);
+        EventTraceContext.capture(envelope);
         return envelope;
     }
 }

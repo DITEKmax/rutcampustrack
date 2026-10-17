@@ -150,6 +150,10 @@ const reportDownload = computed(() =>
         refreshFor: (generation) => auth.refreshFor(generation),
       },
       currentFetcher(),
+      () => {
+        const device = auth.deviceSession.value;
+        return device ? JSON.stringify([device.userId, device.sessionId, 'HEADMAN']) : null;
+      },
     ),
     currentFetcher(),
   ),

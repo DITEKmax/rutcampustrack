@@ -1,17 +1,12 @@
 package ru.rutcampustrack.attendance.latecheckin;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Objects;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
@@ -32,6 +27,13 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Business logic for late-checkin requests.
@@ -100,7 +102,8 @@ public class LateCheckinService {
     public LateCheckinRequest createRequest(Long lessonId) {
         if (requestContext.isHeadman()) {
             throw new ConflictException(
-                    "Староста отмечает себя через журнал посещаемости, а не через запрос к старосте");
+                    "Староста отмечает себя через журнал посещаемости, а не через запрос к"
+                            + " старосте");
         }
 
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
@@ -180,7 +183,7 @@ public class LateCheckinService {
                 saved, lessonDate, lesson.getLessonNumber(), lesson.getSubjectId(), subjectName);
 
         // M04 Группа 8 — late_checkin.created.
-        businessMetrics.lateCheckinCreatedCounter().increment();
+        businessMetrics.incrementAfterCommit(businessMetrics.lateCheckinCreatedCounter());
 
         return saved;
     }
@@ -213,7 +216,8 @@ public class LateCheckinService {
         }
         if (!Objects.equals(groupId, requestContext.getGroupId())) {
             throw new AccessDeniedException(
-                    "РќРµР»СЊР·СЏ РїСЂРѕСЃРјР°С‚СЂРёРІР°С‚СЊ Р·Р°РїСЂРѕСЃС‹ С‡СѓР¶РѕР№ РіСЂСѓРїРїС‹");
+                    "РќРµР»СЊР·СЏ РїСЂРѕСЃРјР°С‚СЂРёРІР°С‚СЊ Р·Р°РїСЂРѕСЃС‹ С‡СѓР¶РѕР№"
+                            + " РіСЂСѓРїРїС‹");
         }
         requireExcuseManagement(groupId);
 

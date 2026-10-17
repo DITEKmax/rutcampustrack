@@ -15,6 +15,7 @@ dependencyManagement {
 // NEW-34: чистый java-library, без autoconfig, без starter'ов.
 // Jackson + SLF4J провайдит сервис-потребитель.
 dependencies {
+    api("io.opentelemetry:opentelemetry-api")
     compileOnly("com.fasterxml.jackson.core:jackson-databind")
     compileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     compileOnly("com.fasterxml.jackson.core:jackson-annotations")

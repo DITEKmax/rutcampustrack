@@ -881,7 +881,7 @@ jobs:
                       'package': 'ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT',
                       'method': 'unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation',
                       'source': 'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java',
-                      'testSha': '317409764e7692bfd7148e0b57c02157ac3f9727aab05b45aa6737e88e7169d8',
+                      'testSha': 'cc29ce79202bd7d5b8b3ee56509af944f2403467805b8883c96e4c7d6b35c776',
                       'production': 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java',
                       'productionSha': '53741f8dc927a2198a518d90789f0cc94a4ed566888049acd0c4b5f03be9d148',
                       'anchor': '        return AdminPermission.validate(input.mode(), input.permissions());',

@@ -6,8 +6,11 @@ import java.util.*;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 import ru.rutcampustrack.auth.dto.*;
 import ru.rutcampustrack.auth.dto.ExportJobModels.*;
@@ -22,22 +25,26 @@ import ru.rutcampustrack.shared.events.AbstractEventPublisher;
 public class ExportJobService extends AbstractEventPublisher {
     private static final Duration JOB_WINDOW = Duration.ofMinutes(10);
     private static final Duration LEASE = Duration.ofSeconds(90);
+    private static final int MAX_ACTIVE_JOBS = 2;
     private static final int MAX_BYTES = 20 * 1024 * 1024;
     private final JdbcTemplate jdbc;
     private final ObjectMapper mapper;
     private final ExportReportAuthority authority;
     private final ReportDownloadTicketService tickets;
+    private final ExportJobMetrics metrics;
 
     public ExportJobService(
             JdbcTemplate jdbc,
             ObjectMapper mapper,
             ExportReportAuthority authority,
-            ReportDownloadTicketService tickets) {
+            ReportDownloadTicketService tickets,
+            ExportJobMetrics metrics) {
         super("auth-service");
         this.jdbc = jdbc;
         this.mapper = mapper.copy();
         this.authority = authority;
         this.tickets = tickets;
+        this.metrics = metrics;
     }
 
     @Transactional
@@ -47,7 +54,7 @@ public class ExportJobService extends AbstractEventPublisher {
         boolean full = authority.requiresFull(actor, request.report());
         // Bounds and idempotency are serialized independently of business mutation locks.
         jdbc.queryForList("SELECT pg_advisory_xact_lock(?)", 724830210056L);
-        jdbc.update("DELETE FROM auth_export_jobs WHERE expires_at < NOW()");
+        expire(256);
         var previous =
                 jdbc.query(
                         "SELECT job_id, binding_hash FROM auth_export_jobs WHERE user_id=? AND session_id=? AND request_id=?",
@@ -94,6 +101,7 @@ public class ExportJobService extends AbstractEventPublisher {
                 full,
                 expires.atOffset(ZoneOffset.UTC));
         event(id, identity, State.QUEUED);
+        committed(() -> metrics.accepted(request.report().kind()));
         return new Status(id, State.QUEUED, request.report().suggestedFilename(), expires, null);
     }
 
@@ -133,6 +141,8 @@ public class ExportJobService extends AbstractEventPublisher {
 
     @Transactional
     public Optional<Claim> claim() {
+        // Serialize admission across Auth/Gateway replicas, independently of enqueue limits.
+        jdbc.queryForList("SELECT pg_advisory_xact_lock(?)", 724830210057L);
         // A crashed worker's lease is recoverable; the third abandoned attempt terminates
         // explicitly.
         var abandoned =
@@ -140,9 +150,14 @@ public class ExportJobService extends AbstractEventPublisher {
                         "SELECT job_id FROM auth_export_jobs WHERE state='preparing' AND lease_until<NOW() AND attempts>=3 AND expires_at>NOW() FOR UPDATE SKIP LOCKED",
                         (rs, n) -> rs.getObject(1, UUID.class));
         for (UUID id : abandoned) terminal(load(id), "GENERATION_FAILED");
+        Long active =
+                jdbc.queryForObject(
+                        "SELECT count(*) FROM auth_export_jobs WHERE state='preparing' AND lease_until>NOW() AND expires_at>NOW()",
+                        Long.class);
+        if (active >= MAX_ACTIVE_JOBS) return Optional.empty();
         var candidates =
                 jdbc.query(
-                        "SELECT job_id FROM auth_export_jobs WHERE expires_at>NOW() AND attempts<3 AND (state='queued' OR state='preparing' AND lease_until<NOW()) ORDER BY created_at,job_id LIMIT 1 FOR UPDATE SKIP LOCKED",
+                        "SELECT job_id FROM auth_export_jobs WHERE expires_at>NOW() AND attempts<3 AND ((state='queued' AND (lease_until IS NULL OR lease_until<=NOW())) OR (state='preparing' AND lease_until<NOW())) ORDER BY created_at,job_id LIMIT 1 FOR UPDATE SKIP LOCKED",
                         (rs, n) -> rs.getObject(1, UUID.class));
         if (candidates.isEmpty()) return Optional.empty();
         Job job = load(candidates.getFirst());
@@ -243,6 +258,7 @@ public class ExportJobService extends AbstractEventPublisher {
                                     id.toString())));
         }
         event(id, job.identity, State.READY);
+        committed(() -> metrics.terminal(job.identity.report().kind(), null, job.createdAt));
         return response(load(id));
     }
 
@@ -255,11 +271,41 @@ public class ExportJobService extends AbstractEventPublisher {
         if (job.attempts >= 3 || !"GENERATION_FAILED".equals(failure.code()))
             terminal(job, failure.code());
         else {
+            // QUEUED has no lease owner: lease_until is its durable retry not-before time.
+            Instant due = Instant.now().plusSeconds(5L << (job.attempts - 1));
+            if (!due.isBefore(job.identity.expiresAt())) {
+                terminal(job, "GENERATION_FAILED");
+                return;
+            }
             jdbc.update(
-                    "UPDATE auth_export_jobs SET state='queued',lease_id=NULL,lease_until=NULL WHERE job_id=?",
+                    "UPDATE auth_export_jobs SET state='queued',lease_id=NULL,lease_until=? WHERE job_id=?",
+                    due.atOffset(ZoneOffset.UTC),
                     id);
             event(id, job.identity, State.QUEUED);
+            committed(() -> metrics.retried(job.identity.report().kind()));
         }
+    }
+
+    /** Expired bytea must be reclaimed even when no new request is enqueued. */
+    @Scheduled(fixedDelayString = "${rutcampustrack.export-jobs.cleanup-millis:60000}")
+    @Transactional
+    public void cleanExpired() {
+        expire(32);
+    }
+
+    private void expire(int limit) {
+        jdbc.query(
+                "DELETE FROM auth_export_jobs WHERE job_id IN (SELECT job_id FROM auth_export_jobs WHERE expires_at<=NOW() ORDER BY expires_at,job_id LIMIT ? FOR UPDATE SKIP LOCKED) RETURNING identity->'report'->>'kind' AS kind,state,created_at",
+                rs -> {
+                    if ("queued".equals(rs.getString("state"))
+                            || "preparing".equals(rs.getString("state"))) {
+                        String kind = rs.getString("kind");
+                        Instant createdAt =
+                                rs.getObject("created_at", OffsetDateTime.class).toInstant();
+                        committed(() -> metrics.expired(kind, createdAt));
+                    }
+                },
+                limit);
     }
 
     private Job owned(SessionPrincipal actor, UUID id) {
@@ -280,7 +326,7 @@ public class ExportJobService extends AbstractEventPublisher {
     private Job load(UUID id) {
         var rows =
                 jdbc.query(
-                        "SELECT job_id,identity,state,lease_id,lease_until,attempts,requires_full,content_type,error_code FROM auth_export_jobs WHERE job_id=? AND expires_at>NOW()",
+                        "SELECT job_id,identity,state,lease_id,lease_until,attempts,requires_full,content_type,error_code,created_at FROM auth_export_jobs WHERE job_id=? AND expires_at>NOW()",
                         (rs, n) -> {
                             StoredReportDownloadTicket identity;
                             try {
@@ -302,7 +348,8 @@ public class ExportJobService extends AbstractEventPublisher {
                                     rs.getInt("attempts"),
                                     rs.getBoolean("requires_full"),
                                     rs.getString("content_type"),
-                                    rs.getString("error_code"));
+                                    rs.getString("error_code"),
+                                    rs.getObject("created_at", OffsetDateTime.class).toInstant());
                         },
                         id);
         if (rows.isEmpty()) throw error(HttpStatus.NOT_FOUND, "Выгрузка не найдена");
@@ -328,6 +375,21 @@ public class ExportJobService extends AbstractEventPublisher {
                 code,
                 job.id);
         event(job.id, job.identity, State.ERROR);
+        committed(() -> metrics.terminal(job.identity.report().kind(), code, job.createdAt));
+    }
+
+    private static void committed(Runnable action) {
+        if (!TransactionSynchronizationManager.isActualTransactionActive()
+                || !TransactionSynchronizationManager.isSynchronizationActive()) {
+            throw new IllegalStateException("Export job mutation requires a transaction");
+        }
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        action.run();
+                    }
+                });
     }
 
     private void event(UUID id, StoredReportDownloadTicket identity, State state) {
@@ -371,7 +433,8 @@ public class ExportJobService extends AbstractEventPublisher {
             int attempts,
             boolean requiresFull,
             String contentType,
-            String errorCode) {}
+            String errorCode,
+            Instant createdAt) {}
 
     public record Download(String filename, String contentType, byte[] content) {
         @Override

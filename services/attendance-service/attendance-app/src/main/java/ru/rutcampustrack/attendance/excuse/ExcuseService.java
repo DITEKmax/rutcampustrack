@@ -1,21 +1,12 @@
 package ru.rutcampustrack.attendance.excuse;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import ru.rutcampustrack.attendance.contract.dto.excuse.CreateExcuseRequest;
 import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -38,6 +29,17 @@ import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Business logic for excuse tickets (Phase 59, Wave 2).
@@ -154,9 +156,8 @@ public class ExcuseService {
         // в outbox» сохраняется.
         excuseEventPublisher.publishRequested(saved, lessonDetails);
         // M04 Группа 8 — excuse.created{kind}. kind = enum ExcuseType (illness, ...).
-        businessMetrics
-                .excuseCreatedCounter(saved.getExcuseType().name().toLowerCase())
-                .increment();
+        businessMetrics.incrementAfterCommit(
+                businessMetrics.excuseCreatedCounter(saved.getExcuseType().name().toLowerCase()));
         return saved;
     }
 

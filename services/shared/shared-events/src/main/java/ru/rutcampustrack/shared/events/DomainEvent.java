@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import org.springframework.context.ApplicationEvent;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
-import org.springframework.context.ApplicationEvent;
 
 /**
  * Базовый класс для всех domain events (NEW-60, P2-1/5, QA3, M04 D5(a)).
@@ -49,6 +51,12 @@ public abstract class DomainEvent extends ApplicationEvent {
 
     @JsonProperty("trace_id")
     private String traceId;
+
+    @JsonProperty("traceparent")
+    private String traceparent;
+
+    @JsonProperty("request_id")
+    private String requestId;
 
     @JsonProperty("occurred_at")
     private OffsetDateTime occurredAt;
@@ -97,6 +105,23 @@ public abstract class DomainEvent extends ApplicationEvent {
 
     public void setTraceId(String traceId) {
         this.traceId = traceId;
+    }
+
+    public String getTraceparent() {
+        return traceparent;
+    }
+
+    public void setTraceparent(String traceparent) {
+        this.traceparent = EventTraceContext.validTraceparent(traceparent);
+    }
+
+    @JsonProperty("request_id")
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = EventTraceContext.validRequestId(requestId);
     }
 
     public OffsetDateTime getOccurredAt() {

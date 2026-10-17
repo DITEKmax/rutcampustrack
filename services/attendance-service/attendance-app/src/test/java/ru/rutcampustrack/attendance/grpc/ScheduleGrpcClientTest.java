@@ -10,13 +10,13 @@ import static org.mockito.Mockito.when;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.lang.reflect.Field;
-import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
@@ -27,6 +27,9 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
+
+import java.lang.reflect.Field;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class ScheduleGrpcClientTest {
@@ -108,6 +111,31 @@ class ScheduleGrpcClientTest {
                                 .setDateFrom("2026-02-01")
                                 .setDateTo("2026-06-30")
                                 .build());
+    }
+
+    @Test
+    void scheduleFailureClassificationPreservesOnlySafeTransportStatusesAsRetryable() {
+        for (Status status :
+                List.of(
+                        Status.UNAVAILABLE,
+                        Status.DEADLINE_EXCEEDED,
+                        Status.INVALID_ARGUMENT,
+                        Status.PERMISSION_DENIED)) {
+            org.mockito.Mockito.doThrow(
+                            status.withDescription("SYNTHETIC_PRIVATE_DETAIL").asRuntimeException())
+                    .when(mockStub)
+                    .getLessonsByGroup(any());
+            var failure =
+                    assertThrows(
+                            ScheduleServiceUnavailableException.class,
+                            () -> client.getLessonsByGroup(5L, 1L, "2026-02-01", "2026-06-30"));
+            org.assertj.core.api.Assertions.assertThat(failure.isRetryable())
+                    .isEqualTo(
+                            status.getCode() == Status.Code.UNAVAILABLE
+                                    || status.getCode() == Status.Code.DEADLINE_EXCEEDED);
+            org.assertj.core.api.Assertions.assertThat(failure.getMessage())
+                    .doesNotContain("SYNTHETIC_PRIVATE_DETAIL");
+        }
     }
 
     @Test

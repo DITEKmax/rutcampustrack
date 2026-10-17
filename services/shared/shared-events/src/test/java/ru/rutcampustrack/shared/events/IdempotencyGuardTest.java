@@ -2,6 +2,14 @@ package ru.rutcampustrack.shared.events;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,8 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class IdempotencyGuardTest {
 
@@ -72,8 +79,7 @@ class IdempotencyGuardTest {
         org.assertj.core.api.Assertions.assertThatThrownBy(
                         () -> guard.tryClaim("academic", envelope))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("event_id")
-                .hasMessageContaining("legacy.event");
+                .hasMessageContaining("event_id");
         assertThat(store.size()).isZero();
     }
 
@@ -105,6 +111,50 @@ class IdempotencyGuardTest {
         envelope.put("event_id", eventId);
 
         assertThat(IdempotencyGuard.extractEventId(envelope)).isEqualTo(eventId);
+    }
+
+    @Test
+    void malformedMetadataIsNeverStringifiedOrEchoedIntoLogsOrException() {
+        String marker = "SYNTHETIC_PRIVATE_MARKER";
+        var stringified = new AtomicBoolean();
+        Object untrusted =
+                new Object() {
+                    @Override
+                    public String toString() {
+                        stringified.set(true);
+                        return marker;
+                    }
+                };
+        Logger logger = (Logger) LoggerFactory.getLogger(IdempotencyGuard.class);
+        var output = new ListAppender<ILoggingEvent>();
+        output.start();
+        logger.addAppender(output);
+        try {
+            for (Object invalid : new Object[] {untrusted, marker, "1-1-1-1-1"}) {
+                org.assertj.core.api.Assertions.assertThatThrownBy(
+                                () ->
+                                        guard.tryClaim(
+                                                "academic",
+                                                Map.of(
+                                                        "event_id",
+                                                        invalid,
+                                                        "event_type",
+                                                        untrusted)))
+                        .isInstanceOf(IllegalStateException.class)
+                        .hasMessageContaining("event_id")
+                        .hasMessageNotContaining(marker);
+            }
+            assertThat(stringified).isFalse();
+            assertThat(store.size()).isZero();
+            assertThat(output.list)
+                    .allSatisfy(
+                            event ->
+                                    assertThat(event.getFormattedMessage())
+                                            .doesNotContain(marker, "processing without dedup"));
+        } finally {
+            logger.detachAppender(output);
+            output.stop();
+        }
     }
 
     /** Минималистичный store для unit-теста — без БД, без Spring. */

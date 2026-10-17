@@ -20,6 +20,9 @@ dependencies {
     implementation(project(":services:shared:shared-security"))
     implementation(project(":services:shared:shared-web-api"))
     implementation(project(":services:shared:shared-logback"))
+    implementation(project(":services:shared:shared-observability"))
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")

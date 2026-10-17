@@ -1,9 +1,11 @@
 package ru.rutcampustrack.attendance.grpc;
 
-import java.util.concurrent.ThreadPoolExecutor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.support.ContextPropagatingTaskDecorator;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * M05 G8 (NEW-149): bounded executor для параллельного fan-out двух independent gRPC-call'ов
@@ -38,6 +40,7 @@ public class GrpcParallelExecutorConfig {
         executor.setMaxPoolSize(8);
         executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("grpc-parallel-");
+        executor.setTaskDecorator(new ContextPropagatingTaskDecorator());
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(5);
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());

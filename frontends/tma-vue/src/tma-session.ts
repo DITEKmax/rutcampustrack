@@ -306,6 +306,12 @@ export function useTmaSession(options: TmaSessionOptions) {
         refreshFor: authenticateFor,
       },
       fetcher,
+      () => {
+        const current = knownProfileGeneration === currentGeneration() ? knownProfile : null
+        return current?.activeRole === 'HEADMAN'
+          ? JSON.stringify([current.userId, current.sessionId, current.activeRole])
+          : null
+      },
     )
   }
 

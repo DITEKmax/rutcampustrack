@@ -46,6 +46,13 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.wiremock:wiremock-standalone:3.9.1")
+    testImplementation(project(":services:mobile-bff:mobile-bff-app"))
+    testImplementation(project(":services:shared:shared-events"))
+    testImplementation(testFixtures(project(":services:shared:shared-security")))
+    testImplementation(libs.grpc.stub)
+    testImplementation(libs.grpc.protobuf)
+    testImplementation(platform("io.grpc:grpc-bom:${libs.versions.grpc.get()}"))
+    testImplementation(platform("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}"))
     // M03a Group 12: real Redis для RateLimitIT / FailOpenIT
     testImplementation("org.testcontainers:testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")

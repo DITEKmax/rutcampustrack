@@ -3,6 +3,20 @@ package ru.rutcampustrack.attendance.report.teacher;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.exception.ReportValidationException;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Cell;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Column;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Context;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Metrics;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.ReportKind;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Row;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -15,19 +29,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.junit.jupiter.api.Test;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-import ru.rutcampustrack.attendance.exception.ReportValidationException;
-import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Cell;
-import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Column;
-import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Context;
-import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Metrics;
-import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.ReportKind;
-import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Row;
 
 class TeacherAttendanceDocxRendererTest {
 
@@ -85,7 +88,7 @@ class TeacherAttendanceDocxRendererTest {
     }
 
     @Test
-    void largeSemesterKeepsThirtyStudentsAndThirtySixLessons() throws Exception {
+    void eighteenWeekSemesterKeepsThirtyStudentsAllThirtySixLessonsAndTotals() throws Exception {
         TeacherAttendanceExportModel model = largeSemesterModel();
 
         byte[] docx = renderer.render(model);
@@ -100,7 +103,8 @@ class TeacherAttendanceDocxRendererTest {
         assertThat(visibleText)
                 .contains(
                         "Математический анализ и прикладная статистика для инженерных направлений",
-                        "Александрова Мария Сергеевна, обучающаяся по индивидуальному учебному плану",
+                        "Александрова Мария Сергеевна, обучающаяся по индивидуальному учебному"
+                                + " плану",
                         "Фёдорова Анастасия Михайловна");
 
         for (int segmentIndex = 0; segmentIndex < 6; segmentIndex++) {
@@ -120,6 +124,11 @@ class TeacherAttendanceDocxRendererTest {
         for (int studentIndex = 0; studentIndex < largeStudentNames().size(); studentIndex++) {
             String studentName = largeStudentNames().get(studentIndex);
             assertThat(occurrences(visibleText, studentName)).isEqualTo(7);
+            List<Element> summaryCells = cells(summaryRows.get(studentIndex + 1));
+            assertThat(
+                            summaryCells.subList(1, 10).stream()
+                                    .map(TeacherAttendanceDocxRendererTest::cellText))
+                    .containsExactly("18", "9", "9", "27", "36", "50%", "75%", "25%", "25%");
         }
         for (int lessonIndex = 0; lessonIndex < 36; lessonIndex++) {
             assertThat(visibleText).contains(largeSemesterModelDate(lessonIndex));
@@ -254,7 +263,7 @@ class TeacherAttendanceDocxRendererTest {
 
     private static TeacherAttendanceExportModel largeSemesterModel() {
         LocalDate from = LocalDate.of(2026, 2, 2);
-        LocalDate to = LocalDate.of(2026, 7, 31);
+        LocalDate to = from.plusWeeks(18).minusDays(1);
         String subject = "Математический анализ и прикладная статистика для инженерных направлений";
         List<Column> columns = new ArrayList<>();
         for (int index = 0; index < 36; index++) {
@@ -361,7 +370,7 @@ class TeacherAttendanceDocxRendererTest {
     }
 
     private static LocalDate largeSemesterDate(LocalDate from, int lessonIndex) {
-        return from.plusDays(lessonIndex * 4L);
+        return from.plusWeeks(lessonIndex / 2).plusDays(lessonIndex % 2 * 3L);
     }
 
     private static String largeSemesterModelDate(int lessonIndex) {

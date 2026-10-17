@@ -3,8 +3,6 @@ package ru.rutcampustrack.academic.group;
 import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -210,11 +208,6 @@ public class GroupService {
             Page<GroupRegistryReadRepository.GroupRegistryRow> page,
             GroupRegistryReadRepository.GroupRegistryCounts counts) {}
 
-    @Caching(
-            evict = {
-                @CacheEvict(value = "groups", key = "#id"),
-                @CacheEvict(value = "group_members", key = "#id")
-            })
     @Transactional
     public Group updateGroup(Long id, UpdateGroupRequest request) {
         Group group =
@@ -280,11 +273,6 @@ public class GroupService {
         return saved;
     }
 
-    @Caching(
-            evict = {
-                @CacheEvict(value = "groups", key = "#id"),
-                @CacheEvict(value = "group_members", key = "#id")
-            })
     @Transactional
     public void restoreGroup(Long id) {
         Group group =
@@ -330,11 +318,6 @@ public class GroupService {
         eventPublisher.publishEvent(new DashboardInvalidatedEvent(this));
     }
 
-    @Caching(
-            evict = {
-                @CacheEvict(value = "groups", key = "#id"),
-                @CacheEvict(value = "group_members", key = "#id")
-            })
     @Transactional
     public void deleteGroup(Long id) {
         Group group = findGroupById(id);

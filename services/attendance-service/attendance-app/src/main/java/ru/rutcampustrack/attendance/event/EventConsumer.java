@@ -1,18 +1,21 @@
 package ru.rutcampustrack.attendance.event;
 
-import java.time.LocalDate;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 import ru.rutcampustrack.shared.events.EventIdempotent;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
+
+import java.time.LocalDate;
+import java.util.Map;
 
 /**
  * Generic RabbitMQ event consumer for the Attendance Service. Reads event_type from the envelope
@@ -60,10 +63,9 @@ public class EventConsumer extends AbstractEventConsumer {
     @RabbitListener(queues = "attendance-service.events")
     @EventIdempotent(consumer = CONSUMER_ID)
     public void onEvent(Map<String, Object> envelope) {
-        String eventType = (String) envelope.get("event_type");
-        if (eventType == null) {
-            log.warn("Received event without event_type, ignoring: {}", envelope);
-            return;
+        Object rawEventType = envelope == null ? null : envelope.get("event_type");
+        if (!(rawEventType instanceof String eventType) || eventType.isBlank()) {
+            throw new IllegalArgumentException("Event envelope requires an event_type");
         }
 
         if ("schedule.action-recorded".equals(eventType)
@@ -473,11 +475,11 @@ public class EventConsumer extends AbstractEventConsumer {
     @SuppressWarnings("unchecked")
     private Map<String, Object> extractPayload(Map<String, Object> envelope) {
         Object raw = envelope.get("payload");
-        if (raw == null) {
-            log.warn("Event envelope has no 'payload' field: {}", envelope);
-            return null;
+        if (!(raw instanceof Map<?, ?> payload)
+                || payload.keySet().stream().anyMatch(key -> !(key instanceof String))) {
+            throw new IllegalArgumentException("Event envelope requires an object payload");
         }
-        return (Map<String, Object>) raw;
+        return (Map<String, Object>) payload;
     }
 
     private Long extractLong(Map<String, Object> map, String key) {

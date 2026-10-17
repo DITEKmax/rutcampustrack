@@ -5,10 +5,13 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.*;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -41,6 +44,8 @@ class ExportJobsIT {
     private ExportJobService jobs;
     private SessionPrincipal actor;
     private ReportDownloadTicketService tickets;
+    private SimpleMeterRegistry registry;
+    private ExportJobMetrics metrics;
 
     @BeforeAll
     void start() {
@@ -86,9 +91,11 @@ class ExportJobsIT {
                                     report.bindingHash(),
                                     report);
                         });
+        registry = new SimpleMeterRegistry();
+        metrics = new ExportJobMetrics(jdbc, registry);
         jobs =
                 new ExportJobService(
-                        jdbc, mapper, new ExportReportAuthority(tickets, jdbc), tickets);
+                        jdbc, mapper, new ExportReportAuthority(tickets, jdbc), tickets, metrics);
     }
 
     @AfterAll
@@ -292,7 +299,7 @@ class ExportJobsIT {
                 queued.jobId());
         jobs =
                 new ExportJobService(
-                        jdbc, mapper, new ExportReportAuthority(tickets, jdbc), tickets);
+                        jdbc, mapper, new ExportReportAuthority(tickets, jdbc), tickets, metrics);
         Claim recovered = claim();
         assertThat(recovered.jobId()).isEqualTo(lost.jobId());
         assertThat(recovered.leaseId()).isNotEqualTo(lost.leaseId());
@@ -430,6 +437,17 @@ class ExportJobsIT {
                     ignored ->
                             jobs.fail(
                                     claim.jobId(), new Fail(claim.leaseId(), "GENERATION_FAILED")));
+            if (i < 2) {
+                assertThat(tx.<Optional<Claim>>execute(ignored -> jobs.claim())).isEmpty();
+                Double delay =
+                        jdbc.queryForObject(
+                                "SELECT EXTRACT(EPOCH FROM lease_until-NOW()) FROM auth_export_jobs",
+                                Double.class);
+                assertThat(delay).isBetween(i == 0 ? 3.0 : 8.0, i == 0 ? 6.0 : 11.0);
+                jdbc.update(
+                        "UPDATE auth_export_jobs SET lease_until=NOW()-interval '1 second' WHERE job_id=?",
+                        queued.jobId());
+            }
         }
         assertThat(jobs.status(actor, queued.jobId()).state()).isEqualTo(State.ERROR);
         assertThat(count("SELECT attempts FROM auth_export_jobs")).isEqualTo(3);
@@ -441,5 +459,301 @@ class ExportJobsIT {
                 .isInstanceOf(org.springframework.dao.DataAccessException.class);
         assertThatThrownBy(() -> jobs.file(actor, queued.jobId()))
                 .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
+    void retryDueSurvivesServiceRestartAndExpiredLeaseCannotCommitOverTheNewAttempt() {
+        Status queued = enqueue();
+        Claim first = claim();
+        tx.executeWithoutResult(
+                ignored ->
+                        jobs.fail(first.jobId(), new Fail(first.leaseId(), "GENERATION_FAILED")));
+        assertThat(jobs.status(actor, queued.jobId()).state()).isEqualTo(State.QUEUED);
+        assertThat(
+                        count(
+                                "SELECT count(*) FROM auth_export_jobs WHERE state='queued' AND lease_id IS NULL AND lease_until>NOW()+interval '3 seconds' AND lease_until<=NOW()+interval '6 seconds'"))
+                .isEqualTo(1);
+        jobs =
+                new ExportJobService(
+                        jdbc, mapper, new ExportReportAuthority(tickets, jdbc), tickets, metrics);
+        assertThat(tx.<Optional<Claim>>execute(ignored -> jobs.claim())).isEmpty();
+        jdbc.update(
+                "UPDATE auth_export_jobs SET lease_until=NOW()-interval '1 second' WHERE job_id=?",
+                queued.jobId());
+        Claim next = claim();
+        assertThat(next.jobId()).isEqualTo(first.jobId());
+        assertThat(next.leaseId()).isNotEqualTo(first.leaseId());
+        assertThatThrownBy(
+                        () ->
+                                tx.execute(
+                                        ignored ->
+                                                jobs.complete(
+                                                        first.jobId(), complete(first, false))))
+                .isInstanceOf(ResponseStatusException.class);
+        tx.execute(ignored -> jobs.complete(next.jobId(), complete(next, false)));
+        assertThat(jobs.status(actor, queued.jobId()).state()).isEqualTo(State.READY);
+        assertThat(
+                        count(
+                                "SELECT count(*) FROM auth_outbox WHERE payload->'payload'->>'state'='ready'"))
+                .isEqualTo(1);
+    }
+
+    @Test
+    void sevenConcurrentClaimsAcrossServiceInstancesHaveOnlyTwoActiveLeases() throws Exception {
+        for (int i = 0; i < 7; i++) enqueue();
+        var second =
+                new ExportJobService(
+                        jdbc, mapper, new ExportReportAuthority(tickets, jdbc), tickets, metrics);
+        var barrier = new CyclicBarrier(7);
+        var pool = Executors.newFixedThreadPool(7);
+        try {
+            List<Future<Optional<Claim>>> futures = new ArrayList<>();
+            for (int i = 0; i < 7; i++) {
+                var service = i % 2 == 0 ? jobs : second;
+                futures.add(
+                        pool.submit(
+                                () -> {
+                                    barrier.await(10, TimeUnit.SECONDS);
+                                    return tx.execute(ignored -> service.claim());
+                                }));
+            }
+            List<Claim> accepted = new ArrayList<>();
+            for (var future : futures) future.get(10, TimeUnit.SECONDS).ifPresent(accepted::add);
+            assertThat(accepted).hasSize(2);
+            assertThat(
+                            count(
+                                    "SELECT count(*) FROM auth_export_jobs WHERE state='preparing' AND lease_until>NOW()"))
+                    .isEqualTo(2);
+            assertThat(count("SELECT count(*) FROM auth_export_jobs WHERE state='queued'"))
+                    .isEqualTo(5);
+            Claim completed = accepted.getFirst();
+            tx.execute(ignored -> jobs.complete(completed.jobId(), complete(completed, false)));
+            assertThat(tx.<Optional<Claim>>execute(ignored -> second.claim())).isPresent();
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    void idleExpiryCleanupReclaimsOnlyExpiredFilesAndNeverDeletesLiveQueuedWork() {
+        Status expired = enqueue();
+        Claim ready = claim();
+        tx.execute(ignored -> jobs.complete(ready.jobId(), complete(ready, false)));
+        Status live = enqueue();
+        jdbc.update(
+                "UPDATE auth_export_jobs SET expires_at=NOW()-interval '1 second' WHERE job_id=?",
+                expired.jobId());
+        tx.executeWithoutResult(ignored -> jobs.cleanExpired());
+        assertThat(count("SELECT count(*) FROM auth_export_jobs WHERE content IS NOT NULL"))
+                .isZero();
+        assertThat(jobs.status(actor, live.jobId()).state()).isEqualTo(State.QUEUED);
+        assertThatThrownBy(() -> jobs.status(actor, expired.jobId()))
+                .isInstanceOfSatisfying(
+                        ResponseStatusException.class,
+                        error -> assertThat(error.getStatusCode().value()).isEqualTo(404));
+    }
+
+    @Test
+    void retryThatCannotFitTheRetentionWindowTerminatesInsteadOfBecomingInvisibleQueuedWork()
+            throws Exception {
+        Status queued = enqueue();
+        Claim first = claim();
+        // Persist the real near-expiry identity as well as the row deadline.
+        Instant nearExpiry = Instant.now().plusSeconds(4);
+        jdbc.update(
+                "UPDATE auth_export_jobs SET identity=jsonb_set(identity,'{expiresAt}',?::jsonb),expires_at=? WHERE job_id=?",
+                mapper.writeValueAsString(nearExpiry),
+                nearExpiry.atOffset(java.time.ZoneOffset.UTC),
+                queued.jobId());
+        tx.executeWithoutResult(
+                ignored ->
+                        jobs.fail(first.jobId(), new Fail(first.leaseId(), "GENERATION_FAILED")));
+        assertThat(
+                        count(
+                                "SELECT count(*) FROM auth_export_jobs WHERE state='error' AND error_code='GENERATION_FAILED'"))
+                .isEqualTo(1);
+    }
+
+    @Test
+    void acceptedEighteenWeekSelectorAndCompletedBytesRemainDurableAcrossServiceRestart() {
+        // Ticket authority is stubbed here; this fixture proves durable selection and byte storage.
+        var weeks =
+                java.util.stream.IntStream.range(0, 18)
+                        .mapToObj(week -> LocalDate.of(2026, 2, 2).plusWeeks(week))
+                        .toList();
+        var report =
+                new IssueReportDownloadTicketRequest(
+                        ReportDownloadKind.HEADMAN_WEEKLY_SELECTED,
+                        null,
+                        null,
+                        null,
+                        new IssueReportDownloadTicketRequest.HeadmanWeeklySelectedParameters(
+                                weeks, ReportDownloadFormat.DOCX),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
+        UUID request = UUID.randomUUID();
+        Status queued = tx.execute(ignored -> jobs.enqueue(actor, new Create(request, report)));
+        jobs =
+                new ExportJobService(
+                        jdbc, mapper, new ExportReportAuthority(tickets, jdbc), tickets, metrics);
+        assertThat(tx.execute(ignored -> jobs.enqueue(actor, new Create(request, report))).jobId())
+                .isEqualTo(queued.jobId());
+        Claim claimed = claim();
+        assertThat(claimed.authority().report().headmanWeeklySelected().weekStarts())
+                .containsExactlyElementsOf(weeks);
+        byte[] bytes = "synthetic document fixture".getBytes(StandardCharsets.UTF_8);
+        var result = new Complete(claimed.leaseId(), bytes, report.expectedMediaType(), 18, false);
+        tx.execute(ignored -> jobs.complete(claimed.jobId(), result));
+        jobs =
+                new ExportJobService(
+                        jdbc, mapper, new ExportReportAuthority(tickets, jdbc), tickets, metrics);
+        assertThat(jobs.file(actor, queued.jobId()).content()).isEqualTo(bytes);
+        assertThat(jobs.status(actor, queued.jobId()).state()).isEqualTo(State.READY);
+    }
+
+    @Test
+    void committedMetricsIgnoreRollbackAndCountOneFinalEffectForAnIdempotentCompletion() {
+        var accepted =
+                registry.get("rct.export.jobs.accepted").tag("kind", "ADMIN_USERS").counter();
+        var success =
+                registry.get("rct.export.jobs.terminal")
+                        .tags("kind", "ADMIN_USERS", "outcome", "success", "reason", "none")
+                        .counter();
+        var retry = registry.get("rct.export.jobs.retries").tag("kind", "ADMIN_USERS").counter();
+        var duration =
+                registry.get("rct.export.jobs.duration")
+                        .tags("kind", "ADMIN_USERS", "outcome", "success")
+                        .timer();
+        double acceptedBefore = accepted.count(),
+                successBefore = success.count(),
+                retryBefore = retry.count();
+        long durationsBefore = duration.count();
+        tx.executeWithoutResult(
+                status -> {
+                    jobs.enqueue(actor, new Create(UUID.randomUUID(), users()));
+                    status.setRollbackOnly();
+                });
+        assertThat(accepted.count()).isEqualTo(acceptedBefore);
+        assertThat(count("SELECT count(*) FROM auth_export_jobs")).isZero();
+        Status queued = enqueue();
+        assertThat(accepted.count()).isEqualTo(acceptedBefore + 1);
+        Claim claimed = claim();
+        tx.executeWithoutResult(
+                status -> {
+                    jobs.complete(claimed.jobId(), complete(claimed, false));
+                    status.setRollbackOnly();
+                });
+        assertThat(success.count()).isEqualTo(successBefore);
+        assertThat(duration.count()).isEqualTo(durationsBefore);
+        assertThat(jobs.status(actor, queued.jobId()).state()).isEqualTo(State.PREPARING);
+        tx.execute(ignored -> jobs.complete(claimed.jobId(), complete(claimed, false)));
+        tx.execute(ignored -> jobs.complete(claimed.jobId(), complete(claimed, false)));
+        assertThat(success.count()).isEqualTo(successBefore + 1);
+        assertThat(duration.count()).isEqualTo(durationsBefore + 1);
+
+        enqueue();
+        Claim failing = claim();
+        tx.executeWithoutResult(
+                status -> {
+                    jobs.fail(failing.jobId(), new Fail(failing.leaseId(), "GENERATION_FAILED"));
+                    status.setRollbackOnly();
+                });
+        assertThat(retry.count()).isEqualTo(retryBefore);
+        assertThat(jobs.status(actor, failing.jobId()).state()).isEqualTo(State.PREPARING);
+        tx.executeWithoutResult(
+                ignored ->
+                        jobs.fail(
+                                failing.jobId(), new Fail(failing.leaseId(), "GENERATION_FAILED")));
+        assertThat(retry.count()).isEqualTo(retryBefore + 1);
+        assertThat(jobs.status(actor, failing.jobId()).state()).isEqualTo(State.QUEUED);
+    }
+
+    @Test
+    void expiryCountsAsFailureOnlyAfterDeleteCommitAndExpectedDenialIsSeparate() {
+        var expired =
+                registry.get("rct.export.jobs.terminal")
+                        .tags("kind", "ADMIN_USERS", "outcome", "failure", "reason", "expired")
+                        .counter();
+        var denied =
+                registry.get("rct.export.jobs.terminal")
+                        .tags(
+                                "kind",
+                                "ADMIN_USERS",
+                                "outcome",
+                                "denied",
+                                "reason",
+                                "authority_denied")
+                        .counter();
+        double expiredBefore = expired.count(), deniedBefore = denied.count();
+        Status waiting = enqueue();
+        jdbc.update(
+                "UPDATE auth_export_jobs SET expires_at=NOW()-interval '1 second' WHERE job_id=?",
+                waiting.jobId());
+        tx.executeWithoutResult(
+                status -> {
+                    jobs.cleanExpired();
+                    status.setRollbackOnly();
+                });
+        assertThat(expired.count()).isEqualTo(expiredBefore);
+        assertThat(count("SELECT count(*) FROM auth_export_jobs")).isEqualTo(1);
+        tx.executeWithoutResult(ignored -> jobs.cleanExpired());
+        assertThat(expired.count()).isEqualTo(expiredBefore + 1);
+        assertThat(count("SELECT count(*) FROM auth_export_jobs")).isZero();
+        enqueue();
+        Claim claim = claim();
+        tx.executeWithoutResult(
+                status -> {
+                    jobs.fail(claim.jobId(), new Fail(claim.leaseId(), "AUTHORITY_DENIED"));
+                    status.setRollbackOnly();
+                });
+        assertThat(denied.count()).isEqualTo(deniedBefore);
+        tx.executeWithoutResult(
+                ignored -> jobs.fail(claim.jobId(), new Fail(claim.leaseId(), "AUTHORITY_DENIED")));
+        tx.executeWithoutResult(
+                ignored -> jobs.fail(claim.jobId(), new Fail(claim.leaseId(), "AUTHORITY_DENIED")));
+        assertThat(denied.count()).isEqualTo(deniedBefore + 1);
+    }
+
+    @Test
+    void scheduledSnapshotUsesOnlyFiniteKindsAndSeparatesBackoffFromDueWork() {
+        Status queued = enqueue();
+        Claim claimed = claim();
+        tx.executeWithoutResult(
+                ignored ->
+                        jobs.fail(
+                                claimed.jobId(), new Fail(claimed.leaseId(), "GENERATION_FAILED")));
+        metrics.refresh();
+        assertThat(
+                        registry.get("rct.export.jobs.waiting")
+                                .tag("kind", "ADMIN_USERS")
+                                .gauge()
+                                .value())
+                .isEqualTo(1);
+        assertThat(registry.get("rct.export.jobs.due").tag("kind", "ADMIN_USERS").gauge().value())
+                .isZero();
+        assertThat(registry.get("rct.export.jobs.snapshot.timestamp").gauge().value()).isPositive();
+        String marker = "synthetic-untrusted-kind-never-a-label";
+        jdbc.update(
+                "UPDATE auth_export_jobs SET identity=jsonb_set(identity,'{report,kind}',to_jsonb(?::text)),lease_until=NULL WHERE job_id=?",
+                marker,
+                queued.jobId());
+        metrics.refresh();
+        assertThat(
+                        registry.get("rct.export.jobs.queue")
+                                .tags("kind", "unknown", "state", "queued")
+                                .gauge()
+                                .value())
+                .isEqualTo(1);
+        assertThat(registry.get("rct.export.jobs.due").tag("kind", "unknown").gauge().value())
+                .isEqualTo(1);
+        assertThat(
+                        registry.getMeters().stream()
+                                .flatMap(meter -> meter.getId().getTags().stream())
+                                .anyMatch(tag -> tag.getValue().contains(marker)))
+                .isFalse();
     }
 }

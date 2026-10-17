@@ -3153,6 +3153,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
             const prototype = ServiceWorker.prototype;
             const descriptor = Object.getOwnPropertyDescriptor(prototype, 'postMessage');
             if (
+              !registration ||
               candidate?.state !== 'installed' ||
               !descriptor ||
               typeof descriptor.value !== 'function' ||
@@ -3161,6 +3162,28 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
               return unavailable;
             const nativePostMessage = descriptor.value as ServiceWorker['postMessage'];
             let sentToCandidate = false;
+            let observationAvailable = true;
+            let candidateControlled = false;
+            let candidateActivated = false;
+            let candidateRedundant = false;
+            let restored = false;
+            // These page-side events do not evaluate or wake the waiting worker.
+            const onStateChange = (event: Event) => {
+              try {
+                if (event.target !== candidate) return;
+                candidateActivated ||= candidate.state === 'activated';
+                candidateRedundant ||= candidate.state === 'redundant';
+              } catch {
+                observationAvailable = false;
+              }
+            };
+            const onControllerChange = () => {
+              try {
+                candidateControlled ||= navigator.serviceWorker.controller === candidate;
+              } catch {
+                observationAvailable = false;
+              }
+            };
             const observed: ServiceWorker['postMessage'] = function (this: ServiceWorker, ...args) {
               const result = Reflect.apply(nativePostMessage, this, args);
               try {
@@ -3173,15 +3196,61 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
                 )
                   sentToCandidate = true;
               } catch {
+                observationAvailable = false;
                 // Observation cannot replace the native call's return or exception.
               }
               return result;
             };
-            Object.defineProperty(prototype, 'postMessage', { ...descriptor, value: observed });
+            const restore = () => {
+              restored = true;
+              try {
+                candidate.removeEventListener('statechange', onStateChange);
+              } finally {
+                try {
+                  navigator.serviceWorker.removeEventListener(
+                    'controllerchange',
+                    onControllerChange,
+                  );
+                } finally {
+                  if (Object.getOwnPropertyDescriptor(prototype, 'postMessage')?.value === observed)
+                    Object.defineProperty(prototype, 'postMessage', descriptor);
+                }
+              }
+            };
+            try {
+              candidate.addEventListener('statechange', onStateChange);
+              navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+              Object.defineProperty(prototype, 'postMessage', { ...descriptor, value: observed });
+            } catch {
+              restore();
+              return unavailable;
+            }
             return {
-              read: () =>
-                sentToCandidate ? ('SENT_TO_CANDIDATE' as const) : ('NOT_OBSERVED' as const),
-              restore: () => Object.defineProperty(prototype, 'postMessage', descriptor),
+              read: () => {
+                try {
+                  if (
+                    restored ||
+                    !observationAvailable ||
+                    Object.getOwnPropertyDescriptor(prototype, 'postMessage')?.value !== observed
+                  )
+                    return 'UNAVAILABLE' as const;
+                  if (!sentToCandidate) return 'NOT_OBSERVED' as const;
+                  if (navigator.serviceWorker.controller === candidate)
+                    return 'CANDIDATE_CONTROLLER_CURRENT' as const;
+                  if (candidateControlled) return 'CANDIDATE_CONTROLLER_OBSERVED' as const;
+                  if (candidateRedundant || candidate.state === 'redundant')
+                    return 'CANDIDATE_REDUNDANT' as const;
+                  if (candidateActivated || candidate.state === 'activated')
+                    return 'CANDIDATE_ACTIVATED' as const;
+                  if (candidate.state === 'activating') return 'CANDIDATE_ACTIVATING' as const;
+                  if (registration.waiting !== candidate) return 'CANDIDATE_REPLACED' as const;
+                  if (candidate.state === 'installed') return 'CANDIDATE_INSTALLED' as const;
+                  return 'UNAVAILABLE' as const;
+                } catch {
+                  return 'UNAVAILABLE' as const;
+                }
+              },
+              restore,
             };
           } catch {
             return unavailable;
@@ -3230,8 +3299,20 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
           const skipWaiting = await skipWaitingObserver
             ?.evaluate((value) => value.read())
             .catch(() => 'UNAVAILABLE' as const);
-          if (skipWaiting === 'SENT_TO_CANDIDATE')
-            expect.soft(false, 'PWA update SKIP_WAITING_SENT_TO_CANDIDATE').toBe(true);
+          if (skipWaiting === 'CANDIDATE_CONTROLLER_CURRENT')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_CONTROLLER_CURRENT').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_CONTROLLER_OBSERVED')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_CONTROLLER_OBSERVED').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_REDUNDANT')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_REDUNDANT').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_ACTIVATED')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_ACTIVATED').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_ACTIVATING')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_ACTIVATING').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_REPLACED')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_REPLACED').toBe(true);
+          else if (skipWaiting === 'CANDIDATE_INSTALLED')
+            expect.soft(false, 'PWA update SENT_CANDIDATE_INSTALLED').toBe(true);
           else if (skipWaiting === 'NOT_OBSERVED')
             expect.soft(false, 'PWA update SKIP_WAITING_NOT_OBSERVED').toBe(true);
           else expect.soft(false, 'PWA update SKIP_WAITING_UNAVAILABLE').toBe(true);

@@ -3715,8 +3715,18 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
         requireValue(value > 0, 'Initial membership readiness deadline exhausted');
         return Math.min(2000, value);
       };
+      let stage:
+        | 'IDENTITY_BUDGET'
+        | 'IDENTITY'
+        | 'QUERY_BUDGET'
+        | 'QUERY'
+        | 'OUTPUT'
+        | 'JSON'
+        | 'SHAPE' = 'IDENTITY_BUDGET';
       try {
-        const current = identity('postgres-academic', remaining());
+        const identityCap = remaining();
+        stage = 'IDENTITY';
+        const current = identity('postgres-academic', identityCap);
         const values = expectedInitialMemberships
           .map(([studentId, groupId]) => `(${studentId},${groupId})`)
           .join(',');
@@ -3729,6 +3739,9 @@ FROM (VALUES ${values}) AS e(student_id,group_id)),
 'noPendingWork',NOT EXISTS(SELECT 1 FROM academic_initial_membership_backfills WHERE state='PENDING'),
 'producerSent',NOT EXISTS(SELECT 1 FROM academic_outbox
 WHERE event_type='student.initial-membership.recorded' AND status<>'sent'))`;
+        stage = 'QUERY_BUDGET';
+        const queryCap = remaining();
+        stage = 'QUERY';
         const raw = docker(
           [
             'exec',
@@ -3748,8 +3761,9 @@ WHERE event_type='student.initial-membership.recorded' AND status<>'sent'))`;
           ],
           `BEGIN READ ONLY; SET LOCAL statement_timeout='2000ms'; ${sql}; ROLLBACK;`,
           { PGPASSWORD: secret.POSTGRES_ACADEMIC_PASSWORD },
-          remaining(),
+          queryCap,
         );
+        stage = 'OUTPUT';
         const lines = raw
           .trim()
           .split('\n')
@@ -3758,7 +3772,9 @@ WHERE event_type='student.initial-membership.recorded' AND status<>'sent'))`;
           Buffer.byteLength(raw, 'utf8') <= 1024 && lines.length === 1,
           'One bounded initial membership projection is required',
         );
+        stage = 'JSON';
         const projection: unknown = JSON.parse(lines[0]);
+        stage = 'SHAPE';
         requireValue(
           projection !== null &&
             typeof projection === 'object' &&
@@ -3773,8 +3789,23 @@ WHERE event_type='student.initial-membership.recorded' AND status<>'sent'))`;
           noPendingWork: boolean;
           producerSent: boolean;
         };
-      } catch {
-        throw new Error('Owned initial membership readiness projection failed');
+      } catch (error) {
+        if (nativeFailure !== undefined && nativeFailure.error === error) nativeFailure.report();
+        switch (stage) {
+          case 'IDENTITY_BUDGET':
+          case 'QUERY_BUDGET':
+            throw new Error('Owned initial membership readiness deadline failed');
+          case 'IDENTITY':
+            throw new Error('Owned initial membership readiness identity read failed');
+          case 'QUERY':
+            throw new Error('Owned initial membership readiness query failed');
+          case 'OUTPUT':
+            throw new Error('Owned initial membership readiness output shape failed');
+          case 'JSON':
+            throw new Error('Owned initial membership readiness JSON decode failed');
+          case 'SHAPE':
+            throw new Error('Owned initial membership readiness boolean shape failed');
+        }
       }
     };
     const quiescence = {

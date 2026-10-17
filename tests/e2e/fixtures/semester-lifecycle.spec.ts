@@ -2771,7 +2771,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
   const diagnostic = {
     schema: 'semester-reconciliation.v5',
     phase: 'SETUP',
-    configuredListenerAttempts: 3,
+    configuredListenerAttempts: 3, // Per delivery; one delayed redrive permits at most six total.
     measuredListenerAttempts: 'UNKNOWN',
     exactDlqEnvelope: false,
     pendingBeforeReplay: false,
@@ -3236,6 +3236,7 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
   const queues = async () => ({
     main: await broker('queues/%2F/attendance-service.events'),
     dead: await broker('queues/%2F/attendance-service.events.dlq'),
+    retry: await broker('queues/%2F/attendance-service.events.retry'),
   });
   const stop = (service: string) => {
     budget(15000, { stop: service }, true);
@@ -3409,6 +3410,67 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
     else equal(value.other, otherBefore, 'Unrelated attendance changed');
     return value;
   };
+  const captureDelayedRetry = async () => {
+    await expect
+      .poll(
+        async () => {
+          const q = await queues();
+          requireValue(
+            q.retry.arguments?.['x-message-ttl'] === 30000 &&
+              q.retry.arguments?.['x-dead-letter-exchange'] === '' &&
+              q.retry.arguments?.['x-dead-letter-routing-key'] === 'attendance-service.events' &&
+              q.retry.consumers === 0,
+            'Owned delayed retry must use the configured thirty-second route without consumers',
+          );
+          return (
+            q.retry.messages_ready === 1 &&
+            q.retry.messages_unacknowledged === 0 &&
+            q.main.messages_ready === 0 &&
+            q.main.messages_unacknowledged === 0 &&
+            q.dead.messages_ready === 0 &&
+            q.dead.messages_unacknowledged === 0
+          );
+        },
+        {
+          // Includes the existing bounded application startup plus the first three dependency
+          // attempts and confirmed retry publication. Global cleanup reserves still apply.
+          timeout: budget(60000),
+          message: 'First transient delivery schedules one exact delayed retry',
+        },
+      )
+      .toBe(true);
+    // RabbitMQ 3.13 TTL semantics preserve the original expiry on requeue. This same management
+    // requeue-only peek used for the terminal DLQ retains the copy without removing or republishing it.
+    const delayed = await broker('queues/%2F/attendance-service.events.retry/get', {
+      count: 1,
+      ackmode: 'ack_requeue_true',
+      encoding: 'base64',
+    });
+    requireValue(
+      delayed.length === 1 &&
+        delayed[0].payload_encoding === 'base64' &&
+        delayed[0].payload_bytes <= 65536 &&
+        Buffer.from(delayed[0].payload, 'base64').equals(envelope!),
+      'Delayed retry must retain the exact original producer bytes',
+    );
+    const prop = delayed[0].properties;
+    requireValue(
+      prop.content_type === 'application/json' &&
+        prop.content_encoding === 'UTF-8' &&
+        prop.delivery_mode === 2 &&
+        prop.message_id === scope.event &&
+        prop.headers?.event_type === 'lesson.closed' &&
+        prop.headers.rct_redrive_count === 1 &&
+        prop.headers.rct_failure_code === 'transient_dependency',
+      'One persistent retry must preserve message identity and the finite redrive budget',
+    );
+    requireValue(effect().state === 'PENDING', 'Delayed original effect must remain pending');
+    const value = consumer();
+    requireValue(
+      value.claims === 0 && value.receipt.length === 0 && value.acks.length === 0,
+      'Delayed preparation failure must leave no business claim receipt or ACK',
+    );
+  };
   const stranded = async () => {
     requireValue(effect().state === 'PENDING', 'Original effect must remain pending');
     const value = consumer();
@@ -3421,7 +3483,9 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       q.dead.messages_ready === 1 &&
         q.dead.messages_unacknowledged === 0 &&
         q.main.messages_ready === 0 &&
-        q.main.messages_unacknowledged === 0,
+        q.main.messages_unacknowledged === 0 &&
+        q.retry.messages_ready === 0 &&
+        q.retry.messages_unacknowledged === 0,
       'One exact quiescent DLQ delivery required',
     );
     if (!peeked) {
@@ -3448,18 +3512,30 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
         prop.content_type === 'application/json' &&
           prop.content_encoding === 'UTF-8' &&
           prop.delivery_mode === 2 &&
+          prop.message_id === scope.event &&
           prop.headers?.event_type === 'lesson.closed' &&
+          prop.headers.rct_redrive_count === 1 &&
           prop.headers['x-death']?.some(
             (v: Row) =>
               v.queue === 'attendance-service.events' && v.reason === 'rejected' && v.count === 1,
           ),
         'Exact original delivery must have been rejected to its DLQ',
       );
+      requireValue(
+        prop.headers['x-death']?.some(
+          (v: Row) =>
+            v.queue === 'attendance-service.events.retry' &&
+            v.reason === 'expired' &&
+            v.count === 1,
+        ),
+        'One automatic delayed cycle must expire before terminal rejection',
+      );
       properties = {
         content_type: prop.content_type,
         content_encoding: prop.content_encoding,
         delivery_mode: prop.delivery_mode,
-        headers: { event_type: prop.headers.event_type },
+        message_id: prop.message_id,
+        headers: { event_type: prop.headers.event_type, rct_redrive_count: 1 },
       };
       diagnostic.exactDlqEnvelope = true;
     }
@@ -3816,6 +3892,8 @@ WHERE event_type='student.initial-membership.recorded' AND status<>'sent'))`;
         | 'MAIN_CONSUMER'
         | 'DLQ_READY'
         | 'DLQ_UNACKED'
+        | 'RETRY_READY'
+        | 'RETRY_UNACKED'
         | 'SCHEDULE_UNPROVEN'
         | 'SCHEDULE_LEGACY'
         | 'SCHEDULE_DUE'
@@ -3845,6 +3923,9 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
             else if (q.main.consumers !== 1) quiescence.firstFailed = 'MAIN_CONSUMER';
             else if (q.dead.messages_ready !== 0) quiescence.firstFailed = 'DLQ_READY';
             else if (q.dead.messages_unacknowledged !== 0) quiescence.firstFailed = 'DLQ_UNACKED';
+            else if (q.retry.messages_ready !== 0) quiescence.firstFailed = 'RETRY_READY';
+            else if (q.retry.messages_unacknowledged !== 0)
+              quiescence.firstFailed = 'RETRY_UNACKED';
             else if (state.unproven !== 0) quiescence.firstFailed = 'SCHEDULE_UNPROVEN';
             else if (state.legacy !== 0) quiescence.firstFailed = 'SCHEDULE_LEGACY';
             else if (state.due !== 0) quiescence.firstFailed = 'SCHEDULE_DUE';
@@ -3857,6 +3938,8 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
               q.main.consumers === 1 &&
               q.dead.messages_ready === 0 &&
               q.dead.messages_unacknowledged === 0 &&
+              q.retry.messages_ready === 0 &&
+              q.retry.messages_unacknowledged === 0 &&
               state.unproven === 0 &&
               state.legacy === 0 &&
               state.due === 0 &&
@@ -3887,6 +3970,12 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
           break;
         case 'DLQ_UNACKED':
           expect.soft(false, 'D9_QUIESCENCE_DLQ_UNACKED').toBe(true);
+          break;
+        case 'RETRY_READY':
+          expect.soft(false, 'D9_QUIESCENCE_RETRY_READY').toBe(true);
+          break;
+        case 'RETRY_UNACKED':
+          expect.soft(false, 'D9_QUIESCENCE_RETRY_UNACKED').toBe(true);
           break;
         case 'SCHEDULE_UNPROVEN':
           expect.soft(false, 'D9_QUIESCENCE_SCHEDULE_UNPROVEN').toBe(true);
@@ -3944,8 +4033,30 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     );
     await recoverOwnClose();
     stop('schedule-service');
-    await restart('attendance-service');
     diagnostic.phase = 'STRANDED';
+    // Observe retry admission while the same application starts. The original synchronous
+    // restart --wait can otherwise hide the entire thirty-second delayed phase behind health.
+    budget(5000, {}, true);
+    identity('attendance-service');
+    docker(
+      [
+        ...compose,
+        'up',
+        '-d',
+        '--no-build',
+        '--no-recreate',
+        '--no-deps',
+        '--pull',
+        'never',
+        'attendance-service',
+      ],
+      undefined,
+      {},
+      5000,
+    );
+    await captureDelayedRetry();
+    // Retain the original same-container healthy restart check and all cleanup bookkeeping.
+    await restart('attendance-service');
     await expect
       .poll(
         async () => {
@@ -3969,12 +4080,16 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
             q.dead.messages_ready === 1 &&
             q.dead.messages_unacknowledged === 0 &&
             q.main.messages_ready === 0 &&
-            q.main.messages_unacknowledged === 0
+            q.main.messages_unacknowledged === 0 &&
+            q.retry.messages_ready === 0 &&
+            q.retry.messages_unacknowledged === 0
           );
         },
         {
-          timeout: budget(15000),
-          message: 'Configured three-attempt policy rejects own close',
+          // One thirty-second delay, three bounded three-second dependency attempts, and a
+          // finite margin for backoff/broker observations; not a fresh unbounded retry cycle.
+          timeout: budget(30000 + 3 * 3000 + 6000),
+          message: 'One delayed cycle and the final three attempts retain the original in DLQ',
         },
       )
       .toBe(true);

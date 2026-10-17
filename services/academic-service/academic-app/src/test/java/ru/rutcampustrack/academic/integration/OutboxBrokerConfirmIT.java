@@ -17,8 +17,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
-import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Message;
@@ -40,6 +40,7 @@ import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.event.RabbitConfig;
 import ru.rutcampustrack.academic.event.RabbitOutboxEventSender;
 import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.shared.outbox.OutboxDeliveryException;
 import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 
@@ -218,7 +219,19 @@ class OutboxBrokerConfirmIT extends AbstractAcademicEventIntegrationTest {
                         .rabbitTemplate(publisher, new Jackson2JsonMessageConverter(mapper));
         RabbitOutboxEventSender sender = new RabbitOutboxEventSender(transport);
         TransactionTemplate tx = new TransactionTemplate(transactions);
-        OutboxPublisherJob job = new OutboxPublisherJob(outboxStorage, sender);
+        // Observe the finite transport reason before the publisher deliberately removes causes.
+        AtomicReference<OutboxDeliveryException.Reason> refusal = new AtomicReference<>();
+        OutboxPublisherJob job =
+                new OutboxPublisherJob(
+                        outboxStorage,
+                        (eventType, payload) -> {
+                            try {
+                                sender.send(eventType, payload);
+                            } catch (OutboxDeliveryException failure) {
+                                refusal.set(failure.reason());
+                                throw failure;
+                            }
+                        });
         Group group = new Group();
         group.setName("ТРН-121");
         group.setActive(true);
@@ -268,13 +281,15 @@ class OutboxBrokerConfirmIT extends AbstractAcademicEventIntegrationTest {
             assertThat(failure)
                     .as("broker nack rejects the publisher transaction")
                     .isInstanceOf(IllegalStateException.class)
-                    .hasCauseInstanceOf(AmqpException.class);
+                    .hasNoCause();
+            assertThat(refusal.get()).isEqualTo(OutboxDeliveryException.Reason.BROKER_NACK);
             assertThat(
                             original.stream()
                                     .map(
                                             record ->
                                                     jdbc.queryForObject(
-                                                            "SELECT status FROM academic_outbox WHERE id=?",
+                                                            "SELECT status FROM academic_outbox"
+                                                                + " WHERE id=?",
                                                             String.class,
                                                             record.id()))
                                     .toList())

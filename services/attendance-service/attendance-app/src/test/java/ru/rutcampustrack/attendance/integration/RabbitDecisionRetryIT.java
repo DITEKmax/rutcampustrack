@@ -42,6 +42,7 @@ import ru.rutcampustrack.shared.events.EventTraceContext;
 import ru.rutcampustrack.shared.outbox.ConfirmedRabbitOutboxSender;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -443,9 +444,14 @@ class RabbitDecisionRetryIT extends AbstractAttendanceIntegrationTest {
                         .containsEntry("requestId", requestId)
                         .containsEntry("request_id", requestId);
             }
-            assertThat(originalCopies.get(1).getMessageProperties().getTimestamp())
-                    .isEqualTo(originalCopies.get(0).getMessageProperties().getTimestamp())
-                    .isNotNull();
+            var originalTimestamp = originalCopies.get(0).getMessageProperties().getTimestamp();
+            var retryTimestamp = originalCopies.get(1).getMessageProperties().getTimestamp();
+            assertThat(originalTimestamp).isNotNull();
+            assertThat(retryTimestamp).isNotNull();
+            // AMQP timestamps encode whole epoch seconds; the original sender-side Date can
+            // retain milliseconds that are removed on the first broker round trip.
+            assertThat(retryTimestamp.toInstant())
+                    .isEqualTo(originalTimestamp.toInstant().truncatedTo(ChronoUnit.SECONDS));
             assertThat(originalCopies.get(1).getMessageProperties().getHeaders())
                     .containsEntry("rct_redrive_count", 1);
             SpanData initialProducer = producer(originalCopies.get(0), origin, origin.spanId());

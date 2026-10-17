@@ -4,6 +4,12 @@ import type { Page, Response, TestInfo } from '@playwright/test';
 import { Actor, admit, expect, test as base, MobileDataset } from '../fixtures/mobile-dataset';
 import { http, registerPrivateSuite, selectRole } from '../fixtures/cloud-accepted-support';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
+import {
+  closedTransferHttpStatus,
+  closedTransferState,
+  transferObservationAnnotation,
+  type TransferObservation,
+} from '../fixtures/safe-reporter';
 
 registerPrivateSuite();
 
@@ -1197,6 +1203,30 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
           operationId: string | null;
           terminal: TransferReceipt | null;
         } = { active: true, operationId: null, terminal: null };
+        // Keep candidate identity in RAM only, including responses before POST is read.
+        const transferGets: {
+          path: string;
+          httpStatus: TransferObservation['lastGetHttpStatus'];
+          body: TransferObservation['lastGetBody'];
+          state: TransferObservation['lastParsedState'];
+          operationMatched: boolean;
+          sourceMatched: boolean;
+          occurrenceMatched: boolean;
+        }[] = [];
+        const transferObservation: TransferObservation = {
+          postHttpStatus: 0,
+          postState: 'UNOBSERVED',
+          getResponseCount: 0,
+          getObservationOverflow: false,
+          lastGetHttpStatus: 0,
+          lastGetBody: 'UNOBSERVED',
+          lastParsedState: 'UNOBSERVED',
+          operationMatched: false,
+          sourceMatched: false,
+          occurrenceMatched: false,
+          observationOutcome: 'ERROR',
+        };
+        let ownTransferPath: string | undefined;
         let completeTransfer!: (receipt: TransferReceipt) => void;
         let failTransfer!: (error: Error) => void;
         let observationTimer: ReturnType<typeof setTimeout> | undefined;
@@ -1208,13 +1238,32 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
           const path = new URL(response.url()).pathname;
           if (
             response.request().method() !== 'GET' ||
-            response.status() !== 200 ||
             !/^\/api\/schedule\/lesson-transfers\/[0-9a-f-]{36}$/.test(path)
           )
             return;
+          const get: (typeof transferGets)[number] = {
+            path,
+            httpStatus: closedTransferHttpStatus(response.status()),
+            body: response.status() === 200 ? 'READING' : 'NOT_READ',
+            state: 'UNOBSERVED',
+            operationMatched: false,
+            sourceMatched: false,
+            occurrenceMatched: false,
+          };
+          if (transferGets.length < 128) transferGets.push(get);
+          else transferObservation.getObservationOverflow = true;
+          if (response.status() !== 200) return;
           void response
             .json()
             .then((receipt: TransferReceipt) => {
+              if (observedTransfer.active) {
+                get.body = 'PARSED';
+                get.state = closedTransferState(receipt?.state);
+                get.operationMatched =
+                  path === `/api/schedule/lesson-transfers/${receipt?.operationId}`;
+                get.sourceMatched = receipt?.sourceLessonId === String(sourceId);
+                get.occurrenceMatched = receipt?.occurrenceId === String(afterRoom!.occurrenceId);
+              }
               if (
                 !observedTransfer.active ||
                 receipt.state !== 'COMPLETED' ||
@@ -1227,7 +1276,9 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
               observedTransfer.terminal = receipt;
               if (receipt.operationId === observedTransfer.operationId) completeTransfer(receipt);
             })
-            .catch(() => undefined);
+            .catch(() => {
+              if (observedTransfer.active) get.body = 'INVALID';
+            });
         };
         page.on('response', observeTransfer);
         let transferResponse: Response;
@@ -1237,8 +1288,11 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
           const transferred = http(page, `/api/schedule/lessons/${sourceId}/transfer`, 'POST');
           await management.getByRole('button', { name: 'Перенести пару', exact: true }).click();
           transferResponse = await transferred;
+          transferObservation.postHttpStatus = closedTransferHttpStatus(transferResponse.status());
           expect([200, 202].includes(transferResponse.status())).toBe(true);
           transferReceipt = await transferResponse.json();
+          transferObservation.postState = closedTransferState(transferReceipt?.state);
+          ownTransferPath = `/api/schedule/lesson-transfers/${transferReceipt?.operationId}`;
           created = { physicalLessonId: Number(transferReceipt.targetLessonId) };
           expect(
             Number.isSafeInteger(created.physicalLessonId) &&
@@ -1253,16 +1307,35 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
           terminalTransfer = transferReceipt;
           if (transferReceipt.state === 'PENDING') {
             // Preserve the existing response-wait bound after POST is known.
-            observationTimer = setTimeout(
-              () => failTransfer(new Error('Own transfer completion was not observed.')),
-              info.project.use.actionTimeout ?? 30000,
-            );
+            observationTimer = setTimeout(() => {
+              transferObservation.observationOutcome = 'TIMEOUT';
+              failTransfer(new Error('Own transfer completion was not observed.'));
+            }, info.project.use.actionTimeout ?? 30000);
             terminalTransfer = await terminalObserved;
           }
+          transferObservation.observationOutcome = 'RETURNED';
         } finally {
           clearTimeout(observationTimer);
           observedTransfer.active = false;
           page.off('response', observeTransfer);
+          const ownGets = transferGets.filter((get) => get.path === ownTransferPath);
+          transferObservation.getResponseCount = ownGets.length;
+          const lastGet = ownGets[ownGets.length - 1];
+          const lastParsed = ownGets.filter((get) => get.body === 'PARSED').pop();
+          if (lastGet) {
+            transferObservation.lastGetHttpStatus = lastGet.httpStatus;
+            transferObservation.lastGetBody = lastGet.body;
+          }
+          if (lastParsed) {
+            transferObservation.lastParsedState = lastParsed.state;
+            transferObservation.operationMatched = lastParsed.operationMatched;
+            transferObservation.sourceMatched = lastParsed.sourceMatched;
+            transferObservation.occurrenceMatched = lastParsed.occurrenceMatched;
+          }
+          info.annotations.push({
+            type: transferObservationAnnotation,
+            description: JSON.stringify(transferObservation),
+          });
         }
         expect(
           terminalTransfer.state === 'COMPLETED' &&

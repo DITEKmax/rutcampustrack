@@ -27,8 +27,54 @@ import yaml
 from check_formulas import long_window_fixture, record_expr, slo_budget_inventory
 
 ROOT = Path(__file__).resolve().parents[3]
+_STATE = {"phase": "PRECHECK_OR_CONFIG", "cleanup": "NOT_STARTED"}
 PROM_UID = "PBFA97CFB590B2093"
 PYTHON_IMAGE = "python:3.12.12-slim-bookworm@sha256:593bd06efe90efa80dc4eee3948be7c0fde4134606dd40d8dd8dbcade98e669c"
+
+
+async def bot_metrics_worker():
+    """Real production HTTP/SDK/queue, local controlled provider; no Bot/Telegram client."""
+    import asyncio
+    from types import SimpleNamespace
+
+    from bot.__main__ import run_health_server
+    from bot.observability import METRICS_REGISTRY, SendQueueCollector
+    from bot.services.send_queue import SendTask, TelegramSendQueue
+
+    async def enabled(*args, **kwargs):
+        return True
+
+    calls = 0
+
+    async def local_provider():
+        nonlocal calls
+        calls += 1
+
+    queue = TelegramSendQueue(prefs_client=SimpleNamespace(is_enabled=enabled))
+    METRICS_REGISTRY.register(SendQueueCollector(queue))
+    stopped = asyncio.Event()
+    asyncio.get_running_loop().add_signal_handler(signal.SIGTERM, stopped.set)
+    queue.start()
+    try:
+        await run_health_server()
+        control = Path("/control")
+        while not (control / "start").exists():
+            await asyncio.sleep(0.1)
+        await queue.put(
+            SendTask(
+                coroutine_factory=local_provider,
+                user_id=10,
+                chat_id=555,
+                category="reminders",
+                notification_type="LESSON_REMINDER",
+            )
+        )
+        await asyncio.wait_for(queue._queue.join(), timeout=10)
+        assert calls == 1 and queue._total_sent == 1 and queue._total_failed == 0
+        (control / "done").write_text("PASS")
+        await stopped.wait()
+    finally:
+        await queue.shutdown()
 
 
 def e2e_scrape_config():
@@ -416,6 +462,10 @@ def main():
         "infra/promtail/promtail.yml",
         "infra/grafana/provisioning/datasources/loki.yml",
         "infra/grafana/provisioning/datasources/tempo.yml",
+        "services/notification-bot/bot/__main__.py",
+        "services/notification-bot/bot/observability.py",
+        "services/notification-bot/bot/services/send_queue.py",
+        "services/notification-bot/requirements.txt",
     ]
     hashes = {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in files}
     with tempfile.TemporaryDirectory(prefix=project + "-") as tmp:
@@ -465,6 +515,59 @@ def main():
             if name == "tempo":
                 service["ports"].append("127.0.0.1::4318")
             config["services"][name] = service
+        # Use production images, collectors, host mounts and capabilities exactly.
+        # Host capability absence is a failed precondition, never synthetic data.
+        _STATE["phase"] = "HOST_EXPORTER_PRECONDITIONS"
+        host_paths = ["/proc", "/sys", "/var/run/dbus", "/var/lib/docker", "/dev/disk", "/dev/kmsg"]
+        missing_host_paths = [path for path in host_paths if not Path(path).exists()]
+        _STATE["missing_host_paths"] = missing_host_paths
+        assert not missing_host_paths, "host-exporter required mounts/devices unavailable: " + ",".join(
+            missing_host_paths
+        )
+        available_kib = int(
+            next(
+                line.split()[1]
+                for line in Path("/proc/meminfo").read_text().splitlines()
+                if line.startswith("MemAvailable:")
+            )
+        )
+        assert available_kib >= 2 * 1024**2, "2GiB available before telemetry cohort required"
+        for name in ["node-exporter", "cadvisor"]:
+            service = copy.deepcopy(source["services"][name])
+            service.pop("container_name", None)
+            service["cpus"] = 0.25
+            config["services"][name] = service
+        control = td / "bot-control"
+        control.mkdir(mode=0o700)
+        config["services"]["notification-bot"] = {
+            "image": PYTHON_IMAGE,
+            "working_dir": "/application",
+            "command": [
+                "sh",
+                "-ec",
+                "python -m pip install --target /tmp/bot-deps --no-cache-dir --disable-pip-version-check -r requirements.txt PyYAML==6.0.3 >/control/install.private.log 2>&1; exec python /repository/infra/prometheus/tests/check_pipeline.py --bot-metrics-worker",
+            ],
+            "environment": {
+                "PYTHONPATH": "/tmp/bot-deps:/application:/repository/infra/prometheus/tests",
+                "PYTHONDONTWRITEBYTECODE": "1",
+                "OTEL_SDK_DISABLED": "true",
+                "DEPLOYMENT_ENVIRONMENT": "synthetic",
+                "SERVICE_VERSION": os.environ["GITHUB_SHA"],
+            },
+            "volumes": [
+                str(ROOT / "services/notification-bot") + ":/application:ro",
+                str(ROOT / "infra/prometheus/tests") + ":/repository/infra/prometheus/tests:ro",
+                str(control) + ":/control",
+            ],
+            "networks": ["private_net"],
+            "ports": ["127.0.0.1::8081"],
+            "user": str(os.getuid()) + ":" + str(os.getgid()),
+            "mem_limit": "256m",
+            "cpus": 0.5,
+            "cap_drop": ["ALL"],
+            "security_opt": ["no-new-privileges:true"],
+            "logging": {"driver": "json-file", "options": {"max-size": "1m", "max-file": "1"}},
+        }
         # Seed exactly the retained finite30d rollup inventory. The running
         # production-version engine enforces its unchanged500000sample cap.
         _, budget = long_window_fixture()
@@ -521,7 +624,14 @@ def main():
         config["secrets"]["alert-webhook-token"] = {"file": str(td / "alert-token")}
         # Only cohort targets are retained; no application target is impersonated.
         prom = yaml.safe_load((ROOT / "infra/prometheus/prometheus.yml").read_text())
-        prom["scrape_configs"] = [x for x in prom["scrape_configs"] if x["job_name"] in names]
+        prom["scrape_configs"] = [
+            x
+            for x in prom["scrape_configs"]
+            if x["job_name"] in names + ["node-exporter", "cadvisor", "notification-bot"]
+        ]
+        for job in prom["scrape_configs"]:
+            if job["job_name"] in ["node-exporter", "cadvisor", "notification-bot"]:
+                job.update(scrape_interval="1s", scrape_timeout="1s", sample_limit=30000, body_size_limit="16MB")
         prom["scrape_configs"].append(
             {
                 "job_name": "synthetic-fixture",
@@ -894,8 +1004,57 @@ def main():
 
         started = time.monotonic()
         try:
+            _STATE["phase"] = "PIPELINE_START"
             docker("up", "-d")
             wait(lambda: grafana("/api/health")["database"] == "ok", 120)
+
+            def samples(expression):
+                response = api("prometheus", "/api/v1/query?" + urllib.parse.urlencode({"query": expression}))
+                assert response["status"] == "success"
+                return response["data"]["result"]
+
+            _STATE["phase"] = "HOST_AND_BOT_METRICS"
+            for job in ["node-exporter", "cadvisor", "notification-bot"]:
+                wait(lambda job=job: len(samples('up{job="' + job + '"} == 1')) == 1, 180)
+                identity = samples('up{job="' + job + '"} == 1')[0]["metric"]
+                port = {"node-exporter": 9100, "cadvisor": 8080, "notification-bot": 8081}[job]
+                assert identity["instance"] == job + ":" + str(port)
+                assert identity["service"] == job and identity["environment"] == "synthetic"
+            try:
+                api("notification-bot", "/health", port="8081")
+                raise AssertionError("bot polling is absent; health must not be fabricated UP")
+            except urllib.error.HTTPError as error:
+                assert error.code == 503
+            for expression in [
+                'node_memory_MemTotal_bytes{job="node-exporter"} > 0',
+                'node_filesystem_avail_bytes{job="node-exporter",mountpoint="/"} > 0',
+                'node_cpu_seconds_total{job="node-exporter",mode="idle"} > 0',
+                'container_memory_usage_bytes{job="cadvisor",container_label_com_docker_compose_project="'
+                + project
+                + '"} > 0',
+                'notification_bot_send_tasks_completed_total{job="notification-bot"} == 0',
+                'notification_bot_send_workers_alive{job="notification-bot"} == 2',
+                'notification_bot_task_alive{job="notification-bot",task="polling"} == 0',
+            ]:
+                wait(lambda expression=expression: bool(samples(expression)))
+            # Polling/consumer were deliberately never started: health remains503,
+            # while the real metrics endpoint and queue execution are observable.
+            (control / "start").write_text("GO")
+            wait(lambda: (control / "done").exists())
+            wait(lambda: len(samples('notification_bot_send_tasks_completed_total{job="notification-bot"} == 1')) == 1)
+            assert len(samples('notification_bot_send_tasks_exhausted_total{job="notification-bot"} == 0')) == 1
+            assert len(samples('notification_bot_send_queue_depth{job="notification-bot"} == 0')) == 1
+            checks.append(
+                {
+                    "actual_host_exporters": ["node-exporter", "cadvisor"],
+                    "available_memory_kib_before_start": available_kib,
+                    "bot_actual_queue_completion_delta": 1,
+                    "qualification": "Production HTTP/SDK/send queue with a local provider; no Telegram receipt or broker consumer claim",
+                }
+            )
+            # Release640MiB limits before the existing Java/broker cohort peaks.
+            docker("stop", "notification-bot", "node-exporter", "cadvisor")
+            _STATE["phase"] = "SLO_ENGINE_AND_GRAFANA"
             flags = api("prometheus", "/api/v1/status/flags")["data"]
             assert int(flags["query.max-samples"]) == budget["production_max_samples"] == 500000
             for name, expected in [
@@ -1082,37 +1241,74 @@ def main():
             )
             assert grafana("/api/datasources/uid/loki")["uid"] == "loki"
             checks.append("Loki/Tempo log+trace, Promtail positions and Grafana provisioning survive owned recreate")
+            _STATE["phase"] = "ACTUAL_JAVA_TRANSPORT"
             app_result = application_transport()
+            _STATE["phase"] = "ACTUAL_BACKGROUND_TRANSPORT"
             background_result = background_transport()
-            print(
-                json.dumps(
-                    {
-                        "result": "PASS",
-                        "source_sha": subprocess.check_output(
-                            ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
-                        ).strip(),
-                        "config_sha256": hashes,
-                        "checks": checks,
-                        "slo_30d_budget": dict(budget, queries=slo_results),
-                        "actual_application_transport": app_result,
-                        "actual_background_transport": background_result,
-                        "elapsed_seconds": round(time.monotonic() - started, 2),
-                    }
-                )
-            )
+            result = {
+                "result": "PASS",
+                "source_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+                "config_sha256": hashes,
+                "checks": checks,
+                "slo_30d_budget": dict(budget, queries=slo_results),
+                "actual_application_transport": app_result,
+                "actual_background_transport": background_result,
+                "elapsed_seconds": round(time.monotonic() - started, 2),
+            }
         finally:
             primary = sys.exc_info()[0]
-            cleanup = docker("down", "--volumes", "--remove-orphans", check=False)
-            remaining = docker("ps", "--quiet", check=False)
-            if primary is None:
+            _STATE["cleanup"] = "STARTED"
+            try:
+                cleanup = docker("down", "--volumes", "--remove-orphans", check=False)
+                remaining = docker("ps", "--quiet", check=False)
                 assert cleanup.returncode == 0 and remaining.returncode == 0 and not remaining.stdout.strip(), (
                     "owned cohort cleanup failed"
                 )
+            except Exception:
+                _STATE["cleanup"] = "FAIL"
+                if primary is None:
+                    _STATE["phase"] = "CLEANUP"
+                    raise
+            else:
+                _STATE["cleanup"] = "PASS"
+        result["cleanup"] = _STATE["cleanup"]
+        print(json.dumps(result))
 
 
 if __name__ == "__main__":
-    if sys.argv[1:] == ["--e2e-async-browser"]:
+    if sys.argv[1:] == ["--bot-metrics-worker"]:
+        import asyncio
+
+        asyncio.run(bot_metrics_worker())
+    elif sys.argv[1:] == ["--e2e-async-browser"]:
         e2e_async_browser()
     else:
         assert not sys.argv[1:]
-        main()
+        try:
+            main()
+        except Exception as error:  # noqa: BLE001 -- closed runtime boundary must never serialize exception text
+            allowed = {
+                "AssertionError",
+                "CalledProcessError",
+                "TimeoutExpired",
+                "OSError",
+                "RuntimeError",
+                "ValueError",
+                "KeyError",
+                "HTTPError",
+            }
+            exception = type(error).__name__
+            code = getattr(error, "returncode", None)
+            print(
+                json.dumps(
+                    {
+                        "result": "FAIL",
+                        "phase": _STATE["phase"],
+                        "cleanup": _STATE["cleanup"],
+                        "exception_class": exception if exception in allowed else "OtherError",
+                        "returncode": code if type(code) is int and -128 <= code <= 255 else None,
+                        "missing_host_paths": _STATE.get("missing_host_paths", []),
+                    }
+                )
+            )
+            sys.exit(1)

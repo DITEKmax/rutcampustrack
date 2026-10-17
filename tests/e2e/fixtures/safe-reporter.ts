@@ -143,6 +143,107 @@ const failureHttpStatuses = [
 ] as const;
 type FailureHttpStatus = (typeof failureHttpStatuses)[number];
 
+export const transferObservationAnnotation = 'rct-own-transfer-v1';
+const transferStates = ['UNOBSERVED', 'PENDING', 'COMPLETED', 'ERROR', 'OTHER'] as const;
+type TransferState = (typeof transferStates)[number];
+type TransferHttpStatus = FailureHttpStatus | 'OTHER';
+
+export function closedTransferState(value: unknown): TransferState {
+  return value === 'PENDING' || value === 'COMPLETED' || value === 'ERROR' ? value : 'OTHER';
+}
+
+export function closedTransferHttpStatus(value: number): TransferHttpStatus {
+  return failureHttpStatuses.some((status) => status === value)
+    ? (value as FailureHttpStatus)
+    : 'OTHER';
+}
+
+/** Observed fixture facts, never an authenticated backend failure cause. */
+export interface TransferObservation {
+  postHttpStatus: TransferHttpStatus;
+  postState: TransferState;
+  getResponseCount: number;
+  getObservationOverflow: boolean;
+  lastGetHttpStatus: TransferHttpStatus;
+  lastGetBody: 'UNOBSERVED' | 'READING' | 'PARSED' | 'INVALID' | 'NOT_READ';
+  lastParsedState: TransferState;
+  operationMatched: boolean;
+  sourceMatched: boolean;
+  occurrenceMatched: boolean;
+  observationOutcome: 'RETURNED' | 'TIMEOUT' | 'ERROR';
+}
+
+/** Treat annotations as untrusted; reconstruct only a fixed, bounded projection. */
+export function safeTransferObservation(annotations: unknown): TransferObservation | undefined {
+  if (!Array.isArray(annotations)) return;
+  for (let index = 0; index < Math.min(annotations.length, 32); index++) {
+    const annotation = ownData(annotations, String(index));
+    if (ownData(annotation, 'type') !== transferObservationAnnotation) continue;
+    const description = ownData(annotation, 'description');
+    if (typeof description !== 'string' || description.length > 768) continue;
+    let value: TransferObservation;
+    try {
+      value = JSON.parse(description);
+    } catch {
+      continue;
+    }
+    const keys = [
+      'postHttpStatus',
+      'postState',
+      'getResponseCount',
+      'getObservationOverflow',
+      'lastGetHttpStatus',
+      'lastGetBody',
+      'lastParsedState',
+      'operationMatched',
+      'sourceMatched',
+      'occurrenceMatched',
+      'observationOutcome',
+    ] as const;
+    if (
+      !value ||
+      typeof value !== 'object' ||
+      Array.isArray(value) ||
+      Object.keys(value).length !== keys.length ||
+      keys.some((key) => !Object.prototype.hasOwnProperty.call(value, key))
+    )
+      continue;
+    const validStatus = (status: unknown) =>
+      status === 'OTHER' || failureHttpStatuses.some((candidate) => candidate === status);
+    if (
+      !validStatus(value.postHttpStatus) ||
+      !validStatus(value.lastGetHttpStatus) ||
+      !transferStates.includes(value.postState) ||
+      !transferStates.includes(value.lastParsedState) ||
+      !Number.isSafeInteger(value.getResponseCount) ||
+      value.getResponseCount < 0 ||
+      value.getResponseCount > 128 ||
+      !['UNOBSERVED', 'READING', 'PARSED', 'INVALID', 'NOT_READ'].includes(value.lastGetBody) ||
+      !['RETURNED', 'TIMEOUT', 'ERROR'].includes(value.observationOutcome) ||
+      [
+        value.getObservationOverflow,
+        value.operationMatched,
+        value.sourceMatched,
+        value.occurrenceMatched,
+      ].some((flag) => typeof flag !== 'boolean')
+    )
+      continue;
+    return {
+      postHttpStatus: value.postHttpStatus,
+      postState: value.postState,
+      getResponseCount: value.getResponseCount,
+      getObservationOverflow: value.getObservationOverflow,
+      lastGetHttpStatus: value.lastGetHttpStatus,
+      lastGetBody: value.lastGetBody,
+      lastParsedState: value.lastParsedState,
+      operationMatched: value.operationMatched,
+      sourceMatched: value.sourceMatched,
+      occurrenceMatched: value.occurrenceMatched,
+      observationOutcome: value.observationOutcome,
+    };
+  }
+}
+
 /** This marker reports source context; serialized/forged text authenticates no operation or cause. */
 export function datasetHttpFailure(method: unknown, path: unknown, httpStatus: unknown): Error {
   if (
@@ -394,6 +495,7 @@ interface SafeResult {
   errorCount: number;
   diagnostics: SafeFailureDiagnostic[];
   errorLocations: { file: string; line: number }[];
+  transferObservation?: TransferObservation;
 }
 
 /** Allowlist output only. Raw step titles, errors, attachments and worker output are never serialized. */
@@ -435,6 +537,8 @@ export default class SafeReporter implements Reporter {
         error.location ? [{ file: basename(error.location.file), line: error.location.line }] : [],
       ),
     };
+    const transferObservation = safeTransferObservation(result.annotations);
+    if (transferObservation) row.transferObservation = transferObservation;
     this.results.push(row);
     // Automatic error contexts are created during worker teardown, after afterEach.
     // Replace attached artifact contents with safe metadata as a second boundary.

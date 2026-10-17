@@ -5334,7 +5334,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m pip install PyYAML==6.0.3
+          python -m pip install PyYAML==6.0.3 aio-pika==9.5.3
           mkdir -p "$RUNNER_TEMP/rct-monitoring-tools" build/monitoring
           python - <<'PY'
           import hashlib, os, pathlib, tarfile, urllib.request
@@ -5366,15 +5366,24 @@ jobs:
           python infra/prometheus/tests/check_formulas.py
       - name: Real firing and resolved delivery to isolated authenticated receiver
         id: delivery
-        run: python infra/prometheus/tests/check_delivery.py | tee build/monitoring/delivery.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          python infra/prometheus/tests/check_delivery.py | tee build/monitoring/delivery.json
       - name: Datastores and official exporters with least privilege
         id: exporters
         if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
-        run: python infra/prometheus/tests/check_exporters.py | tee build/monitoring/exporters.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          python infra/prometheus/tests/check_exporters.py | tee build/monitoring/exporters.json
       - name: Grafana queries, log-trace links and persisted checkpoints
         id: pipeline
         if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
-        run: python infra/prometheus/tests/check_pipeline.py | tee build/monitoring/pipeline.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          python infra/prometheus/tests/check_pipeline.py | tee build/monitoring/pipeline.json
       - name: Record only safe source and check outcomes
         if: always()
         env:
@@ -5389,8 +5398,19 @@ jobs:
           out=pathlib.Path('build/monitoring');out.mkdir(parents=True,exist_ok=True)
           paths=[pathlib.Path('docker-compose.prod.yml'),pathlib.Path('nginx/conf.d/default.conf')]
           paths.extend(p for root in ['infra/prometheus','infra/grafana','infra/alertmanager','infra/loki','infra/tempo','infra/promtail','infra/blackbox','infra/postgres'] for p in pathlib.Path(root).rglob('*') if p.is_file() and p.suffix in ['.yml','.json','.ini','.py','.sh','.sql'])
-          result={'source_sha':os.environ['GITHUB_SHA'],'checks':{k.lower():os.environ[k+'_OUTCOME'] for k in ['TOOLS','FORMULAS','DELIVERY','EXPORTERS','PIPELINE']},'file_sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths if p.is_file()},'qualification':'Isolated telemetry, actual Gateway/BFF transport and controlled fixtures; report/business broker acceptance remains separate.'}
+          outcomes={k.lower():os.environ[k+'_OUTCOME'] for k in ['TOOLS','FORMULAS','DELIVERY','EXPORTERS','PIPELINE']}
+          checks=dict(outcomes);receipts={}
+          for name in ['delivery','exporters','pipeline']:
+              try:
+                  data=json.loads((out/(name+'.json')).read_text())
+                  valid=data.get('result')=='PASS' and (name=='delivery' or data.get('source_sha')==os.environ['GITHUB_SHA'])
+                  receipts[name]='PASS' if valid else 'FAIL'
+              except (OSError,ValueError,TypeError,AttributeError):
+                  receipts[name]='MISSING_OR_INVALID'
+              if receipts[name]!='PASS':checks[name]='failure'
+          result={'source_sha':os.environ['GITHUB_SHA'],'result':'PASS' if all(v=='success' for v in checks.values()) else 'FAIL','checks':checks,'step_outcomes':outcomes,'receipt_results':receipts,'file_sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths if p.is_file()},'qualification':'Isolated telemetry, actual Gateway/BFF transport and controlled fixtures; report/business broker acceptance remains separate.'}
           (out/'manifest.json').write_text(json.dumps(result,indent=2)+'\n')
+          assert result['result']=='PASS','Monitoring checks or safe result receipts failed'
           PY
       - name: Upload safe monitoring outcomes
         if: always()

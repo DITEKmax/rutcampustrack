@@ -19,16 +19,23 @@ public interface InternalWsSessionAdmissionApi {
 
     @Operation(summary = "Check live WebSocket session authority")
     @ApiResponse(responseCode = "204", description = "The bound selected identity is still live")
-    @ApiResponse(responseCode = "401", description = "The bound session or selected identity is no longer valid")
+    @ApiResponse(
+            responseCode = "401",
+            description = "The bound session or selected identity is no longer valid")
     @ApiResponse(responseCode = "503", description = "Session authority is unavailable")
     @PostMapping("/admit-ws-session")
     ResponseEntity<Void> admitWsSession(@Valid @RequestBody WsSessionAdmissionRequest request);
 
     @Operation(summary = "Check live administrator dashboard WebSocket authority")
-    @ApiResponse(responseCode = "204", description = "The bound identity has current DASHBOARD_VIEW")
+    @ApiResponse(
+            responseCode = "204",
+            description = "The bound identity has current DASHBOARD_VIEW")
     @ApiResponse(responseCode = "401", description = "The bound session is invalid")
-    @ApiResponse(responseCode = "403", description = "The selected role or dashboard capability is denied")
+    @ApiResponse(
+            responseCode = "403",
+            description = "The selected role or dashboard capability is denied")
     @ApiResponse(responseCode = "503", description = "Authority is unavailable")
     @PostMapping("/admit-dashboard-session")
-    ResponseEntity<Void> admitDashboardSession(@Valid @RequestBody WsSessionAdmissionRequest request);
+    ResponseEntity<Void> admitDashboardSession(
+            @Valid @RequestBody WsSessionAdmissionRequest request);
 }

@@ -1,23 +1,22 @@
 package ru.rutcampustrack.shared.events;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.time.OffsetDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.OffsetDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 class DomainEventJsonTest {
 
-    private final ObjectMapper mapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    private final ObjectMapper mapper =
+            new ObjectMapper()
+                    .registerModule(new JavaTimeModule())
+                    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-    record LessonStartedPayload(Long lessonId) {
-    }
+    record LessonStartedPayload(Long lessonId) {}
 
     @EventVersion(2)
     static class LessonStartedEvent extends DomainEvent {

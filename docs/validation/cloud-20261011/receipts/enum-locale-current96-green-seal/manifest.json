@@ -1,0 +1,115 @@
+{
+  "verdict": "APPROVE_FINITE_RED_GREEN_EVIDENCE",
+  "scope": "Same unchanged Academic locale row equality case only",
+  "producer": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "actual_Academic_checkout": "1e7d036e82d7cf434db25b1c463a70cfda1d975d",
+  "case_source_SHA256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d",
+  "actual_merge_product_SHA256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b",
+  "count": 14,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/CURRENT.md",
+      "relative_path": "CURRENT.md",
+      "bytes": 403,
+      "mode": "0o600",
+      "sha256": "20f5e7675b221349a495d76f20103dcfc110d1af4a3cdc6b19ec4b55869c1e24"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 4889,
+      "mode": "0o600",
+      "sha256": "bbe5817308dd421cbf12a5d2ae6c030ca993844b28c6c6d24f761244b7ebf0a0"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/attempts.ndjson",
+      "relative_path": "attempts.ndjson",
+      "bytes": 1088,
+      "mode": "0o600",
+      "sha256": "42cd384acff0c0b37c38e1117ac71a3b717be3fe794e47fb43a2d7c5e6bbb1be"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/causal-red-reference.safe.json",
+      "relative_path": "causal-red-reference.safe.json",
+      "bytes": 1141,
+      "mode": "0o600",
+      "sha256": "3c3eeb47d53a32d00a041926f4282837a66a144cd3dafba9e3792177441f190d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/download-safe.py",
+      "relative_path": "download-safe.py",
+      "bytes": 5497,
+      "mode": "0o600",
+      "sha256": "99d4b240295662b31615f8724c762a1d1b3c3b03bc641b9c99efec99f609b0ed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/executed-production-identity.safe.json",
+      "relative_path": "executed-production-identity.safe.json",
+      "bytes": 331,
+      "mode": "0o600",
+      "sha256": "6123365bacbf9f222e8c13ea1e606f10a99e642d88316f972372dadbe9a174cd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/finite-red-green-comparison.safe.json",
+      "relative_path": "finite-red-green-comparison.safe.json",
+      "bytes": 2046,
+      "mode": "0o600",
+      "sha256": "eb8481d2f3f5e187df3ca30660667e19ce07ab81a40c6869d71783154c1dcf2e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/governing-input-ledger.safe.json",
+      "relative_path": "governing-input-ledger.safe.json",
+      "bytes": 1230,
+      "mode": "0o600",
+      "sha256": "0b5a3980614074cba2c020ce91b3c640c24fd15631f79b72592feb83a37fcb2f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/metadata-initial.safe.json",
+      "relative_path": "metadata-initial.safe.json",
+      "bytes": 6807,
+      "mode": "0o600",
+      "sha256": "e241e5b1fe27e7900b4b15f52147d76768dc4ebb6c5c96326ee231c9287c72f6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/metadata-terminal.safe.json",
+      "relative_path": "metadata-terminal.safe.json",
+      "bytes": 11120,
+      "mode": "0o600",
+      "sha256": "c208a1c0ccf48a84cfbdf2ba862637fc997fd7ae662d40e3d67abdd2287a6a3b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/producer-source-identity.safe.json",
+      "relative_path": "producer-source-identity.safe.json",
+      "bytes": 1675,
+      "mode": "0o600",
+      "sha256": "a0303ee6b342e56f96564a1ddf528458caaac26eb2410e0279b9c8cb732af8e4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/safe-integration-outcomes-academic-service-1.json",
+      "relative_path": "safe-integration-outcomes-academic-service-1.json",
+      "bytes": 263894,
+      "mode": "0o600",
+      "sha256": "fc359c12945c2172f1ccb1e59ec81119484bc9d0829f8e178a7e15157b64b305"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/safe-integration-outcomes-academic-service-1.zip",
+      "relative_path": "safe-integration-outcomes-academic-service-1.zip",
+      "bytes": 21427,
+      "mode": "0o600",
+      "sha256": "3d5634da820077f6fa9e001e41198e02a72ea37a9fb8fb88f77303f00f6e4f88"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_96c7_locale_green_receipts/target-outcome.safe.json",
+      "relative_path": "target-outcome.safe.json",
+      "bytes": 1674,
+      "mode": "0o600",
+      "sha256": "4f0cc5cddc406351ea208a335f0d83e38bd88d6a7bded2e7e953ebf236e76ae2"
+    }
+  ],
+  "all_gates_success": false,
+  "separate_Coverage_schedule_failure_cause": "UNKNOWN",
+  "raw_XML_logs_private_values_included": false,
+  "local_native_or_source_mutation": false,
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN"
+}

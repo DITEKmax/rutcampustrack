@@ -1,0 +1,156 @@
+[
+  {
+    "xmlOrdinal": 1,
+    "suiteOrdinal": 1,
+    "ordinal": 1,
+    "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+    "method": null,
+    "status": "SKIPPED",
+    "identity": "ORDINAL_ONLY",
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+    "sourceSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3"
+  },
+  {
+    "xmlOrdinal": 1,
+    "suiteOrdinal": 1,
+    "ordinal": 2,
+    "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+    "method": null,
+    "status": "SKIPPED",
+    "identity": "ORDINAL_ONLY",
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+    "sourceSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3"
+  },
+  {
+    "xmlOrdinal": 1,
+    "suiteOrdinal": 1,
+    "ordinal": 3,
+    "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+    "method": null,
+    "status": "SKIPPED",
+    "identity": "ORDINAL_ONLY",
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+    "sourceSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3"
+  },
+  {
+    "xmlOrdinal": 7,
+    "suiteOrdinal": 1,
+    "ordinal": 1,
+    "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "method": "adminRecoveryWithoutTelegramRestoresStudentAndTeacher",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+  },
+  {
+    "xmlOrdinal": 7,
+    "suiteOrdinal": 1,
+    "ordinal": 2,
+    "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "method": "passwordResetCompletesWhenTheAccountHasNoActiveSessions",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+  },
+  {
+    "xmlOrdinal": 7,
+    "suiteOrdinal": 1,
+    "ordinal": 3,
+    "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "method": "passwordResetIsPurposeBoundAtomicAndRevokesEverySession",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+  },
+  {
+    "xmlOrdinal": 7,
+    "suiteOrdinal": 1,
+    "ordinal": 4,
+    "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "method": "passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+  },
+  {
+    "xmlOrdinal": 7,
+    "suiteOrdinal": 1,
+    "ordinal": 5,
+    "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "method": "requestOtp_204Body_redisHasCode_rabbitReceivesEvent",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+  },
+  {
+    "xmlOrdinal": 7,
+    "suiteOrdinal": 1,
+    "ordinal": 6,
+    "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "method": "passwordResetFailedAttemptsSurviveANewChallenge",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+  },
+  {
+    "xmlOrdinal": 7,
+    "suiteOrdinal": 1,
+    "ordinal": 7,
+    "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "method": "passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+  },
+  {
+    "xmlOrdinal": 7,
+    "suiteOrdinal": 1,
+    "ordinal": 8,
+    "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "method": "adminRecoveryRejectsWrongRoleRevokedSessionAndExpiredTicket",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "sourceSha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb"
+  },
+  {
+    "xmlOrdinal": 9,
+    "suiteOrdinal": 1,
+    "ordinal": 1,
+    "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+    "method": "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+    "status": "FAILED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "sourceSha256": "8660f1e49daa90dcfb4319ab9b4aa6634f2acf76021878c18bb09a38bfd1e05e"
+  },
+  {
+    "xmlOrdinal": 60,
+    "suiteOrdinal": 1,
+    "ordinal": 1,
+    "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+    "method": "legalPageSizesPreserveExactOwnRowsTypesAssignmentsAndTotals",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+    "sourceSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821"
+  },
+  {
+    "xmlOrdinal": 60,
+    "suiteOrdinal": 1,
+    "ordinal": 2,
+    "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+    "method": "teacherListDoesNotPublishPendingAdoptionBeforeExactResume",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+    "sourceSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821"
+  }
+]

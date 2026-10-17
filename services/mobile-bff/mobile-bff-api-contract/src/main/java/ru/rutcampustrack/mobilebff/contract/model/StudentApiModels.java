@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import io.swagger.v3.oas.annotations.media.Schema;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -20,27 +22,86 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Public JS-STUDENT-01-r1 value types. Nested records keep the bounded contract
- * together; Springdoc names are pinned explicitly for stable generated clients.
+ * Public JS-STUDENT-01-r1 value types. Nested records keep the bounded contract together; Springdoc
+ * names are pinned explicitly for stable generated clients.
  */
 public final class StudentApiModels {
 
-    private StudentApiModels() {
+    private StudentApiModels() {}
+
+    public enum ActiveRole {
+        STUDENT
     }
 
-    public enum ActiveRole { STUDENT }
-    public enum Capability { TODAY, GEO_CHECKIN, OFFLINE_SEMESTER_SCHEDULE }
-    public enum LessonType { LECTURE, PRACTICE, LAB }
-    public enum LessonStatus { PLANNED, ACTIVE, CLOSED, CANCELLED }
-    public enum StudentAttendanceLessonStatus {
-        PRESENT, ABSENT, EXCUSED, ACTIVE, FUTURE, NO_DATA, CANCELLED
+    public enum Capability {
+        TODAY,
+        GEO_CHECKIN,
+        OFFLINE_SEMESTER_SCHEDULE
     }
-    public enum StudentAttendanceHistoryStatus { PRESENT, ABSENT, EXCUSED, FUTURE, NO_DATA }
-    public enum StudentAttendanceDayState { PAST, CURRENT, FUTURE }
-    public enum StudentAttendanceGraphState { DATA, NO_DATA, FUTURE }
-    public enum RoomChangeState { UNCHANGED, CHANGED, UNKNOWN }
-    public enum AttendanceStatus { PRESENT, ABSENT, EXCUSED }
-    public enum AttendanceSource { STUDENT_GEO, LATE_CHECKIN, HEADMAN, TEACHER, SYSTEM }
+
+    public enum LessonType {
+        LECTURE,
+        PRACTICE,
+        LAB
+    }
+
+    public enum LessonStatus {
+        PLANNED,
+        ACTIVE,
+        CLOSED,
+        CANCELLED
+    }
+
+    public enum StudentAttendanceLessonStatus {
+        PRESENT,
+        ABSENT,
+        EXCUSED,
+        ACTIVE,
+        FUTURE,
+        NO_DATA,
+        CANCELLED
+    }
+
+    public enum StudentAttendanceHistoryStatus {
+        PRESENT,
+        ABSENT,
+        EXCUSED,
+        FUTURE,
+        NO_DATA
+    }
+
+    public enum StudentAttendanceDayState {
+        PAST,
+        CURRENT,
+        FUTURE
+    }
+
+    public enum StudentAttendanceGraphState {
+        DATA,
+        NO_DATA,
+        FUTURE
+    }
+
+    public enum RoomChangeState {
+        UNCHANGED,
+        CHANGED,
+        UNKNOWN
+    }
+
+    public enum AttendanceStatus {
+        PRESENT,
+        ABSENT,
+        EXCUSED
+    }
+
+    public enum AttendanceSource {
+        STUDENT_GEO,
+        LATE_CHECKIN,
+        HEADMAN,
+        TEACHER,
+        SYSTEM
+    }
+
     public enum EligibilityReason {
         ELIGIBLE,
         ALREADY_PRESENT,
@@ -54,14 +115,42 @@ public final class StudentApiModels {
         HEADMAN_USES_JOURNAL,
         DEPENDENCY_UNAVAILABLE
     }
-    public enum RequestStatus { PENDING, APPROVED, REJECTED, CANCELLED }
-    public enum RequestOrigin { AUTO_GEO_FAILURE }
-    public enum ResolutionReason {
-        GEO_CONFIRMED, HEADMAN_APPROVED, HEADMAN_REJECTED, STUDENT_CANCELLED, PRESENT_PRIORITY
+
+    public enum RequestStatus {
+        PENDING,
+        APPROVED,
+        REJECTED,
+        CANCELLED
     }
-    public enum CheckinOutcome { PRESENT, PENDING_CONFIRMATION }
-    public enum GeoKind { COORDINATES, UNAVAILABLE }
-    public enum GeoUnavailableReason { PERMISSION_DENIED, POSITION_UNAVAILABLE, TIMEOUT }
+
+    public enum RequestOrigin {
+        AUTO_GEO_FAILURE
+    }
+
+    public enum ResolutionReason {
+        GEO_CONFIRMED,
+        HEADMAN_APPROVED,
+        HEADMAN_REJECTED,
+        STUDENT_CANCELLED,
+        PRESENT_PRIORITY
+    }
+
+    public enum CheckinOutcome {
+        PRESENT,
+        PENDING_CONFIRMATION
+    }
+
+    public enum GeoKind {
+        COORDINATES,
+        UNAVAILABLE
+    }
+
+    public enum GeoUnavailableReason {
+        PERMISSION_DENIED,
+        POSITION_UNAVAILABLE,
+        TIMEOUT
+    }
+
     public enum ProblemCode {
         INVALID_REQUEST,
         INVALID_IDEMPOTENCY_KEY,
@@ -84,36 +173,48 @@ public final class StudentApiModels {
         INTERNAL_ERROR
     }
 
-    @Schema(name = "Link", requiredProperties = {"href"})
-    public record Link(URI href) {
-    }
+    @Schema(
+            name = "Link",
+            requiredProperties = {"href"})
+    public record Link(URI href) {}
 
-    @Schema(name = "StudentUser", requiredProperties = {"id", "displayName"})
-    public record StudentUser(String id, String displayName) {
-    }
+    @Schema(
+            name = "StudentUser",
+            requiredProperties = {"id", "displayName"})
+    public record StudentUser(String id, String displayName) {}
 
-    @Schema(name = "GroupSummary", requiredProperties = {"id", "name"})
-    public record GroupSummary(String id, String name) {
-    }
+    @Schema(
+            name = "GroupSummary",
+            requiredProperties = {"id", "name"})
+    public record GroupSummary(String id, String name) {}
 
-    @Schema(name = "SemesterSummary", requiredProperties = {"id", "name", "startsOn", "endsOn"})
-    public record SemesterSummary(String id, String name, LocalDate startsOn, LocalDate endsOn) {
-    }
+    @Schema(
+            name = "SemesterSummary",
+            requiredProperties = {"id", "name", "startsOn", "endsOn"})
+    public record SemesterSummary(String id, String name, LocalDate startsOn, LocalDate endsOn) {}
 
     @Schema(
             name = "StudentSession",
             requiredProperties = {
-                    "sessionId", "sessionVersion", "rolesVersion", "readOnly",
-                    "user", "activeRole", "group", "semester", "capabilities", "serverNow", "_links"
-            }
-    )
+                "sessionId",
+                "sessionVersion",
+                "rolesVersion",
+                "readOnly",
+                "user",
+                "activeRole",
+                "group",
+                "semester",
+                "capabilities",
+                "serverNow",
+                "_links"
+            })
     public record SessionResponse(
             @NotBlank
-            @Schema(
-                    format = "uuid",
-                    pattern = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
-            )
-            String sessionId,
+                    @Schema(
+                            format = "uuid",
+                            pattern =
+                                    "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+                    String sessionId,
             @NotBlank @Pattern(regexp = "^[1-9][0-9]*$") String sessionVersion,
             @NotBlank @Pattern(regexp = "^[1-9][0-9]*$") String rolesVersion,
             boolean readOnly,
@@ -123,28 +224,33 @@ public final class StudentApiModels {
             @Schema(nullable = true) SemesterSummary semester,
             List<Capability> capabilities,
             Instant serverNow,
-            @JsonProperty("_links") Map<String, Link> links
-    ) {
-    }
+            @JsonProperty("_links") Map<String, Link> links) {}
 
-    @Schema(name = "Subject", requiredProperties = {"id", "name", "type"})
-    public record SubjectProjection(String id, String name, LessonType type) {
-    }
+    @Schema(
+            name = "Subject",
+            requiredProperties = {"id", "name", "type"})
+    public record SubjectProjection(String id, String name, LessonType type) {}
 
-    @Schema(name = "Room", requiredProperties = {"current", "previous", "changeState"})
+    @Schema(
+            name = "Room",
+            requiredProperties = {"current", "previous", "changeState"})
     public record RoomProjection(
             @Schema(nullable = true) String current,
             @Schema(nullable = true) String previous,
-            RoomChangeState changeState
-    ) {
-    }
+            RoomChangeState changeState) {}
 
     @Schema(
             name = "LessonSchedule",
             requiredProperties = {
-                    "id", "date", "lessonNumber", "startsAt", "endsAt", "status", "subject", "room"
-            }
-    )
+                "id",
+                "date",
+                "lessonNumber",
+                "startsAt",
+                "endsAt",
+                "status",
+                "subject",
+                "room"
+            })
     public record LessonScheduleProjection(
             String id,
             LocalDate date,
@@ -153,107 +259,114 @@ public final class StudentApiModels {
             LocalTime endsAt,
             LessonStatus status,
             SubjectProjection subject,
-            RoomProjection room
-    ) {
-    }
+            RoomProjection room) {}
 
-    @Schema(name = "Attendance", requiredProperties = {"status", "source", "markedAt"})
+    @Schema(
+            name = "Attendance",
+            requiredProperties = {"status", "source", "markedAt"})
     public record AttendanceProjection(
             AttendanceStatus status,
             AttendanceSource source,
-            @Schema(nullable = true) Instant markedAt
-    ) {
-    }
+            @Schema(nullable = true) Instant markedAt) {}
 
-    @Schema(name = "CheckinEligibility", requiredProperties = {"allowed", "reason", "retryAt"})
+    @Schema(
+            name = "CheckinEligibility",
+            requiredProperties = {"allowed", "reason", "retryAt"})
     public record CheckinEligibility(
-            boolean allowed,
-            EligibilityReason reason,
-            @Schema(nullable = true) Instant retryAt
-    ) {
-    }
+            boolean allowed, EligibilityReason reason, @Schema(nullable = true) Instant retryAt) {}
 
     @Schema(
             name = "AutomaticCheckinRequest",
-            requiredProperties = {"id", "status", "origin", "resolutionReason"}
-    )
+            requiredProperties = {"id", "status", "origin", "resolutionReason"})
     public record AutomaticRequestProjection(
             String id,
             RequestStatus status,
             RequestOrigin origin,
-            @Schema(nullable = true) ResolutionReason resolutionReason
-    ) {
-    }
+            @Schema(nullable = true) ResolutionReason resolutionReason) {}
 
     @Schema(
             name = "TodayLesson",
-            requiredProperties = {"schedule", "attendance", "checkinEligibility", "request"}
-    )
+            requiredProperties = {"schedule", "attendance", "checkinEligibility", "request"})
     public record TodayLessonResponse(
             LessonScheduleProjection schedule,
             @Schema(nullable = true) AttendanceProjection attendance,
             CheckinEligibility checkinEligibility,
-            @Schema(nullable = true) AutomaticRequestProjection request
-    ) {
-    }
+            @Schema(nullable = true) AutomaticRequestProjection request) {}
 
     @Schema(
             name = "StudentToday",
-            requiredProperties = {"date", "timeZone", "serverNow", "lessons", "_links"}
-    )
+            requiredProperties = {"date", "timeZone", "serverNow", "lessons", "_links"})
     public record TodayResponse(
             LocalDate date,
             String timeZone,
             Instant serverNow,
             List<TodayLessonResponse> lessons,
-            @JsonProperty("_links") Map<String, Link> links
-    ) {
-    }
+            @JsonProperty("_links") Map<String, Link> links) {}
 
     @Schema(
             name = "StudentSemesterSchedule",
-            requiredProperties = {"semester", "dateFrom", "dateTo", "updatedAt", "lessons", "_links"}
-    )
+            requiredProperties = {
+                "semester",
+                "dateFrom",
+                "dateTo",
+                "updatedAt",
+                "lessons",
+                "_links"
+            })
     public record ScheduleResponse(
             SemesterSummary semester,
             LocalDate dateFrom,
             LocalDate dateTo,
             Instant updatedAt,
             List<LessonScheduleProjection> lessons,
-            @JsonProperty("_links") Map<String, Link> links
-    ) {
-    }
+            @JsonProperty("_links") Map<String, Link> links) {}
 
-    @Schema(name = "StudentAttendanceMetricValue", requiredProperties = {"count", "percent"})
-    public record StudentAttendanceMetricValue(int count, @Schema(nullable = true) Double percent) {
-    }
+    @Schema(
+            name = "StudentAttendanceMetricValue",
+            requiredProperties = {"count", "percent"})
+    public record StudentAttendanceMetricValue(
+            int count, @Schema(nullable = true) Double percent) {}
 
-    @Schema(name = "StudentAttendanceMetricSet", requiredProperties = {
-            "present", "presentOrExcused", "excused", "absent", "held", "planned"
-    })
+    @Schema(
+            name = "StudentAttendanceMetricSet",
+            requiredProperties = {
+                "present",
+                "presentOrExcused",
+                "excused",
+                "absent",
+                "held",
+                "planned"
+            })
     public record StudentAttendanceMetricSet(
             StudentAttendanceMetricValue present,
             StudentAttendanceMetricValue presentOrExcused,
             StudentAttendanceMetricValue excused,
             StudentAttendanceMetricValue absent,
             int held,
-            int planned
-    ) {
-    }
+            int planned) {}
 
-    @Schema(name = "StudentAttendanceRequestOption", requiredProperties = {"id", "kind", "label", "enabled"})
+    @Schema(
+            name = "StudentAttendanceRequestOption",
+            requiredProperties = {"id", "kind", "label", "enabled"})
     public record StudentAttendanceRequestOption(
             String id,
             String kind,
             String label,
             boolean enabled,
-            @Schema(nullable = true) String reason
-    ) {
-    }
+            @Schema(nullable = true) String reason) {}
 
-    @Schema(name = "StudentAttendanceLesson", requiredProperties = {
-            "id", "date", "number", "subject", "type", "schedule", "status", "requestOptions"
-    })
+    @Schema(
+            name = "StudentAttendanceLesson",
+            requiredProperties = {
+                "id",
+                "date",
+                "number",
+                "subject",
+                "type",
+                "schedule",
+                "status",
+                "requestOptions"
+            })
     public record StudentAttendanceLesson(
             String id,
             LocalDate date,
@@ -262,48 +375,66 @@ public final class StudentApiModels {
             LessonType type,
             AttendanceLessonSchedule schedule,
             StudentAttendanceLessonStatus status,
-            List<StudentAttendanceRequestOption> requestOptions
-    ) {
+            List<StudentAttendanceRequestOption> requestOptions,
+            @Schema(nullable = true) StudentAttendanceExplanation explanation) {
+        public StudentAttendanceLesson(
+                String id,
+                LocalDate date,
+                String number,
+                SubjectProjection subject,
+                LessonType type,
+                AttendanceLessonSchedule schedule,
+                StudentAttendanceLessonStatus status,
+                List<StudentAttendanceRequestOption> requestOptions) {
+            this(id, date, number, subject, type, schedule, status, requestOptions, null);
+        }
     }
 
-    @Schema(name = "StudentAttendanceLessonSchedule", requiredProperties = {"startsAt", "endsAt", "room"})
+    public record StudentAttendanceExplanation(
+            @Schema(nullable = true) String reasonCode,
+            @Schema(nullable = true) String reasonText,
+            @Schema(nullable = true) String comment,
+            @Schema(nullable = true) String cancellationReason) {}
+
+    @Schema(
+            name = "StudentAttendanceLessonSchedule",
+            requiredProperties = {"startsAt", "endsAt", "room"})
     public record AttendanceLessonSchedule(
-            LocalTime startsAt,
-            LocalTime endsAt,
-            @Schema(nullable = true) String room
-    ) {
-    }
+            LocalTime startsAt, LocalTime endsAt, @Schema(nullable = true) String room) {}
 
-    @Schema(name = "StudentAttendanceDay", requiredProperties = {
-            "date", "weekday", "dayNumber", "state", "lessons"
-    })
+    @Schema(
+            name = "StudentAttendanceDay",
+            requiredProperties = {"date", "weekday", "dayNumber", "state", "lessons"})
     public record StudentAttendanceDay(
             LocalDate date,
             String weekday,
             String dayNumber,
             StudentAttendanceDayState state,
-            List<StudentAttendanceLesson> lessons
-    ) {
-    }
+            List<StudentAttendanceLesson> lessons) {}
 
-    @Schema(name = "StudentAttendanceHistorySegment", requiredProperties = {"id", "status"})
+    @Schema(
+            name = "StudentAttendanceHistorySegment",
+            requiredProperties = {"id", "status"})
     public record StudentAttendanceHistorySegment(
             String id,
-            StudentAttendanceHistoryStatus status
-    ) {
+            StudentAttendanceHistoryStatus status,
+            @Schema(nullable = true) StudentAttendanceExplanation explanation) {
+        public StudentAttendanceHistorySegment(String id, StudentAttendanceHistoryStatus status) {
+            this(id, status, null);
+        }
     }
 
-    @Schema(name = "StudentAttendanceTypeCard", requiredProperties = {"type", "metrics", "history"})
+    @Schema(
+            name = "StudentAttendanceTypeCard",
+            requiredProperties = {"type", "metrics", "history"})
     public record StudentAttendanceTypeCard(
             LessonType type,
             StudentAttendanceMetricSet metrics,
-            List<StudentAttendanceHistorySegment> history
-    ) {
-    }
+            List<StudentAttendanceHistorySegment> history) {}
 
-    @Schema(name = "StudentAttendanceSubject", requiredProperties = {
-            "id", "name", "typeCards"
-    })
+    @Schema(
+            name = "StudentAttendanceSubject",
+            requiredProperties = {"id", "name", "typeCards"})
     public record StudentAttendanceSubject(
             String id,
             String name,
@@ -312,107 +443,138 @@ public final class StudentApiModels {
             List<LessonType> selectedTypes,
             StudentAttendanceMetricSet selectedAggregate,
             List<StudentAttendanceTypeCard> typeCards,
-            List<StudentAttendanceSeriesPoint> series
-    ) {
-    }
+            List<StudentAttendanceSeriesPoint> series) {}
 
-    @Schema(name = "StudentAttendanceSeriesPoint", requiredProperties = {
-            "id", "label", "dateFrom", "dateTo", "state", "metrics"
-    })
+    @Schema(
+            name = "StudentAttendanceSeriesPoint",
+            requiredProperties = {"id", "label", "dateFrom", "dateTo", "state", "metrics"})
     public record StudentAttendanceSeriesPoint(
             String id,
             String label,
             LocalDate dateFrom,
             LocalDate dateTo,
             StudentAttendanceGraphState state,
-            StudentAttendanceMetricSet metrics
-    ) {
+            StudentAttendanceMetricSet metrics,
+            @JsonInclude(JsonInclude.Include.NON_NULL) StudentAttendanceGroupPresent groupPresent) {
+        public StudentAttendanceSeriesPoint(
+                String id,
+                String label,
+                LocalDate dateFrom,
+                LocalDate dateTo,
+                StudentAttendanceGraphState state,
+                StudentAttendanceMetricSet metrics) {
+            this(id, label, dateFrom, dateTo, state, metrics, null);
+        }
     }
 
-    @Schema(name = "StudentAttendanceGraph", requiredProperties = {"days", "weeks"})
+    @Schema(
+            name = "StudentAttendanceGroupPresent",
+            requiredProperties = {"numerator", "denominator", "percent"})
+    public record StudentAttendanceGroupPresent(
+            int numerator, int denominator, @Schema(nullable = true) Double percent) {}
+
+    @Schema(
+            name = "StudentAttendanceGraph",
+            requiredProperties = {"days", "weeks"})
     public record StudentAttendanceGraph(
-            List<StudentAttendanceSeriesPoint> days,
-            List<StudentAttendanceSeriesPoint> weeks
-    ) {
-    }
+            List<StudentAttendanceSeriesPoint> days, List<StudentAttendanceSeriesPoint> weeks) {}
 
-    @Schema(name = "StudentAttendanceOwnRank", requiredProperties = {
-            "position", "participantCount", "available"
-    })
+    @Schema(
+            name = "StudentAttendanceOwnRank",
+            requiredProperties = {"position", "participantCount", "available"})
     public record StudentAttendanceOwnRank(
-            @Schema(nullable = true) Integer position,
-            int participantCount,
-            boolean available
-    ) {
-    }
+            @Schema(nullable = true) Integer position, int participantCount, boolean available) {}
 
-    @Schema(name = "StudentAttendance", requiredProperties = {
-            "semester", "dateFrom", "dateTo", "serverNow", "terminalReadOnly",
-            "metrics", "days", "subjects", "graph", "ownRank", "_links"
-    })
+    @Schema(
+            name = "StudentAttendanceWeek",
+            requiredProperties = {
+                "dateFrom",
+                "dateTo",
+                "weekOfSemester",
+                "parityNumber",
+                "parityLabel"
+            })
+    public record StudentAttendanceWeek(
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            int weekOfSemester,
+            int parityNumber,
+            String parityLabel) {}
+
+    @Schema(
+            name = "StudentAttendance",
+            requiredProperties = {
+                "semester",
+                "dateFrom",
+                "dateTo",
+                "serverNow",
+                "weeks",
+                "terminalReadOnly",
+                "metrics",
+                "days",
+                "subjects",
+                "graph",
+                "ownRank",
+                "_links"
+            })
     public record StudentAttendanceResponse(
             SemesterSummary semester,
             LocalDate dateFrom,
             LocalDate dateTo,
             Instant serverNow,
+            List<StudentAttendanceWeek> weeks,
             boolean terminalReadOnly,
             StudentAttendanceMetricSet metrics,
             List<StudentAttendanceDay> days,
             List<StudentAttendanceSubject> subjects,
             StudentAttendanceGraph graph,
             StudentAttendanceOwnRank ownRank,
-            @JsonProperty("_links") Map<String, Link> links
-    ) {
-    }
+            @JsonProperty("_links") Map<String, Link> links) {}
 
-    @Schema(name = "StudentStatisticsSubject", requiredProperties = {"id", "name", "metrics"})
+    @Schema(
+            name = "StudentStatisticsSubject",
+            requiredProperties = {"id", "name", "metrics"})
     public record StudentStatisticsSubject(
-            String id,
-            String name,
-            StudentAttendanceMetricSet metrics
-    ) {
-    }
+            String id, String name, StudentAttendanceMetricSet metrics) {}
 
-    @Schema(name = "StudentStatistics", requiredProperties = {
-            "metrics", "ownRank", "semesterSeries", "subjects", "_links"
-    })
+    @Schema(
+            name = "StudentStatistics",
+            requiredProperties = {"metrics", "ownRank", "semesterSeries", "subjects", "_links"})
     public record StudentStatisticsResponse(
             StudentAttendanceMetricSet metrics,
             StudentAttendanceOwnRank ownRank,
             List<StudentAttendanceSeriesPoint> semesterSeries,
             List<StudentStatisticsSubject> subjects,
-            @JsonProperty("_links") Map<String, Link> links
-    ) {
-    }
+            @JsonProperty("_links") Map<String, Link> links) {}
 
-    @Schema(name = "StudentStatisticsRankingRow", requiredProperties = {
-            "id", "name", "position", "percentage", "isSelf"
-    })
+    @Schema(
+            name = "StudentStatisticsRankingRow",
+            requiredProperties = {"id", "name", "position", "percentage", "isSelf"})
     public record StudentStatisticsRankingRow(
-            String id,
-            String name,
-            Integer position,
-            Double percentage,
-            boolean isSelf
-    ) {
-    }
+            String id, String name, Integer position, Double percentage, boolean isSelf) {}
 
-    @Schema(name = "StudentStatisticsRanking", requiredProperties = {
-            "available", "page", "size", "total", "ownPosition", "rows"
-    })
+    @Schema(
+            name = "StudentStatisticsRanking",
+            requiredProperties = {"available", "page", "size", "total", "ownPosition", "rows"})
     public record StudentStatisticsRankingResponse(
             boolean available,
             int page,
             int size,
             int total,
             @Schema(nullable = true) Integer ownPosition,
-            List<StudentStatisticsRankingRow> rows
-    ) {
-    }
+            List<StudentStatisticsRankingRow> rows) {}
 
-    @Schema(name = "StudentStatisticsSubjectDetail", requiredProperties = {
-            "subjectId", "name", "availableTypes", "selectedTypes", "selectedAggregate", "series", "typeCards"
-    })
+    @Schema(
+            name = "StudentStatisticsSubjectDetail",
+            requiredProperties = {
+                "subjectId",
+                "name",
+                "availableTypes",
+                "selectedTypes",
+                "selectedAggregate",
+                "series",
+                "typeCards"
+            })
     public record StudentStatisticsSubjectDetailResponse(
             String subjectId,
             String name,
@@ -420,27 +582,38 @@ public final class StudentApiModels {
             List<LessonType> selectedTypes,
             StudentAttendanceMetricSet selectedAggregate,
             List<StudentAttendanceSeriesPoint> series,
-            List<StudentAttendanceTypeCard> typeCards
-    ) {
-    }
+            List<StudentAttendanceTypeCard> typeCards) {}
 
-    @Schema(name = "StudentHomeworkSemester", requiredProperties = {"id", "name", "dateFrom", "dateTo"})
-    public record HomeworkSemester(String id, String name, LocalDate dateFrom, LocalDate dateTo) {
-    }
+    @Schema(
+            name = "StudentHomeworkSemester",
+            requiredProperties = {"id", "name", "dateFrom", "dateTo"})
+    public record HomeworkSemester(String id, String name, LocalDate dateFrom, LocalDate dateTo) {}
 
-    @Schema(name = "StudentHomeworkSubject", requiredProperties = {"id", "name"})
-    public record HomeworkSubject(String id, String name) {
-    }
+    @Schema(
+            name = "StudentHomeworkSubject",
+            requiredProperties = {"id", "name"})
+    public record HomeworkSubject(String id, String name) {}
 
-    public enum HomeworkBindingMode { LESSON, DATE }
+    public enum HomeworkBindingMode {
+        LESSON,
+        DATE
+    }
 
     @Schema(
             name = "StudentHomeworkItem",
             requiredProperties = {
-                    "id", "subject", "title", "description", "link", "lessonDate", "lessonNumber", "bindingMode",
-                    "completed", "completedAt", "archived"
-            }
-    )
+                "id",
+                "subject",
+                "title",
+                "description",
+                "link",
+                "lessonDate",
+                "lessonNumber",
+                "bindingMode",
+                "completed",
+                "completedAt",
+                "archived"
+            })
     public record HomeworkItem(
             String id,
             HomeworkSubject subject,
@@ -448,84 +621,84 @@ public final class StudentApiModels {
             String description,
             @Schema(nullable = true) String link,
             LocalDate lessonDate,
-            @Schema(nullable = true, description = "Номер пары для LESSON; null для DATE") Integer lessonNumber,
+            @Schema(nullable = true, description = "Номер пары для LESSON; null для DATE")
+                    Integer lessonNumber,
             HomeworkBindingMode bindingMode,
             boolean completed,
             @Schema(nullable = true) Instant completedAt,
-            boolean archived
-    ) {
-    }
+            boolean archived) {}
 
     @Schema(
             name = "StudentHomework",
-            requiredProperties = {"semester", "from", "to", "serverNow", "items"}
-    )
+            requiredProperties = {"semester", "from", "to", "serverNow", "items"})
     public record HomeworkResponse(
             HomeworkSemester semester,
             LocalDate from,
             LocalDate to,
             Instant serverNow,
-            List<HomeworkItem> items
-    ) {
-    }
+            List<HomeworkItem> items) {}
 
-    @Schema(name = "StudentHomeworkCompletionCommand", requiredProperties = {"completed"})
-    public record HomeworkCompletionRequest(@NotNull Boolean completed) {
-    }
+    @Schema(
+            name = "StudentHomeworkCompletionCommand",
+            requiredProperties = {"completed"})
+    public record HomeworkCompletionRequest(@NotNull Boolean completed) {}
 
-    @Schema(name = "StudentHomeworkCompletion", requiredProperties = {"id", "completed", "completedAt"})
+    @Schema(
+            name = "StudentHomeworkCompletion",
+            requiredProperties = {"id", "completed", "completedAt"})
     public record HomeworkCompletionResponse(
-            String id,
-            boolean completed,
-            @Schema(nullable = true) Instant completedAt
-    ) {
-    }
+            String id, boolean completed, @Schema(nullable = true) Instant completedAt) {}
 
     @JsonTypeInfo(
             use = JsonTypeInfo.Id.NAME,
             include = JsonTypeInfo.As.EXISTING_PROPERTY,
             property = "kind",
-            visible = true
-    )
+            visible = true)
     @JsonSubTypes({
-            @JsonSubTypes.Type(value = CoordinatesGeo.class, name = "COORDINATES"),
-            @JsonSubTypes.Type(value = UnavailableGeo.class, name = "UNAVAILABLE")
+        @JsonSubTypes.Type(value = CoordinatesGeo.class, name = "COORDINATES"),
+        @JsonSubTypes.Type(value = UnavailableGeo.class, name = "UNAVAILABLE")
     })
     @Schema(
             name = "GeoInput",
             discriminatorProperty = "kind",
-            oneOf = {CoordinatesGeo.class, UnavailableGeo.class}
-    )
+            oneOf = {CoordinatesGeo.class, UnavailableGeo.class})
     public sealed interface GeoInput permits CoordinatesGeo, UnavailableGeo {
         GeoKind kind();
     }
 
     @Schema(
             name = "CoordinatesGeo",
-            requiredProperties = {"kind", "latitude", "longitude"}
-    )
+            requiredProperties = {"kind", "latitude", "longitude"})
     public record CoordinatesGeo(
             @NotNull @Schema(allowableValues = "COORDINATES") GeoKind kind,
             @NotNull @DecimalMin("-90.0") @DecimalMax("90.0") Double latitude,
-            @NotNull @DecimalMin("-180.0") @DecimalMax("180.0") Double longitude
-    ) implements GeoInput {
-    }
+            @NotNull @DecimalMin("-180.0") @DecimalMax("180.0") Double longitude)
+            implements GeoInput {}
 
-    @Schema(name = "UnavailableGeo", requiredProperties = {"kind", "reason"})
+    @Schema(
+            name = "UnavailableGeo",
+            requiredProperties = {"kind", "reason"})
     public record UnavailableGeo(
             @NotNull @Schema(allowableValues = "UNAVAILABLE") GeoKind kind,
-            @NotNull GeoUnavailableReason reason
-    ) implements GeoInput {
-    }
+            @NotNull GeoUnavailableReason reason)
+            implements GeoInput {}
 
-    @Schema(name = "StudentCheckinCommand", requiredProperties = {"geo"})
-    public record CheckinRequest(@NotNull @Valid GeoInput geo) {
-    }
+    @Schema(
+            name = "StudentCheckinCommand",
+            requiredProperties = {"geo"})
+    public record CheckinRequest(@NotNull @Valid GeoInput geo) {}
 
     @Schema(
             name = "StudentCheckinAck",
-            requiredProperties = {"outcome", "lessonId", "attendance", "request", "retryAt", "serverNow", "_links"}
-    )
+            requiredProperties = {
+                "outcome",
+                "lessonId",
+                "attendance",
+                "request",
+                "retryAt",
+                "serverNow",
+                "_links"
+            })
     public record CheckinAck(
             CheckinOutcome outcome,
             String lessonId,
@@ -533,16 +706,21 @@ public final class StudentApiModels {
             @Schema(nullable = true) AutomaticRequestProjection request,
             @Schema(nullable = true) Instant retryAt,
             Instant serverNow,
-            @JsonProperty("_links") Map<String, Link> links
-    ) {
-    }
+            @JsonProperty("_links") Map<String, Link> links) {}
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Schema(
             name = "MobileProblemDetails",
             description = "RFC 9457 Problem Details with a stable machine code",
-            requiredProperties = {"status", "type", "title", "detail", "instance", "timestamp", "code"}
-    )
+            requiredProperties = {
+                "status",
+                "type",
+                "title",
+                "detail",
+                "instance",
+                "timestamp",
+                "code"
+            })
     public record MobileProblemDetails(
             int status,
             URI type,
@@ -553,7 +731,5 @@ public final class StudentApiModels {
             @Schema(nullable = true) String traceId,
             ProblemCode code,
             @Schema(nullable = true) Instant retryAt,
-            @Schema(nullable = true) Map<String, String> extras
-    ) {
-    }
+            @Schema(nullable = true) Map<String, String> extras) {}
 }

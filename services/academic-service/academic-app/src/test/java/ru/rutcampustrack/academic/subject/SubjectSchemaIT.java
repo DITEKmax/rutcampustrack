@@ -1,5 +1,8 @@
 package ru.rutcampustrack.academic.subject;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -12,24 +15,20 @@ import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 /**
  * Phase 60-01 / D-01: подтверждает, что после миграции V12:
+ *
  * <ul>
- *   <li>{@code subjects.group_id} — {@code NOT NULL};</li>
- *   <li>{@code subjects.group_id} ссылается на {@code groups(id)} (FK);</li>
- *   <li>{@link SubjectRepository#findByGroupId} фильтрует по группе.</li>
+ *   <li>{@code subjects.group_id} — {@code NOT NULL};
+ *   <li>{@code subjects.group_id} ссылается на {@code groups(id)} (FK);
+ *   <li>{@link SubjectRepository#findByGroupId} фильтрует по группе.
  * </ul>
  */
 class SubjectSchemaIT extends AbstractAcademicIntegrationTest {
 
-    @Autowired
-    private SubjectRepository subjectRepository;
+    @Autowired private SubjectRepository subjectRepository;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
     private Long seedGroupId() {
         return jdbcTemplate.queryForObject(
@@ -80,7 +79,6 @@ class SubjectSchemaIT extends AbstractAcademicIntegrationTest {
         assertThat(page.getContent())
                 .extracting(Subject::getName)
                 .contains("Calculus", "Linear Algebra");
-        assertThat(page.getContent())
-                .allMatch(s -> s.getGroupId().equals(groupId));
+        assertThat(page.getContent()).allMatch(s -> s.getGroupId().equals(groupId));
     }
 }

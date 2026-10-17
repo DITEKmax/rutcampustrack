@@ -1,0 +1,1 @@
+No new product decision required by these bounded candidates. Reuse current accepted safeerrors/stablecodes and existing controlleddependency policy. All runtime/advice/legacydataset uncertainties are verification tasks, not implicit permission questions. D005 explicitly closes manualabsence fork; no reopening.

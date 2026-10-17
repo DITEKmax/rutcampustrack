@@ -1,21 +1,23 @@
 package ru.rutcampustrack.attendance.student;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 public final class StudentCheckinModels {
 
-    private StudentCheckinModels() {
-    }
+    private StudentCheckinModels() {}
 
-    public record Identity(long userId, String role, Long groupId, boolean headman, String displayName,
-                           boolean readOnly) {
-    }
+    public record Identity(
+            long userId,
+            String role,
+            Long groupId,
+            boolean headman,
+            String displayName,
+            boolean readOnly) {}
 
     public record Lesson(
             long id,
@@ -29,9 +31,7 @@ public final class StudentCheckinModels {
             LocalTime startsAt,
             LocalTime endsAt,
             String status,
-            boolean geoBlocked
-    ) {
-    }
+            boolean geoBlocked) {}
 
     public sealed interface Geo permits Coordinates, Unavailable {
         String canonicalValue();
@@ -40,7 +40,10 @@ public final class StudentCheckinModels {
     public record Coordinates(double latitude, double longitude) implements Geo {
         @Override
         public String canonicalValue() {
-            return "coordinates:" + Double.toHexString(latitude) + ':' + Double.toHexString(longitude);
+            return "coordinates:"
+                    + Double.toHexString(latitude)
+                    + ':'
+                    + Double.toHexString(longitude);
         }
     }
 
@@ -51,23 +54,20 @@ public final class StudentCheckinModels {
         }
     }
 
-    public enum Outcome { PRESENT, PENDING_CONFIRMATION }
-
-    public enum Resolution { GEO_CONFIRMED, HEADMAN_APPROVED, HEADMAN_REJECTED }
-
-    public record Attendance(
-            AttendanceStatus status,
-            AttendanceSource source,
-            Instant markedAt
-    ) {
+    public enum Outcome {
+        PRESENT,
+        PENDING_CONFIRMATION
     }
 
-    public record Request(
-            String id,
-            LateCheckinRequestStatus status,
-            Resolution resolution
-    ) {
+    public enum Resolution {
+        GEO_CONFIRMED,
+        HEADMAN_APPROVED,
+        HEADMAN_REJECTED
     }
+
+    public record Attendance(AttendanceStatus status, AttendanceSource source, Instant markedAt) {}
+
+    public record Request(String id, LateCheckinRequestStatus status, Resolution resolution) {}
 
     public record Ack(
             Outcome outcome,
@@ -75,7 +75,5 @@ public final class StudentCheckinModels {
             Attendance attendance,
             Request request,
             Instant retryAt,
-            Instant serverNow
-    ) {
-    }
+            Instant serverNow) {}
 }

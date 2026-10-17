@@ -1,0 +1,35 @@
+{
+  "status": "SEALED_READ_ONLY_NATIVE_METADATA_NO_HEAVY_RUNTIME",
+  "entries": [
+    {
+      "path": "preflight-proposal.safe.json",
+      "sha256": "f3f5482602f6b2d899ef19f99e4a52c236258ca55ac74feb3c42b3386698348d",
+      "bytes": 14394,
+      "mode": "0600"
+    },
+    {
+      "path": "native-metadata.safe.json",
+      "sha256": "2db8f8007c6fc66165094e1b8bea8db51374342c9876c073cf28fe2f120c3590",
+      "bytes": 15809,
+      "mode": "0600"
+    },
+    {
+      "path": "offline-cache-hashes.safe.json",
+      "sha256": "885bf131c283e8df0ab8b7009364a890aee73fb97e5887061e8ecb3e175a6925",
+      "bytes": 112062,
+      "mode": "0600"
+    },
+    {
+      "path": "source-inputs.safe.json",
+      "sha256": "c5b6e73c09c0dc3d9dcff9ce0cc5e2bc2b6602682ad671e313595cdf0e42681c",
+      "bytes": 668,
+      "mode": "0600"
+    },
+    {
+      "path": "read-metadata.py",
+      "sha256": "f1075e549f6108ce850e3a4da2c047807364c55ffaa8ad436ee6aebcc0355e48",
+      "bytes": 4965,
+      "mode": "0600"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "phase": "types",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/d002-step-diagnostic/typecheck-safe.cjs"
+  ],
+  "ready_sha256": "abf70b9342cb033e6f26f1759c59f51c1067b0cdc165cd0037416c3730e13acc",
+  "deadline_seconds": 180,
+  "absolute_stop_at": "2026-10-13T03:28:18.445730+00:00"
+}

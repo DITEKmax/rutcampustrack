@@ -1,0 +1,20 @@
+{
+  "time": "2026-10-12T06:14:53.523929+00:00",
+  "verdict": "ALL_KNOWN_ALIASES_ACCOUNTED_EXACT_PATH_FREEZE_PROPOSAL_READY",
+  "714reference_groups": 714,
+  "1322existing_reference_aliases": 1322,
+  "10831sole_candidate_paths": 10831,
+  "32nlink20_groups_known_aliases": 640,
+  "682nlink1_groups_known_aliases": 682,
+  "unknown_foreign_or_unaccounted_groups": 0,
+  "exact_proposed_COW_freeze_registry_paths": 12153,
+  "prior640_Root_owned_immutable_lineage_exact": true,
+  "full_safe_metadata_accounted_subset_potential_bytes": 1519378432,
+  "actual_freeze": "NOT_SET_ROOT_ACTION_REQUIRED",
+  "actual_recovery_bytes": 0,
+  "mutation_grant": "NONE",
+  "final_potential_headroom_bytes": 357098735,
+  "full256MiBtarget_at_snapshot": true,
+  "processes": [],
+  "resource_mutations": false
+}

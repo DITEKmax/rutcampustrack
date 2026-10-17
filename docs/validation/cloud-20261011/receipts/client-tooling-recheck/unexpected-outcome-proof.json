@@ -1,0 +1,10 @@
+{
+  "kind": "pure-reporter-unexpected-failure-control",
+  "browser": "NOT_STARTED",
+  "returnedStatus": "failed",
+  "storedStatus": "failed",
+  "retainedActualFailure": true,
+  "markerAbsent": true,
+  "stdoutSuppressed": true,
+  "stderrSuppressed": true
+}

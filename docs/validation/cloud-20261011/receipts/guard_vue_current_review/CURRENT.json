@@ -1,0 +1,55 @@
+{
+  "state": "COMPLETED_BOUNDED_REVIEW",
+  "scope": "READ_ONLY guard b78c narrow disappearance and Vue22 public prerequisite",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "root_source": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+  "runtime": "NOT_RUN",
+  "restored": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "bytes": 86218,
+      "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+      "read": "full"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "bytes": 5596,
+      "sha256": "267cf44af36b53a62672d28cf5a5597867daf514905a9251025f638535a9bce0",
+      "read": "full"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "bytes": 16719,
+      "sha256": "9badd7b0438f7476850f597ac21b869f6cccdd3645b481841853d9d2706e8465",
+      "read": "full"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "bytes": 9948,
+      "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65",
+      "read": "full"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "bytes": 3161,
+      "sha256": "a6abddc972df5bc35f9f5dbabc2f0ebe588c164f6dcda778404d85a1e5a5e130",
+      "read": "full"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-guard-and-vue-review.md",
+      "bytes": 3432,
+      "sha256": "247d027c64b06a235e578798406d28dad9c14a5eb64b8634538c3358fc4d9f42",
+      "read": "full"
+    }
+  ],
+  "utc": "2026-10-12T08:39:29.348912+00:00",
+  "guard_verdict": "APPROVE_SOURCE_ONLY",
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "Vue_verdict": "APPROVE_SOURCE_AND_STAGE_PRESERVATION",
+  "STAGE-PRE01": "CLOSED_SOURCE_AND_ACTUAL_PUBLIC_FILES",
+  "blocking_findings": [],
+  "pure_controls_native_exit": 0,
+  "next": "Root records outcome before any independent runtime grant; all originals immutable"
+}

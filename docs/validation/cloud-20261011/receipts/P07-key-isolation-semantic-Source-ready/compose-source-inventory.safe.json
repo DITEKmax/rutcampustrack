@@ -1,0 +1,23 @@
+[
+  {
+    "path": "docker-compose.prod.yml",
+    "before_sha256": "9d59c265db7350fb6c873a03dd49d974d9ec5c167e5383fbb821b498e08b8565",
+    "after_sha256": "204835919afa8d14d203eb6d1a56d0cb8827622b9a90cab239a9982e776cb3be",
+    "parsed_only_change": "remove Notification signing-volume mount",
+    "Auth_mount_preserved": true
+  },
+  {
+    "path": "docker-compose.e2e.yml",
+    "before_sha256": "2807d5a8c4cec7ff8f87b30107f9c19c83bd3570330b35596192d7d2039daf76",
+    "after_sha256": "3de84c8cf87fa1e31ba8d92e3a59d150ce74bb6dddcc4a01211dd780b3b2f42c",
+    "parsed_only_change": "remove Notification signing-volume mount",
+    "Auth_mount_preserved": true
+  },
+  {
+    "path": "infra/local-stand/compose.yml",
+    "before_sha256": "f30e432faa4ecd69839318a48311961998e01018f5e34743b312e7db230794db",
+    "after_sha256": "c4a832758858ea3124cbb40c1c3cb6147c50e4c5196d9b0719f64cfa6897ee4e",
+    "parsed_only_change": "remove Notification signing-volume mount",
+    "Auth_mount_preserved": true
+  }
+]

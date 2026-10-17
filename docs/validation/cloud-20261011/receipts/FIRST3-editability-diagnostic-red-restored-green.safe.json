@@ -1,0 +1,228 @@
+{
+  "state": "CHECKS_PASS_DIAGNOSTIC_CAUSE_ONLY",
+  "updated_utc": "2026-10-13T23:23:52.394111+00:00",
+  "base": "c6c7bf8e944004d0149be4482d792e0954efe8f2",
+  "worktree": "/workspace/rct-worktrees/first3-spec-frame-20261013",
+  "branch": "codex/first3-editability-current-diagnosis-20261013",
+  "current_browser_evidence": {
+    "producer": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+    "artifact_id": 11858835688,
+    "headman": "FAIL",
+    "helper": "FAIL",
+    "student": "PASS",
+    "lesson_roster_http": 200,
+    "report_editable": false,
+    "row_editable": false,
+    "actual_browser_checkout": "NOT_PROVED_BY_BROWSER_SAFE_SCHEMA"
+  },
+  "actual_product_cause": "UNKNOWN",
+  "confirmed_diagnostic_cause": "Observer read blockedReason but actual StudentAttendanceEntry serializes editBlockedReason. Historical false blockedReasonPresent does not show absent reason.",
+  "trace": [
+    "mobile-core getLessonAttendance -> /api/attendance/reports/lesson/{id}",
+    "Nginx /api -> Gateway attendance-service route -> ReportController.getLessonAttendance",
+    "ReportService.buildLessonAttendance -> selected EducationalTime clock instant, JournalLessonPolicy start, current semester/capability/transfer gates"
+  ],
+  "source_observations": {
+    "fixture": "weekday09:00 Europe/Moscow",
+    "lesson": "number1 canonical08:30 -> physical Schedule RPC snapshot",
+    "spring": "Initializer registers primary EducationalTime, normal ClockConfig retains independent real Clock; ReportService explicit @Autowired constructor selects provider clock. Current regression covers selected EducationalTime but not actual initializer+normal-config+Docker instance.",
+    "docker": "Attendance Dockerfile copies whole app source then runs bootJar; build dirs excluded by .dockerignore. No source-visible stale-image cause confirmed.",
+    "guard_preservation": "No UI/publicAPI/grants/securityClock/productPolicy/server/workflow/acceptedFIRST3assertion changes.",
+    "permission_date_followup": "Address-only distinct CheckAssistantPermission -> AssistantPermissionAuthority -> active durable role/group and assistant repositories has no CURRENT_DATE/LocalDate.now/date grant gate. REST mepermissions shares active student group/assistant repositories; journal semester RPC reads uncached archive/release/transition fields. Runtime equality not proved."
+  },
+  "modified": {
+    "tests/e2e/fixtures/first3-observer.ts": "c665056b6af8f2b8467ff335e57606a10d3885c7cf25bbff2ca761eeca274072",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "08271ac71fc0f25ff9637b392a7afcd470be2e9c1616fe21680b5874e6af0f07"
+  },
+  "diagnostic_correction": "Read actual field; emit only reportedEditBlock closed NONE/NOT_STARTED/PERMISSION_DENIED/SEMESTER_ARCHIVED/SEMESTER_WRITE_BLOCKED/TRANSFER_PENDING/LESSON_CANCELLED/UNKNOWN. No raw reason retained. Existing privacy control verifies field contract, known/unknown/absent and allowlist.",
+  "checks": [
+    {
+      "phase": "format_apply",
+      "exit": 0,
+      "expected_exit": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "phase": "format_check",
+      "exit": 0,
+      "expected_exit": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "phase": "types",
+      "exit": 0,
+      "expected_exit": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "phase": "old_field_RED",
+      "exit": 1,
+      "expected_exit": 1,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "phase": "restored_GREEN_privacy",
+      "exit": 0,
+      "expected_exit": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "terminal_reason": "NATIVE_TERMINAL"
+    }
+  ],
+  "native_runs": 5,
+  "grant": "/workspace/scratch/rct-validation/root_clock_next5_grants/first3-editability-diagnostic-light.safe.json",
+  "independent_review": "NOT_RUN",
+  "browser_retry": "NOT_RUN; unchanged retry prohibited",
+  "next": "One whole independent review of stable two-file diagnostic correction, then Root integration and changed-diagnostic ordinary CI. Product cause remains UNKNOWN.",
+  "native_seconds": 78.89,
+  "peaks": {
+    "own_rss": 400670720,
+    "shared_memory": 7281967104
+  },
+  "source_restored": true,
+  "dependency_link_absent": true,
+  "private_tmp_absent": true,
+  "recorded_births": [
+    {
+      "pid": 586724,
+      "start_ticks": 18746399,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586735,
+      "start_ticks": 18746493,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586746,
+      "start_ticks": 18746559,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586753,
+      "start_ticks": 18746816,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586760,
+      "start_ticks": 18746823,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586773,
+      "start_ticks": 18746965,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586794,
+      "start_ticks": 18747057,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586807,
+      "start_ticks": 18747128,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586820,
+      "start_ticks": 18747214,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586931,
+      "start_ticks": 18750291,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586944,
+      "start_ticks": 18750416,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586957,
+      "start_ticks": 18750549,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586964,
+      "start_ticks": 18750554,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586977,
+      "start_ticks": 18750696,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 586990,
+      "start_ticks": 18750804,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 587117,
+      "start_ticks": 18750919,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 587417,
+      "start_ticks": 18754003,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 587430,
+      "start_ticks": 18754119,
+      "state": "ABSENT"
+    }
+  ],
+  "privacy_control": {
+    "state": "PRIVACY_BOUNDARIES_PASSED",
+    "normalChildStatus": 0,
+    "markerAbsent": true,
+    "producerBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": false
+    },
+    "originalMetadataLeakReproduced": true,
+    "expectedFailureRetained": true,
+    "successRetained": true,
+    "guardControl": {
+      "canonicalReporterAccepted": true,
+      "sameBasenameAlternateRejected": true,
+      "extraReporterRejected": true,
+      "traceRejected": true,
+      "videoRejected": true,
+      "screenshotRejected": true,
+      "missingSnapshotGuardRejected": true,
+      "wrongSnapshotGuardRejected": true
+    },
+    "interruptedChildStatus": 0,
+    "interruptedChildSignal": null,
+    "interruptionBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": true
+    },
+    "interruptionPassed": true,
+    "missingGuardRejectedBeforeOperation": true,
+    "browser": "NOT_STARTED"
+  },
+  "red_control_state": "PRIVACY_CONTROL_FAILED",
+  "final_source_diff_check": 0,
+  "author_commit": "526705c568f6c573df03ee2874632888ba7a9aae",
+  "normal_commit_native_exit": 0,
+  "normal_commit_hook_output": "NONE_OBSERVED_NO_BYPASS",
+  "tracked_clean": true
+}

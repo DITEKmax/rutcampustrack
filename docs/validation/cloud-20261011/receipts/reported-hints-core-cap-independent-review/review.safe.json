@@ -1,0 +1,92 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "source_ready_sha256": "c5204b87f7d2909a7afe58107970d675e5711224e25fb8dfe9c7a8f1a972f7fb",
+  "author_manifest_sha256": "8f3ec6c0588d29f13375575440e231f46234c7147340a3034ce8cc9e461fee00",
+  "author_zip_sha256": "ece3d042a74c0c59d94b19728dcb25b96974133eebed7317b54db9d955f487c9",
+  "zip_members": 18,
+  "zip_crc_errors": 0,
+  "source2": {
+    "safe-reporter.ts": {
+      "before": "41c0adc7eb3f732400823a3c045f3af6f677b779891edeba346445e5f58e6cc9",
+      "after": "810a3742a4d475a57c5edf8815779ea76d0b5e72084959060423d4e79b16023f"
+    },
+    "artifact-privacy.ts": {
+      "before": "262c6db9dd8ea808138e646290b8a7bed8ab50763682547c5d66ff0c3e647aea",
+      "after": "0229fdbea1c4032b98b830a297652fe52482a9bb03f098d449cb282e67cde8c4"
+    }
+  },
+  "independent_preservation_checks": {
+    "failureStages_byte_exact": true,
+    "failureHttpStatuses_byte_exact": true,
+    "knownFailureMessages_byte_exact": true,
+    "classifySafeFailure_byte_exact": true,
+    "requirePrivateArtifacts_byte_exact": true,
+    "recordSafeFailure_byte_exact": true,
+    "sanitizer_wipe_tail_byte_exact": true,
+    "result_fields_reporter_stdio_attachment_tail_byte_exact": true
+  },
+  "counterexample": {
+    "execution": "functions V8 pure RAM on selected actual TS functions; only type annotations/as assertions erased, injected public static path adapter; no Node/helper/browser/API runtime",
+    "before": {
+      "total": 8,
+      "core": 8,
+      "hints": 0,
+      "core_statuses": [
+        401,
+        403,
+        404,
+        409,
+        410,
+        422,
+        423
+      ]
+    },
+    "after": {
+      "total": 8,
+      "core": 6,
+      "hints": 2,
+      "core_statuses": [
+        401,
+        403,
+        404,
+        409,
+        410
+      ]
+    },
+    "private_values_read": false,
+    "full_producer_native": "NOT_RUN"
+  },
+  "findings": [
+    {
+      "id": "HINTS-CORE-CAP-EVICTION",
+      "priority": 2,
+      "source": "after/artifact-privacy.ts",
+      "lines": [
+        50,
+        69,
+        74,
+        87
+      ],
+      "effect": "Early untrusted class/frame hints occupy the same max8 decoder result used by unchanged recordSafeFailure; later known core diagnoses are rejected when previous.length reaches8. Baseline preserves UNKNOWN+7core statuses while candidate preserves UNKNOWN+5core+2hints.",
+      "required": "Preserve original core priority under early/late/interleaved and repeated errors; reported hints may use only remaining slots in final total8. Add meaningful reverse-order/interleaving sensitivity controls, preserving original bounded privacy/32scan/core dedup.",
+      "control_gap": "EXISTING_MAX_EIGHT_NO_HINT_EVICTION preloads eight cores before hints and misses hints-before-late-core ordering."
+    }
+  ],
+  "other_source_findings": [],
+  "privacy_source_qualification": [
+    "Own descriptor-only message/stack reads; no name/prototype/getter/conversion read; message<=512 UTF16/singleline/control-free; stack<=8192 UTF16/16lines/eachframe<=1024/exact public symbol and canonical path grammar; no raw path/line/value/name/error/body/hash exported.",
+    "At most one standard class and one frame are exported by decoder; all nine reported enums force UNKNOWN/http0. Forged exact text remains untrusted; reported frame is not an authenticated source location or operation proof.",
+    "Original15 cause classifier/14statuses/privateguard/core recorder/wipe/result fields/reporterstdioattachments byte exact; byte equality alone does not preserve core capacity semantics after shared decoder change.",
+    "No actual FIRST3/D002 cause inferred from source or clock BEGINEND. Root strict collector must separately allow only exact9 reported enums at UNKNOWN/0 before integration/current collection."
+  ],
+  "planned_controls_qualification": [
+    "Old actual pinned serializer adapter requires exactly two class/frame-delivery failures among four predicates, parser0/native1; candidate23 predicates plus genuine browser-free3 expected-failed workers/protected producer privacy/formatter/types planned but NOT_RUN.",
+    "Current controls strongly target untrusted data/privacy/serialization but need cap-order regression above. Marker absence/error counts/statuses/bodies-not-started and closed rows saved before cleanup are meaningful native requirements."
+  ],
+  "caller_source_qualification": [
+    "Same pinned b78/status/observe derivative; explicit oldRED causal predicate(native1+normalterminal+settled/reaped/no supervision error/no signals), newall23/native0/worker3/privacy+format/types gates. Seven sequential phases180 with overall900+60;512MiBmanagedheap/1GiB RSS32MiB cache are sampled soft limits.",
+    "Source-only review does not grant Node/browser/API or actual capacity. Existing fixture private guards/current source ownership must remain intact; only explicit fresh grant permits own2 formatter writes."
+  ],
+  "private_native_errors_logs_grants_credentials_read": false,
+  "native_product_acceptance": "NOT_RUN"
+}

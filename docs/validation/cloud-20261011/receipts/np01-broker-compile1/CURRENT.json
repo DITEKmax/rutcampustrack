@@ -1,0 +1,42 @@
+{
+  "utc": "2026-10-12T06:56:16.734864+00:00",
+  "status": "NP01_COMPILE1_PASS_SOURCE_PRESERVED_ALL_OWN_PIDS_ABSENT_LEASE_RELEASED",
+  "worktree": "/workspace/rct-worktrees/np01-domain-bot",
+  "sha": "b4a0f1067c8275696404f8d369ff4247bcec766c",
+  "root_source_sha": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN",
+  "owned_runtime_pids": [],
+  "owned_container_ids": [],
+  "active_tool_session": null,
+  "default_Docker_socket": "operation not permitted; supported additional network metadata check succeeded",
+  "Docker": "28.4.0/vfs",
+  "next": "package safe compile/correction evidence; refresh hoststage/transient0 and native resource budget; wait separate BROKER1 lease",
+  "source_inventory": 3852,
+  "source_byte_equal": true,
+  "preflight_limitations": [
+    "VFS native logical Size known, allocated copies remain UNKNOWN until measured after separate broker grant",
+    "Python runner imports/7 scenarios/heldlease/nativeport assertion actuals NOT_RUN",
+    "current own plainAuth9a46 built after grant; earlier81d666 retained separately with member comparison"
+  ],
+  "failure": "ced755 new Java line280 AssertJ generic inference; new Python I001 line8",
+  "failure_evidence_sha256": "4dce8904e2f86f8509c2ecce4e84bdd9b8942c0b303a3b42362d0975b1bbab0d",
+  "authorized_correction_paths": [
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "services/notification-bot/tests/np01_broker_bridge_runner.py"
+  ],
+  "guard_source_sha256": "f539f126bb5591e89f1a9e1f6ac72fbb91ba0da39fccda02cd773ca515acf706",
+  "guard_copied_without_execution": false,
+  "original_seals_readonly_verified": "65+20+26 CRC/hash recorded;65 known exact originalsha; no writes",
+  "lease": "NP01_COMPILE1",
+  "runtime_grant_scope": "Auth plainjar + Academic compileJava/compileTestJava ONLY",
+  "observer_pid": 218223,
+  "active_native_child_pid": null,
+  "native_compile_exit": 0,
+  "compile_elapsed_seconds": 34.352,
+  "all_owned_processes_reaped": true,
+  "compile_test_class_present": true,
+  "tests_executed": 0
+}

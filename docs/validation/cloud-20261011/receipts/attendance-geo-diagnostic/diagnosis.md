@@ -1,0 +1,30 @@
+# Final disposition — owner source fork resolved
+D005 / Q005B, 2026-10-11: «Сохранить запрет гео после ручного «н»». Authoritative source AG-S04: /workspace/rutcampustrack/docs/product/decisions/2026-10-11-manual-absence-geo-block.md.
+
+Status RULED_OUT_SOURCE_FORK_RESOLVED; runtime NOT_RUN. Historical §3/manualgeo override is superseded for current acceptance. StudentCheckinService denial and StudentAttendanceSnapshotService disabled eligibility are correct by current owner decision. No product correction needed. Hypothetical Q005A tests withdrawn, not weakened to pass runtime; no baseline red/green claims. Both sole-author uncommitted candidate test patches restored exactly to reviewed8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5. `git status --short` empty and `git diff --exit-code`0. Product remains unchanged. No heavy process/lease, child, push or new commit. Existing canonical denial tests reusable by future baseline/CI validation, no new mirror tests added.
+
+Current contract SHA256: 39501a0169112f531064fbf40eeaf6b5a434e1a930b4e5113c37a21faceb8acf. rct-source-resolution and rct-verification supplied skills read at /workspace/rct-cloud-skills-20261011/project/*/SKILL.md; no shared manifest/docs mutations by author. Root owns accepted registry update.
+
+Historical diagnosis and withdrawn test proposal retained below for provenance only; it does not describe final accepted behavior.
+
+---
+# Attendance geo diagnostic checkpoint
+Revision8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5; baseline3908fad9624f97aec8891fc79338ceb6b0616bf3. Read-only source diagnosis, no heavy lease/runtime, no product/test edits. Requested Sol6.1/high, actualUNKNOWN; nochildren.
+
+Candidate contradiction: accepted packet combined §3 and canonical student-home transfer explicitly allow successful in-window geo over HEADMAN manualABSENT and failed geo automaticrequest. Current StudentCheckinService#executeTransaction checks isManualHeadmanAbsence twice before geofence, raises MANUAL_ABSENCE_REQUIRES_APPEAL. Existing StudentCheckinTransactionIT.manualHeadmanAbsenceRejectsBeforeGeofenceAndWithoutPairMutation asserts this behavior. Status NOT_RUN, not runtimeFAIL.
+
+Public path: POST /api/v1/student/lessons/{lessonId}/checkin, Idempotency-Key and geo body →StudentApiController#checkin→StudentCheckinFacade→MobileAttendanceClient→AttendanceStudentGrpcServiceImpl#checkin→StudentCheckinService. Signed identity/live admission remain unchanged. Grpc maps manualabsence to FAILED_PRECONDITION; BFF exposes conflict. No newroute needed.
+
+Additional client boundary: StudentAttendanceSnapshotService#eligibility returns HEADMAN_ABSENT_REQUIRES_APPEAL for manualABSENT before time/block/cooldown. StudentAttendanceSnapshotServiceTest.pendingAutoRequestDoesNotBypassHeadmanAbsence asserts it. Snapshot service+focusedtest scope extension requested root; noediting yet.
+
+Source authority flagged early: manifest backend-conflicts entry copy-archive with owner/date null and reason notchangingcontracts; student101 copy-canonical contains transferred rules and explicit priority over earliertext, samehash. Story historical appeal prohibition JS-STUDENT06/HEADMAN24 concerns past-pair manual appeal, separate from successful geo currentwindow. Root personally reopened fragments and dated decisions; Q005 ownerpending in main chat (A allow geo override+auto request, B preserve current denial). Only dependent correction blocked; no invented override.
+
+Minimal test proposal (after root source resolution/lease): replace proven-conflicting manual-denial IT with realMongo transaction + existing real outbox helper wired to LessonActionService. Synthetic manualABSENT complete lesson/group/semester fields, old revision+actor, Moscow fixedclock. AG01 verifies stored PRESENT/STUDENT_GEO, original ID, markedBy cleared/new revision, before/after history, GEO_ATTEMPT accepted snapshot, outbox payload and immutable replay/no duplicate. AG02 parameterize outside-radius and GPS unavailable, preserves manualABSENT, creates AUTO_GEO_FAILURE pending request+cooldown+receipt, durable history/events once, no appealbudget. Existing rollback/archive/busylesson/pendingexcuse/foreign/readOnly/window/concurrency IT retains guard coverage. AG03 snapshot focusedtest fixes actual eligibility projection if scope granted.
+
+Minimal product candidate: remove ONLY manualABSENT shortcircuits/helper from StudentCheckinService; retain pair/semester fences, secondread PRESENT shortcut, pendingmanual/excuse rejection, cooldown, eligibility/window and immutable receipts. Remove corresponding snapshot guard only if authorized. Keep compatibility enum/error schemas unchanged; manualappeal StudentRequestService guards untouched. Existing eventpublisher/history mechanisms reused. Baseline meaningful new assertions must fail on current implementation before correction.
+
+Proposed red-before command, NOT EXECUTED:
+python3 /workspace/rct-cloud-setup/run-gradle.py --no-daemon --max-workers=2 :services:attendance-service:attendance-app:compileJava :services:attendance-service:attendance-app:compileTestJava :services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.student.StudentAttendanceSnapshotServiceTest :services:attendance-service:attendance-app:integrationTest --tests ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT.manualHeadmanAbsence* --continue
+Managed network permission, current isolated Mongo container, no overlap with DELIVERY1; logs .agent/evidence/attendance-geo-validation and XML archived perrun. Following green run focused affected class only if no newdependency requires widercheck. Real client/fullstack remains root acceptance.
+
+Prepared tracked WIP (two focused tests only, no runtime): success/history/replay, failed geo parameterized outside/unavailable with exhausted manualbudget untouched, admission denied blocked/cancelled/foreign/afterwindow and full Mongo rollback on outbox insertion failure. Existing race test removes allowance for manualabsence denial conditional on Q005A; existing source guard tests retained. `git diff --check` PASS. Q005 answer+lease required for dependent runtime/fix.

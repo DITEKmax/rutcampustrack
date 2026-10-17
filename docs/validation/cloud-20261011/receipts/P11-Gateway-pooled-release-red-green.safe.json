@@ -1,0 +1,349 @@
+{
+  "state": "FINITE_PUBLIC_GATEWAY_BODYBOUND_RED_GREEN_COMMITTED_REVIEW_FINAL_PENDING",
+  "updated_utc": "2026-10-14T00:10:57.802778+00:00",
+  "base": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "worktree": "/workspace/rct-worktrees/shared-validator-execution-20261013",
+  "branch": "codex/auth-body-bound-actual-20261013",
+  "preserved_previous_branch": "codex/schedule-historical-upgrade-20261013",
+  "selected_model": "gpt-6.1-sol",
+  "selected_effort": "high",
+  "actual_model_effort": "UNKNOWN",
+  "ids": [
+    "Q13",
+    "B08",
+    "P11"
+  ],
+  "adequate_existing_actual_proof": false,
+  "existing_reused_source_cases": [
+    {
+      "class": "ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest",
+      "method": "knownOversizeBodyReturns413WithoutDownstreamCall",
+      "status": "PASSED",
+      "qualification": "MockServerHttpRequest Content-Length4097 no actual transport"
+    },
+    {
+      "class": "ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest",
+      "method": "chunkedOversizeBodyReturns413WithoutDownstreamCall",
+      "status": "PASSED",
+      "qualification": "MockServerHttpRequest Flux buffers4096+1 no actual transport"
+    }
+  ],
+  "retained_receipt": "docs/validation/cloud-20261011/receipts/current657-CI-first3-fail-three-gates-success-SAFE/sealed/safe-unit-outcomes-api-gateway-1-test.json",
+  "retained_test_source_sha256": "9335711a174d7aa67e3b26be1cff5d5c8db7a8bc33c10a83476505485ba66cda",
+  "retained_source_identity_current": true,
+  "source_findings": [
+    "Existing4096 hardreadbound applies Gateway /api/auth/login only",
+    "Auth direct /auth/login has no4096 request-body bound in current source",
+    "Prod/e2e compose Auth expose9090/private_net with no host ports; source private network configuration does not prove deployment reachability",
+    "Original P11 acceptance requires fixed/chunked413 before expensive processing and consideration of directAuth reachability, not unconditional directAuth413"
+  ],
+  "source_sha256": {
+    "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilter.java": "e0f5399b8c126791579914cc1719ffdf719f516e8f02a8ad3728d64820c60764",
+    "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilterTest.java": "9335711a174d7aa67e3b26be1cff5d5c8db7a8bc33c10a83476505485ba66cda",
+    "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java": "33046ce94aac46b3b0055cd46b81d49107dab3536b503780f8f9b646868fa446",
+    "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthController.java": "f03ff5119289f80f3006401910354194624a746435e70c85aa0ed3240b810d17",
+    "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/LoginRequest.java": "e21f07f0f9061458eba634fbf519489004ebcfecd8e79f02fd4335bdd89539ea",
+    "docker-compose.prod.yml": "204835919afa8d14d203eb6d1a56d0cb8827622b9a90cab239a9982e776cb3be",
+    "docker-compose.e2e.yml": "3de84c8cf87fa1e31ba8d92e3a59d150ce74bb6dddcc4a01211dd780b3b2f42c"
+  },
+  "proposed_minimum": "Completed coherent one-line productionfilter bufferownership correction + ONE existingGatewayIT realTCP regression with originalconnectionbehavior",
+  "inventory": {
+    "created": [],
+    "modified": [
+      "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilter.java",
+      "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java"
+    ],
+    "deleted": []
+  },
+  "native": "COMPLETE_SCOPED_GREEN_6PASS_0FES",
+  "heavy_attempts": 2,
+  "public_auth_reachability": "UNKNOWN",
+  "whole_P11": "UNKNOWN",
+  "cleanup": {
+    "all_processes_reaped": true,
+    "all_containers_settled": true,
+    "all_tmp_removed": true,
+    "heavy_released": true
+  },
+  "root_scope_clarification": "Public actual Gateway /api/auth/login4096 bound; no new directAuth4096 policy. Existing Gateway RANDOM_PORT stack and real loopback upstream HTTP witness accepted. No manualGateway adapter/deps.",
+  "test_path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java",
+  "test_source_sha256": "c95fc94ba6b76902bea007c45db7576b49ac8fe17d34afa472c741c31d1527ee",
+  "case": "ru.rutcampustrack.gateway.ratelimit.RateLimitIT.fixedAndChunkedLoginBodiesOver4096AreRejectedBeforeUpstreamHttp",
+  "transport_assertions": [
+    "HttpURLConnection fixedLengthStreaming4097 and chunkedStreaming4097 ->413/problemJSON",
+    "Real upstream /auth/login HTTP request count unchanged after each oversize",
+    "Exactly4096validJSON+whitespace fixed/chunked ->upstream401/requestcount increments"
+  ],
+  "docker_readonly_inventory": "Managedsocket permissiondenied in sandbox; no startup, no rawmetadata",
+  "resources": {
+    "workspace_available_bytes": 6451798016,
+    "gradle_cached": true,
+    "wiremock_3_9_1_cached": true,
+    "testcontainers_1_20_4_cached": true,
+    "image_inventory": "UNKNOWN"
+  },
+  "limitations": [
+    "WireMock is an actualHTTP upstream witness, not genuineAuth/password/session acceptance",
+    "No production/publicreachability/TLS/browser proof",
+    "Auth privatecompose source does not prove actual deployment reachability",
+    "WholeP11 remainsUNKNOWN outside finite transportcases"
+  ],
+  "candidate_command": [
+    "bash",
+    "./gradlew",
+    "--offline",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--console=plain",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+    "--system-prop=org.gradle.java.compile-classpath-packaging=true",
+    ":services:api-gateway:compileTestJava",
+    ":services:api-gateway:test",
+    "--tests",
+    "ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest",
+    ":services:api-gateway:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.gateway.ratelimit.RateLimitIT.fixedAndChunkedLoginBodiesOver4096AreRejectedBeforeUpstreamHttp",
+    "--rerun"
+  ],
+  "formatter_idempotency": {
+    "state": "PASS_CURRENT_TWO_PATHS",
+    "filter_native_exact_repeat_byteequal": true,
+    "filter_sha256": "56a4423f20832942587be8bd85953a581279d27f1f72dac3e90ad75bbabb60a2",
+    "test_prior_native_exact_repeat_reused_identical_source": true,
+    "test_sha256": "c95fc94ba6b76902bea007c45db7576b49ac8fe17d34afa472c741c31d1527ee",
+    "named_apply_check_tasks": "SKIPPED_IDEHOOK_spotlessJava_actual_transform_idempotency_verified"
+  },
+  "root_grant": "/workspace/scratch/rct-validation/root_clock_next5_grants/public-gateway-login-body-bound.safe.json",
+  "actual01": {
+    "case_status": "FAILED",
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "failure_type": "java.net.SocketException",
+    "socket_category": "Connection reset",
+    "failure_at": "first4096boundedcontrol getResponseCode",
+    "pre_failure_assertions": "Both4097fixed/chunked413/problemJSON/upstreamcount0 passed",
+    "server_exception": "io.netty.util.IllegalReferenceCountException refCnt0 decrement1",
+    "classification": "CauseUNKNOWN clientkeepalive or serverbufferownership; no productdefectclaim",
+    "original_junit_xml_private": "/workspace/scratch/rct-validation/auth_body_bound_actual/actual01/original-RED.junit.private.xml",
+    "original_junit_xml_sha256": "732f1deddeef6c5397fafdaf3c8ab183f18bce6c95800a96a52eb60340bb30f5",
+    "original_junit_preserved_before_green": true
+  },
+  "correction_source": "Delete only redundant trailingfilterdoOnDiscard release hook. DataBufferimport remainsused. Originaltestconnectionbehavior restored; Connectionclose diagnostic removed/unexecuted.",
+  "product_filter_sha256": "56a4423f20832942587be8bd85953a581279d27f1f72dac3e90ad75bbabb60a2",
+  "cached_source_confirmation": {
+    "spring_core_version": "6.2.19",
+    "spring_core_jar_sha256": "52146689e71a911c92bac26677d73c692512a739893a57710cc233591756bff6",
+    "reactor_core_version": "3.7.19",
+    "reactor_core_jar_sha256": "50390c15320c578784f60ea9d4d3f7a3eff9ba90c6567f38c6cce5c9f1f69faa",
+    "spring_web_version": "6.2.19",
+    "spring_web_jar_sha256": "ca88e364ecebee61163e2260e8a20584138eca74e28a050d6a2ef6302bad2f2d",
+    "analysis_method": "Read-only Pythonstdlibzip/classfilemethod+bootstrap inspection; no cachedcode executed or sourcecopies/framework written",
+    "join": "join(Publisher,int) already installs Mono.doOnDiscard(DataBuffer.class,DataBufferUtils.release)",
+    "reactor": "Operators.discardLocalAdapter existing/newconsumerhooks compose with Consumer.andThen",
+    "request_body": "ReactorServerHttpRequest.getBody receive().retain().map(NettyDataBufferFactory.wrap)",
+    "allocated_guard": "NettyDataBuffer.isAllocated uses underlyingrefCnt>0; secondrelease can consume remainingNettyowner ref after firstreleasesSpringretained ref",
+    "coverage_gap": "Existingoversizemocks useDefaultDataBufferFactory; no pooledNetty ownership/referencecount proof",
+    "source_verdict": "Redundantreleasehook confirmed; exact causalclosure of subsequent4096Connectionreset still requires nativeoriginalconnectionGREEN"
+  },
+  "native_next_required": [
+    "FreshRootresourcegrant afterclockheavy freed",
+    "Scopedformatter/idempotency two currentSourcepaths",
+    "ExistingLoginBodyExtractionFilterTest5cases plus ONEselectedrealGatewayIT",
+    "Confirmfixed/chunked4097refusal/upstream0 AND subsequentexact4096controls401/upstream1perrequest with originalconnectionbehavior",
+    "Rejectclosure ifIllegalReferenceCountException remains incapturedownXML",
+    "Independentreview/currentCI/integration Root-owned"
+  ],
+  "green_grant": "/workspace/scratch/rct-validation/root_clock_next5_grants/P11-pool-release-green.safe.json",
+  "original_connection_behavior": true,
+  "connection_close_diagnostic": "Removed; neverrun; notacceptedfixturefix",
+  "green_source_sha256": {
+    "filter": "56a4423f20832942587be8bd85953a581279d27f1f72dac3e90ad75bbabb60a2",
+    "test": "c95fc94ba6b76902bea007c45db7576b49ac8fe17d34afa472c741c31d1527ee"
+  },
+  "green_safe_results": [
+    {
+      "task": "test",
+      "class": "ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest",
+      "xml_sha256": "9b08cc1119af51c5cc1d17a95b79665e33c5dc97b18c4ca3b505ecce7e5dedc0",
+      "counts": {
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "method": "knownOversizeBodyReturns413WithoutDownstreamCall()",
+          "status": "PASS"
+        },
+        {
+          "method": "orderIsAfterJwtAndBeforeInternalIssuer()",
+          "status": "PASS"
+        },
+        {
+          "method": "chunkedOversizeBodyReturns413WithoutDownstreamCall()",
+          "status": "PASS"
+        },
+        {
+          "method": "validBodyIsReplayedExactlyOnceAndLoginIsNormalized()",
+          "status": "PASS"
+        },
+        {
+          "method": "emptyAndMalformedBodiesReachDownstreamOnce()",
+          "status": "PASS"
+        }
+      ],
+      "illegal_reference_count_exception_present": false,
+      "public_refcount_zero_present": false
+    },
+    {
+      "task": "integrationTest",
+      "class": "ru.rutcampustrack.gateway.ratelimit.RateLimitIT",
+      "xml_sha256": "a7e9be37dc588edade1cff29b8b52a47e9b6771e72c64e111dfd77132e700321",
+      "counts": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "method": "fixedAndChunkedLoginBodiesOver4096AreRejectedBeforeUpstreamHttp()",
+          "status": "PASS"
+        }
+      ],
+      "illegal_reference_count_exception_present": false,
+      "public_refcount_zero_present": false
+    }
+  ],
+  "finite_public_gateway_result": "PASS fixed/chunked4097 rejected413 before upstream, subsequentfixed/chunked4096 reachesupstream401 withcountincrement, originalTCPbehavior, noNettyrefcountERROR",
+  "pooled_cause_state": "SUPPORTED_BY_EXACT_CACHED_OWNERSHIP_AND_ORIGINAL_RED_SINGLE_LINE_CORRECTION_GREEN",
+  "independent_review": "PENDING_ROOT_ASSIGNMENT",
+  "integration_current_CI": "PENDING_ROOT_INTEGRATION_AND_FRESH_ORDINARY_CI",
+  "native_phase_receipts": [
+    {
+      "phase": "format01",
+      "native_exit": 0,
+      "elapsed_seconds": 18.9,
+      "all_owned_processes_reaped": true,
+      "containers_settled": true,
+      "tmp_removed": true,
+      "private_log": "/workspace/scratch/rct-validation/auth_body_bound_actual/format01/native.raw.private.log",
+      "terminal_receipt": "/workspace/scratch/rct-validation/auth_body_bound_actual/format01/terminal.safe.json",
+      "peaks": {
+        "shared": 6079844352,
+        "rss": 644427776,
+        "min_free": 6450167808,
+        "log_bytes": 630
+      }
+    },
+    {
+      "phase": "format-idempotency01",
+      "native_exit": 0,
+      "elapsed_seconds": 16.82,
+      "all_owned_processes_reaped": true,
+      "containers_settled": true,
+      "tmp_removed": true,
+      "private_log": "/workspace/scratch/rct-validation/auth_body_bound_actual/format-idempotency01/native.raw.private.log",
+      "terminal_receipt": "/workspace/scratch/rct-validation/auth_body_bound_actual/format-idempotency01/terminal.safe.json",
+      "peaks": {
+        "shared": 6243905536,
+        "rss": 807546880,
+        "min_free": 6450118656,
+        "log_bytes": 642
+      }
+    },
+    {
+      "phase": "actual01",
+      "native_exit": 1,
+      "elapsed_seconds": 42.86,
+      "all_owned_processes_reaped": true,
+      "containers_settled": true,
+      "tmp_removed": true,
+      "private_log": "/workspace/scratch/rct-validation/auth_body_bound_actual/actual01/native.raw.private.log",
+      "terminal_receipt": "/workspace/scratch/rct-validation/auth_body_bound_actual/actual01/terminal.safe.json",
+      "peaks": {
+        "shared": 6891491328,
+        "rss": 1256849408,
+        "min_free": 6330781696,
+        "log_bytes": 3949
+      }
+    },
+    {
+      "phase": "green-format01",
+      "native_exit": 0,
+      "elapsed_seconds": 26.21,
+      "all_owned_processes_reaped": true,
+      "containers_settled": true,
+      "tmp_removed": true,
+      "private_log": "/workspace/scratch/rct-validation/auth_body_bound_actual/green-format01/native.raw.private.log",
+      "terminal_receipt": "/workspace/scratch/rct-validation/auth_body_bound_actual/green-format01/terminal.safe.json",
+      "peaks": {
+        "shared": 6700900352,
+        "rss": 707260416,
+        "min_free": 6443958272,
+        "log_bytes": 636
+      }
+    },
+    {
+      "phase": "green-format-idempotency01",
+      "native_exit": 0,
+      "elapsed_seconds": 17.24,
+      "all_owned_processes_reaped": true,
+      "containers_settled": true,
+      "tmp_removed": true,
+      "private_log": "/workspace/scratch/rct-validation/auth_body_bound_actual/green-format-idempotency01/native.raw.private.log",
+      "terminal_receipt": "/workspace/scratch/rct-validation/auth_body_bound_actual/green-format-idempotency01/terminal.safe.json",
+      "peaks": {
+        "shared": 6325436416,
+        "rss": 634232832,
+        "min_free": 6443896832,
+        "log_bytes": 636
+      }
+    },
+    {
+      "phase": "green-actual01",
+      "native_exit": 0,
+      "elapsed_seconds": 43.77,
+      "all_owned_processes_reaped": true,
+      "containers_settled": true,
+      "tmp_removed": true,
+      "private_log": "/workspace/scratch/rct-validation/auth_body_bound_actual/green-actual01/native.raw.private.log",
+      "terminal_receipt": "/workspace/scratch/rct-validation/auth_body_bound_actual/green-actual01/terminal.safe.json",
+      "peaks": {
+        "shared": 7072055296,
+        "rss": 1224077312,
+        "min_free": 6328737792,
+        "log_bytes": 3274
+      }
+    }
+  ],
+  "commit": "47dff0c97a3802d32fce5fe4d89da9a0bb87f6ab",
+  "final_clean_status": "",
+  "normal_commit": {
+    "result": "native0",
+    "hooks": "Existingconfigurationunchanged; normalgitcommit; no --no-verify/skip/corehooksPathoverride",
+    "inventory": "twoassignedpaths only"
+  },
+  "verification_metrics": {
+    "actual_transport_attempts": 2,
+    "native_phases": 6,
+    "native_total_seconds": 165.8,
+    "reason_for_second_actual": "Exactcachedhookownership + minimal confirmedproductioncorrection after originalrealRED, originaltestTCPbehaviorunchanged",
+    "reason_for_formatter_repeats": "Exactfilemechanicalformatter idempotency, namedIDEhookApply/CheckSKIPPED qualification",
+    "test_formatter_replay_after_correction": "Reusedunchangedc95 proof; no repeat"
+  },
+  "root_acceptance": {
+    "at": "2026-10-14T00:11:31.897077+00:00",
+    "status": "FINITE_NATIVE_GREEN_INDEPENDENT_APPROVE_INTEGRATED",
+    "review": "P11-Gateway-pooled-release-independent-review.safe.md",
+    "actual_current_CI": "PENDING",
+    "integrated_sha": "8b16b7793f03574801646e80befa8d57830adb17",
+    "source_identity": true
+  }
+}

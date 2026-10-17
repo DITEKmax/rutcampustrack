@@ -1,0 +1,45 @@
+{
+  "schema": "RCT_INDEPENDENT_READONLY_NARROW_RECHECK_SAFE_V1",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "ready_sha256": "78178f656c9a8ce6e02dedc72210dff4526b2acdf62d77849e64d5c90c90dc43",
+  "selected": "gpt-6.1-sol/xhigh",
+  "actual": "UNKNOWN",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 370,
+      "sha256": "3b49c888618870f8aaeb29e4cbdbc94c5592c8bcb37d5bdbe26aed4be80babf3"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 805,
+      "sha256": "eeb01708ebbac8e0a96c166602f1e2d6d4497fd0632eae3ecb60ecbefc554590"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 9072,
+      "sha256": "e9de549df41457c71d4c9fd274d40c6b394db4e980d3ee289531d48f603722ae"
+    },
+    {
+      "path": "attempts.safe.ndjson",
+      "bytes": 255,
+      "sha256": "699e78a7f36d9bf0430db744cf78eea0d51b1165968db4e2e97f36f26f5d59e0"
+    },
+    {
+      "path": "finite-source-conclusions.safe.json",
+      "bytes": 3610,
+      "sha256": "fe071011273706225f48c3afc0228425257342be41490098434573c2f089bab8"
+    },
+    {
+      "path": "restoration.safe.json",
+      "bytes": 1326,
+      "sha256": "a012131b142fa707f506a37bdb0dc1db7f418bdda90329979182a31f8c561507"
+    },
+    {
+      "path": "source-identity.safe.json",
+      "bytes": 11247,
+      "sha256": "4715d49b3469fe64ed5ff46a25cff6f5caa8ec98aca906ab1c05321498bc79bf"
+    }
+  ],
+  "self_manifest": "Inner ZIP manifest, exact bytes bound by outer seal."
+}

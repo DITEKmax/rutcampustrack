@@ -1,0 +1,15 @@
+{
+  "type": "dict",
+  "keys": [
+    "status",
+    "metadata_only",
+    "no_mutation_permission",
+    "paths",
+    "serialized_reference_link_ledger",
+    "protected_active_writer_paths_are_exact_fences",
+    "prior640_exact_ownership_and_COW_lineage_verified",
+    "active_scope_shared_assets",
+    "all_unknown_groups_paused"
+  ],
+  "sha256": "3b3bfba8affa57cb6b4ed6ec43015bf148b65d61c011e7dba21cfecc1c813a16"
+}

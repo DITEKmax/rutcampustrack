@@ -1,0 +1,21 @@
+{
+  "state": "REAL_PUSH_AND_INDEPENDENT_READBACK_VERIFIED",
+  "utc": "2026-10-14T08:39:14.184294+00:00",
+  "baseline_main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "parent": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+  "local": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+  "remote": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+  "pr_head": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+  "pr": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+  "draft": true,
+  "base": "main",
+  "merged": false,
+  "advertised_merge": "e78a50d6638c353f003f3012115eaa992e8c4359",
+  "actual_checkout": "NOT_READ_YET",
+  "native_commit_push": "93446exit0/settled/reaped",
+  "source_count": 8,
+  "all_paths": 31,
+  "branch": "codex/server-validation-20261011",
+  "CI_Coverage_Security_current": "NOT_READ_YET; ca9f receipts do not claim new execution",
+  "app_artifact_attachment": "UNKNOWN; call492 hung/terminated no native effect, GitHub PR exists and readable"
+}

@@ -1,0 +1,44 @@
+{
+  "status": "PASS_SYNTHETIC_GUARDS_ONLY",
+  "rows": {
+    "HOST-G01": {
+      "before_lexical_escape_accepted": true,
+      "after_parent_traversal_rejected": true,
+      "inside_and_outside_symlinks_rejected": true,
+      "positive_resolved_owned_path": true,
+      "foreign_contents_read": false
+    },
+    "HOST-G03": {
+      "before_exact_copy_forwarded_synthetic_java_spring_unrelated_credential": true,
+      "after_parent_overrides_and_unrelated_credentials_absent": true,
+      "approved_proxy_and_own_synthetic_credential_retained": true,
+      "unreviewed_maps_channels_and_overlap_rejected": true,
+      "real_environment_values_read": false,
+      "secret_values_printed": false
+    },
+    "HOST-G02": {
+      "before": {
+        "old_native_status": 130,
+        "old_claimed_settled": true,
+        "actual_child_still_alive_at_claim": true,
+        "pid": 197625
+      },
+      "after": {
+        "signal_count": 2,
+        "pid": 197627,
+        "native_exit": -9,
+        "settled": true,
+        "idempotent_second_settlement": true,
+        "actual_pid_absent": true
+      },
+      "failure_reports_unsettled": true
+    },
+    "false_grant": {
+      "native_exit": 2,
+      "safe_status_only": true,
+      "app_child_started": false
+    }
+  },
+  "no_network": true,
+  "JVM_app_browser": "NOT_RUN"
+}

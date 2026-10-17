@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-12T00:50:39.636610+00:00",
+  "phase": "ebsr-auth-compatibility-1",
+  "head": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "wipHash": "dcbb452a806d114e0e90cb6db0e2636781a2e2b93f9ada5ae101c15ba6748fed",
+  "command": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    ":services:auth-service:auth-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.auth.integration.AuthIT",
+    "--tests",
+    "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+    "--tests",
+    "ru.rutcampustrack.auth.integration.OpenApiSnapshotIT",
+    "--rerun",
+    "--continue",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m"
+  ],
+  "lease": "EXPORTS3",
+  "status": "RUNNING",
+  "sourceManifest": "ebsr-auth-compatibility-1-source-manifest.json",
+  "sourceManifestSHA256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+  "testFixtureControls": {}
+}

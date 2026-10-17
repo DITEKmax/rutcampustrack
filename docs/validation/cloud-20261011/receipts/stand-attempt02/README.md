@@ -1,0 +1,1 @@
+Immutable safe original receipt archive SHA256 4df6481ced3351fff5a1ef8c81c67a99433c4ec78239f5ff37e73341dc4a9cb0. Verified 20 member byte hashes. ACTUAL_v4_DOCKER9_DISK_FLOOR_STOP_HOST7_NOT_STARTED_CLEANUP_COMPLETE. Actual complete client acceptance NOT_RUN.

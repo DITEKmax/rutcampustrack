@@ -1,0 +1,53 @@
+{
+  "artifact": 11871860377,
+  "producer": "3e89c61b282233f4bda2db693bde939a83968bc2",
+  "run": 38513146910,
+  "digest": "sha256:544e626e51c8fa066fd0c9c317c267e58cde7364cf383cb6fc3f42606cf4b23d",
+  "bytes": 416,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 451,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 5052,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 716
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "ADMIN_LIFECYCLE",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+  "reader": {
+    "native_pid": 644481,
+    "exit": 0,
+    "reaped": true,
+    "private_input_removed": true
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "job_id": 114688682262,
+  "checkout": [
+    "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+  ],
+  "nativeSummary": [],
+  "ruff": [
+    {
+      "code": "I001",
+      "message": "I001 [*] Import block is un-sorted or un-formatted",
+      "location": "tests/np01_broker_bridge_runner.py:8:1"
+    }
+  ]
+}

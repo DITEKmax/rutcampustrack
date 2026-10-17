@@ -1,0 +1,38 @@
+{
+  "source_revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "findings": [
+    {
+      "id": "BR-T01",
+      "status": "CLOSED_SOURCE",
+      "native_runtime": "NOT_RUN"
+    },
+    {
+      "id": "BR-G01",
+      "status": "CLOSED_SOURCE",
+      "native_runtime": "NOT_RUN"
+    },
+    {
+      "id": "BR-G02",
+      "status": "CLOSED_SOURCE",
+      "native_runtime": "NOT_RUN"
+    },
+    {
+      "id": "BR-R01",
+      "status": "CLOSED_SOURCE",
+      "native_runtime": "NOT_RUN"
+    }
+  ],
+  "new_held_lease_case": "SOURCE_PLAN_APPROVED; native exact held-default300/natural-expiry/no-premature-ACK recovery PENDING",
+  "native_pending": [
+    "Exact coherent classpath and Java compile/link new2/full Academic checks under appropriate separate scope",
+    "Actual all-port Docker127 inspection",
+    "Actual worker owned PID/start/kill/wait/reap and final own-process/container absence, including failure cleanup",
+    "Seven real Auth/JPA/Rabbit/Redis/TLS/provider cases; released death distinct from held default300 death",
+    "Optional planned exact NEW provider-card removal intended invariant failure then restored same case green requires separate runtime decision"
+  ],
+  "meaningful_pure_proof": "Reviewer independently executed source-selected exactcard/env helpers only; no actual runner/process/network execution",
+  "no_new_product_bug": true,
+  "scope": "Two frozen test harness paths only; no product/retry/routing/scanner-policy changes",
+  "future_runtime_source_bridge": "Broker2 frozen cb778 exact; authorized OTHERpaths Ruff WIP unreviewed here, coherent current production/dependencies need separate review/import before runtime."
+}

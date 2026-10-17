@@ -1,0 +1,106 @@
+{
+  "commit": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "original": "f5a0d60000332f6560856e527e91e3defcff8a54",
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 16222,
+      "sha256": "7124c96250c6740c1efc312fa9ef03d464fa2f3e25a375afad00971bb27e4cce"
+    },
+    {
+      "path": "tests/e2e/playwright.first3.config.ts",
+      "bytes": 2141,
+      "sha256": "a7fa0e1ab77d24dd1badc98234ad60cbc9c5e0adc5ec507b67325eee30615bfc"
+    },
+    {
+      "path": "tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "bytes": 899,
+      "sha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3"
+    },
+    {
+      "path": "tests/e2e/fixtures/first3-observer.ts",
+      "bytes": 28857,
+      "sha256": "324dab7a2b2ca4156f4240f1c08e4281a2924663e73e5b6a4773d6c0684c5624"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 5413,
+      "sha256": "565924c7f4a890eb86974be94b3e8102300b0a427de1b247517af587c10b3cf9"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 2563,
+      "sha256": "ffa0b7e5fce2db3161dab6c80e65309167ea45439d653a4d5c04508d119140ff"
+    },
+    {
+      "path": "check-source.py",
+      "bytes": 9884,
+      "sha256": "eb48280829953cfd246bc6345db18220ede3b5ff573477d6f826b986ae55165d"
+    },
+    {
+      "path": "mode-controls.safe.json",
+      "bytes": 1128,
+      "sha256": "04c1758460554f33834d9490ad4e01fdeae801d7741ef8442632d5f30a9bfc66"
+    },
+    {
+      "path": "correction-controls.safe.json",
+      "bytes": 3967,
+      "sha256": "590a31852009d50038866f9319d33f60fe01e42160405c24f1ad27c86f5a1fe0"
+    },
+    {
+      "path": "node-source-metadata.safe.json",
+      "bytes": 341,
+      "sha256": "42ef3b508ac768c9a648bd5855b0a818b3f8dac5cd48fa9de4a58cc89f99d97a"
+    },
+    {
+      "path": "static-plan-helper-erratum.safe.json",
+      "bytes": 395,
+      "sha256": "027dcd7c93379bd2b850cb00344283cb0e3394306a241b15c501b6e411c8920c"
+    },
+    {
+      "path": "NODE-PLAN.md",
+      "bytes": 2500,
+      "sha256": "800e8cc8ce607fa97713f5bae97146273befe6c6c9c7017e734074e1c1cc7b42"
+    },
+    {
+      "path": "NODE-PLAN.safe.json",
+      "bytes": 7136,
+      "sha256": "40010114f16bfcd896e3945d658edbc3ca5b8e679f165686bd0aebb35fd5b910"
+    },
+    {
+      "path": "typecheck-safe.cjs",
+      "bytes": 1349,
+      "sha256": "1125fbe3ccb4ab4c752bedee2c27cf0dd47a4998442c0885bebbf4acecccff00"
+    },
+    {
+      "path": "tsconfig.ci-first3.json",
+      "bytes": 943,
+      "sha256": "b16b2b1630c9eda2cde7af01152465e86077ba96db713ba59ec03cc96c92986a"
+    },
+    {
+      "path": "discovery-reporter.cjs",
+      "bytes": 1584,
+      "sha256": "3cc737ed7002cfb35c1d9650bc033418e09fc21e8f7e0543a3ad34a3519365a6"
+    },
+    {
+      "path": "source-discovery.config.ts",
+      "bytes": 508,
+      "sha256": "5bd006be502f38b46f829c3409d48660731a0969948dda0f7898c3059331136d"
+    },
+    {
+      "path": "inventory.safe.json",
+      "bytes": 1793,
+      "sha256": "c11505c87a84cc084cba35ed87a4bde1b7537b40a4f198740f73002412b093de"
+    },
+    {
+      "path": "correction.patch",
+      "bytes": 1735,
+      "sha256": "4d767945ec7d62aaba2770e260632ff1a87c1bdf713292cb8fd7a7621003af0a"
+    },
+    {
+      "path": "source.patch",
+      "bytes": 38568,
+      "sha256": "98e09b5f021bb9626b3a59208c45c968fd0de64da77d300f426e217993266750"
+    }
+  ]
+}

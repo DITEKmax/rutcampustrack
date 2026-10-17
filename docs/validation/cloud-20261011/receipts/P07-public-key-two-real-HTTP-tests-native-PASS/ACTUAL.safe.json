@@ -1,0 +1,148 @@
+{
+  "utc_last": "2026-10-13T14:33:56.488086+00:00",
+  "tool_session": 33379,
+  "tool_native_exit": 0,
+  "terminal": {
+    "direct_pid": 527451,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 527451,
+        "start_ticks": 15556105
+      },
+      {
+        "pid": 527452,
+        "start_ticks": 15556115
+      },
+      {
+        "pid": 527486,
+        "start_ticks": 15556616
+      },
+      {
+        "pid": 527676,
+        "start_ticks": 15567703
+      },
+      {
+        "pid": 527680,
+        "start_ticks": 15567738
+      },
+      {
+        "pid": 527715,
+        "start_ticks": 15574160
+      }
+    ],
+    "adopted_waitpid_receipts": [
+      {
+        "pid": 527486,
+        "start_ticks": 15556616,
+        "native_exit": 0
+      }
+    ],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T14:32:45.025702+00:00",
+    "peaks": {
+      "memory": 7269113856,
+      "min_workspace_free": 7018278912,
+      "owned_rss": 1580912640,
+      "log_bytes": 10573,
+      "private_run_bytes": 32768
+    },
+    "expected_native_exit": 0,
+    "source_intact": true,
+    "exact2_pass": true,
+    "qualification": "Native0 alone insufficient; exact2 fresh closed XML and unchanged source required; parentP07 UNKNOWN"
+  },
+  "closed_results": {
+    "schema": "RCT_P07_CLOSED_XML_V1",
+    "schema_valid": true,
+    "code": "CLOSED",
+    "pass": true,
+    "classname": "ru.rutcampustrack.notification.security.PublicKeyProvisioningTest",
+    "declared": {
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "observed": {
+      "PASSED": 2,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0
+    },
+    "cases": [
+      {
+        "method": "publicHttpKeyVerifiesOriginalSignerAndRejectsIndependentSigner",
+        "status": "PASSED"
+      },
+      {
+        "method": "coldHttpFailureDeniesUntilRecoveryAndRefreshFailureKeepsFetchedKey",
+        "status": "PASSED"
+      }
+    ],
+    "gradle_native_exit": 0
+  },
+  "recorded_births_after": [
+    {
+      "pid": 527426,
+      "start_ticks": 15556005,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 527451,
+      "start_ticks": 15556105,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 527452,
+      "start_ticks": 15556115,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 527486,
+      "start_ticks": 15556616,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 527676,
+      "start_ticks": 15567703,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 527680,
+      "start_ticks": 15567738,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 527715,
+      "start_ticks": 15574160,
+      "state": "ABSENT"
+    }
+  ],
+  "selected_tasks": {
+    ":services:notification-service:notification-app:compileJava": [
+      "EXECUTED"
+    ],
+    ":services:notification-service:notification-app:compileTestJava": [
+      "EXECUTED"
+    ],
+    ":services:notification-service:notification-app:test": [
+      "EXECUTED"
+    ]
+  },
+  "static_build_success_count": 1,
+  "source19_exact": true,
+  "source_count": 19,
+  "head": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d",
+  "tracked_clean": true,
+  "private_tmp_absent": true,
+  "parent_authority_absent": true,
+  "raw_log_or_xml_body_emitted": false,
+  "qualification": "Actual compile and exactly2 nonempty consumer realHTTP methods; true productionprovider/config/validator and synthetic signer; genuineAuth producer PASS receipt reused separately. No AuthNotification fullstack/production/Docker/DB/parentP07 PASS claim. Originalphysical65486 growthFAIL preserved separately."
+}

@@ -1,0 +1,527 @@
+{
+  "status": "PASS_INDEPENDENT_ORIGINAL_BYTE_PROOFS",
+  "verified_copies": [
+    {
+      "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/assess.py",
+      "sha256": "dce4e6a60e52909500b2085eb3c1fbaf7f524e7dac05e850d65517f65f264a15",
+      "bytes": 8088,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/immutable-original-receipts.zip",
+          "member": "assess.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/original-byte-index.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/reconcile.py",
+      "sha256": "9c0be39cf341eda2a4dd576d2311b65cd115f3e80b5edbc7211932aa47ba5fcf",
+      "bytes": 5653,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/immutable-original-receipts.zip",
+          "member": "reconcile.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/original-byte-index.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/source-SubjectListDataIT-actual-checkout.java",
+      "sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "bytes": 10364,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/immutable-original-receipts.zip",
+          "member": "source-SubjectListDataIT-actual-checkout.java"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/original-byte-index.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/audit.py",
+      "sha256": "4ea1801e1978db61fad5f200845ad8c10ad19e3d1a31204680cf13f789f99c5a",
+      "bytes": 16066,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/immutable-review-receipts.zip",
+          "member": "audit.py"
+        },
+        {
+          "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/immutable-original-receipts.zip",
+          "member": "audit.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/ci-generator-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/ci-generator-recheck/transfer-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/clock_audit.py",
+      "sha256": "da0ae2fb472edbd26c6f83388e907f89fe8da10059eab8a354aa9648208216e4",
+      "bytes": 9007,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/immutable-review-receipts.zip",
+          "member": "clock_audit.py"
+        },
+        {
+          "path": "docs/validation/cloud-20261011/receipts/ci-generator-recheck/immutable-original-receipts.zip",
+          "member": "clock_audit.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/ci-generator-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/ci-generator-recheck/transfer-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/clock-runtime-recheck/audit.py",
+      "sha256": "04dd84ac47a199daf727cb6c15d8272a40d92964cf25d543ddb1c0811616b4a1",
+      "bytes": 19983,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/clock-runtime-recheck/immutable-original-receipts.zip",
+          "member": "audit.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/clock-runtime-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/clock-runtime-recheck/transfer-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/check-runtime-receipts.py",
+      "sha256": "0085a000f895a9d19a6fb04241165ed4df21666a8b879b537c2479f7ba97fa00",
+      "bytes": 5489,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/immutable-original-receipts.zip",
+          "member": "check-runtime-receipts.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/immutable-review-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/final-check.py",
+      "sha256": "2f158e184b7a30deb2e4e72db154c7544120bd26fe0df117a475987f4fc7ee61",
+      "bytes": 5700,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/immutable-original-receipts.zip",
+          "member": "final-check.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/immutable-review-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/recheck.py",
+      "sha256": "b65767ae6ba936977f940c45ede56b5c8d6fa86b7f9ab739be098b974f930d9e",
+      "bytes": 8775,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/immutable-original-receipts.zip",
+          "member": "recheck.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/immutable-review-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/export-merged-repository-review/check.py",
+      "sha256": "74201bf339c768a6130fd427eff17202c5cddceeef7f9bc98faefb21beb59495",
+      "bytes": 11007,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/export-merged-repository-review/immutable-original-receipts.zip",
+          "member": "check.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/export-merged-repository-review/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/export-merged-repository-review/immutable-review-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/audit.py",
+      "sha256": "c112b05db7d99c5bba66252707d4ad2cb91d746a32922674e0e69be494431a2f",
+      "bytes": 19087,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/immutable-review-receipts.zip",
+          "member": "audit.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/fingerprint-review/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/fingerprint-review/transfer-manifest.json",
+        "docs/validation/cloud-20261011/receipts/fingerprint-review/immutable-review-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/author-originals/sensitivity.py",
+      "sha256": "81e209736dc4f8deeb4e70d9ee9576067e66d6d9e3429072b3e88026bc707b1a",
+      "bytes": 3703,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/immutable-review-receipts.zip",
+          "member": "author-originals/sensitivity.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/fingerprint-review/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/fingerprint-review/transfer-manifest.json",
+        "docs/validation/cloud-20261011/receipts/fingerprint-review/immutable-review-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/author-originals/verify.py",
+      "sha256": "2376ffd7f209861a6094484468933df0cfcb34f527da0b42127baddd3075462e",
+      "bytes": 3903,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/fingerprint-review/immutable-review-receipts.zip",
+          "member": "author-originals/verify.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/fingerprint-review/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/fingerprint-review/transfer-manifest.json",
+        "docs/validation/cloud-20261011/receipts/fingerprint-review/immutable-review-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/format-freeze-prep/inventory.py",
+      "sha256": "462777888c1941345ced76e57117cfab715fa97f1ee76d16e34338c5b38ff380",
+      "bytes": 10672,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/format-freeze-prep/immutable-original-receipts.zip",
+          "member": "inventory.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/format-freeze-prep/original-byte-index.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/audit_evidence.py",
+      "sha256": "b6f43edd6417db197f8b1d62e335da53946c6fbc13ad010fbfe1d5333dc8d55e",
+      "bytes": 15570,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/immutable-original-receipts.zip",
+          "member": "audit_evidence.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/sha256-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-evidence/run-map-check.py",
+      "sha256": "7c273e1c4d130a6db2afd3fc5fb4f80a8e469b824f56fb386926e609b10a021b",
+      "bytes": 2252,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/immutable-original-receipts.zip",
+          "member": "original-evidence/run-map-check.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/reviewer-original-byte-index-readable.json",
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/sha256-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "sha256": "5b039af3995298b8f81fcaa5eaaeaf372347f7fc5bf999814a1259b7fce4bb86",
+      "bytes": 53919,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/immutable-original-receipts.zip",
+          "member": "source/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/sha256-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+      "sha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+      "bytes": 7915,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/immutable-original-receipts.zip",
+          "member": "source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/sha256-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+      "sha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+      "bytes": 26168,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/immutable-original-receipts.zip",
+          "member": "source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/sha256-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+      "sha256": "96ffa04d5514d94388099488c92cf775ff77cb838c797cb35f6b2f980d3e9675",
+      "bytes": 4914,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/immutable-original-receipts.zip",
+          "member": "source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/sha256-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+      "sha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+      "bytes": 85193,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/map-validation-recheck/immutable-original-receipts.zip",
+          "member": "source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/map-validation-recheck/sha256-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/map-validation-review/audit_evidence.py",
+      "sha256": "c17c9f88f1d67b3cd2c49b0e1f4c5dd3a149e0502fac60ccf0efb2ec684d4bf5",
+      "bytes": 7883,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/map-validation-review/immutable-original-receipts.zip",
+          "member": "audit_evidence.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/map-validation-review/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/map-validation-review/sha256-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/dispositions.py",
+      "sha256": "82d61ad56ee2eb17fd5b6e23137cd8b7cdd54f3baa6750c068756916906b5693",
+      "bytes": 20898,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/immutable-original-receipts.zip",
+          "member": "dispositions.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/receipt-manifest.json",
+        "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/original-byte-index.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/queue.py",
+      "sha256": "7fcc88fb0646290815e788296b0efe8ef9a3918a6a2f55d93127732c6eca0728",
+      "bytes": 32150,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/immutable-original-receipts.zip",
+          "member": "queue.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/receipt-manifest.json",
+        "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/original-byte-index.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/reconcile.py",
+      "sha256": "dcb1a9e246af2192f09ab2bcb91e94469de01f14ba195ce83f0cc7cf79f8ee94",
+      "bytes": 29281,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/immutable-original-receipts.zip",
+          "member": "reconcile.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/receipt-manifest.json",
+        "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/original-byte-index.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/collect-review-inputs.py",
+      "sha256": "87d831dee9886425008e7d9461b765eef6372beae620a67149f49f8c48564455",
+      "bytes": 14508,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/notification-recovery-review/immutable-original-receipts.zip",
+          "member": "collect-review-inputs.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/notification-recovery-review/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/notification-recovery-review/transfer-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/np01-config-author/verify-config.py",
+      "sha256": "c886805e546086e6086403c69fe140721e7a7da5b3d39e41d39649f3c42c4d4e",
+      "bytes": 5889,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/np01-config-author/immutable-original-receipts.zip",
+          "member": "verify-config.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/np01-config-author/original-byte-index.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/np01-source-resolution/source-ledger.py",
+      "sha256": "de08b5a28ce33ef590b406a2a02c8d89a3206ce481db5bcac2279baad0f91906",
+      "bytes": 12061,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/np01-source-resolution/immutable-original-receipts.zip",
+          "member": "source-ledger.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/np01-source-resolution/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/np01-source-resolution/transfer-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/ntr-seal-review/audit.py",
+      "sha256": "f6418136ef1a2f392496e39da91d834cb00c22c4be7df309f395763f15c0e4b7",
+      "bytes": 26059,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/ntr-seal-review/immutable-review-receipts.zip",
+          "member": "audit.py"
+        },
+        {
+          "path": "docs/validation/cloud-20261011/receipts/ntr-seal-review/immutable-original-receipts.zip",
+          "member": "audit.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/ntr-seal-review/original-byte-index.json",
+        "docs/validation/cloud-20261011/receipts/ntr-seal-review/transfer-manifest.json",
+        "docs/validation/cloud-20261011/receipts/ntr-seal-review/immutable-review-manifest.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/security-fingerprint-author/sensitivity.py",
+      "sha256": "81e209736dc4f8deeb4e70d9ee9576067e66d6d9e3429072b3e88026bc707b1a",
+      "bytes": 3703,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/security-fingerprint-author/immutable-original-receipts.zip",
+          "member": "sensitivity.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/security-fingerprint-author/original-byte-index.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/security-fingerprint-author/verify.py",
+      "sha256": "2376ffd7f209861a6094484468933df0cfcb34f527da0b42127baddd3075462e",
+      "bytes": 3903,
+      "exact_archive_members": [
+        {
+          "path": "docs/validation/cloud-20261011/receipts/security-fingerprint-author/immutable-original-receipts.zip",
+          "member": "verify.py"
+        }
+      ],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/security-fingerprint-author/original-byte-index.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/source-manifest-recovery/check-dependencies.py",
+      "sha256": "cf9a9a6fe08637340db76de7871612b4dfe346a1c0e1a63258c8e57b15c78aed",
+      "bytes": 2392,
+      "exact_archive_members": [],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/source-manifest-recovery/artifact-inventory.json"
+      ]
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/source-manifest-recovery/propose-restoration.py",
+      "sha256": "246f3f1c73f97bd979624a23db9ea8d63a9a77b330ce6a82be252f10272aeee0",
+      "bytes": 5365,
+      "exact_archive_members": [],
+      "matching_manifest_paths": [
+        "docs/validation/cloud-20261011/receipts/source-manifest-recovery/artifact-inventory.json"
+      ]
+    }
+  ],
+  "archive_verified_copies": 31,
+  "manifest_only_exact_copies": 2,
+  "registries": [
+    {
+      "path": "docs/design/packets/JS-STUDENT-01/manifest.json",
+      "sha256": "532a4420a4ff85be69378bca3829cba5d28d08859bb0c35a0256edddce5e98b4",
+      "bytes": 11988,
+      "qualification": "Precise source/hash registry under separate root byte owner, no whole-directory exclusion"
+    },
+    {
+      "path": "docs/presentations/manifest.json",
+      "sha256": "12a87af7acb6c45b71de40b67d2ce1a5aad9d524f67aecd7a46c9aa03a5be196",
+      "bytes": 14337,
+      "qualification": "Precise source/hash registry under separate root byte owner, no whole-directory exclusion"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/manifest-post-hooks.json",
+      "sha256": "b4f7e5063cb98b45190b419d5ab17aead9a6a9155dfa8d913f75b294499d118c",
+      "bytes": 305,
+      "qualification": "Precise source/hash registry under separate root byte owner, no whole-directory exclusion"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/skills/manifest.json",
+      "sha256": "fcb54195717b4add577836cdc569995d5cea936f0ab883b475e31914399e6ec7",
+      "bytes": 23928,
+      "qualification": "Precise source/hash registry under separate root byte owner, no whole-directory exclusion"
+    }
+  ],
+  "maintained_unverified_source": "docs/validation/cloud-20261011/receipts/scenario-sources/build-matrix.py retained as python"
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "rct-p10-gh-three-seams-independent-source-review-v1",
+  "disposition": "APPROVE_NARROW_SOURCE_ONLY",
+  "selected_model": "gpt-6.1-sol",
+  "selected_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "READY_sha256": "5b6828ca12085159258cfd4d211c5f4a3e792911005b2414e0ac03487dd26614",
+  "parent_sha256": "c7c91634dac0ed6df56db86aa9e672c96989caa8b4570ba4606ea8056fbe89e6",
+  "capture_sha256": "88f1a6a13e4b0515d14f0a27da5507a7944ca3967220a8910c0753b0f98e75de",
+  "plan_sha256": "5dae02eaf83dd4df4137f04bd483f57421ec13dfb217bc64efbb1f4ae1953b47",
+  "selector_sha256": "94e957778be9f03cbe6ec4320aae64050d9764a15e6a8c0f72006c3eb2e5cac7",
+  "byte_AST_reuse_verified": {
+    "selector": true,
+    "four_capture_admissions": true,
+    "five_parent_callbacks": true,
+    "normal16_ENV_selector": true
+  },
+  "selected_actual_AST_RAM_controls": 6,
+  "all_pass": true,
+  "blocking_findings": [],
+  "stdout_hard_cap_bytes": 1048576,
+  "archive_exact_bytes_before_read": 192040,
+  "capture_native0_and_settled_before_archive_read": true,
+  "primary_and_cleanup_separate": true,
+  "unsafe_raw_retention_explicit": true,
+  "native_or_API_archive_XML_env_value_access": false,
+  "product_or_author_source_writes": 0,
+  "fresh_root_grant_required": true,
+  "original_Unicode_cause": "UNKNOWN",
+  "B013_retry": false
+}

@@ -1,0 +1,3 @@
+{"CreatedAt":"2026-10-11 19:16:54.629651603 +0000 UTC","Driver":"bridge","ID":"5a818f4fe5d3","IPv4":"true","IPv6":"false","Internal":"false","Labels":"","Name":"bridge","Scope":"local"}
+{"CreatedAt":"2026-10-11 17:11:47.569278162 +0000 UTC","Driver":"host","ID":"1911064eb853","IPv4":"true","IPv6":"false","Internal":"false","Labels":"","Name":"host","Scope":"local"}
+{"CreatedAt":"2026-10-11 17:11:47.566084213 +0000 UTC","Driver":"null","ID":"b92899604cbc","IPv4":"true","IPv6":"false","Internal":"false","Labels":"","Name":"none","Scope":"local"}

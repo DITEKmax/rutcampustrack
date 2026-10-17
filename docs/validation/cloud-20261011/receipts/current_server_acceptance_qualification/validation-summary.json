@@ -1,0 +1,14 @@
+{
+  "time": "2026-10-12T08:59:28.824668+00:00",
+  "rows": 23,
+  "native_case_identities": 37,
+  "unique_native_methods": 37,
+  "source_files": 36,
+  "canonical_parent_family_count": 28,
+  "boundary_count": 17,
+  "baseline_unchanged_methods": 30,
+  "new_changed_methods": 7,
+  "whole_family_passes": 0,
+  "prior_finite_rows": 42,
+  "prior_rows_copied_or_modified": 0
+}

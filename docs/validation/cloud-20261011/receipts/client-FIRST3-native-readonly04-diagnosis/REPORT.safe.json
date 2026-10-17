@@ -1,0 +1,30 @@
+{
+  "state": "READONLY04_DIAGNOSIS_COMPLETE_NO_SEMANTIC_PROMOTION",
+  "toolSession": 4652,
+  "nativeExit": 0,
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 397951,
+      "start_ticks": 9947248,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 397947,
+      "start_ticks": 9947217,
+      "exactBirthAbsent": true
+    }
+  ],
+  "source4BeforeCandidatePreserved": true,
+  "inputHelperPinsPreserved": true,
+  "sourceWrites": false,
+  "acceptanceNormalization": "NONE",
+  "previous02and03FailuresRetained": true,
+  "typesListBrowserApiStand": "NOT_RUN",
+  "lease": "RELEASED",
+  "privateTmpCacheRemoved": true,
+  "metrics": {
+    "owned_rss_bytes": 176496640,
+    "run_allocated_bytes": 81920,
+    "shared_memory_bytes": 4814458880
+  }
+}

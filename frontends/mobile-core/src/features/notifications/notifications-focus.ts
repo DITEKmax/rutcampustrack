@@ -66,7 +66,11 @@ export function enterNotificationsFocusScope(
     }
 
     queueMicrotask(() => {
-      if (!returnFocus?.isConnected || returnFocus.closest('[hidden], [inert], [aria-hidden="true"]')) return
+      if (
+        !returnFocus?.isConnected ||
+        returnFocus.closest('[hidden], [inert], [aria-hidden="true"]')
+      )
+        return
       returnFocus.focus()
     })
   }

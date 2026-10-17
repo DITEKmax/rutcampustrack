@@ -1,0 +1,137 @@
+{
+  "kind": "MECHANICAL_SOURCE_ONLY_NOT_CLIENT_ACCEPTANCE",
+  "authorRevision": "57e31683c9e8f5bd7cc9a2e485c8da09a4a1067c",
+  "archive": "/workspace/scratch/rct-validation/client_real_acceptance/client-real-acceptance-mechanical-new7.safe.zip",
+  "bytes": 45368,
+  "sha256": "3389e8a0a5753e00f4f65ed918be2d5cc5cacf3e6109c03abe4cab8a7d8e4108",
+  "members": [
+    {
+      "path": "mechanical-new7/FINAL.safe.json",
+      "sha256": "3b058a5a2e4323417620c0e74c627067ee404a9f0be0ac473c4138140f7555b9",
+      "bytes": 5842
+    },
+    {
+      "path": "mechanical-new7/HANDOFF.md",
+      "sha256": "60fddfd19184e48de0d41c615add20a503f634057eab3b388bbf2051211c2675",
+      "bytes": 2006
+    },
+    {
+      "path": "mechanical-new7/after/tests/e2e/fixtures/cloud-accepted-playwright.ts",
+      "sha256": "32fba7245c7f097ed726063980756e37c06b72c54975e1d5cc03af5005c82b04",
+      "bytes": 842
+    },
+    {
+      "path": "mechanical-new7/after/tests/e2e/fixtures/cloud-accepted-support.ts",
+      "sha256": "e149a131837211c8addd48187a0b7bc4834f32319d7efed82101c441d1aa170c",
+      "bytes": 7988
+    },
+    {
+      "path": "mechanical-new7/after/tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+      "sha256": "10149b671cde2972711723fbee197a4a4c015ec5fe1ebe1cc13d942280dd1801",
+      "bytes": 4400
+    },
+    {
+      "path": "mechanical-new7/after/tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "sha256": "d949111c6b4c13ae246d72281b4a815406bc053b1beed6a05bde7fd78045cf6f",
+      "bytes": 11991
+    },
+    {
+      "path": "mechanical-new7/after/tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "1234259498aaf21712891d4a542c7beebf92ea3f6d447194013b96f1beb88ce4",
+      "bytes": 6794
+    },
+    {
+      "path": "mechanical-new7/after/tests/e2e/specs/cloud-accepted-role-authority.spec.ts",
+      "sha256": "73f7689baa70bcddd717d453bbca6db7960c1be82fdb742b8f8bc80f6a4de753",
+      "bytes": 3442
+    },
+    {
+      "path": "mechanical-new7/after/tests/e2e/specs/cloud-accepted-tma-proof.spec.ts",
+      "sha256": "16e0cb7e2c242a8761ee79c4dbb17c049f85f0e2cbb5d9047f52082c61388c76",
+      "bytes": 3970
+    },
+    {
+      "path": "mechanical-new7/before/tests/e2e/fixtures/cloud-accepted-playwright.ts",
+      "sha256": "a59c5fee38e468268fea21f23a47c8f2c3220a4dfa3cc6919bb04fdb02e83b05",
+      "bytes": 839
+    },
+    {
+      "path": "mechanical-new7/before/tests/e2e/fixtures/cloud-accepted-support.ts",
+      "sha256": "737c8b7cbed5c74adbdaf5fc806b6766c20a5620bc9e7ce380cb774730b785f6",
+      "bytes": 7924
+    },
+    {
+      "path": "mechanical-new7/before/tests/e2e/specs/cloud-accepted-admin-grants.spec.ts",
+      "sha256": "9afb5c7809b21c5d7af895261c20aca5c6aca16160603dac6fc69161f0d15d6d",
+      "bytes": 4351
+    },
+    {
+      "path": "mechanical-new7/before/tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "sha256": "e26258c392df42754e9f39e4b2f283a5a3603309351a41f9abf900870c29000e",
+      "bytes": 11838
+    },
+    {
+      "path": "mechanical-new7/before/tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "dc6bdea1febd81de6ce9e20177929ee6ce5ad3c464412e6a035a64182acad0c2",
+      "bytes": 6722
+    },
+    {
+      "path": "mechanical-new7/before/tests/e2e/specs/cloud-accepted-role-authority.spec.ts",
+      "sha256": "b24d93b05de11ae6c6f41e2da5be0e5f3fd58c45a66ff16d0717aacd1f34e3e2",
+      "bytes": 3407
+    },
+    {
+      "path": "mechanical-new7/before/tests/e2e/specs/cloud-accepted-tma-proof.spec.ts",
+      "sha256": "c38ce6dc83d6bd155ca7acb01b52eb59becc97e5aad497f682f0546a50eb7b17",
+      "bytes": 3914
+    },
+    {
+      "path": "mechanical-new7/format-and-prove.mjs",
+      "sha256": "bb90d4f76b4fb9cc589ca4df427a43ccf072e587cf527cb2caf17902fd8fb814",
+      "bytes": 8581
+    },
+    {
+      "path": "mechanical-new7/inventory.csv",
+      "sha256": "fa8cae1d3a53d7b826d54d41bb906eadbfe49a67e1a796626b87adabeacb1338",
+      "bytes": 1506
+    },
+    {
+      "path": "mechanical-new7/native-format-proof-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "mechanical-new7/native-format-proof.log",
+      "sha256": "7a9f271811aac530dd225405ef5e36ee8c3103729bb2e6d2a6207b516034a6a9",
+      "bytes": 192
+    },
+    {
+      "path": "mechanical-new7/native-typecheck-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "mechanical-new7/native-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "mechanical-new7/proof.safe.json",
+      "sha256": "45f28f58c73eea1d7afc05887358ff2db6de0ab8dbeb8e302c207ee1834c1227",
+      "bytes": 19262
+    },
+    {
+      "path": "mechanical-new7/semantic-location-bridge.safe.json",
+      "sha256": "0ceba875f67246800ca27052c107153bf368a519f84a0173d14873be5abf5cab",
+      "bytes": 5838
+    },
+    {
+      "path": "mechanical-new7/source-revision.txt",
+      "sha256": "7e712c7544361a78ce66916b671965e739931f0b3b021337bda8609cfccf946b",
+      "bytes": 41
+    }
+  ],
+  "RootConfigSha256": "a669c7ed8678df8c09a2c3818eecca73d149dc4ddb8598cc38daf77b8dc457cd",
+  "runtime": "NOT_RUN",
+  "excluded": "node_modules/caches/privateinputs/rawexport/actualcredentials/artifacts; no Root commonconfig copies mutated"
+}

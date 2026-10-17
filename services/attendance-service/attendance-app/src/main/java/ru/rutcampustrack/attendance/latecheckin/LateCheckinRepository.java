@@ -1,15 +1,14 @@
 package ru.rutcampustrack.attendance.latecheckin;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
-import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
+import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 
 public interface LateCheckinRepository extends MongoRepository<LateCheckinRequest, String> {
 
@@ -29,8 +28,12 @@ public interface LateCheckinRepository extends MongoRepository<LateCheckinReques
             Long groupId, Long semesterId, List<LateCheckinRequestStatus> statuses);
 
     Page<LateCheckinRequest> findByGroupIdAndSemesterIdAndStudentIdAndLessonIdInAndStatusIn(
-            Long groupId, Long semesterId, Long studentId, List<Long> lessonIds,
-            List<LateCheckinRequestStatus> statuses, Pageable pageable);
+            Long groupId,
+            Long semesterId,
+            Long studentId,
+            List<Long> lessonIds,
+            List<LateCheckinRequestStatus> statuses,
+            Pageable pageable);
 
     Page<LateCheckinRequest> findByGroupIdAndUpdatedAtGreaterThanEqual(
             Long groupId, Instant updatedAt, Pageable pageable);

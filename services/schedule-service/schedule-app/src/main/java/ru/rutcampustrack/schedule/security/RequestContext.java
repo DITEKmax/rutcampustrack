@@ -8,9 +8,8 @@ import ru.rutcampustrack.schedule.contract.enums.UserRole;
 /**
  * Request-scoped bean holding authenticated user context from API Gateway headers.
  *
- * CRITICAL: proxyMode = ScopedProxyMode.TARGET_CLASS is mandatory so that
- * singleton beans (e.g. RoleCheckAspect) receive a properly scoped proxy
- * instead of a stale instance captured at startup.
+ * <p>CRITICAL: proxyMode = ScopedProxyMode.TARGET_CLASS is mandatory so that singleton beans (e.g.
+ * RoleCheckAspect) receive a properly scoped proxy instead of a stale instance captured at startup.
  */
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)

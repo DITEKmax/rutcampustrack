@@ -1,0 +1,21 @@
+{
+  "scope": "PUBLIC_WEBKIT_BROWSER_ONLY",
+  "passed": true,
+  "stages": 5,
+  "classifier_controls": 15,
+  "client_acceptance": false,
+  "tool_session": 8498,
+  "source_ready_sha256": "157fcf615e954c9bd7efd11f125ddc5721c04e9fe107a5b45681aa1851f64c44",
+  "source_review_sha256": "ad3965ba5d85d3123c7ab3be31acca6fbcd4737e3c63f5f9cf0c94035c130039",
+  "supervisor": {
+    "pid": 371772,
+    "birth": 8640023,
+    "absent": true
+  },
+  "known_children": 5,
+  "native_exit": 0,
+  "settled": true,
+  "private_tmp_removed": true,
+  "limits": "periodic soft sharedUID sampling; no production isolation claim",
+  "producer_head": "ebc2d18226a2f931f2daab454c195c391c7b7f3b"
+}

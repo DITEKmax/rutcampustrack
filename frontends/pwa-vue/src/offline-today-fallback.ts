@@ -15,12 +15,15 @@ export interface MoscowDayClockOptions {
 
 export function createMoscowDayClock(options: MoscowDayClockOptions = {}) {
   const now = options.now ?? (() => new Date())
-  const setInterval = options.setInterval ?? ((callback, delay) => window.setInterval(callback, delay))
+  const setInterval =
+    options.setInterval ?? ((callback, delay) => window.setInterval(callback, delay))
   const clearInterval = options.clearInterval ?? ((timer) => window.clearInterval(timer))
-  const addVisibilityListener = options.addVisibilityListener
-    ?? ((callback) => document.addEventListener('visibilitychange', callback))
-  const removeVisibilityListener = options.removeVisibilityListener
-    ?? ((callback) => document.removeEventListener('visibilitychange', callback))
+  const addVisibilityListener =
+    options.addVisibilityListener ??
+    ((callback) => document.addEventListener('visibilitychange', callback))
+  const removeVisibilityListener =
+    options.removeVisibilityListener ??
+    ((callback) => document.removeEventListener('visibilitychange', callback))
   const isVisible = options.isVisible ?? (() => document.visibilityState === 'visible')
   const currentDate = shallowRef(now())
   let timer: number | null = null

@@ -1,0 +1,24 @@
+{
+  "attempt": "scoped-existing-Spotless",
+  "native_session_id": 5339,
+  "native_exit_code": 0,
+  "result": "PASS",
+  "source_before": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "changed_paths": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+      "old_sha256": "97535debbbfbb21aa0985737abe602052310f6ba8b8988705e403e145b3aa05d",
+      "new_sha256": "9e7ec0425e1be7d86dfcf7b04492488d0dd15c2048f42f70bd53d24df32f13f7",
+      "old_mode": "0o600",
+      "new_mode": "0o600"
+    }
+  ],
+  "all_tracked_inputs_compared": 7032,
+  "only_retained_IT_changed": true,
+  "imports_and_java_tokens_preserved": true,
+  "test_methods": 14,
+  "product_contract_threepaths_unchanged": true,
+  "log_sha256": "1cf51e59c79b8e454f0667d9ff6b4c1010b51b71c1c1327857ebcfcec3874ade",
+  "utc": "2026-10-12T01:50:49Z",
+  "source_after": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4"
+}

@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-12T06:40:26.827442+00:00",
+  "status": "PASS",
+  "public_tracked_inputs_SHA_size_mode": 7350,
+  "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "installed_entries_SHA_size_mode_or_exact_symlink_target": 8272,
+  "installed_exact_path_set": true,
+  "private_keys_or_process_environment_read": false,
+  "public_tracked_template_and_test_public_key_hash_only": true,
+  "source_inode_mtime_nlink_changes": "DEDUP1 intentional only; byte/mode identity preserved",
+  "old_PID1_Z": "untouched; no all-old-reaped claim",
+  "apps_build_containers": "NOT_RUN"
+}

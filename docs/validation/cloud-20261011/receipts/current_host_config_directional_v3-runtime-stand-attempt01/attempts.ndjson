@@ -1,0 +1,7 @@
+{"operation": "Root_contract_state_grant_review_restore", "status": "COMPLETE"}
+{"operation": "read_only_Docker_metadata_default_sandbox", "native_exit": 1, "reason": "EPERM socket connect before mutation"}
+{"operation": "normal_sandbox_escalation_preflight", "native_exit": 0, "namespace_ports_IPAM_images_mounts": "PASS"}
+{"operation": "exact_sealed_Docker9_up_guarded", "session": 18392, "native_exit": 130, "settled": true, "reason": "DISK_FLOOR", "containers_created": 9, "services_started": 0}
+{"operation": "exact_owned_cleanup_labels_ID_images_recheck", "session": 75280, "native_exit": 0, "containers_removed": 9, "volumes_deleted": 0, "all5volumes_preserved": true}
+{"operation": "selected_image_rootfs_metadata", "native_exit": 0, "actual_driver": "vfs", "per_container_size": "UNKNOWN_AFTER_CLEANUP"}
+{"operation": "bounded_existing_teaching_clock_source", "status": "NEW_FIXTURE_CHOICE_NEEDED", "original_sealed_fixture_mutated": false}

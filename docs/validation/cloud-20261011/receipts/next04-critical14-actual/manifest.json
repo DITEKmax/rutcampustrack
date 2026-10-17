@@ -1,0 +1,92 @@
+{
+  "utc": "2026-10-13T03:42:06.321732+00:00",
+  "cohort": "restart-20261013-next04",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/all8-session-map.safe.json",
+      "archive_member": "all8-session-map.safe.json",
+      "sha256": "395da63bc70990ba6a3b049832010a844885f0198f7f186b3adc195f76439f29",
+      "size": 4482
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/artifact-source.safe.json",
+      "archive_member": "artifact-source.safe.json",
+      "sha256": "1f9b083e9984a05fa638a16e7f55d08f3cd3542093d5863a4702d6b72ccd890f",
+      "size": 5480
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/runtime-mapping.safe.json",
+      "archive_member": "runtime-mapping.safe.json",
+      "sha256": "8959984326b2c2b2c6e6aa770998303b81e63c4bbac86eb29a5bf6dc83623438",
+      "size": 8929
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/stand-readiness.safe.json",
+      "archive_member": "stand-readiness.safe.json",
+      "sha256": "75d261b458495c97f84980cd43c449e83b479cb50822286f2cd7f0ad66ab9f7d",
+      "size": 3318
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/host-live8.safe.json",
+      "archive_member": "host-live8.safe.json",
+      "sha256": "a66f9543ebcc2d4213b41bbe8ad9465c54bbdee7f934e730a1bc4dc26a088151",
+      "size": 4597
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/critical4-pointers.safe.json",
+      "archive_member": "critical4-pointers.safe.json",
+      "sha256": "426e2f16f64aea7ff2437b96a7190961358ba262eb241292926d96f419670d68",
+      "size": 1277
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/resources-ready.safe.json",
+      "archive_member": "resources-ready.safe.json",
+      "sha256": "b59e5325adef5465d6eeac344dbddd3993601770e8e975b013867836812c3331",
+      "size": 175
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/late-startup-liveness.safe.json",
+      "archive_member": "late-startup-liveness.safe.json",
+      "sha256": "bd963d59975ca82fa07d15e1712cd2081a2d4142b890c6ab5ac3efeabc6b546a",
+      "size": 306
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/docker-up-launch.safe.json",
+      "archive_member": "docker-up-launch.safe.json",
+      "sha256": "0894ec4cd9f707e306bda1fb6c74a347b6c991aead8808c880b7e14827284ad0",
+      "size": 1005
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/docker-up-terminal.safe.json",
+      "archive_member": "docker-up-terminal.safe.json",
+      "sha256": "8a781950fe0da5f99f30099b496e0ad504a484a3bb3d98d31ab6251991239e37",
+      "size": 848
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/mongo-protocol.safe.json",
+      "archive_member": "mongo-protocol.safe.json",
+      "sha256": "da534856fd23648f7365758865964bab0edffdae6e921875fed3f3e47047df82",
+      "size": 313
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/mongo-readiness-terminal.safe.json",
+      "archive_member": "mongo-readiness-terminal.safe.json",
+      "sha256": "27a47050b65b50c3a0acfa9cd0c2b5976dc2e5412d9f9ce53a23b7f7e3a1f33f",
+      "size": 534
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/academic-migration.safe.json",
+      "archive_member": "academic-migration.safe.json",
+      "sha256": "fbc2cc77f14ab196eabfed0fb4f120a0ceab19f3de4bdd1a9cca74ac3a76ef7d",
+      "size": 137
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next04/data6-status.safe.json",
+      "archive_member": "data6-status.safe.json",
+      "sha256": "b73a6b35d3a15d34f9c4e8b14ae11a31a0471b64bacdc9fcd345bf781e956198",
+      "size": 1921
+    }
+  ],
+  "no_private_values": true,
+  "runtime_lifecycle_not_client_PASS": true
+}

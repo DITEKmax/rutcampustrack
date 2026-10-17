@@ -5,43 +5,42 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import ru.rutcampustrack.academic.contract.enums.SemesterType;
 
-import java.time.LocalDate;
-
-/**
- * Request DTO for full replacement update of a semester (PUT semantics).
- */
+/** Request DTO for full replacement update of a semester (PUT semantics). */
 @Schema(description = "Запрос на полное обновление семестра (PUT)")
 public record UpdateSemesterRequest(
-
-        @Schema(description = "Совместимое название; тип и учебный год задают серверное название",
-                example = "Осенний 2026/2027",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotBlank(message = "Название семестра обязательно")
-        String name,
-
-        @Schema(description = "Дата начала семестра", example = "2026-02-01",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull(message = "Дата начала обязательна")
-        LocalDate dateFrom,
-
-        @Schema(description = "Дата окончания семестра", example = "2026-06-30",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull(message = "Дата окончания обязательна")
-        LocalDate dateTo,
-
+        @Schema(
+                        description =
+                                "Совместимое название; тип и учебный год задают серверное название",
+                        example = "Осенний 2026/2027",
+                        requiredMode = Schema.RequiredMode.REQUIRED)
+                @NotBlank(message = "Название семестра обязательно")
+                String name,
+        @Schema(
+                        description = "Дата начала семестра",
+                        example = "2026-02-01",
+                        requiredMode = Schema.RequiredMode.REQUIRED)
+                @NotNull(message = "Дата начала обязательна")
+                LocalDate dateFrom,
+        @Schema(
+                        description = "Дата окончания семестра",
+                        example = "2026-06-30",
+                        requiredMode = Schema.RequiredMode.REQUIRED)
+                @NotNull(message = "Дата окончания обязательна")
+                LocalDate dateTo,
         @Schema(description = "Обязательный тип семестра")
-        @NotNull(message = "Тип семестра обязателен")
-        SemesterType semesterType,
-
-        @Schema(description = "Первый год учебного года, видимый и редактируемый в форме; вместе с типом задаёт серверное название",
-                example = "2026")
-        @NotNull(message = "Учебный год обязателен")
-        @Min(value = 1, message = "Учебный год должен быть не меньше 1")
-        @Max(value = 9998, message = "Учебный год должен быть не больше 9998")
-        Integer academicYear
-) {
+                @NotNull(message = "Тип семестра обязателен")
+                SemesterType semesterType,
+        @Schema(
+                        description =
+                                "Первый год учебного года, видимый и редактируемый в форме; вместе с типом задаёт серверное название",
+                        example = "2026")
+                @NotNull(message = "Учебный год обязателен")
+                @Min(value = 1, message = "Учебный год должен быть не меньше 1")
+                @Max(value = 9998, message = "Учебный год должен быть не больше 9998")
+                Integer academicYear) {
     public UpdateSemesterRequest(String name, LocalDate dateFrom, LocalDate dateTo) {
         this(name, dateFrom, dateTo, null, null);
     }

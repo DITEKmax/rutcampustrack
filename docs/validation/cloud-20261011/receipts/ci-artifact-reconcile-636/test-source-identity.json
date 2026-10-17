@@ -1,0 +1,2900 @@
+[
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+    "artifactSourceSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3",
+    "headSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3",
+    "currentSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3",
+    "workingSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenIT.java",
+    "artifactSourceSha256": "74de7162edc52dc5d27e5820e404074d5fae92fde8782bdf7074ccfec14aa19c",
+    "headSha256": "74de7162edc52dc5d27e5820e404074d5fae92fde8782bdf7074ccfec14aa19c",
+    "currentSha256": "74de7162edc52dc5d27e5820e404074d5fae92fde8782bdf7074ccfec14aa19c",
+    "workingSha256": "74de7162edc52dc5d27e5820e404074d5fae92fde8782bdf7074ccfec14aa19c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java",
+    "artifactSourceSha256": "7e4f91b5cbaed4e86bc78fbbe0cf93dda844bbc5de3b265b5223d160aeb1fc1a",
+    "headSha256": "7e4f91b5cbaed4e86bc78fbbe0cf93dda844bbc5de3b265b5223d160aeb1fc1a",
+    "currentSha256": "7e4f91b5cbaed4e86bc78fbbe0cf93dda844bbc5de3b265b5223d160aeb1fc1a",
+    "workingSha256": "7e4f91b5cbaed4e86bc78fbbe0cf93dda844bbc5de3b265b5223d160aeb1fc1a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerIT.java",
+    "artifactSourceSha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5",
+    "headSha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5",
+    "currentSha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5",
+    "workingSha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/event/EventIdempotentIT.java",
+    "artifactSourceSha256": "f638ab8e196ca61686ecd3d4c7257e341083192c9e336e2e5f9bef81576d4654",
+    "headSha256": "f638ab8e196ca61686ecd3d4c7257e341083192c9e336e2e5f9bef81576d4654",
+    "currentSha256": "f638ab8e196ca61686ecd3d4c7257e341083192c9e336e2e5f9bef81576d4654",
+    "workingSha256": "f638ab8e196ca61686ecd3d4c7257e341083192c9e336e2e5f9bef81576d4654",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonBlockedContractIT.java",
+    "artifactSourceSha256": "607c2ef0c305543d8ec1685f898ce27f2863605f745a632f120001a27f698d16",
+    "headSha256": "607c2ef0c305543d8ec1685f898ce27f2863605f745a632f120001a27f698d16",
+    "currentSha256": "607c2ef0c305543d8ec1685f898ce27f2863605f745a632f120001a27f698d16",
+    "workingSha256": "607c2ef0c305543d8ec1685f898ce27f2863605f745a632f120001a27f698d16",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonCancelledContractIT.java",
+    "artifactSourceSha256": "35629f5872bc9d69ed47a16612eed891bea59198ba4d364059085cacce9bfc3c",
+    "headSha256": "35629f5872bc9d69ed47a16612eed891bea59198ba4d364059085cacce9bfc3c",
+    "currentSha256": "35629f5872bc9d69ed47a16612eed891bea59198ba4d364059085cacce9bfc3c",
+    "workingSha256": "35629f5872bc9d69ed47a16612eed891bea59198ba4d364059085cacce9bfc3c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonReminderContractIT.java",
+    "artifactSourceSha256": "541b1b8fa00b06476670af362aad0f3369991d995332a4e1f20430e91147b89b",
+    "headSha256": "541b1b8fa00b06476670af362aad0f3369991d995332a4e1f20430e91147b89b",
+    "currentSha256": "541b1b8fa00b06476670af362aad0f3369991d995332a4e1f20430e91147b89b",
+    "workingSha256": "541b1b8fa00b06476670af362aad0f3369991d995332a4e1f20430e91147b89b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonStartedContractIT.java",
+    "artifactSourceSha256": "2e4d08a5f670081d45edc325d23e68585980a502acf43eaef0e491a0a0a52f11",
+    "headSha256": "2e4d08a5f670081d45edc325d23e68585980a502acf43eaef0e491a0a0a52f11",
+    "currentSha256": "2e4d08a5f670081d45edc325d23e68585980a502acf43eaef0e491a0a0a52f11",
+    "workingSha256": "2e4d08a5f670081d45edc325d23e68585980a502acf43eaef0e491a0a0a52f11",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+    "artifactSourceSha256": "76914b8a56585e026f1992e5d6ca2652d974ebf20097253118926b1ab2d80edd",
+    "headSha256": "76914b8a56585e026f1992e5d6ca2652d974ebf20097253118926b1ab2d80edd",
+    "currentSha256": "76914b8a56585e026f1992e5d6ca2652d974ebf20097253118926b1ab2d80edd",
+    "workingSha256": "76914b8a56585e026f1992e5d6ca2652d974ebf20097253118926b1ab2d80edd",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/LessonsByIdsGrpcIT.java",
+    "artifactSourceSha256": "5a2e4c96b185143395fc0dadf8faa2bc992b5adaed33605e3dcb8c880d4626ac",
+    "headSha256": "5a2e4c96b185143395fc0dadf8faa2bc992b5adaed33605e3dcb8c880d4626ac",
+    "currentSha256": "5a2e4c96b185143395fc0dadf8faa2bc992b5adaed33605e3dcb8c880d4626ac",
+    "workingSha256": "5a2e4c96b185143395fc0dadf8faa2bc992b5adaed33605e3dcb8c880d4626ac",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcResolveLessonIT.java",
+    "artifactSourceSha256": "2b52cb335c640ebace500ec88c2a3d2d26073241d390c11a35dd54070c95d0eb",
+    "headSha256": "2b52cb335c640ebace500ec88c2a3d2d26073241d390c11a35dd54070c95d0eb",
+    "currentSha256": "2b52cb335c640ebace500ec88c2a3d2d26073241d390c11a35dd54070c95d0eb",
+    "workingSha256": "2b52cb335c640ebace500ec88c2a3d2d26073241d390c11a35dd54070c95d0eb",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+    "artifactSourceSha256": "b34c5ec53276e050d4fe0261e573c50827071e852a1d63150d07a92276aaca5b",
+    "headSha256": "b34c5ec53276e050d4fe0261e573c50827071e852a1d63150d07a92276aaca5b",
+    "currentSha256": "b34c5ec53276e050d4fe0261e573c50827071e852a1d63150d07a92276aaca5b",
+    "workingSha256": "b34c5ec53276e050d4fe0261e573c50827071e852a1d63150d07a92276aaca5b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ActuatorIT.java",
+    "artifactSourceSha256": "f5b674359d396b585c3d57336d2e8b28ff378529b123c1469254d0e4d7afb524",
+    "headSha256": "f5b674359d396b585c3d57336d2e8b28ff378529b123c1469254d0e4d7afb524",
+    "currentSha256": "f5b674359d396b585c3d57336d2e8b28ff378529b123c1469254d0e4d7afb524",
+    "workingSha256": "f5b674359d396b585c3d57336d2e8b28ff378529b123c1469254d0e4d7afb524",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+    "artifactSourceSha256": "932a456352f1e565335b97b5f27b1fea2a29472f6bbcbf193278531a1acc81ad",
+    "headSha256": "932a456352f1e565335b97b5f27b1fea2a29472f6bbcbf193278531a1acc81ad",
+    "currentSha256": "932a456352f1e565335b97b5f27b1fea2a29472f6bbcbf193278531a1acc81ad",
+    "workingSha256": "932a456352f1e565335b97b5f27b1fea2a29472f6bbcbf193278531a1acc81ad",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/EntityMappingIT.java",
+    "artifactSourceSha256": "f52b8976bcfe77b318c4d37f73bed27c427c1912ff6b798057f3ac8f2e5247d4",
+    "headSha256": "f52b8976bcfe77b318c4d37f73bed27c427c1912ff6b798057f3ac8f2e5247d4",
+    "currentSha256": "f52b8976bcfe77b318c4d37f73bed27c427c1912ff6b798057f3ac8f2e5247d4",
+    "workingSha256": "f52b8976bcfe77b318c4d37f73bed27c427c1912ff6b798057f3ac8f2e5247d4",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+    "artifactSourceSha256": "ba761018d8458be775dadac82ab1c3682e56dfd95b29b2130382c156f0ce0163",
+    "headSha256": "ba761018d8458be775dadac82ab1c3682e56dfd95b29b2130382c156f0ce0163",
+    "currentSha256": "ba761018d8458be775dadac82ab1c3682e56dfd95b29b2130382c156f0ce0163",
+    "workingSha256": "ba761018d8458be775dadac82ab1c3682e56dfd95b29b2130382c156f0ce0163",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonCancelEventIT.java",
+    "artifactSourceSha256": "d437b3558aca89019e5e9ecf71bb6de9b2923c03c4c2cfae31675c059450944f",
+    "headSha256": "d437b3558aca89019e5e9ecf71bb6de9b2923c03c4c2cfae31675c059450944f",
+    "currentSha256": "d437b3558aca89019e5e9ecf71bb6de9b2923c03c4c2cfae31675c059450944f",
+    "workingSha256": "d437b3558aca89019e5e9ecf71bb6de9b2923c03c4c2cfae31675c059450944f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java",
+    "artifactSourceSha256": "11bc36b7468a1ad111e4814c07f3f09f5dd90b7bea66b1342350070ab71e21f8",
+    "headSha256": "11bc36b7468a1ad111e4814c07f3f09f5dd90b7bea66b1342350070ab71e21f8",
+    "currentSha256": "11bc36b7468a1ad111e4814c07f3f09f5dd90b7bea66b1342350070ab71e21f8",
+    "workingSha256": "11bc36b7468a1ad111e4814c07f3f09f5dd90b7bea66b1342350070ab71e21f8",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonPerformanceIT.java",
+    "artifactSourceSha256": "aa05c5194f114f31b8931cde351ccadf5c5a2c25f6406fb5700eaf956e440f52",
+    "headSha256": "aa05c5194f114f31b8931cde351ccadf5c5a2c25f6406fb5700eaf956e440f52",
+    "currentSha256": "aa05c5194f114f31b8931cde351ccadf5c5a2c25f6406fb5700eaf956e440f52",
+    "workingSha256": "aa05c5194f114f31b8931cde351ccadf5c5a2c25f6406fb5700eaf956e440f52",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java",
+    "artifactSourceSha256": "82bd54f117088a4756e40aeff0843bd20c0c53ab65f447f76b0c5e43da4ccd3d",
+    "headSha256": "82bd54f117088a4756e40aeff0843bd20c0c53ab65f447f76b0c5e43da4ccd3d",
+    "currentSha256": "82bd54f117088a4756e40aeff0843bd20c0c53ab65f447f76b0c5e43da4ccd3d",
+    "workingSha256": "82bd54f117088a4756e40aeff0843bd20c0c53ab65f447f76b0c5e43da4ccd3d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/PaginationCapIT.java",
+    "artifactSourceSha256": "b8bd87838cf75d37e31f4657cca392a645dd8311f0bd44b2418f7c4dfe71c9aa",
+    "headSha256": "b8bd87838cf75d37e31f4657cca392a645dd8311f0bd44b2418f7c4dfe71c9aa",
+    "currentSha256": "b8bd87838cf75d37e31f4657cca392a645dd8311f0bd44b2418f7c4dfe71c9aa",
+    "workingSha256": "b8bd87838cf75d37e31f4657cca392a645dd8311f0bd44b2418f7c4dfe71c9aa",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+    "artifactSourceSha256": "e597d0a6fd24143ffa389cff9ece0fa5624b30c1c2dc82fbca5d2438d0d912ae",
+    "headSha256": "e597d0a6fd24143ffa389cff9ece0fa5624b30c1c2dc82fbca5d2438d0d912ae",
+    "currentSha256": "e597d0a6fd24143ffa389cff9ece0fa5624b30c1c2dc82fbca5d2438d0d912ae",
+    "workingSha256": "e597d0a6fd24143ffa389cff9ece0fa5624b30c1c2dc82fbca5d2438d0d912ae",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+    "artifactSourceSha256": "d10ed6fa9cc4bd7605cb2e7ee5efb77a5f80ec808d9497f1b6c8388f88a6c202",
+    "headSha256": "d10ed6fa9cc4bd7605cb2e7ee5efb77a5f80ec808d9497f1b6c8388f88a6c202",
+    "currentSha256": "d10ed6fa9cc4bd7605cb2e7ee5efb77a5f80ec808d9497f1b6c8388f88a6c202",
+    "workingSha256": "d10ed6fa9cc4bd7605cb2e7ee5efb77a5f80ec808d9497f1b6c8388f88a6c202",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleViewIT.java",
+    "artifactSourceSha256": "2986c249f9adea0110d6f7de33b102ece7786c38522d4bb6675eb202dde9c2a6",
+    "headSha256": "2986c249f9adea0110d6f7de33b102ece7786c38522d4bb6675eb202dde9c2a6",
+    "currentSha256": "2986c249f9adea0110d6f7de33b102ece7786c38522d4bb6675eb202dde9c2a6",
+    "workingSha256": "2986c249f9adea0110d6f7de33b102ece7786c38522d4bb6675eb202dde9c2a6",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/SecuritySmokeIT.java",
+    "artifactSourceSha256": "841f46ddbeb23b7952ae84569c69a4f0507e39ba37d18823ff211882127826c9",
+    "headSha256": "841f46ddbeb23b7952ae84569c69a4f0507e39ba37d18823ff211882127826c9",
+    "currentSha256": "841f46ddbeb23b7952ae84569c69a4f0507e39ba37d18823ff211882127826c9",
+    "workingSha256": "841f46ddbeb23b7952ae84569c69a4f0507e39ba37d18823ff211882127826c9",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ShedLockSmokeIT.java",
+    "artifactSourceSha256": "25c09fe04f69c3acb03f491a790fb6d78ad5459b509ec15bd223990af54cf181",
+    "headSha256": "25c09fe04f69c3acb03f491a790fb6d78ad5459b509ec15bd223990af54cf181",
+    "currentSha256": "25c09fe04f69c3acb03f491a790fb6d78ad5459b509ec15bd223990af54cf181",
+    "workingSha256": "25c09fe04f69c3acb03f491a790fb6d78ad5459b509ec15bd223990af54cf181",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java",
+    "artifactSourceSha256": "85e42ef9247729c072cab2061e2b793f57853e1659cdecad1f3b5348c7c66a30",
+    "headSha256": "85e42ef9247729c072cab2061e2b793f57853e1659cdecad1f3b5348c7c66a30",
+    "currentSha256": "85e42ef9247729c072cab2061e2b793f57853e1659cdecad1f3b5348c7c66a30",
+    "workingSha256": "85e42ef9247729c072cab2061e2b793f57853e1659cdecad1f3b5348c7c66a30",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java",
+    "artifactSourceSha256": "3503ab917116151564c28a7a519b611b2023c7ef058923e58fc4fb27224c4a2d",
+    "headSha256": "3503ab917116151564c28a7a519b611b2023c7ef058923e58fc4fb27224c4a2d",
+    "currentSha256": "3503ab917116151564c28a7a519b611b2023c7ef058923e58fc4fb27224c4a2d",
+    "workingSha256": "3503ab917116151564c28a7a519b611b2023c7ef058923e58fc4fb27224c4a2d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java",
+    "artifactSourceSha256": "a3d87edbe7de9b12ad73499eff9f21140032155e9e057b695c23360d203d8855",
+    "headSha256": "a3d87edbe7de9b12ad73499eff9f21140032155e9e057b695c23360d203d8855",
+    "currentSha256": "a3d87edbe7de9b12ad73499eff9f21140032155e9e057b695c23360d203d8855",
+    "workingSha256": "a3d87edbe7de9b12ad73499eff9f21140032155e9e057b695c23360d203d8855",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java",
+    "artifactSourceSha256": "3d593d5a080faa19cfa2c59e4e104e00eb5ee9a28370ed2f3ae25e80a8a9dd77",
+    "headSha256": "3d593d5a080faa19cfa2c59e4e104e00eb5ee9a28370ed2f3ae25e80a8a9dd77",
+    "currentSha256": "3d593d5a080faa19cfa2c59e4e104e00eb5ee9a28370ed2f3ae25e80a8a9dd77",
+    "workingSha256": "3d593d5a080faa19cfa2c59e4e104e00eb5ee9a28370ed2f3ae25e80a8a9dd77",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+    "artifactSourceSha256": "60a766901985d8603fc11878c75ea1b392b0447e6619fa8e14bb0945251ad2ba",
+    "headSha256": "60a766901985d8603fc11878c75ea1b392b0447e6619fa8e14bb0945251ad2ba",
+    "currentSha256": "60a766901985d8603fc11878c75ea1b392b0447e6619fa8e14bb0945251ad2ba",
+    "workingSha256": "60a766901985d8603fc11878c75ea1b392b0447e6619fa8e14bb0945251ad2ba",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+    "artifactSourceSha256": "cd3fb9f3382ef5f31ace7d21c9df2c3abad0ec02346d3bb0a53e5c4c4667f998",
+    "headSha256": "cd3fb9f3382ef5f31ace7d21c9df2c3abad0ec02346d3bb0a53e5c4c4667f998",
+    "currentSha256": "cd3fb9f3382ef5f31ace7d21c9df2c3abad0ec02346d3bb0a53e5c4c4667f998",
+    "workingSha256": "cd3fb9f3382ef5f31ace7d21c9df2c3abad0ec02346d3bb0a53e5c4c4667f998",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonEventPublisherIT.java",
+    "artifactSourceSha256": "e357867b6112fd113fed8efca62877ba8c0f8ef0c3b8243e8ea416dcd419073d",
+    "headSha256": "e357867b6112fd113fed8efca62877ba8c0f8ef0c3b8243e8ea416dcd419073d",
+    "currentSha256": "e357867b6112fd113fed8efca62877ba8c0f8ef0c3b8243e8ea416dcd419073d",
+    "workingSha256": "e357867b6112fd113fed8efca62877ba8c0f8ef0c3b8243e8ea416dcd419073d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonSchemaIT.java",
+    "artifactSourceSha256": "8329d3e2fb4d9cb7b3afa28c14deb212ed313e6c24d24697eacc720be644fb15",
+    "headSha256": "8329d3e2fb4d9cb7b3afa28c14deb212ed313e6c24d24697eacc720be644fb15",
+    "currentSha256": "8329d3e2fb4d9cb7b3afa28c14deb212ed313e6c24d24697eacc720be644fb15",
+    "workingSha256": "8329d3e2fb4d9cb7b3afa28c14deb212ed313e6c24d24697eacc720be644fb15",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+    "artifactSourceSha256": "beb381a33b217b3e3a894eea0fe75984b59fd74f691305272eed06cc9071c7b5",
+    "headSha256": "beb381a33b217b3e3a894eea0fe75984b59fd74f691305272eed06cc9071c7b5",
+    "currentSha256": "beb381a33b217b3e3a894eea0fe75984b59fd74f691305272eed06cc9071c7b5",
+    "workingSha256": "beb381a33b217b3e3a894eea0fe75984b59fd74f691305272eed06cc9071c7b5",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+    "artifactSourceSha256": "e47d5b2332a484cc5fa286cc67143631900770126a2e6c5d05859dad42f9ba9b",
+    "headSha256": "e47d5b2332a484cc5fa286cc67143631900770126a2e6c5d05859dad42f9ba9b",
+    "currentSha256": "e47d5b2332a484cc5fa286cc67143631900770126a2e6c5d05859dad42f9ba9b",
+    "workingSha256": "e47d5b2332a484cc5fa286cc67143631900770126a2e6c5d05859dad42f9ba9b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+    "artifactSourceSha256": "d552bfa72f03b05bb7d02552f5cd9c8235c0f4366b534ea6ea6c45e2348cc944",
+    "headSha256": "d552bfa72f03b05bb7d02552f5cd9c8235c0f4366b534ea6ea6c45e2348cc944",
+    "currentSha256": "d552bfa72f03b05bb7d02552f5cd9c8235c0f4366b534ea6ea6c45e2348cc944",
+    "workingSha256": "d552bfa72f03b05bb7d02552f5cd9c8235c0f4366b534ea6ea6c45e2348cc944",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpFilterTest.java",
+    "artifactSourceSha256": "aa351c16a921ba37be57a1f98cb928d54c811014c3d6613e6e5a4fe754dc4a51",
+    "headSha256": "aa351c16a921ba37be57a1f98cb928d54c811014c3d6613e6e5a4fe754dc4a51",
+    "currentSha256": "aa351c16a921ba37be57a1f98cb928d54c811014c3d6613e6e5a4fe754dc4a51",
+    "workingSha256": "aa351c16a921ba37be57a1f98cb928d54c811014c3d6613e6e5a4fe754dc4a51",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpResolverTest.java",
+    "artifactSourceSha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b",
+    "headSha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b",
+    "currentSha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b",
+    "workingSha256": "61fe13cd1ae631f60cd45f55bf344a2bfc49af6eeface087903b65f8e244865b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/config/PublicKeyConfigTest.java",
+    "artifactSourceSha256": "7ff3a353d6d3d07b34261565212e37e2baaa23a52188137f2c982d3666bf1b26",
+    "headSha256": "7ff3a353d6d3d07b34261565212e37e2baaa23a52188137f2c982d3666bf1b26",
+    "currentSha256": "7ff3a353d6d3d07b34261565212e37e2baaa23a52188137f2c982d3666bf1b26",
+    "workingSha256": "7ff3a353d6d3d07b34261565212e37e2baaa23a52188137f2c982d3666bf1b26",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+    "artifactSourceSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4",
+    "headSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4",
+    "currentSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4",
+    "workingSha256": "1775a6fd5b88fa75515c5a8b2517110c8d0ccfedcff06d2cd899ce441e148be4",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilterTest.java",
+    "artifactSourceSha256": "ef2d98f540ca5ff17e5f7160b9ec0b84ae304f6dd2ba92ba13094596a157e6cc",
+    "headSha256": "ef2d98f540ca5ff17e5f7160b9ec0b84ae304f6dd2ba92ba13094596a157e6cc",
+    "currentSha256": "ef2d98f540ca5ff17e5f7160b9ec0b84ae304f6dd2ba92ba13094596a157e6cc",
+    "workingSha256": "ef2d98f540ca5ff17e5f7160b9ec0b84ae304f6dd2ba92ba13094596a157e6cc",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+    "artifactSourceSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc",
+    "headSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc",
+    "currentSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc",
+    "workingSha256": "0d24899820c849cb5dd908d44bff78dd80ab27435c1262fdbe6b9152cc8282fc",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StreamingRequestSizeGatewayFilterFactoryTest.java",
+    "artifactSourceSha256": "9efa1ef07ae8ce134211557a9b0b8ef8f087f79ecf055662d11c677cfd33a583",
+    "headSha256": "9efa1ef07ae8ce134211557a9b0b8ef8f087f79ecf055662d11c677cfd33a583",
+    "currentSha256": "9efa1ef07ae8ce134211557a9b0b8ef8f087f79ecf055662d11c677cfd33a583",
+    "workingSha256": "9efa1ef07ae8ce134211557a9b0b8ef8f087f79ecf055662d11c677cfd33a583",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StudentRequestsNoStoreFilterTest.java",
+    "artifactSourceSha256": "5cb1e1e143549169b66ed957a96c6d179093a156bb18ac95dc304fe59d052860",
+    "headSha256": "5cb1e1e143549169b66ed957a96c6d179093a156bb18ac95dc304fe59d052860",
+    "currentSha256": "5cb1e1e143549169b66ed957a96c6d179093a156bb18ac95dc304fe59d052860",
+    "workingSha256": "5cb1e1e143549169b66ed957a96c6d179093a156bb18ac95dc304fe59d052860",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenRateLimiterTest.java",
+    "artifactSourceSha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117",
+    "headSha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117",
+    "currentSha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117",
+    "workingSha256": "31a097850bc7df9d2ddd37d0feefd3f1cd8b4388eeb875a500e3f3ae08eda117",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitProblemDetailsFilterTest.java",
+    "artifactSourceSha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69",
+    "headSha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69",
+    "currentSha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69",
+    "workingSha256": "6a5861e1ad0c4b5ae42988bb9ebc2809b54a371fb00c3aab66c66ff1204e4f69",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+    "artifactSourceSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a",
+    "headSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a",
+    "currentSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a",
+    "workingSha256": "2a801067edeb6ee5d43cd26cff20686980566f18dc334f4d8aeb1cf5a4f6fb7a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalIssuerClientPropertiesTest.java",
+    "artifactSourceSha256": "4540e4736c79c8d32c684fcf4fb01e272071a633b21d4e582c0bfdae6ef71d8f",
+    "headSha256": "4540e4736c79c8d32c684fcf4fb01e272071a633b21d4e582c0bfdae6ef71d8f",
+    "currentSha256": "4540e4736c79c8d32c684fcf4fb01e272071a633b21d4e582c0bfdae6ef71d8f",
+    "workingSha256": "4540e4736c79c8d32c684fcf4fb01e272071a633b21d4e582c0bfdae6ef71d8f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClientTest.java",
+    "artifactSourceSha256": "8e3221ff07a5a3d1c763fe7f7bed6377c1282501eed8076edb0c5fa13a642899",
+    "headSha256": "8e3221ff07a5a3d1c763fe7f7bed6377c1282501eed8076edb0c5fa13a642899",
+    "currentSha256": "8e3221ff07a5a3d1c763fe7f7bed6377c1282501eed8076edb0c5fa13a642899",
+    "workingSha256": "8e3221ff07a5a3d1c763fe7f7bed6377c1282501eed8076edb0c5fa13a642899",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+    "artifactSourceSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb",
+    "headSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb",
+    "currentSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb",
+    "workingSha256": "771df71d8661bab0fdab69cae36464b022b41e4772792819f8ba0fa256cfa2bb",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+    "artifactSourceSha256": "7ab9ca4c8d9493319fd4753d874d58fda58562533361938d7ef9751cae904259",
+    "headSha256": "7ab9ca4c8d9493319fd4753d874d58fda58562533361938d7ef9751cae904259",
+    "currentSha256": "7ab9ca4c8d9493319fd4753d874d58fda58562533361938d7ef9751cae904259",
+    "workingSha256": "7ab9ca4c8d9493319fd4753d874d58fda58562533361938d7ef9751cae904259",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorIT.java",
+    "artifactSourceSha256": "eb392c26102d4880f70c35032fcc91ab8dd17feddd118854fff92f04d971f280",
+    "headSha256": "eb392c26102d4880f70c35032fcc91ab8dd17feddd118854fff92f04d971f280",
+    "currentSha256": "eb392c26102d4880f70c35032fcc91ab8dd17feddd118854fff92f04d971f280",
+    "workingSha256": "eb392c26102d4880f70c35032fcc91ab8dd17feddd118854fff92f04d971f280",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorSpanFilterIT.java",
+    "artifactSourceSha256": "b294de5e2178764f4e8270e44b1ad204817dbc82bd50c6375b24f1f43809967f",
+    "headSha256": "b294de5e2178764f4e8270e44b1ad204817dbc82bd50c6375b24f1f43809967f",
+    "currentSha256": "b294de5e2178764f4e8270e44b1ad204817dbc82bd50c6375b24f1f43809967f",
+    "workingSha256": "b294de5e2178764f4e8270e44b1ad204817dbc82bd50c6375b24f1f43809967f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java",
+    "artifactSourceSha256": "54130e276a2667a7173184b8b509eead5bd30d6a1c65fd21e382a98581407b02",
+    "headSha256": "54130e276a2667a7173184b8b509eead5bd30d6a1c65fd21e382a98581407b02",
+    "currentSha256": "54130e276a2667a7173184b8b509eead5bd30d6a1c65fd21e382a98581407b02",
+    "workingSha256": "54130e276a2667a7173184b8b509eead5bd30d6a1c65fd21e382a98581407b02",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "artifactSourceSha256": "7c98e90a008514ccc9649a6e5db5464f408f1e177a444ebc21284c96bf9d8236",
+    "headSha256": "7c98e90a008514ccc9649a6e5db5464f408f1e177a444ebc21284c96bf9d8236",
+    "currentSha256": "7c98e90a008514ccc9649a6e5db5464f408f1e177a444ebc21284c96bf9d8236",
+    "workingSha256": "7c98e90a008514ccc9649a6e5db5464f408f1e177a444ebc21284c96bf9d8236",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/BcryptDoSMitigationIT.java",
+    "artifactSourceSha256": "fa9338ab09e2103ab2de5256bfc35b548d66b9d4b96d06ccd0f41fc622ea5eac",
+    "headSha256": "fa9338ab09e2103ab2de5256bfc35b548d66b9d4b96d06ccd0f41fc622ea5eac",
+    "currentSha256": "fa9338ab09e2103ab2de5256bfc35b548d66b9d4b96d06ccd0f41fc622ea5eac",
+    "workingSha256": "fa9338ab09e2103ab2de5256bfc35b548d66b9d4b96d06ccd0f41fc622ea5eac",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+    "artifactSourceSha256": "b17048caa499e5d6adf930e01c760c89e35489983d43afff99658807669d5d70",
+    "headSha256": "b17048caa499e5d6adf930e01c760c89e35489983d43afff99658807669d5d70",
+    "currentSha256": "b17048caa499e5d6adf930e01c760c89e35489983d43afff99658807669d5d70",
+    "workingSha256": "b17048caa499e5d6adf930e01c760c89e35489983d43afff99658807669d5d70",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LoginRateLimiterIT.java",
+    "artifactSourceSha256": "59a356ab422232db8a65d198132f6ecaa309309bb722e3503ef80cf962ec7cf6",
+    "headSha256": "59a356ab422232db8a65d198132f6ecaa309309bb722e3503ef80cf962ec7cf6",
+    "currentSha256": "59a356ab422232db8a65d198132f6ecaa309309bb722e3503ef80cf962ec7cf6",
+    "workingSha256": "59a356ab422232db8a65d198132f6ecaa309309bb722e3503ef80cf962ec7cf6",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LogoutLifecycleIT.java",
+    "artifactSourceSha256": "b26897d00e52feef3413a614c8d0190b4e92efd5713ff453ad5f5551e5c03964",
+    "headSha256": "b26897d00e52feef3413a614c8d0190b4e92efd5713ff453ad5f5551e5c03964",
+    "currentSha256": "b26897d00e52feef3413a614c8d0190b4e92efd5713ff453ad5f5551e5c03964",
+    "workingSha256": "b26897d00e52feef3413a614c8d0190b4e92efd5713ff453ad5f5551e5c03964",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+    "artifactSourceSha256": "d769c69a5649d4886d59a81b7d07098fcbfcb421aea56f3738c450f9cf9cc5b3",
+    "headSha256": "d769c69a5649d4886d59a81b7d07098fcbfcb421aea56f3738c450f9cf9cc5b3",
+    "currentSha256": "d769c69a5649d4886d59a81b7d07098fcbfcb421aea56f3738c450f9cf9cc5b3",
+    "workingSha256": "d769c69a5649d4886d59a81b7d07098fcbfcb421aea56f3738c450f9cf9cc5b3",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java",
+    "artifactSourceSha256": "353612c87859bf76b1be856263e916ee43fbfd8d244c2e48a859b4c7eac16380",
+    "headSha256": "353612c87859bf76b1be856263e916ee43fbfd8d244c2e48a859b4c7eac16380",
+    "currentSha256": "353612c87859bf76b1be856263e916ee43fbfd8d244c2e48a859b4c7eac16380",
+    "workingSha256": "353612c87859bf76b1be856263e916ee43fbfd8d244c2e48a859b4c7eac16380",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+    "artifactSourceSha256": "3dfb4d30ad7d6344452d541bf9eee0fdf2d7f4d33665f4d7121aa0a45f6cb31c",
+    "headSha256": "3dfb4d30ad7d6344452d541bf9eee0fdf2d7f4d33665f4d7121aa0a45f6cb31c",
+    "currentSha256": "3dfb4d30ad7d6344452d541bf9eee0fdf2d7f4d33665f4d7121aa0a45f6cb31c",
+    "workingSha256": "3dfb4d30ad7d6344452d541bf9eee0fdf2d7f4d33665f4d7121aa0a45f6cb31c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ReportProofValidationIT.java",
+    "artifactSourceSha256": "0d05b0d0fde1ae757485e3c9fa47de6f85a02de31dfa8f9a3e9780e8596260f0",
+    "headSha256": "0d05b0d0fde1ae757485e3c9fa47de6f85a02de31dfa8f9a3e9780e8596260f0",
+    "currentSha256": "0d05b0d0fde1ae757485e3c9fa47de6f85a02de31dfa8f9a3e9780e8596260f0",
+    "workingSha256": "0d05b0d0fde1ae757485e3c9fa47de6f85a02de31dfa8f9a3e9780e8596260f0",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SameSiteCookieContractIT.java",
+    "artifactSourceSha256": "b9559fbe337aabdb482cb50841706f0007f65b81f4e112fd3786d571840265ec",
+    "headSha256": "b9559fbe337aabdb482cb50841706f0007f65b81f4e112fd3786d571840265ec",
+    "currentSha256": "b9559fbe337aabdb482cb50841706f0007f65b81f4e112fd3786d571840265ec",
+    "workingSha256": "b9559fbe337aabdb482cb50841706f0007f65b81f4e112fd3786d571840265ec",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+    "artifactSourceSha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135",
+    "headSha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135",
+    "currentSha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135",
+    "workingSha256": "f3be2ee45730e7b42fff40bdb9f6b70c10f9f2a7eba2020912605d480b5dd135",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/TmaIT.java",
+    "artifactSourceSha256": "f59c97fdc079b150a5f97e8589a043548a9b04c91d3c7bc60c64650072439643",
+    "headSha256": "f59c97fdc079b150a5f97e8589a043548a9b04c91d3c7bc60c64650072439643",
+    "currentSha256": "f59c97fdc079b150a5f97e8589a043548a9b04c91d3c7bc60c64650072439643",
+    "workingSha256": "f59c97fdc079b150a5f97e8589a043548a9b04c91d3c7bc60c64650072439643",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketIT.java",
+    "artifactSourceSha256": "e35c755150658bfcebbbb697bed4d2097886a8e8c26ea029cfe683742499992a",
+    "headSha256": "e35c755150658bfcebbbb697bed4d2097886a8e8c26ea029cfe683742499992a",
+    "currentSha256": "e35c755150658bfcebbbb697bed4d2097886a8e8c26ea029cfe683742499992a",
+    "workingSha256": "e35c755150658bfcebbbb697bed4d2097886a8e8c26ea029cfe683742499992a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapterIT.java",
+    "artifactSourceSha256": "3d0e03d9770687c2fbc99b3bd666794b05ff8e01d9bb1e8217fb47491764e649",
+    "headSha256": "3d0e03d9770687c2fbc99b3bd666794b05ff8e01d9bb1e8217fb47491764e649",
+    "currentSha256": "3d0e03d9770687c2fbc99b3bd666794b05ff8e01d9bb1e8217fb47491764e649",
+    "workingSha256": "3d0e03d9770687c2fbc99b3bd666794b05ff8e01d9bb1e8217fb47491764e649",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+    "artifactSourceSha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+    "headSha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+    "currentSha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+    "workingSha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+    "artifactSourceSha256": "46c5d4262086dc3d296a2de11ae369df5897951375b877ee35ab8877ba542280",
+    "headSha256": "46c5d4262086dc3d296a2de11ae369df5897951375b877ee35ab8877ba542280",
+    "currentSha256": "46c5d4262086dc3d296a2de11ae369df5897951375b877ee35ab8877ba542280",
+    "workingSha256": "46c5d4262086dc3d296a2de11ae369df5897951375b877ee35ab8877ba542280",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/AttendanceSemesterDeletionDataIT.java",
+    "artifactSourceSha256": "a025fda3c7f9818aa3424ffbb56d24bdd1c9416d32f446cf6567a4d4cf66c896",
+    "headSha256": "a025fda3c7f9818aa3424ffbb56d24bdd1c9416d32f446cf6567a4d4cf66c896",
+    "currentSha256": "a025fda3c7f9818aa3424ffbb56d24bdd1c9416d32f446cf6567a4d4cf66c896",
+    "workingSha256": "a025fda3c7f9818aa3424ffbb56d24bdd1c9416d32f446cf6567a4d4cf66c896",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/EventIdempotentIT.java",
+    "artifactSourceSha256": "8479d70a00557055bb4086cad282d5112dd4753e0c52dbcbbfa9fff8fc649428",
+    "headSha256": "8479d70a00557055bb4086cad282d5112dd4753e0c52dbcbbfa9fff8fc649428",
+    "currentSha256": "8479d70a00557055bb4086cad282d5112dd4753e0c52dbcbbfa9fff8fc649428",
+    "workingSha256": "8479d70a00557055bb4086cad282d5112dd4753e0c52dbcbbfa9fff8fc649428",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+    "artifactSourceSha256": "ea9d0c7393285f59c18f80c607488a58abb8a1797e8d61f58fdce21f5756a264",
+    "headSha256": "ea9d0c7393285f59c18f80c607488a58abb8a1797e8d61f58fdce21f5756a264",
+    "currentSha256": "ea9d0c7393285f59c18f80c607488a58abb8a1797e8d61f58fdce21f5756a264",
+    "workingSha256": "ea9d0c7393285f59c18f80c607488a58abb8a1797e8d61f58fdce21f5756a264",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/OneOffLessonCancelledConsumerIT.java",
+    "artifactSourceSha256": "45c16689ce5d3e12119c882a97bba65dc5ec2ac544cbfefd531bd7f52e383bb7",
+    "headSha256": "45c16689ce5d3e12119c882a97bba65dc5ec2ac544cbfefd531bd7f52e383bb7",
+    "currentSha256": "45c16689ce5d3e12119c882a97bba65dc5ec2ac544cbfefd531bd7f52e383bb7",
+    "workingSha256": "45c16689ce5d3e12119c882a97bba65dc5ec2ac544cbfefd531bd7f52e383bb7",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/SemesterDeletionParticipantIT.java",
+    "artifactSourceSha256": "995f8ea1bbc8fdeb0e4fe39756e5a079d11295db0c87560db78b0e91ee5143ea",
+    "headSha256": "995f8ea1bbc8fdeb0e4fe39756e5a079d11295db0c87560db78b0e91ee5143ea",
+    "currentSha256": "995f8ea1bbc8fdeb0e4fe39756e5a079d11295db0c87560db78b0e91ee5143ea",
+    "workingSha256": "995f8ea1bbc8fdeb0e4fe39756e5a079d11295db0c87560db78b0e91ee5143ea",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/events/AttendanceMarkedContractIT.java",
+    "artifactSourceSha256": "e61cbf8f59d9117f281a2cffd6c0450e6cb41d83adfe9f4f2fe021a9e3cd5d11",
+    "headSha256": "e61cbf8f59d9117f281a2cffd6c0450e6cb41d83adfe9f4f2fe021a9e3cd5d11",
+    "currentSha256": "e61cbf8f59d9117f281a2cffd6c0450e6cb41d83adfe9f4f2fe021a9e3cd5d11",
+    "workingSha256": "e61cbf8f59d9117f281a2cffd6c0450e6cb41d83adfe9f4f2fe021a9e3cd5d11",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java",
+    "artifactSourceSha256": "ec8c5b8e6e84bbbf0dda2af680e8988fde1b5bc16a5397ab8c461b1f1b01927a",
+    "headSha256": "ec8c5b8e6e84bbbf0dda2af680e8988fde1b5bc16a5397ab8c461b1f1b01927a",
+    "currentSha256": "ec8c5b8e6e84bbbf0dda2af680e8988fde1b5bc16a5397ab8c461b1f1b01927a",
+    "workingSha256": "ec8c5b8e6e84bbbf0dda2af680e8988fde1b5bc16a5397ab8c461b1f1b01927a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventContractIT.java",
+    "artifactSourceSha256": "cd568a500c0e03b718364741ff8ddc804ecb98ea0bc45c69c928f93cf7fa9109",
+    "headSha256": "cd568a500c0e03b718364741ff8ddc804ecb98ea0bc45c69c928f93cf7fa9109",
+    "currentSha256": "cd568a500c0e03b718364741ff8ddc804ecb98ea0bc45c69c928f93cf7fa9109",
+    "workingSha256": "cd568a500c0e03b718364741ff8ddc804ecb98ea0bc45c69c928f93cf7fa9109",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseRepositoryIT.java",
+    "artifactSourceSha256": "63cc24bcc7c1170455d22c5dbf8a7de7d92ceb83907ffa0387a29ac090c25159",
+    "headSha256": "63cc24bcc7c1170455d22c5dbf8a7de7d92ceb83907ffa0387a29ac090c25159",
+    "currentSha256": "63cc24bcc7c1170455d22c5dbf8a7de7d92ceb83907ffa0387a29ac090c25159",
+    "workingSha256": "63cc24bcc7c1170455d22c5dbf8a7de7d92ceb83907ffa0387a29ac090c25159",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceApproveIT.java",
+    "artifactSourceSha256": "e0ac5f77763ef872ba2dd393c4c6f783a634110d2f562fe91058d0726d1107bb",
+    "headSha256": "e0ac5f77763ef872ba2dd393c4c6f783a634110d2f562fe91058d0726d1107bb",
+    "currentSha256": "e0ac5f77763ef872ba2dd393c4c6f783a634110d2f562fe91058d0726d1107bb",
+    "workingSha256": "e0ac5f77763ef872ba2dd393c4c6f783a634110d2f562fe91058d0726d1107bb",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AdminActivityGrpcIT.java",
+    "artifactSourceSha256": "dd625ac5804e4730199ca85b2d158685b4ff96ce187e2d5c8776fdc1275fc5e8",
+    "headSha256": "dd625ac5804e4730199ca85b2d158685b4ff96ce187e2d5c8776fdc1275fc5e8",
+    "currentSha256": "dd625ac5804e4730199ca85b2d158685b4ff96ce187e2d5c8776fdc1275fc5e8",
+    "workingSha256": "dd625ac5804e4730199ca85b2d158685b4ff96ce187e2d5c8776fdc1275fc5e8",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+    "artifactSourceSha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+    "headSha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+    "currentSha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+    "workingSha256": "9e799f987560d44b59c9fa76fbc8ae0c5d674f792562ccfb59215d5e2c2b9119",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/UserImpactIT.java",
+    "artifactSourceSha256": "56c52631d7ef5ab02053e687e4c0f9d4bd6d58b93c9ef8914f5c7c9edcae19a9",
+    "headSha256": "56c52631d7ef5ab02053e687e4c0f9d4bd6d58b93c9ef8914f5c7c9edcae19a9",
+    "currentSha256": "56c52631d7ef5ab02053e687e4c0f9d4bd6d58b93c9ef8914f5c7c9edcae19a9",
+    "workingSha256": "56c52631d7ef5ab02053e687e4c0f9d4bd6d58b93c9ef8914f5c7c9edcae19a9",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ActuatorIT.java",
+    "artifactSourceSha256": "476e475dd50fb5f2d557c11a4e7c771e125d1e09551cc026a036cfe44575f7fd",
+    "headSha256": "476e475dd50fb5f2d557c11a4e7c771e125d1e09551cc026a036cfe44575f7fd",
+    "currentSha256": "476e475dd50fb5f2d557c11a4e7c771e125d1e09551cc026a036cfe44575f7fd",
+    "workingSha256": "476e475dd50fb5f2d557c11a4e7c771e125d1e09551cc026a036cfe44575f7fd",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/CheckinIT.java",
+    "artifactSourceSha256": "176c0f9c82153b58e10e32c7c7b73fa87c0f41f3cd528f7e07d713ca83e4bf0c",
+    "headSha256": "176c0f9c82153b58e10e32c7c7b73fa87c0f41f3cd528f7e07d713ca83e4bf0c",
+    "currentSha256": "176c0f9c82153b58e10e32c7c7b73fa87c0f41f3cd528f7e07d713ca83e4bf0c",
+    "workingSha256": "176c0f9c82153b58e10e32c7c7b73fa87c0f41f3cd528f7e07d713ca83e4bf0c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+    "artifactSourceSha256": "17555d002eb04126cc209771370b5cc931cdb16ef189261f2eb803ee9fed0680",
+    "headSha256": "17555d002eb04126cc209771370b5cc931cdb16ef189261f2eb803ee9fed0680",
+    "currentSha256": "17555d002eb04126cc209771370b5cc931cdb16ef189261f2eb803ee9fed0680",
+    "workingSha256": "17555d002eb04126cc209771370b5cc931cdb16ef189261f2eb803ee9fed0680",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+    "artifactSourceSha256": "712f3e4e8d227f904b8cad2f280af550ad3401f6ac081c5a51d8096959125b1e",
+    "headSha256": "712f3e4e8d227f904b8cad2f280af550ad3401f6ac081c5a51d8096959125b1e",
+    "currentSha256": "712f3e4e8d227f904b8cad2f280af550ad3401f6ac081c5a51d8096959125b1e",
+    "workingSha256": "712f3e4e8d227f904b8cad2f280af550ad3401f6ac081c5a51d8096959125b1e",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/LateCheckinPerformanceIT.java",
+    "artifactSourceSha256": "b619785767344b5c03e23009649ac5103fa5933a45339b95604fdd6b6c8b107a",
+    "headSha256": "b619785767344b5c03e23009649ac5103fa5933a45339b95604fdd6b6c8b107a",
+    "currentSha256": "b619785767344b5c03e23009649ac5103fa5933a45339b95604fdd6b6c8b107a",
+    "workingSha256": "b619785767344b5c03e23009649ac5103fa5933a45339b95604fdd6b6c8b107a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+    "artifactSourceSha256": "ae76ab01133735cb92b3e9103556abfc5088e4b7ec1b4654c8dcfdaee2fe2f2f",
+    "headSha256": "ae76ab01133735cb92b3e9103556abfc5088e4b7ec1b4654c8dcfdaee2fe2f2f",
+    "currentSha256": "ae76ab01133735cb92b3e9103556abfc5088e4b7ec1b4654c8dcfdaee2fe2f2f",
+    "workingSha256": "ae76ab01133735cb92b3e9103556abfc5088e4b7ec1b4654c8dcfdaee2fe2f2f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MongoIndexIT.java",
+    "artifactSourceSha256": "2526e64650781957f6ca74aff691b09d3ff8682abcff0b069565c9521596dde4",
+    "headSha256": "2526e64650781957f6ca74aff691b09d3ff8682abcff0b069565c9521596dde4",
+    "currentSha256": "2526e64650781957f6ca74aff691b09d3ff8682abcff0b069565c9521596dde4",
+    "workingSha256": "2526e64650781957f6ca74aff691b09d3ff8682abcff0b069565c9521596dde4",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+    "artifactSourceSha256": "52ba393a4e0c5a1a5b0d65d407f1b1d5002c835f99ea7674fe362fe01ea9747c",
+    "headSha256": "52ba393a4e0c5a1a5b0d65d407f1b1d5002c835f99ea7674fe362fe01ea9747c",
+    "currentSha256": "52ba393a4e0c5a1a5b0d65d407f1b1d5002c835f99ea7674fe362fe01ea9747c",
+    "workingSha256": "52ba393a4e0c5a1a5b0d65d407f1b1d5002c835f99ea7674fe362fe01ea9747c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OutboxAtomicityIT.java",
+    "artifactSourceSha256": "51205c6d46f8691cf61b308c28b0538802906e7d5708492800e6edc25f0c02a6",
+    "headSha256": "51205c6d46f8691cf61b308c28b0538802906e7d5708492800e6edc25f0c02a6",
+    "currentSha256": "51205c6d46f8691cf61b308c28b0538802906e7d5708492800e6edc25f0c02a6",
+    "workingSha256": "51205c6d46f8691cf61b308c28b0538802906e7d5708492800e6edc25f0c02a6",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/PaginationCapIT.java",
+    "artifactSourceSha256": "c5ce70c7f0d42a65942d3a73543346ffe29b917a6d7b65d45dd8d8194150788b",
+    "headSha256": "c5ce70c7f0d42a65942d3a73543346ffe29b917a6d7b65d45dd8d8194150788b",
+    "currentSha256": "c5ce70c7f0d42a65942d3a73543346ffe29b917a6d7b65d45dd8d8194150788b",
+    "workingSha256": "c5ce70c7f0d42a65942d3a73543346ffe29b917a6d7b65d45dd8d8194150788b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitConsumerIT.java",
+    "artifactSourceSha256": "4eb7786825e5fe3ba8556c8fd6d763ffbc646edda995dcb6ef303afdb21be67f",
+    "headSha256": "4eb7786825e5fe3ba8556c8fd6d763ffbc646edda995dcb6ef303afdb21be67f",
+    "currentSha256": "4eb7786825e5fe3ba8556c8fd6d763ffbc646edda995dcb6ef303afdb21be67f",
+    "workingSha256": "4eb7786825e5fe3ba8556c8fd6d763ffbc646edda995dcb6ef303afdb21be67f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java",
+    "artifactSourceSha256": "95bff3ce808623bfcd370499410a33bfc3c38465af9097fe3016f80d49e51eda",
+    "headSha256": "95bff3ce808623bfcd370499410a33bfc3c38465af9097fe3016f80d49e51eda",
+    "currentSha256": "95bff3ce808623bfcd370499410a33bfc3c38465af9097fe3016f80d49e51eda",
+    "workingSha256": "95bff3ce808623bfcd370499410a33bfc3c38465af9097fe3016f80d49e51eda",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+    "artifactSourceSha256": "9892c235ea152a4f299db29eef5937b8b9ebf0cc08d687773094b835c8181b67",
+    "headSha256": "9892c235ea152a4f299db29eef5937b8b9ebf0cc08d687773094b835c8181b67",
+    "currentSha256": "9892c235ea152a4f299db29eef5937b8b9ebf0cc08d687773094b835c8181b67",
+    "workingSha256": "9892c235ea152a4f299db29eef5937b8b9ebf0cc08d687773094b835c8181b67",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/SecuritySmokeIT.java",
+    "artifactSourceSha256": "9d85121067b26b5b3959679eb1b3d53b9ec7868c1b823ad09ad7969a315a688f",
+    "headSha256": "9d85121067b26b5b3959679eb1b3d53b9ec7868c1b823ad09ad7969a315a688f",
+    "currentSha256": "9d85121067b26b5b3959679eb1b3d53b9ec7868c1b823ad09ad7969a315a688f",
+    "workingSha256": "9d85121067b26b5b3959679eb1b3d53b9ec7868c1b823ad09ad7969a315a688f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/StartupOrphanCleanupRemovedIT.java",
+    "artifactSourceSha256": "4274355439c47e74045f84ce94677bdb7cba5642af3a1bb5be3628b6132bf112",
+    "headSha256": "4274355439c47e74045f84ce94677bdb7cba5642af3a1bb5be3628b6132bf112",
+    "currentSha256": "4274355439c47e74045f84ce94677bdb7cba5642af3a1bb5be3628b6132bf112",
+    "workingSha256": "4274355439c47e74045f84ce94677bdb7cba5642af3a1bb5be3628b6132bf112",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+    "artifactSourceSha256": "0a3d4fb8f810f4c78d543d1175c9cf83afd62c1112e07bd7b3cba82791a4cf95",
+    "headSha256": "0a3d4fb8f810f4c78d543d1175c9cf83afd62c1112e07bd7b3cba82791a4cf95",
+    "currentSha256": "0a3d4fb8f810f4c78d543d1175c9cf83afd62c1112e07bd7b3cba82791a4cf95",
+    "workingSha256": "0a3d4fb8f810f4c78d543d1175c9cf83afd62c1112e07bd7b3cba82791a4cf95",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportControllerIT.java",
+    "artifactSourceSha256": "2dea809a1b34f1dbc43fc6e5674e5bfc125443e671f9f3932c0e059bfb8c8e15",
+    "headSha256": "2dea809a1b34f1dbc43fc6e5674e5bfc125443e671f9f3932c0e059bfb8c8e15",
+    "currentSha256": "2dea809a1b34f1dbc43fc6e5674e5bfc125443e671f9f3932c0e059bfb8c8e15",
+    "workingSha256": "2dea809a1b34f1dbc43fc6e5674e5bfc125443e671f9f3932c0e059bfb8c8e15",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterIT.java",
+    "artifactSourceSha256": "9474edb4d0538f96732547ac2b84434ed6077cb9ecd2fa5a08932851c0358490",
+    "headSha256": "9474edb4d0538f96732547ac2b84434ed6077cb9ecd2fa5a08932851c0358490",
+    "currentSha256": "9474edb4d0538f96732547ac2b84434ed6077cb9ecd2fa5a08932851c0358490",
+    "workingSha256": "9474edb4d0538f96732547ac2b84434ed6077cb9ecd2fa5a08932851c0358490",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterStrictModeIT.java",
+    "artifactSourceSha256": "81c88862e77bc0756ecad1881e7f499e85d8636c299dfa8521ba1a2b04133632",
+    "headSha256": "81c88862e77bc0756ecad1881e7f499e85d8636c299dfa8521ba1a2b04133632",
+    "currentSha256": "81c88862e77bc0756ecad1881e7f499e85d8636c299dfa8521ba1a2b04133632",
+    "workingSha256": "81c88862e77bc0756ecad1881e7f499e85d8636c299dfa8521ba1a2b04133632",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+    "artifactSourceSha256": "047308e6da9cc0c4cf2041a39fdd052670aa868e350997d176388bc3e44a7d7d",
+    "headSha256": "047308e6da9cc0c4cf2041a39fdd052670aa868e350997d176388bc3e44a7d7d",
+    "currentSha256": "047308e6da9cc0c4cf2041a39fdd052670aa868e350997d176388bc3e44a7d7d",
+    "workingSha256": "047308e6da9cc0c4cf2041a39fdd052670aa868e350997d176388bc3e44a7d7d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheRequestOptionsIT.java",
+    "artifactSourceSha256": "0a2254c19e9589e30394873b0454e19311241018eb6d546d6cd584b21f67fd0b",
+    "headSha256": "0a2254c19e9589e30394873b0454e19311241018eb6d546d6cd584b21f67fd0b",
+    "currentSha256": "0a2254c19e9589e30394873b0454e19311241018eb6d546d6cd584b21f67fd0b",
+    "workingSha256": "0a2254c19e9589e30394873b0454e19311241018eb6d546d6cd584b21f67fd0b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+    "artifactSourceSha256": "c586d6cec078f3167b5747b47d0a70b388d5ade56b0f69178be162b93641bab9",
+    "headSha256": "c586d6cec078f3167b5747b47d0a70b388d5ade56b0f69178be162b93641bab9",
+    "currentSha256": "c586d6cec078f3167b5747b47d0a70b388d5ade56b0f69178be162b93641bab9",
+    "workingSha256": "c586d6cec078f3167b5747b47d0a70b388d5ade56b0f69178be162b93641bab9",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+    "artifactSourceSha256": "cb6cfa6671e80fa2bdd0b1d419bbc344b7ad68359ba3e9df9a4f144fd0087cf2",
+    "headSha256": "cb6cfa6671e80fa2bdd0b1d419bbc344b7ad68359ba3e9df9a4f144fd0087cf2",
+    "currentSha256": "cb6cfa6671e80fa2bdd0b1d419bbc344b7ad68359ba3e9df9a4f144fd0087cf2",
+    "workingSha256": "cb6cfa6671e80fa2bdd0b1d419bbc344b7ad68359ba3e9df9a4f144fd0087cf2",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+    "artifactSourceSha256": "9b7639ae2116060c25dbf8498d4d77abec052f0c7a24be3199220f469510613d",
+    "headSha256": "9b7639ae2116060c25dbf8498d4d77abec052f0c7a24be3199220f469510613d",
+    "currentSha256": "9b7639ae2116060c25dbf8498d4d77abec052f0c7a24be3199220f469510613d",
+    "workingSha256": "9b7639ae2116060c25dbf8498d4d77abec052f0c7a24be3199220f469510613d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminPermissionRpcIT.java",
+    "artifactSourceSha256": "5855c1ce3db7337ea3e5af82a0d36d8ddb77211515b3ca5566cef3a1c36fd42d",
+    "headSha256": "5855c1ce3db7337ea3e5af82a0d36d8ddb77211515b3ca5566cef3a1c36fd42d",
+    "currentSha256": "5855c1ce3db7337ea3e5af82a0d36d8ddb77211515b3ca5566cef3a1c36fd42d",
+    "workingSha256": "5855c1ce3db7337ea3e5af82a0d36d8ddb77211515b3ca5566cef3a1c36fd42d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java",
+    "artifactSourceSha256": "e207b284a01760364ae1896ee633da0bcb8a375e665f74c39b9df9a9ca734902",
+    "headSha256": "e207b284a01760364ae1896ee633da0bcb8a375e665f74c39b9df9a9ca734902",
+    "currentSha256": "e207b284a01760364ae1896ee633da0bcb8a375e665f74c39b9df9a9ca734902",
+    "workingSha256": "e207b284a01760364ae1896ee633da0bcb8a375e665f74c39b9df9a9ca734902",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentReplacementIT.java",
+    "artifactSourceSha256": "71cfcd6e6e702242c31907c9cfb3a5d7dd03f4f236d43adc9ed51e45d020ef0c",
+    "headSha256": "71cfcd6e6e702242c31907c9cfb3a5d7dd03f4f236d43adc9ed51e45d020ef0c",
+    "currentSha256": "71cfcd6e6e702242c31907c9cfb3a5d7dd03f4f236d43adc9ed51e45d020ef0c",
+    "workingSha256": "71cfcd6e6e702242c31907c9cfb3a5d7dd03f4f236d43adc9ed51e45d020ef0c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/dashboard/DashboardInvalidationIT.java",
+    "artifactSourceSha256": "0731a4cebd8f8349be733336a5d43ffb1b64464a5bb421258df35c8d030fe96a",
+    "headSha256": "0731a4cebd8f8349be733336a5d43ffb1b64464a5bb421258df35c8d030fe96a",
+    "currentSha256": "0731a4cebd8f8349be733336a5d43ffb1b64464a5bb421258df35c8d030fe96a",
+    "workingSha256": "0731a4cebd8f8349be733336a5d43ffb1b64464a5bb421258df35c8d030fe96a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/GroupUpdatedContractIT.java",
+    "artifactSourceSha256": "183452621802e03fbdbf5f4605659183522754b7e57df6d4c1d102ccda143e4b",
+    "headSha256": "183452621802e03fbdbf5f4605659183522754b7e57df6d4c1d102ccda143e4b",
+    "currentSha256": "183452621802e03fbdbf5f4605659183522754b7e57df6d4c1d102ccda143e4b",
+    "workingSha256": "183452621802e03fbdbf5f4605659183522754b7e57df6d4c1d102ccda143e4b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java",
+    "artifactSourceSha256": "ad56637bb2738c68fc425699582fc7fdbdc7ccaf4fc115967320cf5ee547d8a4",
+    "headSha256": "ad56637bb2738c68fc425699582fc7fdbdc7ccaf4fc115967320cf5ee547d8a4",
+    "currentSha256": "ad56637bb2738c68fc425699582fc7fdbdc7ccaf4fc115967320cf5ee547d8a4",
+    "workingSha256": "ad56637bb2738c68fc425699582fc7fdbdc7ccaf4fc115967320cf5ee547d8a4",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/AdministrativeNotificationGroupCycleIT.java",
+    "artifactSourceSha256": "924299ee11d30a9658b75cbcb6acd83248be7b583820396859b7184965b5d122",
+    "headSha256": "924299ee11d30a9658b75cbcb6acd83248be7b583820396859b7184965b5d122",
+    "currentSha256": "924299ee11d30a9658b75cbcb6acd83248be7b583820396859b7184965b5d122",
+    "workingSha256": "924299ee11d30a9658b75cbcb6acd83248be7b583820396859b7184965b5d122",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+    "artifactSourceSha256": "27aa62b8921d66425cae7dcde14c468855c5f24071c74b4c9b927ab891afdffc",
+    "headSha256": "27aa62b8921d66425cae7dcde14c468855c5f24071c74b4c9b927ab891afdffc",
+    "currentSha256": "27aa62b8921d66425cae7dcde14c468855c5f24071c74b4c9b927ab891afdffc",
+    "workingSha256": "27aa62b8921d66425cae7dcde14c468855c5f24071c74b4c9b927ab891afdffc",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java",
+    "artifactSourceSha256": "9625d822185092aabfc9105967a6889eff86bd603ad52040bd73aecbd505b2ed",
+    "headSha256": "9625d822185092aabfc9105967a6889eff86bd603ad52040bd73aecbd505b2ed",
+    "currentSha256": "9625d822185092aabfc9105967a6889eff86bd603ad52040bd73aecbd505b2ed",
+    "workingSha256": "9625d822185092aabfc9105967a6889eff86bd603ad52040bd73aecbd505b2ed",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+    "artifactSourceSha256": "ee218a0bda4e750f006ec3ad1410cf40440c470302bdbd2b4e434e3f56b0c7b1",
+    "headSha256": "ee218a0bda4e750f006ec3ad1410cf40440c470302bdbd2b4e434e3f56b0c7b1",
+    "currentSha256": "ee218a0bda4e750f006ec3ad1410cf40440c470302bdbd2b4e434e3f56b0c7b1",
+    "workingSha256": "ee218a0bda4e750f006ec3ad1410cf40440c470302bdbd2b4e434e3f56b0c7b1",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcIT.java",
+    "artifactSourceSha256": "f20cfc0aae3da34998fb261bbcb4d17701baef6ed72ed6ee0e5c2389e4b5a489",
+    "headSha256": "f20cfc0aae3da34998fb261bbcb4d17701baef6ed72ed6ee0e5c2389e4b5a489",
+    "currentSha256": "f20cfc0aae3da34998fb261bbcb4d17701baef6ed72ed6ee0e5c2389e4b5a489",
+    "workingSha256": "f20cfc0aae3da34998fb261bbcb4d17701baef6ed72ed6ee0e5c2389e4b5a489",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveIT.java",
+    "artifactSourceSha256": "66c003b0144c315fd7c4ba7e1b7ad7cd98503bab430916b433c582c28066a2ef",
+    "headSha256": "66c003b0144c315fd7c4ba7e1b7ad7cd98503bab430916b433c582c28066a2ef",
+    "currentSha256": "66c003b0144c315fd7c4ba7e1b7ad7cd98503bab430916b433c582c28066a2ef",
+    "workingSha256": "66c003b0144c315fd7c4ba7e1b7ad7cd98503bab430916b433c582c28066a2ef",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingTransferIT.java",
+    "artifactSourceSha256": "60afd6fd09dddb8b5d8a4bc9eb513301c21817aa07f29706ba1a2383b895745c",
+    "headSha256": "60afd6fd09dddb8b5d8a4bc9eb513301c21817aa07f29706ba1a2383b895745c",
+    "currentSha256": "60afd6fd09dddb8b5d8a4bc9eb513301c21817aa07f29706ba1a2383b895745c",
+    "workingSha256": "60afd6fd09dddb8b5d8a4bc9eb513301c21817aa07f29706ba1a2383b895745c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkControllerIT.java",
+    "artifactSourceSha256": "4ba75508f8a1a501ce7e465479f800c6486f7b8d94cea32e707605cf2af456e8",
+    "headSha256": "4ba75508f8a1a501ce7e465479f800c6486f7b8d94cea32e707605cf2af456e8",
+    "currentSha256": "4ba75508f8a1a501ce7e465479f800c6486f7b8d94cea32e707605cf2af456e8",
+    "workingSha256": "4ba75508f8a1a501ce7e465479f800c6486f7b8d94cea32e707605cf2af456e8",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java",
+    "artifactSourceSha256": "7899c10c1ffac08ce621cf443d9499ebeeb6da5dcf146d4c740aa64751b3dd0e",
+    "headSha256": "7899c10c1ffac08ce621cf443d9499ebeeb6da5dcf146d4c740aa64751b3dd0e",
+    "currentSha256": "7899c10c1ffac08ce621cf443d9499ebeeb6da5dcf146d4c740aa64751b3dd0e",
+    "workingSha256": "7899c10c1ffac08ce621cf443d9499ebeeb6da5dcf146d4c740aa64751b3dd0e",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkMigrationIT.java",
+    "artifactSourceSha256": "5d92f299cd7ad12a7c1d32a92d660f3d4473b1c62b40059a0364727d0e2dfba4",
+    "headSha256": "5d92f299cd7ad12a7c1d32a92d660f3d4473b1c62b40059a0364727d0e2dfba4",
+    "currentSha256": "5d92f299cd7ad12a7c1d32a92d660f3d4473b1c62b40059a0364727d0e2dfba4",
+    "workingSha256": "5d92f299cd7ad12a7c1d32a92d660f3d4473b1c62b40059a0364727d0e2dfba4",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java",
+    "artifactSourceSha256": "e326c7f2ba7a37ee8728845001b82a6f58a485314367cd9d5c9c151f4df1952c",
+    "headSha256": "e326c7f2ba7a37ee8728845001b82a6f58a485314367cd9d5c9c151f4df1952c",
+    "currentSha256": "e326c7f2ba7a37ee8728845001b82a6f58a485314367cd9d5c9c151f4df1952c",
+    "workingSha256": "e326c7f2ba7a37ee8728845001b82a6f58a485314367cd9d5c9c151f4df1952c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkTeacherReadIT.java",
+    "artifactSourceSha256": "c285ad7cd0ded5cc987e6acb98680744892cf74929183e5242dac4aea2658999",
+    "headSha256": "c285ad7cd0ded5cc987e6acb98680744892cf74929183e5242dac4aea2658999",
+    "currentSha256": "c285ad7cd0ded5cc987e6acb98680744892cf74929183e5242dac4aea2658999",
+    "workingSha256": "c285ad7cd0ded5cc987e6acb98680744892cf74929183e5242dac4aea2658999",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+    "artifactSourceSha256": "5fe91e9e2bc1bba88651cb77ba51c1e10cd3e8b3ec6fea5aa084d0b93b67fd65",
+    "headSha256": "5fe91e9e2bc1bba88651cb77ba51c1e10cd3e8b3ec6fea5aa084d0b93b67fd65",
+    "currentSha256": "5fe91e9e2bc1bba88651cb77ba51c1e10cd3e8b3ec6fea5aa084d0b93b67fd65",
+    "workingSha256": "5fe91e9e2bc1bba88651cb77ba51c1e10cd3e8b3ec6fea5aa084d0b93b67fd65",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicPerformanceIT.java",
+    "artifactSourceSha256": "cc703bf2db3516eba61a49121fac977343fa09f5db91954c7f3bda53a4583052",
+    "headSha256": "cc703bf2db3516eba61a49121fac977343fa09f5db91954c7f3bda53a4583052",
+    "currentSha256": "cc703bf2db3516eba61a49121fac977343fa09f5db91954c7f3bda53a4583052",
+    "workingSha256": "cc703bf2db3516eba61a49121fac977343fa09f5db91954c7f3bda53a4583052",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/ActuatorIT.java",
+    "artifactSourceSha256": "beb439db9b6d612d55dc989b4788491c157001033a546a8892950eb1bfbcf167",
+    "headSha256": "beb439db9b6d612d55dc989b4788491c157001033a546a8892950eb1bfbcf167",
+    "currentSha256": "beb439db9b6d612d55dc989b4788491c157001033a546a8892950eb1bfbcf167",
+    "workingSha256": "beb439db9b6d612d55dc989b4788491c157001033a546a8892950eb1bfbcf167",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java",
+    "artifactSourceSha256": "09c9f5f2b18361a456a7f597aa270ba5a2e9cb054f41caa5e5aa2d77c6542e11",
+    "headSha256": "09c9f5f2b18361a456a7f597aa270ba5a2e9cb054f41caa5e5aa2d77c6542e11",
+    "currentSha256": "09c9f5f2b18361a456a7f597aa270ba5a2e9cb054f41caa5e5aa2d77c6542e11",
+    "workingSha256": "09c9f5f2b18361a456a7f597aa270ba5a2e9cb054f41caa5e5aa2d77c6542e11",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EntityMappingIT.java",
+    "artifactSourceSha256": "7c2fe6b821c0acde4dc8ae9c8505768335577bafac4a369324f842d53371295c",
+    "headSha256": "7c2fe6b821c0acde4dc8ae9c8505768335577bafac4a369324f842d53371295c",
+    "currentSha256": "7c2fe6b821c0acde4dc8ae9c8505768335577bafac4a369324f842d53371295c",
+    "workingSha256": "7c2fe6b821c0acde4dc8ae9c8505768335577bafac4a369324f842d53371295c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java",
+    "artifactSourceSha256": "cef6b44113d4f5913528aff13df9de26629356e31e79b4afe2d38d80603e2cda",
+    "headSha256": "cef6b44113d4f5913528aff13df9de26629356e31e79b4afe2d38d80603e2cda",
+    "currentSha256": "cef6b44113d4f5913528aff13df9de26629356e31e79b4afe2d38d80603e2cda",
+    "workingSha256": "cef6b44113d4f5913528aff13df9de26629356e31e79b4afe2d38d80603e2cda",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/GroupRenameEventIT.java",
+    "artifactSourceSha256": "6a7e1fc2394942fb3fe65cd061ae87a6483d56c8477af851583799ae9a2c24ce",
+    "headSha256": "6a7e1fc2394942fb3fe65cd061ae87a6483d56c8477af851583799ae9a2c24ce",
+    "currentSha256": "6a7e1fc2394942fb3fe65cd061ae87a6483d56c8477af851583799ae9a2c24ce",
+    "workingSha256": "6a7e1fc2394942fb3fe65cd061ae87a6483d56c8477af851583799ae9a2c24ce",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanStatsScopeIT.java",
+    "artifactSourceSha256": "2f375da1021df03d92d7240f914d2d114ac4499ed2551f97eb70619cbb15637e",
+    "headSha256": "2f375da1021df03d92d7240f914d2d114ac4499ed2551f97eb70619cbb15637e",
+    "currentSha256": "2f375da1021df03d92d7240f914d2d114ac4499ed2551f97eb70619cbb15637e",
+    "workingSha256": "2f375da1021df03d92d7240f914d2d114ac4499ed2551f97eb70619cbb15637e",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HealthDegradationIT.java",
+    "artifactSourceSha256": "4316992ea084bd7108f44469ab769fa959357d4fccd4749fd6c9149c969334d1",
+    "headSha256": "4316992ea084bd7108f44469ab769fa959357d4fccd4749fd6c9149c969334d1",
+    "currentSha256": "4316992ea084bd7108f44469ab769fa959357d4fccd4749fd6c9149c969334d1",
+    "workingSha256": "4316992ea084bd7108f44469ab769fa959357d4fccd4749fd6c9149c969334d1",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+    "artifactSourceSha256": "84fe05d9f35943d7e01eda545bed09ec04294a68c2181349f1cee70c8bb073bb",
+    "headSha256": "84fe05d9f35943d7e01eda545bed09ec04294a68c2181349f1cee70c8bb073bb",
+    "currentSha256": "84fe05d9f35943d7e01eda545bed09ec04294a68c2181349f1cee70c8bb073bb",
+    "workingSha256": "84fe05d9f35943d7e01eda545bed09ec04294a68c2181349f1cee70c8bb073bb",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InitialPasswordBoundaryIT.java",
+    "artifactSourceSha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+    "headSha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+    "currentSha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+    "workingSha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiErrorResponsesIT.java",
+    "artifactSourceSha256": "e31ce26b203f42ced0d27d2cb626d1247ac090efa4f0cef49a48c2549cefe5d9",
+    "headSha256": "e31ce26b203f42ced0d27d2cb626d1247ac090efa4f0cef49a48c2549cefe5d9",
+    "currentSha256": "e31ce26b203f42ced0d27d2cb626d1247ac090efa4f0cef49a48c2549cefe5d9",
+    "workingSha256": "e31ce26b203f42ced0d27d2cb626d1247ac090efa4f0cef49a48c2549cefe5d9",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java",
+    "artifactSourceSha256": "452f5950a64d4bdb70c9a86c583b82e1ff6595923bd5fd8a59208be2a92a7f28",
+    "headSha256": "452f5950a64d4bdb70c9a86c583b82e1ff6595923bd5fd8a59208be2a92a7f28",
+    "currentSha256": "452f5950a64d4bdb70c9a86c583b82e1ff6595923bd5fd8a59208be2a92a7f28",
+    "workingSha256": "452f5950a64d4bdb70c9a86c583b82e1ff6595923bd5fd8a59208be2a92a7f28",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxBrokerConfirmIT.java",
+    "artifactSourceSha256": "07f5fc19f26c21dfb5bb36c3480b4f55d3f5ebe9ef33e52737e0efac05c73369",
+    "headSha256": "07f5fc19f26c21dfb5bb36c3480b4f55d3f5ebe9ef33e52737e0efac05c73369",
+    "currentSha256": "07f5fc19f26c21dfb5bb36c3480b4f55d3f5ebe9ef33e52737e0efac05c73369",
+    "workingSha256": "07f5fc19f26c21dfb5bb36c3480b4f55d3f5ebe9ef33e52737e0efac05c73369",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxCleanupIT.java",
+    "artifactSourceSha256": "3c5302e48d53f168a7f4929a5500a909c46779e9f63cac3bb2099700b6c3bc52",
+    "headSha256": "3c5302e48d53f168a7f4929a5500a909c46779e9f63cac3bb2099700b6c3bc52",
+    "currentSha256": "3c5302e48d53f168a7f4929a5500a909c46779e9f63cac3bb2099700b6c3bc52",
+    "workingSha256": "3c5302e48d53f168a7f4929a5500a909c46779e9f63cac3bb2099700b6c3bc52",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/PaginationCapIT.java",
+    "artifactSourceSha256": "775b6ca9d313bf7b37575d9223b13a608e9d46979ee7b8ac2115127d088af0c5",
+    "headSha256": "775b6ca9d313bf7b37575d9223b13a608e9d46979ee7b8ac2115127d088af0c5",
+    "currentSha256": "775b6ca9d313bf7b37575d9223b13a608e9d46979ee7b8ac2115127d088af0c5",
+    "workingSha256": "775b6ca9d313bf7b37575d9223b13a608e9d46979ee7b8ac2115127d088af0c5",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RbacCacheIT.java",
+    "artifactSourceSha256": "0faa4dddb1a3f231cdb1b40162054529b6c4646c9021e70e32954e345b0f5b2f",
+    "headSha256": "0faa4dddb1a3f231cdb1b40162054529b6c4646c9021e70e32954e345b0f5b2f",
+    "currentSha256": "0faa4dddb1a3f231cdb1b40162054529b6c4646c9021e70e32954e345b0f5b2f",
+    "workingSha256": "0faa4dddb1a3f231cdb1b40162054529b6c4646c9021e70e32954e345b0f5b2f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java",
+    "artifactSourceSha256": "1c7fecc28b65869e7f93196d3074bdaf15ed7215589dc339b29fb7a3e91a4db4",
+    "headSha256": "1c7fecc28b65869e7f93196d3074bdaf15ed7215589dc339b29fb7a3e91a4db4",
+    "currentSha256": "1c7fecc28b65869e7f93196d3074bdaf15ed7215589dc339b29fb7a3e91a4db4",
+    "workingSha256": "1c7fecc28b65869e7f93196d3074bdaf15ed7215589dc339b29fb7a3e91a4db4",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+    "artifactSourceSha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+    "headSha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+    "currentSha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+    "workingSha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+    "artifactSourceSha256": "829390d60c6ed9bdd476a8e64de6676f965aca11dff7a2a892afd755dd44475d",
+    "headSha256": "829390d60c6ed9bdd476a8e64de6676f965aca11dff7a2a892afd755dd44475d",
+    "currentSha256": "829390d60c6ed9bdd476a8e64de6676f965aca11dff7a2a892afd755dd44475d",
+    "workingSha256": "829390d60c6ed9bdd476a8e64de6676f965aca11dff7a2a892afd755dd44475d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+    "artifactSourceSha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+    "headSha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+    "currentSha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+    "workingSha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+    "artifactSourceSha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+    "headSha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+    "currentSha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+    "workingSha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/FlywayMigrationIT.java",
+    "artifactSourceSha256": "db6b36ed568250c1e8d2725fa8606c2ea21077854f53bc99eca639582725e9e5",
+    "headSha256": "db6b36ed568250c1e8d2725fa8606c2ea21077854f53bc99eca639582725e9e5",
+    "currentSha256": "db6b36ed568250c1e8d2725fa8606c2ea21077854f53bc99eca639582725e9e5",
+    "workingSha256": "db6b36ed568250c1e8d2725fa8606c2ea21077854f53bc99eca639582725e9e5",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/StudentFoundationMigrationIT.java",
+    "artifactSourceSha256": "132ab1b550edbc2367c332f0147fa2d7d9f62afb7c2d87cd151903eba188e82f",
+    "headSha256": "132ab1b550edbc2367c332f0147fa2d7d9f62afb7c2d87cd151903eba188e82f",
+    "currentSha256": "132ab1b550edbc2367c332f0147fa2d7d9f62afb7c2d87cd151903eba188e82f",
+    "workingSha256": "132ab1b550edbc2367c332f0147fa2d7d9f62afb7c2d87cd151903eba188e82f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/notification/NotificationAudienceIT.java",
+    "artifactSourceSha256": "bb6937bd8d6db124940431ff2262d4c9e01c6e3423165dfe757c674a63c6c1e7",
+    "headSha256": "bb6937bd8d6db124940431ff2262d4c9e01c6e3423165dfe757c674a63c6c1e7",
+    "currentSha256": "bb6937bd8d6db124940431ff2262d4c9e01c6e3423165dfe757c674a63c6c1e7",
+    "workingSha256": "bb6937bd8d6db124940431ff2262d4c9e01c6e3423165dfe757c674a63c6c1e7",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/AcademicUserContextFilterIT.java",
+    "artifactSourceSha256": "62233fa7204272d6612a3fbf94f3f937daa12377dd1c37db578f9ccb36c32a0c",
+    "headSha256": "62233fa7204272d6612a3fbf94f3f937daa12377dd1c37db578f9ccb36c32a0c",
+    "currentSha256": "62233fa7204272d6612a3fbf94f3f937daa12377dd1c37db578f9ccb36c32a0c",
+    "workingSha256": "62233fa7204272d6612a3fbf94f3f937daa12377dd1c37db578f9ccb36c32a0c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/AcademicUserContextFilterStrictModeIT.java",
+    "artifactSourceSha256": "afc93be14829392f28ca3fb64811747852374c00c4dad53f562e0aa74d2b92b4",
+    "headSha256": "afc93be14829392f28ca3fb64811747852374c00c4dad53f562e0aa74d2b92b4",
+    "currentSha256": "afc93be14829392f28ca3fb64811747852374c00c4dad53f562e0aa74d2b92b4",
+    "workingSha256": "afc93be14829392f28ca3fb64811747852374c00c4dad53f562e0aa74d2b92b4",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/SecurityIdorIT.java",
+    "artifactSourceSha256": "c16df5244b02cde41309eac61a5bcbb12adf889cde671b447ead76a97deb6975",
+    "headSha256": "c16df5244b02cde41309eac61a5bcbb12adf889cde671b447ead76a97deb6975",
+    "currentSha256": "c16df5244b02cde41309eac61a5bcbb12adf889cde671b447ead76a97deb6975",
+    "workingSha256": "c16df5244b02cde41309eac61a5bcbb12adf889cde671b447ead76a97deb6975",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentAuthorityIT.java",
+    "artifactSourceSha256": "a65066e0fd78b6561b01da13e36b11ed428a1c82812d7417b80622b1b9bb18fb",
+    "headSha256": "a65066e0fd78b6561b01da13e36b11ed428a1c82812d7417b80622b1b9bb18fb",
+    "currentSha256": "a65066e0fd78b6561b01da13e36b11ed428a1c82812d7417b80622b1b9bb18fb",
+    "workingSha256": "a65066e0fd78b6561b01da13e36b11ed428a1c82812d7417b80622b1b9bb18fb",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQueryAdapterIT.java",
+    "artifactSourceSha256": "c30fc24412aa557fcc2736f49d367ed25cc1ba339710ad47b46d70fde8659318",
+    "headSha256": "c30fc24412aa557fcc2736f49d367ed25cc1ba339710ad47b46d70fde8659318",
+    "currentSha256": "c30fc24412aa557fcc2736f49d367ed25cc1ba339710ad47b46d70fde8659318",
+    "workingSha256": "c30fc24412aa557fcc2736f49d367ed25cc1ba339710ad47b46d70fde8659318",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityIT.java",
+    "artifactSourceSha256": "982d6091f4de43478ccd829e6693b8d7dd810a188fc933d5cca822b41f12be07",
+    "headSha256": "982d6091f4de43478ccd829e6693b8d7dd810a188fc933d5cca822b41f12be07",
+    "currentSha256": "982d6091f4de43478ccd829e6693b8d7dd810a188fc933d5cca822b41f12be07",
+    "workingSha256": "982d6091f4de43478ccd829e6693b8d7dd810a188fc933d5cca822b41f12be07",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+    "artifactSourceSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+    "headSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+    "currentSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+    "workingSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectSchemaIT.java",
+    "artifactSourceSha256": "20ffbf89053c44daaae3e4833ba3a2e1440d035ea81ab7916c0a4efed62180e4",
+    "headSha256": "20ffbf89053c44daaae3e4833ba3a2e1440d035ea81ab7916c0a4efed62180e4",
+    "currentSha256": "20ffbf89053c44daaae3e4833ba3a2e1440d035ea81ab7916c0a4efed62180e4",
+    "workingSha256": "20ffbf89053c44daaae3e4833ba3a2e1440d035ea81ab7916c0a4efed62180e4",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectServiceIT.java",
+    "artifactSourceSha256": "762620c1fe5a71d58236fcccb9ca7d95ed3bb1067dc207bca9b1713764ed65c0",
+    "headSha256": "762620c1fe5a71d58236fcccb9ca7d95ed3bb1067dc207bca9b1713764ed65c0",
+    "currentSha256": "762620c1fe5a71d58236fcccb9ca7d95ed3bb1067dc207bca9b1713764ed65c0",
+    "workingSha256": "762620c1fe5a71d58236fcccb9ca7d95ed3bb1067dc207bca9b1713764ed65c0",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserByIdsApiIT.java",
+    "artifactSourceSha256": "7620bcacbc13618800d8b634b2864bb174db22e8ecb429f13bf40834f9b918e3",
+    "headSha256": "7620bcacbc13618800d8b634b2864bb174db22e8ecb429f13bf40834f9b918e3",
+    "currentSha256": "7620bcacbc13618800d8b634b2864bb174db22e8ecb429f13bf40834f9b918e3",
+    "workingSha256": "7620bcacbc13618800d8b634b2864bb174db22e8ecb429f13bf40834f9b918e3",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserRepositorySearchIT.java",
+    "artifactSourceSha256": "c1a9494d7ec392afd35b57b4d597bd082c23af6ab9f9754e6353b927fe115216",
+    "headSha256": "c1a9494d7ec392afd35b57b4d597bd082c23af6ab9f9754e6353b927fe115216",
+    "currentSha256": "c1a9494d7ec392afd35b57b4d597bd082c23af6ab9f9754e6353b927fe115216",
+    "workingSha256": "c1a9494d7ec392afd35b57b4d597bd082c23af6ab9f9754e6353b927fe115216",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserRepositorySortIT.java",
+    "artifactSourceSha256": "6e175ad776cbbfde770eeff7a4e9e21a472d3fd2f6d74fadc93cf3b1b6364391",
+    "headSha256": "6e175ad776cbbfde770eeff7a4e9e21a472d3fd2f6d74fadc93cf3b1b6364391",
+    "currentSha256": "6e175ad776cbbfde770eeff7a4e9e21a472d3fd2f6d74fadc93cf3b1b6364391",
+    "workingSha256": "6e175ad776cbbfde770eeff7a4e9e21a472d3fd2f6d74fadc93cf3b1b6364391",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java",
+    "artifactSourceSha256": "9c7c5d52893af8cb1a2b9bb9158b2e40cb2aed8ca3d456b97e0beafd637d17b1",
+    "headSha256": "9c7c5d52893af8cb1a2b9bb9158b2e40cb2aed8ca3d456b97e0beafd637d17b1",
+    "currentSha256": "9c7c5d52893af8cb1a2b9bb9158b2e40cb2aed8ca3d456b97e0beafd637d17b1",
+    "workingSha256": "9c7c5d52893af8cb1a2b9bb9158b2e40cb2aed8ca3d456b97e0beafd637d17b1",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/InternalIssuerPropertiesTest.java",
+    "artifactSourceSha256": "9c29b6aafd68e1b7d4632ee4b398404cd51223611cce37fba3b590d5c80a1f03",
+    "headSha256": "9c29b6aafd68e1b7d4632ee4b398404cd51223611cce37fba3b590d5c80a1f03",
+    "currentSha256": "9c29b6aafd68e1b7d4632ee4b398404cd51223611cce37fba3b590d5c80a1f03",
+    "workingSha256": "9c29b6aafd68e1b7d4632ee4b398404cd51223611cce37fba3b590d5c80a1f03",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+    "artifactSourceSha256": "3a66017b414b7b79d9e108e385fb118da0defc145272d3a6c85d2d68dad2b4f8",
+    "headSha256": "3a66017b414b7b79d9e108e385fb118da0defc145272d3a6c85d2d68dad2b4f8",
+    "currentSha256": "3a66017b414b7b79d9e108e385fb118da0defc145272d3a6c85d2d68dad2b4f8",
+    "workingSha256": "3a66017b414b7b79d9e108e385fb118da0defc145272d3a6c85d2d68dad2b4f8",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/LowercaseEnumConverterTest.java",
+    "artifactSourceSha256": "5dab0d412338196aa79a81ee83e6047e69694478b688ee870e9500ddb185f02d",
+    "headSha256": "5dab0d412338196aa79a81ee83e6047e69694478b688ee870e9500ddb185f02d",
+    "currentSha256": "5dab0d412338196aa79a81ee83e6047e69694478b688ee870e9500ddb185f02d",
+    "workingSha256": "5dab0d412338196aa79a81ee83e6047e69694478b688ee870e9500ddb185f02d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+    "artifactSourceSha256": "d265ea18fcccf97dd826abaf19076d50d3ac53a30673d850d6535a643cf0396a",
+    "headSha256": "d265ea18fcccf97dd826abaf19076d50d3ac53a30673d850d6535a643cf0396a",
+    "currentSha256": "d265ea18fcccf97dd826abaf19076d50d3ac53a30673d850d6535a643cf0396a",
+    "workingSha256": "d265ea18fcccf97dd826abaf19076d50d3ac53a30673d850d6535a643cf0396a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+    "artifactSourceSha256": "922cdad1016f4bb66dd421a08a238df15593c8fcb2970d1a02b516065c6b994e",
+    "headSha256": "922cdad1016f4bb66dd421a08a238df15593c8fcb2970d1a02b516065c6b994e",
+    "currentSha256": "922cdad1016f4bb66dd421a08a238df15593c8fcb2970d1a02b516065c6b994e",
+    "workingSha256": "922cdad1016f4bb66dd421a08a238df15593c8fcb2970d1a02b516065c6b994e",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/PasswordResetValidationExceptionHandlerTest.java",
+    "artifactSourceSha256": "c9e056568026d97409d19f401e69569e22494b3dcfb36d3506bc472ff21cefcf",
+    "headSha256": "c9e056568026d97409d19f401e69569e22494b3dcfb36d3506bc472ff21cefcf",
+    "currentSha256": "c9e056568026d97409d19f401e69569e22494b3dcfb36d3506bc472ff21cefcf",
+    "workingSha256": "c9e056568026d97409d19f401e69569e22494b3dcfb36d3506bc472ff21cefcf",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/QrLoginValidationExceptionHandlerTest.java",
+    "artifactSourceSha256": "13b25c99d622ae767416a2447a213582afa14bce7f686b3aed8e140df638a3ff",
+    "headSha256": "13b25c99d622ae767416a2447a213582afa14bce7f686b3aed8e140df638a3ff",
+    "currentSha256": "13b25c99d622ae767416a2447a213582afa14bce7f686b3aed8e140df638a3ff",
+    "workingSha256": "13b25c99d622ae767416a2447a213582afa14bce7f686b3aed8e140df638a3ff",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketValidationTest.java",
+    "artifactSourceSha256": "e5d667192d9a4d906e980d7fcfd7e899dd56dc348943cab10e388f372119d4d9",
+    "headSha256": "e5d667192d9a4d906e980d7fcfd7e899dd56dc348943cab10e388f372119d4d9",
+    "currentSha256": "e5d667192d9a4d906e980d7fcfd7e899dd56dc348943cab10e388f372119d4d9",
+    "workingSha256": "e5d667192d9a4d906e980d7fcfd7e899dd56dc348943cab10e388f372119d4d9",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/OtpRequestedContractTest.java",
+    "artifactSourceSha256": "f9063e8b12dfd80dedecbea4896d312ad9efecc115a8a5948a88d54572932eb0",
+    "headSha256": "f9063e8b12dfd80dedecbea4896d312ad9efecc115a8a5948a88d54572932eb0",
+    "currentSha256": "f9063e8b12dfd80dedecbea4896d312ad9efecc115a8a5948a88d54572932eb0",
+    "workingSha256": "f9063e8b12dfd80dedecbea4896d312ad9efecc115a8a5948a88d54572932eb0",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/PasswordChangedContractTest.java",
+    "artifactSourceSha256": "4c525652a020a4812ad340dc97d45cc104fc0ae1be9b2c5658073f5236aac873",
+    "headSha256": "4c525652a020a4812ad340dc97d45cc104fc0ae1be9b2c5658073f5236aac873",
+    "currentSha256": "4c525652a020a4812ad340dc97d45cc104fc0ae1be9b2c5658073f5236aac873",
+    "workingSha256": "4c525652a020a4812ad340dc97d45cc104fc0ae1be9b2c5658073f5236aac873",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/AuthServiceRepositoryFailureTest.java",
+    "artifactSourceSha256": "b44b7a9a1ceeab1f17835f751341cb4bab1457f1ff7de44df7665e706d232bd4",
+    "headSha256": "b44b7a9a1ceeab1f17835f751341cb4bab1457f1ff7de44df7665e706d232bd4",
+    "currentSha256": "b44b7a9a1ceeab1f17835f751341cb4bab1457f1ff7de44df7665e706d232bd4",
+    "workingSha256": "b44b7a9a1ceeab1f17835f751341cb4bab1457f1ff7de44df7665e706d232bd4",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+    "artifactSourceSha256": "9cb433e2d0f0acf3bdc8215527e841f2b9e60a52fff65f0392955ecb7a73bff6",
+    "headSha256": "9cb433e2d0f0acf3bdc8215527e841f2b9e60a52fff65f0392955ecb7a73bff6",
+    "currentSha256": "9cb433e2d0f0acf3bdc8215527e841f2b9e60a52fff65f0392955ecb7a73bff6",
+    "workingSha256": "9cb433e2d0f0acf3bdc8215527e841f2b9e60a52fff65f0392955ecb7a73bff6",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+    "artifactSourceSha256": "73bb12347b6721c0f1702b2e43ece913540483af3da1c4fafb38f389e982c699",
+    "headSha256": "73bb12347b6721c0f1702b2e43ece913540483af3da1c4fafb38f389e982c699",
+    "currentSha256": "73bb12347b6721c0f1702b2e43ece913540483af3da1c4fafb38f389e982c699",
+    "workingSha256": "73bb12347b6721c0f1702b2e43ece913540483af3da1c4fafb38f389e982c699",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+    "artifactSourceSha256": "8c829a6b283c19e594576a3b7bf9afa8b5d28391fdc140c1da029fcdc6af209b",
+    "headSha256": "8c829a6b283c19e594576a3b7bf9afa8b5d28391fdc140c1da029fcdc6af209b",
+    "currentSha256": "8c829a6b283c19e594576a3b7bf9afa8b5d28391fdc140c1da029fcdc6af209b",
+    "workingSha256": "8c829a6b283c19e594576a3b7bf9afa8b5d28391fdc140c1da029fcdc6af209b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/RedisReportDownloadTicketStoreContextTest.java",
+    "artifactSourceSha256": "b51ac85cdb0df9efa9d79c65017bfb1e7b49369898c7e2f79d406f71bbacabad",
+    "headSha256": "b51ac85cdb0df9efa9d79c65017bfb1e7b49369898c7e2f79d406f71bbacabad",
+    "currentSha256": "b51ac85cdb0df9efa9d79c65017bfb1e7b49369898c7e2f79d406f71bbacabad",
+    "workingSha256": "b51ac85cdb0df9efa9d79c65017bfb1e7b49369898c7e2f79d406f71bbacabad",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+    "artifactSourceSha256": "26df85afffaeca840307888008110f5518ae840259d6e2333a42ea7326f25c64",
+    "headSha256": "26df85afffaeca840307888008110f5518ae840259d6e2333a42ea7326f25c64",
+    "currentSha256": "26df85afffaeca840307888008110f5518ae840259d6e2333a42ea7326f25c64",
+    "workingSha256": "26df85afffaeca840307888008110f5518ae840259d6e2333a42ea7326f25c64",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceRepositoryFailureTest.java",
+    "artifactSourceSha256": "79ecbd87950006f8b48abc9d6b3c8906259c5e0f4c55732b53e85aa35f2edd7f",
+    "headSha256": "79ecbd87950006f8b48abc9d6b3c8906259c5e0f4c55732b53e85aa35f2edd7f",
+    "currentSha256": "79ecbd87950006f8b48abc9d6b3c8906259c5e0f4c55732b53e85aa35f2edd7f",
+    "workingSha256": "79ecbd87950006f8b48abc9d6b3c8906259c5e0f4c55732b53e85aa35f2edd7f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceTest.java",
+    "artifactSourceSha256": "81a8e520a13256268b522f5172780bb2924de939ed868ab99a0df343c0913b72",
+    "headSha256": "81a8e520a13256268b522f5172780bb2924de939ed868ab99a0df343c0913b72",
+    "currentSha256": "81a8e520a13256268b522f5172780bb2924de939ed868ab99a0df343c0913b72",
+    "workingSha256": "81a8e520a13256268b522f5172780bb2924de939ed868ab99a0df343c0913b72",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+    "artifactSourceSha256": "553e3d020196d4992aaa5c9a9200e17d7fab05b6a0284e0845563411e791c375",
+    "headSha256": "553e3d020196d4992aaa5c9a9200e17d7fab05b6a0284e0845563411e791c375",
+    "currentSha256": "553e3d020196d4992aaa5c9a9200e17d7fab05b6a0284e0845563411e791c375",
+    "workingSha256": "553e3d020196d4992aaa5c9a9200e17d7fab05b6a0284e0845563411e791c375",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+    "artifactSourceSha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d",
+    "headSha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d",
+    "currentSha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d",
+    "workingSha256": "e1bfd70821025bc673a75acd0a8d1a96643a216c5911af9d94502221b4b8530d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+    "artifactSourceSha256": "f6e4e74515a7972d4c1c467d1fd77351474601017888628a0630bc9137a31273",
+    "headSha256": "f6e4e74515a7972d4c1c467d1fd77351474601017888628a0630bc9137a31273",
+    "currentSha256": "f6e4e74515a7972d4c1c467d1fd77351474601017888628a0630bc9137a31273",
+    "workingSha256": "f6e4e74515a7972d4c1c467d1fd77351474601017888628a0630bc9137a31273",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+    "artifactSourceSha256": "56aeb5c7a1c621422f9160d7230755e130e8a82a1197d1da96cb527afbf2485d",
+    "headSha256": "56aeb5c7a1c621422f9160d7230755e130e8a82a1197d1da96cb527afbf2485d",
+    "currentSha256": "56aeb5c7a1c621422f9160d7230755e130e8a82a1197d1da96cb527afbf2485d",
+    "workingSha256": "56aeb5c7a1c621422f9160d7230755e130e8a82a1197d1da96cb527afbf2485d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/checkin/CheckinServiceTest.java",
+    "artifactSourceSha256": "1093e2e05fbdb1ac96bac4ba7fe91b5d94069a31459d20f46c5cb8a2d20dfacb",
+    "headSha256": "1093e2e05fbdb1ac96bac4ba7fe91b5d94069a31459d20f46c5cb8a2d20dfacb",
+    "currentSha256": "1093e2e05fbdb1ac96bac4ba7fe91b5d94069a31459d20f46c5cb8a2d20dfacb",
+    "workingSha256": "1093e2e05fbdb1ac96bac4ba7fe91b5d94069a31459d20f46c5cb8a2d20dfacb",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/EventConsumerTest.java",
+    "artifactSourceSha256": "fb38d115e0e2950e3171e1a29abf24ca8b329959f6d5115d0ebe448c0c7aa577",
+    "headSha256": "fb38d115e0e2950e3171e1a29abf24ca8b329959f6d5115d0ebe448c0c7aa577",
+    "currentSha256": "fb38d115e0e2950e3171e1a29abf24ca8b329959f6d5115d0ebe448c0c7aa577",
+    "workingSha256": "fb38d115e0e2950e3171e1a29abf24ca8b329959f6d5115d0ebe448c0c7aa577",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceParallelTest.java",
+    "artifactSourceSha256": "e310ff8299e7b1e101c0f8a328874a670e2ad9aed7bea41b55a0d0822b4dc34b",
+    "headSha256": "e310ff8299e7b1e101c0f8a328874a670e2ad9aed7bea41b55a0d0822b4dc34b",
+    "currentSha256": "e310ff8299e7b1e101c0f8a328874a670e2ad9aed7bea41b55a0d0822b4dc34b",
+    "workingSha256": "e310ff8299e7b1e101c0f8a328874a670e2ad9aed7bea41b55a0d0822b4dc34b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceTest.java",
+    "artifactSourceSha256": "40e691e8097d90137dc5a6480310a9fd702bf4791fbc53db3fcd10c9a8c95e04",
+    "headSha256": "40e691e8097d90137dc5a6480310a9fd702bf4791fbc53db3fcd10c9a8c95e04",
+    "currentSha256": "40e691e8097d90137dc5a6480310a9fd702bf4791fbc53db3fcd10c9a8c95e04",
+    "workingSha256": "40e691e8097d90137dc5a6480310a9fd702bf4791fbc53db3fcd10c9a8c95e04",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonGenerationMergeTest.java",
+    "artifactSourceSha256": "c4d204a653a102e7fa19a14161cffc46b173408b12a5a2ed0d2d353bc4cd0479",
+    "headSha256": "c4d204a653a102e7fa19a14161cffc46b173408b12a5a2ed0d2d353bc4cd0479",
+    "currentSha256": "c4d204a653a102e7fa19a14161cffc46b173408b12a5a2ed0d2d353bc4cd0479",
+    "workingSha256": "c4d204a653a102e7fa19a14161cffc46b173408b12a5a2ed0d2d353bc4cd0479",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java",
+    "artifactSourceSha256": "0ff820522bb075977d03987550ac12754167746b3df496731cfd0dd8aad70e7f",
+    "headSha256": "0ff820522bb075977d03987550ac12754167746b3df496731cfd0dd8aad70e7f",
+    "currentSha256": "0ff820522bb075977d03987550ac12754167746b3df496731cfd0dd8aad70e7f",
+    "workingSha256": "0ff820522bb075977d03987550ac12754167746b3df496731cfd0dd8aad70e7f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceTest.java",
+    "artifactSourceSha256": "97cc8e34038397f01cc18e12722043873772a30b9e1fc7bd2791fed277a1e847",
+    "headSha256": "97cc8e34038397f01cc18e12722043873772a30b9e1fc7bd2791fed277a1e847",
+    "currentSha256": "97cc8e34038397f01cc18e12722043873772a30b9e1fc7bd2791fed277a1e847",
+    "workingSha256": "97cc8e34038397f01cc18e12722043873772a30b9e1fc7bd2791fed277a1e847",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/geofence/GeoUtilsTest.java",
+    "artifactSourceSha256": "6e7621f19066cc10544790e4aae80afb570ed63db7e233d39d02c9ebe4ad3089",
+    "headSha256": "6e7621f19066cc10544790e4aae80afb570ed63db7e233d39d02c9ebe4ad3089",
+    "currentSha256": "6e7621f19066cc10544790e4aae80afb570ed63db7e233d39d02c9ebe4ad3089",
+    "workingSha256": "6e7621f19066cc10544790e4aae80afb570ed63db7e233d39d02c9ebe4ad3089",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/geofence/GeofenceServiceTest.java",
+    "artifactSourceSha256": "47d9976da1c2499dd2b62fafffe90415e97a0504001867811f2d60d4e52ee944",
+    "headSha256": "47d9976da1c2499dd2b62fafffe90415e97a0504001867811f2d60d4e52ee944",
+    "currentSha256": "47d9976da1c2499dd2b62fafffe90415e97a0504001867811f2d60d4e52ee944",
+    "workingSha256": "47d9976da1c2499dd2b62fafffe90415e97a0504001867811f2d60d4e52ee944",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+    "artifactSourceSha256": "5a3af24394a0cfde51974eb2edda0d9f520d298ed4617f5c6f02dd7bd7d8eb25",
+    "headSha256": "5a3af24394a0cfde51974eb2edda0d9f520d298ed4617f5c6f02dd7bd7d8eb25",
+    "currentSha256": "5a3af24394a0cfde51974eb2edda0d9f520d298ed4617f5c6f02dd7bd7d8eb25",
+    "workingSha256": "5a3af24394a0cfde51974eb2edda0d9f520d298ed4617f5c6f02dd7bd7d8eb25",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceSemesterDeletionGrpcSecurityTest.java",
+    "artifactSourceSha256": "6ba370d7079ebe921607effe7d0537d82e7687df41a98df2f1a50652f6db9668",
+    "headSha256": "6ba370d7079ebe921607effe7d0537d82e7687df41a98df2f1a50652f6db9668",
+    "currentSha256": "6ba370d7079ebe921607effe7d0537d82e7687df41a98df2f1a50652f6db9668",
+    "workingSha256": "6ba370d7079ebe921607effe7d0537d82e7687df41a98df2f1a50652f6db9668",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcProjectionTest.java",
+    "artifactSourceSha256": "46d40354dfbf7da2698362faab598ddc3a368ac57322d338ca80e20aaabafa3a",
+    "headSha256": "46d40354dfbf7da2698362faab598ddc3a368ac57322d338ca80e20aaabafa3a",
+    "currentSha256": "46d40354dfbf7da2698362faab598ddc3a368ac57322d338ca80e20aaabafa3a",
+    "workingSha256": "46d40354dfbf7da2698362faab598ddc3a368ac57322d338ca80e20aaabafa3a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcRequestReadOnlyTest.java",
+    "artifactSourceSha256": "68e6c16d864c92153b6b5c0e4bb633f015ca96672ae99ca810336e5077498a7a",
+    "headSha256": "68e6c16d864c92153b6b5c0e4bb633f015ca96672ae99ca810336e5077498a7a",
+    "currentSha256": "68e6c16d864c92153b6b5c0e4bb633f015ca96672ae99ca810336e5077498a7a",
+    "workingSha256": "68e6c16d864c92153b6b5c0e4bb633f015ca96672ae99ca810336e5077498a7a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceTest.java",
+    "artifactSourceSha256": "0efaa461e052b5dac85aa30215788d219bdda6ee86a40b87bec3b97f026c9d71",
+    "headSha256": "0efaa461e052b5dac85aa30215788d219bdda6ee86a40b87bec3b97f026c9d71",
+    "currentSha256": "0efaa461e052b5dac85aa30215788d219bdda6ee86a40b87bec3b97f026c9d71",
+    "workingSha256": "0efaa461e052b5dac85aa30215788d219bdda6ee86a40b87bec3b97f026c9d71",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClientTest.java",
+    "artifactSourceSha256": "65b7b665f8a82437371358fb19d5e1eef1fca9e5a4a2ca8fb69493918832c244",
+    "headSha256": "65b7b665f8a82437371358fb19d5e1eef1fca9e5a4a2ca8fb69493918832c244",
+    "currentSha256": "65b7b665f8a82437371358fb19d5e1eef1fca9e5a4a2ca8fb69493918832c244",
+    "workingSha256": "65b7b665f8a82437371358fb19d5e1eef1fca9e5a4a2ca8fb69493918832c244",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentGrpcBoundaryTest.java",
+    "artifactSourceSha256": "508334919476954897211e10f7affa909f32e84c56682b8439227b0ba33d027a",
+    "headSha256": "508334919476954897211e10f7affa909f32e84c56682b8439227b0ba33d027a",
+    "currentSha256": "508334919476954897211e10f7affa909f32e84c56682b8439227b0ba33d027a",
+    "workingSha256": "508334919476954897211e10f7affa909f32e84c56682b8439227b0ba33d027a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcErrorsTest.java",
+    "artifactSourceSha256": "f6ba4e60d7b1d108faa1527e5c0abad27629d4dec2ecf4b7ae80149528f7266d",
+    "headSha256": "f6ba4e60d7b1d108faa1527e5c0abad27629d4dec2ecf4b7ae80149528f7266d",
+    "currentSha256": "f6ba4e60d7b1d108faa1527e5c0abad27629d4dec2ecf4b7ae80149528f7266d",
+    "workingSha256": "f6ba4e60d7b1d108faa1527e5c0abad27629d4dec2ecf4b7ae80149528f7266d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapperTest.java",
+    "artifactSourceSha256": "277560efb0500292f8c27d55e4e0f0c11e655e680cda46856be07c7a21344822",
+    "headSha256": "277560efb0500292f8c27d55e4e0f0c11e655e680cda46856be07c7a21344822",
+    "currentSha256": "277560efb0500292f8c27d55e4e0f0c11e655e680cda46856be07c7a21344822",
+    "workingSha256": "277560efb0500292f8c27d55e4e0f0c11e655e680cda46856be07c7a21344822",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcServiceTest.java",
+    "artifactSourceSha256": "a434e4c64e5a5eaba5bc27c69afa5323e6fc1363b67d0fdfdbb1e35e342308a6",
+    "headSha256": "a434e4c64e5a5eaba5bc27c69afa5323e6fc1363b67d0fdfdbb1e35e342308a6",
+    "currentSha256": "a434e4c64e5a5eaba5bc27c69afa5323e6fc1363b67d0fdfdbb1e35e342308a6",
+    "workingSha256": "a434e4c64e5a5eaba5bc27c69afa5323e6fc1363b67d0fdfdbb1e35e342308a6",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java",
+    "artifactSourceSha256": "55ef0951bb1510c297936848d33f3ec3561d1485baa0ef6f02b1cfc8fa3335f2",
+    "headSha256": "55ef0951bb1510c297936848d33f3ec3561d1485baa0ef6f02b1cfc8fa3335f2",
+    "currentSha256": "55ef0951bb1510c297936848d33f3ec3561d1485baa0ef6f02b1cfc8fa3335f2",
+    "workingSha256": "55ef0951bb1510c297936848d33f3ec3561d1485baa0ef6f02b1cfc8fa3335f2",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinServiceTest.java",
+    "artifactSourceSha256": "edc823a8799523493cde0c03abc2fa9ca1c867512ad814d66f962f765f007cce",
+    "headSha256": "edc823a8799523493cde0c03abc2fa9ca1c867512ad814d66f962f765f007cce",
+    "currentSha256": "edc823a8799523493cde0c03abc2fa9ca1c867512ad814d66f962f765f007cce",
+    "workingSha256": "edc823a8799523493cde0c03abc2fa9ca1c867512ad814d66f962f765f007cce",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/marking/MarkingServiceTest.java",
+    "artifactSourceSha256": "66575c7642632800c0b9620ad1f6106291b7413791d3c8466b3e9504e9bd5b33",
+    "headSha256": "66575c7642632800c0b9620ad1f6106291b7413791d3c8466b3e9504e9bd5b33",
+    "currentSha256": "66575c7642632800c0b9620ad1f6106291b7413791d3c8466b3e9504e9bd5b33",
+    "workingSha256": "66575c7642632800c0b9620ad1f6106291b7413791d3c8466b3e9504e9bd5b33",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/ratelimit/CheckinRateLimiterTest.java",
+    "artifactSourceSha256": "05668e0ba62514d99e0b1fe1b5edeb3beffa9209ec82649e723a9cbb2025a584",
+    "headSha256": "05668e0ba62514d99e0b1fe1b5edeb3beffa9209ec82649e723a9cbb2025a584",
+    "currentSha256": "05668e0ba62514d99e0b1fe1b5edeb3beffa9209ec82649e723a9cbb2025a584",
+    "workingSha256": "05668e0ba62514d99e0b1fe1b5edeb3beffa9209ec82649e723a9cbb2025a584",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/DocxRendererTest.java",
+    "artifactSourceSha256": "cfbac32b1963aaa628837a9fde46d10299625bf104b8fd79ebd80c2dadcad55b",
+    "headSha256": "cfbac32b1963aaa628837a9fde46d10299625bf104b8fd79ebd80c2dadcad55b",
+    "currentSha256": "cfbac32b1963aaa628837a9fde46d10299625bf104b8fd79ebd80c2dadcad55b",
+    "workingSha256": "cfbac32b1963aaa628837a9fde46d10299625bf104b8fd79ebd80c2dadcad55b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanGroupCompositionServiceTest.java",
+    "artifactSourceSha256": "ac182bec18db80e6a0a17b0bae929b0434753b1199e140fed29e3473a3164cd9",
+    "headSha256": "ac182bec18db80e6a0a17b0bae929b0434753b1199e140fed29e3473a3164cd9",
+    "currentSha256": "ac182bec18db80e6a0a17b0bae929b0434753b1199e140fed29e3473a3164cd9",
+    "workingSha256": "ac182bec18db80e6a0a17b0bae929b0434753b1199e140fed29e3473a3164cd9",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsRendererTest.java",
+    "artifactSourceSha256": "6daba81fd46fa4157a13aa5d3de789c9b4cdd18c6a5c820a8d1e3c194b60de3c",
+    "headSha256": "6daba81fd46fa4157a13aa5d3de789c9b4cdd18c6a5c820a8d1e3c194b60de3c",
+    "currentSha256": "6daba81fd46fa4157a13aa5d3de789c9b4cdd18c6a5c820a8d1e3c194b60de3c",
+    "workingSha256": "6daba81fd46fa4157a13aa5d3de789c9b4cdd18c6a5c820a8d1e3c194b60de3c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsServiceTest.java",
+    "artifactSourceSha256": "9f433f73408a7d64334cdcc3cf4ee65775d981cffa1b5488d03c9afdbd950c1e",
+    "headSha256": "9f433f73408a7d64334cdcc3cf4ee65775d981cffa1b5488d03c9afdbd950c1e",
+    "currentSha256": "9f433f73408a7d64334cdcc3cf4ee65775d981cffa1b5488d03c9afdbd950c1e",
+    "workingSha256": "9f433f73408a7d64334cdcc3cf4ee65775d981cffa1b5488d03c9afdbd950c1e",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsTrendRendererTest.java",
+    "artifactSourceSha256": "56fa475f9a55f6a9c6a0ec3644e5119639cdaab52c1dda40dad6c632042612e5",
+    "headSha256": "56fa475f9a55f6a9c6a0ec3644e5119639cdaab52c1dda40dad6c632042612e5",
+    "currentSha256": "56fa475f9a55f6a9c6a0ec3644e5119639cdaab52c1dda40dad6c632042612e5",
+    "workingSha256": "56fa475f9a55f6a9c6a0ec3644e5119639cdaab52c1dda40dad6c632042612e5",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportServiceTest.java",
+    "artifactSourceSha256": "3e28ecef292065e7f1af0bb5def9ae2a92aebecf15a9065e1294b58ee8a044ad",
+    "headSha256": "3e28ecef292065e7f1af0bb5def9ae2a92aebecf15a9065e1294b58ee8a044ad",
+    "currentSha256": "3e28ecef292065e7f1af0bb5def9ae2a92aebecf15a9065e1294b58ee8a044ad",
+    "workingSha256": "3e28ecef292065e7f1af0bb5def9ae2a92aebecf15a9065e1294b58ee8a044ad",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyTemplateSmokeTest.java",
+    "artifactSourceSha256": "923624affaf163378b48b45a4d4c8dcd42a4a8858261c204a7934a82a5130582",
+    "headSha256": "923624affaf163378b48b45a4d4c8dcd42a4a8858261c204a7934a82a5130582",
+    "currentSha256": "923624affaf163378b48b45a4d4c8dcd42a4a8858261c204a7934a82a5130582",
+    "workingSha256": "923624affaf163378b48b45a4d4c8dcd42a4a8858261c204a7934a82a5130582",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportControllerMvcTest.java",
+    "artifactSourceSha256": "e530f1c3cddbde4f1a042a73d7f1dfcbe4e0005be361aee711b07ee7a15c40e7",
+    "headSha256": "e530f1c3cddbde4f1a042a73d7f1dfcbe4e0005be361aee711b07ee7a15c40e7",
+    "currentSha256": "e530f1c3cddbde4f1a042a73d7f1dfcbe4e0005be361aee711b07ee7a15c40e7",
+    "workingSha256": "e530f1c3cddbde4f1a042a73d7f1dfcbe4e0005be361aee711b07ee7a15c40e7",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+    "artifactSourceSha256": "84d57612511220fa20adfeae1787eed9e085a68e2d9ea75d7e21d266cc0b3030",
+    "headSha256": "84d57612511220fa20adfeae1787eed9e085a68e2d9ea75d7e21d266cc0b3030",
+    "currentSha256": "84d57612511220fa20adfeae1787eed9e085a68e2d9ea75d7e21d266cc0b3030",
+    "workingSha256": "84d57612511220fa20adfeae1787eed9e085a68e2d9ea75d7e21d266cc0b3030",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculatorTest.java",
+    "artifactSourceSha256": "d41927321ba948a28c0e9c40574e80d0a75d8b2f0a5d52eea7799199b5ec346c",
+    "headSha256": "d41927321ba948a28c0e9c40574e80d0a75d8b2f0a5d52eea7799199b5ec346c",
+    "currentSha256": "d41927321ba948a28c0e9c40574e80d0a75d8b2f0a5d52eea7799199b5ec346c",
+    "workingSha256": "d41927321ba948a28c0e9c40574e80d0a75d8b2f0a5d52eea7799199b5ec346c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/OwnRankCalculatorTest.java",
+    "artifactSourceSha256": "db7d66fd676e41c31fa44bc9809ebd0e008dbb8094e50e678b9b2f64c2d8daa1",
+    "headSha256": "db7d66fd676e41c31fa44bc9809ebd0e008dbb8094e50e678b9b2f64c2d8daa1",
+    "currentSha256": "db7d66fd676e41c31fa44bc9809ebd0e008dbb8094e50e678b9b2f64c2d8daa1",
+    "workingSha256": "db7d66fd676e41c31fa44bc9809ebd0e008dbb8094e50e678b9b2f64c2d8daa1",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+    "artifactSourceSha256": "661c26eede80bf224b2e8c9eb8e4dbbc788461336cbc600544075504b68e012d",
+    "headSha256": "661c26eede80bf224b2e8c9eb8e4dbbc788461336cbc600544075504b68e012d",
+    "currentSha256": "661c26eede80bf224b2e8c9eb8e4dbbc788461336cbc600544075504b68e012d",
+    "workingSha256": "661c26eede80bf224b2e8c9eb8e4dbbc788461336cbc600544075504b68e012d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceDocxRendererTest.java",
+    "artifactSourceSha256": "d956bb71d631748a74a7702aaef38a7236be5d348ba3482cff6b6f6fa8a2c4b8",
+    "headSha256": "d956bb71d631748a74a7702aaef38a7236be5d348ba3482cff6b6f6fa8a2c4b8",
+    "currentSha256": "d956bb71d631748a74a7702aaef38a7236be5d348ba3482cff6b6f6fa8a2c4b8",
+    "workingSha256": "d956bb71d631748a74a7702aaef38a7236be5d348ba3482cff6b6f6fa8a2c4b8",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceExportServiceTest.java",
+    "artifactSourceSha256": "6e88d7366bee1cfa3234cc1b24f6138bab61dce737071ef45c2a2fd5c6f2a733",
+    "headSha256": "6e88d7366bee1cfa3234cc1b24f6138bab61dce737071ef45c2a2fd5c6f2a733",
+    "currentSha256": "6e88d7366bee1cfa3234cc1b24f6138bab61dce737071ef45c2a2fd5c6f2a733",
+    "workingSha256": "6e88d7366bee1cfa3234cc1b24f6138bab61dce737071ef45c2a2fd5c6f2a733",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportServiceTest.java",
+    "artifactSourceSha256": "c2b445f8ab2874f8867eafaef68c9d1628114aad947b100cb7848b20edf4a940",
+    "headSha256": "c2b445f8ab2874f8867eafaef68c9d1628114aad947b100cb7848b20edf4a940",
+    "currentSha256": "c2b445f8ab2874f8867eafaef68c9d1628114aad947b100cb7848b20edf4a940",
+    "workingSha256": "c2b445f8ab2874f8867eafaef68c9d1628114aad947b100cb7848b20edf4a940",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheServiceTest.java",
+    "artifactSourceSha256": "75042d12dc3483b07707eda49cf7d756d809cb5cb40ce9a069a0e110e4a78082",
+    "headSha256": "75042d12dc3483b07707eda49cf7d756d809cb5cb40ce9a069a0e110e4a78082",
+    "currentSha256": "75042d12dc3483b07707eda49cf7d756d809cb5cb40ce9a069a0e110e4a78082",
+    "workingSha256": "75042d12dc3483b07707eda49cf7d756d809cb5cb40ce9a069a0e110e4a78082",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentAttendanceSnapshotServiceTest.java",
+    "artifactSourceSha256": "3164c41468ec85d3885d8aa1ee8d591bd0bbe71b2fece4608fc668f941e0ba0c",
+    "headSha256": "3164c41468ec85d3885d8aa1ee8d591bd0bbe71b2fece4608fc668f941e0ba0c",
+    "currentSha256": "3164c41468ec85d3885d8aa1ee8d591bd0bbe71b2fece4608fc668f941e0ba0c",
+    "workingSha256": "3164c41468ec85d3885d8aa1ee8d591bd0bbe71b2fece4608fc668f941e0ba0c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java",
+    "artifactSourceSha256": "9d11da9244932f2fee98a063b295cf02e7eb8f25e082e3fd4050b06826479292",
+    "headSha256": "9d11da9244932f2fee98a063b295cf02e7eb8f25e082e3fd4050b06826479292",
+    "currentSha256": "9d11da9244932f2fee98a063b295cf02e7eb8f25e082e3fd4050b06826479292",
+    "workingSha256": "9d11da9244932f2fee98a063b295cf02e7eb8f25e082e3fd4050b06826479292",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+    "artifactSourceSha256": "deef34cd362c85956cc2e448a4fc96e4fbdf3733d0a8318c830f5892067d0eff",
+    "headSha256": "deef34cd362c85956cc2e448a4fc96e4fbdf3733d0a8318c830f5892067d0eff",
+    "currentSha256": "deef34cd362c85956cc2e448a4fc96e4fbdf3733d0a8318c830f5892067d0eff",
+    "workingSha256": "deef34cd362c85956cc2e448a4fc96e4fbdf3733d0a8318c830f5892067d0eff",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AuthConfirmationErrorsTest.java",
+    "artifactSourceSha256": "cfc14db0d24f0d936d0ecd704fa45a36db1e90d654c4baecd42d1fab8e5aeb70",
+    "headSha256": "cfc14db0d24f0d936d0ecd704fa45a36db1e90d654c4baecd42d1fab8e5aeb70",
+    "currentSha256": "cfc14db0d24f0d936d0ecd704fa45a36db1e90d654c4baecd42d1fab8e5aeb70",
+    "workingSha256": "cfc14db0d24f0d936d0ecd704fa45a36db1e90d654c4baecd42d1fab8e5aeb70",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityContractTest.java",
+    "artifactSourceSha256": "3eacc66f6feef44df5848e530acfb6a27af09c15fd3837fd97c17b389b9553a5",
+    "headSha256": "3eacc66f6feef44df5848e530acfb6a27af09c15fd3837fd97c17b389b9553a5",
+    "currentSha256": "3eacc66f6feef44df5848e530acfb6a27af09c15fd3837fd97c17b389b9553a5",
+    "workingSha256": "3eacc66f6feef44df5848e530acfb6a27af09c15fd3837fd97c17b389b9553a5",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentClosureContractTest.java",
+    "artifactSourceSha256": "f96ab9b148bcd31dca3a4a5ad5411dc67638f5fc0ab72db8eda1cd3c0674644e",
+    "headSha256": "f96ab9b148bcd31dca3a4a5ad5411dc67638f5fc0ab72db8eda1cd3c0674644e",
+    "currentSha256": "f96ab9b148bcd31dca3a4a5ad5411dc67638f5fc0ab72db8eda1cd3c0674644e",
+    "workingSha256": "f96ab9b148bcd31dca3a4a5ad5411dc67638f5fc0ab72db8eda1cd3c0674644e",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/LowercaseEnumConverterTest.java",
+    "artifactSourceSha256": "e92ff4f479859e9a9c7fc2515b90674a46a36d30debb20307b4a54433a1fac10",
+    "headSha256": "e92ff4f479859e9a9c7fc2515b90674a46a36d30debb20307b4a54433a1fac10",
+    "currentSha256": "e92ff4f479859e9a9c7fc2515b90674a46a36d30debb20307b4a54433a1fac10",
+    "workingSha256": "e92ff4f479859e9a9c7fc2515b90674a46a36d30debb20307b4a54433a1fac10",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/SubjectTypeUserTypeTest.java",
+    "artifactSourceSha256": "b2408483cf5f0193e3fb8be698086626a0544e43a547eb71c331c445e5bb445f",
+    "headSha256": "b2408483cf5f0193e3fb8be698086626a0544e43a547eb71c331c445e5bb445f",
+    "currentSha256": "b2408483cf5f0193e3fb8be698086626a0544e43a547eb71c331c445e5bb445f",
+    "workingSha256": "b2408483cf5f0193e3fb8be698086626a0544e43a547eb71c331c445e5bb445f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/WebConfigEnumConversionTest.java",
+    "artifactSourceSha256": "780290bca4ef4a725af87dbde154877b71d3709fe4c2bd318712097fd1fe9191",
+    "headSha256": "780290bca4ef4a725af87dbde154877b71d3709fe4c2bd318712097fd1fe9191",
+    "currentSha256": "780290bca4ef4a725af87dbde154877b71d3709fe4c2bd318712097fd1fe9191",
+    "workingSha256": "780290bca4ef4a725af87dbde154877b71d3709fe4c2bd318712097fd1fe9191",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/dashboard/DashboardActivityServiceTest.java",
+    "artifactSourceSha256": "f1ddb46be568a8d991f8dc7f55901627f30953ccef9edfb5401317184bacc3fa",
+    "headSha256": "f1ddb46be568a8d991f8dc7f55901627f30953ccef9edfb5401317184bacc3fa",
+    "currentSha256": "f1ddb46be568a8d991f8dc7f55901627f30953ccef9edfb5401317184bacc3fa",
+    "workingSha256": "f1ddb46be568a8d991f8dc7f55901627f30953ccef9edfb5401317184bacc3fa",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandlerTest.java",
+    "artifactSourceSha256": "6ca96babe99083e3a822464cf79c04c5d8481d676e3fdffb016fa0011e1e3054",
+    "headSha256": "6ca96babe99083e3a822464cf79c04c5d8481d676e3fdffb016fa0011e1e3054",
+    "currentSha256": "6ca96babe99083e3a822464cf79c04c5d8481d676e3fdffb016fa0011e1e3054",
+    "workingSha256": "6ca96babe99083e3a822464cf79c04c5d8481d676e3fdffb016fa0011e1e3054",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/golden/DisplayNameGoldenTest.java",
+    "artifactSourceSha256": "d8be2b482caaf30e566687599051e9ba742695b75a368970a10740c5a0ead373",
+    "headSha256": "d8be2b482caaf30e566687599051e9ba742695b75a368970a10740c5a0ead373",
+    "currentSha256": "d8be2b482caaf30e566687599051e9ba742695b75a368970a10740c5a0ead373",
+    "workingSha256": "d8be2b482caaf30e566687599051e9ba742695b75a368970a10740c5a0ead373",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/golden/DisplayNamePropertyTest.java",
+    "artifactSourceSha256": "f950b942910de48edfe9ab5d2b7c5d8cfec36158dbe80fa35d60c92455b184a1",
+    "headSha256": "f950b942910de48edfe9ab5d2b7c5d8cfec36158dbe80fa35d60c92455b184a1",
+    "currentSha256": "f950b942910de48edfe9ab5d2b7c5d8cfec36158dbe80fa35d60c92455b184a1",
+    "workingSha256": "f950b942910de48edfe9ab5d2b7c5d8cfec36158dbe80fa35d60c92455b184a1",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupArchivalServiceTest.java",
+    "artifactSourceSha256": "6cd2fcd9a524142f553a984d8a29a1b4973bb992f31cb716f82cf50f645a3d4d",
+    "headSha256": "6cd2fcd9a524142f553a984d8a29a1b4973bb992f31cb716f82cf50f645a3d4d",
+    "currentSha256": "6cd2fcd9a524142f553a984d8a29a1b4973bb992f31cb716f82cf50f645a3d4d",
+    "workingSha256": "6cd2fcd9a524142f553a984d8a29a1b4973bb992f31cb716f82cf50f645a3d4d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupNameParserTest.java",
+    "artifactSourceSha256": "29892d2154325e2a5ab5ddb66e790803f65ce9d3c6b790f87d8195a777bb55a5",
+    "headSha256": "29892d2154325e2a5ab5ddb66e790803f65ce9d3c6b790f87d8195a777bb55a5",
+    "currentSha256": "29892d2154325e2a5ab5ddb66e790803f65ce9d3c6b790f87d8195a777bb55a5",
+    "workingSha256": "29892d2154325e2a5ab5ddb66e790803f65ce9d3c6b790f87d8195a777bb55a5",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionServiceTest.java",
+    "artifactSourceSha256": "4931f11546ec7caef2e8cd243ca9377f6a30b4e60904de3ff6c932c774c82d31",
+    "headSha256": "4931f11546ec7caef2e8cd243ca9377f6a30b4e60904de3ff6c932c774c82d31",
+    "currentSha256": "4931f11546ec7caef2e8cd243ca9377f6a30b4e60904de3ff6c932c774c82d31",
+    "workingSha256": "4931f11546ec7caef2e8cd243ca9377f6a30b4e60904de3ff6c932c774c82d31",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupServiceTest.java",
+    "artifactSourceSha256": "19f8624897992153b4215fc060e0996878525870e03d54c5704f3a101f5d5c64",
+    "headSha256": "19f8624897992153b4215fc060e0996878525870e03d54c5704f3a101f5d5c64",
+    "currentSha256": "19f8624897992153b4215fc060e0996878525870e03d54c5704f3a101f5d5c64",
+    "workingSha256": "19f8624897992153b4215fc060e0996878525870e03d54c5704f3a101f5d5c64",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcContractTest.java",
+    "artifactSourceSha256": "89ef75da5bfbe10430ef7a81b597fb0ab391fb9bc89f7bf91525fe1fb8c0debb",
+    "headSha256": "89ef75da5bfbe10430ef7a81b597fb0ab391fb9bc89f7bf91525fe1fb8c0debb",
+    "currentSha256": "89ef75da5bfbe10430ef7a81b597fb0ab391fb9bc89f7bf91525fe1fb8c0debb",
+    "workingSha256": "89ef75da5bfbe10430ef7a81b597fb0ab391fb9bc89f7bf91525fe1fb8c0debb",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+    "artifactSourceSha256": "ba6d2eff9590d2055080162163b8f678d7f6583d739f53f3d36f40b6a788b1ce",
+    "headSha256": "ba6d2eff9590d2055080162163b8f678d7f6583d739f53f3d36f40b6a788b1ce",
+    "currentSha256": "ba6d2eff9590d2055080162163b8f678d7f6583d739f53f3d36f40b6a788b1ce",
+    "workingSha256": "ba6d2eff9590d2055080162163b8f678d7f6583d739f53f3d36f40b6a788b1ce",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java",
+    "artifactSourceSha256": "f9ac077159005ef780b01b106785832d0e0762af3da9a941afcf779df6970c5d",
+    "headSha256": "f9ac077159005ef780b01b106785832d0e0762af3da9a941afcf779df6970c5d",
+    "currentSha256": "f9ac077159005ef780b01b106785832d0e0762af3da9a941afcf779df6970c5d",
+    "workingSha256": "f9ac077159005ef780b01b106785832d0e0762af3da9a941afcf779df6970c5d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HistoricalMembershipGrpcTest.java",
+    "artifactSourceSha256": "e53029ad5276756d34c9b2fc4176e7c402d7d9223049bc6b1e9f7f924f6420b3",
+    "headSha256": "e53029ad5276756d34c9b2fc4176e7c402d7d9223049bc6b1e9f7f924f6420b3",
+    "currentSha256": "e53029ad5276756d34c9b2fc4176e7c402d7d9223049bc6b1e9f7f924f6420b3",
+    "workingSha256": "e53029ad5276756d34c9b2fc4176e7c402d7d9223049bc6b1e9f7f924f6420b3",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/InMemoryHeadmanRateLimiterTest.java",
+    "artifactSourceSha256": "631f7f6b4313741bd035c95f669acc459d9e483974f65890a02e7b723e82e46b",
+    "headSha256": "631f7f6b4313741bd035c95f669acc459d9e483974f65890a02e7b723e82e46b",
+    "currentSha256": "631f7f6b4313741bd035c95f669acc459d9e483974f65890a02e7b723e82e46b",
+    "workingSha256": "631f7f6b4313741bd035c95f669acc459d9e483974f65890a02e7b723e82e46b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/RedisHeadmanRateLimiterTest.java",
+    "artifactSourceSha256": "6dc734e50a0cb4161a91294ff20655251e242726d3529e3545c39c50d091725b",
+    "headSha256": "6dc734e50a0cb4161a91294ff20655251e242726d3529e3545c39c50d091725b",
+    "currentSha256": "6dc734e50a0cb4161a91294ff20655251e242726d3529e3545c39c50d091725b",
+    "workingSha256": "6dc734e50a0cb4161a91294ff20655251e242726d3529e3545c39c50d091725b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+    "artifactSourceSha256": "51e8350e6f7e2f1b8864c7f42e13ac230d91369427be12dac2527ece9f8ae1ee",
+    "headSha256": "51e8350e6f7e2f1b8864c7f42e13ac230d91369427be12dac2527ece9f8ae1ee",
+    "currentSha256": "51e8350e6f7e2f1b8864c7f42e13ac230d91369427be12dac2527ece9f8ae1ee",
+    "workingSha256": "51e8350e6f7e2f1b8864c7f42e13ac230d91369427be12dac2527ece9f8ae1ee",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentProjectionGrpcServiceTest.java",
+    "artifactSourceSha256": "3ffbbf69f34850a1169f0ce6e1d2e45c58a75a42d83a15dd418683c9c5c188da",
+    "headSha256": "3ffbbf69f34850a1169f0ce6e1d2e45c58a75a42d83a15dd418683c9c5c188da",
+    "currentSha256": "3ffbbf69f34850a1169f0ce6e1d2e45c58a75a42d83a15dd418683c9c5c188da",
+    "workingSha256": "3ffbbf69f34850a1169f0ce6e1d2e45c58a75a42d83a15dd418683c9c5c188da",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/TeacherAcademicReadGrpcServiceTest.java",
+    "artifactSourceSha256": "eaeab519eb9ccb5708e33e79db85c371fba1ee74a2bd23d1d33bcd9f2d05b215",
+    "headSha256": "eaeab519eb9ccb5708e33e79db85c371fba1ee74a2bd23d1d33bcd9f2d05b215",
+    "currentSha256": "eaeab519eb9ccb5708e33e79db85c371fba1ee74a2bd23d1d33bcd9f2d05b215",
+    "workingSha256": "eaeab519eb9ccb5708e33e79db85c371fba1ee74a2bd23d1d33bcd9f2d05b215",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/history/HistoricalMembershipServiceTest.java",
+    "artifactSourceSha256": "b371d3c9593390d942e614e38a58a906f50fec1b877494a2bec8149822104221",
+    "headSha256": "b371d3c9593390d942e614e38a58a906f50fec1b877494a2bec8149822104221",
+    "currentSha256": "b371d3c9593390d942e614e38a58a906f50fec1b877494a2bec8149822104221",
+    "workingSha256": "b371d3c9593390d942e614e38a58a906f50fec1b877494a2bec8149822104221",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkNotificationJobTest.java",
+    "artifactSourceSha256": "065688f8981f23059243964c85e888f31c0b7009642b7dc93f5cdc989f29d96e",
+    "headSha256": "065688f8981f23059243964c85e888f31c0b7009642b7dc93f5cdc989f29d96e",
+    "currentSha256": "065688f8981f23059243964c85e888f31c0b7009642b7dc93f5cdc989f29d96e",
+    "workingSha256": "065688f8981f23059243964c85e888f31c0b7009642b7dc93f5cdc989f29d96e",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkServiceTest.java",
+    "artifactSourceSha256": "e9c488a9ce7d66cfa571101f345181911bbcb655d31ed879fe10b069d7f95f05",
+    "headSha256": "e9c488a9ce7d66cfa571101f345181911bbcb655d31ed879fe10b069d7f95f05",
+    "currentSha256": "e9c488a9ce7d66cfa571101f345181911bbcb655d31ed879fe10b069d7f95f05",
+    "workingSha256": "e9c488a9ce7d66cfa571101f345181911bbcb655d31ed879fe10b069d7f95f05",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java",
+    "artifactSourceSha256": "fb464d8e92c7e5ffc91141a41e31a1c93b2c3a79f0b4029be2bdbf92ff863812",
+    "headSha256": "fb464d8e92c7e5ffc91141a41e31a1c93b2c3a79f0b4029be2bdbf92ff863812",
+    "currentSha256": "fb464d8e92c7e5ffc91141a41e31a1c93b2c3a79f0b4029be2bdbf92ff863812",
+    "workingSha256": "fb464d8e92c7e5ffc91141a41e31a1c93b2c3a79f0b4029be2bdbf92ff863812",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+    "artifactSourceSha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+    "headSha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+    "currentSha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+    "workingSha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapOwnerHmacProviderTest.java",
+    "artifactSourceSha256": "992268e9131d94a0cc202e5219191a1a4575543c269dcc9cbca8d850f8ec5337",
+    "headSha256": "992268e9131d94a0cc202e5219191a1a4575543c269dcc9cbca8d850f8ec5337",
+    "currentSha256": "992268e9131d94a0cc202e5219191a1a4575543c269dcc9cbca8d850f8ec5337",
+    "workingSha256": "992268e9131d94a0cc202e5219191a1a4575543c269dcc9cbca8d850f8ec5337",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+    "artifactSourceSha256": "5e630d3de0e98ae6256bd0613710257007965ae6eca78f3f5ced8994cd43ba58",
+    "headSha256": "5e630d3de0e98ae6256bd0613710257007965ae6eca78f3f5ced8994cd43ba58",
+    "currentSha256": "5e630d3de0e98ae6256bd0613710257007965ae6eca78f3f5ced8994cd43ba58",
+    "workingSha256": "5e630d3de0e98ae6256bd0613710257007965ae6eca78f3f5ced8994cd43ba58",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapUsageServiceTest.java",
+    "artifactSourceSha256": "f4b6a1459b9939d7fdec14bb791f1cd8df933d01b94ee9c7b5fc750264f4460b",
+    "headSha256": "f4b6a1459b9939d7fdec14bb791f1cd8df933d01b94ee9c7b5fc750264f4460b",
+    "currentSha256": "f4b6a1459b9939d7fdec14bb791f1cd8df933d01b94ee9c7b5fc750264f4460b",
+    "workingSha256": "f4b6a1459b9939d7fdec14bb791f1cd8df933d01b94ee9c7b5fc750264f4460b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/MigrationConcurrentlyTest.java",
+    "artifactSourceSha256": "8e410c9c9519f24837770572fa6f5b4db0107a32460800d6f9d519899783c56b",
+    "headSha256": "8e410c9c9519f24837770572fa6f5b4db0107a32460800d6f9d519899783c56b",
+    "currentSha256": "8e410c9c9519f24837770572fa6f5b4db0107a32460800d6f9d519899783c56b",
+    "workingSha256": "8e410c9c9519f24837770572fa6f5b4db0107a32460800d6f9d519899783c56b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/RoleCheckAspectTest.java",
+    "artifactSourceSha256": "80cffad9a1cc58d87c9e42eaf49471c17226c93d44421b5eacbeee201994c406",
+    "headSha256": "80cffad9a1cc58d87c9e42eaf49471c17226c93d44421b5eacbeee201994c406",
+    "currentSha256": "80cffad9a1cc58d87c9e42eaf49471c17226c93d44421b5eacbeee201994c406",
+    "workingSha256": "80cffad9a1cc58d87c9e42eaf49471c17226c93d44421b5eacbeee201994c406",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentLockContractTest.java",
+    "artifactSourceSha256": "8fd755c885e853fb9b534f04c7726a521df0bdc97dc24baf14b578f64d62e240",
+    "headSha256": "8fd755c885e853fb9b534f04c7726a521df0bdc97dc24baf14b578f64d62e240",
+    "currentSha256": "8fd755c885e853fb9b534f04c7726a521df0bdc97dc24baf14b578f64d62e240",
+    "workingSha256": "8fd755c885e853fb9b534f04c7726a521df0bdc97dc24baf14b578f64d62e240",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java",
+    "artifactSourceSha256": "073eb455673753d25c0d25fbb34407036a802c9afcaa5fd26eae9417c4a26039",
+    "headSha256": "073eb455673753d25c0d25fbb34407036a802c9afcaa5fd26eae9417c4a26039",
+    "currentSha256": "073eb455673753d25c0d25fbb34407036a802c9afcaa5fd26eae9417c4a26039",
+    "workingSha256": "073eb455673753d25c0d25fbb34407036a802c9afcaa5fd26eae9417c4a26039",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java",
+    "artifactSourceSha256": "534fbd652fab153a854b5a907dda90b764c32c8613a587e3c13d54de4acc1429",
+    "headSha256": "534fbd652fab153a854b5a907dda90b764c32c8613a587e3c13d54de4acc1429",
+    "currentSha256": "534fbd652fab153a854b5a907dda90b764c32c8613a587e3c13d54de4acc1429",
+    "workingSha256": "534fbd652fab153a854b5a907dda90b764c32c8613a587e3c13d54de4acc1429",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityContractTest.java",
+    "artifactSourceSha256": "28e93d1a7330c57a477d9f649264f669ea105bb0e62d64d0da08aeb65fa3d192",
+    "headSha256": "28e93d1a7330c57a477d9f649264f669ea105bb0e62d64d0da08aeb65fa3d192",
+    "currentSha256": "28e93d1a7330c57a477d9f649264f669ea105bb0e62d64d0da08aeb65fa3d192",
+    "workingSha256": "28e93d1a7330c57a477d9f649264f669ea105bb0e62d64d0da08aeb65fa3d192",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java",
+    "artifactSourceSha256": "0548032ac194eea6f68c5a5cd8b894ce39f72cec47619de6da969935efd93c64",
+    "headSha256": "0548032ac194eea6f68c5a5cd8b894ce39f72cec47619de6da969935efd93c64",
+    "currentSha256": "0548032ac194eea6f68c5a5cd8b894ce39f72cec47619de6da969935efd93c64",
+    "workingSha256": "0548032ac194eea6f68c5a5cd8b894ce39f72cec47619de6da969935efd93c64",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceListTest.java",
+    "artifactSourceSha256": "29e2a63607cf9d0b162189d573d67a048693387a702820feb85f50978ec7d704",
+    "headSha256": "29e2a63607cf9d0b162189d573d67a048693387a702820feb85f50978ec7d704",
+    "currentSha256": "29e2a63607cf9d0b162189d573d67a048693387a702820feb85f50978ec7d704",
+    "workingSha256": "29e2a63607cf9d0b162189d573d67a048693387a702820feb85f50978ec7d704",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServicePatchProfileTest.java",
+    "artifactSourceSha256": "71f817713983710c68571a7931c8f64851b7c489ff75c2bfffb08ae4c539f1bd",
+    "headSha256": "71f817713983710c68571a7931c8f64851b7c489ff75c2bfffb08ae4c539f1bd",
+    "currentSha256": "71f817713983710c68571a7931c8f64851b7c489ff75c2bfffb08ae4c539f1bd",
+    "workingSha256": "71f817713983710c68571a7931c8f64851b7c489ff75c2bfffb08ae4c539f1bd",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java",
+    "artifactSourceSha256": "3b397692f2ba09e83a94ed73fc41cd916890e85b2ddefabc813d63c3c7ed7de5",
+    "headSha256": "3b397692f2ba09e83a94ed73fc41cd916890e85b2ddefabc813d63c3c7ed7de5",
+    "currentSha256": "3b397692f2ba09e83a94ed73fc41cd916890e85b2ddefabc813d63c3c7ed7de5",
+    "workingSha256": "3b397692f2ba09e83a94ed73fc41cd916890e85b2ddefabc813d63c3c7ed7de5",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+    "artifactSourceSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b",
+    "headSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b",
+    "currentSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b",
+    "workingSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/RabbitConfigTest.java",
+    "artifactSourceSha256": "2c2327feb11d71b0672c1c2ee42c6702f40938ede225b080ef9396b3d4987539",
+    "headSha256": "2c2327feb11d71b0672c1c2ee42c6702f40938ede225b080ef9396b3d4987539",
+    "currentSha256": "2c2327feb11d71b0672c1c2ee42c6702f40938ede225b080ef9396b3d4987539",
+    "workingSha256": "2c2327feb11d71b0672c1c2ee42c6702f40938ede225b080ef9396b3d4987539",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+    "artifactSourceSha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8",
+    "headSha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8",
+    "currentSha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8",
+    "workingSha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+    "artifactSourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f",
+    "headSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f",
+    "currentSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f",
+    "workingSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WebSocketConfigTest.java",
+    "artifactSourceSha256": "5ebe02e6094c55452ff9a67891890ab8300e16ad52bce3755bf3b212b264250c",
+    "headSha256": "5ebe02e6094c55452ff9a67891890ab8300e16ad52bce3755bf3b212b264250c",
+    "currentSha256": "5ebe02e6094c55452ff9a67891890ab8300e16ad52bce3755bf3b212b264250c",
+    "workingSha256": "5ebe02e6094c55452ff9a67891890ab8300e16ad52bce3755bf3b212b264250c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+    "artifactSourceSha256": "75984027093886bb62f72898a6ab838aba300196c450c4ce12c079bececc14c3",
+    "headSha256": "75984027093886bb62f72898a6ab838aba300196c450c4ce12c079bececc14c3",
+    "currentSha256": "75984027093886bb62f72898a6ab838aba300196c450c4ce12c079bececc14c3",
+    "workingSha256": "75984027093886bb62f72898a6ab838aba300196c450c4ce12c079bececc14c3",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistryTest.java",
+    "artifactSourceSha256": "913b8040c4464b3aa8121119aad5b1e726807447d2a8a1e723973ddcee38ac7a",
+    "headSha256": "913b8040c4464b3aa8121119aad5b1e726807447d2a8a1e723973ddcee38ac7a",
+    "currentSha256": "913b8040c4464b3aa8121119aad5b1e726807447d2a8a1e723973ddcee38ac7a",
+    "workingSha256": "913b8040c4464b3aa8121119aad5b1e726807447d2a8a1e723973ddcee38ac7a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+    "artifactSourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983",
+    "headSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983",
+    "currentSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983",
+    "workingSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventConsumerTest.java",
+    "artifactSourceSha256": "fb66630028b1c0e8811ea03fc9b0cd52c80117f0ce9c34ba78f3cb9188782502",
+    "headSha256": "fb66630028b1c0e8811ea03fc9b0cd52c80117f0ce9c34ba78f3cb9188782502",
+    "currentSha256": "fb66630028b1c0e8811ea03fc9b0cd52c80117f0ce9c34ba78f3cb9188782502",
+    "workingSha256": "fb66630028b1c0e8811ea03fc9b0cd52c80117f0ce9c34ba78f3cb9188782502",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/GroupEventTest.java",
+    "artifactSourceSha256": "12132711b5d19967f96b5957ad6632f293fbb713ff64fce97df2ab99db233c44",
+    "headSha256": "12132711b5d19967f96b5957ad6632f293fbb713ff64fce97df2ab99db233c44",
+    "currentSha256": "12132711b5d19967f96b5957ad6632f293fbb713ff64fce97df2ab99db233c44",
+    "workingSha256": "12132711b5d19967f96b5957ad6632f293fbb713ff64fce97df2ab99db233c44",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/exception/NotificationUnavailableBoundaryTest.java",
+    "artifactSourceSha256": "d0cc90a86f626b41eee4233b8ec37a90cdfb555abe67d158da44afbb6cefa0e6",
+    "headSha256": "d0cc90a86f626b41eee4233b8ec37a90cdfb555abe67d158da44afbb6cefa0e6",
+    "currentSha256": "d0cc90a86f626b41eee4233b8ec37a90cdfb555abe67d158da44afbb6cefa0e6",
+    "workingSha256": "d0cc90a86f626b41eee4233b8ec37a90cdfb555abe67d158da44afbb6cefa0e6",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationAudienceAdmissionTest.java",
+    "artifactSourceSha256": "cf600f3c08056012366e86f8652e0cf59a217942a5202e49203cf36ca187377e",
+    "headSha256": "cf600f3c08056012366e86f8652e0cf59a217942a5202e49203cf36ca187377e",
+    "currentSha256": "cf600f3c08056012366e86f8652e0cf59a217942a5202e49203cf36ca187377e",
+    "workingSha256": "cf600f3c08056012366e86f8652e0cf59a217942a5202e49203cf36ca187377e",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationControllerTest.java",
+    "artifactSourceSha256": "55cea294eafc1feb013762bbd173ed48a20babdc8a4068960978772d02d2e72d",
+    "headSha256": "55cea294eafc1feb013762bbd173ed48a20babdc8a4068960978772d02d2e72d",
+    "currentSha256": "55cea294eafc1feb013762bbd173ed48a20babdc8a4068960978772d02d2e72d",
+    "workingSha256": "55cea294eafc1feb013762bbd173ed48a20babdc8a4068960978772d02d2e72d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+    "artifactSourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76",
+    "headSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76",
+    "currentSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76",
+    "workingSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerTest.java",
+    "artifactSourceSha256": "9299b94a15b376fb1f3cb0ce5968bfdf121b0c4dfad70eeb7dffe758c5bb2746",
+    "headSha256": "9299b94a15b376fb1f3cb0ce5968bfdf121b0c4dfad70eeb7dffe758c5bb2746",
+    "currentSha256": "9299b94a15b376fb1f3cb0ce5968bfdf121b0c4dfad70eeb7dffe758c5bb2746",
+    "workingSha256": "9299b94a15b376fb1f3cb0ce5968bfdf121b0c4dfad70eeb7dffe758c5bb2746",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryEventProcessorTest.java",
+    "artifactSourceSha256": "cd5c4d79c2f7d2e29bb09af54026e73008e01f8fb3409f3c397a215c8bb8fdee",
+    "headSha256": "cd5c4d79c2f7d2e29bb09af54026e73008e01f8fb3409f3c397a215c8bb8fdee",
+    "currentSha256": "cd5c4d79c2f7d2e29bb09af54026e73008e01f8fb3409f3c397a215c8bb8fdee",
+    "workingSha256": "cd5c4d79c2f7d2e29bb09af54026e73008e01f8fb3409f3c397a215c8bb8fdee",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryServiceTest.java",
+    "artifactSourceSha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f",
+    "headSha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f",
+    "currentSha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f",
+    "workingSha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationV2SerializationTest.java",
+    "artifactSourceSha256": "663412418f977acf0967c51248cf3939e999c910f81c629104dffded892e867b",
+    "headSha256": "663412418f977acf0967c51248cf3939e999c910f81c629104dffded892e867b",
+    "currentSha256": "663412418f977acf0967c51248cf3939e999c910f81c629104dffded892e867b",
+    "workingSha256": "663412418f977acf0967c51248cf3939e999c910f81c629104dffded892e867b",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/NotificationPreferencesServiceTest.java",
+    "artifactSourceSha256": "8413c94043dcaf87f746c93a7e2f15d7e3f301e0b056cb0aef73ffaee8f32caa",
+    "headSha256": "8413c94043dcaf87f746c93a7e2f15d7e3f301e0b056cb0aef73ffaee8f32caa",
+    "currentSha256": "8413c94043dcaf87f746c93a7e2f15d7e3f301e0b056cb0aef73ffaee8f32caa",
+    "workingSha256": "8413c94043dcaf87f746c93a7e2f15d7e3f301e0b056cb0aef73ffaee8f32caa",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+    "artifactSourceSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9",
+    "headSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9",
+    "currentSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9",
+    "workingSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java",
+    "artifactSourceSha256": "f6d45fcb309a4ae403aec94b81621c98ff8c620467917086a5c80fc1b4a0d8f1",
+    "headSha256": "f6d45fcb309a4ae403aec94b81621c98ff8c620467917086a5c80fc1b4a0d8f1",
+    "currentSha256": "f6d45fcb309a4ae403aec94b81621c98ff8c620467917086a5c80fc1b4a0d8f1",
+    "workingSha256": "f6d45fcb309a4ae403aec94b81621c98ff8c620467917086a5c80fc1b4a0d8f1",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionRepositoryTest.java",
+    "artifactSourceSha256": "7c850bcb004d462b6f731dc6c4f1d9c7926c342d4fc2fa15eacd75468562dd24",
+    "headSha256": "7c850bcb004d462b6f731dc6c4f1d9c7926c342d4fc2fa15eacd75468562dd24",
+    "currentSha256": "7c850bcb004d462b6f731dc6c4f1d9c7926c342d4fc2fa15eacd75468562dd24",
+    "workingSha256": "7c850bcb004d462b6f731dc6c4f1d9c7926c342d4fc2fa15eacd75468562dd24",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/WebPushDeliveryServiceTest.java",
+    "artifactSourceSha256": "12f02934d333be8b36e17f54fe52b8c4a6dcc38d02d0e2d421414fa33467495e",
+    "headSha256": "12f02934d333be8b36e17f54fe52b8c4a6dcc38d02d0e2d421414fa33467495e",
+    "currentSha256": "12f02934d333be8b36e17f54fe52b8c4a6dcc38d02d0e2d421414fa33467495e",
+    "workingSha256": "12f02934d333be8b36e17f54fe52b8c4a6dcc38d02d0e2d421414fa33467495e",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/NotificationSignedContextTest.java",
+    "artifactSourceSha256": "abac0dba4bc09656d7c7223f87677101f9d0600d73b6e24c8310a29fd4c6e1af",
+    "headSha256": "abac0dba4bc09656d7c7223f87677101f9d0600d73b6e24c8310a29fd4c6e1af",
+    "currentSha256": "abac0dba4bc09656d7c7223f87677101f9d0600d73b6e24c8310a29fd4c6e1af",
+    "workingSha256": "abac0dba4bc09656d7c7223f87677101f9d0600d73b6e24c8310a29fd4c6e1af",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityInfrastructureTest.java",
+    "artifactSourceSha256": "153470b9d132a462d88e42bb0f01888203dbc996e1a6032e2d8f322210d5f677",
+    "headSha256": "153470b9d132a462d88e42bb0f01888203dbc996e1a6032e2d8f322210d5f677",
+    "currentSha256": "153470b9d132a462d88e42bb0f01888203dbc996e1a6032e2d8f322210d5f677",
+    "workingSha256": "153470b9d132a462d88e42bb0f01888203dbc996e1a6032e2d8f322210d5f677",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/NotificationLoggingIT.java",
+    "artifactSourceSha256": "1a8451ec013a210c616f1c338d9f277cc8431baff1499e891103da85541c22f5",
+    "headSha256": "1a8451ec013a210c616f1c338d9f277cc8431baff1499e891103da85541c22f5",
+    "currentSha256": "1a8451ec013a210c616f1c338d9f277cc8431baff1499e891103da85541c22f5",
+    "workingSha256": "1a8451ec013a210c616f1c338d9f277cc8431baff1499e891103da85541c22f5",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java",
+    "artifactSourceSha256": "70910bbe80258a9da0ec6f25548d5dc0c632e6e7b1551c62ede8475eaef30649",
+    "headSha256": "70910bbe80258a9da0ec6f25548d5dc0c632e6e7b1551c62ede8475eaef30649",
+    "currentSha256": "70910bbe80258a9da0ec6f25548d5dc0c632e6e7b1551c62ede8475eaef30649",
+    "workingSha256": "70910bbe80258a9da0ec6f25548d5dc0c632e6e7b1551c62ede8475eaef30649",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportIT.java",
+    "artifactSourceSha256": "0d0fca075c1d34e0ba25a3a3e9323a4967394778acd7ccb719ef88115f0d0022",
+    "headSha256": "0d0fca075c1d34e0ba25a3a3e9323a4967394778acd7ccb719ef88115f0d0022",
+    "currentSha256": "0d0fca075c1d34e0ba25a3a3e9323a4967394778acd7ccb719ef88115f0d0022",
+    "workingSha256": "0d0fca075c1d34e0ba25a3a3e9323a4967394778acd7ccb719ef88115f0d0022",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventIdempotentIT.java",
+    "artifactSourceSha256": "cd167d73dac37ad869d20f9074cccf88eb73c60cf17a1afdc544d77904c6df00",
+    "headSha256": "cd167d73dac37ad869d20f9074cccf88eb73c60cf17a1afdc544d77904c6df00",
+    "currentSha256": "cd167d73dac37ad869d20f9074cccf88eb73c60cf17a1afdc544d77904c6df00",
+    "workingSha256": "cd167d73dac37ad869d20f9074cccf88eb73c60cf17a1afdc544d77904c6df00",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/exception/NotificationErrorHandlingIT.java",
+    "artifactSourceSha256": "6039c8350f450bf72093f8ea55587f04655dcddd2098c418adcace005d64062e",
+    "headSha256": "6039c8350f450bf72093f8ea55587f04655dcddd2098c418adcace005d64062e",
+    "currentSha256": "6039c8350f450bf72093f8ea55587f04655dcddd2098c418adcace005d64062e",
+    "workingSha256": "6039c8350f450bf72093f8ea55587f04655dcddd2098c418adcace005d64062e",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerIT.java",
+    "artifactSourceSha256": "5e8545bf689a979ee1e2d89bc2d31dc9aa38e8bc6440a0a4e4ed05cb3e3ab7f5",
+    "headSha256": "5e8545bf689a979ee1e2d89bc2d31dc9aa38e8bc6440a0a4e4ed05cb3e3ab7f5",
+    "currentSha256": "5e8545bf689a979ee1e2d89bc2d31dc9aa38e8bc6440a0a4e4ed05cb3e3ab7f5",
+    "workingSha256": "5e8545bf689a979ee1e2d89bc2d31dc9aa38e8bc6440a0a4e4ed05cb3e3ab7f5",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationMongoIndexesIT.java",
+    "artifactSourceSha256": "462af7c19c4f70da24dda571623d1b268bfda359bcb8701800ad401480fa9c81",
+    "headSha256": "462af7c19c4f70da24dda571623d1b268bfda359bcb8701800ad401480fa9c81",
+    "currentSha256": "462af7c19c4f70da24dda571623d1b268bfda359bcb8701800ad401480fa9c81",
+    "workingSha256": "462af7c19c4f70da24dda571623d1b268bfda359bcb8701800ad401480fa9c81",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationStateV2IT.java",
+    "artifactSourceSha256": "aadbd4009486203718ae7409b0e6b57bfab1a6f3a80e6144459a77693dfc5209",
+    "headSha256": "aadbd4009486203718ae7409b0e6b57bfab1a6f3a80e6144459a77693dfc5209",
+    "currentSha256": "aadbd4009486203718ae7409b0e6b57bfab1a6f3a80e6144459a77693dfc5209",
+    "workingSha256": "aadbd4009486203718ae7409b0e6b57bfab1a6f3a80e6144459a77693dfc5209",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/DurableNotificationPreferencesIT.java",
+    "artifactSourceSha256": "93d264191a8d80663d5beb487457463fb1bf56395525121e3c92864208c2235a",
+    "headSha256": "93d264191a8d80663d5beb487457463fb1bf56395525121e3c92864208c2235a",
+    "currentSha256": "93d264191a8d80663d5beb487457463fb1bf56395525121e3c92864208c2235a",
+    "workingSha256": "93d264191a8d80663d5beb487457463fb1bf56395525121e3c92864208c2235a",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionCleanupJobIT.java",
+    "artifactSourceSha256": "d17b2596591cc821099236a191b81d583c190fc785ffe978104c02c625cba367",
+    "headSha256": "d17b2596591cc821099236a191b81d583c190fc785ffe978104c02c625cba367",
+    "currentSha256": "d17b2596591cc821099236a191b81d583c190fc785ffe978104c02c625cba367",
+    "workingSha256": "d17b2596591cc821099236a191b81d583c190fc785ffe978104c02c625cba367",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityIdorIT.java",
+    "artifactSourceSha256": "28cf6829a337d667a7848783fba19ea46976975732a8808df9cc7c1033362e22",
+    "headSha256": "28cf6829a337d667a7848783fba19ea46976975732a8808df9cc7c1033362e22",
+    "currentSha256": "28cf6829a337d667a7848783fba19ea46976975732a8808df9cc7c1033362e22",
+    "workingSha256": "28cf6829a337d667a7848783fba19ea46976975732a8808df9cc7c1033362e22",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/ws/StompIntegrationIT.java",
+    "artifactSourceSha256": "b85e9386e61c5b677af59dcc25eb965f274daed0a82ce1b93ee9e472ea118f8d",
+    "headSha256": "b85e9386e61c5b677af59dcc25eb965f274daed0a82ce1b93ee9e472ea118f8d",
+    "currentSha256": "b85e9386e61c5b677af59dcc25eb965f274daed0a82ce1b93ee9e472ea118f8d",
+    "workingSha256": "b85e9386e61c5b677af59dcc25eb965f274daed0a82ce1b93ee9e472ea118f8d",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/arch/ScheduledLockRuleNegativeTest.java",
+    "artifactSourceSha256": "058a814c406ebf2616d8c3bda27cf36e36693831f2bd15047c8eb78ac932b642",
+    "headSha256": "058a814c406ebf2616d8c3bda27cf36e36693831f2bd15047c8eb78ac932b642",
+    "currentSha256": "058a814c406ebf2616d8c3bda27cf36e36693831f2bd15047c8eb78ac932b642",
+    "workingSha256": "058a814c406ebf2616d8c3bda27cf36e36693831f2bd15047c8eb78ac932b642",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/config/SchedulingConfigStructureTest.java",
+    "artifactSourceSha256": "cae35d733b93aa8e2b5520c1809f92cf8614f5edbbff0ad8f95d29a10a4d0597",
+    "headSha256": "cae35d733b93aa8e2b5520c1809f92cf8614f5edbbff0ad8f95d29a10a4d0597",
+    "currentSha256": "cae35d733b93aa8e2b5520c1809f92cf8614f5edbbff0ad8f95d29a10a4d0597",
+    "workingSha256": "cae35d733b93aa8e2b5520c1809f92cf8614f5edbbff0ad8f95d29a10a4d0597",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+    "artifactSourceSha256": "ced13be86613f7f981ea61dbdc093c30d464fe0ada6752765ef61afbc69ca820",
+    "headSha256": "ced13be86613f7f981ea61dbdc093c30d464fe0ada6752765ef61afbc69ca820",
+    "currentSha256": "ced13be86613f7f981ea61dbdc093c30d464fe0ada6752765ef61afbc69ca820",
+    "workingSha256": "ced13be86613f7f981ea61dbdc093c30d464fe0ada6752765ef61afbc69ca820",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+    "artifactSourceSha256": "59b3df62ea55bbc3576f777aebe108c73a8902c39ff4f6051bc18958fce00622",
+    "headSha256": "59b3df62ea55bbc3576f777aebe108c73a8902c39ff4f6051bc18958fce00622",
+    "currentSha256": "59b3df62ea55bbc3576f777aebe108c73a8902c39ff4f6051bc18958fce00622",
+    "workingSha256": "59b3df62ea55bbc3576f777aebe108c73a8902c39ff4f6051bc18958fce00622",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+    "artifactSourceSha256": "4b00a51ddebcb3d4d5bc66079af7ed309d3011009eaa51cd418eeae2c992b44c",
+    "headSha256": "4b00a51ddebcb3d4d5bc66079af7ed309d3011009eaa51cd418eeae2c992b44c",
+    "currentSha256": "4b00a51ddebcb3d4d5bc66079af7ed309d3011009eaa51cd418eeae2c992b44c",
+    "workingSha256": "4b00a51ddebcb3d4d5bc66079af7ed309d3011009eaa51cd418eeae2c992b44c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemEntityTest.java",
+    "artifactSourceSha256": "32ee4bf58a63d2a7c884d87f59e502c03d1dd7d8860cee7e5f2503b5a9d31353",
+    "headSha256": "32ee4bf58a63d2a7c884d87f59e502c03d1dd7d8860cee7e5f2503b5a9d31353",
+    "currentSha256": "32ee4bf58a63d2a7c884d87f59e502c03d1dd7d8860cee7e5f2503b5a9d31353",
+    "workingSha256": "32ee4bf58a63d2a7c884d87f59e502c03d1dd7d8860cee7e5f2503b5a9d31353",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java",
+    "artifactSourceSha256": "ab68559a2882a70560f5a5469d474c5859cbffb443b44c7f680c3ed7cfc39498",
+    "headSha256": "ab68559a2882a70560f5a5469d474c5859cbffb443b44c7f680c3ed7cfc39498",
+    "currentSha256": "ab68559a2882a70560f5a5469d474c5859cbffb443b44c7f680c3ed7cfc39498",
+    "workingSha256": "ab68559a2882a70560f5a5469d474c5859cbffb443b44c7f680c3ed7cfc39498",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonControllerTransferTest.java",
+    "artifactSourceSha256": "e56335cc33af688c0e71cf877951558ea9ba08001dece6267428cc4add939283",
+    "headSha256": "e56335cc33af688c0e71cf877951558ea9ba08001dece6267428cc4add939283",
+    "currentSha256": "e56335cc33af688c0e71cf877951558ea9ba08001dece6267428cc4add939283",
+    "workingSha256": "e56335cc33af688c0e71cf877951558ea9ba08001dece6267428cc4add939283",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+    "artifactSourceSha256": "2a138bea8d36ef41fdab2b7ab5f0fd59459f94a39de2fc31c21a941fe70b2f8c",
+    "headSha256": "2a138bea8d36ef41fdab2b7ab5f0fd59459f94a39de2fc31c21a941fe70b2f8c",
+    "currentSha256": "2a138bea8d36ef41fdab2b7ab5f0fd59459f94a39de2fc31c21a941fe70b2f8c",
+    "workingSha256": "2a138bea8d36ef41fdab2b7ab5f0fd59459f94a39de2fc31c21a941fe70b2f8c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonSlotTest.java",
+    "artifactSourceSha256": "d6b2d4b2ed344d952ec8fefa41eb262c2891f39d05f21957fdca7ec5a4862e8c",
+    "headSha256": "d6b2d4b2ed344d952ec8fefa41eb262c2891f39d05f21957fdca7ec5a4862e8c",
+    "currentSha256": "d6b2d4b2ed344d952ec8fefa41eb262c2891f39d05f21957fdca7ec5a4862e8c",
+    "workingSha256": "d6b2d4b2ed344d952ec8fefa41eb262c2891f39d05f21957fdca7ec5a4862e8c",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/MigrationConcurrentlyTest.java",
+    "artifactSourceSha256": "ec7062fc70ad2cc151ad77dedd7c503e63e238634c54cbec96277a924910f538",
+    "headSha256": "ec7062fc70ad2cc151ad77dedd7c503e63e238634c54cbec96277a924910f538",
+    "currentSha256": "ec7062fc70ad2cc151ad77dedd7c503e63e238634c54cbec96277a924910f538",
+    "workingSha256": "ec7062fc70ad2cc151ad77dedd7c503e63e238634c54cbec96277a924910f538",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringDateCalculatorTest.java",
+    "artifactSourceSha256": "6ad73a18aa657c56cfa8c84215609e0ce1a4a3eadafb8b0ca9487519e33e4144",
+    "headSha256": "6ad73a18aa657c56cfa8c84215609e0ce1a4a3eadafb8b0ca9487519e33e4144",
+    "currentSha256": "6ad73a18aa657c56cfa8c84215609e0ce1a4a3eadafb8b0ca9487519e33e4144",
+    "workingSha256": "6ad73a18aa657c56cfa8c84215609e0ce1a4a3eadafb8b0ca9487519e33e4144",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringLifecycleGateTest.java",
+    "artifactSourceSha256": "97b27948a4693c0d31f095439229d1caf588dad0e148ac54530bce4102377db3",
+    "headSha256": "97b27948a4693c0d31f095439229d1caf588dad0e148ac54530bce4102377db3",
+    "currentSha256": "97b27948a4693c0d31f095439229d1caf588dad0e148ac54530bce4102377db3",
+    "workingSha256": "97b27948a4693c0d31f095439229d1caf588dad0e148ac54530bce4102377db3",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringScheduleItemCoordinatorTest.java",
+    "artifactSourceSha256": "814ab189f8c60bd7cd25b659614b8d7e05b5275fc9681b3da2fb6fc0524851ac",
+    "headSha256": "814ab189f8c60bd7cd25b659614b8d7e05b5275fc9681b3da2fb6fc0524851ac",
+    "currentSha256": "814ab189f8c60bd7cd25b659614b8d7e05b5275fc9681b3da2fb6fc0524851ac",
+    "workingSha256": "814ab189f8c60bd7cd25b659614b8d7e05b5275fc9681b3da2fb6fc0524851ac",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  },
+  {
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/week/AcademicWeekPolicyControllerTest.java",
+    "artifactSourceSha256": "5b804277e915406795352fc75c7bbddb53fa41b8a6e8227944e21256b4a4e007",
+    "headSha256": "5b804277e915406795352fc75c7bbddb53fa41b8a6e8227944e21256b4a4e007",
+    "currentSha256": "5b804277e915406795352fc75c7bbddb53fa41b8a6e8227944e21256b4a4e007",
+    "workingSha256": "5b804277e915406795352fc75c7bbddb53fa41b8a6e8227944e21256b4a4e007",
+    "headMatchesArtifact": true,
+    "currentMatchesArtifact": true
+  }
+]

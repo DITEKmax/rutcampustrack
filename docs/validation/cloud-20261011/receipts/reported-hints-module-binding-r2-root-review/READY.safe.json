@@ -1,0 +1,57 @@
+{
+  "status": "MODULE_BINDING_SOURCE_CORRECTION_READY_NARROW_REVIEW_REQUIRED",
+  "rootSourceProducer": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "prospectiveExecutionHead": "9176c680f4f810816792b4e21f6e60f387f38740",
+  "unchangedSource2": {
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/fixtures/artifact-privacy.ts": "570d66e3a82543fa98960cb9d6a622597857066952d631e6cf9058a90b8e0232",
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/fixtures/safe-reporter.ts": "40f8881ecaa963135edf3b7c4b6eec860a903d7861a1c9fdf372aff0b82ad686"
+  },
+  "oldNativeSealed": {
+    "report": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/actual-node01/REPORT.safe.json",
+    "reportSHA256": "0425ac565b57dd55899c1a44a752894687f6c0164a3d66d4db0ac4538ea4ae91",
+    "zipSHA256": "f48afd2a44416d9a67dce708b6c0e4103ab986cfbc866a9abe2eda06a366b5aa",
+    "actualNativeExit": 1,
+    "accepted": false,
+    "lease": "RELEASED"
+  },
+  "helperDelta": {
+    "path": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/module-binding-r2/delta.safe.json",
+    "sha256": "8b8ebf8812310b5f2fe55466bdd9d87374f282518ce87fa233b18c264e29cbf8",
+    "inverseByteExact": true,
+    "changedOnly": "VM __dirname forALL historical/current variants canonical W/fixtures in two own scratch helpers"
+  },
+  "selectedReaderRAM": {
+    "path": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/module-binding-r2/binding-controls.safe.json",
+    "sha256": "f636fd7ceca9e5046fb3dc870b7406e1ca3d92990548fef22348e94fda401e79",
+    "count": 4,
+    "passed": 4,
+    "qualification": "Actualbyteexactreader with4 exacttype-only erasures intoolV8, noNode/no fullrecorder. Native old7 preserved; canonical6 expectation derivedcapmodel, unchangedactualexpectedRED oracle."
+  },
+  "nativePlan": {
+    "path": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/native-plan/PLAN.module-binding-r2.safe.json",
+    "sha256": "e5c57daa28ecf699ac93c2f688b2aa62dbfa8cf8f046f2d4069812001cd973e9",
+    "driver": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/native-plan/run-approved-node.module-binding-r2.py",
+    "driverSHA256": "3ced09830983654b492554cf166628d810078bedceec22e70312ec0076ad8e56",
+    "scopeNewOwnRun": "/tmp/rct-reported-hints-priority-node-20261013-attempt02",
+    "guardCallbacksAcceptanceCapsUnchanged": true,
+    "phaseCount": 9,
+    "futureFreshGrantRequired": true,
+    "authorized": false
+  },
+  "inventory": {
+    "CreatedOwnScratch": [
+      "hints-controls.canonical.cjs",
+      "priority-controls.canonical.cjs",
+      "native-plan/PLAN.module-binding-r2.safe.json",
+      "native-plan/run-approved-node.module-binding-r2.py",
+      "module-binding-r2/source packet"
+    ],
+    "ModifiedOriginal": [],
+    "TSchanged": false,
+    "Deleted": []
+  },
+  "nativeAfterCorrection": "NOT_RUN",
+  "ownedNativeProcesses": "NONE",
+  "actualCIcause": "UNKNOWN",
+  "noAPIbrowsernetworkserviceRootOrVendorWrites": true
+}

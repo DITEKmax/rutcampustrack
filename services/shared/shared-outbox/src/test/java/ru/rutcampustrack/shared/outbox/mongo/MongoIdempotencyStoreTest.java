@@ -1,13 +1,5 @@
 package ru.rutcampustrack.shared.outbox.mongo;
 
-import org.bson.Document;
-import org.junit.jupiter.api.Test;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.mongodb.MongoDatabaseFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
-
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,19 +11,24 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
+import org.bson.Document;
+import org.junit.jupiter.api.Test;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+
 /**
- * M13 G24-fix-1 — regression guard для B2 (MongoIdempotencyStore
- * transactional binding).
+ * M13 G24-fix-1 — regression guard для B2 (MongoIdempotencyStore transactional binding).
  *
- * <p>До G24-fix-1 store использовал {@code mongoTemplate.getCollection(name)
- * .insertOne(doc)} — это раздаёт write напрямую в MongoCollection в обход
- * Spring's {@code MongoTransactionManager} session binding. Если caller
- * @Transactional handler throws после tryClaim, claim row коммитится,
- * domain rollback'ается → event lost при redelivery (false-positive duplicate).
+ * <p>До G24-fix-1 store использовал {@code mongoTemplate.getCollection(name) .insertOne(doc)} — это
+ * раздаёт write напрямую в MongoCollection в обход Spring's {@code MongoTransactionManager} session
+ * binding. Если caller @Transactional handler throws после tryClaim, claim row коммитится, domain
+ * rollback'ается → event lost при redelivery (false-positive duplicate).
  *
- * <p>Этот тест гарантирует что используется {@link MongoTemplate#insert(Object,
- * String)} — Spring routing path который участвует в активной session.
- * Если кто-то откатит fix → тест fail с явным reason.
+ * <p>Этот тест гарантирует что используется {@link MongoTemplate#insert(Object, String)} — Spring
+ * routing path который участвует в активной session. Если кто-то откатит fix → тест fail с явным
+ * reason.
  */
 class MongoIdempotencyStoreTest {
 
@@ -56,7 +53,8 @@ class MongoIdempotencyStoreTest {
     void tryClaim_duplicateKey_returnsFalse() {
         MongoTemplate template = template();
         doThrow(new DuplicateKeyException("E11000"))
-                .when(template).insert(any(Document.class), anyString());
+                .when(template)
+                .insert(any(Document.class), anyString());
 
         MongoIdempotencyStore store = new MongoIdempotencyStore(template);
         boolean claimed = store.tryClaim("test-consumer", UUID.randomUUID());
@@ -68,7 +66,8 @@ class MongoIdempotencyStoreTest {
     void tryClaim_otherException_propagates() {
         MongoTemplate template = template();
         doThrow(new RuntimeException("network down"))
-                .when(template).insert(any(Document.class), anyString());
+                .when(template)
+                .insert(any(Document.class), anyString());
 
         MongoIdempotencyStore store = new MongoIdempotencyStore(template);
 

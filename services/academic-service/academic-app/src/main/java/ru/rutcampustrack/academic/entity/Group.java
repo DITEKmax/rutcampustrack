@@ -1,25 +1,23 @@
 package ru.rutcampustrack.academic.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.OffsetDateTime;
-
 /**
  * Study group.
  *
- * <p>BUG-006-5 / план 58-04: поля {@code name} и {@code code} слиты в одно {@code name}.
- * Активный формат: {@code ХХ(х)-NNN} (кириллица, 3 цифры) — например {@code УИТ-311}, {@code УВПв-511}.
- * Архивный формат (ставится только сервисом архивации, см. план 58-06):
- * {@code <active> (выпуск YYYY)} — например {@code УИТ-411 (выпуск 2026)}.
- * Entity-pattern разрешает оба формата.
+ * <p>BUG-006-5 / план 58-04: поля {@code name} и {@code code} слиты в одно {@code name}. Активный
+ * формат: {@code ХХ(х)-NNN} (кириллица, 3 цифры) — например {@code УИТ-311}, {@code УВПв-511}.
+ * Архивный формат (ставится только сервисом архивации, см. план 58-06): {@code <active> (выпуск
+ * YYYY)} — например {@code УИТ-411 (выпуск 2026)}. Entity-pattern разрешает оба формата.
  */
 @Entity
 @Table(name = "groups")
@@ -37,15 +35,15 @@ public class Group {
 
     @Setter
     @NotBlank
-    @Pattern(regexp = NAME_PATTERN,
-            message = "Формат имени группы: ХХ(х)-NNN (пример УИТ-311)")
+    @Pattern(regexp = NAME_PATTERN, message = "Формат имени группы: ХХ(х)-NNN (пример УИТ-311)")
     @Size(max = 32)
     @Column(name = "name", nullable = false, unique = true, length = 32)
     private String name;
 
     /** Split code fields introduced for the ADMIN registry. Nullable for legacy rows. */
     @Setter
-    @Pattern(regexp = "^[А-ЯЁ][А-ЯЁа-яё]{1,3}$",
+    @Pattern(
+            regexp = "^[А-ЯЁ][А-ЯЁа-яё]{1,3}$",
             message = "Буквенный код: 2–4 кириллических символа")
     @Size(max = 4)
     @Column(name = "alphabetic_code", length = 4)
@@ -83,8 +81,8 @@ public class Group {
     private OffsetDateTime createdAt;
 
     /**
-     * Заполняется сервисом архивации (BUG-006-6 / план 58-06) одновременно с {@code is_active=false}.
-     * {@code NULL} для активных групп и исторических записей, созданных до V9.
+     * Заполняется сервисом архивации (BUG-006-6 / план 58-06) одновременно с {@code
+     * is_active=false}. {@code NULL} для активных групп и исторических записей, созданных до V9.
      */
     @Setter
     @Column(name = "archived_at")

@@ -4,8 +4,13 @@ import ru.rutcampustrack.notification.contract.dto.preferences.NotificationPrefe
 
 public class NotificationPreferencesConflict extends RuntimeException {
     private final NotificationPreferencesV2Dto current;
+
     public NotificationPreferencesConflict(NotificationPreferencesV2Dto current) {
-        super("Notification preferences revision conflicts"); this.current = current;
+        super("Notification preferences revision conflicts");
+        this.current = current;
     }
-    public NotificationPreferencesV2Dto current() { return current; }
+
+    public NotificationPreferencesV2Dto current() {
+        return current;
+    }
 }

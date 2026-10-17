@@ -1,24 +1,25 @@
 package ru.rutcampustrack.notification.push;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**
  * Spring Data MongoDB repository for push subscriptions.
  *
- * Per D-06: findAllByGroupId used by Plan 03 PushService to retrieve all subscribers
- * in a group for fanout delivery.
- * deleteByUserIdAndEndpoint scopes deletion to current user — T-27-07 mitigation.
+ * <p>Per D-06: findAllByGroupId used by Plan 03 PushService to retrieve all subscribers in a group
+ * for fanout delivery. deleteByUserIdAndEndpoint scopes deletion to current user — T-27-07
+ * mitigation.
  *
- * M05 G7 (NEW-148): touchLastSeen + deleteByLastSeenBefore для retention
- * cleanup stale push-подписок (см. PushSubscriptionCleanupJob).
+ * <p>M05 G7 (NEW-148): touchLastSeen + deleteByLastSeenBefore для retention cleanup stale
+ * push-подписок (см. PushSubscriptionCleanupJob).
  */
-public interface PushSubscriptionRepository extends MongoRepository<PushSubscriptionDocument, String> {
+public interface PushSubscriptionRepository
+        extends MongoRepository<PushSubscriptionDocument, String> {
 
     List<PushSubscriptionDocument> findAllByGroupId(Long groupId);
+
     List<PushSubscriptionDocument> findAllByUserIdIn(java.util.Collection<Long> userIds);
 
     Optional<PushSubscriptionDocument> findByUserIdAndEndpoint(Long userId, String endpoint);

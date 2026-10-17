@@ -1,0 +1,15 @@
+{
+  "stage_py_sha256": "ce100a17a61b34a68d6efa3c2a6d4b3f8c56d296e2d9c80b2b24814ce67eaffb",
+  "AST_parse": "PASS",
+  "actual_source_review": "complete stdlib code; no children/network/JVM; NEW O_EXCL nlink1 temp644 before ownlinks; full source CRC/SHA and final metadata gates; own exacttemp cleanup/no oldsourcechmod",
+  "classloader_verifier_initial_assumption": "Initial all-libs-indexed check failed only because original Boot indexes exclude auto-added jarmode-tools; corrected to original standard index plus all actual libs preserved. No product/native failure credit.",
+  "author_stage_native_exit": 0,
+  "author_PID218459_absent": true,
+  "historical_final_stage_bound_bytes": 197558272,
+  "cap_bytes": 201326592,
+  "transient0": true,
+  "already_charged_do_not_count192MiB_twice": true,
+  "future_runtime_remaining_budget": 8079735569,
+  "fresh_floor_after_NPcleanup_required": true,
+  "actual_apps_Docker_UID_JVM_TLS_browser": "NOT_RUN"
+}

@@ -10,18 +10,16 @@ import ru.rutcampustrack.shared.outbox.OutboxStorage;
 /**
  * Test-side аналог {@code OutboxConfig.Publisher} (M02 Группа 5).
  *
- * <p>Прод-Publisher guarded {@code @Profile("!test")} — шедулер не стартует
- * в тестах. Этот config даёт {@link OutboxPublisherJob} bean (без
- * {@code @EnableScheduling}) — тесты дёргают {@code publishBatch()} вручную
- * чтобы выпихнуть pending rows в Rabbit.
+ * <p>Прод-Publisher guarded {@code @Profile("!test")} — шедулер не стартует в тестах. Этот config
+ * даёт {@link OutboxPublisherJob} bean (без {@code @EnableScheduling}) — тесты дёргают {@code
+ * publishBatch()} вручную чтобы выпихнуть pending rows в Rabbit.
  */
 @Configuration
 @Profile("test")
 public class OutboxTestConfig {
 
     @Bean
-    public OutboxPublisherJob outboxPublisherJob(OutboxStorage storage,
-                                                 OutboxEventSender sender) {
+    public OutboxPublisherJob outboxPublisherJob(OutboxStorage storage, OutboxEventSender sender) {
         return new OutboxPublisherJob(storage, sender);
     }
 }

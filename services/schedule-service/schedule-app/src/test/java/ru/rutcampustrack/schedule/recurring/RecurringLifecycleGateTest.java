@@ -1,6 +1,18 @@
 package ru.rutcampustrack.schedule.recurring;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import jakarta.persistence.EntityManager;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
@@ -14,26 +26,13 @@ import ru.rutcampustrack.schedule.item.ScheduleItemService;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.LessonGenerationService;
-import ru.rutcampustrack.schedule.lesson.RecurringLessonLifecycleWriter;
 import ru.rutcampustrack.schedule.lesson.LessonService;
+import ru.rutcampustrack.schedule.lesson.RecurringLessonLifecycleWriter;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
 import ru.rutcampustrack.schedule.subject.SubjectDeletedCascadeService;
-
-import java.time.Clock;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class RecurringLifecycleGateTest {
 
@@ -50,12 +49,18 @@ class RecurringLifecycleGateTest {
         when(context.getUserId()).thenReturn(42L);
         when(academic.isHeadman(42L, 10L)).thenReturn(true);
 
-        ScheduleItemService service = new ScheduleItemService(
-                items, academic, context, generation, Clock.systemUTC());
+        ScheduleItemService service =
+                new ScheduleItemService(items, academic, context, generation, Clock.systemUTC());
 
-        UpdateScheduleItemRequest request = new UpdateScheduleItemRequest(
-                20L, (short) 2, (short) 1, LocalTime.of(10, 0), LocalTime.of(11, 0),
-                WeekType.ALL, "B-202");
+        UpdateScheduleItemRequest request =
+                new UpdateScheduleItemRequest(
+                        20L,
+                        (short) 2,
+                        (short) 1,
+                        LocalTime.of(10, 0),
+                        LocalTime.of(11, 0),
+                        WeekType.ALL,
+                        "B-202");
         assertThatThrownBy(() -> service.updateScheduleItem(7L, request))
                 .isInstanceOf(RecurringLifecycleNotReadyException.class);
         assertThatThrownBy(() -> service.deleteScheduleItem(7L))
@@ -66,13 +71,25 @@ class RecurringLifecycleGateTest {
 
     @Test
     void legacyGenerationMethodsFailClosedBeforeAnyRepositoryMutation() {
-        LessonGenerationService service = new LessonGenerationService(
-                mock(LessonRepository.class), Clock.systemUTC(), mock(ApplicationEventPublisher.class));
+        LessonGenerationService service =
+                new LessonGenerationService(
+                        mock(LessonRepository.class),
+                        Clock.systemUTC(),
+                        mock(ApplicationEventPublisher.class));
 
-        assertThatThrownBy(() -> service.generateLessons(null, LocalDate.MIN, LocalDate.MAX, WeekType.ALL))
+        assertThatThrownBy(
+                        () ->
+                                service.generateLessons(
+                                        null, LocalDate.MIN, LocalDate.MAX, WeekType.ALL))
                 .isInstanceOf(RecurringLifecycleNotReadyException.class);
-        assertThatThrownBy(() -> service.regenerateFromDate(null, LocalDate.MIN, LocalDate.MAX,
-                WeekType.ALL, LocalDate.MIN))
+        assertThatThrownBy(
+                        () ->
+                                service.regenerateFromDate(
+                                        null,
+                                        LocalDate.MIN,
+                                        LocalDate.MAX,
+                                        WeekType.ALL,
+                                        LocalDate.MIN))
                 .isInstanceOf(RecurringLifecycleNotReadyException.class);
         assertThatThrownBy(() -> service.deletePlannedLessonsFromToday(7L))
                 .isInstanceOf(RecurringLifecycleNotReadyException.class);
@@ -85,7 +102,8 @@ class RecurringLifecycleGateTest {
         AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
         RequestContext context = mock(RequestContext.class);
         ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
-        ScheduleSemesterArchiveWriteFence archiveWriteFence = mock(ScheduleSemesterArchiveWriteFence.class);
+        ScheduleSemesterArchiveWriteFence archiveWriteFence =
+                mock(ScheduleSemesterArchiveWriteFence.class);
         RecurringLessonLifecycleWriter lifecycleWriter = mock(RecurringLessonLifecycleWriter.class);
         EntityManager entityManager = mock(EntityManager.class);
 
@@ -100,8 +118,16 @@ class RecurringLifecycleGateTest {
         when(context.getUserId()).thenReturn(42L);
         when(lifecycleWriter.restore(11L, 42L)).thenReturn(11L);
 
-        LessonService service = new LessonService(
-                lessons, items, academic, context, events, lifecycleWriter, entityManager, archiveWriteFence);
+        LessonService service =
+                new LessonService(
+                        lessons,
+                        items,
+                        academic,
+                        context,
+                        events,
+                        lifecycleWriter,
+                        entityManager,
+                        archiveWriteFence);
 
         service.restoreLesson(11L);
         verify(lifecycleWriter).restore(11L, 42L);
@@ -116,14 +142,16 @@ class RecurringLifecycleGateTest {
         OneOffLessonRepository oneOffs = mock(OneOffLessonRepository.class);
         LessonRepository lessons = mock(LessonRepository.class);
         ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
-        ScheduleSemesterArchiveWriteFence archiveWriteFence = mock(ScheduleSemesterArchiveWriteFence.class);
+        ScheduleSemesterArchiveWriteFence archiveWriteFence =
+                mock(ScheduleSemesterArchiveWriteFence.class);
         when(items.findBySubjectId(20L)).thenReturn(List.of(scheduleItem(7L)));
         when(oneOffs.findBySubjectId(20L)).thenReturn(List.of());
         when(lessons.findIdsBySubjectId(20L)).thenReturn(List.of(100L));
         when(lessons.countCanonicalReferencesBySubjectId(20L)).thenReturn(1L);
 
-        SubjectDeletedCascadeService service = new SubjectDeletedCascadeService(
-                items, oneOffs, lessons, events, archiveWriteFence);
+        SubjectDeletedCascadeService service =
+                new SubjectDeletedCascadeService(
+                        items, oneOffs, lessons, events, archiveWriteFence);
 
         assertThatThrownBy(() -> service.cascade(20L))
                 .isInstanceOf(RecurringLifecycleNotReadyException.class);

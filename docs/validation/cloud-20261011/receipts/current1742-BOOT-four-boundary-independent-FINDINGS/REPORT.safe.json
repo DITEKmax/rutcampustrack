@@ -1,0 +1,54 @@
+{
+  "schema": "BOOT_PRIVATE_CONSUMER_SEAM_INDEPENDENT_REVIEW_V1",
+  "utc": "2026-10-13T14:45:54.931669+00:00",
+  "verdict": "FINDINGS",
+  "findings": [
+    {
+      "id": "BOOT-BRIDGE-CLOSE-ONLY-CREATION-UNTRACKED",
+      "priority": 2,
+      "source": "private-bridge.py:147",
+      "cause": "Successful private write followed by close error returns no ownership identity and performs no cleanup",
+      "correction": "Guarded exact-leaf cleanup or closed ownership/disposition record; fail operation"
+    },
+    {
+      "id": "BOOT-BRIDGE-PARSER-CLOSE-MASKS-PRIMARY",
+      "priority": 2,
+      "source": "private-bridge.py:254",
+      "cause": "New direct-close adapter lets exact consumer close failure replace raw read/parse error and skip unlink",
+      "correction": "New adapter preserves primary and consumer cleanup; close-only fails; e7a6 immutable/one read"
+    },
+    {
+      "id": "BOOT-BRIDGE-CARRIER-READ-WITHOUT-FRESH-GUARD",
+      "priority": 2,
+      "source": "private-bridge.py:221",
+      "cause": "Carrier read can begin after marker completion crosses active deadline without fresh guard",
+      "correction": "Reuse current guard at private open/read after metadata with UTC last; unchanged caps"
+    },
+    {
+      "id": "BOOT-BRIDGE-CLOSED-PROJECTION-NOT-PERSISTED",
+      "priority": 2,
+      "source": "private-bridge.py:266",
+      "cause": "Projection only stdout/return while prescribed b78 child stdout is DEVNULL; carrier/raw then removed",
+      "correction": "Bounded exclusive SAFE projection receipt before carrier cleanup or concrete reviewed existing output capture; b78 unchanged"
+    }
+  ],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "helper_sha256": "d15666183a74ad6caacdd25f16815131d818f2b2a04b2a99786f105a29d1fd44",
+  "source_manifest_sha256": "d0d42f5e33d4e939073e43482d58dd551bda8922a26816ba0eb1d563eb2804e6",
+  "source_zip_sha256": "1cb866bec696828ce521b1fe4c375c9ae6c753605f8046f972b3705f49d645d0",
+  "checks": {
+    "selected_AST_RAM_positive_closed": 13,
+    "selected_AST_RAM_counterexamples": 3,
+    "Source_b78_output_counterexample": 1,
+    "public_source_pins": "PASS",
+    "old20_transport_choice": "REUSED_NOT_REREVIEWED",
+    "reviewer_checking_schema_failure": "PRESERVED_FIXED_ONLY_RECEIPT_SCRIPT"
+  },
+  "native": "NOT_RUN",
+  "cause": "UNKNOWN",
+  "FIRST3": "NOT_RUN",
+  "effects": "PublicSource/selectedAST RAM only; no actual private files/helper import/body/log/env/API/network/native/Source edits/children/B013",
+  "next": "Same-author bounded new sibling correction; targeted four-boundary recheck; Root fresh concrete b78/output grant after resource freeze released"
+}

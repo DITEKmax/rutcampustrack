@@ -1,0 +1,11 @@
+{
+  "reason": "Split source-rich rows by role to satisfy new-file size gate; same full evidence retained",
+  "count": 147,
+  "files": [
+    "story-details/admin.json",
+    "story-details/headman.json",
+    "story-details/student.json",
+    "story-details/system.json",
+    "story-details/teacher.json"
+  ]
+}

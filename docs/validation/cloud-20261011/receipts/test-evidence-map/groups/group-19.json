@@ -1,0 +1,1395 @@
+{
+  "group_id": "NOTIFICATION-PREFERENCES-HISTORY",
+  "criterion": "Mongo canonical preferences/legacy binding adoption, outage-defer and recipient-dated history/dedup",
+  "related_source_story_ids": [
+    "JS-SYSTEM-09",
+    "JS-SYSTEM-10",
+    "JS-SYSTEM-11",
+    "JS-STUDENT-WEB-06"
+  ],
+  "research_ids": [
+    "P03",
+    "P04",
+    "P05",
+    "P12",
+    "P13"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventIdempotentIT.java",
+      "class": "ru.rutcampustrack.notification.event.EventIdempotentIT",
+      "methods": [
+        {
+          "method": "duplicateDeliveryHistoryAndDurableIntentCommitOnceAcrossBothConsumerQueues",
+          "line": 158,
+          "assertion_evidence": [
+            {
+              "line": 163,
+              "expression": "assertThat(repository.findAll()).hasSize(2);"
+            },
+            {
+              "line": 164,
+              "expression": "assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isEqualTo(1);"
+            },
+            {
+              "line": 165,
+              "expression": "assertThat(claimsForConsumer(NotificationHistoryConsumer.CONSUMER_ID, id)).isEqualTo(1);"
+            },
+            {
+              "line": 167,
+              "expression": "assertThat(intent).isNotNull();"
+            },
+            {
+              "line": 168,
+              "expression": "assertThat(ru.rutcampustrack.notification.history.NotificationAudienceService.decode(intent)).containsOnlyKeys(43L);"
+            },
+            {
+              "line": 169,
+              "expression": "verify(webPushDeliveryService, never()).sendToGroup(anyLong(), anyString(), any(), any());"
+            }
+          ]
+        },
+        {
+          "method": "authorityFailureRetriesBeforeClaimThenSealedIntentCommitsOnce",
+          "line": 178,
+          "assertion_evidence": [
+            {
+              "line": 186,
+              "expression": "assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isEqualTo(1);"
+            },
+            {
+              "line": 187,
+              "expression": "assertThat(mongoTemplate.findById(id.toString(), org.bson.Document.class, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION)).isNotNull();"
+            },
+            {
+              "line": 188,
+              "expression": "assertThat(rabbitAdmin.getQueueInfo(\"<literal-redacted>\").getMessageCount()).isZero();"
+            },
+            {
+              "line": 191,
+              "expression": "await().during(ofSeconds(1)).atMost(ofSeconds(3)).untilAsserted(() -> assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isEqualTo(1));"
+            }
+          ]
+        },
+        {
+          "method": "exhaustedAuthorityFailureRollsBackClaimAndRetainsOriginalEventInDlq",
+          "line": 194,
+          "assertion_evidence": [
+            {
+              "line": 201,
+              "expression": "assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isZero();"
+            },
+            {
+              "line": 202,
+              "expression": "assertThat(rabbitAdmin.getQueueInfo(\"<literal-redacted>\").getMessageCount()).isEqualTo(1);"
+            },
+            {
+              "line": 204,
+              "expression": "assertThat(repository.findAll()).isEmpty();"
+            },
+            {
+              "line": 205,
+              "expression": "assertThat(mongoTemplate.getCollection(ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).countDocuments()).isZero();"
+            },
+            {
+              "line": 207,
+              "expression": "assertThat(retained.get(\"<literal-redacted>\")).isEqualTo(id.toString());"
+            }
+          ]
+        },
+        {
+          "method": "reminderDependencyFailureRetriesAndRetainsOnlyUnmarkedHistoryAndEnabledExternalIntent",
+          "line": 210,
+          "assertion_evidence": [
+            {
+              "line": 228,
+              "expression": "assertThat(claimsForConsumer(EventConsumer.CONSUMER_ID, id)).isEqualTo(1);"
+            },
+            {
+              "line": 230,
+              "expression": "assertThat(intent).isNotNull();"
+            },
+            {
+              "line": 231,
+              "expression": "assertThat(ru.rutcampustrack.notification.history.NotificationAudienceService.decode(intent)).containsOnlyKeys(44L);"
+            },
+            {
+              "line": 232,
+              "expression": "assertThat(claimsForConsumer(NotificationHistoryConsumer.CONSUMER_ID, id)).isEqualTo(1);"
+            },
+            {
+              "line": 233,
+              "expression": "assertThat(repository.findAll()).extracting(NotificationHistoryDocument::getUserId).containsExactlyInAnyOrder(43L, 44L);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "ContainerTestBase"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationAudienceAdmissionTest.java",
+      "class": "ru.rutcampustrack.notification.history.NotificationAudienceAdmissionTest",
+      "methods": [
+        {
+          "method": "transferUsesEachFactualGroupAndCompleteTeacherTupleWithoutInventingLegacyAssignment",
+          "line": 13,
+          "assertion_evidence": [
+            {
+              "line": 19,
+              "expression": "assertThat(requests).extracting(NotificationAudienceRequest::getGroupId).containsExactly(7L, 8L);"
+            },
+            {
+              "line": 20,
+              "expression": "assertThat(requests.getFirst().getLessonScopesList()).hasSize(1);"
+            },
+            {
+              "line": 21,
+              "expression": "assertThat(requests.getFirst().getLessonScopes(0).getAssignmentId()).isEqualTo(21);"
+            },
+            {
+              "line": 22,
+              "expression": "assertThat(requests.getLast().getLessonScopes(0).getLessonDate()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 24,
+              "expression": "assertThat(legacy.getGroupId()).isEqualTo(7);"
+            }
+          ]
+        },
+        {
+          "method": "responseEchoRolesAndPrivateOwnerAreValidatedBeforeUnion",
+          "line": 42,
+          "assertion_evidence": [
+            {
+              "line": 45,
+              "expression": "assertThat(request.getRequestOutcome()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 47,
+              "expression": "assertThat(NotificationAudienceClient.validate(request, valid)).containsEntry(12L, Set.of(\"<literal-redacted>\", \"<literal-redacted>\"));"
+            },
+            {
+              "line": 48,
+              "expression": "assertThatThrownBy(() -> NotificationAudienceClient.validate(request,"
+            },
+            {
+              "line": 49,
+              "expression": "response(request, recipient(11, \"<literal-redacted>\", \"<literal-redacted>\")))).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 50,
+              "expression": "assertThatThrownBy(() -> NotificationAudienceClient.validate(request,"
+            },
+            {
+              "line": 51,
+              "expression": "response(request, recipient(12, \"<literal-redacted>\")))).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 52,
+              "expression": "assertThatThrownBy(() -> NotificationAudienceClient.validate(request,"
+            },
+            {
+              "line": 53,
+              "expression": "response(request, recipient(12, \"<literal-redacted>\"), recipient(12, \"<literal-redacted>\")))).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 54,
+              "expression": "assertThatThrownBy(() -> NotificationAudienceClient.validate(request,"
+            }
+          ]
+        },
+        {
+          "method": "privateDecisionDetailsNeverEnterOtherRecipientsProjectionAndActionsUsePhysicalTarget",
+          "line": 61,
+          "assertion_evidence": [
+            {
+              "line": 65,
+              "expression": "assertThat(NotificationPayloadSnapshot.forRecipient(\"<literal-redacted>\", privatePayload, 12))"
+            },
+            {
+              "line": 67,
+              "expression": "assertThat(NotificationPayloadSnapshot.forRecipient(\"<literal-redacted>\", privatePayload, 11))"
+            },
+            {
+              "line": 72,
+              "expression": "assertThat(item.action().lessonId()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 73,
+              "expression": "assertThat(item.action().role()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 74,
+              "expression": "assertThat(new NotificationCatalog().present(document(NotificationType.SEMESTER_ACTIVATED,"
+            },
+            {
+              "line": 75,
+              "expression": "Map.of(\"<literal-redacted>\", 3L), \"<literal-redacted>\"), \"<literal-redacted>\").action()).isNull();"
+            },
+            {
+              "line": 76,
+              "expression": "assertThat(NotificationCatalog.typeIds()).hasSize(32);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerIT.java",
+      "class": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerIT",
+      "methods": [
+        {
+          "method": "requestedHistoryRetriesLookupAndKeepsOwnerAndCurrentHeadmanRowsOnCommittedReplay",
+          "line": 91,
+          "assertion_evidence": [
+            {
+              "line": 112,
+              "expression": "assertThat(all).hasSize(2).extracting(NotificationHistoryDocument::getUserId)"
+            },
+            {
+              "line": 114,
+              "expression": "assertThat(all).allSatisfy(doc -> {"
+            },
+            {
+              "line": 115,
+              "expression": "assertThat(doc.getEventId()).isEqualTo(envelope.get(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 116,
+              "expression": "assertThat(doc.getType()).isEqualTo(\"<literal-redacted>\".equals(eventType)"
+            },
+            {
+              "line": 118,
+              "expression": "assertThat(doc.getTraceId()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 119,
+              "expression": "assertThat(doc.getSentAt()).isNotNull();"
+            }
+          ]
+        },
+        {
+          "method": "groupFailureRollsBackClaimAndCommittedReplayKeepsReadState",
+          "line": 137,
+          "assertion_evidence": [
+            {
+              "line": 148,
+              "expression": "verify(audienceClient, atLeast(3)).resolve(eq(envelope)));"
+            },
+            {
+              "line": 150,
+              "expression": "assertThat(rabbitAdmin.getQueueInfo(\"<literal-redacted>\").getMessageCount())"
+            },
+            {
+              "line": 151,
+              "expression": ".isEqualTo(1));"
+            },
+            {
+              "line": 152,
+              "expression": "assertThat(repository.findByEventIdAndUserIdIn(eventId, List.of(42L, 43L))).isEmpty();"
+            },
+            {
+              "line": 155,
+              "expression": "assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isZero();"
+            },
+            {
+              "line": 156,
+              "expression": "assertThat(rabbitTemplate.receive(\"<literal-redacted>\")).isNotNull();"
+            },
+            {
+              "line": 162,
+              "expression": "assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isEqualTo(1L);"
+            }
+          ]
+        },
+        {
+          "method": "homeworkUpdatedUsesDatedAudienceSanitizedSnapshotAndIdempotentReplay",
+          "line": 196,
+          "assertion_evidence": [
+            {
+              "line": 218,
+              "expression": "assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isEqualTo(1L);"
+            },
+            {
+              "line": 220,
+              "expression": "assertThat(all).hasSize(2)"
+            },
+            {
+              "line": 223,
+              "expression": "assertThat(all).allSatisfy(document -> {"
+            },
+            {
+              "line": 224,
+              "expression": "assertThat(document.getType()).isEqualTo(NotificationType.HOMEWORK_UPDATED);"
+            },
+            {
+              "line": 225,
+              "expression": "assertThat(document.getPayload())"
+            },
+            {
+              "line": 239,
+              "expression": "verify(mongoTemplate, atLeastOnce()).exists(ArgumentMatchers.argThat(query -> {"
+            },
+            {
+              "line": 245,
+              "expression": "assertThat(repository.findByEventIdAndUserIdIn(eventId, List.of(42L, 43L))).hasSize(2);"
+            }
+          ]
+        },
+        {
+          "method": "oneOffCancellationKeepsDatedRecipientHistoryAndReadStateOnReplay",
+          "line": 252,
+          "assertion_evidence": [
+            {
+              "line": 266,
+              "expression": "assertThat(mongoTemplate.count(claimQuery, MongoIdempotencyStore.DEFAULT_COLLECTION)).isEqualTo(1L);"
+            },
+            {
+              "line": 268,
+              "expression": "assertThat(all).hasSize(2).extracting(NotificationHistoryDocument::getUserId)"
+            },
+            {
+              "line": 270,
+              "expression": "assertThat(all).allSatisfy(document -> {"
+            },
+            {
+              "line": 271,
+              "expression": "assertThat(document.getEventId()).isEqualTo(eventId);"
+            },
+            {
+              "line": 272,
+              "expression": "assertThat(document.getType()).isEqualTo(NotificationType.LESSON_CANCELLED);"
+            },
+            {
+              "line": 273,
+              "expression": "assertThat(document.getPayload()).isEqualTo(Map.of("
+            }
+          ]
+        },
+        {
+          "method": "groupBroadcastIsPersistedForAcademicMembers",
+          "line": 310,
+          "assertion_evidence": [
+            {
+              "line": 321,
+              "expression": "assertThat(all).hasSize(1);"
+            },
+            {
+              "line": 322,
+              "expression": "assertThat(all.get(0).getType()).isEqualTo(NotificationType.LESSON_STARTED);"
+            },
+            {
+              "line": 323,
+              "expression": "assertThat(all.get(0).getUserId()).isEqualTo(42L);"
+            },
+            {
+              "line": 325,
+              "expression": "verify(audienceClient, atLeastOnce()).resolve(eq(envelope));"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "ContainerTestBase"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryServiceTest.java",
+      "class": "ru.rutcampustrack.notification.history.NotificationHistoryServiceTest",
+      "methods": [
+        {
+          "method": "getUnreadCountDelegatesToRepository",
+          "line": 42,
+          "assertion_evidence": [
+            {
+              "line": 48,
+              "expression": "assertThat(result.count()).isEqualTo(7L);"
+            }
+          ]
+        },
+        {
+          "method": "markAsReadReturnsFalseWhenNothingUpdated",
+          "line": 51,
+          "assertion_evidence": [
+            {
+              "line": 57,
+              "expression": "assertThat(ok).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "markAsReadReturnsTrueOnUpdate",
+          "line": 60,
+          "assertion_evidence": [
+            {
+              "line": 66,
+              "expression": "assertThat(ok).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "markAllReadReturnsCount",
+          "line": 69,
+          "assertion_evidence": [
+            {
+              "line": 75,
+              "expression": "assertThat(count).isEqualTo(12L);"
+            }
+          ]
+        },
+        {
+          "method": "invalidateUnreadCountEvictsCache",
+          "line": 78,
+          "assertion_evidence": [
+            {
+              "line": 84,
+              "expression": "verify(cache).evict(99L);"
+            }
+          ]
+        },
+        {
+          "method": "invalidateUnreadCountTolerantToMissingCache",
+          "line": 87,
+          "assertion_evidence": [
+            {
+              "line": 94,
+              "expression": "verify(cache, never()).evict(anyLong());"
+            },
+            {
+              "line": 95,
+              "expression": "verify(cache, never()).evict(anyString());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationStateV2IT.java",
+      "class": "ru.rutcampustrack.notification.history.NotificationStateV2IT",
+      "methods": [
+        {
+          "method": "roleCommandsAreIsolatedAndUnreadReplayPreservesSentAtRetentionAndOrdering",
+          "line": 46,
+          "assertion_evidence": [
+            {
+              "line": 51,
+              "expression": "assertThat(inbox.count(student).count()).isEqualTo(1);"
+            },
+            {
+              "line": 52,
+              "expression": "assertThat(inbox.count(headman).count()).isEqualTo(1);"
+            },
+            {
+              "line": 54,
+              "expression": "assertThat(read.unreadCount()).isZero();"
+            },
+            {
+              "line": 55,
+              "expression": "assertThat(inbox.count(headman).count()).isEqualTo(1);"
+            },
+            {
+              "line": 58,
+              "expression": "assertThat(replay.item()).isEqualTo(unread.item());"
+            },
+            {
+              "line": 59,
+              "expression": "assertThat(unread.item().orderAt()).isEqualTo(NOW);"
+            }
+          ]
+        },
+        {
+          "method": "cursorIsBoundToUserRoleAndFilterAndLegacyNeverBackfillsHeadmanRole",
+          "line": 71,
+          "assertion_evidence": [
+            {
+              "line": 77,
+              "expression": "assertThat(page.items()).extracting(NotificationInboxDto.Item::id).containsExactly(first.getId());"
+            },
+            {
+              "line": 78,
+              "expression": "assertThat(inbox.list(context, 1, page.nextCursor(), false).items()).extracting(NotificationInboxDto.Item::id).containsExactly(second.getId());"
+            },
+            {
+              "line": 79,
+              "expression": "assertThatThrownBy(() -> inbox.list(context(11L, \"<literal-redacted>\"), 1, page.nextCursor(), false)).isInstanceOf(org.springframework.web.server.ResponseStatusException.class);"
+            },
+            {
+              "line": 80,
+              "expression": "assertThatThrownBy(() -> inbox.list(context(12L, \"<literal-redacted>\"), 1, page.nextCursor(), false)).isInstanceOf(org.springframework.web.server.ResponseStatusException.class);"
+            },
+            {
+              "line": 81,
+              "expression": "assertThatThrownBy(() -> inbox.list(context, 1, page.nextCursor(), true)).isInstanceOf(org.springframework.web.server.ResponseStatusException.class);"
+            }
+          ]
+        },
+        {
+          "method": "concurrentReadCommandsApplyOneRevisionAndSameCommandReplayDoesNotBump",
+          "line": 87,
+          "assertion_evidence": [
+            {
+              "line": 96,
+              "expression": "assertThat(results.get(0).get().item().revision()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 97,
+              "expression": "assertThat(results.get(1).get().item().revision()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 98,
+              "expression": "assertThat(mongo.findById(doc.getId(), NotificationHistoryDocument.class).getRoleViews().get(\"<literal-redacted>\").getRevision()).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "legacyOffMuteSurviveAndSplitTelegramIsIndependentWithAtomicRevisionConflict",
+          "line": 101,
+          "assertion_evidence": [
+            {
+              "line": 105,
+              "expression": "assertThat(old.splitChannels()).isTrue();"
+            },
+            {
+              "line": 106,
+              "expression": "assertThat(old.types().get(\"<literal-redacted>\").telegram()).isFalse();"
+            },
+            {
+              "line": 111,
+              "expression": "assertThat(saved.mutedUntil()).isEqualTo(NOW.plusSeconds(600));"
+            },
+            {
+              "line": 112,
+              "expression": "assertThat(preferences.appEnabled(11, \"<literal-redacted>\")).isFalse();"
+            },
+            {
+              "line": 116,
+              "expression": "assertThat(preferences.telegramEnabled(11, 101, \"<literal-redacted>\")).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "concurrentPreferenceSavesCommitOneWholeProfileAndLoserGets409",
+          "line": 123,
+          "assertion_evidence": [
+            {
+              "line": 139,
+              "expression": "assertThat(values.stream().filter(NotificationPreferencesV2Dto.class::isInstance)).hasSize(1);"
+            },
+            {
+              "line": 140,
+              "expression": "assertThat(values.stream().filter(NotificationPreferencesConflict.class::isInstance)).hasSize(1);"
+            },
+            {
+              "line": 142,
+              "expression": "assertThat(committed.types()).isIn(one, two);"
+            },
+            {
+              "line": 143,
+              "expression": "assertThat(committed.revision()).isNotEqualTo(initial.revision());"
+            }
+          ]
+        },
+        {
+          "method": "preferenceLegacyOffCannotSucceedAgainstProfileAdoptedAfterItsRead",
+          "line": 146,
+          "assertion_evidence": [
+            {
+              "line": 156,
+              "expression": "assertThatThrownBy(() -> legacy.updateForUser(11, off))"
+            },
+            {
+              "line": 157,
+              "expression": ".isInstanceOf(org.springframework.dao.TransientDataAccessResourceException.class);"
+            },
+            {
+              "line": 158,
+              "expression": "assertThat(mongo.findById(11L, Document.class, \"<literal-redacted>\").containsKey(\"<literal-redacted>\")).isTrue();"
+            },
+            {
+              "line": 160,
+              "expression": "assertThat(legacy.updateForUser(11, off).categories().get(\"<literal-redacted>\")).isFalse();"
+            },
+            {
+              "line": 162,
+              "expression": "assertThat(current.types().get(\"<literal-redacted>\").appPush()).isFalse();"
+            },
+            {
+              "line": 163,
+              "expression": "assertThat(current.types().get(\"<literal-redacted>\").appPush()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "preferenceAdoptionCannotCommitProfileBuiltBeforeSuccessfulLegacyOff",
+          "line": 168,
+          "assertion_evidence": [
+            {
+              "line": 179,
+              "expression": "assertThatThrownBy(() -> racedPreferences.get(11))"
+            },
+            {
+              "line": 180,
+              "expression": ".isInstanceOf(org.springframework.dao.TransientDataAccessResourceException.class);"
+            },
+            {
+              "line": 181,
+              "expression": "assertThat(legacyResponse.get().categories().get(\"<literal-redacted>\")).isFalse();"
+            },
+            {
+              "line": 182,
+              "expression": "assertThat(mongo.findById(11L, Document.class, \"<literal-redacted>\").containsKey(\"<literal-redacted>\")).isFalse();"
+            },
+            {
+              "line": 184,
+              "expression": "assertThat(current.types().get(\"<literal-redacted>\").appPush()).isFalse();"
+            },
+            {
+              "line": 185,
+              "expression": "assertThat(current.types().get(\"<literal-redacted>\").appPush()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "preferenceLegacyGetProjectsOnlyCanonicalAppAndUnchangedSavePreservesOff",
+          "line": 190,
+          "assertion_evidence": [
+            {
+              "line": 200,
+              "expression": "assertThat(shown.categories().get(\"<literal-redacted>\")).isFalse(); // mixed app category is conservative OFF"
+            },
+            {
+              "line": 201,
+              "expression": "assertThat(shown.categories().get(\"<literal-redacted>\")).isTrue(); // Telegram OFF does not change app projection"
+            },
+            {
+              "line": 204,
+              "expression": "assertThat(saved.categories()).isEqualTo(shown.categories());"
+            },
+            {
+              "line": 206,
+              "expression": "assertThat(current.types().get(\"<literal-redacted>\")).isEqualTo(types.get(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 207,
+              "expression": "assertThat(current.types().get(\"<literal-redacted>\").appPush()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "preferenceLegacyExplicitEnableKeepsUnifiedColumnsAndColors",
+          "line": 211,
+          "assertion_evidence": [
+            {
+              "line": 219,
+              "expression": "assertThat(legacy.getForUser(11).categories().get(\"<literal-redacted>\")).isFalse();"
+            },
+            {
+              "line": 220,
+              "expression": "assertThat(legacy.updateForUser(11, new ru.rutcampustrack.notification.contract.dto.preferences.UpdateNotificationPreferencesRequest("
+            },
+            {
+              "line": 221,
+              "expression": "Map.of(\"<literal-redacted>\", true), NOW.plusSeconds(600))).categories().get(\"<literal-redacted>\")).isTrue();"
+            },
+            {
+              "line": 223,
+              "expression": "assertThat(current.types().get(\"<literal-redacted>\")).isEqualTo(new NotificationPreferencesV2Dto.TypePreference(true, true, \"<literal-redacted>\"));"
+            },
+            {
+              "line": 224,
+              "expression": "assertThat(current.types().get(\"<literal-redacted>\")).isEqualTo(new NotificationPreferencesV2Dto.TypePreference(true, true, \"<literal-redacted>\"));"
+            }
+          ]
+        },
+        {
+          "method": "allRoleCatalogMigrationPreservesOldSplitOffMuteAndRejectsStale21Save",
+          "line": 237,
+          "assertion_evidence": [
+            {
+              "line": 248,
+              "expression": "assertThat(migrated.types()).hasSize(32);"
+            },
+            {
+              "line": 249,
+              "expression": "assertThat(migrated.revision()).isNotEqualTo(initial.revision());"
+            },
+            {
+              "line": 250,
+              "expression": "assertThat(migrated.types().get(\"<literal-redacted>\")).isEqualTo(new NotificationPreferencesV2Dto.TypePreference(false, true, \"<literal-redacted>\"));"
+            },
+            {
+              "line": 251,
+              "expression": "assertThat(migrated.types().get(\"<literal-redacted>\")).isEqualTo(new NotificationPreferencesV2Dto.TypePreference(false, true, \"<literal-redacted>\"));"
+            },
+            {
+              "line": 252,
+              "expression": "assertThat(migrated.mutedUntil()).isEqualTo(initial.mutedUntil());"
+            },
+            {
+              "line": 255,
+              "expression": "assertThatThrownBy(() -> preferences.update(11, new NotificationPreferencesV2Dto.Update(initial.revision(), true, stale)))"
+            }
+          ]
+        },
+        {
+          "method": "allRoleCatalogAdoptionCasNeverOverwritesConcurrentExplicitOff",
+          "line": 261,
+          "assertion_evidence": [
+            {
+              "line": 275,
+              "expression": "assertThatThrownBy(() -> preferences.get(11)).isInstanceOf(org.springframework.dao.TransientDataAccessResourceException.class);"
+            },
+            {
+              "line": 277,
+              "expression": "assertThat(migrated.types().get(\"<literal-redacted>\").appPush()).isFalse();"
+            },
+            {
+              "line": 278,
+              "expression": "assertThat(migrated.types().get(\"<literal-redacted>\").telegram()).isFalse();"
+            },
+            {
+              "line": 279,
+              "expression": "assertThat(migrated.types().get(\"<literal-redacted>\").appPush()).isFalse();"
+            },
+            {
+              "line": 280,
+              "expression": "assertThat(migrated.revision()).isNotEqualTo(initial.revision());"
+            }
+          ]
+        },
+        {
+          "method": "allRoleSnapshotAndRoleUnionRemainImmutableOnReplayWithoutBumpingReadOrSentAt",
+          "line": 283,
+          "assertion_evidence": [
+            {
+              "line": 291,
+              "expression": "assertThat(audience.snapshot(event)).isEqualTo(snapshot);"
+            },
+            {
+              "line": 292,
+              "expression": "assertThat(audience.current(event, snapshot)).containsOnlyKeys(11L).containsEntry(11L, Set.of(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 300,
+              "expression": "assertThat(replay.getPayload()).containsEntry(\"<literal-redacted>\", 51L);"
+            },
+            {
+              "line": 301,
+              "expression": "assertThat(replay.getSentAt()).isEqualTo(SENT);"
+            },
+            {
+              "line": 302,
+              "expression": "assertThat(replay.getRoleViews().get(\"<literal-redacted>\").getRevision()).isEqualTo(1);"
+            },
+            {
+              "line": 303,
+              "expression": "assertThat(replay.getRoleViews().get(\"<literal-redacted>\").getOrderAt()).isEqualTo(SENT);"
+            }
+          ]
+        },
+        {
+          "method": "allRoleIntentClaimRetriesAfterOutageAndProviderLeaseCannotBeReplayedByAnotherWorker",
+          "line": 307,
+          "assertion_evidence": [
+            {
+              "line": 316,
+              "expression": "assertThat(claimed).hasSize(1);"
+            },
+            {
+              "line": 319,
+              "expression": "assertThat(intents.claim()).isNull();"
+            },
+            {
+              "line": 322,
+              "expression": "assertThat(second.getInteger(\"<literal-redacted>\")).isEqualTo(2);"
+            },
+            {
+              "line": 323,
+              "expression": "assertThat(intents.startProvider(first, \"<literal-redacted>\")).isFalse();"
+            },
+            {
+              "line": 324,
+              "expression": "assertThat(intents.startProvider(second, \"<literal-redacted>\")).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "allRoleDispatcherUsesUserIdentityAndRechecksAuthorityBeforeProviderAfterDurableRetry",
+          "line": 332,
+          "assertion_evidence": [
+            {
+              "line": 350,
+              "expression": "verifyNoInteractions(provider);"
+            },
+            {
+              "line": 351,
+              "expression": "assertThat(mongo.findById(event.get(\"<literal-redacted>\"), Document.class, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).getString(\"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 356,
+              "expression": "verify(provider).sendToSubscription(eq(teacher), eq(\"<literal-redacted>\"), argThat(item -> item.action().role().equals(\"<literal-redacted>\")));"
+            },
+            {
+              "line": 357,
+              "expression": "verify(provider, never()).sendToSubscription(eq(revoked), anyString(), any());"
+            },
+            {
+              "line": 358,
+              "expression": "verify(subs, never()).findAllByGroupId(anyLong());"
+            },
+            {
+              "line": 359,
+              "expression": "assertThat(mongo.findById(event.get(\"<literal-redacted>\"), Document.class, ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).getString(\"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "allRoleClaimHistoryAndIntentRollbackTogetherAndReplayCommitsOneIntent",
+          "line": 362,
+          "assertion_evidence": [
+            {
+              "line": 379,
+              "expression": "assertThatThrownBy(() -> transactions.executeWithoutResult(status -> consumer.onEvent(event))).isInstanceOf(IllegalStateException.class);"
+            },
+            {
+              "line": 380,
+              "expression": "assertThat(mongo.count(new Query(), NotificationHistoryDocument.class)).isZero();"
+            },
+            {
+              "line": 381,
+              "expression": "assertThat(mongo.getCollection(NotificationAudienceService.COLLECTION).countDocuments()).isZero();"
+            },
+            {
+              "line": 382,
+              "expression": "assertThat(mongo.getCollection(ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION).countDocuments()).isZero();"
+            },
+            {
+              "line": 386,
+              "expression": "assertThat(mongo.count(new Query(), NotificationHistoryDocument.class)).isEqualTo(1);"
+            },
+            {
+              "line": 387,
+              "expression": "assertThat(mongo.getCollection(ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).countDocuments()).isEqualTo(1);"
+            },
+            {
+              "line": 388,
+              "expression": "verify(push, never()).sendToSubscription(any(), anyString(), any());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "Clock"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/DurableNotificationPreferencesIT.java",
+      "class": "ru.rutcampustrack.notification.preferences.DurableNotificationPreferencesIT",
+      "methods": [
+        {
+          "method": "authorityOutageRollsBackEventClaimBeforeEnqueueAndReplayAdmitsOnce",
+          "line": 128,
+          "assertion_evidence": [
+            {
+              "line": 134,
+              "expression": "assertThatThrownBy(() -> consumer.onEvent(envelope)).isInstanceOf(TransientDataAccessResourceException.class);"
+            },
+            {
+              "line": 135,
+              "expression": "assertThat(mongo.getCollection(ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION)"
+            },
+            {
+              "line": 137,
+              "expression": "verifyNoInteractions(messaging);"
+            },
+            {
+              "line": 138,
+              "expression": "verify(webPush, never()).sendToGroup(anyLong(), anyString(), anyMap(), anySet());"
+            },
+            {
+              "line": 142,
+              "expression": "assertThat(mongo.getCollection(ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore.DEFAULT_COLLECTION)"
+            },
+            {
+              "line": 143,
+              "expression": ".countDocuments()).isEqualTo(1);"
+            },
+            {
+              "line": 144,
+              "expression": "assertThat(mongo.getCollection(ru.rutcampustrack.notification.push.NotificationPushIntentStore.COLLECTION).countDocuments()).isEqualTo(1);"
+            },
+            {
+              "line": 145,
+              "expression": "assertThat(mongo.getCollection(\"<literal-redacted>\").countDocuments()).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "concurrentSameEventClaimCommitsOneEffectAndLoserRetriesSafely",
+          "line": 149,
+          "assertion_evidence": [
+            {
+              "line": 174,
+              "expression": "assertThat(List.of(futures.get(0).get(), futures.get(1).get())).containsExactlyInAnyOrder(true, false);"
+            },
+            {
+              "line": 176,
+              "expression": "assertThat(attempts.get()).isGreaterThanOrEqualTo(3);"
+            },
+            {
+              "line": 177,
+              "expression": "assertThat(mongo.getCollection(claims).countDocuments()).isEqualTo(1);"
+            },
+            {
+              "line": 178,
+              "expression": "assertThat(mongo.getCollection(\"<literal-redacted>\").countDocuments()).isEqualTo(1);"
+            },
+            {
+              "line": 180,
+              "expression": "assertThat(duplicate).isFalse();"
+            },
+            {
+              "line": 181,
+              "expression": "assertThat(mongo.getCollection(\"<literal-redacted>\").countDocuments()).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "adoptedChoicesSurviveRedisLossAndDoNotReimportOverMongo",
+          "line": 184,
+          "assertion_evidence": [
+            {
+              "line": 190,
+              "expression": "assertThat(before.eligible()).isFalse();"
+            },
+            {
+              "line": 191,
+              "expression": "assertThat(before.globalEnabled()).isFalse();"
+            },
+            {
+              "line": 194,
+              "expression": "assertThat(after).isEqualTo(before);"
+            },
+            {
+              "line": 195,
+              "expression": "assertThat(canonical.isEnabledForUser(11L, \"<literal-redacted>\")).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "neededLegacyOutageNeverDefaultsButExistingMongoDoesNotConsultRedis",
+          "line": 198,
+          "assertion_evidence": [
+            {
+              "line": 203,
+              "expression": "assertThat(canonical.getForUser(11).categories()).containsEntry(\"<literal-redacted>\", false);"
+            },
+            {
+              "line": 204,
+              "expression": "assertThatThrownBy(() -> canonical.getForUser(12)).isInstanceOf(TransientDataAccessResourceException.class);"
+            },
+            {
+              "line": 205,
+              "expression": "assertThat(mongo.findById(12L, Document.class, NotificationPreferencesStore.USERS)).isNull();"
+            }
+          ]
+        },
+        {
+          "method": "privateRouteRejectsMissingCredentialWrongBindingAndUnavailableAuthority",
+          "line": 208,
+          "assertion_evidence": [
+            {
+              "line": 213,
+              "expression": "mvc.perform(get(route)).andExpect(status().isUnauthorized());"
+            },
+            {
+              "line": 214,
+              "expression": "mvc.perform(get(route).header(\"<literal-redacted>\", token + \"<literal-redacted>\")).andExpect(status().isUnauthorized());"
+            },
+            {
+              "line": 215,
+              "expression": "verifyNoInteractions(binding);"
+            },
+            {
+              "line": 216,
+              "expression": "assertThat(mongo.getCollection(NotificationPreferencesStore.TELEGRAM).countDocuments()).isZero();"
+            },
+            {
+              "line": 218,
+              "expression": ".andExpect(status().isOk()).andExpect(jsonPath(\"<literal-redacted>\").value(11))"
+            },
+            {
+              "line": 219,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\").value(true));"
+            },
+            {
+              "line": 222,
+              "expression": ".andExpect(status().isConflict());"
+            },
+            {
+              "line": 226,
+              "expression": ".andExpect(status().isServiceUnavailable());"
+            }
+          ]
+        },
+        {
+          "method": "concurrentCallbackTogglesAndReplaysLinearizeWithoutLostUpdates",
+          "line": 229,
+          "assertion_evidence": [
+            {
+              "line": 239,
+              "expression": "assertThat(bot.get(11, 101, null).globalEnabled()).isTrue();"
+            },
+            {
+              "line": 242,
+              "expression": "assertThat(bot.get(11, 101, null).globalEnabled()).isTrue();"
+            },
+            {
+              "line": 243,
+              "expression": "assertThat(mongo.getCollection(NotificationPreferencesStore.RECEIPTS).countDocuments()).isEqualTo(2);"
+            }
+          ]
+        },
+        {
+          "method": "receiptIsAtomicAndReplayDoesNotToggleOrExtendMuteAndRechecksBinding",
+          "line": 246,
+          "assertion_evidence": [
+            {
+              "line": 249,
+              "expression": "assertThat(first.categories().get(\"<literal-redacted>\")).isFalse();"
+            },
+            {
+              "line": 250,
+              "expression": "assertThat(bot.update(11, 101, toggle)).isEqualTo(first);"
+            },
+            {
+              "line": 251,
+              "expression": "assertThatThrownBy(() -> bot.update(11, 101, command(\"<literal-redacted>\", TOGGLE_CATEGORY, \"<literal-redacted>\", null, null)))"
+            },
+            {
+              "line": 252,
+              "expression": ".isInstanceOf(ResponseStatusException.class);"
+            },
+            {
+              "line": 255,
+              "expression": "assertThat(bot.update(11, 101, mute).mutedUntil()).isEqualTo(muted.mutedUntil());"
+            },
+            {
+              "line": 257,
+              "expression": "assertThatThrownBy(() -> bot.update(11, 101, toggle)).isInstanceOf(ResponseStatusException.class);"
+            }
+          ]
+        },
+        {
+          "method": "failedBootstrapAndReceiptInsertionRollbackMarkerFacetAndMutation",
+          "line": 261,
+          "assertion_evidence": [
+            {
+              "line": 264,
+              "expression": "assertThatThrownBy(() -> bot.get(11, 101, \"<literal-redacted>\")).isInstanceOf(TransientDataAccessResourceException.class);"
+            },
+            {
+              "line": 265,
+              "expression": "assertThat(mongo.findById(101L, Document.class, NotificationPreferencesStore.LEGACY_OWNERS)).isNull();"
+            },
+            {
+              "line": 266,
+              "expression": "assertThat(mongo.findById(\"<literal-redacted>\", Document.class, NotificationPreferencesStore.TELEGRAM)).isNull();"
+            },
+            {
+              "line": 271,
+              "expression": "assertThatThrownBy(() -> bot.update(11, 101, command(\"<literal-redacted>\", TOGGLE_GLOBAL, null, null, null)))"
+            },
+            {
+              "line": 272,
+              "expression": ".isInstanceOf(TransientDataAccessResourceException.class);"
+            },
+            {
+              "line": 273,
+              "expression": "assertThat(mongo.findById(\"<literal-redacted>\", Document.class, NotificationPreferencesStore.TELEGRAM).getBoolean(\"<literal-redacted>\")).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "rebindCannotCopyLegacyFacetAndPartialConcurrentPatchesDoNotLoseFields",
+          "line": 276,
+          "assertion_evidence": [
+            {
+              "line": 278,
+              "expression": "assertThat(bot.get(11, 101, null).globalEnabled()).isFalse();"
+            },
+            {
+              "line": 279,
+              "expression": "assertThat(bot.get(12, 101, null).globalEnabled()).isTrue();"
+            },
+            {
+              "line": 280,
+              "expression": "assertThat(bot.get(11, 101, null).globalEnabled()).isFalse();"
+            },
+            {
+              "line": 290,
+              "expression": "assertThat(canonical.getForUser(11).categories()).containsEntry(\"<literal-redacted>\", false).containsEntry(\"<literal-redacted>\", false);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": true,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "mongo",
+        "redis"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:notification-service:notification-app:integrationTest --tests ru.rutcampustrack.notification.event.EventIdempotentIT --tests ru.rutcampustrack.notification.history.NotificationHistoryConsumerIT --tests ru.rutcampustrack.notification.history.NotificationStateV2IT --tests ru.rutcampustrack.notification.preferences.DurableNotificationPreferencesIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/notification-service/notification-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:notification-service:notification-app:test --tests ru.rutcampustrack.notification.history.NotificationAudienceAdmissionTest --tests ru.rutcampustrack.notification.history.NotificationHistoryServiceTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/notification-service/notification-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:notification-service:notification-app:integrationTest",
+      ":services:notification-service:notification-app:test"
+    ],
+    "command_if_java": "./gradlew :services:notification-service:notification-app:integrationTest :services:notification-service:notification-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "Real Mongo/Redis own state; gRPC audience and WebPush/STOMP often mocked. Current recipient/binding/revoke external delivery requires bot/provider path beyond history assertions.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

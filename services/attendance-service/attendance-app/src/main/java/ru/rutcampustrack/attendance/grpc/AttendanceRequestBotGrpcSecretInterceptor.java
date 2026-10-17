@@ -1,6 +1,5 @@
 package ru.rutcampustrack.attendance.grpc;
 
-import io.grpc.CallOptions;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
@@ -29,12 +28,16 @@ public class AttendanceRequestBotGrpcSecretInterceptor implements ServerIntercep
             return next.startCall(call, headers);
         }
         String provided = headers.get(SECRET_KEY);
-        if (expectedSecret == null || expectedSecret.isBlank()
-                || provided == null || !java.security.MessageDigest.isEqual(
-                provided.getBytes(java.nio.charset.StandardCharsets.UTF_8),
-                expectedSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
-            call.close(Status.UNAUTHENTICATED.withDescription("Invalid or missing gRPC secret"), new Metadata());
-            return new ServerCall.Listener<>() { };
+        if (expectedSecret == null
+                || expectedSecret.isBlank()
+                || provided == null
+                || !java.security.MessageDigest.isEqual(
+                        provided.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                        expectedSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
+            call.close(
+                    Status.UNAUTHENTICATED.withDescription("Invalid or missing gRPC secret"),
+                    new Metadata());
+            return new ServerCall.Listener<>() {};
         }
         return next.startCall(call, headers);
     }

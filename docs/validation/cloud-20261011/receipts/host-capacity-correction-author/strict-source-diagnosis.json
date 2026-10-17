@@ -1,0 +1,324 @@
+{
+  "at": "2026-10-12T05:35:34.175105+00:00",
+  "status": "READ_ONLY_EXACT_STRICT_PROPOSAL",
+  "reference_head": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+  "reference_tracked_clean": true,
+  "minimum_file_bytes": 32768,
+  "scopes": [
+    {
+      "scope": "client-current-artifacts",
+      "head": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "tracked_clean_before_after": true,
+      "candidate_count": 702,
+      "allocated_bytes": 282615808,
+      "already_same_inode_count": 0,
+      "exclusion_counts": {
+        "protected component": 2134,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1
+      },
+      "is_additional_scope": false
+    },
+    {
+      "scope": "np01-config",
+      "head": "579b491847991b20a88986797c1c3baeb0272b7b",
+      "tracked_clean_before_after": true,
+      "candidate_count": 672,
+      "allocated_bytes": 85815296,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1831,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": false
+    },
+    {
+      "scope": "np01-contract",
+      "head": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+      "tracked_clean_before_after": true,
+      "candidate_count": 672,
+      "allocated_bytes": 85815296,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1831,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1
+      },
+      "is_additional_scope": false
+    },
+    {
+      "scope": "security-fingerprint",
+      "head": "2a1c1f82b3b2a06daf1f666478d796e0a55e3775",
+      "tracked_clean_before_after": true,
+      "candidate_count": 682,
+      "allocated_bytes": 86491136,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1831,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": false
+    },
+    {
+      "scope": "delivery",
+      "head": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+      "tracked_clean_before_after": true,
+      "candidate_count": 675,
+      "allocated_bytes": 81481728,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1206,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": false
+    },
+    {
+      "scope": "file-boundaries",
+      "head": "c73ef351d1a1b794e600bcdec2e8f8b282c2e558",
+      "tracked_clean_before_after": true,
+      "candidate_count": 678,
+      "allocated_bytes": 81780736,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1452,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": false
+    },
+    {
+      "scope": "gateway-claims",
+      "head": "2003948d83b2603967aa29f6434217c2a29453e1",
+      "tracked_clean_before_after": true,
+      "candidate_count": 677,
+      "allocated_bytes": 81682432,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1532,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": false
+    },
+    {
+      "scope": "recovery",
+      "head": "bd430a37e689a523a227ac85b7ac0c4018629efb",
+      "tracked_clean_before_after": true,
+      "candidate_count": 677,
+      "allocated_bytes": 81682432,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1532,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": false
+    },
+    {
+      "scope": "renderer-files",
+      "head": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+      "tracked_clean_before_after": true,
+      "candidate_count": 674,
+      "allocated_bytes": 81440768,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1206,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": false
+    },
+    {
+      "scope": "auth-generator",
+      "head": "381543370f08c2251daa00e80c16e3d441cfe072",
+      "tracked_clean_before_after": true,
+      "candidate_count": 677,
+      "allocated_bytes": 81682432,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1532,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": false
+    },
+    {
+      "scope": "ci-evidence",
+      "head": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "tracked_clean_before_after": true,
+      "candidate_count": 677,
+      "allocated_bytes": 81682432,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1532,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": false
+    },
+    {
+      "scope": "auth-gateway-test-deps",
+      "head": "6d5c1c58c3b4ba6d1b43a715535f8e08dbb682ee",
+      "tracked_clean_before_after": true,
+      "candidate_count": 677,
+      "allocated_bytes": 81682432,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1532,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": true
+    },
+    {
+      "scope": "data-lecture",
+      "head": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "tracked_clean_before_after": true,
+      "candidate_count": 676,
+      "allocated_bytes": 81637376,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1452,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": true
+    },
+    {
+      "scope": "exports",
+      "head": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+      "tracked_clean_before_after": true,
+      "candidate_count": 664,
+      "allocated_bytes": 80764928,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1370,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": true
+    },
+    {
+      "scope": "notification-provider",
+      "head": "d674ea1ff1d26bf40f2585e0a3438c1896e60a1b",
+      "tracked_clean_before_after": true,
+      "candidate_count": 676,
+      "allocated_bytes": 81637376,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1452,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": true
+    },
+    {
+      "scope": "security",
+      "head": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+      "tracked_clean_before_after": true,
+      "candidate_count": 675,
+      "allocated_bytes": 81485824,
+      "already_same_inode_count": 32,
+      "exclusion_counts": {
+        "protected component": 1206,
+        "private credential/env/key": 4,
+        "canonical generated OpenAPI snapshot": 6,
+        "executable/generated binary": 1,
+        "generated header": 1
+      },
+      "is_additional_scope": true
+    }
+  ],
+  "candidate_count": 10831,
+  "unique_countable_inodes": 10831,
+  "unique_countable_allocated_bytes": 1519378432,
+  "all_nlink1": true,
+  "same_device_SHA_size_mode_UID_GID": true,
+  "no_symlink_ancestry": true,
+  "excluded_components": [
+    ".agent",
+    ".agents",
+    ".aws",
+    ".codex",
+    ".git",
+    ".gradle",
+    ".venv",
+    "backup",
+    "backups",
+    "build",
+    "cache",
+    "caches",
+    "certificates",
+    "certs",
+    "coverage",
+    "data",
+    "dist",
+    "env",
+    "evidence",
+    "generated",
+    "keys",
+    "node_modules",
+    "playwright-report",
+    "receipts",
+    "secrets",
+    "target",
+    "test-reports",
+    "test-results",
+    "validation",
+    "venv"
+  ],
+  "private_regex": "(^|/)(\\.env[^/]*|\\.npmrc|\\.pypirc|credentials?)(/|$)|\\.(pem|key|p12|pfx|jks|keystore)$",
+  "excluded_executable_suffixes": [
+    ".a",
+    ".class",
+    ".db",
+    ".dll",
+    ".exe",
+    ".jar",
+    ".o",
+    ".pyc",
+    ".so",
+    ".sqlite"
+  ],
+  "generated_header_regex": "(?im)^\\s*(?://|#|/\\*|\\*)\\s*(?:code generated|generated by|automatically generated|do not edit)|@(?:javax\\.annotation\\.)?Generated\\(",
+  "active_or_unproven_excluded_scopes": [
+    "Root",
+    "np01-domain-bot",
+    "ci-academic-heap",
+    "client-format",
+    "client-runtime"
+  ],
+  "actual_recovered_bytes": 0,
+  "resource_mutation": false
+}

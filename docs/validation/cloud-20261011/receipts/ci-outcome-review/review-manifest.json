@@ -1,0 +1,72 @@
+{
+  "reviewed_commit": "b6114f4084f757d04d166ab995b57b4f4697042f",
+  "verdict": "CHANGES_REQUESTED",
+  "created_at": "2026-10-11T22:36:10.213711+00:00",
+  "files": [
+    {
+      "file": "checks.json",
+      "bytes": 2705,
+      "sha256": "3c3ad88a1c59dd1a26c562383f21b1f7363cdd1b1579c66770036a15d5cd4c59",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "evidence-reconciliation.json",
+      "bytes": 8610,
+      "sha256": "9fa28c7556d92a3e8e5ca44d289fd7315e0175877606ccd6c18225b5cc1517fa",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "findings.md",
+      "bytes": 4751,
+      "sha256": "18d9a25c64be778333adcddb4f5d85ee5523fbf58001078e39670fa0c0629bf5",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "opened-sources.json",
+      "bytes": 6063,
+      "sha256": "78479df144b76f9aa7ea2017362cc97d0db4b9d9fcaa788764050f249080d98e",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "source-counterexamples.json",
+      "bytes": 2214,
+      "sha256": "56dc77158f0ba59bcf85546bef22b2645b1bcc5d73f046f1910747e0991d0c7c",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "source-equivalence.json",
+      "bytes": 3857,
+      "sha256": "2fc21f1169fe3047ba250d7002a12ae07212d7eeb0ec7290799e91b6e7479dde",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    },
+    {
+      "file": "verdict.json",
+      "bytes": 3486,
+      "sha256": "38afd49e89b2f1dcbe14920ad4bb04b5b4af2c0dec5397aa8edfa55d2ce06c58",
+      "sensitive_scan": {
+        "compact_jwt": 0,
+        "private_key_pem": 0
+      }
+    }
+  ],
+  "immutability": "Review outputs frozen; full exact hashes recorded, self hash returned separately.",
+  "sensitive_scan": "PASS"
+}

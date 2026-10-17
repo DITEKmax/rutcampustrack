@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-12T00:49:35.776565+00:00",
+  "phase": "ebsr-affected-unit-2",
+  "head": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "wipHash": "dcbb452a806d114e0e90cb6db0e2636781a2e2b93f9ada5ae101c15ba6748fed",
+  "command": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    ":services:auth-service:auth-app:test",
+    "--tests",
+    "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+    "--rerun",
+    ":services:api-gateway:test",
+    "--tests",
+    "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+    "--tests",
+    "ru.rutcampustrack.gateway.security.ExportJobWorkerTest",
+    "--rerun",
+    "--continue",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m"
+  ],
+  "lease": "EXPORTS3",
+  "status": "RUNNING",
+  "sourceManifest": "ebsr-affected-unit-2-source-manifest.json",
+  "sourceManifestSHA256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+  "testFixtureControls": {}
+}

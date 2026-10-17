@@ -1,0 +1,61 @@
+{
+  "status": "NATIVE_VERIFIED_OWN_TWO_COMMIT_INTEGRATION_READY",
+  "ownHead": "6a087581fb84bf3edee55838e61c3e6cc5eb84ce",
+  "semanticCommit": "bccf07d5218b03492add5457352ebdaf1821bf01",
+  "mechanicalCommit": "6a087581fb84bf3edee55838e61c3e6cc5eb84ce",
+  "baseOwnHead": "0dc311c6fe89c71592a47b539eabce1a59d9d047",
+  "sourceProducerRoot": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "executionRoot": "9176c680f4f810816792b4e21f6e60f387f38740",
+  "scope": [
+    "tests/e2e/fixtures/artifact-privacy.ts",
+    "tests/e2e/fixtures/safe-reporter.ts"
+  ],
+  "gitModes": "100644",
+  "finalSource": {
+    "tests/e2e/fixtures/artifact-privacy.ts": {
+      "sha256": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82",
+      "bytes": 3822,
+      "physicalMode": "0o600",
+      "nlink": 1
+    },
+    "tests/e2e/fixtures/safe-reporter.ts": {
+      "sha256": "c69e4c46c2a03a285b11af11c03337bd2fd6472707148dd43bd4b928a757491c",
+      "bytes": 13224,
+      "physicalMode": "0o600",
+      "nlink": 1
+    }
+  },
+  "sourceReview": "independentcorepriority14ed/c300 +Rootcanonicalbindinginverse review (reader/maps/guards/wipe/outputs unchanged); no fullsemanticreview reset",
+  "nativeActual": {
+    "session": 62006,
+    "nativeExit": 0,
+    "acceptedPhases": 9,
+    "knownBirths": 19,
+    "allAbsentReaped": true,
+    "TMPremoved": true,
+    "immutablePinsIntact": true,
+    "lease": "RELEASED",
+    "reportPath": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/actual-node02/REPORT.safe.json",
+    "reportSHA256": "537f7c79c2ea9a8b3a20abeff226d9f2c7b7834ab29a3740b91cee6244d57cd5",
+    "archiveSHA256": "53e67bd8fcff0967d46faa2c217d9d21bf0e4623b8fb4e61c115af295c456548",
+    "old78037FAILPreserved": true
+  },
+  "mechanicalEquivalence": {
+    "path": "/workspace/scratch/rct-validation/client_real_acceptance/ci-reported-hints-core-priority-r1/actual-node02/mechanical-equivalence.safe.json",
+    "sha256": "5c49f4ee77f9eea072b3a71960f9e99cf896b49b8968fab224af6daed47c8a83",
+    "diffSHA256": "f3a37b7e4ca2f8247b207e85e9f00a2097f257d9aec37650a878f9325393ba64",
+    "qualification": "exactinverse Sourcebytes; only3linewrap changes+one removedtrailing callargument comma, no literal/operator/comment/directive changes; notclaiming rawAST/emit byteeq; beforeparse0+afterTS5.9.3errors0"
+  },
+  "checks": "causalpriorityRED5/fail4\u2192GREEN5; oldmissinghintRED4/fail2\u2192GREEN23; actualpublicworker3 failuresretained+UNKNOWN0/privateMarkerabsent; originalproducer/interrupt/missingguardPASS;formatter2check0;strictTS5.9.3errors0",
+  "reportedHints": "UNTRUSTEDmetadata alwaysUNKNOWN0/core factsprioritized; sourcechannel8/decodefirst32/max1class+1frame. No actualerrorclass/origin/operationauthentication.",
+  "actualClientAcceptance": false,
+  "actualCIcause": "UNKNOWN",
+  "D002ClockHookENDNotSuccessProof": true,
+  "rootCollectorCompanion": "Root solewriter32de Sourceapproved/UNBOUND; bindtoactualfinal reporter enum+UNKNOWN0 validation beforeCI collection",
+  "rootHooksStillRequired": true,
+  "authorInstalledExecutableGitHooks": 0,
+  "hooksBypassed": false,
+  "ownClean": true,
+  "pushed": false,
+  "noRootGlobalConfigWorkflowProtocolApiVendorLockAngularWrites": true
+}

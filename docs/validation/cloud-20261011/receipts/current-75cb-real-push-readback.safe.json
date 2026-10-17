@@ -1,0 +1,27 @@
+{
+  "producer": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "local_remote_PR_head_equal": true,
+  "pr": {
+    "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+    "head": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da",
+    "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "draft": true,
+    "state": "open",
+    "merged": false,
+    "advertised_merge": "74330241e4377166fa65b9ccee87433e15d319da",
+    "actual_checkout": "UNKNOWN_PENDING_CURRENT_CI"
+  },
+  "push": {
+    "supervisor": 653542,
+    "session": 39725,
+    "native_exit": 0,
+    "reaped": true
+  },
+  "source_delta_parent_d3a9": [
+    ".github/workflows/ci.yml"
+  ],
+  "after_actionlint": "PASS",
+  "ordinary_hooks": "all6PASS",
+  "acceptance": "IN_PROGRESS; current actual CI pending"
+}

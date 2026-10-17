@@ -1,0 +1,13 @@
+{
+  "artifact": 11880711036,
+  "run": 38536484758,
+  "digest": "sha256:e0e84e3dbbac820d2fb2bcebb08ff4dfbb41fa58fec7b62c8e574889686c2949",
+  "bytes": 291,
+  "checkout": {
+    "checkout_sha": "e78a50d6638c353f003f3012115eaa992e8c4359",
+    "tree_sha": "a8c6d5a31cdd5d1a3086e8ccedfca0868871d734",
+    "producer_head_sha": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9"
+  },
+  "merge_parent_and_tree_join": "PASS official Git commit parents=[main3908,producer0648], tree matches exactlocal HEAD tree; mainancestor verified",
+  "private_logs_or_bodies_read": false
+}

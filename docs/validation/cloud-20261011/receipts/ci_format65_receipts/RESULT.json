@@ -1,0 +1,42 @@
+{
+  "utc": "2026-10-12T10:59:33.198278+00:00",
+  "producer": "65e0baeff26ac5673420bfc55e51a75085636423",
+  "actual_checkout": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+  "workflow_verdicts": {
+    "CI": "FAIL_RUFF_FORMAT_1",
+    "Coverage": "FAIL_VUE_SOURCE_ORACLE_1",
+    "Security": "SUCCESS_EXECUTED3_BUILTIMAGES_SKIP",
+    "OpenAPI": "SUCCESS"
+  },
+  "jobs_executed": 30,
+  "java_native": {
+    "passed": 2596,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 3
+  },
+  "broker_finite7": "PASS_SOURCE_BOUND_CURRENT_NATIVE",
+  "Chromium": {
+    "clean_passed": 9,
+    "flaky": 0,
+    "seconds": 17.0,
+    "real_backend": true
+  },
+  "PythonCoverage": {
+    "passed": 415,
+    "seconds": 33.93
+  },
+  "VueCoverage": {
+    "passed": 1027,
+    "failed": 1
+  },
+  "current_finite23_cases37_methods": "PASS_REQUALIFIED",
+  "subjects3": "PASS_REQUALIFIED",
+  "whole_product_acceptance": "INCOMPLETE",
+  "safe_only": true,
+  "private_URL_metadata_remaining": false,
+  "local_runtime_source_shared_writes": false,
+  "active_sessions": [],
+  "selected": "Sol6.1/high",
+  "actual": "UNKNOWN"
+}

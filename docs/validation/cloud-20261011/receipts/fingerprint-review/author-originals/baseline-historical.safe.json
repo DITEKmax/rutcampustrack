@@ -1,0 +1,27 @@
+{
+  "command": [
+    "/workspace/scratch/rct-validation/security_fingerprint/gitleaks",
+    "git",
+    "--no-banner",
+    "--no-color",
+    "--redact=100",
+    "--report-format=json",
+    "--report-path=/workspace/scratch/rct-validation/security_fingerprint/baseline-historical.private-redacted.json",
+    "--log-opts=--no-merges --first-parent e99abf06062f8efd2697da4dc424658feaee08b0^..63647fc9b63175e1e32b0773d57affc637ea1065",
+    "--gitleaks-ignore-path=/workspace/scratch/rct-validation/security_fingerprint/empty-ignore",
+    "/workspace/rct-worktrees/security-fingerprint"
+  ],
+  "exit_code": 1,
+  "findings_count": 1,
+  "findings": [
+    {
+      "RuleID": "generic-api-key",
+      "File": "docs/validation/cloud-20261011/packet-export-backend-security-review.md",
+      "StartLine": 12,
+      "EndLine": 12,
+      "Commit": "63647fc9b63175e1e32b0773d57affc637ea1065",
+      "Fingerprint": "63647fc9b63175e1e32b0773d57affc637ea1065:docs/validation/cloud-20261011/packet-export-backend-security-review.md:generic-api-key:12"
+    }
+  ],
+  "report_sha256": "6511973115d42c8a20539fc6ac9656d724d6216a04f1dace0bb22ecb3c83db8e"
+}

@@ -1,0 +1,65 @@
+{
+  "utc": "2026-10-12T10:46:27.973648+00:00",
+  "old": "/workspace/scratch/rct-validation/real_client_runtime/browsers",
+  "new": "/tmp/rct-validation-browsers-20261012",
+  "regular_files": 628,
+  "directories": 32,
+  "symlinks": [
+    {
+      "relative": "webkit-2272/minibrowser-gtk/lib/libjavascriptcoregtk-6.0.so.1",
+      "target": "libjavascriptcoregtk-6.0.so.1.8.0",
+      "absolute": false
+    },
+    {
+      "relative": "webkit-2272/minibrowser-gtk/lib/libwebkitgtk-6.0.so.4",
+      "target": "libwebkitgtk-6.0.so.4.17.0",
+      "absolute": false
+    },
+    {
+      "relative": "webkit-2272/minibrowser-gtk/sys/lib/libsoup-3.0.so.0",
+      "target": "libsoup-3.0.so.0.7.4",
+      "absolute": false
+    },
+    {
+      "relative": "webkit-2272/minibrowser-wpe/lib/libWPEBackend-fdo-1.0.so.1",
+      "target": "libWPEBackend-fdo-1.0.so.1.9.5",
+      "absolute": false
+    },
+    {
+      "relative": "webkit-2272/minibrowser-wpe/lib/libwpe-1.0.so.1",
+      "target": "libwpe-1.0.so.1.9.3",
+      "absolute": false
+    },
+    {
+      "relative": "webkit-2272/minibrowser-wpe/lib/libWPEWebKit-2.0.so.1",
+      "target": "libWPEWebKit-2.0.so.1.10.0",
+      "absolute": false
+    },
+    {
+      "relative": "webkit-2272/minibrowser-wpe/lib/libWPEBackend-fdo-1.0.so",
+      "target": "libWPEBackend-fdo-1.0.so.1.9.5",
+      "absolute": false
+    },
+    {
+      "relative": "webkit-2272/minibrowser-wpe/sys/lib/libsoup-3.0.so.0",
+      "target": "libsoup-3.0.so.0.7.4",
+      "absolute": false
+    }
+  ],
+  "external_hardrefs": [],
+  "browser_processes": [],
+  "own_allocated_bytes": 935981056,
+  "resources": {
+    "workspace": {
+      "device": 27,
+      "free": 9103257600
+    },
+    "tmp": {
+      "device": 33,
+      "free": 9439608832
+    }
+  },
+  "new_exists": false,
+  "nodes_owned_uid": 1000,
+  "state": "READONLY_PREFLIGHT_ONLY"
+}

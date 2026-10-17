@@ -1,51 +1,75 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import chevronDown from '../../assets/chevron-down.svg'
+import { computed, ref, watch } from 'vue';
+import chevronDown from '../../assets/chevron-down.svg';
 import {
+  attendanceExplanationText,
   displayPercent,
   historyStatusLabel,
   lessonTypeLabel,
   LESSON_TYPE_ORDER,
   type AttendanceSubject,
   type AttendanceSubjectTypeSummary,
-} from './attendance-view-model'
+} from './attendance-view-model';
 
-const props = withDefaults(defineProps<{
-  subjects: readonly AttendanceSubject[]
-  expandedSubjectId?: string | null
-}>(), {
-  expandedSubjectId: null,
-})
+const props = withDefaults(
+  defineProps<{
+    subjects: readonly AttendanceSubject[];
+    expandedSubjectId?: string | null;
+  }>(),
+  {
+    expandedSubjectId: null,
+  },
+);
 
-const emit = defineEmits<{ toggle: [subjectId: string] }>()
+const emit = defineEmits<{ toggle: [subjectId: string] }>();
 
 function subjectIsExpanded(subject: AttendanceSubject): boolean {
-  return subject.id === props.expandedSubjectId
+  return subject.id === props.expandedSubjectId;
 }
 
 function orderedTypeCards(subject: AttendanceSubject): readonly AttendanceSubjectTypeSummary[] {
-  return LESSON_TYPE_ORDER
-    .map((type) => subject.typeCards.find((card) => card.type === type))
-    .filter((card): card is AttendanceSubjectTypeSummary => Boolean(card))
+  return LESSON_TYPE_ORDER.map((type) =>
+    subject.typeCards.find((card) => card.type === type),
+  ).filter((card): card is AttendanceSubjectTypeSummary => Boolean(card));
 }
 
 function historyTone(status: AttendanceSubjectTypeSummary['history'][number]['status']): string {
-  return status.toLowerCase().replace('_', '-')
+  return status.toLowerCase().replace('_', '-');
 }
 
-function metricLabel(
-  status: 'present' | 'excused' | 'absent',
-  percent: number | null,
-): string {
+function metricLabel(status: 'present' | 'excused' | 'absent', percent: number | null): string {
   const labels: Record<typeof status, string> = {
     present: 'Присутствовал',
     excused: 'Уважительная причина',
     absent: 'Отсутствовал',
-  }
-  return `${labels[status]}: ${displayPercent(percent)}`
+  };
+  return `${labels[status]}: ${displayPercent(percent)}`;
 }
 
-const hasSubjects = computed(() => props.subjects.length > 0)
+const explanationId = ref<string | null>(null);
+const explanationInteraction = ref<'hover' | 'focus' | 'tap'>('hover');
+function showExplanation(id: string, interaction: 'hover' | 'focus' | 'tap'): void {
+  if (interaction === 'hover' && explanationId.value !== null) return;
+  explanationId.value = id;
+  explanationInteraction.value = interaction;
+}
+function hideHoverExplanation(): void {
+  if (explanationInteraction.value === 'hover') explanationId.value = null;
+}
+
+watch(
+  () => [props.subjects, props.expandedSubjectId],
+  () => {
+    explanationId.value = null;
+  },
+);
+function segmentExplanation(segment: AttendanceSubjectTypeSummary['history'][number]): string {
+  return attendanceExplanationText(segment.status, segment.explanation);
+}
+function segmentId(subjectId: string, type: string, id: string): string {
+  return `attendance-history-explanation-${subjectId}-${type}-${id}`;
+}
+const hasSubjects = computed(() => props.subjects.length > 0);
 </script>
 
 <template>
@@ -129,18 +153,50 @@ const hasSubjects = computed(() => props.subjects.length > 0)
             </div>
             <div
               class="attendance-type-card__history"
-              role="list"
+              role="group"
               :aria-label="`История ${lessonTypeLabel(card.type)}`"
             >
-              <span
+              <template
                 v-for="(segment, index) in card.history"
                 :key="segment.id"
-                class="attendance-type-card__segment"
-                :class="`attendance-type-card__segment--${historyTone(segment.status)}`"
-                role="listitem"
-                :aria-label="`Занятие ${index + 1}: ${historyStatusLabel(segment.status)}`"
-              />
+              >
+                <button
+                  v-if="segmentExplanation(segment)"
+                  class="attendance-type-card__segment attendance-type-card__segment--explanation"
+                  :class="`attendance-type-card__segment--${historyTone(segment.status)}`"
+                  type="button"
+                  :aria-label="`Занятие ${index + 1}: ${historyStatusLabel(segment.status)} · ${segmentExplanation(segment)}`"
+                  :aria-expanded="explanationId === segmentId(subject.id, card.type, segment.id)"
+                  :aria-describedby="explanationId === segmentId(subject.id, card.type, segment.id) ? explanationId : undefined"
+                  @mouseenter="showExplanation(segmentId(subject.id, card.type, segment.id), 'hover')"
+                  @mouseleave="hideHoverExplanation"
+                  @focus="showExplanation(segmentId(subject.id, card.type, segment.id), 'focus')"
+                  @blur="explanationId = null"
+                  @click="showExplanation(segmentId(subject.id, card.type, segment.id), 'tap')"
+                  @keydown.esc="explanationId = null"
+                />
+                <span
+                  v-else
+                  class="attendance-type-card__segment"
+                  :class="`attendance-type-card__segment--${historyTone(segment.status)}`"
+                  role="img"
+                  :aria-label="`Занятие ${index + 1}: ${historyStatusLabel(segment.status)}`"
+                />
+              </template>
             </div>
+            <template
+              v-for="segment in card.history"
+              :key="segment.id"
+            >
+              <p
+                v-if="explanationId === segmentId(subject.id, card.type, segment.id) && segmentExplanation(segment)"
+                :id="explanationId"
+                class="attendance-status-explanation"
+                role="tooltip"
+              >
+                {{ segmentExplanation(segment) }}
+              </p>
+            </template>
           </article>
         </div>
       </li>

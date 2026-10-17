@@ -1,0 +1,39 @@
+{
+  "artifact_id": 11741289574,
+  "name": "safe-integration-outcomes-academic-service-1",
+  "bytes": 21428,
+  "digest": "5424a4c2a08781a8c3dfa873a9b09dd918a1564055b43db63faacb7ef3a8a39d",
+  "metadata": {
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+    "service": "academic-service",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38236931589",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "collection": "RESULTS",
+  "xml_count": 66,
+  "summary": {
+    "PASSED": 446,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  },
+  "broker_native": [
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+      "method": "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "sourceSha256": "ac58bd3b01a8816a38a0bdc1abbefd3e484389b116e3b2048a42dd82a8105547"
+    }
+  ]
+}

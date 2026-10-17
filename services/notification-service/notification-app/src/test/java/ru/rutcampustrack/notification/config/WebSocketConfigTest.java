@@ -1,16 +1,15 @@
 package ru.rutcampustrack.notification.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * M13 G18: STOMP heartbeat config — guarantees that {@link WebSocketConfig}
- * provides a TaskScheduler. Without this scheduler Spring silently disables
- * heartbeat (default 0/0) — idle WebSocket connections behind nginx may
- * stall as half-open. Regression guard.
+ * M13 G18: STOMP heartbeat config — guarantees that {@link WebSocketConfig} provides a
+ * TaskScheduler. Without this scheduler Spring silently disables heartbeat (default 0/0) — idle
+ * WebSocket connections behind nginx may stall as half-open. Regression guard.
  */
 class WebSocketConfigTest {
 

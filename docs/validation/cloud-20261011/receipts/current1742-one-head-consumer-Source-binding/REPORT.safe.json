@@ -1,0 +1,18 @@
+{
+  "utc": "2026-10-13T11:03:32.189128+00:00",
+  "scope": "ROOT_CURRENT1742_CONSUMER_BINDING_SOURCE_ONLY",
+  "published_source_head": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+  "original_schema_sha256": "e47e3636b6843641b96ceac59b13e9c7988060f87128829f52e92bf8e73b7c22",
+  "bound_schema_sha256": "ea7d341ab0356d9b3235ff748eb62a64dac1cd1a1673315379ea6d215cfc7c7e",
+  "reporter_sha256": "2b6cc3ae15566b50e61428f7c533bedf23651c9206cdef5b6d23a96a7e8cb336",
+  "privacy_sha256": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82",
+  "single_source_head_literal_inverse_exact": true,
+  "known_normal_runs": {
+    "CI_PR": 38387263916,
+    "Coverage": 38387263972,
+    "Security": 38387263915,
+    "OpenAPI": 38387263917,
+    "CI_PUSH_DISTINCT": 38387255561
+  },
+  "qualification": "ActualGitpush0+independentGitremote/PRreadback0 same1742 Draft/mainunmerged. OnlySourceheadparameter of approvede47e updated; same11closedreportedcontexts/oldcoreprivacy/caps/algorithm. No actualrunbinding/downloadreader/grant/nativecollection; collectorSourceplannext/freshgrantmandatory."
+}

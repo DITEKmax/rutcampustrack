@@ -1,0 +1,28 @@
+{
+  "source_commit": "23482bb599540d4f35ead68cae6d988e25d8b80f",
+  "source13_manifest_sha256": "f8cf8c4be77550d86de02f4687c508742e84b05171600c62bccc61149c1641a9",
+  "files": {
+    "run-it-owned.py": "5b27e8fd4c1d658426c24e8abaf6950142682116294005b12252eba64d0673a7",
+    "logged-it-child.py": "130e8c367cb02762ece383704f899c3fafc97c064051cd12a9d6692711b4914a",
+    "it_container_observer.py": "ac671c9cbb1f36cb76d8955819b320db175cbb36541d4e08d1600dc053cb7f75",
+    "it-plan.safe.json": "6d01914ad513c889c65cd612c10a2fe675478693bb5fdc303f00f2f3d802216e",
+    "it-source-supplement.safe.json": "44102d246b8a283c8b43dc2aefc355c393c49b1544c9a5b0d8516a5c383de40a",
+    "it-observer-source-controls.py": "ec4b6746155252c496f7be450817f06bae20568e45ada584292e0d0ed64b582e",
+    "it-observer-source-controls.safe.json": "a127f950e2df81bd637e769811d0210696af8166170a8cf2f999f5c830bba679",
+    "it-testcontainers-sdk-source.safe.json": "be897180dea9a90ba2fee1fac6389f19742ab954cd1ada91a0b77a8373146187",
+    "read-tc-class-source.py": "46a74a1f63c868cbf73aafea277c37ef1ac2aaada2f685320a292986c2084336"
+  },
+  "status": "SOURCE_READY_REVIEW_PENDING_NATIVE_NOT_GRANTED",
+  "required_grant_fields": [
+    "exclusive_docker_creation=true",
+    "owned_container_cleanup=true",
+    "container_images lists role/tag/id/size for4data+Ryuk candidate(s)+alpine:3.17",
+    "container_observer_sha256",
+    "source_supplement_sha256",
+    "same source13/test/child/parent/guard pins",
+    "fresh540phase+60cleanup/600scope/caps"
+  ],
+  "qualification": "Same b78 fresh parent-child authority; finite NP01 observer derivative. Foreign baseline protected. TCsession labels fordata/probe; RyukfactoryUUID name/defaultlabels. SDK1.20.4 or1.21.4 candidate runtime resolution UNKNOWN. Source cached two AtomicReference probe callers bounded2/JVM,2sequential forks =><=4probe total,0actual until observed. Checks preserved; temp JVMproperty confines classpathmount. Exact11freshXML/noFES beforePASS. No manualUUID/sharedconfig/fixture changes.",
+  "supersedes_ready_sha256": "0950e6b6f3b2a0d2e2f98fdea92e876a2cb804eb56bff7abcef69c89f5f6acba",
+  "correction": "Minimal2line source SHA recheck immediately before observer exec_module, same resolvedSDK callback and source13 pins; prior draft preserved before-r1 files"
+}

@@ -1,0 +1,35 @@
+{
+  "argv": [
+    "bash",
+    "./gradlew",
+    ":services:auth-service:auth-app:jar",
+    ":services:academic-service:academic-app:compileJava",
+    ":services:academic-service:academic-app:compileTestJava",
+    ":services:academic-service:academic-app:ciGraphProof",
+    "--offline",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--console=plain",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+    "--init-script",
+    "/workspace/scratch/rct-validation/ci_academic_graph_compile/graph.init.gradle",
+    "-DciGraphReceipt=/workspace/scratch/rct-validation/ci_academic_graph_compile/candidate-graph.json",
+    "--init-script",
+    "/workspace/scratch/rct-validation/ci_academic_graph_compile/classpath-proof.init.gradle",
+    ":services:academic-service:academic-app:ciAcademicClasspathProof",
+    "-Dci.academic.classpath.receipt=/workspace/scratch/rct-validation/ci_academic_graph_compile/candidate-classpath.json"
+  ],
+  "cwd": "/workspace/rct-worktrees/ci-academic-heap",
+  "env_keys": [
+    "GRADLE_USER_HOME",
+    "HTTPS_PROXY",
+    "HTTP_PROXY",
+    "JAVA_HOME",
+    "LANG",
+    "PATH",
+    "SSL_CERT_FILE",
+    "TMPDIR"
+  ],
+  "source_sha": "18265e3932f9609b4cef4e156e21d310f2d3c63d"
+}

@@ -1,0 +1,20 @@
+// Existing exact MCP call is made only under a NEW fresh Root grant.
+// Store its response immediately, before any validation. Never text/notify that response.
+store("p10-original-artifact-attempt02-response", r);
+let stage = "RESPONSE_STORED";
+store("p10-original-artifact-attempt02-stage", {stage});
+if (!r || typeof r !== "object" || r.isError === true) throw new Error("CLOSED");
+stage = "TOOL_RESULT_ACCEPTED"; store("p10-original-artifact-attempt02-stage", {stage});
+const o = r.structuredContent, v = o?.structuredContent;
+if (!o || typeof o !== "object" || !v || typeof v !== "object") throw new Error("CLOSED");
+stage = "REFERENCE_SHAPE_ACCEPTED"; store("p10-original-artifact-attempt02-stage", {stage});
+if (!(v.artifact_id === 11806374316 || v.artifact_id === "11806374316")
+    || !(o.artifact_id === 11806374316 || o.artifact_id === "11806374316")) throw new Error("CLOSED");
+stage = "ARTIFACT_IDENTITY_ACCEPTED"; store("p10-original-artifact-attempt02-stage", {stage});
+if (typeof v.download_url !== "string" || !v.download_url.length || v.download_url.length > 8192) throw new Error("CLOSED");
+stage = "PRIVATE_STRING_BOUNDED_CHILD_FULL_URL_VALIDATION_REQUIRED";
+store("p10-original-artifact-attempt02-stage", {stage});
+// Construct the same exact seven-field request in RAM from approved metadata plus v.download_url.
+// Reuse the existing os.open O_WRONLY|O_CREAT|O_EXCL0600 -> apply_patch Update adapter.
+// Full URL shape validation remains in unchanged child urllib.parse before download.
+// On any rejection save/print only CLOSED + the fixed last successful stage; no error/result/URL values.

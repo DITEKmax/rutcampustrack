@@ -1,14 +1,16 @@
 package ru.rutcampustrack.academic.entity;
 
 import jakarta.persistence.*;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "teacher_subject_groups",
-       uniqueConstraints = @UniqueConstraint(
-           columnNames = {"teacher_id", "subject_id", "group_id", "semester_id"}))
+@Table(
+        name = "teacher_subject_groups",
+        uniqueConstraints =
+                @UniqueConstraint(
+                        columnNames = {"teacher_id", "subject_id", "group_id", "semester_id"}))
 @Getter
 @NoArgsConstructor
 public class TeacherSubjectGroup {

@@ -14,7 +14,8 @@ public class ScheduleSemesterDeletionSnapshotReader {
     }
 
     public Snapshot read(long semesterId) {
-        return jdbc.query("""
+        return jdbc.query(
+                """
                 WITH domain_rows AS (
                     SELECT 'schedule_item' AS kind, item.id::TEXT AS row_id, to_jsonb(item)::TEXT AS value
                       FROM schedule_items item WHERE item.semester_id = ?
@@ -52,14 +53,32 @@ public class ScheduleSemesterDeletionSnapshotReader {
                        coalesce((SELECT state_version FROM schedule_semester_archive_barriers
                                   WHERE semester_id = ?), 0) AS observed_fence_version
                   FROM domain_rows
-                """, rs -> {
-            if (!rs.next()) throw new IllegalStateException("Schedule deletion snapshot returned no row");
-            return new Snapshot(rs.getLong("schedule_templates"), rs.getLong("one_off_lessons"),
-                    rs.getLong("lessons"), rs.getString("participant_digest"),
-                    rs.getLong("observed_fence_version"));
-        }, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId, semesterId);
+                """,
+                rs -> {
+                    if (!rs.next())
+                        throw new IllegalStateException(
+                                "Schedule deletion snapshot returned no row");
+                    return new Snapshot(
+                            rs.getLong("schedule_templates"),
+                            rs.getLong("one_off_lessons"),
+                            rs.getLong("lessons"),
+                            rs.getString("participant_digest"),
+                            rs.getLong("observed_fence_version"));
+                },
+                semesterId,
+                semesterId,
+                semesterId,
+                semesterId,
+                semesterId,
+                semesterId,
+                semesterId,
+                semesterId);
     }
 
-    public record Snapshot(long scheduleTemplates, long oneOffLessons, long lessons,
-                           String participantDigest, long observedFenceVersion) { }
+    public record Snapshot(
+            long scheduleTemplates,
+            long oneOffLessons,
+            long lessons,
+            String participantDigest,
+            long observedFenceVersion) {}
 }

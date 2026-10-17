@@ -1,0 +1,14 @@
+{
+  "authorized_by_root": true,
+  "scope": "CURRENT_CA3D_AUTH_IT_ONE_SAFE_READER",
+  "issued": "2026-10-13T18:23:23.770015+00:00",
+  "stop": "2026-10-13T18:25:23.770015+00:00",
+  "namespace": "/workspace/scratch/rct-validation/ci_ca3d_closed_read",
+  "artifact": 11837741782,
+  "reader_sha256": "5545998d369d9f2f6af19d9376a19b814b7942da0d4085ba6191a05a39ba9dd0",
+  "schema_sha256": "ea7d341ab0356d9b3235ff748eb62a64dac1cd1a1673315379ea6d215cfc7c7e",
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "limits": "unchanged45/5/5/30;32MiBcompressed+decompressed/512MiBRSS/256MiBgrowth/4GiBfloor/15GiBshared1reserve",
+  "free_bytes": 7010406400,
+  "shared_memory_bytes": 5410656256
+}

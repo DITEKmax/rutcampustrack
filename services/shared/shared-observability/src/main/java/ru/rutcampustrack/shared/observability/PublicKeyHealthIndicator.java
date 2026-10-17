@@ -1,19 +1,18 @@
 package ru.rutcampustrack.shared.observability;
 
+import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
-
 /**
- * KI-4 (M03b backlog) — readiness gate для публичного ключа internal-JWT.
- * Если api-gateway не подгрузил RSA public key из auth-service, validator
- * не сможет проверить ни одного входящего запроса → health должен сигнализировать
- * {@code DOWN} → docker compose рестартит контейнер либо load-balancer
- * исключает из ротации.
+ * KI-4 (M03b backlog) — readiness gate для публичного ключа internal-JWT. Если api-gateway не
+ * подгрузил RSA public key из auth-service, validator не сможет проверить ни одного входящего
+ * запроса → health должен сигнализировать {@code DOWN} → docker compose рестартит контейнер либо
+ * load-balancer исключает из ротации.
  *
  * <p>Сервис регистрирует bean (обычно в api-gateway):
+ *
  * <pre>{@code
  * @Bean
  * HealthIndicator publicKeyHealthIndicator(PublicKeyProvider provider) {
@@ -21,9 +20,8 @@ import java.util.function.BooleanSupplier;
  * }
  * }</pre>
  *
- * <p>Дизайн: принимает {@link BooleanSupplier} вместо конкретного класса,
- * чтобы shared-модуль не зависел от {@code shared-security}. Сервис вяжет
- * через лямбду.
+ * <p>Дизайн: принимает {@link BooleanSupplier} вместо конкретного класса, чтобы shared-модуль не
+ * зависел от {@code shared-security}. Сервис вяжет через лямбду.
  */
 public class PublicKeyHealthIndicator implements HealthIndicator {
 

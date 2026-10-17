@@ -1,0 +1,105 @@
+{
+  "artifact": 11867227483,
+  "producer": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+  "run": 38503763478,
+  "digest": "sha256:c4f37eb325f003755f6b984b2ca30b4db425bfacb045dc7e4f58ddfd00f55db0",
+  "bytes": 1044,
+  "phases": {
+    "seed": {
+      "status": "failed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "application-recovery.spec.ts",
+          "line": 326,
+          "project": "chromium",
+          "status": "failed",
+          "expectedStatus": "passed",
+          "durationMs": 91846,
+          "errorCount": 1,
+          "diagnostics": [
+            {
+              "stage": "UNKNOWN",
+              "cause": "UNKNOWN",
+              "httpStatus": 0
+            }
+          ],
+          "errorLocations": [
+            {
+              "file": "application-recovery.spec.ts",
+              "line": 326
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "lifecycle_closed_diagnostics": {
+    "server": {
+      "targetPresent": true,
+      "targetSemesterMatches": true,
+      "targetStatus": "planned",
+      "endPlus5IsDue": true,
+      "unfinishedTransfer": false,
+      "barrierState": "NONE",
+      "shedlockPresent": true,
+      "shedlockCurrentlyHeld": false,
+      "shedlockRecentlyAcquired": false,
+      "logsObserved": true,
+      "reportedClasses": [
+        "IllegalStateException"
+      ],
+      "reportedSqlStates": [],
+      "reportedLifecycleFailure": true,
+      "reportedAuthorityFrame": false
+    },
+    "api": {
+      "clockMatchesExpected": true,
+      "apiReadHttp": 200,
+      "targetPresent": true,
+      "targetStatus": "PLANNED",
+      "current": true,
+      "endPlus5IsDue": true
+    }
+  },
+  "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+  "missing_phases": [
+    "admit",
+    "attachment",
+    "pending"
+  ],
+  "diagnostic_schema": {
+    "seed": [
+      {
+        "caseCode": "APPLICATION_RECOVERY_PHASE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ]
+  },
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+  "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_SUCCESSFUL_ACTUAL_RESTORE_STEP_AND_ALL_FOUR_PHASES",
+  "Root_native_terminal": {
+    "direct_pid": 625971,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 625971,
+        "start_ticks": 20158499
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "private_input_gone": true,
+  "classification": "ACTUALFAIL-causeUNKNOWN-untrustedstaticframeorcloseddiagnostics-only"
+}

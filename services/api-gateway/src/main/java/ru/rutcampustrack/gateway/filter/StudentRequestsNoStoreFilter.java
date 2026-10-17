@@ -21,10 +21,14 @@ public class StudentRequestsNoStoreFilter implements GlobalFilter, Ordered {
         }
 
         exchange.getResponse().getHeaders().set(HttpHeaders.CACHE_CONTROL, "no-store");
-        exchange.getResponse().beforeCommit(() -> {
-            exchange.getResponse().getHeaders().set(HttpHeaders.CACHE_CONTROL, "no-store");
-            return Mono.empty();
-        });
+        exchange.getResponse()
+                .beforeCommit(
+                        () -> {
+                            exchange.getResponse()
+                                    .getHeaders()
+                                    .set(HttpHeaders.CACHE_CONTROL, "no-store");
+                            return Mono.empty();
+                        });
         return chain.filter(exchange);
     }
 

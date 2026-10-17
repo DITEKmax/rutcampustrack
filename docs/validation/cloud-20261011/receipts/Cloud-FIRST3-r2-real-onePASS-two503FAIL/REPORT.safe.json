@@ -1,0 +1,213 @@
+{
+  "kind": "ACTUAL_CURRENT96_FIRST3_CLOUD_R2",
+  "utc": "2026-10-12T23:38:34.546804+00:00",
+  "toolSession": 79263,
+  "context": "require_escalated approved ordinaryactor1000/root0 networkIPC",
+  "nativeExit": 1,
+  "terminalReason": "NATIVE_TERMINAL",
+  "signalCount": 0,
+  "caseResults": [
+    {
+      "file": "mobile-real-server.spec.ts",
+      "line": 14,
+      "project": "chromium",
+      "status": "passed",
+      "expectedStatus": "passed",
+      "durationMs": 12369,
+      "errorCount": 0,
+      "errorLocations": []
+    },
+    {
+      "file": "mobile-real-server.spec.ts",
+      "line": 61,
+      "project": "chromium",
+      "status": "failed",
+      "expectedStatus": "passed",
+      "durationMs": 16648,
+      "errorCount": 2,
+      "errorLocations": [
+        {
+          "file": "mobile-real-server.spec.ts",
+          "line": 61
+        },
+        {
+          "file": "mobile-real-server.spec.ts",
+          "line": 61
+        }
+      ]
+    },
+    {
+      "file": "mobile-real-server.spec.ts",
+      "line": 142,
+      "project": "chromium",
+      "status": "failed",
+      "expectedStatus": "passed",
+      "durationMs": 10244,
+      "errorCount": 1,
+      "errorLocations": [
+        {
+          "file": "mobile-real-server.spec.ts",
+          "line": 142
+        }
+      ]
+    }
+  ],
+  "runnerErrors": 0,
+  "unsafeArtifact": false,
+  "observations": [
+    {
+      "caseCode": "STUDENT",
+      "events": 11,
+      "BEGIN": true,
+      "END": true,
+      "diagnosticCompleted": true,
+      "dropped": 0,
+      "path": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-next96-date-r2/runs/attempt-01/supervision/observations-student.safe.json",
+      "sha256": "a0180b6ae8fc96ba93a64d2e069bb16f2d170150bccbc02ab9ce0f2efd386581"
+    },
+    {
+      "caseCode": "HEADMAN",
+      "events": 16,
+      "BEGIN": true,
+      "END": true,
+      "diagnosticCompleted": true,
+      "dropped": 0,
+      "path": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-next96-date-r2/runs/attempt-01/supervision/observations-headman.safe.json",
+      "sha256": "68dbba5c72a5d079c23a6ae5e72ddcace05b8661f3e38488566b41c42736145c"
+    },
+    {
+      "caseCode": "HELPER",
+      "events": 14,
+      "BEGIN": true,
+      "END": true,
+      "diagnosticCompleted": true,
+      "dropped": 0,
+      "path": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-next96-date-r2/runs/attempt-01/supervision/observations-helper.safe.json",
+      "sha256": "70db240d5494618036f18d46b5773ba8ce3aa91cdd926ba6b8bee41798d0d7a8"
+    }
+  ],
+  "confirmedCurrentBoundary": {
+    "STUDENT14": "REAL_COMPLETION_PERSIST_RELOAD_PASS",
+    "HEADMAN61": "LESSON_ROSTER_503_UI_AND_FAILURE_READ_WITH_CORRECT_ROLE_DATE_TARGET",
+    "HELPER142": "LESSON_ROSTER_503_UI_AND_FAILURE_READ_WITH_LIVE_MARK_PERMISSION_CORRECT_DATE_TARGET"
+  },
+  "deeper503Cause": "UNKNOWN",
+  "historicalThreeFailureCauses": "UNKNOWN",
+  "collectorErrata": [
+    "Expected base observation filename was incorrect; original approved observer writes three per-case suffixes. AllthreeBEGIN/END retained.",
+    "Initial own artifact whitelist assertion rejected two canonical reporter-neutralized markdown attachments. RAM exact-byte equality to closed failed-case rows is now proven; no raw data emitted/hashed/archived. Native results unchanged."
+  ],
+  "all17KnownBirthsAbsent": [
+    {
+      "pid": 414260,
+      "start_ticks": 10185602,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 414291,
+      "start_ticks": 10185925,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 414304,
+      "start_ticks": 10186045,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 414306,
+      "start_ticks": 10186051,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 414307,
+      "start_ticks": 10186052,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 414323,
+      "start_ticks": 10186059,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 414378,
+      "start_ticks": 10186125,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 414384,
+      "start_ticks": 10186134,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 414794,
+      "start_ticks": 10188625,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 415031,
+      "start_ticks": 10190315,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 415044,
+      "start_ticks": 10190480,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 415046,
+      "start_ticks": 10190486,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 415047,
+      "start_ticks": 10190486,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 415062,
+      "start_ticks": 10190496,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 415077,
+      "start_ticks": 10190531,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 415090,
+      "start_ticks": 10190541,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 414256,
+      "start_ticks": 10185425,
+      "exactBirthAbsent": true
+    }
+  ],
+  "settled": true,
+  "allOwnedReaped": true,
+  "root19Exact": true,
+  "r2Source6Exact": true,
+  "frozenR1Source13Exact": true,
+  "clockExact": true,
+  "immutableFinalCohortBindExact": true,
+  "ownedPrivateTmpRemoved": true,
+  "ownedTransformCacheRemoved": true,
+  "cacheAllocatedBeforeRemoval": 565248,
+  "peaks": {
+    "owned_rss_bytes": 870899712,
+    "run_allocated_bytes": 786432,
+    "shared_memory_bytes": 11899580416
+  },
+  "artifactClosedFileCount": 4,
+  "neutralizedContextCount": 2,
+  "neutralizedContextsExactClosedRows": true,
+  "unexpectedArtifactCount": 0,
+  "privacyQualification": "Final two attachment bytes equal canonical closed rows. This is end-state proof, not new instrumentation of actual producer ordering; source/Node producer-before-attach privacy proofs remain separately qualified.",
+  "noContextErrorBodyParsingOrEmission": true,
+  "noSourceEditsRepeatExtraApi": true,
+  "browserLease": "RELEASED",
+  "standLease": "SEPARATE_ROOT_HOST_AUTHORIZATION_ACTIVE_UNCHANGED",
+  "matrixQualification": "Finite originalSTUDENT scenario pass only; two currentrealFAIL retain accepted assertions. No parent family/allclientPASS.",
+  "syntheticDataQualification": "Existing dataset worker setup/teardown completed in native runner; no extra database state probe or reset performed."
+}

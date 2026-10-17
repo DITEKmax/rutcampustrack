@@ -19,8 +19,8 @@ import ru.rutcampustrack.notification.security.RequireRole;
 /**
  * REST controller для notification history (M10 G5).
  *
- * <p>userId — из {@link RequestContext} (Gateway-inject'ит из JWT).
- * Каждый user видит только собственную историю.
+ * <p>userId — из {@link RequestContext} (Gateway-inject'ит из JWT). Каждый user видит только
+ * собственную историю.
  */
 @RestController
 public class NotificationController implements NotificationApi {
@@ -28,8 +28,8 @@ public class NotificationController implements NotificationApi {
     private final NotificationHistoryService service;
     private final RequestContext requestContext;
 
-    public NotificationController(NotificationHistoryService service,
-                                  RequestContext requestContext) {
+    public NotificationController(
+            NotificationHistoryService service, RequestContext requestContext) {
         this.service = service;
         this.requestContext = requestContext;
     }

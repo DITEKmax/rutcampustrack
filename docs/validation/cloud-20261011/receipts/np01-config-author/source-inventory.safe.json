@@ -1,0 +1,14 @@
+[
+  {
+    "path": "services/academic-service/academic-app/src/main/resources/application.yml",
+    "before_sha256": "cacc5bf22ce59977904b08f4c1d6a9cc7ba0f55054904b6af01f7d23d5e87d9a",
+    "after_sha256": "3a37469ef8681b518e6104e977f81d87b7089376cb4557f7a348ca3d58c7e5da",
+    "change": "Modified; additive configuration only"
+  },
+  {
+    "path": "services/notification-bot/bot/config.py",
+    "before_sha256": "10439c2672b6f24c4d1a8f3a365128ae439920a1d86b5eca2b2de2c5102d5747",
+    "after_sha256": "a8dd9ed5e4de4bb40459e24bd757cdbcbdef8ae4d0cc6da8b84ce14babe788ef",
+    "change": "Modified; additive configuration only"
+  }
+]

@@ -1,0 +1,638 @@
+{
+  "utc": "2026-10-13T15:41:39.596992+00:00",
+  "scope": "/workspace/rct-worktrees/notification-public-key-isolation-20261013",
+  "head": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d",
+  "source_tracked_clean": true,
+  "operation": "READ_ONLY_LSTAT_METADATA_ONLY_NO_FILE_CONTENTS_NO_DELETION",
+  "discovery": "Only default build paths next to tracked Gradle scripts; no broad workspace or Gradle cache/Docker/data traversal. Root build directory inode allocated bytes omitted; descendants included.",
+  "builds": [
+    {
+      "path": "build",
+      "device": 27,
+      "inode": 1257640,
+      "uid": 1000,
+      "files": 2,
+      "directories": 17,
+      "logical_bytes": 149505,
+      "allocated_bytes": 225280,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 1,
+          "directories": 15,
+          "logical_bytes": 1,
+          "allocated_bytes": 65536,
+          "exclusive_regular_allocated_bytes": 4096
+        },
+        "retain_test_evidence": {
+          "files": 1,
+          "directories": 2,
+          "logical_bytes": 149504,
+          "allocated_bytes": 159744,
+          "exclusive_regular_allocated_bytes": 151552
+        }
+      }
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/build",
+      "device": 27,
+      "inode": 1369777,
+      "uid": 1000,
+      "files": 97,
+      "directories": 20,
+      "logical_bytes": 440066,
+      "allocated_bytes": 708608,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 1,
+          "directories": 2,
+          "logical_bytes": 25,
+          "allocated_bytes": 12288,
+          "exclusive_regular_allocated_bytes": 4096
+        },
+        "retain_generated_source_until_exact_scope_approval": {
+          "files": 0,
+          "directories": 8,
+          "logical_bytes": 0,
+          "allocated_bytes": 32768,
+          "exclusive_regular_allocated_bytes": 0
+        },
+        "candidate_compiled_classes": {
+          "files": 94,
+          "directories": 8,
+          "logical_bytes": 286333,
+          "allocated_bytes": 499712,
+          "exclusive_regular_allocated_bytes": 466944
+        },
+        "retain_reusable_jars": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 130211,
+          "allocated_bytes": 135168,
+          "exclusive_regular_allocated_bytes": 131072
+        },
+        "candidate_compiler_formatter_temporaries": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 23497,
+          "allocated_bytes": 28672,
+          "exclusive_regular_allocated_bytes": 24576
+        }
+      }
+    },
+    {
+      "path": "services/notification-service/notification-api-contract/build",
+      "device": 27,
+      "inode": 1369891,
+      "uid": 1000,
+      "files": 37,
+      "directories": 25,
+      "logical_bytes": 153824,
+      "allocated_bytes": 323584,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 1,
+          "directories": 2,
+          "logical_bytes": 25,
+          "allocated_bytes": 12288,
+          "exclusive_regular_allocated_bytes": 4096
+        },
+        "retain_generated_source_until_exact_scope_approval": {
+          "files": 0,
+          "directories": 8,
+          "logical_bytes": 0,
+          "allocated_bytes": 32768,
+          "exclusive_regular_allocated_bytes": 0
+        },
+        "candidate_compiled_classes": {
+          "files": 34,
+          "directories": 13,
+          "logical_bytes": 86888,
+          "allocated_bytes": 196608,
+          "exclusive_regular_allocated_bytes": 143360
+        },
+        "retain_reusable_jars": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 42247,
+          "allocated_bytes": 49152,
+          "exclusive_regular_allocated_bytes": 45056
+        },
+        "candidate_compiler_formatter_temporaries": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 24664,
+          "allocated_bytes": 32768,
+          "exclusive_regular_allocated_bytes": 28672
+        }
+      }
+    },
+    {
+      "path": "services/notification-service/notification-app/build",
+      "device": 27,
+      "inode": 1369968,
+      "uid": 1000,
+      "files": 1822,
+      "directories": 383,
+      "logical_bytes": 22655492,
+      "allocated_bytes": 28483584,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 157,
+          "directories": 287,
+          "logical_bytes": 1364864,
+          "allocated_bytes": 2846720,
+          "exclusive_regular_allocated_bytes": 1654784
+        },
+        "retain_generated_source_until_exact_scope_approval": {
+          "files": 454,
+          "directories": 39,
+          "logical_bytes": 7967932,
+          "allocated_bytes": 9195520,
+          "exclusive_regular_allocated_bytes": 9019392
+        },
+        "retain_test_evidence": {
+          "files": 11,
+          "directories": 11,
+          "logical_bytes": 168735,
+          "allocated_bytes": 241664,
+          "exclusive_regular_allocated_bytes": 196608
+        },
+        "candidate_copied_resources": {
+          "files": 12,
+          "directories": 3,
+          "logical_bytes": 71181,
+          "allocated_bytes": 122880,
+          "exclusive_regular_allocated_bytes": 110592
+        },
+        "candidate_compiled_classes": {
+          "files": 1186,
+          "directories": 41,
+          "logical_bytes": 9187659,
+          "allocated_bytes": 12169216,
+          "exclusive_regular_allocated_bytes": 11935744
+        },
+        "candidate_compiler_formatter_temporaries": {
+          "files": 2,
+          "directories": 2,
+          "logical_bytes": 3895121,
+          "allocated_bytes": 3907584,
+          "exclusive_regular_allocated_bytes": 3899392
+        }
+      }
+    },
+    {
+      "path": "services/shared/shared-events/build",
+      "device": 27,
+      "inode": 1370738,
+      "uid": 1000,
+      "files": 10,
+      "directories": 19,
+      "logical_bytes": 30651,
+      "allocated_bytes": 135168,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 1,
+          "directories": 2,
+          "logical_bytes": 25,
+          "allocated_bytes": 12288,
+          "exclusive_regular_allocated_bytes": 4096
+        },
+        "retain_generated_source_until_exact_scope_approval": {
+          "files": 0,
+          "directories": 8,
+          "logical_bytes": 0,
+          "allocated_bytes": 32768,
+          "exclusive_regular_allocated_bytes": 0
+        },
+        "candidate_compiled_classes": {
+          "files": 7,
+          "directories": 7,
+          "logical_bytes": 13450,
+          "allocated_bytes": 57344,
+          "exclusive_regular_allocated_bytes": 28672
+        },
+        "retain_reusable_jars": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 8226,
+          "allocated_bytes": 16384,
+          "exclusive_regular_allocated_bytes": 12288
+        },
+        "candidate_compiler_formatter_temporaries": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 8950,
+          "allocated_bytes": 16384,
+          "exclusive_regular_allocated_bytes": 12288
+        }
+      }
+    },
+    {
+      "path": "services/shared/shared-logback/build",
+      "device": 27,
+      "inode": 1369950,
+      "uid": 1000,
+      "files": 6,
+      "directories": 22,
+      "logical_bytes": 20211,
+      "allocated_bytes": 122880,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 1,
+          "directories": 2,
+          "logical_bytes": 25,
+          "allocated_bytes": 12288,
+          "exclusive_regular_allocated_bytes": 4096
+        },
+        "retain_generated_source_until_exact_scope_approval": {
+          "files": 0,
+          "directories": 8,
+          "logical_bytes": 0,
+          "allocated_bytes": 32768,
+          "exclusive_regular_allocated_bytes": 0
+        },
+        "candidate_copied_resources": {
+          "files": 1,
+          "directories": 3,
+          "logical_bytes": 2671,
+          "allocated_bytes": 16384,
+          "exclusive_regular_allocated_bytes": 4096
+        },
+        "candidate_compiled_classes": {
+          "files": 2,
+          "directories": 7,
+          "logical_bytes": 4956,
+          "allocated_bytes": 36864,
+          "exclusive_regular_allocated_bytes": 8192
+        },
+        "retain_reusable_jars": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 4630,
+          "allocated_bytes": 12288,
+          "exclusive_regular_allocated_bytes": 8192
+        },
+        "candidate_compiler_formatter_temporaries": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 7929,
+          "allocated_bytes": 12288,
+          "exclusive_regular_allocated_bytes": 8192
+        }
+      }
+    },
+    {
+      "path": "services/shared/shared-observability/build",
+      "device": 27,
+      "inode": 1369955,
+      "uid": 1000,
+      "files": 17,
+      "directories": 23,
+      "logical_bytes": 63277,
+      "allocated_bytes": 200704,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 1,
+          "directories": 2,
+          "logical_bytes": 25,
+          "allocated_bytes": 12288,
+          "exclusive_regular_allocated_bytes": 4096
+        },
+        "retain_generated_source_until_exact_scope_approval": {
+          "files": 0,
+          "directories": 8,
+          "logical_bytes": 0,
+          "allocated_bytes": 32768,
+          "exclusive_regular_allocated_bytes": 0
+        },
+        "candidate_copied_resources": {
+          "files": 1,
+          "directories": 4,
+          "logical_bytes": 76,
+          "allocated_bytes": 20480,
+          "exclusive_regular_allocated_bytes": 4096
+        },
+        "candidate_compiled_classes": {
+          "files": 13,
+          "directories": 7,
+          "logical_bytes": 27220,
+          "allocated_bytes": 86016,
+          "exclusive_regular_allocated_bytes": 57344
+        },
+        "retain_reusable_jars": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 16623,
+          "allocated_bytes": 24576,
+          "exclusive_regular_allocated_bytes": 20480
+        },
+        "candidate_compiler_formatter_temporaries": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 19333,
+          "allocated_bytes": 24576,
+          "exclusive_regular_allocated_bytes": 20480
+        }
+      }
+    },
+    {
+      "path": "services/shared/shared-outbox/build",
+      "device": 27,
+      "inode": 1370815,
+      "uid": 1000,
+      "files": 18,
+      "directories": 21,
+      "logical_bytes": 148255,
+      "allocated_bytes": 274432,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 1,
+          "directories": 2,
+          "logical_bytes": 25,
+          "allocated_bytes": 12288,
+          "exclusive_regular_allocated_bytes": 4096
+        },
+        "retain_generated_source_until_exact_scope_approval": {
+          "files": 0,
+          "directories": 8,
+          "logical_bytes": 0,
+          "allocated_bytes": 32768,
+          "exclusive_regular_allocated_bytes": 0
+        },
+        "candidate_compiled_classes": {
+          "files": 15,
+          "directories": 9,
+          "logical_bytes": 50258,
+          "allocated_bytes": 118784,
+          "exclusive_regular_allocated_bytes": 81920
+        },
+        "retain_reusable_jars": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 26717,
+          "allocated_bytes": 32768,
+          "exclusive_regular_allocated_bytes": 28672
+        },
+        "candidate_compiler_formatter_temporaries": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 71255,
+          "allocated_bytes": 77824,
+          "exclusive_regular_allocated_bytes": 73728
+        }
+      }
+    },
+    {
+      "path": "services/shared/shared-security/build",
+      "device": 27,
+      "inode": 1370851,
+      "uid": 1000,
+      "files": 32,
+      "directories": 30,
+      "logical_bytes": 203179,
+      "allocated_bytes": 401408,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 2,
+          "directories": 3,
+          "logical_bytes": 50,
+          "allocated_bytes": 20480,
+          "exclusive_regular_allocated_bytes": 8192
+        },
+        "retain_generated_source_until_exact_scope_approval": {
+          "files": 0,
+          "directories": 10,
+          "logical_bytes": 0,
+          "allocated_bytes": 40960,
+          "exclusive_regular_allocated_bytes": 0
+        },
+        "candidate_compiled_classes": {
+          "files": 26,
+          "directories": 14,
+          "logical_bytes": 107675,
+          "allocated_bytes": 225280,
+          "exclusive_regular_allocated_bytes": 167936
+        },
+        "retain_reusable_jars": {
+          "files": 2,
+          "directories": 1,
+          "logical_bytes": 54393,
+          "allocated_bytes": 61440,
+          "exclusive_regular_allocated_bytes": 57344
+        },
+        "candidate_compiler_formatter_temporaries": {
+          "files": 2,
+          "directories": 2,
+          "logical_bytes": 41061,
+          "allocated_bytes": 53248,
+          "exclusive_regular_allocated_bytes": 45056
+        }
+      }
+    },
+    {
+      "path": "services/shared/shared-test-containers/build",
+      "device": 27,
+      "inode": 1372282,
+      "uid": 1000,
+      "files": 12,
+      "directories": 20,
+      "logical_bytes": 127584,
+      "allocated_bytes": 237568,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 2,
+          "directories": 3,
+          "logical_bytes": 50,
+          "allocated_bytes": 20480,
+          "exclusive_regular_allocated_bytes": 8192
+        },
+        "retain_generated_source_until_exact_scope_approval": {
+          "files": 0,
+          "directories": 8,
+          "logical_bytes": 0,
+          "allocated_bytes": 32768,
+          "exclusive_regular_allocated_bytes": 0
+        },
+        "candidate_compiled_classes": {
+          "files": 7,
+          "directories": 7,
+          "logical_bytes": 19017,
+          "allocated_bytes": 61440,
+          "exclusive_regular_allocated_bytes": 32768
+        },
+        "retain_reusable_jars": {
+          "files": 2,
+          "directories": 1,
+          "logical_bytes": 11076,
+          "allocated_bytes": 20480,
+          "exclusive_regular_allocated_bytes": 16384
+        },
+        "candidate_compiler_formatter_temporaries": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 97441,
+          "allocated_bytes": 102400,
+          "exclusive_regular_allocated_bytes": 98304
+        }
+      }
+    },
+    {
+      "path": "services/shared/shared-web-api/build",
+      "device": 27,
+      "inode": 1369752,
+      "uid": 1000,
+      "files": 6,
+      "directories": 22,
+      "logical_bytes": 20604,
+      "allocated_bytes": 126976,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 1,
+          "directories": 2,
+          "logical_bytes": 25,
+          "allocated_bytes": 12288,
+          "exclusive_regular_allocated_bytes": 4096
+        },
+        "retain_generated_source_until_exact_scope_approval": {
+          "files": 0,
+          "directories": 8,
+          "logical_bytes": 0,
+          "allocated_bytes": 32768,
+          "exclusive_regular_allocated_bytes": 0
+        },
+        "candidate_compiled_classes": {
+          "files": 3,
+          "directories": 10,
+          "logical_bytes": 12815,
+          "allocated_bytes": 61440,
+          "exclusive_regular_allocated_bytes": 20480
+        },
+        "retain_reusable_jars": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 6485,
+          "allocated_bytes": 12288,
+          "exclusive_regular_allocated_bytes": 8192
+        },
+        "candidate_compiler_formatter_temporaries": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 1279,
+          "allocated_bytes": 8192,
+          "exclusive_regular_allocated_bytes": 4096
+        }
+      }
+    },
+    {
+      "path": "services/shared/shared-web/build",
+      "device": 27,
+      "inode": 1369961,
+      "uid": 1000,
+      "files": 25,
+      "directories": 28,
+      "logical_bytes": 155749,
+      "allocated_bytes": 335872,
+      "categories": {
+        "retain_other_or_unknown": {
+          "files": 1,
+          "directories": 2,
+          "logical_bytes": 25,
+          "allocated_bytes": 12288,
+          "exclusive_regular_allocated_bytes": 4096
+        },
+        "retain_generated_source_until_exact_scope_approval": {
+          "files": 0,
+          "directories": 8,
+          "logical_bytes": 0,
+          "allocated_bytes": 32768,
+          "exclusive_regular_allocated_bytes": 0
+        },
+        "candidate_copied_resources": {
+          "files": 2,
+          "directories": 4,
+          "logical_bytes": 269,
+          "allocated_bytes": 24576,
+          "exclusive_regular_allocated_bytes": 8192
+        },
+        "candidate_compiled_classes": {
+          "files": 20,
+          "directories": 12,
+          "logical_bytes": 70460,
+          "allocated_bytes": 167936,
+          "exclusive_regular_allocated_bytes": 118784
+        },
+        "retain_reusable_jars": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 34033,
+          "allocated_bytes": 40960,
+          "exclusive_regular_allocated_bytes": 36864
+        },
+        "candidate_compiler_formatter_temporaries": {
+          "files": 1,
+          "directories": 1,
+          "logical_bytes": 50962,
+          "allocated_bytes": 57344,
+          "exclusive_regular_allocated_bytes": 53248
+        }
+      }
+    }
+  ],
+  "categories": {
+    "retain_other_or_unknown": {
+      "files": 170,
+      "directories": 324,
+      "logical_bytes": 1365165,
+      "allocated_bytes": 3051520,
+      "exclusive_regular_allocated_bytes": 1708032
+    },
+    "retain_test_evidence": {
+      "files": 12,
+      "directories": 13,
+      "logical_bytes": 318239,
+      "allocated_bytes": 401408,
+      "exclusive_regular_allocated_bytes": 348160
+    },
+    "retain_generated_source_until_exact_scope_approval": {
+      "files": 454,
+      "directories": 121,
+      "logical_bytes": 7967932,
+      "allocated_bytes": 9531392,
+      "exclusive_regular_allocated_bytes": 9019392
+    },
+    "candidate_compiled_classes": {
+      "files": 1407,
+      "directories": 135,
+      "logical_bytes": 9866731,
+      "allocated_bytes": 13680640,
+      "exclusive_regular_allocated_bytes": 13062144
+    },
+    "retain_reusable_jars": {
+      "files": 12,
+      "directories": 10,
+      "logical_bytes": 334641,
+      "allocated_bytes": 405504,
+      "exclusive_regular_allocated_bytes": 364544
+    },
+    "candidate_compiler_formatter_temporaries": {
+      "files": 13,
+      "directories": 13,
+      "logical_bytes": 4241492,
+      "allocated_bytes": 4321280,
+      "exclusive_regular_allocated_bytes": 4268032
+    },
+    "candidate_copied_resources": {
+      "files": 16,
+      "directories": 14,
+      "logical_bytes": 74197,
+      "allocated_bytes": 184320,
+      "exclusive_regular_allocated_bytes": 126976
+    }
+  },
+  "total_build_descendant_allocated_bytes": 31576064,
+  "potential_exclusive_regular_file_recovery_bytes": 17457152,
+  "conservative_compiled_classes_only_recovery_bytes": 13062144,
+  "special_preserved": [],
+  "elapsed_seconds": 1.8,
+  "qualification": "Candidate generated output bytes, not cleanup authorization or exact future filesystem free-space increase; stat allocated block accounting counts each inode once, hardlinked/symlink/foreign/special metadata preserved. Preserve all test-results/reports/jacoco, reusable libs JARs, generated Source and unknown contents; no contents read, no product changes/native/build/deletion. Later own cleanup would need fresh exact scope/ownership/time guard and Root approval. This small own worktree cannot close the roughly2.38GB stand deficit; threshold9380818650B unchanged."
+}

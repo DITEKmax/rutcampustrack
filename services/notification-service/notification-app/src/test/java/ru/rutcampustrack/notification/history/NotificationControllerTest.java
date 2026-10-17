@@ -1,5 +1,14 @@
 package ru.rutcampustrack.notification.history;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,24 +28,12 @@ import ru.rutcampustrack.notification.contract.dto.history.UnreadCountDto;
 import ru.rutcampustrack.notification.exception.AccessDeniedException;
 import ru.rutcampustrack.notification.security.RequestContext;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class NotificationControllerTest {
 
-    @Mock
-    private NotificationHistoryService service;
+    @Mock private NotificationHistoryService service;
 
-    @Mock
-    private RequestContext requestContext;
+    @Mock private RequestContext requestContext;
 
     @Mock
     @SuppressWarnings("rawtypes")

@@ -1,15 +1,14 @@
 package ru.rutcampustrack.shared.web.api.exception;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class ErrorResponseTest {
 
@@ -18,9 +17,14 @@ class ErrorResponseTest {
     @Test
     @DisplayName("M11 G0: 6-arg constructor (auth-service legacy) — null'ы для extension fields")
     void sixArgConstructor() {
-        ErrorResponse er = new ErrorResponse(
-                401, "about:blank", "Unauthorized", "Bad creds",
-                "/api/auth/login", Instant.parse("2026-04-24T10:15:30Z"));
+        ErrorResponse er =
+                new ErrorResponse(
+                        401,
+                        "about:blank",
+                        "Unauthorized",
+                        "Bad creds",
+                        "/api/auth/login",
+                        Instant.parse("2026-04-24T10:15:30Z"));
 
         assertThat(er.status()).isEqualTo(401);
         assertThat(er.traceId()).isNull();
@@ -33,10 +37,15 @@ class ErrorResponseTest {
     @DisplayName("M11 G0: 7-arg constructor (schedule/attendance legacy) — fieldErrors заполнен")
     void sevenArgConstructor() {
         FieldError fe = new FieldError("dayOfWeek", 7, "must be between 0 and 5");
-        ErrorResponse er = new ErrorResponse(
-                400, "https://api.rutcampustrack.ru/problems/validation",
-                "Validation failed", "Bad input",
-                "/api/schedule/items", Instant.now(), List.of(fe));
+        ErrorResponse er =
+                new ErrorResponse(
+                        400,
+                        "https://api.rutcampustrack.ru/problems/validation",
+                        "Validation failed",
+                        "Bad input",
+                        "/api/schedule/items",
+                        Instant.now(),
+                        List.of(fe));
 
         assertThat(er.fieldErrors()).hasSize(1);
         assertThat(er.fieldErrors().get(0).field()).isEqualTo("dayOfWeek");
@@ -46,11 +55,17 @@ class ErrorResponseTest {
     @Test
     @DisplayName("M11 G0: 9-arg constructor (academic full) — field + extras")
     void nineArgConstructor() {
-        ErrorResponse er = new ErrorResponse(
-                409, ErrorResponse.PROBLEM_BASE + "conflict",
-                "Конфликт", "Группа имеет студентов",
-                "/api/academic/groups/1", Instant.now(),
-                null, "name", Map.of("studentsCount", 12));
+        ErrorResponse er =
+                new ErrorResponse(
+                        409,
+                        ErrorResponse.PROBLEM_BASE + "conflict",
+                        "Конфликт",
+                        "Группа имеет студентов",
+                        "/api/academic/groups/1",
+                        Instant.now(),
+                        null,
+                        "name",
+                        Map.of("studentsCount", 12));
 
         assertThat(er.field()).isEqualTo("name");
         assertThat(er.extras()).containsEntry("studentsCount", 12);
@@ -59,7 +74,8 @@ class ErrorResponseTest {
     @Test
     @DisplayName("M11 G0: factory notFound() возвращает корректный 404")
     void factoryNotFound() {
-        ErrorResponse er = ErrorResponse.notFound("Group 99 not found", "/api/groups/99", "trace-1");
+        ErrorResponse er =
+                ErrorResponse.notFound("Group 99 not found", "/api/groups/99", "trace-1");
 
         assertThat(er.status()).isEqualTo(404);
         assertThat(er.title()).isEqualTo("Ресурс не найден");
@@ -70,9 +86,14 @@ class ErrorResponseTest {
     @Test
     @DisplayName("M11 G0: JSON serialization исключает null поля (JsonInclude.NON_NULL)")
     void jsonSerializationOmitsNulls() throws Exception {
-        ErrorResponse er = new ErrorResponse(
-                401, "about:blank", "Unauthorized", "Bad creds",
-                "/api/auth/login", Instant.parse("2026-04-24T10:15:30Z"));
+        ErrorResponse er =
+                new ErrorResponse(
+                        401,
+                        "about:blank",
+                        "Unauthorized",
+                        "Bad creds",
+                        "/api/auth/login",
+                        Instant.parse("2026-04-24T10:15:30Z"));
 
         String json = mapper.writeValueAsString(er);
 
@@ -97,10 +118,16 @@ class ErrorResponseTest {
     @Test
     @DisplayName("M11 G0: 8-arg constructor (academic с field, без extras)")
     void eightArgConstructor() {
-        ErrorResponse er = new ErrorResponse(
-                409, ErrorResponse.PROBLEM_BASE + "conflict",
-                "Конфликт", "Login занят",
-                "/api/users", Instant.now(), null, "login");
+        ErrorResponse er =
+                new ErrorResponse(
+                        409,
+                        ErrorResponse.PROBLEM_BASE + "conflict",
+                        "Конфликт",
+                        "Login занят",
+                        "/api/users",
+                        Instant.now(),
+                        null,
+                        "login");
 
         assertThat(er.field()).isEqualTo("login");
         assertThat(er.extras()).isNull();

@@ -1,0 +1,9 @@
+# D002 guarded callback const + Root481 rebind
+
+APPROVE_SOURCE for observercf11c526 and READYabf70b93. Only the checked ordinary onError function reference is captured in a const after the unchanged descriptor/type guard, then invoked with the same receiver/fixed closed message. Exact inverse recovers the entire approved27e5 source; no casts/non-null assertions, privacy/cap/publication/schema/clock/assertion/gate weakening or callback overwrite.
+
+Root657→481 changes exactly artifact-privacy262c and safe-reporter41c0. Other17 committed source blobs/modes and READY hash entries are exact. Whole private reporter/capture/debug guard and sanitizer wipe core are preserved. Whole original SafeReporter class is identical after removing only the separately approved new diagnostics row; onError is unchanged and both step callbacks remain absent before opt-in installation. Reviewer did not read credential fixture bodies. Future source-at-use pins remain required.
+
+Actual prior Node01 retained meaningful11 privacy causal RED/GREEN and formatterPASS, followed by TS18048 and listNOT_RUN. Native exact compiler location was not captured; source inspection identifies the nullable descriptor used in a later closure, consistent with18048. Const correction/newRoot rebind does not claim actual compiler success or replay prior privacy controls. Narrow types+one367 discovery420active+60 cleanup plan retains previous guard/resource logic with fresh attempt91/grant02 and exact source bindings; its two phases remain NOT_RUN.
+
+Original one367 assertions/60-second timeout/security clocks/SW allow, actual browser01c942/9f49 and all old source/archive/receipts remain distinct. Actual D002 timeout stage/cause stays UNKNOWN. This review grants no Node/browser/API/stand or new cohort/data159 use. Requested gpt-6.1-sol/high; actual UNKNOWN. Own source/metadata proof only, no author/Root repairs, private body/ENV/key/grant/data/log read or native execution.

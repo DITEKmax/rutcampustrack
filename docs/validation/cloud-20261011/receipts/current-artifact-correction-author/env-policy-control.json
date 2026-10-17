@@ -1,0 +1,8 @@
+{
+  "native_exit": 0,
+  "explicit_env_None_rejected_before_launch": true,
+  "own_child_before": [],
+  "own_child_after": [],
+  "parent_environment_read": false,
+  "valid_explicit_map_controls": "retained normal/deadline/status_failure/two_signal results; new guard only precedes existing logic"
+}

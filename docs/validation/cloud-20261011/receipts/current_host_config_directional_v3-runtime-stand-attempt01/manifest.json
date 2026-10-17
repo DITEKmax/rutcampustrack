@@ -1,0 +1,111 @@
+{
+  "utc": "2026-10-12T10:35:05.692251+00:00",
+  "status": "ACTUAL_DISK_FLOOR_STOP_BEFORE_SERVICES_CREATED_ONLY_CLEANUP_COMPLETE",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/CURRENT.json",
+      "archive_path": "CURRENT.json",
+      "bytes": 559,
+      "sha256": "2bc87e70b8ebcbc7f22a583932df5b3bc5fbd3700fc470992ca8a2861685cea3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/HANDOFF.md",
+      "archive_path": "HANDOFF.md",
+      "bytes": 2183,
+      "sha256": "282b6cea287e1e536abdbece04f74779ffb0c85196cbd575a188b3cc99bb6f03"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/actual-outcome.safe.json",
+      "archive_path": "actual-outcome.safe.json",
+      "bytes": 2130,
+      "sha256": "f8414c2e7774e094e9c02bef40c7fc836e9606ca01972578d745a33586f980fa"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/attempts.ndjson",
+      "archive_path": "attempts.ndjson",
+      "bytes": 950,
+      "sha256": "64e10e327dd5a834020d5a59bf1eedb6a2597489b09fa8ccb6e35c10a30f5355"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/cleanup-before.safe.json",
+      "archive_path": "cleanup-before.safe.json",
+      "bytes": 4156,
+      "sha256": "499192b6fa40c5bf10d1411506b3d23ff47497471f2697d042249028dea5d1ac"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/cleanup-docker-owned.py",
+      "archive_path": "cleanup-docker-owned.py",
+      "bytes": 4153,
+      "sha256": "6d344c675e1b6cfdeff80a9d4e189e7fdadff61f1e2d5c7736bfa1a236bad169"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/cleanup-process.safe.json",
+      "archive_path": "cleanup-process.safe.json",
+      "bytes": 147,
+      "sha256": "1142e8e1ecf7e98c5245c188cdd1b9953d1d310ec4a8a9e0ef20abaa882bb455"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/cleanup-terminal.safe.json",
+      "archive_path": "cleanup-terminal.safe.json",
+      "bytes": 1295,
+      "sha256": "40dd96f79b17007e66052a6cc661268255d29ba6a4543e78eabe7c6f3683caf1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/docker-up-launch.safe.json",
+      "archive_path": "docker-up-launch.safe.json",
+      "bytes": 859,
+      "sha256": "86fb079f7ca1affda43da8c4bf7b0a2cb62e91d6be71f0cbda477ae47e44de31"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/docker-up-owned.py",
+      "archive_path": "docker-up-owned.py",
+      "bytes": 2519,
+      "sha256": "ab24bd4bccffe93fbc9c723d1a51e04783defe9896586f69d3816c9896a94911"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/docker-up-process.safe.json",
+      "archive_path": "docker-up-process.safe.json",
+      "bytes": 142,
+      "sha256": "32200452b6c6d9824da62cd9117bb513d35213c61820f63691d92626c4c341a9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/docker-up-terminal.safe.json",
+      "archive_path": "docker-up-terminal.safe.json",
+      "bytes": 807,
+      "sha256": "a212fd192e3c6fb2dddd5d405e173039d64574cb7ba16e1f47a00031af21c591"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/image-rootfs-metadata.safe.json",
+      "archive_path": "image-rootfs-metadata.safe.json",
+      "bytes": 1682,
+      "sha256": "0520decdd91f3e924523c740b78cd3d2f1d0882de4490aaf1507bbe46fb86645"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/preflight.py",
+      "archive_path": "preflight.py",
+      "bytes": 4334,
+      "sha256": "04dbff250565a8a65e11b91f1e022a6ef4d5565f64663a31b1bbfcfbe2348c84"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/preflight.safe.json",
+      "archive_path": "preflight.safe.json",
+      "bytes": 4312,
+      "sha256": "35093ded3f7619f1179320f8c21ebe6ff82013b8fd3d132aa1aa6f203a1d6eea"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/resources-live.safe.json",
+      "archive_path": "resources-live.safe.json",
+      "bytes": 147,
+      "sha256": "45b32af13d28780847888a7ce78fd8ad51ec72b65b78169372b38d9494e0b350"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/runtime/stand-attempt01/teaching-clock-choice.safe.json",
+      "archive_path": "teaching-clock-choice.safe.json",
+      "bytes": 572,
+      "sha256": "b6db593f6108cf60539aeff05f154834a8fd410aef41ebff0a9d824794fc0234"
+    }
+  ],
+  "file_count": 17,
+  "safe_only": true,
+  "private_credentials_logs_or_payload_bodies": false
+}

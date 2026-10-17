@@ -5,6 +5,7 @@ import {
   type StompSubscription,
 } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
+import { isExportJobState, notifyExportJobHint } from '../../shared/report-download-client'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { NotificationsSessionOwner } from './notifications-client'
 
@@ -137,12 +138,19 @@ export function createGenerationBoundNotificationsRealtime(
 
   function scheduleDashboardInvalidation(): void {
     if (!options.scope.adminDashboard || !isCurrent() || dashboardRefreshTimer !== undefined) return
-    const delay = Math.max(0, MIN_INVALIDATION_INTERVAL_MS - (Date.now() - lastDashboardInvalidationAt))
+    const delay = Math.max(
+      0,
+      MIN_INVALIDATION_INTERVAL_MS - (Date.now() - lastDashboardInvalidationAt),
+    )
     dashboardRefreshTimer = setTimeout(() => {
       dashboardRefreshTimer = undefined
       if (!isCurrent()) return
       lastDashboardInvalidationAt = Date.now()
-      try { options.onAdminDashboardChanged?.() } catch { /* Listener does not own the transport. */ }
+      try {
+        options.onAdminDashboardChanged?.()
+      } catch {
+        /* Listener does not own the transport. */
+      }
     }, delay)
   }
 
@@ -151,13 +159,16 @@ export function createGenerationBoundNotificationsRealtime(
     if (!isCurrent() || !currentClient || ticketRetryTimer !== undefined) return
     const delay = ticketRetryDelayMs
     ticketRetryDelayMs = Math.min(ticketRetryDelayMs * 2, MAX_RECONNECT_DELAY_MS)
-    void currentClient.deactivate({ force: true }).then(() => {
-      if (!isCurrent() || client !== currentClient) return
-      ticketRetryTimer = setTimeout(() => {
-        ticketRetryTimer = undefined
-        if (isCurrent() && client === currentClient) currentClient.activate()
-      }, delay)
-    }).catch(() => undefined)
+    void currentClient
+      .deactivate({ force: true })
+      .then(() => {
+        if (!isCurrent() || client !== currentClient) return
+        ticketRetryTimer = setTimeout(() => {
+          ticketRetryTimer = undefined
+          if (isCurrent() && client === currentClient) currentClient.activate()
+        }, delay)
+      })
+      .catch(() => undefined)
   }
 
   const configuration: StompConfig = {
@@ -185,13 +196,23 @@ export function createGenerationBoundNotificationsRealtime(
     },
     onConnect: () => {
       if (!isCurrent()) return
-      subscriptions = destinations.map((destination) => client!.subscribe(
-        destination,
-        () => scheduleInvalidation(),
-      ))
-      if (options.scope.adminDashboard) subscriptions.push(client!.subscribe('/topic/admin/dashboard', (message) => {
-        if (isDashboardInvalidation(message.body)) scheduleDashboardInvalidation()
-      }))
+      subscriptions = destinations.map((destination) =>
+        client!.subscribe(destination, (message) => {
+          if (!isCurrent()) return
+          const jobId = exportHint(message.body)
+          if (jobId !== null) {
+            notifyExportJobHint(jobId)
+            return
+          }
+          scheduleInvalidation()
+        }),
+      )
+      if (options.scope.adminDashboard)
+        subscriptions.push(
+          client!.subscribe('/topic/admin/dashboard', (message) => {
+            if (isDashboardInvalidation(message.body)) scheduleDashboardInvalidation()
+          }),
+        )
       scheduleInvalidation()
       scheduleDashboardInvalidation()
     },
@@ -200,9 +221,7 @@ export function createGenerationBoundNotificationsRealtime(
     },
   }
 
-  client = options.createClient
-    ? options.createClient(configuration)
-    : new Client(configuration)
+  client = options.createClient ? options.createClient(configuration) : new Client(configuration)
   if (active) client.activate()
 
   return {
@@ -248,7 +267,7 @@ function isUuid(value: string): boolean {
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
+    ? (value as Record<string, unknown>)
     : null
 }
 
@@ -256,6 +275,26 @@ function isDashboardInvalidation(body: string): boolean {
   try {
     const envelope = asRecord(JSON.parse(body))
     const payload = asRecord(envelope?.payload)
-    return envelope?.type === 'dashboard.invalidated' && payload !== null && Object.keys(payload).length === 0
-  } catch { return false }
+    return (
+      envelope?.type === 'dashboard.invalidated' &&
+      payload !== null &&
+      Object.keys(payload).length === 0
+    )
+  } catch {
+    return false
+  }
+}
+
+function exportHint(body: string): string | null {
+  try {
+    const event = asRecord(JSON.parse(body))
+    return event?.type === 'export.state.changed' &&
+      typeof event.jobId === 'string' &&
+      isUuid(event.jobId) &&
+      isExportJobState(event.state)
+      ? event.jobId
+      : null
+  } catch {
+    return null
+  }
 }

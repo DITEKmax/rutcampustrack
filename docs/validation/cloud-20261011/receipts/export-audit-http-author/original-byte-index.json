@@ -1,0 +1,47 @@
+{
+  "source": "/workspace/scratch/rct-validation/export_audit_http_followon",
+  "manifest": "manifest.safe.json",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "original_sha256": "ec4e5016be92e3b50301543b452cc505acb08fda88dc1ef85ca9ec5b25e8580a",
+      "original_bytes": 1384,
+      "working_sha256": "ec4e5016be92e3b50301543b452cc505acb08fda88dc1ef85ca9ec5b25e8580a",
+      "working_bytes": 1384,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "CI-original-safe-excerpt.json",
+      "original_sha256": "14da1c15ddf04e62047c9b254d5d3286aad290e4794ded4c46d0093cbb7f90af",
+      "original_bytes": 1130,
+      "working_sha256": "14da1c15ddf04e62047c9b254d5d3286aad290e4794ded4c46d0093cbb7f90af",
+      "working_bytes": 1130,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-checks.safe.json",
+      "original_sha256": "f842e8e8ca7411c3cc9d2ffc006075a7a6af03f88ae3c691d89c5f88a84f2a06",
+      "original_bytes": 1565,
+      "working_sha256": "f842e8e8ca7411c3cc9d2ffc006075a7a6af03f88ae3c691d89c5f88a84f2a06",
+      "working_bytes": 1565,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "runtime-plan.safe.json",
+      "original_sha256": "3182898616c16be58085aed6f8a7f70e31106fecc42354f27990990f37f03b15",
+      "original_bytes": 1516,
+      "working_sha256": "3182898616c16be58085aed6f8a7f70e31106fecc42354f27990990f37f03b15",
+      "working_bytes": 1516,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "manifest.safe.json",
+      "original_sha256": "fd97401656755802bc126e67209909fc1d30fe22925a1ad897f2ee2338204a62",
+      "original_bytes": 1182,
+      "working_sha256": "fd97401656755802bc126e67209909fc1d30fe22925a1ad897f2ee2338204a62",
+      "working_bytes": 1182,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

@@ -1,0 +1,63 @@
+{
+  "at": "2026-10-12T03:27:33.782311+00:00",
+  "root_revision": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+  "runner_before_sha256": "178b194097865cd682ed60fed0ab7ee1e1720da7552c4f22e58eaa56cd8f5b09",
+  "runner_after_sha256": "8d39ad71b7d508b59f688d4ca1aa7e77b08ef002d3330cd48b4ea076c6d9d98a",
+  "actual_command": [
+    "python3",
+    "-I",
+    "-S",
+    "-B",
+    "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/guard-controls.py"
+  ],
+  "actual_native_exit": 0,
+  "AST_all_three": "PASS",
+  "synthetic_guard_results_sha256": "89d8e6b28e9c4569f9c0690219f926b378aaa155016b4f8b67cac7339dd58f49",
+  "children_readback": [
+    {
+      "stage": "before",
+      "pid": 197625,
+      "actual_proc_pid_absent_readback": true
+    },
+    {
+      "stage": "after",
+      "pid": 197627,
+      "actual_proc_pid_absent_readback": true
+    }
+  ],
+  "source_files": [
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/safe-child-status.py",
+      "sha256": "8d39ad71b7d508b59f688d4ca1aa7e77b08ef002d3330cd48b4ea076c6d9d98a",
+      "bytes": 13256
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/guard-controls.py",
+      "sha256": "2e2911bc98e339aebfd4153bfd898d9737db362c80b6bb6cefd50b8aaa5ba77f",
+      "bytes": 10978
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/harmless-child.py",
+      "sha256": "1f4700d17ced2f2a181866ff5c3d2ec928eac062d9f9c1a50144bfa718f2b4be",
+      "bytes": 287
+    }
+  ],
+  "originals": [
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/manifest.json",
+      "sha256": "fac7de9671ce6338b0e28ddd8745918bb04cd2816cd708861685e2d4f3f521cf",
+      "file_count": 29,
+      "every_file_byte_exact": true
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-manifest.json",
+      "sha256": "8159e470b37267bb2e2142e5e772eb0b925e83b50f82a68cfb0842ba28389287",
+      "file_count": 6,
+      "every_file_byte_exact": true
+    }
+  ],
+  "no_real_environment_values_read": true,
+  "no_parent_credentials_forwarded_to_harmless_children": true,
+  "no_network": true,
+  "JVM_app_browser_container_keys": "NOT_RUN"
+}

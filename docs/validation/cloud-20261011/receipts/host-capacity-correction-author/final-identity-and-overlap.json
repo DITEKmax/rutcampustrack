@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-12T05:41:27.109925+00:00",
+  "all10831_rows_current_metadata_exact": true,
+  "unique_candidate_inodes": 10831,
+  "unique_reference_inodes": 714,
+  "no_symlink_ancestry": true,
+  "same_device_SHA_size_modes_UID_GID": true,
+  "peer3575_overlap_rows": 3447,
+  "peer3575_overlap_allocated_bytes": 924459008,
+  "new_nonoverlapping_rows": 7384,
+  "new_nonoverlapping_allocated_bytes": 594919424,
+  "old_original36_and_peer3575_are_nonadditive": true,
+  "all_original_safe_files_preserved": 131,
+  "actual_recovery": 0,
+  "resource_mutation": false
+}

@@ -1,0 +1,67 @@
+{
+  "utc": "2026-10-12T15:09:11.074854+00:00",
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "NP01-CALLER-BASELINE-BINDING",
+    "NP01-CALLER-INTERNAL-CHILD-AUTHORITY"
+  ],
+  "source_only": true,
+  "runtime": false,
+  "entries": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 316,
+      "sha256": "3d34d824dfa76669b9e08c61b362a2e3a4daadf70378f01660eef51fc6ed7753"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 6919,
+      "sha256": "d7050b1fa73fdf6dba3c8e1df9e671de4f1e6bc85f30473656bc6bafe9a96e20"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 492,
+      "sha256": "4e9d604eb4482e3d14d42b4e759b5c9cfaf77681e3ae70a64c58957312d5457f"
+    },
+    {
+      "path": "baseline-binding-counterexample.safe.json",
+      "bytes": 1007,
+      "sha256": "3cf8217ea3b7e6aab8e1d3377d3a6426c4561e234b2adaafb5ea2d8d8ea2ffb3"
+    },
+    {
+      "path": "check-baseline-binding.py",
+      "bytes": 3754,
+      "sha256": "3d3dced20585e37524f12b392000c44499ab0d2b9057c8174a5d3d2dae0f19b3"
+    },
+    {
+      "path": "check-current-source.py",
+      "bytes": 5684,
+      "sha256": "bb2c38384695dce46a928ef6d588e3046699f571278a56cea67e49a8b46b19f6"
+    },
+    {
+      "path": "current-source-checks.safe.json",
+      "bytes": 655586,
+      "sha256": "f198771e73af84c0bbe73596431954ceb721344e7a8658eecd509ce38c1bd5ff"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 1394,
+      "sha256": "577886ba361d4e893a13f00722255589bae854ea2e5870187a367ddbfa52e44f"
+    },
+    {
+      "path": "input-ledger.json",
+      "bytes": 1312,
+      "sha256": "7fd81c4b86a3375ebfb9a02388fa4803ba4ef11bc188a7b0ca55505b9c3ffde0"
+    },
+    {
+      "path": "internal-child-boundary.safe.json",
+      "bytes": 563,
+      "sha256": "9179f2b21ce1639796ada0f03ee83c93af23c6162aca0517e011329feae5c084"
+    },
+    {
+      "path": "three-protected-source-metadata.safe.json",
+      "bytes": 427,
+      "sha256": "51ff4d6a1ffefcd2a455220ce733449f99eb95b32eab3cbd8edc606f20ce85c1"
+    }
+  ]
+}

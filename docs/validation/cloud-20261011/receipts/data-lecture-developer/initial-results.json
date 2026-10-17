@@ -1,0 +1,155 @@
+{
+  "attempt": "initial-1",
+  "session": 17719,
+  "overall_exit": 1,
+  "checks": [
+    {
+      "class": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+      "tests": 2,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "legalPageSizesPreserveExactOwnRowsTypesAssignmentsAndTotals()",
+          "failure_message": null
+        },
+        {
+          "name": "teacherListDoesNotPublishPendingAdoptionBeforeExactResume()",
+          "failure_message": "java.lang.AssertionError: [uncommitted adoption must not publish teacher subject authority] \nExpecting\n  [1L]\nnot to contain\n  [1L]\nbut found\n  [1L]\n"
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "grpcClientsMustSetDeadline",
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "integrationTestsMustEndWithIT",
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "entitiesMustNotUseJpaRelations",
+          "failure_message": null
+        },
+        {
+          "name": "repositoriesReturningCollectionsMustGuardNPlusOne",
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.report.ReportDomainIsolationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "reportDoesNotImportCheckin",
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.arch.IntegrationTestNamingConventionIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "integrationTestsMustEndWithIT",
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.arch.ScheduledMustHaveSchedulerLockTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "transferStartingAfterCompactBatchBlocksWholeReadAndRecoveryPreservesScope()",
+          "failure_message": null
+        }
+      ]
+    },
+    {
+      "class": "ru.rutcampustrack.attendance.arch.GrpcClientDeadlineTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "grpcClientsMustSetDeadline",
+          "failure_message": null
+        }
+      ]
+    }
+  ],
+  "L06_measurement": {
+    "batch": 1,
+    "perItem": 2,
+    "elapsedMicros": 20031
+  },
+  "gradle_result": "BUILD FAILED (one L05candidate assertion; independent selectedcompletedresults preserved)",
+  "gradle_elapsed": "2m 57s",
+  "owned_pg_container_ids": [
+    "24c3b8fbcd93bd6c4d2036518c0d85b97e71ddc79a242ae55faf627b1bc82777"
+  ]
+}

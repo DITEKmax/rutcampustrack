@@ -1,0 +1,58 @@
+{
+  "revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "runtime": "NOT_RUN",
+  "scope": "exact2 frozen corrected broker harness paths; OTHERpaths current WIP excluded",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 1030,
+      "sha256": "b95b15bdeaa8349b542d25f3119889b7af432e956d5009793d5bd4024dd72837"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 14621,
+      "sha256": "464e164fb5752eab760e60cc17b01975c3e426d5508e05299175d99f8e215313"
+    },
+    {
+      "path": "dependency-source-inventory.json",
+      "bytes": 7319,
+      "sha256": "eaf020b9a73ec5325e1aea3e2b0a1165d631f7438df0623a510021678b29fb02"
+    },
+    {
+      "path": "final-preservation-check.json",
+      "bytes": 1076,
+      "sha256": "c37a00392f0c6ccb4284863b5c73594fe9ac6f725d58f25673117422876cc9c0"
+    },
+    {
+      "path": "governing-source-inventory.json",
+      "bytes": 1547,
+      "sha256": "3f4b9fe8ec192e418ecd5938a5ee1e1cd6c1e87506910f7c163030c45ce9657c"
+    },
+    {
+      "path": "pure-helper-proof.safe.json",
+      "bytes": 775,
+      "sha256": "b402af0d3b0bc8176340f15e776116d4194dfd19b0411143754b0170be528277"
+    },
+    {
+      "path": "source-closure-and-runtime-pending.json",
+      "bytes": 1696,
+      "sha256": "ec3cb1abadc50fcc1a70cadd6abea9d99bc2a81d6a5f827391289f1a4c1ce769"
+    },
+    {
+      "path": "source-inventory.json",
+      "bytes": 1069,
+      "sha256": "942bae536e6c8120ddc4cc533ab55f7b0bfb826cabd1a50abe7b9c4a5bd75950"
+    }
+  ],
+  "excluded": [
+    "private-frozen-source/**",
+    "author20 source archive content copied directly",
+    "actual ENV/keys/provider card content/claim token/private logs/XML",
+    "author OTHERpaths permitted Ruff/CI WIP"
+  ],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN"
+}

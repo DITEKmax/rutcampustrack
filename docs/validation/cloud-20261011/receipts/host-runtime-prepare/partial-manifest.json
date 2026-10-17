@@ -1,0 +1,62 @@
+[
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/PARTIAL.md",
+    "sha256": "9c9dfb9846d0a2f7297a76a08ce7bb385a0c98c8c4bacbc741767845b916d909",
+    "bytes": 1375
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/buildkit-current.jsonl",
+    "sha256": "64046f5457360f70aaf014452c1a9ee7ea15b1fa99af15db4b5089bb7ebb5cbd",
+    "bytes": 10770
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/buildkit-exact-filter-proof.jsonl",
+    "sha256": "4e74f782f571740d704ef59063514f014e6aec21b260228aecb590207903142e",
+    "bytes": 301
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/buildkit-prune-help.txt",
+    "sha256": "375c8f524a2252384ab656ec19f5a7b4fa1c3a19fce8fd9d32b3ee6988ed7bf0",
+    "bytes": 733
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/capacity-candidates.json",
+    "sha256": "3d8fe7e6a89834312154f8f25892e99a4a274a54860fe9090fe04702ccd17245",
+    "bytes": 16371
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/containers-current.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/images-current.jsonl",
+    "sha256": "b1ec8c64467b87a66d4ab5af4d235176c8f3c6bcb2b8d1a84c2cae5e6dcd6023",
+    "bytes": 3529
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/listeners-current.txt",
+    "sha256": "eb79357025bf81df8995e48cdaa5825aab16933d9675b52466d0c12bdcb5f5ad",
+    "bytes": 44
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/networks-current.jsonl",
+    "sha256": "ee4dd9612165274824b6aa2c9ba9817ae3ccf86b635fa08126e9b85a20f088ea",
+    "bytes": 550
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/protected-image-metadata.json",
+    "sha256": "b19328c97ffc87f8ed2d5569ab9f736df103daae0ac19b07f676bf88d8827a9c",
+    "bytes": 10242
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/resource-snapshot.json",
+    "sha256": "d5912f2ac2920633599b7c81fd16bfa7c8601c68280a9087737625e76161799d",
+    "bytes": 384
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/source-ledger.json",
+    "sha256": "430fb2f7f620c8f28b9b929090ba38506b40e0d249383dc19ac25c96f2ffe74f",
+    "bytes": 3823
+  }
+]

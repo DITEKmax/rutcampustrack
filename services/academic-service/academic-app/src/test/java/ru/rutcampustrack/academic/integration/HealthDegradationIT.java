@@ -1,5 +1,9 @@
 package ru.rutcampustrack.academic.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+
+import java.time.Duration;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -15,46 +19,36 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
 
-import java.time.Duration;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-
 /**
- * M13 G12 — проверяет что {@code /actuator/health} реально отражает
- * состояние downstream'ов (Rabbit), а не silent UP при их падении.
+ * M13 G12 — проверяет что {@code /actuator/health} реально отражает состояние downstream'ов
+ * (Rabbit), а не silent UP при их падении.
  *
- * <p>Не extends {@link AbstractAcademicIntegrationTest} (тот mock'ает
- * RabbitTemplate + excluds RabbitAutoConfiguration) и не
- * {@link AbstractAcademicEventIntegrationTest} (тот reuse=true делит
+ * <p>Не extends {@link AbstractAcademicIntegrationTest} (тот mock'ает RabbitTemplate + excluds
+ * RabbitAutoConfiguration) и не {@link AbstractAcademicEventIntegrationTest} (тот reuse=true делит
  * RabbitMQContainer с другими IT — stop его сломает соседей).
  *
- * <p>Здесь — own dedicated PostgreSQLContainer + RabbitMQContainer
- * без {@code reuse}. Тест останавливает Rabbit и проверяет что
- * {@code components.rabbit.status: DOWN} в health response.
+ * <p>Здесь — own dedicated PostgreSQLContainer + RabbitMQContainer без {@code reuse}. Тест
+ * останавливает Rabbit и проверяет что {@code components.rabbit.status: DOWN} в health response.
  *
- * <p>{@code @Order} нужен — health-up должен быть первым (до stop'а),
- * health-down — после.
+ * <p>{@code @Order} нужен — health-up должен быть первым (до stop'а), health-down — после.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class HealthDegradationIT {
 
-    @Autowired
-    TestRestTemplate restTemplate;
+    @Autowired TestRestTemplate restTemplate;
 
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16")
-            .withDatabaseName("academic_db")
-            .withUsername("rct_user")
-            .withPassword("rct_dev_pass")
-            .withReuse(true);
+    static final PostgreSQLContainer<?> POSTGRES =
+            new PostgreSQLContainer<>("postgres:16")
+                    .withDatabaseName("academic_db")
+                    .withUsername("rct_user")
+                    .withPassword("rct_dev_pass")
+                    .withReuse(true);
 
-    /**
-     * Dedicated Rabbit без reuse — тест свободно его останавливает,
-     * не ломая параллельные IT.
-     */
-    static final RabbitMQContainer RABBITMQ = new RabbitMQContainer("rabbitmq:3.13-management-alpine");
+    /** Dedicated Rabbit без reuse — тест свободно его останавливает, не ломая параллельные IT. */
+    static final RabbitMQContainer RABBITMQ =
+            new RabbitMQContainer("rabbitmq:3.13-management-alpine");
 
     static {
         POSTGRES.start();
@@ -72,9 +66,11 @@ class HealthDegradationIT {
         registry.add("spring.rabbitmq.username", RABBITMQ::getAdminUsername);
         registry.add("spring.rabbitmq.password", RABBITMQ::getAdminPassword);
 
-        registry.add("spring.autoconfigure.exclude",
-                () -> "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration," +
-                      "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
+        registry.add(
+                "spring.autoconfigure.exclude",
+                () ->
+                        "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
+                                + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
 
         // application-test.yml выключает management.health.rabbit.enabled
         // (чтобы остальные IT без Rabbit container'а не падали). Здесь — у нас
@@ -88,7 +84,8 @@ class HealthDegradationIT {
     @Test
     @Order(1)
     void healthUp_when_allDownstreams_alive() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/actuator/health", String.class);
+        ResponseEntity<String> response =
+                restTemplate.getForEntity("/actuator/health", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody())
@@ -107,20 +104,24 @@ class HealthDegradationIT {
         // Spring Boot RabbitHealthIndicator пингует через short timeout.
         // Ждём пока health indicator успеет обновиться (TCP timeout для
         // closed port'а на localhost ~ instant, но даём 10с margin).
-        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
-            ResponseEntity<String> response = restTemplate.getForEntity("/actuator/health", String.class);
+        await().atMost(Duration.ofSeconds(10))
+                .untilAsserted(
+                        () -> {
+                            ResponseEntity<String> response =
+                                    restTemplate.getForEntity("/actuator/health", String.class);
 
-            // SERVICE_UNAVAILABLE (503) когда хотя бы один indicator DOWN.
-            assertThat(response.getStatusCode())
-                    .as("health endpoint должен возвращать 503 если Rabbit упал")
-                    .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+                            // SERVICE_UNAVAILABLE (503) когда хотя бы один indicator DOWN.
+                            assertThat(response.getStatusCode())
+                                    .as("health endpoint должен возвращать 503 если Rabbit упал")
+                                    .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
 
-            assertThat(response.getBody())
-                    .as("composite status должен быть DOWN")
-                    .contains("\"status\":\"DOWN\"")
-                    .as("rabbit indicator должен сообщать о своей деградации")
-                    .contains("\"rabbit\"")
-                    .containsPattern("\"rabbit\"\\s*:\\s*\\{[^}]*\"status\"\\s*:\\s*\"DOWN\"");
-        });
+                            assertThat(response.getBody())
+                                    .as("composite status должен быть DOWN")
+                                    .contains("\"status\":\"DOWN\"")
+                                    .as("rabbit indicator должен сообщать о своей деградации")
+                                    .contains("\"rabbit\"")
+                                    .containsPattern(
+                                            "\"rabbit\"\\s*:\\s*\\{[^}]*\"status\"\\s*:\\s*\"DOWN\"");
+                        });
     }
 }

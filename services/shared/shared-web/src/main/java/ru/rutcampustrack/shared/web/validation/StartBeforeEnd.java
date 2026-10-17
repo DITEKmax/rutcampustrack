@@ -2,7 +2,6 @@ package ru.rutcampustrack.shared.web.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,13 +11,12 @@ import java.lang.annotation.Target;
 /**
  * Class-level constraint: поле {@code start} должно быть &lt; поля {@code end}.
  *
- * <p>Применим к любому классу/record с двумя полями типа {@code Temporal}
- * ({@link java.time.LocalDate}, {@link java.time.LocalDateTime},
- * {@link java.time.Instant}, {@link java.time.OffsetDateTime},
- * {@link java.time.ZonedDateTime}).
+ * <p>Применим к любому классу/record с двумя полями типа {@code Temporal} ({@link
+ * java.time.LocalDate}, {@link java.time.LocalDateTime}, {@link java.time.Instant}, {@link
+ * java.time.OffsetDateTime}, {@link java.time.ZonedDateTime}).
  *
- * <p>{@code null} в любом из полей — constraint пропускает (используйте
- * {@code @NotNull} для обязательности).
+ * <p>{@code null} в любом из полей — constraint пропускает (используйте {@code @NotNull} для
+ * обязательности).
  */
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)

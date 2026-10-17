@@ -1,0 +1,39 @@
+{
+  "review": "independent canonical NP01 selective sensitivity source plan",
+  "input_zip_sha256": "385b07206662207ee5077f2b6e22e7ff3720422c22bcf5c0ab98c85abd10a341",
+  "verdict": "APPROVE_SOURCE_PLAN",
+  "closed_findings": [
+    "NP01-SENS-ORACLE01",
+    "NP01-SENS-PLAN02"
+  ],
+  "runtime": "NOT_RUN",
+  "capacitygrant": "PENDING unsupported1GiBnotadopted",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 346,
+      "sha256": "9357e711d3e33688e5dffbf4efce3604af851b31579277811ae982373769732b"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 674,
+      "sha256": "833be3013de52336d1065bfe122777f48e06fe9df547d4c5b2d93c849b9a8315"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 3725,
+      "sha256": "453ca50a29423d288a101f20468d3bc6b409a079cbe6edf1ad3ada90f186a9ad"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 417,
+      "sha256": "d1051a8d9a5f9fcd12592f7570e281b9e22796bcb0edb6334d64b8b0a6ff2af2"
+    },
+    {
+      "path": "source-and-closure.safe.json",
+      "bytes": 1521,
+      "sha256": "c4308944cdfdfdf2cac3c508e5db47154b941a127fed299140261a92c67b7fd7"
+    }
+  ],
+  "immutable_after_seal": true
+}

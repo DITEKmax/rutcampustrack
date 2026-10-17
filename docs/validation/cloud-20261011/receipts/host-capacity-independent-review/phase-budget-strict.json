@@ -1,0 +1,26 @@
+{
+  "time": "2026-10-12T05:23:21.370866+00:00",
+  "fresh_free_bytes": 7187083264,
+  "stage_floor_plus_final_plus_transient": 4630511616,
+  "runtime_floor_plus_final_plus9Docker_plusgrowth": 8277277457,
+  "max_of_nonoverlap_phases": 8277277457,
+  "original_conservative_all_sum_unchanged": 8411495185,
+  "full4422potential_bytes": 1172307968,
+  "strict3575potential_bytes": 944234496,
+  "strict_shortfall_after_potential_recovery": 145959697,
+  "full4422historical_headroom": 82113775,
+  "actual_recovered_bytes": 0,
+  "actual_staging_or_Docker_allocation": "UNKNOWN",
+  "nonoverlap_conditions": [
+    "allfull8publicstage completed beforeDocker9allocation",
+    "all extractor/tempfiles released beforedataorapps",
+    "samefilesystematomicmoves ratherthanfullcopies",
+    "192MiBfinal remains;128MiBtransient isstagephaseonly",
+    "freshstatvfs/directoryallocation/perstepbudget andglobalgrowth rechecked"
+  ],
+  "status": "strict selection insufficient; no startup grant",
+  "final_snapshot_time": "2026-10-12T05:29:27.290048+00:00",
+  "final_snapshot_free_bytes": 7184449536,
+  "final_snapshot_strict_shortfall_after_potential_recovery": 148593425,
+  "final_snapshot_full4422_headroom": 79480047
+}

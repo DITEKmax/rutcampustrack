@@ -1,0 +1,33 @@
+{
+  "schema": "RCT_D002_ROOT481_COMPATIBILITY",
+  "old_producer_sha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "current_source_revision": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "exact_changed_root_paths": [
+    "tests/e2e/fixtures/artifact-privacy.ts",
+    "tests/e2e/fixtures/safe-reporter.ts"
+  ],
+  "hash_bindings": [
+    {
+      "path": "tests/e2e/fixtures/artifact-privacy.ts",
+      "old_producer_sha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+      "old_sha256": "a682b63534c6dfdba54843df8a412f08a020b76734de1fa6546805076d82b8d0",
+      "new_producer_sha": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+      "new_sha256": "262c6db9dd8ea808138e646290b8a7bed8ab50763682547c5d66ff0c3e647aea"
+    },
+    {
+      "path": "tests/e2e/fixtures/safe-reporter.ts",
+      "old_producer_sha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+      "old_sha256": "bbf8f3381fe7e20eb426a34f625c836264096ac1dac7f30085e547b629749c4e",
+      "new_producer_sha": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+      "new_sha256": "41c0adc7eb3f732400823a3c045f3af6f677b779891edeba346445e5f58e6cc9"
+    }
+  ],
+  "unchanged_other_root17": true,
+  "private_reporter_capture_debug_target_guard_whole_bytes_exact": true,
+  "canonical_safe_reporter_old_class_whole_bytes_exact_after_removing_only_new_diagnostics_row": true,
+  "canonical_onError_whole_bytes_exact": true,
+  "canonical_old_sanitizer_wipe_core_exact": true,
+  "step_callbacks_still_absent": true,
+  "diagnostics_row": "Existing Root independently reviewed bounded enum extension; D002 observer never reads TestResult/errors/annotations. Stage acceptance requires canonical runnerErrors0 +valid ownclosedstepartifact, notCLI0.",
+  "source_compilation_provenance": "Original3Source controls/format PASS and TS18048FAIL ran on657 oldobserver27e5. New callbackconst/source481 twohash rebind are SOURCE only; fresh addressedtypes/list pending."
+}

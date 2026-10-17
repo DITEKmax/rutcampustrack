@@ -1,0 +1,11 @@
+{
+  "author": {
+    "path": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/manifest.json",
+    "sha256": "ff9f2c4121641cd7b530a9eb57919e83051492a666328ed9f649d91e2004c968",
+    "entries": 24,
+    "exact": true
+  },
+  "archive_sha256": "209d29dcc7796d25b377183e0f2a3cce4711ccc3ae01f65f172f5949ca3163d2",
+  "archive_members": 25,
+  "all_original_members_exact": true
+}

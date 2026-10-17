@@ -1,0 +1,31 @@
+{
+  "schema": "RCT_SAFE_RECEIPT_MANIFEST_V1",
+  "files": [
+    {
+      "path": "REPORT.safe.json",
+      "bytes": 4521,
+      "sha256": "b7d6a39a594dd7449a96d73792ac613e543f8e6b76ced431ca9fa8f8ee694229"
+    },
+    {
+      "path": "launch.safe.json",
+      "bytes": 921,
+      "sha256": "947c2823c661d7d3d8d130e7a74346326b639f40fc33ccff5c788900d33469f8"
+    },
+    {
+      "path": "precredential.safe.json",
+      "bytes": 2027,
+      "sha256": "3ab8c49a5e6f8539682e2fb79392113741fc87cc5c342adf8b01fee6bf818a9b"
+    },
+    {
+      "path": "process.safe.json",
+      "bytes": 147,
+      "sha256": "b25870679f1b37918ae4c386cbfc861646709271a0c61b0ba92a62bfdb28f257"
+    },
+    {
+      "path": "terminal.safe.json",
+      "bytes": 1289,
+      "sha256": "88a1ba7b0b9bb196b7a6a13f4cde8c34061eeba39a7376fee887212f6a34183d"
+    }
+  ],
+  "raw_or_private_inputs_included": false
+}

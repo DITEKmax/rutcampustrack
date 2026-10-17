@@ -1,0 +1,528 @@
+{
+  "verdict": "APPROVE_FINITE_CURRENT_SAFE_GATE_RECEIPTS",
+  "producer": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "actual_SAFE_job_checkout": "db57c30f1c27722985733f9b023bc4795854a307",
+  "runs": {
+    "CI": 38313867449,
+    "Coverage": 38313867586,
+    "Security": 38313867469,
+    "OpenAPI": 38313867478
+  },
+  "count": 72,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/CURRENT.md",
+      "relative_path": "CURRENT.md",
+      "bytes": 279,
+      "mode": "0o600",
+      "sha256": "26a198748060dc6359c5ce10b676a15baa975375c55d887623aeb2fc8899a382"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 4452,
+      "mode": "0o600",
+      "sha256": "493173ccf2f169c6ca4a499b3fe7cfeb01244905d390916d55c4a4cdd6a499be"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/artifact-metadata-terminal.safe.json",
+      "relative_path": "artifact-metadata-terminal.safe.json",
+      "bytes": 12824,
+      "mode": "0o600",
+      "sha256": "24011034074e429beac23ad1c8c75785e25ab9a60aca928ca94217703cc3872a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/attempts.ndjson",
+      "relative_path": "attempts.ndjson",
+      "bytes": 544,
+      "mode": "0o600",
+      "sha256": "c62207fc44b05a7858d3002d108643683fbce21b3187a1b47f1634f1ddbb6e59"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/download-safe.py",
+      "relative_path": "download-safe.py",
+      "bytes": 8644,
+      "mode": "0o600",
+      "sha256": "9c24cacee06d7709f5519ffe19c33b378cd6b12ac7f77d6c5a4e92b90ea1dee3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/merge-source-qualification.safe.json",
+      "relative_path": "merge-source-qualification.safe.json",
+      "bytes": 723,
+      "mode": "0o600",
+      "sha256": "159f996ef673642af18ad2e6258b731aa8f7ff205b9a8e55eaa9372036279621"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/metadata-checkpoint-2209.safe.json",
+      "relative_path": "metadata-checkpoint-2209.safe.json",
+      "bytes": 78496,
+      "mode": "0o600",
+      "sha256": "3b8c89b3415d67236f3d6a242b7540861b2ac0515913e58fe298126060c0280c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/metadata-initial.safe.json",
+      "relative_path": "metadata-initial.safe.json",
+      "bytes": 29638,
+      "mode": "0o600",
+      "sha256": "960fd34e8638a59da239f862efd36d84e6de0e94c8d2860d27299617e5412f0f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/metadata-terminal.safe.json",
+      "relative_path": "metadata-terminal.safe.json",
+      "bytes": 81369,
+      "mode": "0o600",
+      "sha256": "fdc1a9b7d9a4218aa1071c8bff8c47e339291db2b9e9e30a830198ad94ba3bcc"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/native-final.safe.json",
+      "relative_path": "native-final.safe.json",
+      "bytes": 43458,
+      "mode": "0o600",
+      "sha256": "59ac36e4f807bfae65df98678a3b1cacc09f7334d3387900076a3ca4fd6e0231"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/native-partial.safe.json",
+      "relative_path": "native-partial.safe.json",
+      "bytes": 26699,
+      "mode": "0o600",
+      "sha256": "4e55e500454b9308d07cf04f0633b9d3dff9073d9b5fb92a1efad64f4d34b776"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-academic-service-1-integrationTest.json",
+      "relative_path": "safe-coverage-outcomes-academic-service-1-integrationTest.json",
+      "bytes": 263934,
+      "mode": "0o600",
+      "sha256": "e3412073f47c12563d60cd62011fe525f014b5d290799597f97d472a320ed4d3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-academic-service-1-test.json",
+      "relative_path": "safe-coverage-outcomes-academic-service-1-test.json",
+      "bytes": 257576,
+      "mode": "0o600",
+      "sha256": "938e73826d4553a13b227a064a09259b2e009575769b1fe6da0a587bb2fe8399"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-academic-service-1.safe.json",
+      "relative_path": "safe-coverage-outcomes-academic-service-1.safe.json",
+      "bytes": 2530,
+      "mode": "0o600",
+      "sha256": "860cff0fdc2c69568c95a64b3f759ba45d4cee33847d62a549ed91044707eb8d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-academic-service-1.zip",
+      "relative_path": "safe-coverage-outcomes-academic-service-1.zip",
+      "bytes": 36671,
+      "mode": "0o600",
+      "sha256": "614ac70ad012dbb1df4c4326e81dcaeeb5a7c26b2eba779a8590396d7eba6988"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-api-gateway-1-integrationTest.json",
+      "relative_path": "safe-coverage-outcomes-api-gateway-1-integrationTest.json",
+      "bytes": 8158,
+      "mode": "0o600",
+      "sha256": "5cf2f680e47f195936f69d8450e59dd63158c2ced0cba287ca3357df330288db"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-api-gateway-1-test.json",
+      "relative_path": "safe-coverage-outcomes-api-gateway-1-test.json",
+      "bytes": 91358,
+      "mode": "0o600",
+      "sha256": "58976f5e14f5f63f82a12dd643cf6939c37b5b161f5dec4f3001635755e635b7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-api-gateway-1.safe.json",
+      "relative_path": "safe-coverage-outcomes-api-gateway-1.safe.json",
+      "bytes": 1982,
+      "mode": "0o600",
+      "sha256": "7c396d2b5e5e456700b6569fa894b8d3b2b9b9319addbb52b49bc3a02da4e2a1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-api-gateway-1.zip",
+      "relative_path": "safe-coverage-outcomes-api-gateway-1.zip",
+      "bytes": 7632,
+      "mode": "0o600",
+      "sha256": "2c119a0c37e5950fc30c2bdbcc7fad3645899e2720c1b2dbc068b25044245de1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-attendance-service-1-integrationTest.json",
+      "relative_path": "safe-coverage-outcomes-attendance-service-1-integrationTest.json",
+      "bytes": 138678,
+      "mode": "0o600",
+      "sha256": "184f4dd91f5e80efb2e1626813e47f05d9125a5a54e9fc5f853a9b905c9e7ae4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-attendance-service-1-test.json",
+      "relative_path": "safe-coverage-outcomes-attendance-service-1-test.json",
+      "bytes": 193504,
+      "mode": "0o600",
+      "sha256": "425013b21df18406460effc280785752c8405171d934e56a16c378f94b541fed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-attendance-service-1.safe.json",
+      "relative_path": "safe-coverage-outcomes-attendance-service-1.safe.json",
+      "bytes": 2006,
+      "mode": "0o600",
+      "sha256": "2fdf19b970a93f67f0120094463869cd33cf8c6e7d857e22308d36d468a3735d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-attendance-service-1.zip",
+      "relative_path": "safe-coverage-outcomes-attendance-service-1.zip",
+      "bytes": 27730,
+      "mode": "0o600",
+      "sha256": "18d6c9313fe83737203ac9fea803045f8132864c1f3274e4dd8e12f16b5bfc2e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-auth-service-1-integrationTest.json",
+      "relative_path": "safe-coverage-outcomes-auth-service-1-integrationTest.json",
+      "bytes": 95942,
+      "mode": "0o600",
+      "sha256": "0ed1b9918adcaca5984814f24e7563b2f58b0e8a2d730a94383bc4c325de77a7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-auth-service-1-test.json",
+      "relative_path": "safe-coverage-outcomes-auth-service-1-test.json",
+      "bytes": 83524,
+      "mode": "0o600",
+      "sha256": "80e0c2ace8e236db732bee122f936668b778f65a153e93bab60188b378333156"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-auth-service-1.safe.json",
+      "relative_path": "safe-coverage-outcomes-auth-service-1.safe.json",
+      "bytes": 1988,
+      "mode": "0o600",
+      "sha256": "3df158dadeef302a131dd9e4e0447922425ae2b2a598dceed1ba56eb4a6f069f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-auth-service-1.zip",
+      "relative_path": "safe-coverage-outcomes-auth-service-1.zip",
+      "bytes": 16169,
+      "mode": "0o600",
+      "sha256": "867058636d37b9a0689d76d7bc09a52316ef6a80369b3b3b12332cf5fb4b35ae"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-notification-service-1-integrationTest.json",
+      "relative_path": "safe-coverage-outcomes-notification-service-1-integrationTest.json",
+      "bytes": 40030,
+      "mode": "0o600",
+      "sha256": "8d038937601f7eed2f84e6a55d7abd9574fd0d577572c743d8d30a399821d520"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-notification-service-1-test.json",
+      "relative_path": "safe-coverage-outcomes-notification-service-1-test.json",
+      "bytes": 82311,
+      "mode": "0o600",
+      "sha256": "400b49107e138129e5cbaf5bc6c264f028856cb7588402146c19313791448369"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-notification-service-1.safe.json",
+      "relative_path": "safe-coverage-outcomes-notification-service-1.safe.json",
+      "bytes": 2011,
+      "mode": "0o600",
+      "sha256": "f47a356e1adbd070655411c24bb1c26fab84d637f4ac0c3cbc059f2be82b06d6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-notification-service-1.zip",
+      "relative_path": "safe-coverage-outcomes-notification-service-1.zip",
+      "bytes": 11854,
+      "mode": "0o600",
+      "sha256": "aa51370168c5d23a08d952765e310fb6d9d23a00c79b1a3235917b3ef58d119a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-schedule-service-1-integrationTest.json",
+      "relative_path": "safe-coverage-outcomes-schedule-service-1-integrationTest.json",
+      "bytes": 125364,
+      "mode": "0o600",
+      "sha256": "193a5c2a160e136d7e39170ecbe43db93f687d36bfaf95d1ff1af05bf247b3cf"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-schedule-service-1-test.json",
+      "relative_path": "safe-coverage-outcomes-schedule-service-1-test.json",
+      "bytes": 139036,
+      "mode": "0o600",
+      "sha256": "290e7f124ffa31fb2e4d650494f10e61c556497b253d41814a5ff04c03e5226d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-schedule-service-1.safe.json",
+      "relative_path": "safe-coverage-outcomes-schedule-service-1.safe.json",
+      "bytes": 2539,
+      "mode": "0o600",
+      "sha256": "ddd4657876621aaf91a869346768e6874cceb22b1820fbf15df898d3b0994ef4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-coverage-outcomes-schedule-service-1.zip",
+      "relative_path": "safe-coverage-outcomes-schedule-service-1.zip",
+      "bytes": 16256,
+      "mode": "0o600",
+      "sha256": "d7a5aab6e6f7c21c7f9044708f1f3e68d5511651d90e6fdc269247c285ac2bf6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-academic-service-1-integrationTest.json",
+      "relative_path": "safe-integration-outcomes-academic-service-1-integrationTest.json",
+      "bytes": 263894,
+      "mode": "0o600",
+      "sha256": "25f0fe130ef4ae0c00be33f6e50d9388678da6d2d41a35aea7786441aa636b0a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-academic-service-1.safe.json",
+      "relative_path": "safe-integration-outcomes-academic-service-1.safe.json",
+      "bytes": 1649,
+      "mode": "0o600",
+      "sha256": "e476722ad22d65c0fb827b517ee1daf245bc87fe7501255c4476f7486baad392"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-academic-service-1.zip",
+      "relative_path": "safe-integration-outcomes-academic-service-1.zip",
+      "bytes": 21432,
+      "mode": "0o600",
+      "sha256": "57a6957025a66cef0f32ad4fa7ac691b409c7398e439979aeb8507028627db1f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-api-gateway-1-integrationTest.json",
+      "relative_path": "safe-integration-outcomes-api-gateway-1-integrationTest.json",
+      "bytes": 8118,
+      "mode": "0o600",
+      "sha256": "30ba32be07b027b46a4cc30de32a835f2c7a477f5d776257a6763ac80afea65c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-api-gateway-1.safe.json",
+      "relative_path": "safe-integration-outcomes-api-gateway-1.safe.json",
+      "bytes": 1106,
+      "mode": "0o600",
+      "sha256": "32ee472915178abca96b91975f95b1cea97031bcb5341b7615bbe58eb0133fc5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-api-gateway-1.zip",
+      "relative_path": "safe-integration-outcomes-api-gateway-1.zip",
+      "bytes": 1341,
+      "mode": "0o600",
+      "sha256": "118e0b51e09c95d0f7df07258bf4729ece722a4d2e076246887f2b62ccde373f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-attendance-service-1-integrationTest.json",
+      "relative_path": "safe-integration-outcomes-attendance-service-1-integrationTest.json",
+      "bytes": 138638,
+      "mode": "0o600",
+      "sha256": "874b11c5adb1d4bd4db25c73135007565c3f4fee3cae01f94a69d37d5f4c2a66"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-attendance-service-1.safe.json",
+      "relative_path": "safe-integration-outcomes-attendance-service-1.safe.json",
+      "bytes": 1123,
+      "mode": "0o600",
+      "sha256": "4d227f0405cd632a8bd4e834c380e517db426079d31314e0d04a5bf5fab10331"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-attendance-service-1.zip",
+      "relative_path": "safe-integration-outcomes-attendance-service-1.zip",
+      "bytes": 12444,
+      "mode": "0o600",
+      "sha256": "acc5315a349f1b6d1be351f32a0f3ac8c09fb02db9116276d0caff8fc0e389a0"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-auth-service-1-integrationTest.json",
+      "relative_path": "safe-integration-outcomes-auth-service-1-integrationTest.json",
+      "bytes": 95902,
+      "mode": "0o600",
+      "sha256": "f953273b805c751b75339d75c3b0fc7a9a06560806d42a9a7d59a94e827dd2c9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-auth-service-1.safe.json",
+      "relative_path": "safe-integration-outcomes-auth-service-1.safe.json",
+      "bytes": 1110,
+      "mode": "0o600",
+      "sha256": "f50a34a4e9b0706265fb3b8442ec9a983829fc97007d1dcb7d09583ff74d1a8a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-auth-service-1.zip",
+      "relative_path": "safe-integration-outcomes-auth-service-1.zip",
+      "bytes": 8306,
+      "mode": "0o600",
+      "sha256": "1785af68215d5726696cc9219fcab7de7e9c2df9dd42b9f14dc36651a6dffa4a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-notification-service-1-integrationTest.json",
+      "relative_path": "safe-integration-outcomes-notification-service-1-integrationTest.json",
+      "bytes": 39990,
+      "mode": "0o600",
+      "sha256": "8f5d656eebf963f730c3b703b2d88c9beac34cf90cf5452b13f394294b4b1ada"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-notification-service-1.safe.json",
+      "relative_path": "safe-integration-outcomes-notification-service-1.safe.json",
+      "bytes": 1125,
+      "mode": "0o600",
+      "sha256": "8ceca14a446b0b5b84d486dc904fc753adadc11e5d890912d14d383d8784dd33"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-notification-service-1.zip",
+      "relative_path": "safe-integration-outcomes-notification-service-1.zip",
+      "bytes": 4167,
+      "mode": "0o600",
+      "sha256": "7bb5cc3ee4e5546fe159df15ba828e8288c6f743f28693d99d02048468fc337d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-schedule-service-1-integrationTest.json",
+      "relative_path": "safe-integration-outcomes-schedule-service-1-integrationTest.json",
+      "bytes": 125324,
+      "mode": "0o600",
+      "sha256": "09d44533eefdab93b65a4e7deb8c1741a2157e46356ad4e755e48794e98381e7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-schedule-service-1.safe.json",
+      "relative_path": "safe-integration-outcomes-schedule-service-1.safe.json",
+      "bytes": 1658,
+      "mode": "0o600",
+      "sha256": "a8a33cece3ab6255be58e7d0c589c6ec1654542eb2c66a1c76915fc5f27461f8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-integration-outcomes-schedule-service-1.zip",
+      "relative_path": "safe-integration-outcomes-schedule-service-1.zip",
+      "bytes": 10767,
+      "mode": "0o600",
+      "sha256": "ca75a3cb67c49be1ee1ada21d6c441b46891b7141570899dfbdf0cad1dc69a03"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-academic-service-1-test.json",
+      "relative_path": "safe-unit-outcomes-academic-service-1-test.json",
+      "bytes": 257529,
+      "mode": "0o600",
+      "sha256": "16e297037cc42e19a20e2536f6676d10c504abe336089bc093cf037c03b614bf"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-academic-service-1.safe.json",
+      "relative_path": "safe-unit-outcomes-academic-service-1.safe.json",
+      "bytes": 1094,
+      "mode": "0o600",
+      "sha256": "0c83cfd55af47f463d00b75c7d024c1342ecb054da7ff2b825e9d3ff83609643"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-academic-service-1.zip",
+      "relative_path": "safe-unit-outcomes-academic-service-1.zip",
+      "bytes": 15174,
+      "mode": "0o600",
+      "sha256": "3f65387cb379d0e04a9aa55ccdc868ab8725075f461eeb823351e9e4f05a6389"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-api-gateway-1-test.json",
+      "relative_path": "safe-unit-outcomes-api-gateway-1-test.json",
+      "bytes": 91311,
+      "mode": "0o600",
+      "sha256": "33a413b2335f0da46f270dc61ae53105bea59e191f8933d237509a5ba0702559"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-api-gateway-1.safe.json",
+      "relative_path": "safe-unit-outcomes-api-gateway-1.safe.json",
+      "bytes": 1083,
+      "mode": "0o600",
+      "sha256": "5ca8eb15329d2e60e8d52231140e1f8158e25b7b144c64e72a2dffe87c4dbb4d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-api-gateway-1.zip",
+      "relative_path": "safe-unit-outcomes-api-gateway-1.zip",
+      "bytes": 6218,
+      "mode": "0o600",
+      "sha256": "0787918916cc1cab8a4f6c3379a499f1aab9b639896b68a87d062a57d2ea180d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-attendance-service-1-test.json",
+      "relative_path": "safe-unit-outcomes-attendance-service-1-test.json",
+      "bytes": 193457,
+      "mode": "0o600",
+      "sha256": "6050256d5dac9ccd169d7c24e3c52a7bfeab3b0fa56b92ee6f939840cd6296ab"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-attendance-service-1.safe.json",
+      "relative_path": "safe-unit-outcomes-attendance-service-1.safe.json",
+      "bytes": 1098,
+      "mode": "0o600",
+      "sha256": "a1d65f9abeacc7f0a432377e97aefe3881bebdfeef4215d4e0fcd90d15b077e9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-attendance-service-1.zip",
+      "relative_path": "safe-unit-outcomes-attendance-service-1.zip",
+      "bytes": 15208,
+      "mode": "0o600",
+      "sha256": "ceb26e4160370469f42bf2cca5dc2feeacf8ae167a32b0fe1563394da2ced9be"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-auth-service-1-test.json",
+      "relative_path": "safe-unit-outcomes-auth-service-1-test.json",
+      "bytes": 83477,
+      "mode": "0o600",
+      "sha256": "af4960435b3488f836cf2ecf39d91ec7be26c9ab0af44c1ee20300c6182785ef"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-auth-service-1.safe.json",
+      "relative_path": "safe-unit-outcomes-auth-service-1.safe.json",
+      "bytes": 1085,
+      "mode": "0o600",
+      "sha256": "62f94771bcf44c37ddc240bd1cb396f88a354605ac35292d7678da759758380e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-auth-service-1.zip",
+      "relative_path": "safe-unit-outcomes-auth-service-1.zip",
+      "bytes": 7795,
+      "mode": "0o600",
+      "sha256": "fd2bd92e113309a57187f602aa2fabd391dd456f41cc8398b989259e2cff59a6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-notification-service-1-test.json",
+      "relative_path": "safe-unit-outcomes-notification-service-1-test.json",
+      "bytes": 82264,
+      "mode": "0o600",
+      "sha256": "f77336f012cf2c9c135e7ea89972c6f1d944455f6b5321cfb0eebce6668eccce"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-notification-service-1.safe.json",
+      "relative_path": "safe-unit-outcomes-notification-service-1.safe.json",
+      "bytes": 1101,
+      "mode": "0o600",
+      "sha256": "051d1aed045b4d96a7745cc24ff5ca8fb7e5e764df168eb16f4e2c22cf2ab429"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-notification-service-1.zip",
+      "relative_path": "safe-unit-outcomes-notification-service-1.zip",
+      "bytes": 7630,
+      "mode": "0o600",
+      "sha256": "ef8b229daf10c8e170c443d52d7a038cbf094f16bc554f369c935a8d0407f9e7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-schedule-service-1-test.json",
+      "relative_path": "safe-unit-outcomes-schedule-service-1-test.json",
+      "bytes": 138989,
+      "mode": "0o600",
+      "sha256": "f5a594a35f4d44c7e97329bdef3be377660ce60e2a30a039ed4ccdef800c8814"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-schedule-service-1.safe.json",
+      "relative_path": "safe-unit-outcomes-schedule-service-1.safe.json",
+      "bytes": 1093,
+      "mode": "0o600",
+      "sha256": "2ed686befc10f00aab8cf99409468751df4c69560f4b63a059d80d48ae734b1e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/safe-unit-outcomes-schedule-service-1.zip",
+      "relative_path": "safe-unit-outcomes-schedule-service-1.zip",
+      "bytes": 5406,
+      "mode": "0o600",
+      "sha256": "4e8d1a689a1384f435708639fec161c64bd4df784fa4dd3f513018f9d165d796"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_18451_receipts/source-identity.safe.json",
+      "relative_path": "source-identity.safe.json",
+      "bytes": 2091,
+      "mode": "0o600",
+      "sha256": "6bd34299b63c58b4d47ef80f3cabd2318abb8ac12a3255c7ebdd7dffe63ff0b1"
+    }
+  ],
+  "all4current_gate_success": true,
+  "SAFE_archives": 18,
+  "task_outcomes": 24,
+  "historical96_cause": "UNKNOWN",
+  "failure_diagnostic_native_branch_exercised": false,
+  "whole_product_matrix_promoted": false,
+  "raw_private_fields_included": false,
+  "local_native_or_source_mutation": false,
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN"
+}

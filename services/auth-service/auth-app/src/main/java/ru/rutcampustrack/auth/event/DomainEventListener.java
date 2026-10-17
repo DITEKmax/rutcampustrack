@@ -9,17 +9,17 @@ import ru.rutcampustrack.shared.events.AbstractEventPublisher;
 /**
  * Слушает Spring {@link DomainEvent} и отправляет в RabbitMQ fanout.
  *
- * <p>Auth Service не работает в JPA-транзакции при публикации OTP-событий,
- * поэтому используем обычный {@code @EventListener} (синхронно после вызова
- * {@code ApplicationEventPublisher.publishEvent()}), а не TransactionalEventListener.
+ * <p>Auth Service не работает в JPA-транзакции при публикации OTP-событий, поэтому используем
+ * обычный {@code @EventListener} (синхронно после вызова {@code
+ * ApplicationEventPublisher.publishEvent()}), а не TransactionalEventListener.
  *
- * <p>Ошибки AMQP логируются, но не пробрасываются: сбой rabbit'а не должен
- * ронять основной поток аутентификации.
+ * <p>Ошибки AMQP логируются, но не пробрасываются: сбой rabbit'а не должен ронять основной поток
+ * аутентификации.
  *
- * <p>M09 G2.6: бин регистрируется {@code @Bean}'ом в {@link RabbitConfig}
- * (не через {@code @Component}), чтобы получить именно наш
- * {@code RabbitTemplate} с {@code Jackson2JsonMessageConverter}, а не
- * default-autoconfig'овый с {@code SimpleMessageConverter} (байты/Java).
+ * <p>M09 G2.6: бин регистрируется {@code @Bean}'ом в {@link RabbitConfig} (не через
+ * {@code @Component}), чтобы получить именно наш {@code RabbitTemplate} с {@code
+ * Jackson2JsonMessageConverter}, а не default-autoconfig'овый с {@code SimpleMessageConverter}
+ * (байты/Java).
  */
 public class DomainEventListener extends AbstractEventPublisher {
 
@@ -44,8 +44,11 @@ public class DomainEventListener extends AbstractEventPublisher {
             // Jackson'ом бросает MessageConversionException/IllegalStateException,
             // которые раньше пробрасывались и ломали /auth/otp/request. Сбой
             // rabbit'а/сериализации не должен ронять основной поток.
-            log.warn("Failed to publish event {} ({}): {}",
-                    event.getEventType(), event.getEventId(), e.getMessage());
+            log.warn(
+                    "Failed to publish event {} ({}): {}",
+                    event.getEventType(),
+                    event.getEventId(),
+                    e.getMessage());
         }
     }
 }

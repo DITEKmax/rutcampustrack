@@ -1,0 +1,115 @@
+{
+  "verdict": "AUTHOR_NARROW_SOURCE_CORRECTED_PENDING_INDEPENDENT_RECHECK",
+  "original_manifest_sha256": "9cafda102559d0f2b062fc0bfda816611d331121cee8e5c75a3412c761a0d3c9",
+  "original_ZIP_sha256": "1628de2fef1f4d3eaadcd9444dc3fe75155bb3a1f9301e497d55deb3d68a59b8",
+  "base": "db177beeb9660f5a17d7fadf660e024e28f9f4b9",
+  "changed_from_original": 2,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_safe_fail_diagnostics_line_correction/CURRENT.md",
+      "relative_path": "CURRENT.md",
+      "bytes": 321,
+      "mode": "0o600",
+      "sha256": "39fd387b986292e2f4a533d89b81e53c3c9c9b39ad33ae40a9a0a00f2fe9cfa1",
+      "kind": "SAFE_PROOF"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_safe_fail_diagnostics_line_correction/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 2477,
+      "mode": "0o600",
+      "sha256": "e10cafa7e89ae97dd967569da02a7aeba18098f1ffc2f0c8cdaad41ed249f770",
+      "kind": "SAFE_PROOF"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_safe_fail_diagnostics_line_correction/attempts.ndjson",
+      "relative_path": "attempts.ndjson",
+      "bytes": 326,
+      "mode": "0o600",
+      "sha256": "b58d94dc708d1050b1029c0a7a43af6595eb030628b2a5291e856cb85367b411",
+      "kind": "SAFE_PROOF"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_safe_fail_diagnostics_line_correction/check-correction.py",
+      "relative_path": "check-correction.py",
+      "bytes": 4432,
+      "mode": "0o600",
+      "sha256": "3c4cc01574b35a8cb618b5dda39d8c3eb66f4819319dfb9cc9c454146967011a",
+      "kind": "SAFE_PROOF"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_safe_fail_diagnostics_line_correction/correction-checks.safe.json",
+      "relative_path": "correction-checks.safe.json",
+      "bytes": 1187,
+      "mode": "0o600",
+      "sha256": "54913d7197bd4a34c647243ba164089538b2d122e48d03afbc8a1fff54f17ab6",
+      "kind": "SAFE_PROOF"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_safe_fail_diagnostics_line_correction/correction-vs-original.patch",
+      "relative_path": "correction-vs-original.patch",
+      "bytes": 3201,
+      "mode": "0o600",
+      "sha256": "7b35b403bf7bcad0b1fe00c26bb32168b82ce2fbf6cb9b87f4f5e678be46e72f",
+      "kind": "SAFE_PROOF"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/schedule_safe_fail_diagnostics_line_correction/lint.safe.json",
+      "relative_path": "lint.safe.json",
+      "bytes": 436,
+      "mode": "0o600",
+      "sha256": "98d97b168bc03bfd7b0143b11142b4eccbca87c0b94281db31538df7cd876158",
+      "kind": "SAFE_PROOF"
+    },
+    {
+      "path": "/tmp/rct-schedule-safe-diagnostic-line-correction-db177/.github/workflows/coverage.yml",
+      "relative_path": "source/.github/workflows/coverage.yml",
+      "repo_path": ".github/workflows/coverage.yml",
+      "bytes": 10563,
+      "mode": "0o600",
+      "sha256": "561c6906c5a80725c638d4951e007aa54e7644d8e7a6b60c154d4b3a8e9db68b",
+      "original9caf_source_sha256": "561c6906c5a80725c638d4951e007aa54e7644d8e7a6b60c154d4b3a8e9db68b",
+      "changed_from_original": false,
+      "kind": "ASSIGNED_SOURCE"
+    },
+    {
+      "path": "/tmp/rct-schedule-safe-diagnostic-line-correction-db177/scripts/collect-ci-test-outcomes.py",
+      "relative_path": "source/scripts/collect-ci-test-outcomes.py",
+      "repo_path": "scripts/collect-ci-test-outcomes.py",
+      "bytes": 15464,
+      "mode": "0o600",
+      "sha256": "238a5a9fb3f7d1a62b138c51bffd9037636645e970d74bf21467afcde4488bd9",
+      "original9caf_source_sha256": "64509ab721659fd43ccc8179905afe4b5bcb6f2848bb9a432e9cb83f4392dbf1",
+      "changed_from_original": true,
+      "kind": "ASSIGNED_SOURCE"
+    },
+    {
+      "path": "/tmp/rct-schedule-safe-diagnostic-line-correction-db177/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "relative_path": "source/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "repo_path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "bytes": 111858,
+      "mode": "0o600",
+      "sha256": "4a9c9ac845d2fdf62b2b0f26497a897c42878eed8ca5c766e8747a6d00ef6ad0",
+      "original9caf_source_sha256": "4a9c9ac845d2fdf62b2b0f26497a897c42878eed8ca5c766e8747a6d00ef6ad0",
+      "changed_from_original": false,
+      "kind": "ASSIGNED_SOURCE"
+    },
+    {
+      "path": "/tmp/rct-schedule-safe-diagnostic-line-correction-db177/tests/harness/test_ci_test_outcomes.py",
+      "relative_path": "source/tests/harness/test_ci_test_outcomes.py",
+      "repo_path": "tests/harness/test_ci_test_outcomes.py",
+      "bytes": 21679,
+      "mode": "0o600",
+      "sha256": "6f59b3a81f51f3717136f58473f880b272b2a2dada292dc2eae2f967eb32e139",
+      "original9caf_source_sha256": "00146679bf538691eeee46ac6af72f4911e37022d3559a083b52f587c10f497d",
+      "changed_from_original": true,
+      "kind": "ASSIGNED_SOURCE"
+    }
+  ],
+  "count": 11,
+  "native": false,
+  "raw_fields_included": false,
+  "history_cause": "UNKNOWN",
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN"
+}

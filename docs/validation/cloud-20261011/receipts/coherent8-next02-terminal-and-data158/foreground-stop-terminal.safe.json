@@ -1,0 +1,63 @@
+{
+  "all8_settled": true,
+  "known16_identities_absent": true,
+  "terminal": [
+    {
+      "service": "mongo",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": 0,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "academic",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "auth",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "schedule",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "attendance",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "bff",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": 143,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "gateway",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    },
+    {
+      "service": "notification",
+      "settled": true,
+      "reason": "STOP_REQUEST",
+      "native_exit": -9,
+      "all_owned_including_Z_reaped": true
+    }
+  ],
+  "no_foreign_or_numeric_group_signal": true
+}

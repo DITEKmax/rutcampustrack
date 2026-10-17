@@ -1,0 +1,14 @@
+{
+  "utc": "2026-10-12T09:15:57.718733+00:00",
+  "writer": "ci_academic_heap",
+  "source_scope": [
+    "AdminGroupsScreen.vue exactly FOUR spans promotedStudentCount/archivedStudentCount/skippedStudentCount/skippedGroupCount: targeted prettier-ignore and original literalspace between strong+small, no othercounts/newUI",
+    "headman-journal-page.component.html exactONE mat-option interpolation/@if node preserves original literalgap; targetedignore only",
+    "scripts/format-authored.mjs exactTWO pg_format argv add --no-extra-line capture+inplace, pinned5.6 no otherflags/rules",
+    "tests/e2e/playwright.config.ts ONE testIgnore regex extends existingmobile exclusion tocloud-accepted-.*.spec.ts; optinNEWrealServercases excludeddefaultsmoke; no globaltest/gate skips"
+  ],
+  "proof": "realVue/Angularcompilertext+originalcounterexamples/idempotence; exactSQLEOF5.6 red/default/green bothformatterhooksfixedpoint; default/real-optin discovery source+futureactuallist separation",
+  "commits": "separatesmall source/toolingpreservation beforemechanical; allsameauthorconfigownership. Independentfreshreview later",
+  "deps": "minimalPG16-compatible pinnedpglast6.x owncache withinalready64MiBtotal permitted; no projectdeps/locks/versionfallback",
+  "resource": "lightNode512MiB/PythonSQLonly; no currentJava/Docker/broker grant"
+}

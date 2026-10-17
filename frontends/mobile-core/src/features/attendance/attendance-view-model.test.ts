@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  attendanceExplanationText,
   displayPercent,
   findAttendanceLesson,
   graphForRange,
@@ -19,7 +20,9 @@ const lesson = {
   type: 'LECTURE',
   schedule: { startsAt: '10:15:00', endsAt: '11:45:00', room: null },
   status: 'ABSENT',
-  requestOptions: [{ id: 'request.opaque', kind: 'EXCUSE', label: 'Уважительная причина', enabled: true }],
+  requestOptions: [
+    { id: 'request.opaque', kind: 'EXCUSE', label: 'Уважительная причина', enabled: true },
+  ],
 } satisfies AttendanceLesson
 
 const data = {
@@ -34,14 +37,43 @@ const data = {
   days: [{ date: lesson.date, weekday: 'вт', dayNumber: '8', state: 'CURRENT', lessons: [lesson] }],
   subjects: [],
   graph: {
-    days: [{ id: 'day:opaque', label: '8', dateFrom: lesson.date, dateTo: lesson.date, state: 'NO_DATA', metrics: {
-      present: { count: 0, percent: null }, presentOrExcused: { count: 0, percent: null }, excused: { count: 0, percent: null }, absent: { count: 0, percent: null }, held: 0, planned: 1,
-    } }],
+    days: [
+      {
+        id: 'day:opaque',
+        label: '8',
+        dateFrom: lesson.date,
+        dateTo: lesson.date,
+        state: 'NO_DATA',
+        metrics: {
+          present: { count: 0, percent: null },
+          presentOrExcused: { count: 0, percent: null },
+          excused: { count: 0, percent: null },
+          absent: { count: 0, percent: null },
+          held: 0,
+          planned: 1,
+        },
+      },
+    ],
     weeks: [],
   },
 } satisfies AttendanceViewModel
 
 describe('attendance controlled projection helpers', () => {
+  it('keeps full explanation text only for the matching status and omits missing legacy fields', () => {
+    const explanation = {
+      reasonCode: 'OTHER',
+      reasonText: 'Другое',
+      comment: 'Длинный текст '.repeat(30),
+      cancellationReason: 'Причина отмены',
+    }
+    expect(attendanceExplanationText('EXCUSED', explanation)).toBe(
+      `Другое · ${explanation.comment}`,
+    )
+    expect(attendanceExplanationText('CANCELLED', explanation)).toBe('Причина отмены')
+    for (const status of ['PRESENT', 'ABSENT', 'FUTURE'] as const)
+      expect(attendanceExplanationText(status, explanation)).toBe('')
+    expect(attendanceExplanationText('EXCUSED')).toBe('')
+  })
   it('keeps null distinct from a real zero and formats a percentage for display', () => {
     expect(displayPercent(null)).toBe('—')
     expect(displayPercent(0)).toBe('0%')

@@ -1,0 +1,77 @@
+{
+  "schema": "RCT_P06_TEST_SOURCE_READY_V1",
+  "state": "SOURCE_READY_INDEPENDENT_REVIEW_REQUIRED_NATIVE_NOT_GRANTED",
+  "utc": "2026-10-13T05:47:11.358590+00:00",
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "worktree": "/workspace/rct-worktrees/shared-validator-execution-20261013",
+  "branch": "codex/session-durability-validation-20261013",
+  "base": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "scope": {
+    "modified": [
+      "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java"
+    ],
+    "new_tests": 1,
+    "new_private_helpers": 2,
+    "product_config_contract_dependency_workflow_runner_changes": 0
+  },
+  "source_pins": {
+    "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java": "36bb223e2f903b1133bee2ce940e3341f48fa16f481441232c5668643dbc9ba9",
+    "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java": "b5cef648221489390b9c2d2746bb5791a75dd1e2858d91001cf952226c5779b7",
+    "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionService.java": "47fe22d35bcdeb3518594d5b529df7ca0d2948dfe0453f99f6272268ec41b092",
+    "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/port/SessionStatePort.java": "d18f81269dbf18e4d8914b87469a3b5fefc0fc943d5aa9d3c2407807c7788d8f",
+    "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/InternalSessionAdmissionController.java": "76e773ef6efca2d4fc48b822c7281b1f741d407ebd0e2bd78898dd460aa678ab",
+    "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java": "c6e5cf36379ce00cadd064cda00a0127cc27e488a190a938ba367d123cd62eae",
+    "services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql": "1d15418fa4869d1288b3fa25f688a237087294f360aea6729f524de2f5b67f90",
+    "services/auth-service/auth-app/build.gradle.kts": "2b73dd93e93b58c26d51889c89e3c6814524b88f33084ad2a55b65ef7c03c397",
+    "build.gradle.kts": "58d676307ae668e6a4dddecea21a1676e14f00cc74d49cc4f758d3f464cbd8ae",
+    "gradle/libs.versions.toml": "31f2c8b6a39801380de5674b74517b0707f1acc2bb3ac06f2ee767c9000dcdb8"
+  },
+  "accepted_family": "RESEARCH-P06",
+  "parent_disposition": "UNKNOWN",
+  "accepted_sources": [
+    "TASK-CONTRACT.md security/requiredbehavior/P06",
+    "docs/product/decisions/2026-10-08-limited-administrators.md liveauthority/outagefailclosed",
+    "p06-reconstruction-outage-source/REPORT.safe.json4bc2/manifest3857",
+    "Root Source-only exactoneIT authorassignment"
+  ],
+  "oracle_sequence": [
+    "RealPG/RSA/activeSTUDENT owner/sessionsAandB; both retainedbearers initially admitted; realA revokecommits.",
+    "Construct newbounded DataSource/JdbcTemplate/transactionmanager/JdbcSessionAuthority/SessionAdmissionService/controller againstSAMEPG and SAMEsigner; no resets/reseeds/migrationreruns. A exact401SESSION_REVOKED plusJDBCrefreshSESSION_REVOKED; B200/signedcanonicalownUID-SID-versions-STUDENT-ACTIVE-group; knownBrefreshJTI rotates successfully.",
+    "PauseonlyexistingPOSTGRES fixturegetContainerId; assertactualDockerpaused state. Otherwisevalid B productionreceiver503/AUTHORITY_UNAVAILABLE/no-store/no internalToken; samecorrectBrefreshJTI\u2192realJDBC AUTHORITY_UNAVAILABLE. Local2sec connect/sockettimeouts onlynewDataSource; newcase@TestTimeout60 olddefaults unchanged.",
+    "Finally inspectexactownedcontainer andunpause evenuncertainpauseresponse (attemptflag setbeforeeffect). Requireunpaused, Bpositive andA401negative afterrecovery. RAMequalityofsessionJTI/versions/expiry/revocation/times/labels, userrolesversion, exactownsecurityeventrows andoutboxcount unchanged. KnownBrefreshJTI stillsucceeds afterimmutabilitycheck."
+  ],
+  "privacy": [
+    "No print/logger/artifactwrite/testCasecontext/responsebody/token/key/IDs/JTI/hashvalues in newcode. Token/body/JTI/state stayRAM; tuplecomparison andidentityclaims checkbooleans only; negativebody mustlackinternalToken. ExistingSourcehashes/publiccode onlyinpacket.",
+    "FutureprivateJUnitXML/Gradlelog couldcontainframeworkfailure details; neverpublish/hashraw; existingclosedSource-method/status/counters collector required."
+  ],
+  "verification_proposal": {
+    "native_granted": false,
+    "gradle_tasks": [
+      ":services:auth-service:auth-app:compileJava",
+      ":services:auth-service:auth-app:compileTestJava",
+      ":services:auth-service:auth-app:integrationTest"
+    ],
+    "selector": "ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT.durableRevokeSurvivesReconstructionAndRealAuthorityOutageFailsClosed",
+    "one_invocation": "./gradlew :services:auth-service:auth-app:compileJava :services:auth-service:auth-app:compileTestJava :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT.durableRevokeSurvivesReconstructionAndRealAuthorityOutageFailsClosed --no-daemon --offline --max-workers=1 --rerun-tasks",
+    "expected_xml": "services/auth-service/auth-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT.xml",
+    "expected_cases": 1,
+    "no_skip_empty_success": true,
+    "formatter": "ExistingJavaformatter targetonlynewhunk/file aftergrant; oldSourcebyteprotection mustremainexplicit ifmechanicaloldfilechanges arise. NoJavaformatter run now.",
+    "runtime_scope": "ExistingTestcontainers ownedfreshPG16/normalDocker/Ryuk lifetime and exactfixturepause-unpause only. Root separate resourcegrant/platformapproval required; neversharedstand/oldvols/nativeMongo/realcredentials."
+  },
+  "critical_sensitivity_proposal": {
+    "status": "PROPOSED_ONLY_NOT_WRITTEN_NOT_GRANTED",
+    "count": 1,
+    "temporary_fault": "In ownedfuturetestresource only, temporarily map SessionAdmissionService AUTHORITY_UNAVAILABLE toINVALID_SESSION instead ofAUTHORITY_UNAVAILABLE; allotherguards/RPC/productcodes untouched; nevercommit/integratefault.",
+    "causal_oracle": "Same selectednewcase mustretainhealthyA/B/reconstruction controls thenfail outage expected503/codeAUTHORITY_UNAVAILABLE becauseactual401/INVALID_SESSION; exactpausefinallycleanup mandatory. RestoreoriginalproductionSourcehash thenselectedcaseGREEN.",
+    "why_meaningful": "Distinguishes realdependencyunavailability fromauthenticationrejection on otherwisevalidliveB; prevents false logout/recoverybehavior. Notmethodname/callcount/bootstrap/irrelevantfault.",
+    "qualifications": "One focusedpublicstatus/cause sensitivity; doesnotprove everypossiblecache/bypass/regression orfullAuthprocessrestart/allroles."
+  },
+  "limits": [
+    "Sourceonly; no Java/Gradle/Docker/pause/JDBCconnection/API/Node execution.",
+    "Fresh authority reconstruction isnotfullOSAuthprocessrestart. Pureproductioncontroller MockMvc receiver isnotrealHTTPGateway/PWA/TMA.",
+    "STUDENT oneownactivegroup only; LIMITED/allroles/revokegrant races/fullP06 remainUNKNOWN.",
+    "ActualDockertransport/jdbcdriver timeoutbehavior/nativecleanup effectiveness stillUNKNOWN untilactualboundedrun."
+  ]
+}

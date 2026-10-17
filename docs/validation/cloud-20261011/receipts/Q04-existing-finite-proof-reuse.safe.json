@@ -1,0 +1,431 @@
+{
+  "scope": "One bounded Q04 proof-reuse mapping; read-only actual sources/receipts; no new checks, network, downloads or repo writes",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "current": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+  "receipt": "receipts/ci_format65_receipts/safe-integration-outcomes-academic-service-1.json.readable.zip",
+  "producer_metadata": {
+    "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+    "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+    "service": "academic-service",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38236931589",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "source_identity": {
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java": {
+      "producer_sha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9",
+      "current_sha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9",
+      "equal": true
+    },
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java": {
+      "producer_sha256": "1cfdb58a2d25b8bdc246bb1855c5f8857af1cf3090ff86efbe187e246bc59fac",
+      "current_sha256": "1cfdb58a2d25b8bdc246bb1855c5f8857af1cf3090ff86efbe187e246bc59fac",
+      "equal": true
+    },
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java": {
+      "producer_sha256": "922cdcb41bbac46ccc6807f791a68b536f78bc276f0fc6543eba3bc755043f86",
+      "current_sha256": "922cdcb41bbac46ccc6807f791a68b536f78bc276f0fc6543eba3bc755043f86",
+      "equal": true
+    },
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java": {
+      "producer_sha256": "ebfcadd193ad9ca82d5d54cf5175c83386bc611736546f0f821131feabbd3ada",
+      "current_sha256": "ebfcadd193ad9ca82d5d54cf5175c83386bc611736546f0f821131feabbd3ada",
+      "equal": true
+    },
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java": {
+      "producer_sha256": "5419c3e67888de5f56082423b9735dee4e9fc26df02bf6dbe752e72ed72eeadc",
+      "current_sha256": "5419c3e67888de5f56082423b9735dee4e9fc26df02bf6dbe752e72ed72eeadc",
+      "equal": true
+    },
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java": {
+      "producer_sha256": "2db8ae5e5bb67bfb62477dee374b89a7da94786f750864fea6afd80505db034b",
+      "current_sha256": "2db8ae5e5bb67bfb62477dee374b89a7da94786f750864fea6afd80505db034b",
+      "equal": true
+    },
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminPermissionRpcIT.java": {
+      "producer_sha256": "555a2d4f03506c434b7a7b2261cbf7aca14d8be82671aa9891f969de4fa05e18",
+      "current_sha256": "555a2d4f03506c434b7a7b2261cbf7aca14d8be82671aa9891f969de4fa05e18",
+      "equal": true
+    }
+  },
+  "reuse_qualification": "Exact CI65 individual SOURCE_METHOD PASSED, not aggregate acceptance. These test files and core domain/base-fixture paths unchanged65→897. AcademicGrpcServiceImpl/interceptor have additive changes and UserSpecifications changed; no blanket Academic equality or current897 runtime claim. a032 local SAFE has Auth172/Gateway only, not Academic.",
+  "mapping": [
+    {
+      "boundary": "BOUNDARY-09",
+      "accepted_ids": [
+        "JS-ADMIN-19",
+        "JS-ADMIN-26",
+        "AC-11"
+      ],
+      "existing_exact_PASS": [
+        {
+          "test": "AdminAccessAuthorityIT.limitedAssignmentRoundTripsValidatesDependenciesAndNeverDelegatesFull",
+          "xmlOrdinal": 1,
+          "caseOrdinal": 6
+        },
+        {
+          "test": "AdminAccessAuthorityIT.plainJsonApiRoundTripsAndRejectsDirectLimitedMutationAndStaleCas",
+          "xmlOrdinal": 1,
+          "caseOrdinal": 7
+        },
+        {
+          "test": "AdminAccessAuthorityIT.credentialsAndActiveAdminTargetProtectionApplyToMixedRoleAccountsAndSelf",
+          "xmlOrdinal": 1,
+          "caseOrdinal": 1
+        },
+        {
+          "test": "AdminAccessAuthorityIT.userHeadmanPatchRequiresGroupsManageBeforeAnyMutation",
+          "xmlOrdinal": 1,
+          "caseOrdinal": 4
+        },
+        {
+          "test": "AdminAccessAuthorityIT.genericSemesterStatusAndOperationCannotContinueDeleteWithoutDataDelete",
+          "xmlOrdinal": 1,
+          "caseOrdinal": 9
+        }
+      ],
+      "proved": "PG LIMITED profile/dependencies/duplicate/empty/full-only refusals; direct LIMITED assignment403+target remains unassigned; CAS409; protected mixed-role/self targets; missing GROUPS_MANAGE PATCH leaves version/grants unchanged; generic semester operation cannot continue DELETE without DATA_DELETE.",
+      "limits": "Manual context and some mocked repositories; no all12 real domain admission/noeffect/audit matrix. Catalogue test does not submit UNKNOWN/null; separate RPC unknown denial mocks authority.",
+      "remaining": "Current next5 tests/e2e/specs/mobile-real-server.spec.ts:230 LIMITED accounts visible/create403 is NOT_RUN pending ordinaryCI; it lacks post403 DB assertion, so read back absence. Reuse negatives above; only distinct still-unproved grant guard/live revoke/noeffect operations, not permission subsets.",
+      "classification": "MISSING_PROOF"
+    },
+    {
+      "boundary": "BOUNDARY-10",
+      "accepted_ids": [
+        "JS-ADMIN-02",
+        "JS-ADMIN-04",
+        "JS-ADMIN-19"
+      ],
+      "existing_exact_PASS": [
+        {
+          "test": "AdminAccessAuthorityIT.concurrentFullRevocationsSerializeAndCannotRemoveLastFull",
+          "xmlOrdinal": 1,
+          "caseOrdinal": 12
+        },
+        {
+          "test": "AdminAccessAuthorityIT.actorDowngradeWhileWaitingForGlobalLockCannotUseOldFullAdmission",
+          "xmlOrdinal": 1,
+          "caseOrdinal": 5
+        },
+        {
+          "test": "AdminAccessAuthorityIT.archiveTombstoneVersionAndLastFullGuardCoverLegacyGrantLifecycle",
+          "xmlOrdinal": 1,
+          "caseOrdinal": 3
+        },
+        {
+          "test": "AdminAccessAuthorityIT.staleCasAndRevokeRegrantDoNotResurrectSelectionOrOtherRoleLogin",
+          "xmlOrdinal": 1,
+          "caseOrdinal": 10
+        },
+        {
+          "test": "AdminAccessAuthorityIT.ownTeacherRoleChangeCommitsAndProjectsSuccessWithoutCredentialsFromStaleClaims",
+          "xmlOrdinal": 1,
+          "caseOrdinal": 11
+        }
+      ],
+      "proved": "ActualPG cross-revoke exactly1 winner/1 refusal/1 FULL remaining; waiting downgraded actor cannot assign; archive lastFULL guard/tombstone; regrant old session stays unselected; unaffected TEACHER remains after ADMIN revoke and selected ADMIN after TEACHER suspension.",
+      "limits": "Service/manual claims; ownTeacher UserRepository mocked; not every actual public archive/status route.",
+      "remaining": "Public route-specific lastFULL status/archive refusal + unchanged authority tuple only where no existing qualified proof; actual Auth refresh/unaffected-role navigation separate. Do not rerun already proved service races.",
+      "classification": "MISSING_PROOF"
+    },
+    {
+      "boundary": "BOUNDARY-11",
+      "accepted_ids": [
+        "JS-ADMIN-01",
+        "JS-ADMIN-19"
+      ],
+      "existing_exact_PASS": [
+        {
+          "test": "HistoricalMembershipIT.serviceCreatedEnrollmentAndTransferAreDatedAndComplete",
+          "xmlOrdinal": 37,
+          "caseOrdinal": 5
+        },
+        {
+          "test": "HistoricalMembershipIT.managedEnrollmentRollsBackUserWhenHistoryInsertFails",
+          "xmlOrdinal": 37,
+          "caseOrdinal": 1
+        }
+      ],
+      "proved": "Managed realPG create writes user/history/coverage; history-save failure after actual user insert rolls back both.",
+      "limits": "No same-name login collision/unchanged login/add-role field-preservation oracle.",
+      "remaining": "One actual create→add-role→readback same accountID/login/other-role fields and collision/invalid role-specific input. LIMITED230 denial cannot prove successful creation. Existing validation selectors need exact assertion qualification before credit.",
+      "classification": "MISSING_PROOF"
+    },
+    {
+      "boundary": "BOUNDARY-12",
+      "accepted_ids": [
+        "JS-ADMIN-04"
+      ],
+      "existing_exact_PASS": [
+        {
+          "test": "UserArchiveLifecycleIT.protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment",
+          "xmlOrdinal": 47,
+          "caseOrdinal": 1
+        },
+        {
+          "test": "UserArchiveLifecycleIT.archiveWaitsForHelperWriterThenRevokesItsCommittedAuthorityWithoutFkDeadlock",
+          "xmlOrdinal": 47,
+          "caseOrdinal": 2
+        },
+        {
+          "test": "UserArchiveLifecycleIT.stalePreviewAndLegacyArchiveSeamsCannotChangeAuthority",
+          "xmlOrdinal": 47,
+          "caseOrdinal": 3
+        },
+        {
+          "test": "UserArchiveLifecycleIT.previewBecomesStaleWhenAnotherTeacherLosesAuthorityAndLocalWarningChanges",
+          "xmlOrdinal": 47,
+          "caseOrdinal": 4
+        }
+      ],
+      "proved": "PG denied intent no archive; receipt failure rollback; exact replay; restore zero active grants/no group/headman/selected session, retains login/binding/history/grant IDs; fresh assignment only, no old-session resurrection. Real helper lock wait→archive revokes helper; stale headman cannot assign after restore. Local stale preview denied before Auth/no receipt.",
+      "limits": "Auth confirmation and Attendance impact counts mocked; no actual marks/tickets/homework/cache/network/browser chain.",
+      "remaining": "One real API/Vue preview→actual Auth confirmation→archive/reload→restore; old bearer denied; actual impact/history IDs and bytes retained; explicit reassign restores only new authority. Existing PG rollback/race is sufficient, no repeat.",
+      "classification": "MISSING_PROOF"
+    },
+    {
+      "boundary": "BOUNDARY-13",
+      "accepted_ids": [
+        "JS-ADMIN-03",
+        "JS-HEADMAN-03",
+        "JS-SYSTEM-07"
+      ],
+      "existing_exact_PASS": [
+        {
+          "test": "HistoricalMembershipIT.serviceCreatedEnrollmentAndTransferAreDatedAndComplete",
+          "xmlOrdinal": 37,
+          "caseOrdinal": 5
+        },
+        {
+          "test": "HistoricalMembershipIT.datedReadUsesOneRepeatableReadSnapshotWhileTransferCommits",
+          "xmlOrdinal": 37,
+          "caseOrdinal": 7
+        },
+        {
+          "test": "HistoricalMembershipIT.currentAssignmentWithClosedOnlyHistoryFailsClosed",
+          "xmlOrdinal": 37,
+          "caseOrdinal": 9
+        },
+        {
+          "test": "HistoricalMembershipIT.currentAssignmentWithoutTargetHistoryFailsClosed",
+          "xmlOrdinal": 37,
+          "caseOrdinal": 6
+        },
+        {
+          "test": "HistoricalMembershipIT.unsupportedDirectMembershipMutationLeavesUserUnchanged",
+          "xmlOrdinal": 37,
+          "caseOrdinal": 2
+        },
+        {
+          "test": "HistoricalMembershipIT.terminalRoleGrantClosesHistoryAndReactivationStartsCanonicalInterval",
+          "xmlOrdinal": 37,
+          "caseOrdinal": 3
+        },
+        {
+          "test": "HistoricalMembershipIT.selectionClearRollsBackWithGrantAndLegacySuspensionAlsoClearsSelection",
+          "xmlOrdinal": 37,
+          "caseOrdinal": 8
+        }
+      ],
+      "proved": "ActualPG initial interval at semester start; transferD old-exclusive/new-inclusive; historic roster unchanged by later transfer/archive; repeatable-read coherent snapshot; missing/closed-only target history fails closed; direct group PATCH no change; terminal/reactivation interval/session rollback.",
+      "limits": "Academic only; base Rabbit mock. No real Academic→Attendance late-member/backfill or Notification authority chain.",
+      "remaining": "One dated transfer read through actual Academic/Attendance plus late-member historical ABSENT backfill/replay without overwriting explicit mark; Notification current audience/old personal history readback. Independent mocked-source consumer evidence is insufficient for this seam.",
+      "classification": "MISSING_PROOF"
+    },
+    {
+      "boundary": "BOUNDARY-14",
+      "accepted_ids": [
+        "JS-ADMIN-06",
+        "JS-ADMIN-07",
+        "JS-ADMIN-15",
+        "AC-35"
+      ],
+      "existing_exact_PASS": [
+        {
+          "test": "GroupHeadmanAssignmentIT.assignmentChangesDurableHeadmanRevokesAssistantsAndReloadsRegistry",
+          "xmlOrdinal": 17,
+          "caseOrdinal": 6
+        },
+        {
+          "test": "GroupHeadmanAssignmentIT.concurrentCandidatesHaveOneWinnerAndOneCasConflict",
+          "xmlOrdinal": 17,
+          "caseOrdinal": 3
+        },
+        {
+          "test": "GroupHeadmanAssignmentIT.archivedGroupAndNonMemberAreRejected",
+          "xmlOrdinal": 17,
+          "caseOrdinal": 1
+        },
+        {
+          "test": "GroupHeadmanAssignmentIT.activeStudentGrantKeepsMultiRoleHeadmanEligibleDuringProfileSync",
+          "xmlOrdinal": 17,
+          "caseOrdinal": 2
+        },
+        {
+          "test": "GroupHeadmanAssignmentIT.currentHeadmanCompositionUsesFreshGrantRosterAndGroupRoles",
+          "xmlOrdinal": 17,
+          "caseOrdinal": 4
+        }
+      ],
+      "proved": "Signed MockMvc initial assign/PG replacement helper count/revoke/replay/registry; concurrent1 winner+1 conflict+1 headman; foreign/archived refused; durable grant eligibility; old headman composition denied.",
+      "limits": "No public Auth/Gateway/Vue; direct supplied composition actor; old helper downstream operation not attempted. Standalone removal source issue below.",
+      "remaining": "One actual Vue replace confirmation+count+reload then old-helper accepted-capability refusal/noeffect; natural departure draft reason/count. Resolve ONLY standalone-removal oracle before changing product/tests.",
+      "classification": "MISSING_PROOF"
+    },
+    {
+      "boundary": "BOUNDARY-15",
+      "accepted_ids": [
+        "JS-ADMIN-16",
+        "JS-ADMIN-17",
+        "AC-36"
+      ],
+      "existing_exact_PASS": [
+        {
+          "test": "GroupPromotionCycleIT.singleThenMassPromotionRejectsStaleAndRetriedPlansWithoutChangingIdentityOrHistory",
+          "xmlOrdinal": 18,
+          "caseOrdinal": 3
+        },
+        {
+          "test": "GroupPromotionCycleIT.automaticCatchUpReusesManualLedgerAndReplayDoesNotPromoteTwice",
+          "xmlOrdinal": 18,
+          "caseOrdinal": 2
+        },
+        {
+          "test": "GroupPromotionCycleIT.massPromotionAdjacentCoursesFlushesInVacatedNameOrderAndRetainsHistory",
+          "xmlOrdinal": 18,
+          "caseOrdinal": 4
+        },
+        {
+          "test": "GroupPromotionCycleIT.durationOnlyCorrectionInvalidatesPreviewWithoutResettingCycleLedger",
+          "xmlOrdinal": 18,
+          "caseOrdinal": 1
+        },
+        {
+          "test": "GroupPromotionCycleIT.archivedExtensionPreservesOriginalCutoffRosterAssignmentsAndOnceOnlyPromotion",
+          "xmlOrdinal": 18,
+          "caseOrdinal": 5
+        }
+      ],
+      "proved": "RealPG/signed MockMvc single→mass/replay/CAS; directly invoked automatic job fixed Sep1 catches up same ledger; graduates archived; late groups excluded; IDs/history/assignment cutoff and original cycle unchanged after extension.",
+      "limits": "Sequential operations, not concurrent manual/auto race. Exact18Aug bound separately mocked unit proof, not PG/wallclock firing.",
+      "remaining": "Actual Vue preview/action/readback plus genuinely simultaneous manual/automatic PG once-only witness and pre-completion refusal only if not already separately qualified. Opened existing selectors do not prove that simultaneous race; no wallclock waiting needed.",
+      "classification": "MISSING_PROOF"
+    },
+    {
+      "boundary": "BOUNDARY-35",
+      "accepted_ids": [
+        "AC-37",
+        "R-16",
+        "R-17",
+        "R-18",
+        "R-21",
+        "R-23",
+        "R-24"
+      ],
+      "existing_exact_PASS": [
+        {
+          "test": "GroupRegistryIT.registryFiltersBeforePaginationAndUsesIdenticalFiltersForEveryTabCount",
+          "xmlOrdinal": 19,
+          "caseOrdinal": 4
+        },
+        {
+          "test": "GroupRegistryIT.registrySortsWholeResultWithStableTiesAndUnknownMetadataLastInBothDirections",
+          "xmlOrdinal": 19,
+          "caseOrdinal": 5
+        },
+        {
+          "test": "GroupRegistryIT.registryCreatesAllNineProgramTypesWithExplicitDurationAndRejectsInvalidQueryValues",
+          "xmlOrdinal": 19,
+          "caseOrdinal": 1
+        },
+        {
+          "test": "GroupRegistryIT.registryCreateCoverageStatusCountsAndLegacyDurationAreServerDerived",
+          "xmlOrdinal": 19,
+          "caseOrdinal": 3
+        },
+        {
+          "test": "GroupRegistryIT.restoreArchivedGroupsIsAdminOnlyIdempotentAndKeepsLegacyNamesAndRegistryCounts",
+          "xmlOrdinal": 19,
+          "caseOrdinal": 2
+        }
+      ],
+      "proved": "RealPG signed FULL MockMvc filters before page/same tab counts/multisort stable ties across2-row pages/unknown last; bad sort/direction/course/enum4xx;9 types/server-derived draft; restore replay/occupied-name refusal unchanged.",
+      "limits": "Not every registry/request/stats query, no LIMITED group view or Vue URL/back/reset/export. CASE-ENUM-FILTER-LOCALE-001 separately proves current96 user filter equality only.",
+      "remaining": "One Vue group filter/sort/page→reload/back/reset→filtered export readback using current grant. Qualify other registry only for distinct query code. Existing PG ordering needs no rerun.",
+      "classification": "MISSING_PROOF"
+    }
+  ],
+  "whole_family_closures": [],
+  "whole_boundary_closures": [],
+  "separate_reused_proofs": [
+    {
+      "test": "AdminPermissionRpcIT.signedIdentityFreshDenyForgedIdentityAndUnavailableCannotGrantFull",
+      "receipt": "Same CI65 integration artifact",
+      "limits": "Actual plaintext Netty loopback; real-method Mockito service, mocked AdminAccessJdbcAuthority; token/forged/unknown/FULL→LIMITED/outage denied. Not realPG/TLS/current897 service proof."
+    },
+    {
+      "tests": [
+        "GroupPromotionServiceTest.automaticExecutionWaitsForMoscowAugustEighteenthAndACompletedSpringCycle",
+        "GroupPromotionServiceTest.automaticExecutionStartsAtMidnightAugustEighteenthInMoscow"
+      ],
+      "receipt": "receipts/ci_format65_receipts/safe-unit-outcomes-academic-service-1.json.readable.zip",
+      "limits": "Exact CI65 PASSED; mocked repository unit only. Reuse due-time logic without promoting PG or wallclock scheduling."
+    },
+    {
+      "case": "CASE-SB06-INITIAL-PASSWORD-DISPLAY",
+      "receipt": "receipts/finite-evidence-reconciliation/selected-safe-outcomes.json",
+      "revision": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+      "limits": "Previously accepted finite signed MockMvc+PG display/live grant/no-store; not bot/browser or changed-password transaction chain."
+    },
+    {
+      "case": "CASE-ENUM-FILTER-LOCALE-001",
+      "revision": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+      "receipt": "receipts/enum-locale-current96-green-seal",
+      "limits": "Existing six actual user-filter HTTP/JPA/PG queries+unknown400; no whole registry family."
+    }
+  ],
+  "standalone_removal_source_issue": {
+    "classification": "SOURCE_PRIORITY_CONFLICT_NOT_ESTABLISHED_PRODUCT_DEFECT",
+    "archive": "backend-conflicts.md:293 manifest copy-archive owner/date null; SHA701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8; reason does not change current contracts.",
+    "candidate_spec": "docs/wireframes/admin/133-admin-groups.md:310–325 copy-canonical candidate owner/date null: inherited task4 dated01.08.2026 from same archive explicitly forbids standalone removal; earlier77/209 снят→draft is marked unconfirmed.",
+    "accepted_registry": "JS-ADMIN-07 current accepted job-stories.yaml removes old flag AND assigns new; AC35 group operation/one headman/cascade, no standalone-forbid. No dated standalone override found.",
+    "actual_counterpoint": "Exact CI65 PASSED GroupHeadmanAssignmentIT.legacyPatchConvergesThroughCanonicalPathAndKeepsOneActiveGrant asserts legacy PATCH false→zero headman grants; current UserService:744 calls GroupHeadmanAssignmentService.revokeLegacyHeadman:132; not policy evidence.",
+    "disposition": "Root resolves candidate matrix wording before product/test oracle changes. If owner clarification necessary, only standalone PATCH: A disallow standalone removal/require replacement (candidate133 intent recommendation); B preserve legacy removal/helper revoke/draft. Independent proofs unaffected.",
+    "root_followup": "Q012 owner question already sent/saved by Root; only standalone removal dependent. No oracle/product correction before decision."
+  },
+  "classification_summary": {
+    "confirmed_new_product_bugs": [],
+    "test_environment_faults_observed": [],
+    "unproved": "Remaining observable seams in8 rows; no whole small accepted family can be closed from inspected existing evidence. Existing selectors in existing_exact_PASS are sufficient historical server reuse, not instructions to rerun them."
+  },
+  "frozen_platform": "B013 T008 sensitivity and B014 GatewayIP untouched; no equivalent preparation/execution/reassignment or closure.",
+  "relevant_source_diff": {
+    "compare": [
+      "65e0baeff26ac5673420bfc55e51a75085636423",
+      "89746d1dc3d3ac7c23470c3998f9d85ed268859f"
+    ],
+    "scoped_roots": [
+      "services/academic-service/academic-app/src/main",
+      "services/academic-service/academic-contract",
+      "services/shared",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+    ],
+    "changed": [
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserSpecifications.java"
+    ],
+    "limits": "Scoped diff supports unchanged admin/role-grant/archive/group/membership/promotion code and schema plus shared authority. Does not establish whole dependency/build/generated/runtime source identity. Keep all native proofs producer-scoped; no current897 PASS inferred."
+  },
+  "class_paths": {
+    "AdminAccessAuthorityIT": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+    "HistoricalMembershipIT": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+    "UserArchiveLifecycleIT": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+    "GroupHeadmanAssignmentIT": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+    "GroupPromotionCycleIT": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java",
+    "GroupRegistryIT": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java"
+  }
+}

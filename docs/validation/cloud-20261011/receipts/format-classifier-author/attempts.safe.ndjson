@@ -1,0 +1,2 @@
+{"outcome": "HARNESS_EXPECTATION_CORRECTION", "reason": "1549 was c4 historical Java count; actual25668 Spotless has1581 after32 integratedexport authors. Exact Java list already matched before count assertion; no product/classifier correction required."}
+{"outcome": "PASS", "criteria": "37exact exclusions, every other tracked disposition unchanged, 2663sourceinputs hash unchanged"}

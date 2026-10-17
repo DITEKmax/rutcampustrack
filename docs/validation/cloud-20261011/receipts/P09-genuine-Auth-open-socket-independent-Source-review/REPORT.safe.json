@@ -1,0 +1,30 @@
+{
+  "schema": "P09_GENUINE_AUTH_SOCKET_SOURCE_INDEPENDENT_REVIEW_V1",
+  "utc": "2026-10-13T13:56:13.905941+00:00",
+  "verdict": "FINDINGS",
+  "findings": [
+    {
+      "id": "P09-TEST-CLEANUP-MASKS-PRIMARY",
+      "priority": 2,
+      "source": "RealAuthOpenSocketLogoutIT.java:160",
+      "cause": "Outer finally cleanup error replaces primary rule failure; first direct disconnect can skip the second",
+      "needed": "Preserve primary and suppressed cleanup failures; attempt cleanup independently; cleanup-only failures must fail; same author narrow correction"
+    }
+  ],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "author_head": "a7648c62e34eb75776603ffcc171e8aaf2f54f42",
+  "base": "86a9c859d361399b2c0deeca0ec20f2c950ec698",
+  "test_sha256": "214c60272df3cbb471bb4cba4fe974c67d5e285d15517401517dc57a5831e607",
+  "build_sha256": "282a4efc96471a80d07adcc68bd21568d350a48bf7dab29e58fc130b2b903eaf",
+  "inventory_paths": 2,
+  "genuine_join_Source": "COHERENT_NO_MOCK_AUTHORITY",
+  "classpath_Source": "NARROW_TEST_ONLY_NOT_RUNTIME_PROVEN",
+  "effect_assertions_Source": "BASELINE_TWO_RECIPIENTS_DURABLE_LOGOUT_A_DENIED_B_DELIVERED_COHERENT",
+  "RAM4": "Qualified finally control-flow analogue only; not Java/runtime proof",
+  "compile_runtime_sensitivity": "NOT_RUN",
+  "P09_parent": "UNKNOWN",
+  "effects": "Read-only publicSource + own receipt/RAM; no tests/native/network/private artifacts/env/keys/Source edits/children/B013",
+  "next": "Same author cleanup correction -> narrow review -> Root fresh formatter/compile/one genuine join grant -> reviewed sensitivity/restoredGREEN/currentCI"
+}

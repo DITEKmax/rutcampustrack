@@ -1,0 +1,15 @@
+{
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "sha256": "7e4232fadec1c563c283373b96b2718a3dc1892e3d3db97663642723a206eb91",
+  "bytes": 3903712,
+  "initial_json_error": {
+    "error": "Expecting ':' delimiter",
+    "line": 31285,
+    "column": 40,
+    "character_offset": 2126422,
+    "byte_offset": 2126488
+  },
+  "status": "PROPOSAL_COMPLETE",
+  "git_blob": "1f3d133be34cb0642148b1e5a3747d8533aee46c",
+  "intact_history_found": false
+}

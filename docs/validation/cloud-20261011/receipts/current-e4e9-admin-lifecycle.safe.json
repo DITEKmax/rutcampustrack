@@ -1,0 +1,47 @@
+{
+  "artifact": 11876232864,
+  "producer": "e4e922add972586a342d49aeaafa93ff84715cac",
+  "run": 38525988847,
+  "digest": "sha256:001f43f8c4451a86219558e075b430025acb3acff6de32689ca4213e488f88c5",
+  "bytes": 419,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 452,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 16076,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 746
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "ADMIN_ACCOUNT_LIFECYCLE",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+}

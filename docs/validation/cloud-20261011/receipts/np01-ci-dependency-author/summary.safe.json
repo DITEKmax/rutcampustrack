@@ -1,0 +1,29 @@
+{
+  "status": "SOURCE_READY; fresh independent review and coherent integration/hosted CI pending",
+  "commit": "579b491847991b20a88986797c1c3baeb0272b7b",
+  "parent_classifier_commit": "f09f7b2f2321dc4605b019a4fd1b52a0be0d4f10",
+  "Modified": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/coverage.yml"
+  ],
+  "Created": [],
+  "Deleted": [],
+  "source_sha256": {
+    ".github/workflows/ci.yml": "e05122c8128ca75ce6d32e2da94221a1a88f6594d9854145146dafa6df652a84",
+    ".github/workflows/coverage.yml": "18de3ebcaaf92b970835aa80655479f8fc9001134524cca9f59a4f86902186ff"
+  },
+  "scope": "Exactly Academic-only dependency steps in existing java-integration-test and java-coverage jobs; existing commands/gates/triggers/matrices/collectors/all other jobs preserved",
+  "setup_python": "Existing pinned v5.6.0 a26af69be951a213d495a4c3e4e4022e16d87065, Python3.12",
+  "runtime_dependency_inputs": [
+    "services/notification-bot/requirements.txt",
+    "services/notification-bot/requirements-test.txt"
+  ],
+  "test_interpreter": "$RUNNER_TEMP/np01-python/bin/python via NP01_PYTHON_EXECUTABLE; explicit isolated interpreter, no fallback",
+  "local_checks": "YAML/source semantic comparison, academic-only matrix1of6 perjob, shellsyntax, successfulsetup/envcontrol, failedpipnoenvpublication, Gitleaksstaged0/EOFwhitespaceSizediff PASS",
+  "shared_venv_integrity": {
+    "files": 3272,
+    "all_bytes_unchanged": true,
+    "no_install": true
+  },
+  "limits": "Actual hosted new bridge CI/Coverage execution NOT_RUN; no Cloud Java/apps/Docker/provider/browsers run in this scope."
+}

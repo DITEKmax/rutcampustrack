@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T08:21:40.053844+00:00",
+  "type": "PROSE_UNIT_CORRECTION_NO_BUDGET_CHANGE",
+  "preserved_archive": "np01-broker-attempts01-03-partial-safe.zip",
+  "preserved_archive_sha256": "7cc7a2b4f615799efcadedf5ccad43bdef92c7a2074d569d877fd1aabaa3f1dd",
+  "correction": "The future-step handoff prose says 16GiB hardstop. Exact grant/driver value is16106127360B =15GiB hardstop, against cgroup maximum17179869184B =16GiB with1073741824B =1GiB reserve. All actual grant JSON and guard comparisons use the correct bytes. No runtime budget change.",
+  "shared_memory_stop_bytes": 16106127360,
+  "cgroup_memory_max_bytes": 17179869184,
+  "reserve_bytes": 1073741824,
+  "new_runtime": false
+}

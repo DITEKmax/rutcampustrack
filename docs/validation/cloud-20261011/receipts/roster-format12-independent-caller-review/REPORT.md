@@ -1,0 +1,3 @@
+APPROVE_SOURCE: formatter caller/init only. Exact12 handwritten Java targets match independently approved semantic13 ledger; Root Spotless7.0.4/google1.25.2 AOSP and steps/config byte exact. Init changes target list only, checks actual target equality. Parent fresh source/grant/identity gate precedes apply; child checks allowed delta and fresh owned authority before formatJavaCheck. Ten finite set-oracle controls and unchanged status/observe/privacy identity primitives checked; no runtime/native executed.
+
+Fresh Root capacity/grant, native marker+apply/check statuses, exact post-run path/mode snapshots and final mechanical-equivalence evidence remain required. Semantic81ced review reused; no full backend review replay.

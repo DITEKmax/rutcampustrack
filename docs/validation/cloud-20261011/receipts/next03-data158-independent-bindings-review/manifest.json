@@ -1,0 +1,16 @@
+{
+  "scope": "NEXT03_THREE_INPUT_OVERLAYS_SELFSEAL_ONLY",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 1601,
+      "sha256": "156cb88bdf7db053ff4096c7c0bbce292cef61ddcd2df973a227f3f2bbf44da6"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 2870,
+      "sha256": "893475142297cd74c165a8bbfc059ac3b004e4182f1ccaa1e46a02aeac2a8880"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "utc": "2026-10-13T15:34:33.526768+00:00",
+  "scope": "BOOT_ORIGINAL_SINGLE_MCP_ACTUAL_FINAL",
+  "result": "PREPARE2849_NATIVE0; SINGLEMCP_RETURN_PRIVATECARRIER154B; CONSUME50491_NATIVE1_BEFORE_ANY_ACCEPTED_LOG_PROJECTION",
+  "receipt": "receipts/current1742-BOOT-one-official-MCP-actual",
+  "recorded_births": 4,
+  "all_recorded_births_fresh_absent": true,
+  "carrier_retained": true,
+  "carrier_metadata_equal": true,
+  "carrier_bytes": 154,
+  "raw_private_absent": true,
+  "consume_marker": true,
+  "reported_payload": "17char_NON_JSON_TEXT; not qualifiedtimestampedBootlog",
+  "actual_log_obtained": false,
+  "MCP_calls": 1,
+  "qualification": "Nativeoneconsume settled/reaped/nosignals/allknownabsent; originalrawfilecleaned, owned600carrier retained per reviewonparserrefusal. Finalread-onlymetadataafterhard qualified. FullSDKresponse cleared perapprovedrecipe, structuredpayloadUNKNOWN; no rawtext/hash/env/URL/logoutput. Rootlateclosed-statusclassifier refusedclockbefore read, no result/lateeffect. Priorclock/parameter/defaultanchorfailures retained, no platformrejection/productverdict. No duplicateMCP/parser."
+}

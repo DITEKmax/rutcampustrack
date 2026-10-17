@@ -1,0 +1,463 @@
+{
+  "at": "2026-10-11T23:03:23.008189+00:00",
+  "reviewRevision": "c0f6c43ee1cf354bf483ebb1ff8fdd8dca02b41b",
+  "claimedInspection": "assigned diff and critical source excerpts; never a whole-repository/full-client audit",
+  "sources": [
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/api/generated/academic.types.ts",
+      "sha256": "84a9594175c0e531836544983a53fb741ae11c6252064f0db12dd1aeaa7367eb",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "relevant generated blocks plus schema parser"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/api/generated/auth.ts",
+      "sha256": "fe4863a4f4732090274e8961e3fcfd1f59aabf24b8e446a1edc92c51e5060ca6",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "relevant generated blocks plus schema parser"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/admin-groups/AdminGroupsScreen.vue",
+      "sha256": "13e83194131e80b11d454591a9b82dd9459dd7dc58ed2a52a2ae2c6ceb42a32b",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
+      "sha256": "42a0d9c5151abc45dd391b00a703d2388ee4586234f69114b5036fb138ebcc6f",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+      "sha256": "93243050549753241c29f4413dcac8e8ace28da29b2950a5f9f8c568672b73eb",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/admin-users/admin-users-client.ts",
+      "sha256": "bf3ca73c75e902de02f95b5700fd686a8af629b8b16d333a5142341dd355dd84",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+      "sha256": "7a1bd9afd6faa2a73b69b2092c395b6a8ef19a87e38a2d197c36d5e577e0cf73",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue",
+      "sha256": "27cde6045a7353c03f4e67baf7750abb9fc4e5639eeb0b9cb425e50dbbf4e4b0",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+      "sha256": "c7fa88c33791883d06637e5abb16fc0a5d74c5fcc9ddf6cf0c066aea81e18349",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/headman-stats/headman-stats-client.ts",
+      "sha256": "fefc6eb88403d0a00647abf4207c4faef2e3679a0f5752f3265e3ad062a202b1",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/notifications/notifications-realtime.ts",
+      "sha256": "9281420cea57ae28f617e9f3b7bc895e87deebb7152fb56338fda96a81b74488",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+      "sha256": "fae2f2f6a68ceca06462f5e591495f2b965097fe393fde15484e0a0aca767944",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/teacher/TeacherLessonExportControl.vue",
+      "sha256": "f4298597641e9ada9830468a15e2542d6e4a0647feeba98711bddafa550e6c77",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
+      "sha256": "0fa994711c8f51980581f80612b46ef9d85c5ce360f5234af5718efebeff28e4",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/index.ts",
+      "sha256": "d89f09faceeafc7f586dc860df5ed1a48282934852816e020db365914b4be604",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/report-download-client.ts",
+      "sha256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/report-download-selector.test.ts",
+      "sha256": "5ee9f1b87d3d1606bafdf2716d3809ad7ffd9e261554825ca9a4f98d732420b0",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/pwa-vue/src/App.vue",
+      "sha256": "f4f88b8924987f88a2a41119741d73091609c06374cb269ee33c485e24151694",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/tma-vue/src/App.vue",
+      "sha256": "bfd4c3403560156185f8627d3f3927a259daf53d1897a4c091124b097aa50251",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/tma-vue/src/report-download-adapter.test.ts",
+      "sha256": "e13795fde9ad0cb4a564aceaf87b8d33fda9e6a09d36136395cae40e09e92d1b",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/tma-vue/src/report-download-adapter.ts",
+      "sha256": "6c6534b06d55ab56d351b674e04a0dd7fea9a7d180bbaea416206342b77515a7",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/tma-vue/src/tma-auth.test.ts",
+      "sha256": "772b4bf366268faea13e69069f200fa14731dc4e733e5ea026b9a25191a78dea",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/async-export.test.ts",
+      "sha256": "e9fa67c65f35064e252be1afc852a4819927466cafb9cbd9dcd9cb56644d6bf3",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/components/ExportButton.vue",
+      "sha256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/components/export-button.pcss",
+      "sha256": "42660db6c9c979c97f3ded040a24c47c01e449f9b891c83acd1a214009e4bcbf",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/components/export-button.test.ts",
+      "sha256": "8dc81e02061f97d6aefdb06524df1a0495048dbf4efbd1b168ccf195f98efad7",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/report-download-browser.ts",
+      "sha256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+      "scope": "ASSIGNED_CLIENT",
+      "inspection": "full local diff and critical handlers/tests/source"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/AGENTS.md",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/.agent/orchestration-v2/RULES.md",
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/.agent/orchestration-v2/CURRENT.md",
+      "sha256": "4dffe03acdbd4757096df77e8fc8ab471ef786cc9174cc20afcdfa6981fc0d5b",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/AGENTS.md",
+      "sha256": "165680e3eeb6476af0099a70bc96bc58c5492b851393381c63071677a04f1d8f",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/tests/AGENTS.md",
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/agent-workflow.md",
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/design/COMPONENT_REGISTRY.md",
+      "sha256": "9bd46cf132d72ad0c8ee8ea40ead38f3fa7eda3f44c2f094c6567acaf1b0aede",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/design/brandbook-v2.md",
+      "sha256": "38b1046c0537fde3f4673932180af09799faf8ce4904e4bea8753fe6a03ad170",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/design/tokens-v2.json",
+      "sha256": "53c5f074e398cc045538df0f3a119e58ab0173b8923f93d70a8546c04ca6a779",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/product/reference-rutcampustrack-design/BRAND_DIRECTION.md",
+      "sha256": "583ca82fee6efe776a729f01cecdf381f74530a2c1324b0d3b11f48c84f4d03c",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/product/reference-rutcampustrack-design/A11Y_REQUIREMENTS.md",
+      "sha256": "5deaa70ff0d2e7f2def41ea581190b66d2a839fb385d068728b6ffa66085abc6",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/wireframes/admin/132-admin-users.md",
+      "sha256": "0bc918e6eea1d67d2baa40bcd72a6c1e4a958786bc7979127f46b49728bc0368",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/wireframes/admin/133-admin-groups.md",
+      "sha256": "b2fbfcc6a56e84005c4afd770d0506cd9362f5f4f53109836a5233105632487c",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/wireframes/headman/116-headman-group.md",
+      "sha256": "1968870fa7b29a36b41bbdf99bbb0e4fe1c031653b85ae65a194445a5b7db17a",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/wireframes/headman/113-headman-stats.md",
+      "sha256": "7e2fde6ee3ac319fcf53739b077799470181f05bf57fd8e42d0dd196e63a5bb8",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/wireframes/teacher/122-teacher-attendance.md",
+      "sha256": "dea55c16465d745bfe510df9e9f8f70e85e1fae2065d0bc226965a653969e02f",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/wireframes/teacher/123-teacher-stats.md",
+      "sha256": "294ec2c4b28032efa6dda76598c58687ef47853355f22031ae63779132bf1840",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/styles/tokens.pcss",
+      "sha256": "943c80a16c66bd467720bf34c8727e9e1108c3289a6a666bd9a83ceeef2b8c32",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/session-owner.ts",
+      "sha256": "e3d53d4b605383d67d35adddb20801bc626cd328c905d162281cc0861ad336e9",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/admin-access/admin-access-client.ts",
+      "sha256": "26dc89b9480470bf2ca2121abf77d1c13e8b6fc7d233c7389c263e92c16e2ca8",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+      "sha256": "2f1175510b99ae30e7b252f8c4cd00dac4e6af4610037d873569bf51e498b817",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/teacher/teacher-stats-screen.test.ts",
+      "sha256": "a9ee80e3350178e3d85cb3e607fc429adccf9be57b7cdc948da7789739fda53e",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/headman-stats/headman-stats-screen.test.ts",
+      "sha256": "555a470906eed9b46d3acef5398f683994b05a3a898937e6dea2b474c7f08d6c",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/teacher/teacher-client.ts",
+      "sha256": "7219ae5e4c4ae89f1f73271dff12ba376dfee375221995d012cb9d7e89bb248b",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/components/MobileToolsSheet.vue",
+      "sha256": "d9d43e5facfd23b4d50a40e3cd8c7d6104aca1a6a6280fa4d126d01c568b0459",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/pwa-vue/src/auth.ts",
+      "sha256": "0942ac4560476fed3b418d20b924f4cae95b34fad2c7ff5a45bbc2c18059aee8",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/pwa-vue/src/pwa-version.ts",
+      "sha256": "24996c6277ed2041779d1ec5c0c39bf39cfbdf9c3a884c520c54c342a9ae59be",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/tma-vue/src/telegram.ts",
+      "sha256": "120ba2a6036c006bb0804de797938091e412f00273c3041edaa2f65166ebf0fa",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/scripts/generate-auth-types.mjs",
+      "sha256": "4ba09d4a6bfe7e6894e015792c55f208dc532eacbf8bde2b040e05f63b216389",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/scripts/generate-academic-schedule-types.mjs",
+      "sha256": "9a05c0978c0219775168b417e290b327a4d0b1317b9d8522794b1700a2ed1c04",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/api/generated/schedule.types.ts",
+      "sha256": "faa42b8abdae6d33d8a54f3b7992631a0562fc7db72484d7e2a70563a005144c",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/openapi/auth.json",
+      "sha256": "e929f282fe088766cc38c26ad45e9e7bed0b0bf4cfacf93fb03ac66d4aef2b4a",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/openapi/academic.json",
+      "sha256": "270be56bc2ef230c97c797469838710b1c9f6d0e22ca6ad181ebfd5d522d76fc",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ExportJobModels.java",
+      "sha256": "0711b0258cf588b87b51eacebf92a42166c71cdaec1143ca722100d4ce157a52",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+      "sha256": "46f8dc20b5951c4b8d8886897462def7c6849a602117c35e35ef0d36ce0e7d3e",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportService.java",
+      "sha256": "920bcd8f49ecfb199a040732181515ae428ebed4386e364dc40c49e44717f1c7",
+      "scope": "DEPENDENCY_READ_ONLY",
+      "inspection": "targeted source excerpts/search or parser/hash input; not whole-file semantic review"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+      "scope": "ROOT_CONTRACT_READ_ONLY",
+      "inspection": "restored contract/current/decision/packet/design inputs; root progress docs may advance independently"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "d97ccb437222a9d20591c1297cc4c71ee45a7128f472e53693531527098e5f26",
+      "scope": "ROOT_CONTRACT_READ_ONLY",
+      "inspection": "restored contract/current/decision/packet/design inputs; root progress docs may advance independently"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "41228c26c4d5806f7951d3d0a8d3f21dbfbd7e9f9556f4360e4b5e2b400f1c86",
+      "scope": "ROOT_CONTRACT_READ_ONLY",
+      "inspection": "restored contract/current/decision/packet/design inputs; root progress docs may advance independently"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "c005dcff44b704c2106bbc0761672d3b8c636f11bc6c3a0ccf9e570b3b747fd3",
+      "scope": "ROOT_CONTRACT_READ_ONLY",
+      "inspection": "restored contract/current/decision/packet/design inputs; root progress docs may advance independently"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "7519ae9fd0dac1251ea8336c80a091e0a3f14dfb055399329c475acbd59d70a9",
+      "scope": "ROOT_CONTRACT_READ_ONLY",
+      "inspection": "restored contract/current/decision/packet/design inputs; root progress docs may advance independently"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-export-client-review.md",
+      "sha256": "cac0b5c16cf3e2c1de93993e043733e51bf5f91a4384ce19d543fd60968167ae",
+      "scope": "ROOT_CONTRACT_READ_ONLY",
+      "inspection": "restored contract/current/decision/packet/design inputs; root progress docs may advance independently"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/skills/project/rutcampustrack-design/SKILL.md",
+      "sha256": "ade844d0da8923709e07f01c7ca26f4a50f5223b100903fb1341cafef62416a5",
+      "scope": "ROOT_CONTRACT_READ_ONLY",
+      "inspection": "restored contract/current/decision/packet/design inputs; root progress docs may advance independently"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/export_developer/frontend-review-packet.md",
+      "sha256": "d88f61eb4c7ca9e473768ceb3fddc68e07bb1ed8b4f085228726116d601bd411",
+      "scope": "AUTHOR_EVIDENCE_READ_ONLY",
+      "inspection": "packet/inventory/strict probe/hash recipe and scoped evidence search"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/export_developer/frontend-ready-inventory.json",
+      "sha256": "9aa37e36509c488a4eb214d72e269a99e7c04cf304fab73521db99e67edeed95",
+      "scope": "AUTHOR_EVIDENCE_READ_ONLY",
+      "inspection": "packet/inventory/strict probe/hash recipe and scoped evidence search"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/export_developer/auth-path-consumer.ts",
+      "sha256": "a2b3321f165aceb8458fb8b7e004aed63cf7654af3e0488d3995042348d45304",
+      "scope": "AUTHOR_EVIDENCE_READ_ONLY",
+      "inspection": "packet/inventory/strict probe/hash recipe and scoped evidence search"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/export_developer/command-check.py",
+      "sha256": "bd7c14ef4cb2f6028149da3ff1cfa5f271d7aa3c0e6f4a137340ca3203ffc178",
+      "scope": "AUTHOR_EVIDENCE_READ_ONLY",
+      "inspection": "packet/inventory/strict probe/hash recipe and scoped evidence search"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/export_developer/attempts.ndjson",
+      "sha256": "e34e8db7f1614fdf602fb702e71688a4abc9a23d02af0fae2fbbf1c704a095e3",
+      "scope": "AUTHOR_EVIDENCE_READ_ONLY",
+      "inspection": "packet/inventory/strict probe/hash recipe and scoped evidence search"
+    }
+  ]
+}

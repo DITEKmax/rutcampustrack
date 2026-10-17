@@ -1,0 +1,79 @@
+{
+  "source": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+  "parent": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "exact6": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "before_revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+      "after_revision": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+      "before_bytes": 8169,
+      "before_sha256": "5944fa5e4b0979d82f957a1e4e7da4e8c01bc48e0b07a2eb3206a30970d2db50",
+      "after_bytes": 8208,
+      "after_sha256": "ba9e35c4105e64a55d71027dc077fa0fee87ca0ffdaa16e1a5de51cfb3183533",
+      "current_after_equal": true,
+      "before_exact_root731": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "before_revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+      "after_revision": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+      "before_bytes": 43335,
+      "before_sha256": "7c98e90a008514ccc9649a6e5db5464f408f1e177a444ebc21284c96bf9d8236",
+      "after_bytes": 45967,
+      "after_sha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb",
+      "current_after_equal": true,
+      "before_exact_root731": true
+    },
+    {
+      "path": "services/notification-bot/bot/__main__.py",
+      "before_revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+      "after_revision": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+      "before_bytes": 12351,
+      "before_sha256": "e1495aa9f21957456529fe5a704f3cc9f8e9e1294fbbe9622e0c0ec84d8f8ce0",
+      "after_bytes": 12351,
+      "after_sha256": "828a2cad57d9124734a429863a7db4513767f0775f3e9e3130d3d39d69f3e7fa",
+      "current_after_equal": true,
+      "before_exact_root731": true
+    },
+    {
+      "path": "services/notification-bot/bot/notifications/password_changed.py",
+      "before_revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+      "after_revision": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+      "before_bytes": 2345,
+      "before_sha256": "e1dd015d606307a153b5ecab315f96266bf40dc6bd75685fdc6dfb90f35f1fb5",
+      "after_bytes": 2346,
+      "after_sha256": "573b4e1218e27008cdf98b3a9b8d6dae9c354a5783b9fc73899ee6b061eb852a",
+      "current_after_equal": true,
+      "before_exact_root731": true
+    },
+    {
+      "path": "services/notification-bot/tests/np01_bridge_runner.py",
+      "before_revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+      "after_revision": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+      "before_bytes": 17418,
+      "before_sha256": "a7c4f6a8875698785fe9fa8c45e9f6e94830e8c3d96f252f1f640cc11acdbe5f",
+      "after_bytes": 17418,
+      "after_sha256": "c91c068b4b157bf267d4791d6920715ef228cf2abec3f950a7367c6794e1e1ca",
+      "current_after_equal": true,
+      "before_exact_root731": true
+    },
+    {
+      "path": "services/notification-bot/tests/test_bot_credential_cards.py",
+      "before_revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+      "after_revision": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+      "before_bytes": 14169,
+      "before_sha256": "13e8baaeba999a3be6527b0a4793dc008ae10ebcffb097132c064c9b8e824e99",
+      "after_bytes": 14222,
+      "after_sha256": "fc6d9f6a8c4bba73b25885758bf55bad0f74abfd42c5b906b3ce2e2b6c128baf",
+      "current_after_equal": true,
+      "before_exact_root731": true
+    }
+  ],
+  "author26": {
+    "sha256": "936620f6c85da7d20ed5b1cc3faf6e6906c2816568643274f92523f19b7df7b7",
+    "bytes": 96725,
+    "all26members_exact": true,
+    "CRC": "PASS"
+  },
+  "runtime": "NOT_RUN"
+}

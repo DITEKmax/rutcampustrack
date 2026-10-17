@@ -1,5 +1,12 @@
 package ru.rutcampustrack.schedule.security;
 
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,23 +20,16 @@ import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
 
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
  * M13 G9 (NEW-31) — IDOR-проверки schedule-service.
  *
  * <p>Schedule имеет 2 уровня защиты:
+ *
  * <ol>
- *   <li>Write-операции (cancel/restore/blockLesson/...) проверяют headman через
- *       gRPC {@code AcademicGrpcClient.isHeadman}. Mock возвращает false для
- *       чужой группы → AccessDenied.</li>
- *   <li>Read-операции (getLessons/listScheduleItems/...) проверяют
- *       {@code requestContext.groupId == targetGroupId} (M13 G9 fix).</li>
+ *   <li>Write-операции (cancel/restore/blockLesson/...) проверяют headman через gRPC {@code
+ *       AcademicGrpcClient.isHeadman}. Mock возвращает false для чужой группы → AccessDenied.
+ *   <li>Read-операции (getLessons/listScheduleItems/...) проверяют {@code requestContext.groupId ==
+ *       targetGroupId} (M13 G9 fix).
  * </ol>
  */
 @AutoConfigureMockMvc
@@ -73,22 +73,27 @@ class SecurityIdorIT extends AbstractScheduleIntegrationTest {
         lessonBId = saveFixtureLesson(lesson).getId();
 
         // one-off для группы B
-        oneOffLessonBId = jdbc.queryForObject(
-                "INSERT INTO schedule_one_off_lessons (group_id, subject_id, semester_id, date, " +
-                "lesson_number, classroom, created_by, created_at) " +
-                "VALUES (?, 100, ?, '2041-10-20', 3, 'A-101', ?, NOW()) RETURNING id",
-                Long.class, groupBId, semesterId, headmanBId);
+        oneOffLessonBId =
+                jdbc.queryForObject(
+                        "INSERT INTO schedule_one_off_lessons (group_id, subject_id, semester_id, date, "
+                                + "lesson_number, classroom, created_by, created_at) "
+                                + "VALUES (?, 100, ?, '2041-10-20', 3, 'A-101', ?, NOW()) RETURNING id",
+                        Long.class,
+                        groupBId,
+                        semesterId,
+                        headmanBId);
 
         // gRPC mock — headman группы B != group A
         when(academicGrpcClient.isHeadman(anyLong(), anyLong())).thenReturn(false);
         // ADMIN/TEACHER редко bypass — для read endpoint'ов нужен active semester
-        SemesterResponse activeSem = SemesterResponse.newBuilder()
-                .setId(semesterId)
-                .setName("Test sem")
-                .setDateFrom("2041-09-01")
-                .setDateTo("2041-12-31")
-                .setFirstWeekType("odd")
-                .build();
+        SemesterResponse activeSem =
+                SemesterResponse.newBuilder()
+                        .setId(semesterId)
+                        .setName("Test sem")
+                        .setDateFrom("2041-09-01")
+                        .setDateTo("2041-12-31")
+                        .setFirstWeekType("odd")
+                        .build();
         when(academicGrpcClient.getActiveSemester()).thenReturn(activeSem);
     }
 
@@ -112,19 +117,21 @@ class SecurityIdorIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void getLessons_foreignGroupId_returns403() throws Exception {
-        mockMvc.perform(asStudentA(
-                        get("/schedule/groups/{groupId}/lessons", groupBId)
-                                .param("dateFrom", "2041-09-01")
-                                .param("dateTo", "2041-12-31")))
+        mockMvc.perform(
+                        asStudentA(
+                                get("/schedule/groups/{groupId}/lessons", groupBId)
+                                        .param("dateFrom", "2041-09-01")
+                                        .param("dateTo", "2041-12-31")))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void listScheduleItems_foreignGroupId_returns403() throws Exception {
-        mockMvc.perform(asStudentA(
-                        get("/schedule/items")
-                                .param("groupId", groupBId.toString())
-                                .param("semesterId", semesterId.toString())))
+        mockMvc.perform(
+                        asStudentA(
+                                get("/schedule/items")
+                                        .param("groupId", groupBId.toString())
+                                        .param("semesterId", semesterId.toString())))
                 .andExpect(status().isForbidden());
     }
 
@@ -136,11 +143,12 @@ class SecurityIdorIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void listOneOffLessons_foreignGroupId_returns403() throws Exception {
-        mockMvc.perform(asStudentA(
-                        get("/schedule/one-off-lessons")
-                                .param("groupId", groupBId.toString())
-                                .param("dateFrom", "2041-09-01")
-                                .param("dateTo", "2041-12-31")))
+        mockMvc.perform(
+                        asStudentA(
+                                get("/schedule/one-off-lessons")
+                                        .param("groupId", groupBId.toString())
+                                        .param("dateFrom", "2041-09-01")
+                                        .param("dateTo", "2041-12-31")))
                 .andExpect(status().isForbidden());
     }
 
@@ -150,10 +158,11 @@ class SecurityIdorIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void cancelLesson_foreignGroup_returns403() throws Exception {
-        mockMvc.perform(asHeadmanA(
-                        patch("/schedule/lessons/{id}/cancel", lessonBId)
-                                .contentType("application/json")
-                                .content("{\"reason\":\"test\"}")))
+        mockMvc.perform(
+                        asHeadmanA(
+                                patch("/schedule/lessons/{id}/cancel", lessonBId)
+                                        .contentType("application/json")
+                                        .content("{\"reason\":\"test\"}")))
                 .andExpect(status().isForbidden());
     }
 
@@ -165,18 +174,20 @@ class SecurityIdorIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void toggleGeoBlock_foreignGroup_returns403() throws Exception {
-        mockMvc.perform(asHeadmanA(
-                        patch("/schedule/lessons/{id}/geo-block", lessonBId)
-                                .contentType("application/json")
-                                .content("{\"blocked\":true}")))
+        mockMvc.perform(
+                        asHeadmanA(
+                                patch("/schedule/lessons/{id}/geo-block", lessonBId)
+                                        .contentType("application/json")
+                                        .content("{\"blocked\":true}")))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void blockLesson_foreignGroup_returns403() throws Exception {
-        mockMvc.perform(asHeadmanA(
-                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .post("/schedule/lessons/{id}/blockage", lessonBId)))
+        mockMvc.perform(
+                        asHeadmanA(
+                                org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                        .post("/schedule/lessons/{id}/blockage", lessonBId)))
                 .andExpect(status().isForbidden());
     }
 
@@ -194,9 +205,10 @@ class SecurityIdorIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void deleteScheduleItem_foreignGroup_returns403() throws Exception {
-        mockMvc.perform(asHeadmanA(delete("/schedule/items/{id}", scheduleItemBId))
-                        .header("Idempotency-Key", java.util.UUID.randomUUID())
-                        .header("If-Match", "1"))
+        mockMvc.perform(
+                        asHeadmanA(delete("/schedule/items/{id}", scheduleItemBId))
+                                .header("Idempotency-Key", java.util.UUID.randomUUID())
+                                .header("If-Match", "1"))
                 .andExpect(status().isForbidden());
     }
 }

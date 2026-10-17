@@ -1,27 +1,5 @@
 package ru.rutcampustrack.academic.map;
 
-import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.entity.User;
-import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BooleanSupplier;
-
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.DATA_LOSS;
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.FAILED_PRECONDITION;
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.INVALID_ARGUMENT;
@@ -43,12 +21,33 @@ import static ru.rutcampustrack.academic.map.CampusMapReadModels.ManifestResult;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.Plan;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.PlanResult;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BooleanSupplier;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
 /**
  * Authenticated, fail-closed read service for the Academic campus-map graph.
  *
- * <p>The manifest is assembled inside one repeatable-read transaction.  Plan
- * and asset reads use the same immutable row models, so the gRPC handler never
- * has to inspect JPA entities or raw database values.</p>
+ * <p>The manifest is assembled inside one repeatable-read transaction. Plan and asset reads use the
+ * same immutable row models, so the gRPC handler never has to inspect JPA entities or raw database
+ * values.
  */
 @Service
 public class CampusMapReadService {
@@ -63,15 +62,12 @@ public class CampusMapReadService {
     private final CampusMapReadRepository repository;
     private final UserRepository userRepository;
 
-    public CampusMapReadService(CampusMapReadRepository repository,
-                                UserRepository userRepository) {
+    public CampusMapReadService(CampusMapReadRepository repository, UserRepository userRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
     }
 
-    /**
-     * Builds an ordered coherent manifest from one database snapshot.
-     */
+    /** Builds an ordered coherent manifest from one database snapshot. */
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public ManifestResult readManifest(long knownRevision, InternalJwtClaims claims) {
         authorize(claims);
@@ -99,36 +95,38 @@ public class CampusMapReadService {
             List<ManifestFloor> manifestFloors = new ArrayList<>();
             for (Floor floor : floors) {
                 Plan plan = planForFloor(floor, plansByFloor);
-                ManifestPlan aggregate = plan == null
-                        ? null
-                        : toPlanAggregate(building.id(), plan, true);
+                ManifestPlan aggregate =
+                        plan == null ? null : toPlanAggregate(building.id(), plan, true);
                 manifestFloors.add(new ManifestFloor(floor.id(), floor.label(), aggregate));
             }
             buildings.add(new ManifestBuilding(building.id(), building.label(), manifestFloors));
         }
 
-        Manifest manifest = new Manifest(
-                catalog.schemaVersion(),
-                catalog.validationPolicyVersion(),
-                catalog.revision(),
-                buildings);
+        Manifest manifest =
+                new Manifest(
+                        catalog.schemaVersion(),
+                        catalog.validationPolicyVersion(),
+                        catalog.revision(),
+                        buildings);
         return new ManifestResult(false, catalog.revision(), manifest);
     }
 
     /** Reads the current plan for one canonical building/floor pair. */
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-    public PlanResult readFloorPlan(String buildingId,
-                                    String floorId,
-                                    InternalJwtClaims claims) {
+    public PlanResult readFloorPlan(String buildingId, String floorId, InternalJwtClaims claims) {
         authorize(claims);
         long buildingKey = parseCanonicalId(buildingId, "building id");
         long floorKey = parseCanonicalId(floorId, "floor id");
         Catalog catalog = currentCatalog();
 
-        Building building = repository.findActiveBuilding(buildingKey)
-                .orElseThrow(() -> failure(NOT_FOUND, "campus map building was not found"));
-        Floor floor = repository.findActiveFloor(floorKey)
-                .orElseThrow(() -> failure(NOT_FOUND, "campus map floor was not found"));
+        Building building =
+                repository
+                        .findActiveBuilding(buildingKey)
+                        .orElseThrow(() -> failure(NOT_FOUND, "campus map building was not found"));
+        Floor floor =
+                repository
+                        .findActiveFloor(floorKey)
+                        .orElseThrow(() -> failure(NOT_FOUND, "campus map floor was not found"));
         if (floor.buildingId() != building.id()) {
             throw failure(NOT_FOUND, "campus map floor was not found");
         }
@@ -139,8 +137,14 @@ public class CampusMapReadService {
             throw failure(DATA_LOSS, "campus map current plan identity is invalid");
         }
 
-        Plan plan = repository.findPlanById(floor.currentVersionId(), floor.id())
-                .orElseThrow(() -> failure(DATA_LOSS, "campus map current plan graph is inconsistent"));
+        Plan plan =
+                repository
+                        .findPlanById(floor.currentVersionId(), floor.id())
+                        .orElseThrow(
+                                () ->
+                                        failure(
+                                                DATA_LOSS,
+                                                "campus map current plan graph is inconsistent"));
         if (plan.publishedAt() == null) {
             throw failure(FAILED_PRECONDITION, "campus map current plan is not published");
         }
@@ -149,17 +153,18 @@ public class CampusMapReadService {
     }
 
     /**
-     * Reads an immutable published asset.  An empty result means that the
-     * stream was cancelled before completion; all other failures are typed.
+     * Reads an immutable published asset. An empty result means that the stream was cancelled
+     * before completion; all other failures are typed.
      */
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-    public Optional<Asset> readAsset(String buildingId,
-                                     String floorId,
-                                     long version,
-                                     CampusMapFormat format,
-                                     String assetId,
-                                     InternalJwtClaims claims,
-                                     BooleanSupplier cancelled) {
+    public Optional<Asset> readAsset(
+            String buildingId,
+            String floorId,
+            long version,
+            CampusMapFormat format,
+            String assetId,
+            InternalJwtClaims claims,
+            BooleanSupplier cancelled) {
         BooleanSupplier cancellation = cancelled == null ? () -> false : cancelled;
         if (cancellation.getAsBoolean()) {
             return Optional.empty();
@@ -178,10 +183,14 @@ public class CampusMapReadService {
             throw failure(INVALID_ARGUMENT, "map format is invalid");
         }
 
-        Building building = repository.findActiveBuilding(buildingKey)
-                .orElseThrow(() -> failure(NOT_FOUND, "campus map building was not found"));
-        Floor floor = repository.findActiveFloor(floorKey)
-                .orElseThrow(() -> failure(NOT_FOUND, "campus map floor was not found"));
+        Building building =
+                repository
+                        .findActiveBuilding(buildingKey)
+                        .orElseThrow(() -> failure(NOT_FOUND, "campus map building was not found"));
+        Floor floor =
+                repository
+                        .findActiveFloor(floorKey)
+                        .orElseThrow(() -> failure(NOT_FOUND, "campus map floor was not found"));
         if (floor.buildingId() != building.id()) {
             throw failure(NOT_FOUND, "campus map floor was not found");
         }
@@ -189,8 +198,10 @@ public class CampusMapReadService {
             return Optional.empty();
         }
 
-        Plan plan = repository.findPlan(floor.id(), version)
-                .orElseThrow(() -> failure(NOT_FOUND, "campus map plan was not found"));
+        Plan plan =
+                repository
+                        .findPlan(floor.id(), version)
+                        .orElseThrow(() -> failure(NOT_FOUND, "campus map plan was not found"));
         if (plan.publishedAt() == null) {
             throw failure(FAILED_PRECONDITION, "campus map plan is not published");
         }
@@ -211,10 +222,18 @@ public class CampusMapReadService {
             return Optional.empty();
         }
 
-        Asset asset = repository.loadAsset(assetKey, plan.id(), format)
-                .orElseThrow(() -> failure(DATA_LOSS, "campus map asset content is unavailable"));
+        Asset asset =
+                repository
+                        .loadAsset(assetKey, plan.id(), format)
+                        .orElseThrow(
+                                () ->
+                                        failure(
+                                                DATA_LOSS,
+                                                "campus map asset content is unavailable"));
         byte[] content = asset.content();
-        if (content == null || content.length == 0 || content.length > CampusMapReadRepository.MAX_ASSET_BYTES) {
+        if (content == null
+                || content.length == 0
+                || content.length > CampusMapReadRepository.MAX_ASSET_BYTES) {
             if (content != null && content.length > CampusMapReadRepository.MAX_ASSET_BYTES) {
                 throw failure(RESOURCE_EXHAUSTED, "campus map asset is too large");
             }
@@ -238,18 +257,19 @@ public class CampusMapReadService {
     private void authorize(InternalJwtClaims claims) {
         boolean student = claims != null && STUDENT.equalsIgnoreCase(claims.domainRole());
         boolean teacher = claims != null && TEACHER.equalsIgnoreCase(claims.domainRole());
-        boolean validCommonClaims = claims != null
-                && claims.userId() > 0
-                && claims.sessionId() != null
-                && claims.sessionVersion() > 0
-                && claims.rolesVersion() > 0;
-        boolean validStudentClaims = student
-                && claims.groupId() != null
-                && claims.groupId() > 0
-                && allowedStatus(claims.status(), claims.readOnly());
-        boolean validTeacherClaims = teacher
-                && !claims.readOnly()
-                && ACTIVE.equalsIgnoreCase(claims.status());
+        boolean validCommonClaims =
+                claims != null
+                        && claims.userId() > 0
+                        && claims.sessionId() != null
+                        && claims.sessionVersion() > 0
+                        && claims.rolesVersion() > 0;
+        boolean validStudentClaims =
+                student
+                        && claims.groupId() != null
+                        && claims.groupId() > 0
+                        && allowedStatus(claims.status(), claims.readOnly());
+        boolean validTeacherClaims =
+                teacher && !claims.readOnly() && ACTIVE.equalsIgnoreCase(claims.status());
         if (!validCommonClaims || (!validStudentClaims && !validTeacherClaims)) {
             throw failure(PERMISSION_DENIED, "signed campus-map identity is not allowed");
         }
@@ -259,7 +279,8 @@ public class CampusMapReadService {
                 throw failure(PERMISSION_DENIED, "signed campus-map identity is not allowed");
             }
         } catch (DataAccessException error) {
-            throw failure(CampusMapReadException.Code.INTERNAL,
+            throw failure(
+                    CampusMapReadException.Code.INTERNAL,
                     "campus map identity lookup failed",
                     error);
         }
@@ -318,8 +339,8 @@ public class CampusMapReadService {
         return byId;
     }
 
-    private static Map<Long, List<Floor>> validateFloors(List<Floor> rows,
-                                                          Map<Long, Building> buildingsById) {
+    private static Map<Long, List<Floor>> validateFloors(
+            List<Floor> rows, Map<Long, Building> buildingsById) {
         if (rows == null) {
             throw failure(DATA_LOSS, "campus map floor graph is unavailable");
         }
@@ -354,8 +375,7 @@ public class CampusMapReadService {
         }
     }
 
-    private Map<Long, Plan> validateCurrentPlans(List<Plan> rows,
-                                                  List<Floor> floorRows) {
+    private Map<Long, Plan> validateCurrentPlans(List<Plan> rows, List<Floor> floorRows) {
         if (rows == null) {
             throw failure(DATA_LOSS, "campus map plan graph is unavailable");
         }
@@ -412,7 +432,9 @@ public class CampusMapReadService {
         Map<CampusMapFormat, FormatSlot> slots = new LinkedHashMap<>();
         Set<Long> ids = new HashSet<>();
         for (FormatSlot slot : rows) {
-            if (slot == null || !ids.add(slot.id()) || slots.putIfAbsent(slot.format(), slot) != null) {
+            if (slot == null
+                    || !ids.add(slot.id())
+                    || slots.putIfAbsent(slot.format(), slot) != null) {
                 throw failure(DATA_LOSS, "campus map plan format graph is inconsistent");
             }
             validateSlot(slot, plan, validateAssets);
@@ -442,14 +464,23 @@ public class CampusMapReadService {
         }
         validateViewBox(slot.viewBox());
         if (slot.state() == CampusMapFormatState.READY) {
-            if (slot.assetId() == null || slot.assetId() <= 0 || slot.bytes() <= 0
-                    || slot.sha256() == null || slot.sha256().length != 32) {
+            if (slot.assetId() == null
+                    || slot.assetId() <= 0
+                    || slot.bytes() <= 0
+                    || slot.sha256() == null
+                    || slot.sha256().length != 32) {
                 throw failure(DATA_LOSS, "ready campus map format metadata is invalid");
             }
             if (validateAssets) {
-                AssetMetadata metadata = repository.findAssetMetadata(
-                                slot.assetId(), slot.planVersionId(), slot.format())
-                        .orElseThrow(() -> failure(DATA_LOSS, "ready campus map asset is missing"));
+                AssetMetadata metadata =
+                        repository
+                                .findAssetMetadata(
+                                        slot.assetId(), slot.planVersionId(), slot.format())
+                                .orElseThrow(
+                                        () ->
+                                                failure(
+                                                        DATA_LOSS,
+                                                        "ready campus map asset is missing"));
                 validateAssetMetadata(slot, metadata);
             }
         } else if (slot.assetId() != null || slot.bytes() != 0 || slot.sha256() != null) {
@@ -469,18 +500,19 @@ public class CampusMapReadService {
         }
         validateSlot(slot, plan, false);
         if (validateAssets) {
-            AssetMetadata metadata = repository.findAssetMetadata(
-                            slot.assetId(), slot.planVersionId(), slot.format())
-                    .orElseThrow(() -> failure(DATA_LOSS, "ready campus map asset is missing"));
+            AssetMetadata metadata =
+                    repository
+                            .findAssetMetadata(slot.assetId(), slot.planVersionId(), slot.format())
+                            .orElseThrow(
+                                    () -> failure(DATA_LOSS, "ready campus map asset is missing"));
             validateAssetMetadata(slot, metadata);
             return metadata;
         }
         return null;
     }
 
-    private static FormatSlot selectedSlot(List<FormatSlot> rows,
-                                           long planVersionId,
-                                           CampusMapFormat format) {
+    private static FormatSlot selectedSlot(
+            List<FormatSlot> rows, long planVersionId, CampusMapFormat format) {
         if (rows == null) {
             throw failure(DATA_LOSS, "campus map plan format graph is unavailable");
         }
@@ -521,9 +553,7 @@ public class CampusMapReadService {
             throw failure(DATA_LOSS, "campus map plan catalog identity is invalid");
         }
         Optional<Catalog> parent = repository.findCatalogById(plan.catalogRevisionId());
-        if (parent == null
-                || parent.isEmpty()
-                || parent.get().id() != plan.catalogRevisionId()) {
+        if (parent == null || parent.isEmpty() || parent.get().id() != plan.catalogRevisionId()) {
             throw failure(DATA_LOSS, "campus map plan catalog parent is unavailable");
         }
     }
@@ -554,14 +584,14 @@ public class CampusMapReadService {
         if (viewBox == null || viewBox.isEmpty()) {
             return;
         }
-        if (viewBox.size() != 4 || viewBox.stream().anyMatch(value -> value == null || !Double.isFinite(value))) {
+        if (viewBox.size() != 4
+                || viewBox.stream().anyMatch(value -> value == null || !Double.isFinite(value))) {
             throw failure(DATA_LOSS, "campus map view box is invalid");
         }
     }
 
-    private static boolean digestMatches(byte[] content,
-                                         byte[] expected,
-                                         BooleanSupplier cancelled) {
+    private static boolean digestMatches(
+            byte[] content, byte[] expected, BooleanSupplier cancelled) {
         if (expected == null || expected.length != 32) {
             throw failure(DATA_LOSS, "campus map asset digest is invalid");
         }
@@ -576,7 +606,8 @@ public class CampusMapReadService {
             }
             return MessageDigest.isEqual(expected, digest.digest());
         } catch (NoSuchAlgorithmException error) {
-            throw failure(CampusMapReadException.Code.INTERNAL,
+            throw failure(
+                    CampusMapReadException.Code.INTERNAL,
                     "campus map asset digest is unavailable",
                     error);
         }
@@ -605,13 +636,13 @@ public class CampusMapReadService {
         return parsed;
     }
 
-    private static CampusMapReadException failure(CampusMapReadException.Code code, String message) {
+    private static CampusMapReadException failure(
+            CampusMapReadException.Code code, String message) {
         return CampusMapReadException.of(code, message);
     }
 
-    private static CampusMapReadException failure(CampusMapReadException.Code code,
-                                                    String message,
-                                                    Throwable cause) {
+    private static CampusMapReadException failure(
+            CampusMapReadException.Code code, String message, Throwable cause) {
         return CampusMapReadException.of(code, message, cause);
     }
 }

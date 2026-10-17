@@ -1,13 +1,12 @@
 package ru.rutcampustrack.gateway.config;
 
-import org.junit.jupiter.api.Test;
-import com.github.tomakehurst.wiremock.WireMockServer;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.Sinks;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PublicKey;
@@ -18,12 +17,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 
 class PublicKeyConfigTest {
 
@@ -35,7 +34,7 @@ class PublicKeyConfigTest {
         KeyPair keyPair = gen.generateKeyPair();
 
         byte[] encoded = keyPair.getPublic().getEncoded();
-        String base64 = Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(encoded);
+        String base64 = Base64.getMimeEncoder(64, new byte[] {'\n'}).encodeToString(encoded);
         String pem = "-----BEGIN PUBLIC KEY-----\n" + base64 + "\n-----END PUBLIC KEY-----\n";
 
         PublicKeyConfig config = new PublicKeyConfig();
@@ -61,8 +60,10 @@ class PublicKeyConfigTest {
         server.start();
         try {
             AtomicLong time = new AtomicLong();
-            PublicKeyConfig config = new PublicKeyConfig(WebClient.create(), server.baseUrl(), time::get);
-            server.stubFor(get(urlEqualTo("/auth/public-key")).willReturn(aResponse().withStatus(503)));
+            PublicKeyConfig config =
+                    new PublicKeyConfig(WebClient.create(), server.baseUrl(), time::get);
+            server.stubFor(
+                    get(urlEqualTo("/auth/public-key")).willReturn(aResponse().withStatus(503)));
             config.init();
             assertThat(config.isReady()).isFalse();
             assertThatThrownBy(config::getPublicKey).isInstanceOf(IllegalStateException.class);
@@ -93,12 +94,14 @@ class PublicKeyConfigTest {
     }
 
     @Test
-    void invalidReplacementKeepsLastGoodKeyAndRetriesThirtySecondsAfterCompletion() throws Exception {
+    void invalidReplacementKeepsLastGoodKeyAndRetriesThirtySecondsAfterCompletion()
+            throws Exception {
         WireMockServer server = new WireMockServer(wireMockConfig().dynamicPort());
         server.start();
         try {
             AtomicLong time = new AtomicLong();
-            PublicKeyConfig config = new PublicKeyConfig(WebClient.create(), server.baseUrl(), time::get);
+            PublicKeyConfig config =
+                    new PublicKeyConfig(WebClient.create(), server.baseUrl(), time::get);
             PublicKey first = rsaKey();
             serveKey(server, keyResponse(first));
             config.init();
@@ -128,11 +131,17 @@ class PublicKeyConfigTest {
         AtomicInteger requests = new AtomicInteger();
         CountDownLatch started = new CountDownLatch(1);
         Sinks.One<ClientResponse> response = Sinks.one();
-        WebClient client = WebClient.builder().exchangeFunction(request -> Mono.defer(() -> {
-            requests.incrementAndGet();
-            started.countDown();
-            return response.asMono();
-        })).build();
+        WebClient client =
+                WebClient.builder()
+                        .exchangeFunction(
+                                request ->
+                                        Mono.defer(
+                                                () -> {
+                                                    requests.incrementAndGet();
+                                                    started.countDown();
+                                                    return response.asMono();
+                                                }))
+                        .build();
         PublicKeyConfig config = new PublicKeyConfig(client, "http://auth-test", time::get);
         var executor = Executors.newSingleThreadExecutor();
         try {
@@ -163,12 +172,18 @@ class PublicKeyConfigTest {
 
     private static String keyResponse(PublicKey key) {
         String encoded = Base64.getEncoder().encodeToString(key.getEncoded());
-        return "{\"publicKey\":\"-----BEGIN PUBLIC KEY-----\\n" + encoded
+        return "{\"publicKey\":\"-----BEGIN PUBLIC KEY-----\\n"
+                + encoded
                 + "\\n-----END PUBLIC KEY-----\",\"algorithm\":\"RSA\"}";
     }
 
     private static void serveKey(WireMockServer server, String body) {
-        server.stubFor(get(urlEqualTo("/auth/public-key")).willReturn(aResponse()
-                .withStatus(200).withHeader("Content-Type", "application/json").withBody(body)));
+        server.stubFor(
+                get(urlEqualTo("/auth/public-key"))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(200)
+                                        .withHeader("Content-Type", "application/json")
+                                        .withBody(body)));
     }
 }

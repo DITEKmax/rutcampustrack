@@ -1,0 +1,26 @@
+{
+  "command": [
+    "python3",
+    "-B",
+    "/workspace/scratch/rct-validation/hostcfg_g01_v3_recheck/check.py"
+  ],
+  "driver_sha256": "b8447bcd5ef71571b1248b2c4dce8a936d3b96b7f645568d74019c99b414f8be",
+  "native_exit": 0,
+  "wall_seconds": 0.004889287,
+  "actual_old4_rejected_new4_accepted": "two current selected Python validator AST + independently inspected Java source-rule counterpart; no native Java/JVM run",
+  "public_controls": 14,
+  "predicates": 3,
+  "actual_v3_privatepath_controls": [
+    1,
+    3
+  ],
+  "actual_v3_initial_grant_controls": [
+    1,
+    5
+  ],
+  "selected_generator": "actual function AST with deterministic public bytes fixture; no private random generation",
+  "selected_suffix_filter_controls": 6,
+  "prior_native_exit1": "reviewer expected only filter insertion; actual exact scope correction also sorted iterator and added stat-only VAPID inventory; corrected own expected delta, no source/runtime failure",
+  "private_keys_ID_values_hashes_not_read_or_published": true,
+  "no_guard_main_runtime_children_signals_network": true
+}

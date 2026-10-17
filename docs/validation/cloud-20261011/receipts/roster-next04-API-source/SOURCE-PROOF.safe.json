@@ -1,0 +1,21 @@
+{
+  "sourceOnly": true,
+  "native": "NOT_RUN",
+  "callerSHA256": "d0b965cc06ee42f5af1ae7a89ba8991fa5afae8f7c8f949e146d494d34b0f239",
+  "readySHA256": "31171f9462e810b754bed82bfc1c998daad8e6779f51dc64b4c28e66274e4526",
+  "nativePlanSHA256": "f7b3dbdea8e992e16948e5fe92bb1f8f25db99afb0d4916be41057c21d87062a",
+  "baseCallerSHA256": "29191b9ec848fa7dd044ce1873d1d5dd0ae36b6395a9d8b2892dc1cfe1cf8f4f",
+  "sixR2GuardFunctionsExact": true,
+  "statusObserveCallbacksExact": true,
+  "pythonParse0": true,
+  "closedAcceptanceChangedOnlyForAPIWitness": true,
+  "newProtocol": false,
+  "command": [
+    "python",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/api-next04-proposal/run-api-witness.py",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/api-next04-proposal/private/root-api-grant-NEW.json"
+  ],
+  "resourceBudget": "one60active+30cleanup; fits requested outer200 cap without increasing original60; no sourcewrites/APIuntilfreshRootgrantedactual4facts/live16.",
+  "ROOT19updated481": true,
+  "actual503cause": "UNKNOWN"
+}

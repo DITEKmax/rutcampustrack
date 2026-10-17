@@ -1,5 +1,8 @@
 package ru.rutcampustrack.notification.security;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,14 +19,10 @@ import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
 import ru.rutcampustrack.shared.security.PublicKeyProvider;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class SecurityInfrastructureTest {
 
-    @Mock
-    private ProceedingJoinPoint pjp;
+    @Mock private ProceedingJoinPoint pjp;
 
     private RequestContext requestContext;
     private RoleCheckAspect roleCheckAspect;
@@ -37,25 +36,25 @@ class SecurityInfrastructureTest {
         // M03a: build NotificationUserContextFilter with in-memory keypair for legacy header tests.
         InternalJwtTestFactory factory = new InternalJwtTestFactory();
         InternalJwtProperties props = new InternalJwtProperties(null, 0, 0, true, null, null, null);
-        PublicKeyProvider keyProvider = new PublicKeyProvider(props) {
-            @Override
-            public void init() {
-            }
+        PublicKeyProvider keyProvider =
+                new PublicKeyProvider(props) {
+                    @Override
+                    public void init() {}
 
-            @Override
-            public void refresh() {
-            }
+                    @Override
+                    public void refresh() {}
 
-            @Override
-            public java.security.PublicKey getPublicKey() {
-                return factory.publicKey();
-            }
-        };
+                    @Override
+                    public java.security.PublicKey getPublicKey() {
+                        return factory.publicKey();
+                    }
+                };
         InternalJwtValidator validator = new InternalJwtValidator(keyProvider, props);
         filter = new NotificationUserContextFilter(validator, props, requestContext, null);
     }
 
-    // Test 1: RoleCheckAspect allows method execution when request has STUDENT role and @RequireRole({STUDENT}) is present
+    // Test 1: RoleCheckAspect allows method execution when request has STUDENT role and
+    // @RequireRole({STUDENT}) is present
     @Test
     void roleCheckAspect_allowsStudentWhenRequireRoleStudent() throws Throwable {
         requestContext.setRole(UserRole.STUDENT);
@@ -68,7 +67,8 @@ class SecurityInfrastructureTest {
         verify(pjp).proceed();
     }
 
-    // Test 2: RoleCheckAspect throws AccessDeniedException when request has TEACHER role and @RequireRole({STUDENT}) is present
+    // Test 2: RoleCheckAspect throws AccessDeniedException when request has TEACHER role and
+    // @RequireRole({STUDENT}) is present
     @Test
     void roleCheckAspect_rejectsTeacherWhenRequireRoleStudent() throws Throwable {
         requestContext.setRole(UserRole.TEACHER);
@@ -79,7 +79,8 @@ class SecurityInfrastructureTest {
         verify(pjp, never()).proceed();
     }
 
-    // Test 3: NotificationUserContextFilter populates RequestContext.userId from X-User-Id legacy header (dual-mode)
+    // Test 3: NotificationUserContextFilter populates RequestContext.userId from X-User-Id legacy
+    // header (dual-mode)
     @Test
     void userContextFilter_populatesUserIdFromLegacyHeader() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -96,7 +97,8 @@ class SecurityInfrastructureTest {
         assertThat(requestContext.getRole()).isEqualTo(UserRole.STUDENT);
     }
 
-    // Test 4: NotificationUserContextFilter populates RequestContext.groupId from X-Group-Id legacy header
+    // Test 4: NotificationUserContextFilter populates RequestContext.groupId from X-Group-Id legacy
+    // header
     @Test
     void userContextFilter_populatesGroupIdFromLegacyHeader() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();

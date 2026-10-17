@@ -1,0 +1,387 @@
+[
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+    "original_review_sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+    "current_sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "Accepted owner decisions embedded in JS-ADMIN-01/02/03, chat 7",
+        "status": "canonical-for-admin-users-delivery; later conflicting owner decisions must be surfaced before dependent edits",
+        "source_sha256": null,
+        "copy_sha256": null,
+        "owner": "/root",
+        "decision_date": "Original owner decision date not inferred from file mtime; chat 7 attribution retained",
+        "supersedes": [
+          "role-prefixed UserService.generateLogin behavior",
+          "terminal-role selectability in Auth RoleStatus where inconsistent with JS-ADMIN-02 active-only RoleSwitcher"
+        ]
+      },
+      {
+        "source": "design:knowledge/job-stories.md",
+        "status": "copy-archive",
+        "source_sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+    "original_review_sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+    "current_sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "design:02-backend/backend-conflicts.md",
+        "status": "copy-archive",
+        "source_sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/architecture/reference-rutcampustrack-design/TRANSPORT.md",
+    "original_review_sha256": "37f2c5f6fd1ce6a4d676870887ad0dfcc49e4f947f9054f608190192d4382985",
+    "current_sha256": "37f2c5f6fd1ce6a4d676870887ad0dfcc49e4f947f9054f608190192d4382985",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "design:knowledge/TRANSPORT.md",
+        "status": "copy-canonical",
+        "source_sha256": "37f2c5f6fd1ce6a4d676870887ad0dfcc49e4f947f9054f608190192d4382985",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/reference-rutcampustrack-design/COMPONENT_REGISTRY.md",
+    "original_review_sha256": "0b18a2d420dbd1245b5199620166ae96780f885ebbb58d9437a410ee0b153e7a",
+    "current_sha256": "0b18a2d420dbd1245b5199620166ae96780f885ebbb58d9437a410ee0b153e7a",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "design:knowledge/COMPONENT_REGISTRY.md",
+        "status": "copy-canonical",
+        "source_sha256": "0b18a2d420dbd1245b5199620166ae96780f885ebbb58d9437a410ee0b153e7a",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+    "original_review_sha256": "40a13a9ddb8cc2e8a2ab8c7cec2aec9f0ddfe7f6de10dfbc6e779423046330d3",
+    "current_sha256": "40a13a9ddb8cc2e8a2ab8c7cec2aec9f0ddfe7f6de10dfbc6e779423046330d3",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "design:02-backend/backend-requests.md",
+        "status": "copy-archive",
+        "source_sha256": "40a13a9ddb8cc2e8a2ab8c7cec2aec9f0ddfe7f6de10dfbc6e779423046330d3",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/headman/112-headman-attendance.md",
+    "original_review_sha256": "f56e797466530a4dc10690d63694a776737ff7a0598524f88088e4d9ff73fd60",
+    "current_sha256": "f56e797466530a4dc10690d63694a776737ff7a0598524f88088e4d9ff73fd60",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "design:01-wireframes/headman/112-headman-attendance.md",
+        "status": "copy-canonical",
+        "source_sha256": "f56e797466530a4dc10690d63694a776737ff7a0598524f88088e4d9ff73fd60",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/headman/112-headman-attendance.md",
+        "status": "duplicate",
+        "source_sha256": "f56e797466530a4dc10690d63694a776737ff7a0598524f88088e4d9ff73fd60",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/headman/113-headman-stats.md",
+    "original_review_sha256": "7e2fde6ee3ac319fcf53739b077799470181f05bf57fd8e42d0dd196e63a5bb8",
+    "current_sha256": "7e2fde6ee3ac319fcf53739b077799470181f05bf57fd8e42d0dd196e63a5bb8",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "Current PWA/TMA implementation and accepted VIEW_STATS export decision in owner conversation",
+        "status": "resolved: implement in mobile-core shared by pwa-vue and tma-vue; named statistical rows allowed under VIEW_STATS, separate roster export remains outside this permission",
+        "source_sha256": null,
+        "copy_sha256": null,
+        "owner": "/root",
+        "decision_date": null,
+        "supersedes": "read-only scout proposal to implement legacy frontends/pwa React and infer anonymization of all statistical exports; no owner decision superseded"
+      },
+      {
+        "source": "design:01-wireframes/headman/113-headman-stats.md",
+        "status": "copy-canonical",
+        "source_sha256": "7e2fde6ee3ac319fcf53739b077799470181f05bf57fd8e42d0dd196e63a5bb8",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/headman/113-headman-stats.md",
+        "status": "duplicate",
+        "source_sha256": "7e2fde6ee3ac319fcf53739b077799470181f05bf57fd8e42d0dd196e63a5bb8",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/headman/116-headman-group.md",
+    "original_review_sha256": "1968870fa7b29a36b41bbdf99bbb0e4fe1c031653b85ae65a194445a5b7db17a",
+    "current_sha256": "1968870fa7b29a36b41bbdf99bbb0e4fe1c031653b85ae65a194445a5b7db17a",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "design:01-wireframes/headman/116-headman-group.md",
+        "status": "copy-canonical",
+        "source_sha256": "1968870fa7b29a36b41bbdf99bbb0e4fe1c031653b85ae65a194445a5b7db17a",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/headman/116-headman-group.md",
+        "status": "duplicate",
+        "source_sha256": "1968870fa7b29a36b41bbdf99bbb0e4fe1c031653b85ae65a194445a5b7db17a",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/teacher/122-teacher-attendance.md",
+    "original_review_sha256": "dea55c16465d745bfe510df9e9f8f70e85e1fae2065d0bc226965a653969e02f",
+    "current_sha256": "dea55c16465d745bfe510df9e9f8f70e85e1fae2065d0bc226965a653969e02f",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "ПК-122 explicit partial state versus tentative period interpretation",
+        "status": "resolved: preserve full-semester journal/export, blank future columns, future lessons excluded from metrics",
+        "source_sha256": null,
+        "copy_sha256": null,
+        "owner": "/root",
+        "decision_date": null,
+        "supersedes": "root export contract to-today assumption of 2026-09-23; no owner decision superseded"
+      },
+      {
+        "source": "design:01-wireframes/teacher/122-teacher-attendance.md",
+        "status": "copy-canonical",
+        "source_sha256": "dea55c16465d745bfe510df9e9f8f70e85e1fae2065d0bc226965a653969e02f",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/teacher/122-teacher-attendance.md",
+        "status": "duplicate",
+        "source_sha256": "dea55c16465d745bfe510df9e9f8f70e85e1fae2065d0bc226965a653969e02f",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/teacher/123-teacher-stats.md",
+    "original_review_sha256": "294ec2c4b28032efa6dda76598c58687ef47853355f22031ae63779132bf1840",
+    "current_sha256": "294ec2c4b28032efa6dda76598c58687ef47853355f22031ae63779132bf1840",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "design:01-wireframes/teacher/123-teacher-stats.md",
+        "status": "copy-canonical",
+        "source_sha256": "294ec2c4b28032efa6dda76598c58687ef47853355f22031ae63779132bf1840",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/teacher/123-teacher-stats.md",
+        "status": "duplicate",
+        "source_sha256": "294ec2c4b28032efa6dda76598c58687ef47853355f22031ae63779132bf1840",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/admin/132-admin-users.md",
+    "original_review_sha256": "0bc918e6eea1d67d2baa40bcd72a6c1e4a958786bc7979127f46b49728bc0368",
+    "current_sha256": "0bc918e6eea1d67d2baa40bcd72a6c1e4a958786bc7979127f46b49728bc0368",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "design:01-wireframes/admin/132-admin-users.md",
+        "status": "copy-canonical",
+        "source_sha256": "0bc918e6eea1d67d2baa40bcd72a6c1e4a958786bc7979127f46b49728bc0368",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/admin/132-admin-users.md",
+        "status": "duplicate",
+        "source_sha256": "0bc918e6eea1d67d2baa40bcd72a6c1e4a958786bc7979127f46b49728bc0368",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/wireframes/admin/133-admin-groups.md",
+    "original_review_sha256": "b2fbfcc6a56e84005c4afd770d0506cd9362f5f4f53109836a5233105632487c",
+    "current_sha256": "b2fbfcc6a56e84005c4afd770d0506cd9362f5f4f53109836a5233105632487c",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "design:01-wireframes/admin/133-admin-groups.md",
+        "status": "copy-canonical",
+        "source_sha256": "b2fbfcc6a56e84005c4afd770d0506cd9362f5f4f53109836a5233105632487c",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      },
+      {
+        "source": "kit:specs/wireframes/admin/133-admin-groups.md",
+        "status": "duplicate",
+        "source_sha256": "b2fbfcc6a56e84005c4afd770d0506cd9362f5f4f53109836a5233105632487c",
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/decisions/2026-09-24-assistant-report-export.md",
+    "original_review_sha256": "986278530c3406667cbd17f66e285cd1e4fd9e52ed5341367fc21a5923d8cef7",
+    "current_sha256": "986278530c3406667cbd17f66e285cd1e4fd9e52ed5341367fc21a5923d8cef7",
+    "unchanged_from_original_review": true,
+    "source_metadata": []
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/decisions/2026-10-01-group-roster-export.md",
+    "original_review_sha256": "d10d83c0e9b5a343f07782ed62def870a9ced616ccd6310ac2b2a6e81ae85d4b",
+    "current_sha256": "d10d83c0e9b5a343f07782ed62def870a9ced616ccd6310ac2b2a6e81ae85d4b",
+    "unchanged_from_original_review": true,
+    "source_metadata": []
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/decisions/2026-10-08-limited-administrators.md",
+    "original_review_sha256": "ad891e1eb3d16a29268658a2b8452654fa562e5e2e2103363a79501d8c30c2a3",
+    "current_sha256": "ad891e1eb3d16a29268658a2b8452654fa562e5e2e2103363a79501d8c30c2a3",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "Direct owner async reply in frontend main chat: selected rights for administrators, adequate split delegated to team; independently read by backend root",
+        "status": "accepted rule; frozen capability/API contract R1; backend and frontend implementation in progress, runtime not accepted",
+        "source_sha256": null,
+        "copy_sha256": null,
+        "owner": "/root",
+        "decision_date": null,
+        "supersedes": "Proposal to keep only full administrator access with frontend confirmation"
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/implementation/release-surface-matrix.md",
+    "original_review_sha256": "b933e14e408a7ac226ba838b8cbec67fb0ed773bbf6c3357fe813c8849121d16",
+    "current_sha256": "b933e14e408a7ac226ba838b8cbec67fb0ed773bbf6c3357fe813c8849121d16",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "derived:preparation/docs/implementation/release-surface-matrix.md",
+        "status": "generated",
+        "source_sha256": null,
+        "copy_sha256": null,
+        "owner": null,
+        "decision_date": null,
+        "supersedes": []
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md",
+    "original_review_sha256": "38db8d7630fd2d33392a6fb0bc5032006a980dc6c0af8320a0421f2042f0ff33",
+    "current_sha256": "38db8d7630fd2d33392a6fb0bc5032006a980dc6c0af8320a0421f2042f0ff33",
+    "unchanged_from_original_review": true,
+    "source_metadata": []
+  },
+  {
+    "path": "/workspace/rct-worktrees/exports/docs/product/decisions/2026-09-20-retrospective-attendance.md",
+    "original_review_sha256": "951e833291cdae03874b36d3128a5cce46826f974953005ddf53b857f8564be4",
+    "current_sha256": "951e833291cdae03874b36d3128a5cce46826f974953005ddf53b857f8564be4",
+    "unchanged_from_original_review": true,
+    "source_metadata": []
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-11-admin-registry-export-columns-and-grants.md",
+    "original_review_sha256": "02c2e42cdfdbbf43c14f6406f0a37e0ef828a3770f2258f504a3b6f7ac3823aa",
+    "current_sha256": "02c2e42cdfdbbf43c14f6406f0a37e0ef828a3770f2258f504a3b6f7ac3823aa",
+    "unchanged_from_original_review": true,
+    "source_metadata": [
+      {
+        "source": "D006/D007",
+        "status": "accepted owner decision",
+        "decision_date": "2026-10-11"
+      }
+    ]
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "original_review_sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+    "current_sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+    "unchanged_from_original_review": false,
+    "source_metadata": [
+      {
+        "source": "current owner contract including D008",
+        "status": "accepted owner decision",
+        "decision_date": "2026-10-11"
+      }
+    ]
+  }
+]

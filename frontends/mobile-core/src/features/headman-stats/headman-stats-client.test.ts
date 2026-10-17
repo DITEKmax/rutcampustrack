@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
-import { headmanStatsFixtureResponse } from '../../dev/headman-stats-fixtures'
+import {
+  headmanStatsFixtureResponse,
+  headmanStatsFixtureDetail,
+} from '../../dev/headman-stats-fixtures'
 import { validateTicketRequest } from '../../shared/report-download-client'
 import {
   HeadmanStatsApi,
@@ -19,7 +22,10 @@ const pngFormat: HeadmanStatsTrendFormat = {
 }
 
 const statsPdf: HeadmanStatsFormat = {
-  code: 'pdf', label: 'PDF', contentType: 'application/pdf', extension: 'pdf',
+  code: 'pdf',
+  label: 'PDF',
+  contentType: 'application/pdf',
+  extension: 'pdf',
 }
 const statsQuery: HeadmanStatsExportQuery = {
   subjectId: 12,
@@ -29,14 +35,69 @@ const statsQuery: HeadmanStatsExportQuery = {
 }
 
 describe('headman statistics downloads', () => {
+  it('retains authoritative target rank and rejects malformed or hidden peer metadata', async () => {
+    let rank: unknown = { position: 2, participantCount: 7, available: true, visibility: 'VISIBLE' }
+    const api = new HeadmanStatsApi({
+      accessToken: () => 'synthetic',
+      fetcher: async () =>
+        new Response(
+          JSON.stringify({ ...headmanStatsFixtureDetail('overview-autumn', 11, 7), rank }),
+        ),
+    })
+    const read = () =>
+      api.studentDetail(11, { semesterId: 7, latePage: 0, excusePage: 0, size: 20 })
+    expect((await read()).rank).toEqual(rank)
+    for (rank of [undefined, null]) expect((await read()).rank).toBeNull()
+    rank = { position: null, participantCount: 0, available: false, visibility: 'HIDDEN' }
+    expect((await read()).rank).toEqual(rank)
+    rank = { position: null, participantCount: 3, available: false, visibility: 'VISIBLE' }
+    expect((await read()).rank).toEqual(rank)
+    for (rank of [
+      { position: 0, participantCount: 7, available: true, visibility: 'VISIBLE' },
+      { position: 8, participantCount: 7, available: true, visibility: 'VISIBLE' },
+      { position: null, participantCount: 1, available: false, visibility: 'HIDDEN' },
+      { position: null, participantCount: 0, available: false, visibility: 'UNKNOWN' },
+    ])
+      await expect(read()).rejects.toThrow('некорректные подробности')
+  })
+
+  it('retains submitted reason order and distinguishes unavailable from empty or malformed counts', async () => {
+    let reasonCounts: unknown = [
+      { code: 'ILLNESS', label: 'Болезнь', count: 3 },
+      { code: 'OTHER', label: 'Другое', count: 1 },
+    ]
+    const api = new HeadmanStatsApi({
+      accessToken: () => 'synthetic',
+      fetcher: async () =>
+        new Response(
+          JSON.stringify({
+            ...headmanStatsFixtureResponse('overview-autumn', query),
+            reasonCounts,
+          }),
+        ),
+    })
+    const query = { subjectId: null, lessonTypes: [], page: 0, size: 20, sorts: [], filters: [] }
+    expect((await api.query(query)).reasonCounts).toEqual(reasonCounts)
+    reasonCounts = null
+    expect((await api.query(query)).reasonCounts).toBeNull()
+    reasonCounts = []
+    expect((await api.query(query)).reasonCounts).toEqual([])
+    reasonCounts = [{ code: 'UNKNOWN', label: 'Неизвестно', count: 2 }]
+    await expect(api.query(query)).rejects.toThrow('разбивку причин')
+    reasonCounts = [{ code: 'OTHER', label: 'Другое', count: -1 }]
+    await expect(api.query(query)).rejects.toThrow('разбивку причин')
+  })
   it('preserves the selected block in both transports and returns the actual server filename', async () => {
     const filename = 'headman-stats-group2-20260901-20261001.pdf'
-    const fetcher = vi.fn<typeof fetch>(async () => new Response('%PDF-fixture', {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
-      },
-    }))
+    const fetcher = vi.fn<typeof fetch>(
+      async () =>
+        new Response('%PDF-fixture', {
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
+          },
+        }),
+    )
     const api = new HeadmanStatsApi({ accessToken: () => 'session', fetcher })
     const downloaded = await api.downloadExport(statsQuery, statsPdf)
     expect(downloaded.filename).toBe(filename)
@@ -48,7 +109,10 @@ describe('headman statistics downloads', () => {
     expect(JSON.parse(String(init?.body))).toEqual({ ...statsQuery, format: 'pdf' })
 
     const ticket = toHeadmanStatsReportRequest(statsQuery, 'pdf')
-    expect(ticket).toEqual({ kind: 'HEADMAN_STATS', headmanStats: { ...statsQuery, format: 'pdf' } })
+    expect(ticket).toEqual({
+      kind: 'HEADMAN_STATS',
+      headmanStats: { ...statsQuery, format: 'pdf' },
+    })
     validateTicketRequest(ticket)
   })
 
@@ -56,22 +120,37 @@ describe('headman statistics downloads', () => {
     { body: '', type: 'application/pdf', filename: 'stats.pdf' },
     { body: 'unexpected HTML', type: 'text/html', filename: 'stats.pdf' },
     { body: '%PDF-fixture', type: 'application/pdf', filename: 'stats.xlsx' },
-  ])('rejects an empty or mismatched file instead of offering it for download: $type $filename', async (file) => {
-    const api = new HeadmanStatsApi({ accessToken: () => 'session', fetcher: vi.fn<typeof fetch>(async () =>
-      new Response(file.body, { headers: {
-        'Content-Type': file.type,
-        'Content-Disposition': `attachment; filename="${file.filename}"`,
-      } }),
-    ) })
-    await expect(api.downloadExport(statsQuery, statsPdf)).rejects.toThrow(Error)
-  })
+  ])(
+    'rejects an empty or mismatched file instead of offering it for download: $type $filename',
+    async (file) => {
+      const api = new HeadmanStatsApi({
+        accessToken: () => 'session',
+        fetcher: vi.fn<typeof fetch>(
+          async () =>
+            new Response(file.body, {
+              headers: {
+                'Content-Type': file.type,
+                'Content-Disposition': `attachment; filename="${file.filename}"`,
+              },
+            }),
+        ),
+      })
+      await expect(api.downloadExport(statsQuery, statsPdf)).rejects.toThrow(Error)
+    },
+  )
 
   it('preserves an HTTP error and its public explanation instead of downloading the problem JSON', async () => {
     const detail = 'Сервис отчётов временно недоступен.'
-    const api = new HeadmanStatsApi({ accessToken: () => 'session', fetcher: vi.fn<typeof fetch>(async () =>
-      new Response(JSON.stringify({ detail }), { status: 503,
-        headers: { 'Content-Type': 'application/problem+json' } }),
-    ) })
+    const api = new HeadmanStatsApi({
+      accessToken: () => 'session',
+      fetcher: vi.fn<typeof fetch>(
+        async () =>
+          new Response(JSON.stringify({ detail }), {
+            status: 503,
+            headers: { 'Content-Type': 'application/problem+json' },
+          }),
+      ),
+    })
     const failure = await api.downloadExport(statsQuery, statsPdf).catch((cause: unknown) => cause)
     expect(failure).toBeInstanceOf(HeadmanStatsApiError)
     expect((failure as HeadmanStatsApiError).response.status).toBe(503)
@@ -81,16 +160,16 @@ describe('headman statistics downloads', () => {
 
 describe('headman trend downloads', () => {
   it('uses the direct PWA export route and verifies an actual PNG response', async () => {
-    const fetcher = vi.fn<typeof fetch>(async () => new Response(
-      new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'image/png',
-          'Content-Disposition': 'attachment; filename="headman-stats-trend.png"',
-        },
-      },
-    ))
+    const fetcher = vi.fn<typeof fetch>(
+      async () =>
+        new Response(new Uint8Array([0x89, 0x50, 0x4e, 0x47]), {
+          status: 200,
+          headers: {
+            'Content-Type': 'image/png',
+            'Content-Disposition': 'attachment; filename="headman-stats-trend.png"',
+          },
+        }),
+    )
     const api = new HeadmanStatsApi({ accessToken: () => 'session', fetcher })
 
     const result = await api.downloadTrendExport(
@@ -111,11 +190,14 @@ describe('headman trend downloads', () => {
   })
 
   it('maps the selected trend to a closed native ticket selector without group or recipient overrides', () => {
-    const request = toHeadmanStatsTrendReportRequest({
-      mode: 'SUBJECT',
-      subjectId: 12,
-      lessonTypes: ['LECTURE', 'LAB'],
-    }, 'html')
+    const request = toHeadmanStatsTrendReportRequest(
+      {
+        mode: 'SUBJECT',
+        subjectId: 12,
+        lessonTypes: ['LECTURE', 'LAB'],
+      },
+      'html',
+    )
 
     expect(request).toEqual({
       kind: 'HEADMAN_STATS_TREND',
@@ -133,20 +215,47 @@ describe('headman trend downloads', () => {
 })
 
 describe('complete ticket analytics contract', () => {
-  const query = {subjectId:null,lessonTypes:[],sorts:[{field:'displayName',descending:false}],filters:[],page:0,size:2}
+  const query = {
+    subjectId: null,
+    lessonTypes: [],
+    sorts: [{ field: 'displayName', descending: false }],
+    filters: [],
+    page: 0,
+    size: 2,
+  }
   it('retains all-filtered ticket counters independently from the visible page and preserves legacy unavailability', async () => {
     const fixture = headmanStatsFixtureResponse('overview-autumn', query)
-    const api = new HeadmanStatsApi({accessToken:()=>'fixture',fetcher:async()=>new Response(JSON.stringify(fixture))})
+    const api = new HeadmanStatsApi({
+      accessToken: () => 'fixture',
+      fetcher: async () => new Response(JSON.stringify(fixture)),
+    })
     const result = await api.query(query)
     expect(result.rows).toHaveLength(2)
     expect(result.summaryTickets?.lateCheckin.submitted).toBe(78)
-    expect(result.summaryTickets?.lateCheckin.submitted).toBeGreaterThan(result.rows.reduce((sum,row)=>sum+row.lateCheckin.submitted,0))
-    const legacy = new HeadmanStatsApi({accessToken:()=>'fixture',fetcher:async()=>new Response(JSON.stringify({...fixture,summaryTickets:undefined}))})
+    expect(result.summaryTickets?.lateCheckin.submitted).toBeGreaterThan(
+      result.rows.reduce((sum, row) => sum + row.lateCheckin.submitted, 0),
+    )
+    const legacy = new HeadmanStatsApi({
+      accessToken: () => 'fixture',
+      fetcher: async () => new Response(JSON.stringify({ ...fixture, summaryTickets: undefined })),
+    })
     expect((await legacy.query(query)).summaryTickets).toBeNull()
   })
   it('rejects impossible decision ratios rather than publishing fabricated pending totals', async () => {
-    const fixture = headmanStatsFixtureResponse('overview-autumn',query)
-    const api = new HeadmanStatsApi({accessToken:()=>'fixture',fetcher:async()=>new Response(JSON.stringify({...fixture,summaryTickets:{lateCheckin:{submitted:1,approved:2,rejected:0},excuse:{submitted:0,approved:0,rejected:0}}}))})
+    const fixture = headmanStatsFixtureResponse('overview-autumn', query)
+    const api = new HeadmanStatsApi({
+      accessToken: () => 'fixture',
+      fetcher: async () =>
+        new Response(
+          JSON.stringify({
+            ...fixture,
+            summaryTickets: {
+              lateCheckin: { submitted: 1, approved: 2, rejected: 0 },
+              excuse: { submitted: 0, approved: 0, rejected: 0 },
+            },
+          }),
+        ),
+    })
     await expect(api.query(query)).rejects.toThrow('некорректную сводку тикетов')
   })
 })

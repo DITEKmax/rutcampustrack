@@ -1,0 +1,19 @@
+{
+  "schema": "BOOT_ONE_INITIAL_BOM_NARROW_RECHECK_V1",
+  "verdict": "APPROVE_SOURCE",
+  "manifest_sha256": "aefb6075dd23236e312b06525c36ad1673cde655c271e99fdcbe55b971a03471",
+  "adapter_sha256": "66aacd7f7a3b8423b17d8d0db851539c5c4cd3f462966122ee6ca40005364a72",
+  "existing_interface_sha256": "312cbee0aebbb97e935509ed7b03bae282c53efcb9017d847b7c8877ac71a57f",
+  "pins": "two new members and original312 PASS",
+  "directed_actual_V8_RAM_group": "PASS: ten checks for exact one-prefix removal/remainder identity, noBOM unchanged, double/interior/status/error/ambiguity/unknown binding denial, owned error/nested getters refused without calls, unknown getter not copied",
+  "review": "Only fixed observed SC.content schema. Adapter removes at most one initial UFEFF and preserves the complete remainder. It preserves predefined isError/nested own descriptors, including accessors so unchanged312 refuses them without getter calls; no dynamic key copying, ambiguity or error bypass. Delegates framing to exact312 and leaves e7a6/b78/encoder/fourP2 unchanged. Postresponse/interface caps and existing transport qualifications retained; body remains private. No findings in this narrow scope.",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "actual_response_SDK_native_privatefile_body": "NOT_RUN",
+  "cause": "UNKNOWN",
+  "FIRST3": "NOT_RUN",
+  "checking_note": "Initial public-file read guessed previous package names; missing files reported, then exact listed Source filenames read; no Source or private effect",
+  "next": "Root fresh transfer/consume grant for retained authorized response; no refetch, old namespace/parser replay or leaf native authority",
+  "effects": "Public Source and synthetic tool-V8 RAM only; own this concise JSON; no Source edits, copies, archive, new test files, children or B013 action"
+}

@@ -1,0 +1,10 @@
+{
+  "parent_manifest_sha256": "ad9c223893c3ab957a9f61f5e68089c2a7c4cf035b35b1e5dffb4a84c38e3399",
+  "kind": "RECEIPT_COUNT_ERRATUM_NO_SOURCE_CHANGE",
+  "actual_cli_groups": 14,
+  "actual_new_flow_groups": 3,
+  "actual_total_groups": 17,
+  "machine_READY_and_controls_already_correct": true,
+  "prose_HANDOFF_15_and_CURRENT_18_superseded": true,
+  "logic_caps_grant_code_or_checks_changed": false
+}

@@ -1,8 +1,5 @@
 package ru.rutcampustrack.attendance.report;
 
-import org.springframework.stereotype.Component;
-import ru.rutcampustrack.attendance.exception.ReportValidationException;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,6 +15,8 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import org.springframework.stereotype.Component;
+import ru.rutcampustrack.attendance.exception.ReportValidationException;
 
 @Component
 public class DocxRenderer {
@@ -38,24 +37,28 @@ public class DocxRenderer {
             throw new ReportValidationException("At least one report model is required");
         }
         TemplatePackage template = readTemplate();
-        List<String> renderedDocuments = models.stream()
-                .map(model -> renderDocumentXml(template.documentXml(), model))
-                .toList();
+        List<String> renderedDocuments =
+                models.stream()
+                        .map(model -> renderDocumentXml(template.documentXml(), model))
+                        .toList();
 
-        String documentXml = renderedDocuments.size() == 1
-                ? renderedDocuments.get(0)
-                : mergeDocumentXml(renderedDocuments);
+        String documentXml =
+                renderedDocuments.size() == 1
+                        ? renderedDocuments.get(0)
+                        : mergeDocumentXml(renderedDocuments);
         return writePackage(template.entries(), fitLibreOfficeGeometry(documentXml));
     }
 
     private static String renderDocumentXml(String documentXml, HeadmanWeeklyReportModel model) {
         String renderedXml = documentXml;
         for (Map.Entry<String, String> entry : valuesFor(model).entrySet()) {
-            renderedXml = renderedXml.replace("${" + entry.getKey() + "}", escapeXml(entry.getValue()));
+            renderedXml =
+                    renderedXml.replace("${" + entry.getKey() + "}", escapeXml(entry.getValue()));
         }
         var matcher = PLACEHOLDER.matcher(renderedXml);
         if (matcher.find()) {
-            throw new ReportValidationException("DOCX template still contains placeholder " + matcher.group());
+            throw new ReportValidationException(
+                    "DOCX template still contains placeholder " + matcher.group());
         }
         return renderedXml;
     }
@@ -75,7 +78,8 @@ public class DocxRenderer {
         }
 
         for (HeadmanWeeklyReportModel.Day day : model.days()) {
-            int dayIndex = (int) java.time.temporal.ChronoUnit.DAYS.between(model.weekStart(), day.date());
+            int dayIndex =
+                    (int) java.time.temporal.ChronoUnit.DAYS.between(model.weekStart(), day.date());
             if (dayIndex < 0 || dayIndex >= DAYS.size()) {
                 continue;
             }
@@ -85,16 +89,24 @@ public class DocxRenderer {
                         || lesson.lessonNumber() > HeadmanWeeklyReportModel.MAX_LESSONS_PER_DAY) {
                     continue;
                 }
-                values.put("subject_" + dayCode + "_" + lesson.lessonNumber(), nullToEmpty(lesson.subjectName()));
-                values.put("type_" + dayCode + "_" + lesson.lessonNumber(), nullToEmpty(lesson.lessonType()));
+                values.put(
+                        "subject_" + dayCode + "_" + lesson.lessonNumber(),
+                        nullToEmpty(lesson.subjectName()));
+                values.put(
+                        "type_" + dayCode + "_" + lesson.lessonNumber(),
+                        nullToEmpty(lesson.lessonType()));
             }
         }
 
-        for (int studentIndex = 1; studentIndex <= HeadmanWeeklyReportModel.MAX_STUDENTS; studentIndex++) {
+        for (int studentIndex = 1;
+                studentIndex <= HeadmanWeeklyReportModel.MAX_STUDENTS;
+                studentIndex++) {
             String number = "%02d".formatted(studentIndex);
             values.put("student_" + number + "_name", "");
             for (String day : DAYS) {
-                for (int lesson = 1; lesson <= HeadmanWeeklyReportModel.MAX_LESSONS_PER_DAY; lesson++) {
+                for (int lesson = 1;
+                        lesson <= HeadmanWeeklyReportModel.MAX_LESSONS_PER_DAY;
+                        lesson++) {
                     values.put("att_" + number + "_" + day + "_" + lesson, "");
                 }
             }
@@ -106,14 +118,18 @@ public class DocxRenderer {
             String number = "%02d".formatted(i + 1);
             values.put("student_" + number + "_name", nullToEmpty(student.displayName()));
             for (HeadmanWeeklyReportModel.AttendanceMark mark : student.attendance()) {
-                int dayIndex = (int) java.time.temporal.ChronoUnit.DAYS.between(model.weekStart(), mark.date());
+                int dayIndex =
+                        (int)
+                                java.time.temporal.ChronoUnit.DAYS.between(
+                                        model.weekStart(), mark.date());
                 if (dayIndex < 0
                         || dayIndex >= DAYS.size()
                         || mark.lessonNumber() < 1
                         || mark.lessonNumber() > HeadmanWeeklyReportModel.MAX_LESSONS_PER_DAY) {
                     continue;
                 }
-                values.put("att_" + number + "_" + DAYS.get(dayIndex) + "_" + mark.lessonNumber(),
+                values.put(
+                        "att_" + number + "_" + DAYS.get(dayIndex) + "_" + mark.lessonNumber(),
                         nullToEmpty(mark.symbol()));
             }
         }
@@ -171,7 +187,8 @@ public class DocxRenderer {
     }
 
     private static TemplatePackage readTemplate() {
-        InputStream resource = DocxRenderer.class.getClassLoader().getResourceAsStream(TEMPLATE_RESOURCE);
+        InputStream resource =
+                DocxRenderer.class.getClassLoader().getResourceAsStream(TEMPLATE_RESOURCE);
         if (resource == null) {
             throw new ReportValidationException("DOCX template not found: " + TEMPLATE_RESOURCE);
         }
@@ -179,7 +196,7 @@ public class DocxRenderer {
         Map<String, byte[]> entries = new LinkedHashMap<>();
         String documentXml = null;
         try (InputStream input = resource;
-             ZipInputStream zip = new ZipInputStream(input, StandardCharsets.UTF_8)) {
+                ZipInputStream zip = new ZipInputStream(input, StandardCharsets.UTF_8)) {
             ZipEntry entry = zip.getNextEntry();
             while (entry != null) {
                 if (!entry.isDirectory()) {
@@ -203,12 +220,13 @@ public class DocxRenderer {
 
     private static byte[] writePackage(Map<String, byte[]> entries, String documentXml) {
         try (ByteArrayOutputStream output = new ByteArrayOutputStream();
-             ZipOutputStream zip = new ZipOutputStream(output, StandardCharsets.UTF_8)) {
+                ZipOutputStream zip = new ZipOutputStream(output, StandardCharsets.UTF_8)) {
             for (Map.Entry<String, byte[]> entry : entries.entrySet()) {
                 zip.putNextEntry(new ZipEntry(entry.getKey()));
-                byte[] bytes = DOCUMENT_XML.equals(entry.getKey())
-                        ? documentXml.getBytes(StandardCharsets.UTF_8)
-                        : entry.getValue();
+                byte[] bytes =
+                        DOCUMENT_XML.equals(entry.getKey())
+                                ? documentXml.getBytes(StandardCharsets.UTF_8)
+                                : entry.getValue();
                 zip.write(bytes);
                 zip.closeEntry();
             }
@@ -220,7 +238,8 @@ public class DocxRenderer {
     }
 
     static String readDocumentXml(byte[] docx) {
-        try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(docx), StandardCharsets.UTF_8)) {
+        try (ZipInputStream zip =
+                new ZipInputStream(new ByteArrayInputStream(docx), StandardCharsets.UTF_8)) {
             ZipEntry entry = zip.getNextEntry();
             while (entry != null) {
                 if (DOCUMENT_XML.equals(entry.getName())) {

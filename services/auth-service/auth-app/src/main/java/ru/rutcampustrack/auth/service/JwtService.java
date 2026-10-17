@@ -4,6 +4,27 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -15,28 +36,6 @@ import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.entity.enums.UserRole;
 import ru.rutcampustrack.auth.session.model.RoleGrant;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.*;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -80,12 +79,17 @@ public class JwtService {
             log.info("Loading RSA keys from filesystem: {}", keyDir.toAbsolutePath());
             try {
                 privateKey = loadPrivateKey(privateKeyPath);
-                log.info("RSA private key parsed (PKCS#8, {} bytes)", privateKey.getEncoded().length);
+                log.info(
+                        "RSA private key parsed (PKCS#8, {} bytes)",
+                        privateKey.getEncoded().length);
                 publicKey = loadPublicKey(publicKeyPath);
                 log.info("RSA public key parsed (X.509, {} bytes)", publicKey.getEncoded().length);
             } catch (Exception e) {
-                log.error("Failed to load RSA keys from filesystem (path={}): {}",
-                        keyDir.toAbsolutePath(), e.toString(), e);
+                log.error(
+                        "Failed to load RSA keys from filesystem (path={}): {}",
+                        keyDir.toAbsolutePath(),
+                        e.toString(),
+                        e);
                 throw e;
             }
         } else {
@@ -111,50 +115,57 @@ public class JwtService {
         log.info("RSA kid resolved: {}", keyId);
 
         publicKeyPem = buildPem(publicKey.getEncoded(), "PUBLIC KEY");
-        log.info("RSA key pair ready (kid={}), public key PEM serialized "
-                + "(Redis cache scheduled to ApplicationReadyEvent)", keyId);
+        log.info(
+                "RSA key pair ready (kid={}), public key PEM serialized "
+                        + "(Redis cache scheduled to ApplicationReadyEvent)",
+                keyId);
     }
 
     /**
      * M13 G25.17 — Redis cache населяется ПОСЛЕ context refresh.
      *
-     * <p>JwtService.init() в @PostConstruct не должен блокироваться на
-     * Redis: Lettuce/Netty lazy-инициализирует event loop и connection pool
-     * при первом use, на холодном CI runner это может занять 30+ секунд из-за
-     * Netty entropy/DNS init и default command timeout. Healthcheck не
-     * успевает зеленеть в start_period 60s.
+     * <p>JwtService.init() в @PostConstruct не должен блокироваться на Redis: Lettuce/Netty
+     * lazy-инициализирует event loop и connection pool при первом use, на холодном CI runner это
+     * может занять 30+ секунд из-за Netty entropy/DNS init и default command timeout. Healthcheck
+     * не успевает зеленеть в start_period 60s.
      *
-     * <p>Перенос в ApplicationReadyEvent гарантирует: (1) Tomcat готов
-     * принимать /actuator/health, (2) Redis cache best-effort — если падает,
-     * downstream сервисы либо ретраят, либо забирают public key через
-     * /auth/.well-known/jwks.json endpoint (если такой есть; иначе через
-     * первый failed parse + retry). На prod connection pool warm после
-     * первого fetch.
+     * <p>Перенос в ApplicationReadyEvent гарантирует: (1) Tomcat готов принимать /actuator/health,
+     * (2) Redis cache best-effort — если падает, downstream сервисы либо ретраят, либо забирают
+     * public key через /auth/.well-known/jwks.json endpoint (если такой есть; иначе через первый
+     * failed parse + retry). На prod connection pool warm после первого fetch.
      */
     @EventListener(ApplicationReadyEvent.class)
     public void cachePublicKeyInRedis() {
         try {
             log.info("Caching public key in Redis (post-startup)...");
-            redisTemplate.opsForValue().set("jwt:public_key", publicKeyPem, Duration.ofSeconds(3600));
+            redisTemplate
+                    .opsForValue()
+                    .set("jwt:public_key", publicKeyPem, Duration.ofSeconds(3600));
             log.info("Public key cached in Redis successfully");
         } catch (Exception e) {
-            log.warn("Failed to cache public key in Redis (will retry on next signing): {}", e.toString());
+            log.warn(
+                    "Failed to cache public key in Redis (will retry on next signing): {}",
+                    e.toString());
         }
     }
 
     /**
-     * Legacy stage-2 access token.  It intentionally has no session-bound
-     * claims and is never accepted by {@link #parseSessionAccessToken(String)}.
+     * Legacy stage-2 access token. It intentionally has no session-bound claims and is never
+     * accepted by {@link #parseSessionAccessToken(String)}.
      */
     public String generateAccessToken(User user) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + jwtProperties.accessTokenExpiration() * 1000);
 
         return Jwts.builder()
-                .header().keyId(keyId).and()
+                .header()
+                .keyId(keyId)
+                .and()
                 .subject(user.getId().toString())
                 .issuer(JWT_ISSUER)
-                .audience().add(JWT_AUDIENCE).and()
+                .audience()
+                .add(JWT_AUDIENCE)
+                .and()
                 .claim(TOKEN_USE_CLAIM, TOKEN_USE_ACCESS)
                 .claim("role", user.getRole().name())
                 .claim("group_id", user.getGroupId())
@@ -166,36 +177,38 @@ public class JwtService {
     }
 
     /**
-     * Signs the access-token form that is eligible for session admission.
-     * Public login wiring will pass the same authoritative snapshot that owns
-     * the selected grant; no caller-supplied identity is accepted here.
+     * Signs the access-token form that is eligible for session admission. Public login wiring will
+     * pass the same authoritative snapshot that owns the selected grant; no caller-supplied
+     * identity is accepted here.
      */
     public String generateSessionAccessToken(
-            SessionSnapshot snapshot,
-            Instant issuedAt,
-            Instant expiration
-    ) {
+            SessionSnapshot snapshot, Instant issuedAt, Instant expiration) {
         Objects.requireNonNull(snapshot, "snapshot");
         Objects.requireNonNull(issuedAt, "issuedAt");
         Objects.requireNonNull(expiration, "expiration");
         RoleGrant activeRole = requireActiveRole(snapshot);
         requireWholeSecondWindow(issuedAt, expiration);
 
-        var builder = Jwts.builder()
-                .header().keyId(keyId).and()
-                .subject(Long.toString(snapshot.userId()))
-                .issuer(JWT_ISSUER)
-                .audience().add(JWT_AUDIENCE).and()
-                .claim(TOKEN_USE_CLAIM, TOKEN_USE_ACCESS)
-                .claim("sid", snapshot.sessionId().toString())
-                .claim("sv", Long.toString(snapshot.sessionVersion()))
-                .claim("rv", Long.toString(snapshot.rolesVersion()))
-                .claim("role", activeRole.role().name())
-                .claim("status", activeRole.status().name())
-                .claim("is_headman", activeRole.role().name().equals("HEADMAN"))
-                .claim("readOnly", activeRole.isReadOnly())
-                .issuedAt(Date.from(issuedAt))
-                .expiration(Date.from(expiration));
+        var builder =
+                Jwts.builder()
+                        .header()
+                        .keyId(keyId)
+                        .and()
+                        .subject(Long.toString(snapshot.userId()))
+                        .issuer(JWT_ISSUER)
+                        .audience()
+                        .add(JWT_AUDIENCE)
+                        .and()
+                        .claim(TOKEN_USE_CLAIM, TOKEN_USE_ACCESS)
+                        .claim("sid", snapshot.sessionId().toString())
+                        .claim("sv", Long.toString(snapshot.sessionVersion()))
+                        .claim("rv", Long.toString(snapshot.rolesVersion()))
+                        .claim("role", activeRole.role().name())
+                        .claim("status", activeRole.status().name())
+                        .claim("is_headman", activeRole.role().name().equals("HEADMAN"))
+                        .claim("readOnly", activeRole.isReadOnly())
+                        .issuedAt(Date.from(issuedAt))
+                        .expiration(Date.from(expiration));
         if (activeRole.groupId() != null) {
             builder.claim("group_id", Long.toString(activeRole.groupId()));
         }
@@ -207,10 +220,14 @@ public class JwtService {
         Date expiration = new Date(now.getTime() + jwtProperties.refreshTokenExpiration() * 1000);
 
         return Jwts.builder()
-                .header().keyId(keyId).and()
+                .header()
+                .keyId(keyId)
+                .and()
                 .subject(user.getId().toString())
                 .issuer(JWT_ISSUER)
-                .audience().add(JWT_AUDIENCE).and()
+                .audience()
+                .add(JWT_AUDIENCE)
+                .and()
                 .claim(TOKEN_USE_CLAIM, TOKEN_USE_REFRESH)
                 .id(UUID.randomUUID().toString())
                 .issuedAt(now)
@@ -220,9 +237,9 @@ public class JwtService {
     }
 
     /**
-     * Parse the access-token form used by the HTTP filter and WebSocket ticket
-     * endpoint. Keeping this alias strict prevents refresh tokens from being
-     * accepted by callers that still use the historical method name.
+     * Parse the access-token form used by the HTTP filter and WebSocket ticket endpoint. Keeping
+     * this alias strict prevents refresh tokens from being accepted by callers that still use the
+     * historical method name.
      */
     public Jws<Claims> parseToken(String token) {
         return parseAccessToken(token);
@@ -238,9 +255,9 @@ public class JwtService {
     }
 
     /**
-     * Strict parser for the original session-bound access token used by
-     * admission.  The legacy parser above remains for the stage-2 public
-     * login/filter transition and deliberately does not satisfy this method.
+     * Strict parser for the original session-bound access token used by admission. The legacy
+     * parser above remains for the stage-2 public login/filter transition and deliberately does not
+     * satisfy this method.
      */
     public Jws<Claims> parseSessionAccessToken(String token) {
         Jws<Claims> parsed = parseSignedToken(token, JWT_AUDIENCE, TOKEN_USE_ACCESS);
@@ -273,11 +290,7 @@ public class JwtService {
 
     /** Signs the cookie form bound to one persisted session and refresh JTI. */
     public String generateSessionRefreshToken(
-            SessionSnapshot snapshot,
-            UUID refreshJti,
-            Instant issuedAt,
-            Instant expiration
-    ) {
+            SessionSnapshot snapshot, UUID refreshJti, Instant issuedAt, Instant expiration) {
         Objects.requireNonNull(snapshot, "snapshot");
         Objects.requireNonNull(refreshJti, "refreshJti");
         Objects.requireNonNull(issuedAt, "issuedAt");
@@ -287,10 +300,14 @@ public class JwtService {
             throw new IllegalArgumentException("refresh expiration cannot extend the session");
         }
         return Jwts.builder()
-                .header().keyId(keyId).and()
+                .header()
+                .keyId(keyId)
+                .and()
                 .subject(Long.toString(snapshot.userId()))
                 .issuer(JWT_ISSUER)
-                .audience().add(JWT_AUDIENCE).and()
+                .audience()
+                .add(JWT_AUDIENCE)
+                .and()
                 .claim(TOKEN_USE_CLAIM, TOKEN_USE_REFRESH)
                 .claim("sid", snapshot.sessionId().toString())
                 .id(refreshJti.toString())
@@ -311,7 +328,8 @@ public class JwtService {
     }
 
     /** Signs a neutral capability used only while a session has no selected role. */
-    public String generateBootstrapToken(SessionSnapshot snapshot, Instant issuedAt, Instant expiration) {
+    public String generateBootstrapToken(
+            SessionSnapshot snapshot, Instant issuedAt, Instant expiration) {
         Objects.requireNonNull(snapshot, "snapshot");
         Objects.requireNonNull(issuedAt, "issuedAt");
         Objects.requireNonNull(expiration, "expiration");
@@ -320,10 +338,14 @@ public class JwtService {
         }
         requireWholeSecondWindow(issuedAt, expiration);
         return Jwts.builder()
-                .header().keyId(keyId).and()
+                .header()
+                .keyId(keyId)
+                .and()
                 .subject(Long.toString(snapshot.userId()))
                 .issuer(JWT_ISSUER)
-                .audience().add(JWT_AUDIENCE).and()
+                .audience()
+                .add(JWT_AUDIENCE)
+                .and()
                 .claim(TOKEN_USE_CLAIM, TOKEN_USE_BOOTSTRAP)
                 .claim("sid", snapshot.sessionId().toString())
                 .claim("sv", Long.toString(snapshot.sessionVersion()))
@@ -358,17 +380,20 @@ public class JwtService {
         return parseRefreshToken(token).getPayload().getId();
     }
 
-    public String getSigningKeyId() { return keyId; }
+    public String getSigningKeyId() {
+        return keyId;
+    }
 
     public String getPublicKeyPem() {
         return publicKeyPem;
     }
 
     /**
-     * Signs an internal token exclusively from one accepted coherent snapshot.
-     * The admission service supplies the already-capped whole-second window.
+     * Signs an internal token exclusively from one accepted coherent snapshot. The admission
+     * service supplies the already-capped whole-second window.
      */
-    public String generateInternalToken(SessionSnapshot snapshot, Instant issuedAt, Instant expiration) {
+    public String generateInternalToken(
+            SessionSnapshot snapshot, Instant issuedAt, Instant expiration) {
         return generateInternalToken(snapshot, issuedAt, expiration, null);
     }
 
@@ -378,21 +403,21 @@ public class JwtService {
             Instant issuedAt,
             Instant expiration,
             String reportBindingHash,
-            Instant reportTicketExpiresAt
-    ) {
-        if (reportBindingHash == null || !reportBindingHash.matches("[0-9a-f]{64}")
+            Instant reportTicketExpiresAt) {
+        if (reportBindingHash == null
+                || !reportBindingHash.matches("[0-9a-f]{64}")
                 || reportTicketExpiresAt == null) {
             throw new IllegalArgumentException("report binding hash is invalid");
         }
-        return generateInternalToken(snapshot, issuedAt, expiration, reportBindingHash, reportTicketExpiresAt);
+        return generateInternalToken(
+                snapshot, issuedAt, expiration, reportBindingHash, reportTicketExpiresAt);
     }
 
     private String generateInternalToken(
             SessionSnapshot snapshot,
             Instant issuedAt,
             Instant expiration,
-            String reportBindingHash
-    ) {
+            String reportBindingHash) {
         return generateInternalToken(snapshot, issuedAt, expiration, reportBindingHash, null);
     }
 
@@ -401,29 +426,33 @@ public class JwtService {
             Instant issuedAt,
             Instant expiration,
             String reportBindingHash,
-            Instant reportTicketExpiresAt
-    ) {
+            Instant reportTicketExpiresAt) {
         Objects.requireNonNull(snapshot, "snapshot");
         Objects.requireNonNull(issuedAt, "issuedAt");
         Objects.requireNonNull(expiration, "expiration");
         RoleGrant activeRole = requireActiveRole(snapshot);
         requireWholeSecondWindow(issuedAt, expiration);
 
-        var builder = Jwts.builder()
-                .header().keyId(keyId).and()
-                .subject(Long.toString(snapshot.userId()))
-                .issuer(JWT_ISSUER)
-                .audience().add(INTERNAL_JWT_AUDIENCE).and()
-                .claim(TOKEN_USE_CLAIM, TOKEN_USE_INTERNAL)
-                .claim("sid", snapshot.sessionId().toString())
-                .claim("sv", Long.toString(snapshot.sessionVersion()))
-                .claim("rv", Long.toString(snapshot.rolesVersion()))
-                .claim("role", activeRole.role().name())
-                .claim("status", activeRole.status().name())
-                .claim("is_headman", activeRole.role().name().equals("HEADMAN"))
-                .claim("readOnly", activeRole.isReadOnly())
-                .issuedAt(Date.from(issuedAt))
-                .expiration(Date.from(expiration));
+        var builder =
+                Jwts.builder()
+                        .header()
+                        .keyId(keyId)
+                        .and()
+                        .subject(Long.toString(snapshot.userId()))
+                        .issuer(JWT_ISSUER)
+                        .audience()
+                        .add(INTERNAL_JWT_AUDIENCE)
+                        .and()
+                        .claim(TOKEN_USE_CLAIM, TOKEN_USE_INTERNAL)
+                        .claim("sid", snapshot.sessionId().toString())
+                        .claim("sv", Long.toString(snapshot.sessionVersion()))
+                        .claim("rv", Long.toString(snapshot.rolesVersion()))
+                        .claim("role", activeRole.role().name())
+                        .claim("status", activeRole.status().name())
+                        .claim("is_headman", activeRole.role().name().equals("HEADMAN"))
+                        .claim("readOnly", activeRole.isReadOnly())
+                        .issuedAt(Date.from(issuedAt))
+                        .expiration(Date.from(expiration));
         if (activeRole.groupId() != null) {
             builder.claim("group_id", Long.toString(activeRole.groupId()));
         }
@@ -438,8 +467,15 @@ public class JwtService {
         if (publicKey == null) {
             throw new IllegalStateException("JWT public key is not initialized");
         }
-        return Jwts.parser()
-                .verifyWith(publicKey)
+        var signatures = Jwts.parser().verifyWith(publicKey).sig();
+        // JJWT 0.12.6 rebuilds its nonempty registry after each mutation; retain RS256 throughout.
+        for (var algorithm : Jwts.SIG.get().values()) {
+            if (!Jwts.SIG.RS256.getId().equals(algorithm.getId())) {
+                signatures.remove(algorithm);
+            }
+        }
+        return signatures
+                .and()
                 .requireIssuer(JWT_ISSUER)
                 .requireAudience(audience)
                 .require(TOKEN_USE_CLAIM, purpose)
@@ -464,7 +500,8 @@ public class JwtService {
     private static void requireExpiration(Claims claims) {
         Date expiration = claims.getExpiration();
         if (expiration == null || !expiration.after(new Date())) {
-            throw new IllegalArgumentException("JWT expiration is required and must be in the future");
+            throw new IllegalArgumentException(
+                    "JWT expiration is required and must be in the future");
         }
     }
 
@@ -498,13 +535,15 @@ public class JwtService {
         if (!issuedAt.truncatedTo(ChronoUnit.SECONDS).equals(issuedAt)
                 || !expiration.truncatedTo(ChronoUnit.SECONDS).equals(expiration)
                 || !issuedAt.isBefore(expiration)) {
-            throw new IllegalArgumentException("JWT time claims must be whole-second values with iat before exp");
+            throw new IllegalArgumentException(
+                    "JWT time claims must be whole-second values with iat before exp");
         }
     }
 
     private static void requirePositiveDecimal(String value, String name) {
         if (value == null || !value.matches("[1-9][0-9]*")) {
-            throw new IllegalArgumentException("JWT " + name + " must be a positive decimal string");
+            throw new IllegalArgumentException(
+                    "JWT " + name + " must be a positive decimal string");
         }
         try {
             Long.parseLong(value);
@@ -514,11 +553,7 @@ public class JwtService {
     }
 
     private static void requireSemanticIdentity(
-            String role,
-            String status,
-            boolean isHeadman,
-            boolean readOnly
-    ) {
+            String role, String status, boolean isHeadman, boolean readOnly) {
         if (isHeadman != "HEADMAN".equals(role)) {
             throw new IllegalArgumentException("JWT headman flag is inconsistent");
         }
@@ -534,7 +569,8 @@ public class JwtService {
             throw new IllegalArgumentException("JWT issuer is invalid");
         }
         if (!Set.of(JWT_AUDIENCE).equals(raw.requiredSingletonStringArray("aud"))) {
-            throw new IllegalArgumentException("JWT audience must contain exactly the expected value");
+            throw new IllegalArgumentException(
+                    "JWT audience must contain exactly the expected value");
         }
         if (!TOKEN_USE_ACCESS.equals(raw.requiredPlainString(TOKEN_USE_CLAIM))) {
             throw new IllegalArgumentException("JWT token use is invalid");
@@ -564,7 +600,8 @@ public class JwtService {
             throw new IllegalArgumentException("JWT issuer is invalid");
         }
         if (!Set.of(INTERNAL_JWT_AUDIENCE).equals(raw.requiredSingletonStringArray("aud"))) {
-            throw new IllegalArgumentException("JWT audience must contain exactly the expected value");
+            throw new IllegalArgumentException(
+                    "JWT audience must contain exactly the expected value");
         }
         if (!TOKEN_USE_INTERNAL.equals(raw.requiredPlainString(TOKEN_USE_CLAIM))) {
             throw new IllegalArgumentException("JWT token use is invalid");
@@ -598,7 +635,8 @@ public class JwtService {
             throw new IllegalArgumentException("JWT issuer is invalid");
         }
         if (!Set.of(JWT_AUDIENCE).equals(raw.requiredSingletonStringArray("aud"))) {
-            throw new IllegalArgumentException("JWT audience must contain exactly the expected value");
+            throw new IllegalArgumentException(
+                    "JWT audience must contain exactly the expected value");
         }
         if (!purpose.equals(raw.requiredPlainString(TOKEN_USE_CLAIM))) {
             throw new IllegalArgumentException("JWT token use is invalid");
@@ -643,7 +681,8 @@ public class JwtService {
                 throw new IllegalArgumentException("JWT compact form is invalid");
             }
             try {
-                String json = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+                String json =
+                        new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
                 JsonObjectParser parser = new JsonObjectParser(json);
                 return new RawJwtPayload(parser.parse());
             } catch (IllegalArgumentException exception) {
@@ -676,11 +715,13 @@ public class JwtService {
         private Set<String> requiredSingletonStringArray(String name) {
             RawJsonValue value = required(name);
             if (value.kind != RawJsonKind.ARRAY || value.arrayValues.size() != 1) {
-                throw new IllegalArgumentException("JWT " + name + " must be a singleton JSON array");
+                throw new IllegalArgumentException(
+                        "JWT " + name + " must be a singleton JSON array");
             }
             RawJsonValue item = value.arrayValues.get(0);
             if (item.kind != RawJsonKind.STRING || item.escaped) {
-                throw new IllegalArgumentException("JWT " + name + " must contain a plain JSON string");
+                throw new IllegalArgumentException(
+                        "JWT " + name + " must contain a plain JSON string");
             }
             return Set.of(item.stringValue);
         }
@@ -688,7 +729,8 @@ public class JwtService {
         private long requiredWholeSecondNumber(String name) {
             RawJsonValue value = required(name);
             if (value.kind != RawJsonKind.NUMBER || !value.raw.matches("[0-9]+")) {
-                throw new IllegalArgumentException("JWT " + name + " must be an integer NumericDate");
+                throw new IllegalArgumentException(
+                        "JWT " + name + " must be an integer NumericDate");
             }
             try {
                 return Long.parseLong(value.raw);
@@ -706,7 +748,14 @@ public class JwtService {
         }
     }
 
-    private enum RawJsonKind { STRING, NUMBER, BOOLEAN, NULL, OBJECT, ARRAY }
+    private enum RawJsonKind {
+        STRING,
+        NUMBER,
+        BOOLEAN,
+        NULL,
+        OBJECT,
+        ARRAY
+    }
 
     private static final class RawJsonValue {
         private final RawJsonKind kind;
@@ -722,8 +771,7 @@ public class JwtService {
                 String stringValue,
                 boolean escaped,
                 boolean booleanValue,
-                List<RawJsonValue> arrayValues
-        ) {
+                List<RawJsonValue> arrayValues) {
             this.kind = kind;
             this.raw = raw;
             this.stringValue = stringValue;
@@ -741,7 +789,8 @@ public class JwtService {
         }
 
         private static RawJsonValue array(String raw, List<RawJsonValue> values) {
-            return new RawJsonValue(RawJsonKind.ARRAY, raw, null, false, false, List.copyOf(values));
+            return new RawJsonValue(
+                    RawJsonKind.ARRAY, raw, null, false, false, List.copyOf(values));
         }
     }
 
@@ -859,7 +908,8 @@ public class JwtService {
             }
             if (index < text.length() && (text.charAt(index) == 'e' || text.charAt(index) == 'E')) {
                 index++;
-                if (index < text.length() && (text.charAt(index) == '+' || text.charAt(index) == '-')) {
+                if (index < text.length()
+                        && (text.charAt(index) == '+' || text.charAt(index) == '-')) {
                     index++;
                 }
                 requireDigits();
@@ -875,7 +925,8 @@ public class JwtService {
             while (index < text.length()) {
                 char current = text.charAt(index++);
                 if (current == '"') {
-                    return new ParsedString(text.substring(start, index), value.toString(), escaped);
+                    return new ParsedString(
+                            text.substring(start, index), value.toString(), escaped);
                 }
                 if (current < 0x20) {
                     throw error("control character in JSON string");
@@ -959,27 +1010,24 @@ public class JwtService {
             return new IllegalArgumentException("JWT payload " + message + " at offset " + index);
         }
 
-        private record ParsedString(String raw, String value, boolean escaped) {
-        }
+        private record ParsedString(String raw, String value, boolean escaped) {}
     }
 
     /**
      * M13 G25.14 — explicit /dev/urandom seed + SHA1PRNG software CSPRNG.
      *
-     * <p>Корневая причина hang'а на CI: на alpine musl JDK 21 ВСЕ native-PRNG
-     * provider'ы (NativePRNG, NativePRNGNonBlocking — G25.13 не помог; DRBG
-     * тоже instantiate'ится через default SecureRandom seed) под капотом
-     * читают /dev/random при init/reseed, игнорируя
-     * `-Djava.security.egd=file:/dev/./urandom`. На холодном GitHub Actions
-     * Azure runner entropy pool пустой → блок на минуты.
+     * <p>Корневая причина hang'а на CI: на alpine musl JDK 21 ВСЕ native-PRNG provider'ы
+     * (NativePRNG, NativePRNGNonBlocking — G25.13 не помог; DRBG тоже instantiate'ится через
+     * default SecureRandom seed) под капотом читают /dev/random при init/reseed, игнорируя
+     * `-Djava.security.egd=file:/dev/./urandom`. На холодном GitHub Actions Azure runner entropy
+     * pool пустой → блок на минуты.
      *
-     * <p>Bullet-proof решение: читаем 32 байта напрямую из /dev/urandom
-     * (Linux gurantee: urandom NEVER blocks, в отличие от /dev/random) и
-     * seedим SHA1PRNG — software-only CSPRNG, никаких дальнейших I/O reads.
-     * Криптостойкость 256-bit seed equivalent default SecureRandom.
+     * <p>Bullet-proof решение: читаем 32 байта напрямую из /dev/urandom (Linux gurantee: urandom
+     * NEVER blocks, в отличие от /dev/random) и seedим SHA1PRNG — software-only CSPRNG, никаких
+     * дальнейших I/O reads. Криптостойкость 256-bit seed equivalent default SecureRandom.
      *
-     * <p>На Windows /dev/urandom отсутствует — fallback на default SecureRandom
-     * (Windows CSPRNG через Crypto API non-blocking).
+     * <p>На Windows /dev/urandom отсутствует — fallback на default SecureRandom (Windows CSPRNG
+     * через Crypto API non-blocking).
      */
     private static SecureRandom nonBlockingSecureRandom() {
         Path urandom = Paths.get("/dev/urandom");
@@ -996,7 +1044,9 @@ public class JwtService {
                 random.setSeed(seed);
                 return random;
             } catch (IOException | NoSuchAlgorithmException e) {
-                log.warn("Failed to seed SHA1PRNG from /dev/urandom, falling back to default SecureRandom", e);
+                log.warn(
+                        "Failed to seed SHA1PRNG from /dev/urandom, falling back to default SecureRandom",
+                        e);
             }
         }
         return new SecureRandom();
@@ -1020,7 +1070,7 @@ public class JwtService {
     }
 
     private String buildPem(byte[] encoded, String type) {
-        String base64 = Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(encoded);
+        String base64 = Base64.getMimeEncoder(64, new byte[] {'\n'}).encodeToString(encoded);
         return "-----BEGIN " + type + "-----\n" + base64 + "\n-----END " + type + "-----\n";
     }
 
@@ -1038,10 +1088,10 @@ public class JwtService {
 
     private byte[] readPemBytes(Path path) throws IOException {
         String pem = Files.readString(path);
-        String stripped = pem
-                .replaceAll("-----BEGIN [A-Z ]+-----", "")
-                .replaceAll("-----END [A-Z ]+-----", "")
-                .replaceAll("\\s", "");
+        String stripped =
+                pem.replaceAll("-----BEGIN [A-Z ]+-----", "")
+                        .replaceAll("-----END [A-Z ]+-----", "")
+                        .replaceAll("\\s", "");
         return Base64.getDecoder().decode(stripped);
     }
 }

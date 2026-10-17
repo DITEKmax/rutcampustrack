@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-12T00:46:04.672096+00:00",
+  "phase": "ebsr-crosslayer-after-3",
+  "head": "e258af8f7b836814ad47aed3ded46060594f8567",
+  "wipHash": "dcbb452a806d114e0e90cb6db0e2636781a2e2b93f9ada5ae101c15ba6748fed",
+  "command": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    ":services:auth-service:auth-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT",
+    "--rerun",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m"
+  ],
+  "lease": "EXPORTS3",
+  "status": "RUNNING",
+  "sourceManifest": "ebsr-crosslayer-after-3-source-manifest.json",
+  "sourceManifestSHA256": "5eac57c0886f516cd94e6e2faed2b80beba139642c26cf02368116e48dfdcb1b",
+  "testFixtureControls": {}
+}

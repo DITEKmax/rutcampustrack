@@ -1,0 +1,10 @@
+{
+  "time": "2026-10-11T22:01:35.756645+00:00",
+  "action": "structural_boundary_launch",
+  "sha": "232f0210ab65a6750b120e811d81f0e110b9e107",
+  "test_wip_sha256": "82fc4fc477c4f2008f8a8d973b2c30c0b85204b0ba56017b8530fde6bb28202c",
+  "product_unchanged": true,
+  "command": "python3 /workspace/rct-cloud-setup/run-gradle.py --no-daemon --max-workers=1 :services:api-gateway:compileTestJava :services:api-gateway:test --tests ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest.fractionalDateFixturePreservesNonzeroFractionAtWallSecondBoundary",
+  "log": "/workspace/rct-worktrees/gateway-claims/.agent/evidence/gateway-claims/structural-boundary-red.log",
+  "purpose": "Separate fixture nonzero fraction from actual production raw JSON refusal"
+}

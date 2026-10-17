@@ -161,6 +161,12 @@ export interface RequestsDraft {
 export type RequestsDraftPatch = Partial<
   Pick<
     RequestsDraft,
-    'bucket' | 'view' | 'excuseLessonIds' | 'excuseReason' | 'excuseComment' | 'excuseFiles' | 'lateLessonId'
+    | 'bucket'
+    | 'view'
+    | 'excuseLessonIds'
+    | 'excuseReason'
+    | 'excuseComment'
+    | 'excuseFiles'
+    | 'lateLessonId'
   >
 >

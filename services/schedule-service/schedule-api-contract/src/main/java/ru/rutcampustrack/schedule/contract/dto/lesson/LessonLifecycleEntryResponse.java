@@ -1,12 +1,11 @@
 package ru.rutcampustrack.schedule.contract.dto.lesson;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
-import ru.rutcampustrack.schedule.contract.enums.LessonType;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
+import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
+import ru.rutcampustrack.schedule.contract.enums.LessonType;
 
 @Schema(name = "LessonLifecycleEntryResponse")
 public record LessonLifecycleEntryResponse(
@@ -17,8 +16,7 @@ public record LessonLifecycleEntryResponse(
         String generation,
         @Schema(nullable = true) String reason,
         String actorId,
-        Instant occurredAt
-) {
+        Instant occurredAt) {
     public LessonLifecycleEntryResponse {
         requirePositiveDecimal(revision, "revision");
         requireUppercase(action, "action");
@@ -28,11 +26,24 @@ public record LessonLifecycleEntryResponse(
         Objects.requireNonNull(occurredAt, "occurredAt");
     }
 
-    @Schema(name = "LessonLifecycleLessonInfo", requiredProperties = {
-            "lessonId", "groupId", "subjectId", "startsAt", "lessonNumber", "date",
-            "occurrenceId", "assignmentId", "semesterId", "teacherId", "lessonType",
-            "generation", "revision", "status"
-    })
+    @Schema(
+            name = "LessonLifecycleLessonInfo",
+            requiredProperties = {
+                "lessonId",
+                "groupId",
+                "subjectId",
+                "startsAt",
+                "lessonNumber",
+                "date",
+                "occurrenceId",
+                "assignmentId",
+                "semesterId",
+                "teacherId",
+                "lessonType",
+                "generation",
+                "revision",
+                "status"
+            })
     public record LessonInfo(
             String lessonId,
             String groupId,
@@ -47,8 +58,7 @@ public record LessonLifecycleEntryResponse(
             LessonType lessonType,
             String generation,
             String revision,
-            LessonStatus status
-    ) {
+            LessonStatus status) {
         public LessonInfo {
             requirePositiveDecimal(lessonId, "lessonId");
             requirePositiveDecimal(groupId, "groupId");
@@ -83,4 +93,3 @@ public record LessonLifecycleEntryResponse(
         }
     }
 }
-

@@ -1,0 +1,1 @@
+Spring AMQP3.2 RabbitTemplate reference fetched successfully into spring-template.html, confirms/scoped invoke documentation reviewed. RabbitMQ3.13 alarms page fetch returned HTTP403; not represented as personally read. Existing owner contract includes prior official-source research. No retry to bypass response and no product defect inferred from docs availability.

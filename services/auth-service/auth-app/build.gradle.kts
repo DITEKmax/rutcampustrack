@@ -62,6 +62,15 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation(project(":services:api-gateway"))
+    testImplementation("org.springframework:spring-webflux")
+    // Real Auth logout -> already-open Notification socket, without Notification data stores.
+    testImplementation(project(":services:notification-service:notification-app")) {
+        isTransitive = false
+    }
+    testImplementation("org.springframework.boot:spring-boot-starter-websocket")
+    testImplementation(platform("org.springframework.cloud:spring-cloud-dependencies:2025.0.3"))
+    testImplementation("org.springframework.cloud:spring-cloud-gateway-server")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")

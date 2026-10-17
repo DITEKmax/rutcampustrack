@@ -1,0 +1,47 @@
+{
+  "utc": "2026-10-12T10:31:00.672370+00:00",
+  "guard": {
+    "direct_pid": 266606,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 266606,
+        "start_ticks": 5485195
+      },
+      {
+        "pid": 266616,
+        "start_ticks": 5485196
+      },
+      {
+        "pid": 266623,
+        "start_ticks": 5485202
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "resources": {
+    "utc": "2026-10-12T10:31:00.672407+00:00",
+    "free_available_bytes": 8150220800,
+    "memory_current": 3934334976,
+    "memory_max": 17179869184
+  },
+  "remaining_owned_containers": 0,
+  "owned_network_absent": true,
+  "all_five_owned_volumes_preserved": true,
+  "volumes": [
+    "rct-client-host-config-20261012_owned-mongo-attendance",
+    "rct-client-host-config-20261012_owned-postgres-academic",
+    "rct-client-host-config-20261012_owned-postgres-schedule",
+    "rct-client-host-config-20261012_owned-rabbitmq",
+    "rct-client-host-config-20261012_owned-redis"
+  ],
+  "hosts_launched": 0,
+  "service_readiness_TLS_browser": "NOT_RUN"
+}

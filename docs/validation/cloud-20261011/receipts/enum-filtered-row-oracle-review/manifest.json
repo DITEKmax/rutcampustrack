@@ -1,0 +1,63 @@
+{
+  "utc": "2026-10-12T17:32:34.856622+00:00",
+  "status": "SEALED_READ_ONLY_PRECISE_MISSING_ORACLE",
+  "scope": "ENUM-ROW-EQUALITY / RESEARCH-L04",
+  "entries": [
+    {
+      "path": "CURRENT.md",
+      "sha256": "85a2817730ebd871205a00965538f48f8433a369ddaf3f0027828e032a36e998",
+      "bytes": 312,
+      "mode": "0600"
+    },
+    {
+      "path": "HANDOFF.md",
+      "sha256": "62b1bf03d7e658b02637d5a73d8846a388da1dc41dc2178502ff5f3999ad2e66",
+      "bytes": 7805,
+      "mode": "0600"
+    },
+    {
+      "path": "attempts.ndjson",
+      "sha256": "89c99b58c5f4c83b99e3b866bc740936bedd471316806840d106cfae8c6536fd",
+      "bytes": 253,
+      "mode": "0600"
+    },
+    {
+      "path": "existing-safe-evidence.json",
+      "sha256": "fa07acf6e547e794b252f0ce57e2609b472855b3f6d9818d28dd8feecd0860ef",
+      "bytes": 14097,
+      "mode": "0600"
+    },
+    {
+      "path": "findings.safe.json",
+      "sha256": "d397bfc92c8c1d26d1c4cc76edcf502e67f4e99d514ed22bdeee4a2201f7a3bf",
+      "bytes": 523,
+      "mode": "0600"
+    },
+    {
+      "path": "input-ledger.json",
+      "sha256": "b84285ac9542b2e03efbc5ca68051d60413f5da4c810e1ea00b8038012392dc8",
+      "bytes": 2256,
+      "mode": "0600"
+    },
+    {
+      "path": "minimal-next-oracle.safe.json",
+      "sha256": "4195f9d4ea31e028daff66a697b9142660ac82564f5fe46a716d278d299145e4",
+      "bytes": 4047,
+      "mode": "0600"
+    },
+    {
+      "path": "queue-and-disposition.json",
+      "sha256": "7349079456a7a7ca0e65760e2c48bc773e83585693121fc149afcbc846d520b0",
+      "bytes": 1705,
+      "mode": "0600"
+    },
+    {
+      "path": "source-ledger.json",
+      "sha256": "7b1b422add6e007daaea5a9c1326049c2e82eb8cb6b31a5e1f7534249a5daef1",
+      "bytes": 4902,
+      "mode": "0600"
+    }
+  ],
+  "native": "NOT_RUN",
+  "parent_promotions": 0
+}

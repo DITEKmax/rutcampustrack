@@ -1,0 +1,10 @@
+{
+  "schema": "RCT_SAFE_SOURCE_REVIEW_MANIFEST_V1",
+  "verdict": "APPROVE_SOURCE_FRESH_BOUND_ROOT_GRANT_REQUIRED",
+  "files": {
+    "REPORT.safe.json": {
+      "sha256": "8b44ea3da93703d3c4c5bf91e751f5495b8849dc0e0519458630a6382bd4df7a",
+      "bytes": 5804
+    }
+  }
+}

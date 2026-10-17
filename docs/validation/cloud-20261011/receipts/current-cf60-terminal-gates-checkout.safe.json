@@ -1,0 +1,62 @@
+{
+  "observed_at": "2026-10-14 00:41:02 UTC",
+  "head_sha": "cf60e65946b81139a47670c473c4212b3756a76c",
+  "actual_checkout": "a51fca22ae4b5a06536c9614f3e50798c2749f27",
+  "actual_producer": "current-cf60-P11-case.safe.json/current-cf60-AuthIT.safe.json",
+  "git_parents": [
+    "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "cf60e65946b81139a47670c473c4212b3756a76c"
+  ],
+  "tree_sha": "71e094be69e61ce0bf7624d8223b5a4249e9253f",
+  "tree_equal_head": true,
+  "runs": [
+    {
+      "id": 38489533064,
+      "name": "CI",
+      "event": "pull_request",
+      "head_sha": "cf60e65946b81139a47670c473c4212b3756a76c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "failure",
+      "failed_jobs": [
+        {
+          "id": 115611193257,
+          "name": "Playwright E2E auth flow"
+        }
+      ]
+    },
+    {
+      "id": 38489533004,
+      "name": "Coverage",
+      "event": "pull_request",
+      "head_sha": "cf60e65946b81139a47670c473c4212b3756a76c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "failed_jobs": []
+    },
+    {
+      "id": 38489533054,
+      "name": "OpenAPI Drift Guard",
+      "event": "pull_request",
+      "head_sha": "cf60e65946b81139a47670c473c4212b3756a76c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "failed_jobs": []
+    },
+    {
+      "id": 38489533000,
+      "name": "Security",
+      "event": "pull_request",
+      "head_sha": "cf60e65946b81139a47670c473c4212b3756a76c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "failed_jobs": []
+    }
+  ],
+  "cases": "Auth172PASS0FES/P09PASS/P11PASS/student14PASS/helper142PASS/headman61attachment118FAIL_UNKNOWN",
+  "next5": "NOT_RUN_successgate",
+  "always_cleanup": "SUCCESS"
+}

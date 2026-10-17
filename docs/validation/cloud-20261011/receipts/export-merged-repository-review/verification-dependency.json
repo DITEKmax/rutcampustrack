@@ -1,0 +1,31 @@
+{
+  "status": "PROPOSED_NOT_EXECUTED_BY_REVIEWER",
+  "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "scope": "Combined Academic query registration/publication and actual batch lookup only",
+  "required_lease": "Root grants current resource capacity; reviewer never runs heavy",
+  "argv": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    ":services:academic-service:academic-app:compileJava",
+    ":services:academic-service:academic-app:compileTestJava",
+    ":services:academic-service:academic-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.academic.subject.SubjectListDataIT.teacherListDoesNotPublishPendingAdoptionBeforeExactResume",
+    "--tests",
+    "ru.rutcampustrack.academic.integration.AcademicGrpcIT.getSubjectsByIds_returnsSubjectNamesAndTypes",
+    "--rerun",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m"
+  ],
+  "cwd": "/workspace/rutcampustrack",
+  "reuse": "If current integrated Academic acceptance already executes both exact-source cases with fresh XML/native terminal, reuse it without duplicate runs.",
+  "not_required_for_this_merge": [
+    "L05 page repeat solely for historical recovery",
+    "whole assignment or Academic suite",
+    "Auth18 rerun",
+    "browser/native renderer/private broker stack"
+  ],
+  "oracle_limits": "Both existing tests target only publication/gRPC metadata; current full Academic and external grant/provider/native/client scenarios remain separate."
+}

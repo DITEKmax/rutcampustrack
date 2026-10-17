@@ -13,3 +13,8 @@ grpc:
       security:
         trust-cert-collection: ${ACADEMIC_GRPC_TRUST_CERT_COLLECTION}
         authority-override: ${ACADEMIC_GRPC_TLS_AUTHORITY}
+    attendance-service:
+      negotiation-type: TLS
+      security:
+        trust-cert-collection: ${ATTENDANCE_GRPC_TRUST_CERT_COLLECTION}
+        authority-override: ${ATTENDANCE_GRPC_TLS_AUTHORITY:attendance-service}

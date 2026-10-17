@@ -1,0 +1,26 @@
+{
+  "schema": "P10_COMPILE_ACTUAL_SAFE_SEAL_V1",
+  "files": {
+    "REPORT.safe.json": {
+      "sha256": "4d29961f41675fd978400483f4b4e9d869ef04fa97ba956bb9deb9e8ef58adfa",
+      "bytes": 3142
+    },
+    "child-exit.safe.json": {
+      "sha256": "0849db4a0b7391d48c2cb70ee4cc4b56672a052b36510fc8199e65323b9b4f4e",
+      "bytes": 19
+    },
+    "dispatch.safe.json": {
+      "sha256": "43b7b01c1afee321c21fe8c638aec039668ef1f29f564a7f3ef9d00e00628576",
+      "bytes": 323
+    },
+    "supervisor.safe.json": {
+      "sha256": "a60b789be043fb0a2ecd7da4bbc05edade547c48c7594900486a6bd2676eea8d",
+      "bytes": 117
+    },
+    "terminal.safe.json": {
+      "sha256": "d80d11621ccfa40645cf0bfe73f3be8c927162dcb6f60e37a027f69aba9cce38",
+      "bytes": 972
+    }
+  },
+  "excluded": "Rawprivateformatter/compilerlogs/body/hash/actualRootgrant/privateXML absent."
+}

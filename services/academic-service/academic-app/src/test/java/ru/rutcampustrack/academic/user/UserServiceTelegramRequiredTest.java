@@ -1,5 +1,17 @@
 package ru.rutcampustrack.academic.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,25 +33,11 @@ import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
 /**
- * BUG-006-3 / D-08..D-11: telegramId is required for STUDENT, optional for
- * TEACHER and ADMIN. Validation lives inside {@link UserService#createUser}
- * (guard runs before any repo access) and surfaces a
- * {@link BadRequestException} with {@code field="telegramId"} — so the frontend
- * can highlight the offending control via the Problem-Detail payload.
+ * BUG-006-3 / D-08..D-11: telegramId is required for STUDENT, optional for TEACHER and ADMIN.
+ * Validation lives inside {@link UserService#createUser} (guard runs before any repo access) and
+ * surfaces a {@link BadRequestException} with {@code field="telegramId"} — so the frontend can
+ * highlight the offending control via the Problem-Detail payload.
  */
 @ExtendWith(MockitoExtension.class)
 class UserServiceTelegramRequiredTest {
@@ -57,36 +55,44 @@ class UserServiceTelegramRequiredTest {
     @Mock private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
     @Mock private ru.rutcampustrack.academic.admin.AdminAccessService adminAccessService;
 
-    @InjectMocks
-    private UserService service;
+    @org.mockito.Spy
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder =
+            new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+
+    @InjectMocks private UserService service;
 
     @org.junit.jupiter.api.BeforeEach
     void managedEnrollmentFixture() {
-        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccess", adminAccess);
-        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccessService", adminAccessService);
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                service, "adminAccess", adminAccess);
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                service, "adminAccessService", adminAccessService);
         Group group = org.mockito.Mockito.mock(Group.class);
         lenient().when(group.getId()).thenReturn(1L);
         lenient().when(group.isActive()).thenReturn(true);
         Semester semester = org.mockito.Mockito.mock(Semester.class);
+        lenient().when(semester.getId()).thenReturn(1L);
         lenient().when(semester.getDateFrom()).thenReturn(LocalDate.of(2026, 9, 1));
         lenient().when(semester.getDateTo()).thenReturn(LocalDate.of(2027, 1, 31));
         GroupHistoryCoverage coverage = org.mockito.Mockito.mock(GroupHistoryCoverage.class);
         lenient().when(coverage.getCoverageFrom()).thenReturn(LocalDate.of(2026, 9, 1));
         lenient().when(coverage.getWriterVersion()).thenReturn("managed_v1");
         lenient().when(groupRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(group));
-        lenient().when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
+        lenient()
+                .when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
                 .thenReturn(List.of(semester));
         lenient().when(coverageRepository.findById(1L)).thenReturn(Optional.of(coverage));
     }
 
     private CreateUserRequest req(UserRole role, Long telegramId, String employeeNumber) {
         return new CreateUserRequest(
-                "Иванов", "Иван", "Иванович",
+                "Иванов",
+                "Иван",
+                "Иванович",
                 role,
                 role == UserRole.STUDENT ? 1L : null,
                 employeeNumber,
-                telegramId
-        );
+                telegramId);
     }
 
     @Test
@@ -94,10 +100,13 @@ class UserServiceTelegramRequiredTest {
         CreateUserRequest req = req(UserRole.STUDENT, null, null);
 
         assertThatThrownBy(() -> service.createUser(req))
-                .isInstanceOfSatisfying(BadRequestException.class, ex -> {
-                    assertThat(ex.getField()).isEqualTo("telegramId");
-                    assertThat(ex.getMessage()).isEqualTo("Telegram ID обязателен для студента");
-                });
+                .isInstanceOfSatisfying(
+                        BadRequestException.class,
+                        ex -> {
+                            assertThat(ex.getField()).isEqualTo("telegramId");
+                            assertThat(ex.getMessage())
+                                    .isEqualTo("Telegram ID обязателен для студента");
+                        });
 
         verify(userRepository, never()).save(any());
         verify(userRepository, never()).nextStudentLoginSeq();
@@ -109,21 +118,25 @@ class UserServiceTelegramRequiredTest {
         CreateUserRequest req = req(UserRole.STUDENT, 0L, null);
 
         assertThatThrownBy(() -> service.createUser(req))
-                .isInstanceOfSatisfying(BadRequestException.class, ex -> {
-                    assertThat(ex.getField()).isEqualTo("telegramId");
-                });
+                .isInstanceOfSatisfying(
+                        BadRequestException.class,
+                        ex -> {
+                            assertThat(ex.getField()).isEqualTo("telegramId");
+                        });
 
         verify(userRepository, never()).save(any());
     }
 
     @Test
     void studentWithoutGroupIsRejectedBeforePersistence() {
-        CreateUserRequest request = new CreateUserRequest(
-                "Иванов", "Иван", null, UserRole.STUDENT, null, null, 123456789L);
+        CreateUserRequest request =
+                new CreateUserRequest(
+                        "Иванов", "Иван", null, UserRole.STUDENT, null, null, 123456789L);
 
         assertThatThrownBy(() -> service.createUser(request))
-                .isInstanceOfSatisfying(BadRequestException.class, ex ->
-                        assertThat(ex.getField()).isEqualTo("groupId"));
+                .isInstanceOfSatisfying(
+                        BadRequestException.class,
+                        ex -> assertThat(ex.getField()).isEqualTo("groupId"));
 
         verify(userRepository, never()).save(any());
     }
@@ -133,33 +146,45 @@ class UserServiceTelegramRequiredTest {
         CreateUserRequest request = req(UserRole.STUDENT, 123456789L, "EMP-777");
 
         assertThatThrownBy(() -> service.createUser(request))
-                .isInstanceOfSatisfying(BadRequestException.class, ex ->
-                        assertThat(ex.getField()).isEqualTo("employeeNumber"));
+                .isInstanceOfSatisfying(
+                        BadRequestException.class,
+                        ex -> assertThat(ex.getField()).isEqualTo("employeeNumber"));
 
         verify(userRepository, never()).save(any());
     }
 
     @Test
     void teacherCannotCarryStudentGroup() {
-        CreateUserRequest request = new CreateUserRequest(
-                "Иванов", "Иван", null, UserRole.TEACHER, 1L, "EMP-777", null);
+        CreateUserRequest request =
+                new CreateUserRequest(
+                        "Иванов", "Иван", null, UserRole.TEACHER, 1L, "EMP-777", null);
 
         assertThatThrownBy(() -> service.createUser(request))
-                .isInstanceOfSatisfying(BadRequestException.class, ex ->
-                        assertThat(ex.getField()).isEqualTo("groupId"));
+                .isInstanceOfSatisfying(
+                        BadRequestException.class,
+                        ex -> assertThat(ex.getField()).isEqualTo("groupId"));
 
         verify(userRepository, never()).save(any());
     }
 
     @Test
     void adminCannotCarryTeacherEmployeeNumber() {
-        CreateUserRequest request = new CreateUserRequest(
-                "Иванов", "Иван", null, UserRole.ADMIN, null, "EMP-777", null,
-                new ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput("FULL", List.of()));
+        CreateUserRequest request =
+                new CreateUserRequest(
+                        "Иванов",
+                        "Иван",
+                        null,
+                        UserRole.ADMIN,
+                        null,
+                        "EMP-777",
+                        null,
+                        new ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput(
+                                "FULL", List.of()));
 
         assertThatThrownBy(() -> service.createUser(request))
-                .isInstanceOfSatisfying(BadRequestException.class, ex ->
-                        assertThat(ex.getField()).isEqualTo("employeeNumber"));
+                .isInstanceOfSatisfying(
+                        BadRequestException.class,
+                        ex -> assertThat(ex.getField()).isEqualTo("employeeNumber"));
 
         verify(userRepository, never()).save(any());
     }
@@ -177,14 +202,26 @@ class UserServiceTelegramRequiredTest {
 
     @Test
     void adminWithoutTelegramIdIsAccepted() {
-        CreateUserRequest req = new CreateUserRequest("Иванов", "Иван", "Иванович", UserRole.ADMIN,
-                null, null, null, new ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput("FULL", List.of()));
+        CreateUserRequest req =
+                new CreateUserRequest(
+                        "Иванов",
+                        "Иван",
+                        "Иванович",
+                        UserRole.ADMIN,
+                        null,
+                        null,
+                        null,
+                        new ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput(
+                                "FULL", List.of()));
         when(userRepository.nextTeacherLoginSeq()).thenReturn(3L);
-        when(userRepository.save(any())).thenAnswer(inv -> {
-            ru.rutcampustrack.academic.entity.User user = inv.getArgument(0);
-            org.springframework.test.util.ReflectionTestUtils.setField(user, "id", 10L);
-            return user;
-        });
+        when(userRepository.save(any()))
+                .thenAnswer(
+                        inv -> {
+                            ru.rutcampustrack.academic.entity.User user = inv.getArgument(0);
+                            org.springframework.test.util.ReflectionTestUtils.setField(
+                                    user, "id", 10L);
+                            return user;
+                        });
 
         assertThatCode(() -> service.createUser(req)).doesNotThrowAnyException();
 
@@ -195,7 +232,23 @@ class UserServiceTelegramRequiredTest {
     void studentWithTelegramIdIsAccepted() {
         CreateUserRequest req = req(UserRole.STUDENT, 123456789L, null);
         lenient().when(userRepository.existsByTelegramId(123456789L)).thenReturn(false);
-        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(userRepository.save(any()))
+                .thenAnswer(
+                        inv -> {
+                            ru.rutcampustrack.academic.entity.User user = inv.getArgument(0);
+                            org.springframework.test.util.ReflectionTestUtils.setField(
+                                    user, "id", 10L);
+                            return user;
+                        });
+        when(studentGroupHistoryRepository.save(any()))
+                .thenAnswer(
+                        inv -> {
+                            ru.rutcampustrack.academic.entity.StudentGroupHistory history =
+                                    inv.getArgument(0);
+                            org.springframework.test.util.ReflectionTestUtils.setField(
+                                    history, "id", 100L);
+                            return history;
+                        });
 
         assertThatCode(() -> service.createUser(req)).doesNotThrowAnyException();
 

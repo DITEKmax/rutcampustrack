@@ -1,0 +1,9 @@
+{
+  "validMonday09": true,
+  "sundayRejected": true,
+  "nightRejected": true,
+  "malformedRejected": true,
+  "absentMarkerRejected": true,
+  "absentOptInRejected": true,
+  "browser": "NOT_STARTED"
+}

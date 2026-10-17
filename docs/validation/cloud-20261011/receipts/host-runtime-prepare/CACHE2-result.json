@@ -1,0 +1,361 @@
+{
+  "at": "2026-10-12T02:16:26.817891+00:00",
+  "grant": "Root CACHE2 exact14 sealedcapacity-candidates3d8fe7; no new resource allocations",
+  "status": "COMPLETE",
+  "results": [
+    {
+      "at": "2026-10-12T02:16:21.471231+00:00",
+      "id": "vz3s00i9bjxjdyrxw4a2rkkaw",
+      "free_before": 5870661632,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^vz3s00i9bjxjdyrxw4a2rkkaw$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "fffec1977347cb7015025fc6b2be97adda97f758f5d21e0dfb0115baceaf3e86",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 6194130944
+    },
+    {
+      "at": "2026-10-12T02:16:21.889715+00:00",
+      "id": "lv1hxsvqr2gmwrrxx5s2u8efx",
+      "free_before": 6194126848,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^lv1hxsvqr2gmwrrxx5s2u8efx$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "dcf9305258c8d2d6af51cbd4035b8787b5bb32a624a4b518123795e5f9da64b6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 6464507904
+    },
+    {
+      "at": "2026-10-12T02:16:22.315304+00:00",
+      "id": "w058d3omube7o0h9bpb87rafp",
+      "free_before": 6464507904,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^w058d3omube7o0h9bpb87rafp$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "701597d6f8b2b2b63b7af06247883aa7e51589fbed281b98a8a0a1c61fb65854",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 6739267584
+    },
+    {
+      "at": "2026-10-12T02:16:22.707867+00:00",
+      "id": "i6ren2qwert8xq06ct7k0by2w",
+      "free_before": 6739267584,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^i6ren2qwert8xq06ct7k0by2w$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "9a2c73d1a92ca7e99c33d53e214756b23285216884b49634657b5d17125a4b8d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 7046377472
+    },
+    {
+      "at": "2026-10-12T02:16:23.105125+00:00",
+      "id": "79f7cf5hn4fc74t4vjfark4g7",
+      "free_before": 7046352896,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^79f7cf5hn4fc74t4vjfark4g7$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "fd3e91308969291d3e41756e53f0bbbcbd3fd4ff05436f077b189af945560076",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 7360966656
+    },
+    {
+      "at": "2026-10-12T02:16:23.487125+00:00",
+      "id": "popynjor3mjua1kxfpd7x8qy4",
+      "free_before": 7360966656,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^popynjor3mjua1kxfpd7x8qy4$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "e9f955b461e7d509fb131ddb2d3bb57ce7f57deb16183d3b35f2b2d610efe98e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 7679516672
+    },
+    {
+      "at": "2026-10-12T02:16:23.895449+00:00",
+      "id": "k83nl6as79uj7497kzo8gzn6a",
+      "free_before": 7679516672,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^k83nl6as79uj7497kzo8gzn6a$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "1778d96267656bd0b440d4bb6ca4c00497437b858108f4b2f26677dab56c99c3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 8001781760
+    },
+    {
+      "at": "2026-10-12T02:16:24.266909+00:00",
+      "id": "vwidtwn33ziesiyfojrmw1hhj",
+      "free_before": 8001781760,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^vwidtwn33ziesiyfojrmw1hhj$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "791b2ea5a1a92696ee9f1822790db46ef9010fa83d5e36c7ba091d98ce181a21",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 8213372928
+    },
+    {
+      "at": "2026-10-12T02:16:24.631986+00:00",
+      "id": "z9oag2b57kp1htgji7yb5tbe5",
+      "free_before": 8213368832,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^z9oag2b57kp1htgji7yb5tbe5$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "362f5ab6285f77c76d7b9e6b76511d0fad9fbcbadd8da89750db35c1abf065f8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 8424955904
+    },
+    {
+      "at": "2026-10-12T02:16:24.985383+00:00",
+      "id": "xld9cixg2zf065ckuhu0wtjpr",
+      "free_before": 8424955904,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^xld9cixg2zf065ckuhu0wtjpr$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "725d8da603f076a13cf8bddbbcbc10d2114849057f0b65103349d515c92ec2be",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 8746049536
+    },
+    {
+      "at": "2026-10-12T02:16:25.338118+00:00",
+      "id": "jdr4sxwhjnpni53brlg0x28gi",
+      "free_before": 8746049536,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^jdr4sxwhjnpni53brlg0x28gi$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "ccee1e2bed6a7e46cbbac3e34b4ad871cafaf782c2fd356d4f4746bc2db2b24f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 8957636608
+    },
+    {
+      "at": "2026-10-12T02:16:25.704267+00:00",
+      "id": "l211f4paf5nx44yi805z2nyiz",
+      "free_before": 8957636608,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^l211f4paf5nx44yi805z2nyiz$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "904db32cb166c19020c33a34de35f57b926999fe5d9bcb35b599574d6307ac35",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 9169219584
+    },
+    {
+      "at": "2026-10-12T02:16:26.036859+00:00",
+      "id": "vuzw1c1bxukbxch5nhal5wdzw",
+      "free_before": 9169219584,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^vuzw1c1bxukbxch5nhal5wdzw$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "8236b18fd3c07e2602c166b7f8de51bba1e4d3b7769b9ae10b395023799462d1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 9380802560
+    },
+    {
+      "at": "2026-10-12T02:16:26.534082+00:00",
+      "id": "2o1w8rn791myfm6csayrdke60",
+      "free_before": 9380802560,
+      "argv": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "buildx",
+        "prune",
+        "--filter",
+        "id=^2o1w8rn791myfm6csayrdke60$",
+        "--filter",
+        "type=regular"
+      ],
+      "native_exit": 0,
+      "stdout_sha256": "d3743f287857500e7e5878daa67d442f02df3d77df59ce7c74f5a5b33d8921b9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "COMMAND_COMPLETED",
+      "selected_id_absent_after": true,
+      "free_after": 9592389632
+    }
+  ],
+  "free_before_bytes": 5870682112,
+  "free_after_bytes": 9592389632,
+  "actual_net_free_delta_bytes": 3721707520,
+  "floor_bytes": 4294967296,
+  "all_protected_images_present": true,
+  "all_volumes_unchanged": true,
+  "all_non_candidate_cache_records_present": true,
+  "candidate_ids_remaining": [],
+  "all8_original_jars_exact": true,
+  "jar_verification": [
+    {
+      "path": "/workspace/rct-worktrees/client-acceptance/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "sha256": "ba514dcb98d623e3f926debf1a3306532d7c13a090367972bfeabc0c77b05635",
+      "bytes": 99997978,
+      "matches_original": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-acceptance/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "sha256": "b70e18c4e1004f49301a1813f13e46a56c4f13fed442a7a6569734f781a61520",
+      "bytes": 99563129,
+      "matches_original": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-acceptance/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "sha256": "62442b2b58d12c94d177df5a4fc5b417d01d058e20e52c6fb2850d727b964d6d",
+      "bytes": 93018667,
+      "matches_original": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-acceptance/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "sha256": "fbdcf1af4690f9efc547fa48e2d27af46e4ad3184143b6ef6195fc4e9ef015da",
+      "bytes": 95835362,
+      "matches_original": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-acceptance/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "sha256": "52c96cf5349d33e0dfee09f81208e969e693bb3e7ff48762513d16c6e88dc78e",
+      "bytes": 50003899,
+      "matches_original": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-acceptance/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "sha256": "2e40d87f5716e148ed58416de73407d38ed8b7c43387f63d4fe4815820082929",
+      "bytes": 62064303,
+      "matches_original": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-acceptance/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "sha256": "12d6aa434927bf3091d16ce06178e5d42191856f63da38bfe6259b5e204df8d1",
+      "bytes": 86529116,
+      "matches_original": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-acceptance/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "sha256": "b01fe685f628d0d0e3cc4e6758f32ed2f81ce16bac8cb3f63b8b14b687a527a0",
+      "bytes": 48783192,
+      "matches_original": true
+    }
+  ],
+  "qualifier": "Actual statvfs net delta; candidate logical sizes not equal VFS reclaimed bytes. No app/browser/keys/source changes."
+}

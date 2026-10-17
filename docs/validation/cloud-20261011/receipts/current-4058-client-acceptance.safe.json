@@ -1,0 +1,583 @@
+{
+  "producer": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+  "run": 38548579139,
+  "event": "pull_request",
+  "attempt": 1,
+  "actual_checkout": {
+    "checkout_sha": "189b857d9cc2a21f4c818b3915b7ce07034245ac",
+    "tree_sha": "2875852c61e0b82f20b1248d159f4b1598bd157b",
+    "producer_head_sha": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+    "parents": [
+      "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "40580c6b6b5dbda40d01fde48eb5d455cded9d61"
+    ],
+    "official_metadata_join": true,
+    "root_committed_tree_equal": true
+  },
+  "cases": {
+    "admin": {
+      "artifact": 11885928628,
+      "producer": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+      "run": 38548579139,
+      "digest": "sha256:b70391aa255d4e2075957dabaddf373505a5fefa4173d571d98a23ada8b89017",
+      "bytes": 366,
+      "results": {
+        "status": "passed",
+        "runnerErrors": 0,
+        "unsafeArtifact": false,
+        "suppressedStdoutBytes": 0,
+        "suppressedStderrBytes": 0,
+        "results": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 452,
+            "project": "chromium",
+            "status": "passed",
+            "expectedStatus": "passed",
+            "durationMs": 5758,
+            "errorCount": 0,
+            "diagnostics": [],
+            "errorLocations": []
+          }
+        ]
+      },
+      "diagnostic_schema": [
+        {
+          "caseCode": "ADMIN_ACCOUNT_LIFECYCLE",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        }
+      ],
+      "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+      "raw_logs_HTML_XML_error_context_read": false,
+      "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+      "bounded_reader": {
+        "direct_pid": 692220,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 692220,
+            "start_ticks": 22796457
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    "role": {
+      "artifact": 11885534914,
+      "producer": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+      "run": 38548579139,
+      "digest": "sha256:a42a73cf33979a279d0e2f050deb8330d5b1b740e3672114fd85aac20e44064a",
+      "bytes": 367,
+      "results": {
+        "status": "passed",
+        "runnerErrors": 0,
+        "unsafeArtifact": false,
+        "suppressedStdoutBytes": 0,
+        "suppressedStderrBytes": 0,
+        "results": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 848,
+            "project": "chromium",
+            "status": "passed",
+            "expectedStatus": "passed",
+            "durationMs": 2368,
+            "errorCount": 0,
+            "diagnostics": [],
+            "errorLocations": []
+          }
+        ]
+      },
+      "diagnostic_schema": [
+        {
+          "caseCode": "ROLE_TRANSITION_LOGOUT_ALL",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        }
+      ],
+      "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+      "raw_logs_HTML_XML_error_context_read": false,
+      "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+      "bounded_reader": {
+        "direct_pid": 692233,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 692233,
+            "start_ticks": 22796559
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    "lesson_lane": {
+      "artifact": 11886258370,
+      "producer": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+      "run": 38548579139,
+      "digest": "sha256:7dcfe414f40bd62e834634bc391012356223594d73d87bc259222a73d75c523d",
+      "bytes": 515,
+      "results": {
+        "status": "failed",
+        "runnerErrors": 0,
+        "unsafeArtifact": false,
+        "suppressedStdoutBytes": 0,
+        "suppressedStderrBytes": 0,
+        "results": [
+          {
+            "file": "mobile-attendance-requests.spec.ts",
+            "line": 8,
+            "project": "chromium",
+            "status": "failed",
+            "expectedStatus": "passed",
+            "durationMs": 57169,
+            "errorCount": 1,
+            "diagnostics": [
+              {
+                "stage": "UNKNOWN",
+                "cause": "UNKNOWN",
+                "httpStatus": 0
+              }
+            ],
+            "errorLocations": [
+              {
+                "file": "mobile-attendance-requests.spec.ts",
+                "line": 8
+              }
+            ]
+          },
+          {
+            "file": "mobile-lesson-lifecycle.spec.ts",
+            "line": 20,
+            "project": "chromium",
+            "status": "passed",
+            "expectedStatus": "passed",
+            "durationMs": 62082,
+            "errorCount": 0,
+            "diagnostics": [],
+            "errorLocations": []
+          },
+          {
+            "file": "mobile-schedule-lifecycle.spec.ts",
+            "line": 97,
+            "project": "chromium",
+            "status": "failed",
+            "expectedStatus": "passed",
+            "durationMs": 12502,
+            "errorCount": 1,
+            "diagnostics": [
+              {
+                "stage": "UNKNOWN",
+                "cause": "UNKNOWN",
+                "httpStatus": 0
+              }
+            ],
+            "errorLocations": [
+              {
+                "file": "mobile-schedule-lifecycle.spec.ts",
+                "line": 97
+              }
+            ]
+          },
+          {
+            "file": "mobile-schedule-lifecycle.spec.ts",
+            "line": 401,
+            "project": "chromium",
+            "status": "failed",
+            "expectedStatus": "passed",
+            "durationMs": 34380,
+            "errorCount": 1,
+            "diagnostics": [
+              {
+                "stage": "UNKNOWN",
+                "cause": "UNKNOWN",
+                "httpStatus": 0
+              }
+            ],
+            "errorLocations": [
+              {
+                "file": "mobile-schedule-lifecycle.spec.ts",
+                "line": 401
+              }
+            ]
+          }
+        ]
+      },
+      "diagnostic_schema": [
+        {
+          "caseCode": "MANUAL_BUDGET_AUTO_REQUEST",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        },
+        {
+          "caseCode": "LESSON_LIFECYCLE",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        },
+        {
+          "caseCode": "BUILDER_REMOVE_READD_HISTORY_RIGHTS",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        },
+        {
+          "caseCode": "SEMESTER_ETAG_ROOM_TODAY",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        }
+      ],
+      "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+      "raw_logs_HTML_XML_error_context_read": false,
+      "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+      "bounded_reader": {
+        "direct_pid": 692422,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 692422,
+            "start_ticks": 22809432
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    "helper": {
+      "artifact": 11887120515,
+      "producer": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+      "run": 38548579139,
+      "digest": "sha256:77f2816776c704bb3b969342bcd8624527c417beba700b6ae8db547ba0b493f3",
+      "bytes": 504,
+      "results": {
+        "status": "failed",
+        "runnerErrors": 0,
+        "unsafeArtifact": false,
+        "suppressedStdoutBytes": 0,
+        "suppressedStderrBytes": 0,
+        "results": [
+          {
+            "file": "cloud-accepted-helper-capabilities.spec.ts",
+            "line": 21,
+            "project": "chromium",
+            "status": "passed",
+            "expectedStatus": "passed",
+            "durationMs": 1913,
+            "errorCount": 0,
+            "diagnostics": [],
+            "errorLocations": []
+          },
+          {
+            "file": "cloud-accepted-helper-capabilities.spec.ts",
+            "line": 124,
+            "project": "chromium",
+            "status": "failed",
+            "expectedStatus": "passed",
+            "durationMs": 484,
+            "errorCount": 2,
+            "diagnostics": [
+              {
+                "stage": "UNKNOWN",
+                "cause": "UNKNOWN",
+                "httpStatus": 0
+              },
+              {
+                "stage": "UNKNOWN",
+                "cause": "REPORTED_CLASS_ERROR",
+                "httpStatus": 0
+              }
+            ],
+            "errorLocations": [
+              {
+                "file": "cloud-accepted-helper-capabilities.spec.ts",
+                "line": 130
+              },
+              {
+                "file": "cloud-accepted-helper-capabilities.spec.ts",
+                "line": 130
+              }
+            ]
+          },
+          {
+            "file": "cloud-accepted-helper-capabilities.spec.ts",
+            "line": 179,
+            "project": "chromium",
+            "status": "passed",
+            "expectedStatus": "passed",
+            "durationMs": 2454,
+            "errorCount": 0,
+            "diagnostics": [],
+            "errorLocations": []
+          }
+        ]
+      },
+      "diagnostic_schema": [
+        {
+          "caseCode": "HELPER_VIEW_STATS",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        },
+        {
+          "caseCode": "HELPER_CANCEL_LESSONS",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        },
+        {
+          "caseCode": "HELPER_MANAGE_EXCUSES",
+          "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+        }
+      ],
+      "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+      "raw_logs_HTML_XML_error_context_read": false,
+      "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+      "bounded_reader": {
+        "direct_pid": 693257,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 693257,
+            "start_ticks": 22828637
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    "assignment": {
+      "artifact": 11886916094,
+      "producer": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+      "run": 38548579139,
+      "digest": "sha256:820c753eb04b537caef94e34490cfca6eda42a8cd25be2e5b7a9187c396656a5",
+      "bytes": 1213,
+      "phases": {
+        "pending": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "assignment-lifecycle.spec.ts",
+              "line": 598,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 235,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "prepare": {
+          "status": "passed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "assignment-lifecycle.spec.ts",
+              "line": 598,
+              "project": "chromium",
+              "status": "passed",
+              "expectedStatus": "passed",
+              "durationMs": 8488,
+              "errorCount": 0,
+              "diagnostics": [],
+              "errorLocations": []
+            }
+          ]
+        },
+        "resume": {
+          "status": "failed",
+          "runnerErrors": 0,
+          "unsafeArtifact": false,
+          "suppressedStdoutBytes": 0,
+          "suppressedStderrBytes": 0,
+          "results": [
+            {
+              "file": "assignment-lifecycle.spec.ts",
+              "line": 598,
+              "project": "chromium",
+              "status": "failed",
+              "expectedStatus": "passed",
+              "durationMs": 178,
+              "errorCount": 1,
+              "diagnostics": [
+                {
+                  "stage": "DATASET_HTTP",
+                  "cause": "DATASET_ASSIGNMENT_CLOSE_HTTP",
+                  "httpStatus": 503
+                },
+                {
+                  "stage": "UNKNOWN",
+                  "cause": "REPORTED_CLASS_ERROR",
+                  "httpStatus": 0
+                }
+              ],
+              "errorLocations": [
+                {
+                  "file": "assignment-lifecycle.spec.ts",
+                  "line": 460
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "lifecycle_closed_diagnostics": {},
+      "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+      "missing_phases": [],
+      "diagnostic_schema": {
+        "pending": [
+          {
+            "caseCode": "ASSIGNMENT_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "prepare": [
+          {
+            "caseCode": "ASSIGNMENT_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ],
+        "resume": [
+          {
+            "caseCode": "ASSIGNMENT_LIFECYCLE",
+            "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+          }
+        ]
+      },
+      "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+      "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+      "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_ALL_THREE_PHASES_AND_SUCCESSFUL_OWNED_SCHEDULE_RESTART_STEP",
+      "bounded_reader": {
+        "direct_pid": 693243,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 693243,
+            "start_ticks": 22828503
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    }
+  },
+  "limits": "finiteactualcases only; no wholefamily/productionready/DONE claim",
+  "gates": {
+    "CI": {
+      "run": 38548579139,
+      "conclusion": "failure",
+      "jobs": "soleE2EFAIL+18SUCCESS"
+    },
+    "Coverage": {
+      "run": 38548579807,
+      "conclusion": "failure",
+      "jobs": "soleVuefixtureFAIL+7SUCCESS/DiffSKIP"
+    },
+    "Security": {
+      "run": 38548579142,
+      "conclusion": "success"
+    },
+    "OpenAPI": {
+      "run": 38548579117,
+      "conclusion": "success"
+    },
+    "cleanup": "freshSKIP/certSUCCESS/containersSUCCESS43s",
+    "E2E_seconds": 1321,
+    "boot_seconds": 696
+  },
+  "independent_finite_Q03_Q04_reconciliation": {
+    "scope": "Readonly finite acceptance reconciliation for new4058 admin/role PASS against current matrix and actual job-stories167–205/264–290/874, dated user-restore decision and existing named receipts. No new execution/network/source/shared-doc edits or registry. Sol6.1/high actualUNKNOWN; Q012/B013/B014 restrictions retained.",
+    "newProof": "receipts/current-4058-client-acceptance.safe.json: producer40580c6b6b5dbda40d01fde48eb5d455cded9d61, run38548579139/attempt1. Actual checkout189b857d9cc2a21f4c818b3915b7ce07034245ac/tree2875852c61e0b82f20b1248d159f4b1598bd157b; official parents3908+4058 and producer tree joined. Current spec SHA e912ff443f2ac2ef60bfe6061023edbc839e05492aad962f007f5306c9be2e03 (a file SHA, not a commit). Named admin case at452 PASS5758ms artifact11885928628/digestb70391aa255d4e2075957dabaddf373505a5fefa4173d571d98a23ada8b89017; role at848 PASS2368ms artifact11885534914/digesta42a73cf33979a279d0e2f050deb8330d5b1b740e3672114fd85aac20e44064a. Browser schemas alone lack checkout identity; separate checkout join supplies it.",
+    "existingProofJoins": {
+      "Q04": "receipts/current-897-Q04-Academic-cases-checkout.safe.json: producer89746d1dc3d3ac7c23470c3998f9d85ed268859f, checkout10b1546c19d789be9da58461fef3794ba8620220, run38495986019, artifact11864247987. Existing Q04 reuse receipt gives exact named SOURCE_METHOD PASSs. Current UserArchiveLifecycleIT, GroupHeadmanAssignmentIT, GroupRegistryIT and AdminAccessAuthorityIT match recorded test SHA; current UserArchiveService and GroupHeadmanAssignmentService exact65→4058 bytes. Not whole Academic equality.",
+      "Q03": "Q03-existing-finite-auth-proof-reuse.safe.json / current-ca3d-auth-Unicode-safe/safe-integration-outcomes-auth-service-1-integrationTest.json: producerca3d3ff07795abe32fdf99d3fb638ce8cc4cb821, checkoute3488c02a73d57b14cd22566c984e6a02fff2f2c, run38443009381. Selected role-selection, terminal/suspended-refresh and logout-all/bootstrap named tests still exact current bytes. AuthService/JdbcSessionAuthority/SessionAdmissionService exact recorded current-production hashes; historical producer identity retained.",
+      "archiveQuery": "receipts/current-ca9f-academic-coverage.safe.json: ca9f225ae730a4cf36a2476feedccf69ac9f20bc, checkoutf3ecaac1463cc8a81cbc850c987f0e72cd2ec69b, run38530338743, artifact11878108492. Named UserSearchIT.archivedRegistryFilterIncludesArchivedAccountsAndRestoredRoleHistory PASS/SOURCE_METHOD; current test SHA2efdde78e2786428cfcf5276bde6a816a661b513ed8447319076c5f293860e70 exact. Real signed MockMvc/PG explicitly proves archived filter inclusion and default-list exclusion, with filtered count/page/tie-breaks."
+    },
+    "wholeRowPASSProposals": [
+      {
+        "id": "JS-ADMIN-06",
+        "basis": "New admin452 chooses an actual group member, commits replacement, reads authoritative headman ID/roster, admits new account as HEADMAN; current old headman no longer has active HEADMAN and old operations are refused. Complement exact GroupHeadmanAssignmentIT.assignmentChangesDurableHeadmanRevokesAssistantsAndReloadsRegistry and currentHeadmanCompositionUsesFreshGrantRosterAndGroupRoles for signed initial assignment/eligibility. Accepted assignment story is satisfied; no inference about standalone removal."
+      },
+      {
+        "id": "JS-ADMIN-07",
+        "basis": "Admin452 real Vue preview shows exactly1 helper to revoke, confirms replacement, authoritative response/roster show new headman and0 helpers, old headman grant inactive, same previously-successful helper bearer now403 with unchanged attendance revision, reload retains new headman. Existing named concurrentCandidatesHaveOneWinnerAndOneCasConflict and archivedGroupAndNonMemberAreRejected cover independent race/foreign guards. This closes accepted replacement/cascade story; Q012 is only standalone removal and remains pending."
+      },
+      {
+        "id": "JS-ADMIN-15",
+        "basis": "Current source requires server-derived DRAFT view for a created headmanless group. Named current-compatible GroupRegistryIT.registryCreateCoverageStatusCountsAndLegacyDurationAreServerDerived (89719/1/3) proves actual create→DRAFT/status/reason/count server result; registryFiltersBeforePaginationAndUsesIdenticalFiltersForEveryTabCount proves server tab counts/filtering. New admin452 real Vue reads DRAFT group after natural archive departure with exact reason, absent headman and student count matching authoritative roster. Combined finite server+client draft criterion is satisfied; no promotion/course-cycle claim."
+      },
+      {
+        "id": "BOUNDARY-12",
+        "basis": "Admin452 adds actual Vue/Auth preview→password-confirmed archive204→archived search/reload→restore204, canonical ACTIVE account without group/headman/active/selectable grants, old bearer still denied and same historical attendance tuple/revision retained; helper count remains0. Existing UserArchiveLifecycleIT.protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment supplies exact replay, no selected session resurrection, retained login/password/binding/grant/history IDs and explicit fresh assignment opening only new membership while old session stays unselected; helper lock/stale-preview guards separately passed. Existing UserSearchIT proves default exclusion/explicit archived discovery. This finite archive/restore-authority boundary has no remaining distinct required operation; no need rerun its PG races. Broader JS-ADMIN-04 all-history object kinds remain separate below."
+      }
+    ],
+    "finiteClausePASSAndRemainder": [
+      {
+        "id": "BOUNDARY-01 / JS-SYSTEM-14",
+        "nowPASS": "Actual role848 reload/refresh clears newly suspended selected STUDENT to neutral, exposes disabled STUDENT and active TEACHER, explicit role selection reaches authorized teacher UI/API; admin452 explicitly selects ADMIN and new HEADMAN admission works. Existing Auth passwordLoginSelectsStudentAndRoleSwitchIssuesTeacherBoundAccess supplies default STUDENT/bound teacher selection.",
+        "wholeStatus": "UNKNOWN",
+        "oneMissingAction": "Observe an ADMIN-only login remaining neutral before explicit selection, including canonical required login/profile/active-semester payload criterion where still unqualified. Do not invent a two-tab/browser crossproduct from the old proposal."
+      },
+      {
+        "id": "BOUNDARY-02 / RESEARCH-P06; Q03-REUSE-03",
+        "nowPASS": "Role848 actual two independent sessions listed; UI logout-all204; both access tokens denied401 and both retained refresh cookies denied401; fresh login reads identical lesson/roster. Real suspended-STUDENT403/WRONG_ROLE and unaffected TEACHER200 also proved. Complement existing revokeAllCoversEveryOwnSessionAndAppendsOneEvent and bootstrapBearerOnlyLogoutAndLogoutAllAreAllowedByTheExactScope. Remove the generic missing real role/logout-all join.",
+        "wholeStatus": "UNKNOWN",
+        "oneMissingAction": "Accepted durable-revocation branch: restart actual Auth with retained DB, then revoked identity denied/live control admitted. Existing PG/outage/refresh proofs remain sufficient; no repeat service race."
+      },
+      {
+        "id": "BOUNDARY-03 / JS-ADMIN-02",
+        "nowPASS": "The SUSPENDED STUDENT/active TEACHER distinction and preserved teacher data now have real Gateway/Vue proof.",
+        "wholeStatus": "UNKNOWN",
+        "oneMissingAction": "Use an actual terminal STUDENT grant, e.g.EXPELLED, to read its permitted history and refuse mutation while active TEACHER stays usable. SUSPENDED is not terminal; new role848 cannot replace this exact accepted read-only rule. Existing terminalRoleRemainsVisibleWithoutSelectionAndSuspendedActiveRoleIsClearedOnRefresh is real PG only."
+      },
+      {
+        "id": "BOUNDARY-11 / JS-ADMIN-01 / JS-ADMIN-19",
+        "nowPASS": "Real Vue singular create201→add missing teacher employeeNumber through dedicated rolePUT200→same ID/login/names/group/Telegram fields and ACTIVE STUDENT+TEACHER readback. New4058 fills the old create/add-role/clobber gap; no need repeat it.",
+        "wholeStatus": "UNKNOWN",
+        "oneMissingAction": "Attempt duplicate identity via create and observe the accepted existing-account/add-role path with no second account; collision/invalid role-specific input remains unqualified by this positive flow. JS-ADMIN-01 bot-first-start delivery is a separate accepted clause, not proved by create."
+      },
+      {
+        "id": "JS-ADMIN-04",
+        "nowPASS": "Actual reversible archive/password intent, one exact impact mark/headman count, filtered archived discovery, restore-no-rights/old-bearer denial, preserved account fields/login and actual attendance history. BOUNDARY-12 can close as above.",
+        "wholeStatus": "UNKNOWN",
+        "oneMissingAction": "Archive/restore an account with an actual preexisting ticket/homework history object and read the same retained evidence afterward, if no existing finite receipt already qualifies that explicit source preservation clause. Do not infer these object kinds from empty fixture state or backup/restore proof."
+      },
+      {
+        "id": "BOUNDARY-14",
+        "nowPASS": "Accepted initial/replacement/foreign/race/cascade clauses already have named PG proof; new4058 completes real preview count, same old-helper capability refusal/no effect, reload and natural-departure DRAFT reason/count.",
+        "wholeStatus": "UNKNOWN only dependent Q012 standalone-removal fork; not an unexecuted replacement scenario.",
+        "oneMissingAction": "Owner disposition for standalone remove-without-replacement only. No runtime action or product change is authorized from silence; JS-ADMIN-06/07 accepted stories can be PASS independently."
+      }
+    ],
+    "unchangedBounds": "No new claim for Q03 password/reset/absolute browser expiry, OTP/QR/TMA, last-FULL public-route races, dated transfer/backfill, promotion cycle or broad listing matrix. Those prior finite dispositions stay producer-bound; no general new remainder campaign. Root is sole matrix/doc writer; this key is compact proposals only, not applied matrix edits.",
+    "effects": "Only this existing outcome key written. No runtime/native/CI/network/download/source edits/credentials/raw artifacts/subagents. Preserve Q012 pending and B013/B014 frozen. Actual proof identity/limits stated without percentages or test-count readiness."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "phase": "SOURCE_DISCOVERY_ONLY",
+  "case_count": 3,
+  "unexpected_case_count": 0,
+  "rows": [
+    {
+      "source": "MOBILE_REAL_SERVER",
+      "line": 14,
+      "project": "chromium"
+    },
+    {
+      "source": "MOBILE_REAL_SERVER",
+      "line": 61,
+      "project": "chromium"
+    },
+    {
+      "source": "MOBILE_REAL_SERVER",
+      "line": 142,
+      "project": "chromium"
+    }
+  ],
+  "pass": true
+}

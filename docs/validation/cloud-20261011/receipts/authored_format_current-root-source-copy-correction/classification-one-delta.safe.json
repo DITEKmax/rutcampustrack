@@ -1,0 +1,17 @@
+{
+  "native_inventory_exit": 0,
+  "counts": {
+    "prettier": 680,
+    "sql": 6,
+    "python": 120,
+    "java": 1590
+  },
+  "exact_one_delta": [
+    {
+      "path": "docs/validation/cloud-20261011/receipts/scenario-sources/build-matrix.py",
+      "reason": "immutable verification evidence/source copy; preserve exact bytes"
+    }
+  ],
+  "all_other7351_classifications_equal": true,
+  "angular433_still_excluded": true
+}

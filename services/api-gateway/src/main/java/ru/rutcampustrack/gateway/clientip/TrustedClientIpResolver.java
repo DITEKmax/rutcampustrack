@@ -1,22 +1,22 @@
 package ru.rutcampustrack.gateway.clientip;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.stereotype.Component;
-
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.stereotype.Component;
 
 /** Resolves the client address from the raw peer and one strictly validated XFF value. */
 @Component
 public class TrustedClientIpResolver {
 
     private static final String X_FORWARDED_FOR = "X-Forwarded-For";
-    public static final String CLIENT_IP_ATTRIBUTE = TrustedClientIpResolver.class.getName() + ".clientIp";
-    public static final String PEER_IP_ATTRIBUTE = TrustedClientIpResolver.class.getName() + ".peerIp";
+    public static final String CLIENT_IP_ATTRIBUTE =
+            TrustedClientIpResolver.class.getName() + ".clientIp";
+    public static final String PEER_IP_ATTRIBUTE =
+            TrustedClientIpResolver.class.getName() + ".peerIp";
     public static final String UNKNOWN = "unknown";
 
     private final TrustedClientIpProperties properties;
@@ -55,17 +55,20 @@ public class TrustedClientIpResolver {
     }
 
     /**
-     * Canonicalizes a single IPv4/IPv6 literal without performing DNS lookup.
-     * Outer whitespace is accepted for an XFF line; all other characters must
-     * belong to the literal grammar.
+     * Canonicalizes a single IPv4/IPv6 literal without performing DNS lookup. Outer whitespace is
+     * accepted for an XFF line; all other characters must belong to the literal grammar.
      */
     public static Optional<String> canonicalizeLiteral(String candidate) {
         if (candidate == null) {
             return Optional.empty();
         }
         String value = candidate.strip();
-        if (value.isEmpty() || value.indexOf('%') >= 0 || value.indexOf('/') >= 0
-                || value.indexOf(',') >= 0 || value.indexOf('[') >= 0 || value.indexOf(']') >= 0) {
+        if (value.isEmpty()
+                || value.indexOf('%') >= 0
+                || value.indexOf('/') >= 0
+                || value.indexOf(',') >= 0
+                || value.indexOf('[') >= 0
+                || value.indexOf(']') >= 0) {
             return Optional.empty();
         }
 
@@ -88,7 +91,9 @@ public class TrustedClientIpResolver {
         byte[] address = new byte[4];
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];
-            if (part.isEmpty() || part.length() > 3 || (part.length() > 1 && part.charAt(0) == '0')) {
+            if (part.isEmpty()
+                    || part.length() > 3
+                    || (part.length() > 1 && part.charAt(0) == '0')) {
                 return Optional.empty();
             }
             int valuePart = 0;
@@ -202,7 +207,8 @@ public class TrustedClientIpResolver {
             return Optional.of(canonicalizeIpv4(bytes));
         }
         if (isIpv4Mapped(bytes)) {
-            return Optional.of(canonicalizeIpv4(new byte[]{bytes[12], bytes[13], bytes[14], bytes[15]}));
+            return Optional.of(
+                    canonicalizeIpv4(new byte[] {bytes[12], bytes[13], bytes[14], bytes[15]}));
         }
 
         int[] groups = new int[8];
@@ -227,7 +233,7 @@ public class TrustedClientIpResolver {
         }
 
         StringBuilder result = new StringBuilder();
-        for (int i = 0; i < groups.length;) {
+        for (int i = 0; i < groups.length; ) {
             if (i == bestStart) {
                 result.append("::");
                 i += bestLength;
@@ -252,10 +258,14 @@ public class TrustedClientIpResolver {
     }
 
     private static String canonicalizeIpv4(byte[] bytes) {
-        return (bytes[0] & 0xff) + "." + (bytes[1] & 0xff) + "."
-                + (bytes[2] & 0xff) + "." + (bytes[3] & 0xff);
+        return (bytes[0] & 0xff)
+                + "."
+                + (bytes[1] & 0xff)
+                + "."
+                + (bytes[2] & 0xff)
+                + "."
+                + (bytes[3] & 0xff);
     }
 
-    public record Resolution(String peerIp, String clientIp, boolean trustedPeer) {
-    }
+    public record Resolution(String peerIp, String clientIp, boolean trustedPeer) {}
 }

@@ -1,0 +1,76 @@
+{
+  "artifact_id": 11781264632,
+  "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "run_id": 38329143416,
+  "event": "pull_request",
+  "actual_checkout": "NOT_PROVED_BY_BROWSER_SAFE_SCHEMA",
+  "archive_sha256": "7c1889419caf6a4cdb78742a00068f3508783d03310cb0f38cc6174f5aafb1ea",
+  "archive_bytes": 424,
+  "member_names": [
+    "artifacts/safe-results.json"
+  ],
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 14,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 81,
+        "errorCount": 1,
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 14
+          }
+        ]
+      },
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 61,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 61,
+        "errorCount": 1,
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 61
+          }
+        ]
+      },
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 142,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 72,
+        "errorCount": 1,
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 142
+          }
+        ]
+      }
+    ]
+  },
+  "observations": {},
+  "missing_members": [
+    "supervision/observations-headman.safe.json",
+    "supervision/observations-helper.safe.json",
+    "supervision/observations-student.safe.json"
+  ],
+  "source_assertions": "UNCHANGED_ACCEPTED_FIRST3",
+  "raw_logs_XML_HTML_error_context_read": false,
+  "buffer_limit": "POST_BUFFER_CLASSIFIER_NOT_HARD_RSS_BOUND",
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+}

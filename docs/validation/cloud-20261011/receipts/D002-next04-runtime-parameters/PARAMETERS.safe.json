@@ -1,0 +1,110 @@
+{
+  "state": "SOURCE_ONLY_RUNTIME_TEMPLATES_UNBOUND_NOT_RUN",
+  "utc": "2026-10-13T03:25:47.427341+00:00",
+  "same_caller": {
+    "path": "/workspace/scratch/rct-validation/client_session_offline_acceptance/d002-step-diagnostic/run-d002-steps.py",
+    "sha256": "5f95fae4d75eba9151f250fa3146a8be32642ee32a9129e3147dff1a03c4a039",
+    "prepared_source_base": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+    "execution_checkout_required": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+    "ready_sha256": "954d2fbb5faea5272f3a5e9924a563e6d66bc786a849b7318a807651d3c6e4b9",
+    "config_sha256": "c40fba08397e8ddb59314ddd009c202c179575d6e848f0322c3263740360a190",
+    "wrapper_sha256": "b829b9b6f6099ccd68f1ac96aadcd7c8fd15fcd6e7b9a2500f27ec758d3c40c8",
+    "observer_sha256": "cf11c5268fdbfd839be408cbeb37cbef2f7ae713c56ba755dc9c1e0cc064c076",
+    "no_source_delta": true
+  },
+  "Root_only_fills": [
+    "authorizedtrue only afterlivefacts/newfreshgrant",
+    "actualcurrentnext04cohort identity",
+    "issued_at/absolute_stop_at/expires_at (<=300active,+60cleanup)",
+    "host_cleanup_at at least browserstop+60 and boundidenticalhostreceipt",
+    "absolute adoptedstand_ready_receipt +exactSHA",
+    "fourcurrentactualSAFEreceiptabsolute paths+SHAs and trueproducer/readinessfields",
+    "all8services live16distinct wrapper/childpid+birth/directPPID mapping"
+  ],
+  "planned_exact_caller_argv": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/d002-step-diagnostic/run-d002-steps.py",
+    "/workspace/scratch/rct-validation/client_session_offline_acceptance/d002-step-diagnostic/private/browser-grant01.json"
+  ],
+  "same_private_run": "/workspace/scratch/rct-validation/client_session_offline_acceptance/d002-step-diagnostic/runs/attempt-01",
+  "retention": {
+    "always_keep": [
+      "artifacts/safe-results.json",
+      "supervision/d002-steps.safe.json",
+      "supervision/launch.safe.json",
+      "supervision/process.safe.json",
+      "supervision/terminal.safe.json"
+    ],
+    "timeout": "Canonical publicstep callbacks write atomicclosedstep snapshot at each BEGIN/END to supervision outsidePlaywright outputDir. Caller deletes ONLY settled privateTMP; collector removes owntransformcache afterallbirthsreaped. Neither deletes supervision step witness on testTIMEOUT. Preserve resultstatus/time/errorcount/lastsourceevents without rawerrors/context.",
+    "invalid_observer": "Missing/invalid/malformed/capped artifact, canonicalrunnerErrors>0 or unsafeArtifacttrue forbidsaccepted stage classification, evenCLI0 or seeminglyvalidlaststep. ObserverOwnfailures invoke unchangedonError onlyclosedconstant; sourcealreadyapproved/nativetypes+publichookidentityPASS.",
+    "output_schema": {
+      "path": "supervision/d002-steps.safe.json",
+      "schema": "RCT_D002_CLOSED_STEPS_V1",
+      "keys": [
+        "schema",
+        "caseLine",
+        "events",
+        "ignored"
+      ],
+      "event_keys": [
+        "category",
+        "source",
+        "line",
+        "step",
+        "order",
+        "edge"
+      ],
+      "max_events": 256,
+      "max_utf8_bytes": 65536,
+      "ignored_limit": 4096,
+      "unknown_hooks_limit": 32,
+      "category_values": [
+        "API",
+        "EXPECT",
+        "FIXTURE",
+        "HOOK",
+        "TEST_STEP",
+        "ATTACH",
+        "OTHER"
+      ],
+      "source_values": [
+        "ORIGINAL",
+        "PWA_AUTH",
+        "WRAPPER",
+        "UNKNOWN"
+      ],
+      "edge_values": [
+        "BEGIN",
+        "END"
+      ],
+      "line_ranges": {
+        "ORIGINAL": [
+          367,
+          410
+        ],
+        "PWA_AUTH": [
+          1,
+          64
+        ],
+        "WRAPPER": [
+          1,
+          32
+        ],
+        "UNKNOWN": [
+          0,
+          0
+        ]
+      },
+      "privacy": "No title/args/errors/HTTP/body/URL/IDs/cache entries read/hashed/stringified/output. Only own data descriptors for category/location/file/line; unknown fallback. Step identity weakmap yields fresh integer unrelated to private TestCase/testId."
+    },
+    "qualified_timeout_stage": "TestTIMEOUT/native1 may still produce a valid reached-step witness when RunnerErrors0/schema/bounds/source intact; that is stage evidence only, not D002functionalPASS or proofanoperation completedsuccessfully."
+  },
+  "not_authorized": [
+    "API/browser/seed/service/Node",
+    "SWregistrationprobe",
+    "original260/9smoke/FIRST3/roster replay",
+    "browserbootstrap or timeoutincrease",
+    "Source/root/config/guard edits"
+  ],
+  "native_status": "NOT_RUN_NEXT04_UNBOUND"
+}

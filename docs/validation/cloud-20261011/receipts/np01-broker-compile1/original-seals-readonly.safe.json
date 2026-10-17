@@ -1,0 +1,26 @@
+[
+  {
+    "path": "/workspace/scratch/rct-validation/np01_domain_bot/sealed/domain1-safe-outcomes.zip",
+    "bytes": 5520518,
+    "sha256": "b4cdbe44a7f21d6608c2657e28e856ec8689f7883973874457f6b5887703b4e6",
+    "members": 65,
+    "bad_crc_member": null,
+    "read_only": true
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/np01_domain_bot/sealed/broker-corrections-source-safe.zip",
+    "bytes": 62179,
+    "sha256": "70cf8eca30b4ff5ff6f1018af3db64a6056bb7cf78d01091270d39efcb6d08c5",
+    "members": 20,
+    "bad_crc_member": null,
+    "read_only": true
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/np01_domain_bot/sealed/ci731-compatibility-source-safe.zip",
+    "bytes": 96725,
+    "sha256": "936620f6c85da7d20ed5b1cc3faf6e6906c2816568643274f92523f19b7df7b7",
+    "members": 26,
+    "bad_crc_member": null,
+    "read_only": true
+  }
+]

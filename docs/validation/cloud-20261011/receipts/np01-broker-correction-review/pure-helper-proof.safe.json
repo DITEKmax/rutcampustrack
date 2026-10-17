@@ -1,0 +1,18 @@
+{
+  "source": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "actual_executed": "AST-selected PURE helper functions only; runner imports/main/network/signals/processes not executed",
+  "old_global_oracle_accepts_wrong_new_removal": true,
+  "new_exact_helper_rejects_wrong_new_removal": true,
+  "new_exact_helper_rejects_fulltext_mutation": true,
+  "positive_exact_new_control": true,
+  "capture_same_chat_unique_new_card": true,
+  "fake_parent_only": true,
+  "real_environment_values_read": false,
+  "unrelated11_env_names_omitted": true,
+  "needed11_inputs_plus9_explicit_runtime_fields": true,
+  "missing_required_input_denied": true,
+  "supervisor_redis_mutations_in_AST": [],
+  "source_AST": "PASS_PARSE_ONLY",
+  "Java_compile": "NOT_RUN",
+  "native_runtime": "NOT_RUN"
+}

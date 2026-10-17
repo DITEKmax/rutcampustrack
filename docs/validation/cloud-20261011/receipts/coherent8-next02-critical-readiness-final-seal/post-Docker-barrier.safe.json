@@ -1,0 +1,16 @@
+{
+  "utc": "2026-10-12T23:19:55.214140+00:00",
+  "Docker_tool_session": 72096,
+  "native_exit": 0,
+  "settled": true,
+  "workspace_free": 5519220736,
+  "tmp_free": 7509594112,
+  "shared": 9429872640,
+  "maximum": 17179869184,
+  "postDocker_required_workspace": 5368709120,
+  "tmp_required": 5368709120,
+  "shared_stop": 16106127360,
+  "shared_reserve": 1073741824,
+  "resources_pass": true,
+  "source_root_grant_deadline": "2026-10-12T23:47:59.421341+00:00"
+}

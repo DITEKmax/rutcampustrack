@@ -1,0 +1,255 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "checkoutSha": "314f67ff03438ce16351dccd58b66dfa4f957737",
+    "prHeadSha": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+    "service": "api-gateway",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38219224186",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "collection": "RESULTS",
+  "acceptance": "NOT_ASSESSED",
+  "xml": [
+    {
+      "ordinal": 1,
+      "sha256": "e1d06a42abe154b27524e41d9ae616e93d95aa435ed67e11fa65a5656898e1e1",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 3
+          },
+          "observed": {
+            "PASSED": 0,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 3,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 2,
+      "sha256": "64e0b027f6c0c5dbdf00a8a3e3e5ebbe1cbcb9c6fa0ad704cf2290c83e992da9",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 3,
+      "sha256": "438c2793222f9e298430675093f3d5f6c8fe6cc715d06b8e44909c11f914136f",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 4,
+      "sha256": "55e7bc7c0a30e3a5b407f141547346a9c05a6f654df9e3d6cdb0c67ea6263433",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 6,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    }
+  ],
+  "cases": [
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+      "method": null,
+      "status": "SKIPPED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+      "sourceSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+      "method": null,
+      "status": "SKIPPED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+      "sourceSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+      "method": null,
+      "status": "SKIPPED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+      "sourceSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.FailOpenIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenIT.java",
+      "sourceSha256": "74de7162edc52dc5d27e5820e404074d5fae92fde8782bdf7074ccfec14aa19c"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java",
+      "sourceSha256": "7e4f91b5cbaed4e86bc78fbbe0cf93dda844bbc5de3b265b5223d160aeb1fc1a"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java",
+      "sourceSha256": "7e4f91b5cbaed4e86bc78fbbe0cf93dda844bbc5de3b265b5223d160aeb1fc1a"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerIT.java",
+      "sourceSha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerIT.java",
+      "sourceSha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerIT.java",
+      "sourceSha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerIT.java",
+      "sourceSha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerIT.java",
+      "sourceSha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerIT",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerIT.java",
+      "sourceSha256": "fd73018a43a322d2e0e54e0b1ead1c7d4723343a808d08cdd29d32862ea076a5"
+    }
+  ],
+  "summary": {
+    "PASSED": 9,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 3,
+    "NOT_EXECUTED": 0
+  }
+}

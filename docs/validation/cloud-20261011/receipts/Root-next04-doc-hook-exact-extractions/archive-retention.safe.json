@@ -1,0 +1,95 @@
+[
+  {
+    "path": "docs/validation/cloud-20261011/receipts/D002-callback-const-root481-source/READY.current.safe.json",
+    "public_source": "tests/e2e/fixtures/pwa-auth.ts",
+    "verified_public_source_SHA": true,
+    "sha256": "abf70b9342cb033e6f26f1759c59f51c1067b0cdc165cd0037416c3730e13acc",
+    "committed_archive": "docs/validation/cloud-20261011/receipts/Root-next04-doc-hook-exact-extractions/original-extractions.safe.zip",
+    "archive_entry": "0/READY.current.safe.json",
+    "existing_producer_archive": "docs/validation/cloud-20261011/receipts/D002-callback-const-root481-source/narrow-source.safe.zip",
+    "existing_producer_entry": "READY.current.safe.json",
+    "qualification": "Exact bytes matched existing producer archive; public pwa-auth SourceSHA verified. Not a credential. Standalone excluded from staging/formatting, detector/rules unchanged."
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/roster-next04-API-digest-shadow-correction/READY.safe.json",
+    "public_source": "tests/e2e/fixtures/pwa-auth.ts",
+    "verified_public_source_SHA": true,
+    "sha256": "31171f9462e810b754bed82bfc1c998daad8e6779f51dc64b4c28e66274e4526",
+    "committed_archive": "docs/validation/cloud-20261011/receipts/Root-next04-doc-hook-exact-extractions/original-extractions.safe.zip",
+    "archive_entry": "1/READY.safe.json",
+    "existing_producer_archive": "docs/validation/cloud-20261011/receipts/roster-next04-API-digest-shadow-correction/api-source.safe.zip",
+    "existing_producer_entry": "READY.safe.json",
+    "qualification": "Exact bytes matched existing producer archive; public pwa-auth SourceSHA verified. Not a credential. Standalone excluded from staging/formatting, detector/rules unchanged."
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/roster-next04-API-digest-shadow-correction/PLAN.safe.json",
+    "public_source": "tests/e2e/fixtures/pwa-auth.ts",
+    "verified_public_source_SHA": true,
+    "sha256": "fcb1b9d41c73475f63a56b7b09b77eac4ac0d5e1a6b919e7a18c3f86f1ce0c71",
+    "committed_archive": "docs/validation/cloud-20261011/receipts/Root-next04-doc-hook-exact-extractions/original-extractions.safe.zip",
+    "archive_entry": "2/PLAN.safe.json",
+    "existing_producer_archive": "docs/validation/cloud-20261011/receipts/roster-next04-API-digest-shadow-correction/api-source.safe.zip",
+    "existing_producer_entry": "PLAN.safe.json",
+    "qualification": "Exact bytes matched existing producer archive; public pwa-auth SourceSHA verified. Not a credential. Standalone excluded from staging/formatting, detector/rules unchanged."
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/roster-next04-API-source/READY.safe.json",
+    "public_source": "tests/e2e/fixtures/pwa-auth.ts",
+    "verified_public_source_SHA": true,
+    "sha256": "31171f9462e810b754bed82bfc1c998daad8e6779f51dc64b4c28e66274e4526",
+    "committed_archive": "docs/validation/cloud-20261011/receipts/Root-next04-doc-hook-exact-extractions/original-extractions.safe.zip",
+    "archive_entry": "3/READY.safe.json",
+    "existing_producer_archive": "docs/validation/cloud-20261011/receipts/roster-next04-API-source/api-source.safe.zip",
+    "existing_producer_entry": "READY.safe.json",
+    "qualification": "Exact bytes matched existing producer archive; public pwa-auth SourceSHA verified. Not a credential. Standalone excluded from staging/formatting, detector/rules unchanged."
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/roster-next04-API-source/PLAN.safe.json",
+    "public_source": "tests/e2e/fixtures/pwa-auth.ts",
+    "verified_public_source_SHA": true,
+    "sha256": "fcb1b9d41c73475f63a56b7b09b77eac4ac0d5e1a6b919e7a18c3f86f1ce0c71",
+    "committed_archive": "docs/validation/cloud-20261011/receipts/Root-next04-doc-hook-exact-extractions/original-extractions.safe.zip",
+    "archive_entry": "4/PLAN.safe.json",
+    "existing_producer_archive": "docs/validation/cloud-20261011/receipts/roster-next04-API-source/api-source.safe.zip",
+    "existing_producer_entry": "PLAN.safe.json",
+    "qualification": "Exact bytes matched existing producer archive; public pwa-auth SourceSHA verified. Not a credential. Standalone excluded from staging/formatting, detector/rules unchanged."
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/session-offline-two-case-source-ready/READY.safe.json",
+    "public_source": "tests/e2e/fixtures/pwa-auth.ts",
+    "verified_public_source_SHA": true,
+    "sha256": "d0a0349bddf9295e6ab634ae9003cb9cf48a998eafdf0be8b19ae9a6fefd2020",
+    "committed_archive": "docs/validation/cloud-20261011/receipts/Root-next04-doc-hook-exact-extractions/original-extractions.safe.zip",
+    "archive_entry": "5/READY.safe.json",
+    "existing_producer_archive": "docs/validation/cloud-20261011/receipts/session-offline-two-case-source-ready/source-ready.safe.zip",
+    "existing_producer_entry": "READY.safe.json",
+    "qualification": "Exact bytes matched existing producer archive; public pwa-auth SourceSHA verified. Not a credential. Standalone excluded from staging/formatting, detector/rules unchanged."
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/D002-browser01-corrected-stepcount-validation/safe-results.json",
+    "exact_machine_output": true,
+    "sha256": "804cfbd871e0d886a4305f2d388f16a7e9f5ed52a2bb8fc02ce2065e6ee31c6a",
+    "committed_archive": "docs/validation/cloud-20261011/receipts/Root-next04-doc-hook-exact-extractions/original-extractions.safe.zip",
+    "archive_entry": "6/safe-results.json",
+    "existing_producer_archive": null,
+    "existing_producer_entry": null,
+    "qualification": "Exact original Root extraction supplemental only; byte identity to producer archive NOT_PROVED. Existing validated producer ZIP/report remains authoritative. Standalone excluded from staging/formatting, detector/rules unchanged."
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/current657-CI-first3-fail-three-gates-success-SAFE/sealed/first3-safe-1-artifacts-safe-results.json",
+    "exact_machine_output": true,
+    "sha256": "1d8beeb243bc3258654fff9e743d38e02947041f9d001b1854b249781ece15ad",
+    "committed_archive": "docs/validation/cloud-20261011/receipts/Root-next04-doc-hook-exact-extractions/original-extractions.safe.zip",
+    "archive_entry": "7/first3-safe-1-artifacts-safe-results.json",
+    "existing_producer_archive": "docs/validation/cloud-20261011/receipts/current657-CI-first3-fail-three-gates-success-SAFE/sealed/first3-safe-1.zip",
+    "existing_producer_entry": "artifacts/safe-results.json",
+    "qualification": "Exact bytes matched existing producer archive; public pwa-auth SourceSHA verified. Not a credential. Standalone excluded from staging/formatting, detector/rules unchanged."
+  },
+  {
+    "path": "docs/validation/cloud-20261011/receipts/D002-browser01-early442FAIL/safe-results.json",
+    "sha256": "804cfbd871e0d886a4305f2d388f16a7e9f5ed52a2bb8fc02ce2065e6ee31c6a",
+    "committed_archive": "docs/validation/cloud-20261011/receipts/Root-next04-doc-hook-exact-extractions/early442-exact-extraction.safe.zip",
+    "archive_entry": "safe-results.json",
+    "qualification": "Exact original Root extraction supplemental only; existing validated native/report ZIP remains authoritative; exclude standalone fromformatting/staging."
+  }
+]

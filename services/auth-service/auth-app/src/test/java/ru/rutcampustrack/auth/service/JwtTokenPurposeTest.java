@@ -1,23 +1,18 @@
 package ru.rutcampustrack.auth.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import ru.rutcampustrack.auth.config.JwtProperties;
-import ru.rutcampustrack.auth.entity.User;
-import ru.rutcampustrack.auth.entity.enums.UserRole;
-import ru.rutcampustrack.auth.session.model.AuthMethod;
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleGrant;
-import ru.rutcampustrack.auth.session.model.RoleStatus;
-import ru.rutcampustrack.auth.session.model.SessionSnapshot;
-
-import java.nio.charset.StandardCharsets;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
@@ -30,11 +25,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import ru.rutcampustrack.auth.config.JwtProperties;
+import ru.rutcampustrack.auth.entity.User;
+import ru.rutcampustrack.auth.entity.enums.UserRole;
+import ru.rutcampustrack.auth.session.model.AuthMethod;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.RoleGrant;
+import ru.rutcampustrack.auth.session.model.RoleStatus;
+import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 
 class JwtTokenPurposeTest {
 
@@ -102,23 +103,23 @@ class JwtTokenPurposeTest {
                 .isInstanceOf(RuntimeException.class);
         assertThatThrownBy(() -> jwtService.extractUserId(token))
                 .isInstanceOf(RuntimeException.class);
-        assertThatThrownBy(() -> jwtService.extractJti(token))
-                .isInstanceOf(RuntimeException.class);
+        assertThatThrownBy(() -> jwtService.extractJti(token)).isInstanceOf(RuntimeException.class);
     }
 
     @Test
     void internalTokenCarriesInternalPurposeAndCannotBeParsedAsAccess() {
         Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-        String token = jwtService.generateInternalToken(
-                snapshot(), issuedAt, issuedAt.plusSeconds(60));
+        String token =
+                jwtService.generateInternalToken(snapshot(), issuedAt, issuedAt.plusSeconds(60));
 
-        Claims claims = Jwts.parser()
-                .verifyWith(keyPair.getPublic())
-                .requireIssuer(ISSUER)
-                .requireAudience(JwtService.INTERNAL_JWT_AUDIENCE)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        Claims claims =
+                Jwts.parser()
+                        .verifyWith(keyPair.getPublic())
+                        .requireIssuer(ISSUER)
+                        .requireAudience(JwtService.INTERNAL_JWT_AUDIENCE)
+                        .build()
+                        .parseSignedClaims(token)
+                        .getPayload();
 
         assertThat(claims.get(JwtService.TOKEN_USE_CLAIM, String.class))
                 .isEqualTo(JwtService.TOKEN_USE_INTERNAL);
@@ -135,8 +136,9 @@ class JwtTokenPurposeTest {
     @Test
     void sessionAccessTokenCarriesFrozenWireAndLegacyAccessIsNotAdmitted() {
         Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-        String token = jwtService.generateSessionAccessToken(
-                snapshot(), issuedAt, issuedAt.plusSeconds(60));
+        String token =
+                jwtService.generateSessionAccessToken(
+                        snapshot(), issuedAt, issuedAt.plusSeconds(60));
 
         Claims claims = jwtService.parseSessionAccessToken(token).getPayload();
 
@@ -163,23 +165,23 @@ class JwtTokenPurposeTest {
 
     @Test
     void sessionAccessParserRejectsUnknownRolesStatusesAndInvalidDecimalStrings() {
-        List<RawOverride> invalidClaims = List.of(
-                new RawOverride("role", "\"UNKNOWN\""),
-                new RawOverride("status", "\"UNKNOWN\""),
-                new RawOverride("sub", "\"0\""),
-                new RawOverride("sub", "\"-1\""),
-                new RawOverride("sub", "\"01\""),
-                new RawOverride("sub", "\"9223372036854775808\""),
-                new RawOverride("sv", "\"0\""),
-                new RawOverride("sv", "\"-1\""),
-                new RawOverride("sv", "\"9223372036854775808\""),
-                new RawOverride("rv", "\"0\""),
-                new RawOverride("rv", "\"-1\""),
-                new RawOverride("rv", "\"9223372036854775808\""),
-                new RawOverride("group_id", "\"0\""),
-                new RawOverride("group_id", "\"-1\""),
-                new RawOverride("group_id", "\"9223372036854775808\"")
-        );
+        List<RawOverride> invalidClaims =
+                List.of(
+                        new RawOverride("role", "\"UNKNOWN\""),
+                        new RawOverride("status", "\"UNKNOWN\""),
+                        new RawOverride("sub", "\"0\""),
+                        new RawOverride("sub", "\"-1\""),
+                        new RawOverride("sub", "\"01\""),
+                        new RawOverride("sub", "\"9223372036854775808\""),
+                        new RawOverride("sv", "\"0\""),
+                        new RawOverride("sv", "\"-1\""),
+                        new RawOverride("sv", "\"9223372036854775808\""),
+                        new RawOverride("rv", "\"0\""),
+                        new RawOverride("rv", "\"-1\""),
+                        new RawOverride("rv", "\"9223372036854775808\""),
+                        new RawOverride("group_id", "\"0\""),
+                        new RawOverride("group_id", "\"-1\""),
+                        new RawOverride("group_id", "\"9223372036854775808\""));
 
         for (RawOverride invalidClaim : invalidClaims) {
             assertSessionRejected(rawSessionToken(invalidClaim.name(), invalidClaim.value()));
@@ -188,27 +190,41 @@ class JwtTokenPurposeTest {
 
     @Test
     void sessionAccessParserRejectsMissingRequiredClaims() {
-        for (String requiredClaim : List.of(
-                "iss", "aud", "token_use", "sub", "sid", "sv", "rv", "role",
-                "status", "is_headman", "readOnly", "iat", "exp")) {
+        for (String requiredClaim :
+                List.of(
+                        "iss",
+                        "aud",
+                        "token_use",
+                        "sub",
+                        "sid",
+                        "sv",
+                        "rv",
+                        "role",
+                        "status",
+                        "is_headman",
+                        "readOnly",
+                        "iat",
+                        "exp")) {
             assertSessionRejected(rawSessionTokenWithout(requiredClaim));
         }
     }
 
     @Test
     void sessionAccessParserAcceptsSignedTokenWithoutOptionalGroupId() {
-        Claims claims = jwtService.parseSessionAccessToken(rawSessionTokenWithout("group_id")).getPayload();
+        Claims claims =
+                jwtService.parseSessionAccessToken(rawSessionTokenWithout("group_id")).getPayload();
 
         assertThat(claims.get("group_id")).isNull();
     }
 
     @Test
     void sessionAccessParserRejectsSemanticIdentityMismatches() {
-        List<RawOverride> invalidClaims = List.of(
-                new RawOverride("status", "\"SUSPENDED\""),
-                new RawOverride("is_headman", "true"),
-                new RawOverride("readOnly", "true"),
-                new RawOverride("status", "\"EXPELLED\""));
+        List<RawOverride> invalidClaims =
+                List.of(
+                        new RawOverride("status", "\"SUSPENDED\""),
+                        new RawOverride("is_headman", "true"),
+                        new RawOverride("readOnly", "true"),
+                        new RawOverride("status", "\"EXPELLED\""));
 
         for (RawOverride invalidClaim : invalidClaims) {
             assertSessionRejected(rawSessionToken(invalidClaim.name(), invalidClaim.value()));
@@ -219,8 +235,9 @@ class JwtTokenPurposeTest {
     void sessionAccessParserRejectsFutureAndNonNumberTimes() {
         long epoch = Instant.now().truncatedTo(ChronoUnit.SECONDS).getEpochSecond();
 
-        assertSessionRejected(rawSessionToken(
-                "iat", Long.toString(epoch + 120), "exp", Long.toString(epoch + 180)));
+        assertSessionRejected(
+                rawSessionToken(
+                        "iat", Long.toString(epoch + 120), "exp", Long.toString(epoch + 180)));
         assertSessionRejected(rawSessionToken("iat", "\"not-a-number\""));
         assertSessionRejected(rawSessionToken("exp", "\"not-a-number\""));
     }
@@ -241,7 +258,8 @@ class JwtTokenPurposeTest {
     @Test
     void accessParserRejectsMissingOrWrongPurpose() {
         assertAccessRejected(signedToken(null, String.valueOf(USER_ID), future(), "STUDENT", null));
-        assertAccessRejected(signedToken("refresh", String.valueOf(USER_ID), future(), "STUDENT", null));
+        assertAccessRejected(
+                signedToken("refresh", String.valueOf(USER_ID), future(), "STUDENT", null));
     }
 
     @Test
@@ -250,31 +268,102 @@ class JwtTokenPurposeTest {
         assertAccessRejected(signedToken("access", "not-a-number", future(), "STUDENT", null));
         assertAccessRejected(signedToken("access", "0", future(), "STUDENT", null));
         assertAccessRejected(signedToken("access", String.valueOf(USER_ID), null, "STUDENT", null));
-        assertAccessRejected(signedToken("access", String.valueOf(USER_ID), expired(), "STUDENT", null));
+        assertAccessRejected(
+                signedToken("access", String.valueOf(USER_ID), expired(), "STUDENT", null));
         assertAccessRejected(signedToken("access", String.valueOf(USER_ID), future(), null, null));
-        assertAccessRejected(signedToken("access", String.valueOf(USER_ID), future(), "UNKNOWN", null));
+        assertAccessRejected(
+                signedToken("access", String.valueOf(USER_ID), future(), "UNKNOWN", null));
     }
 
     @Test
     void parserStillRejectsWrongIssuerAudienceAndSignature() throws Exception {
-        assertAccessRejected(signedToken("access", String.valueOf(USER_ID), future(), "STUDENT", null,
-                "wrong-issuer", AUDIENCE, keyPair.getPrivate()));
-        assertAccessRejected(signedToken("access", String.valueOf(USER_ID), future(), "STUDENT", null,
-                ISSUER, "wrong-audience", keyPair.getPrivate()));
+        assertAccessRejected(
+                signedToken(
+                        "access",
+                        String.valueOf(USER_ID),
+                        future(),
+                        "STUDENT",
+                        null,
+                        "wrong-issuer",
+                        AUDIENCE,
+                        keyPair.getPrivate()));
+        assertAccessRejected(
+                signedToken(
+                        "access",
+                        String.valueOf(USER_ID),
+                        future(),
+                        "STUDENT",
+                        null,
+                        ISSUER,
+                        "wrong-audience",
+                        keyPair.getPrivate()));
 
         KeyPair otherKeyPair = generateKeyPair();
-        assertAccessRejected(signedToken("access", String.valueOf(USER_ID), future(), "STUDENT", null,
-                ISSUER, AUDIENCE, otherKeyPair.getPrivate()));
+        assertAccessRejected(
+                signedToken(
+                        "access",
+                        String.valueOf(USER_ID),
+                        future(),
+                        "STUDENT",
+                        null,
+                        ISSUER,
+                        AUDIENCE,
+                        otherKeyPair.getPrivate()));
+    }
+
+    @Test
+    void parsersRejectOtherValidRsaAlgorithmsOutsideTheRs256Profile() {
+        for (var algorithm : List.of(Jwts.SIG.RS384, Jwts.SIG.RS512, Jwts.SIG.PS256)) {
+            for (String purpose : List.of("access", "refresh")) {
+                String token =
+                        Jwts.builder()
+                                .subject(String.valueOf(USER_ID))
+                                .issuer(ISSUER)
+                                .audience()
+                                .add(AUDIENCE)
+                                .and()
+                                .claim(JwtService.TOKEN_USE_CLAIM, purpose)
+                                .claim("role", "STUDENT")
+                                .id(UUID.randomUUID().toString())
+                                .issuedAt(new Date())
+                                .expiration(future())
+                                .signWith(keyPair.getPrivate(), algorithm)
+                                .compact();
+
+                // The signature and claims are valid; refusal must be the algorithm profile.
+                assertThat(
+                                Jwts.parser()
+                                        .verifyWith(keyPair.getPublic())
+                                        .build()
+                                        .parseSignedClaims(token)
+                                        .getPayload()
+                                        .getSubject())
+                        .isEqualTo(String.valueOf(USER_ID));
+                assertThatThrownBy(
+                                () -> {
+                                    if (purpose.equals("access")) {
+                                        jwtService.parseAccessToken(token);
+                                    } else {
+                                        jwtService.parseRefreshToken(token);
+                                    }
+                                })
+                        .isInstanceOf(SignatureException.class)
+                        .hasCauseInstanceOf(UnsupportedJwtException.class);
+            }
+        }
     }
 
     @Test
     void refreshParserRejectsMissingPurposeSubjectExpirationOrJti() {
         assertRefreshRejected(signedToken(null, String.valueOf(USER_ID), future(), null, "jti"));
-        assertRefreshRejected(signedToken("access", String.valueOf(USER_ID), future(), null, "jti"));
+        assertRefreshRejected(
+                signedToken("access", String.valueOf(USER_ID), future(), null, "jti"));
         assertRefreshRejected(signedToken("refresh", "-1", future(), null, "jti"));
         assertRefreshRejected(signedToken("refresh", String.valueOf(USER_ID), null, null, "jti"));
-        assertRefreshRejected(signedToken("refresh", String.valueOf(USER_ID), future(), null, null));
-        assertRefreshRejected(signedToken("refresh", String.valueOf(USER_ID), future(), null, "   "));
+        assertRefreshRejected(
+                signedToken("refresh", String.valueOf(USER_ID), future(), null, null));
+        assertRefreshRejected(
+                signedToken("refresh", String.valueOf(USER_ID), future(), null, "   "));
     }
 
     private void assertAccessRejected(String token) {
@@ -324,12 +413,13 @@ class JwtTokenPurposeTest {
             values.remove(omitted);
         }
         StringBuilder payload = new StringBuilder("{");
-        values.forEach((name, value) -> {
-            if (payload.length() > 1) {
-                payload.append(',');
-            }
-            payload.append('"').append(name).append("\":").append(value);
-        });
+        values.forEach(
+                (name, value) -> {
+                    if (payload.length() > 1) {
+                        payload.append(',');
+                    }
+                    payload.append('"').append(name).append("\":").append(value);
+                });
         return signRawCompact(payload.append('}').toString());
     }
 
@@ -348,7 +438,8 @@ class JwtTokenPurposeTest {
     }
 
     private static String base64Url(String value) {
-        return Base64.getUrlEncoder().withoutPadding()
+        return Base64.getUrlEncoder()
+                .withoutPadding()
                 .encodeToString(value.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -356,27 +447,29 @@ class JwtTokenPurposeTest {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(value);
     }
 
-    private String signedToken(String purpose,
-                               String subject,
-                               Date expiration,
-                               String role,
-                               String jti) {
-        return signedToken(purpose, subject, expiration, role, jti, ISSUER, AUDIENCE, keyPair.getPrivate());
+    private String signedToken(
+            String purpose, String subject, Date expiration, String role, String jti) {
+        return signedToken(
+                purpose, subject, expiration, role, jti, ISSUER, AUDIENCE, keyPair.getPrivate());
     }
 
-    private String signedToken(String purpose,
-                               String subject,
-                               Date expiration,
-                               String role,
-                               String jti,
-                               String issuer,
-                               String audience,
-                               PrivateKey signingKey) {
-        JwtBuilder builder = Jwts.builder()
-                .subject(subject)
-                .issuer(issuer)
-                .audience().add(audience).and()
-                .issuedAt(new Date());
+    private String signedToken(
+            String purpose,
+            String subject,
+            Date expiration,
+            String role,
+            String jti,
+            String issuer,
+            String audience,
+            PrivateKey signingKey) {
+        JwtBuilder builder =
+                Jwts.builder()
+                        .subject(subject)
+                        .issuer(issuer)
+                        .audience()
+                        .add(audience)
+                        .and()
+                        .issuedAt(new Date());
         if (purpose != null) {
             builder.claim(JwtService.TOKEN_USE_CLAIM, purpose);
         }
@@ -414,9 +507,15 @@ class JwtTokenPurposeTest {
 
     private static SessionSnapshot snapshot() {
         Instant created = Instant.parse("2026-09-10T08:00:00Z");
-        RoleGrant grant = new RoleGrant(
-                1L, USER_ID, AuthRole.STUDENT, RoleStatus.ACTIVE, GROUP_ID,
-                created, created);
+        RoleGrant grant =
+                new RoleGrant(
+                        1L,
+                        USER_ID,
+                        AuthRole.STUDENT,
+                        RoleStatus.ACTIVE,
+                        GROUP_ID,
+                        created,
+                        created);
         return new SessionSnapshot(
                 UUID.fromString("33333333-3333-4333-8333-333333333333"),
                 USER_ID,
@@ -431,10 +530,8 @@ class JwtTokenPurposeTest {
                 null,
                 AuthMethod.OTP,
                 "test",
-                "test"
-        );
+                "test");
     }
 
-    private record RawOverride(String name, String value) {
-    }
+    private record RawOverride(String name, String value) {}
 }

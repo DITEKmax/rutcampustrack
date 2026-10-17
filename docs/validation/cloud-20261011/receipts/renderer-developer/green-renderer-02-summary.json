@@ -1,0 +1,32 @@
+[
+  {
+    "class": "ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT",
+    "tests": 2,
+    "failed": 0,
+    "skipped": 0
+  },
+  {
+    "class": "ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest",
+    "tests": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  {
+    "class": "ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest",
+    "tests": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  {
+    "class": "ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT",
+    "tests": 2,
+    "failed": 2,
+    "skipped": 0
+  },
+  {
+    "class": "ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest",
+    "tests": 2,
+    "failed": 0,
+    "skipped": 0
+  }
+]

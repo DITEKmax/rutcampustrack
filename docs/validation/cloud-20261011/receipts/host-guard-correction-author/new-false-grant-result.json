@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-12T03:29:24.048664+00:00",
+  "reason": "NEW grant template added after base guard controls; validate its false authorization boundary",
+  "native_exit": 2,
+  "safe_status_only": true,
+  "child_started": false,
+  "JVM_app_browser": "NOT_RUN"
+}

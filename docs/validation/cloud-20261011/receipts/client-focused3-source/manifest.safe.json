@@ -1,0 +1,108 @@
+{
+  "state": "SOURCE_ONLY_NATIVE_NOT_RUN",
+  "scope": "NEW own diagnostic scratch only",
+  "members": [
+    {
+      "path": "PLAN.md",
+      "bytes": 7025,
+      "sha256": "9389830a90466123cb6a8b47fd287cc5fb93193566dc74c49c4283d19b5daf5e",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "READY.safe.json",
+      "bytes": 10486,
+      "sha256": "167b8b1b3bd15dc41c4adebb93d73d514c553c8f6bfd59a6bd03c8294323f49e",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "check-observer-fields.cjs",
+      "bytes": 2257,
+      "sha256": "fa8288e7aebad60f06ed7d1f531d8f13d65672ebb18432ac9a7ad6359d1414db",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "discovery-reporter.cjs",
+      "bytes": 1514,
+      "sha256": "9e6e99710007651125dd6665bb61d87ad3b881dce8b4730fde89191426b2403f",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "focus3.config.ts",
+      "bytes": 2365,
+      "sha256": "57e677add9162302e69c81e39ba2e1f195d0aff871ab1f7a175b4d3faf68cbe8",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "focus3.spec.ts",
+      "bytes": 714,
+      "sha256": "e18dee045e9f6bfee9d8da3d7f5032727f4c759dd62905bee51973c958252ef5",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "observer.ts",
+      "bytes": 24775,
+      "sha256": "bc16825621d82805991a50b5cd98b65686697188502e43577d64945c653fc678",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "root-node-grant-template.safe.json",
+      "bytes": 1768,
+      "sha256": "41749e514403de99e13a89e15ca9ade58063f96beb1293c486a9e4811e866b6b",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "run-focus3.py",
+      "bytes": 11459,
+      "sha256": "e7b9ab23f878c94da4f70ca956d9d7eb2db8a1190eb10dc0ea8761e585bdf9e0",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "run-source-checks.py",
+      "bytes": 10547,
+      "sha256": "86253fce839da9114bc127dd8252ebd2f1e2a3b34b63855b905b3523b5ba4a6f",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "source-discovery.config.ts",
+      "bytes": 476,
+      "sha256": "f3dd4997e783e5a50c46851f2213c6318762f4ed0452fbbacd4726ebced5a6ed",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "source-inventory.safe.json",
+      "bytes": 3779,
+      "sha256": "732f88c964ac38bd7ba3327aa4e844d4382c8cb6c4d869d69827a7457eb190ad",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "tsconfig.focus3.json",
+      "bytes": 512,
+      "sha256": "c61dbb63849e35dbc53812cbab2ed6a9ed35a8cabaf0e8d9025d67171a9927d4",
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "typecheck-safe.cjs",
+      "bytes": 1263,
+      "sha256": "8d8de3f765aa29b23a05f9d1534a305beb90f2d8a4cf402a87179ddbbdb74a64",
+      "mode": "0o600",
+      "nlink": 1
+    }
+  ],
+  "runtime_checks": "NOT_RUN",
+  "runtime_owned_processes": "NONE",
+  "raw_context_body_credentials_included": false,
+  "root_common_product_angular_mutations": false
+}

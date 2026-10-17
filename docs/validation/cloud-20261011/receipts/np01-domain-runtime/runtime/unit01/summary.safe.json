@@ -1,0 +1,113 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "unit01",
+  "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+  "native_exit": 0,
+  "disk_aborted": false,
+  "seconds": 36.719,
+  "counts": {
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+      "case": "[1] method=GetOwnBotInitialCredentials",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+      "case": "[2] method=ManageOwnBotCredentialMessages",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+      "case": "directDomainInvocationRequiresVerifiedBotPrincipal()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+      "case": "[1] defect=plaintext",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+      "case": "[2] defect=missing",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+      "case": "[3] defect=duplicate",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+      "case": "[4] defect=malformed",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+      "case": "[5] defect=wrong",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+      "case": "[6] defect=unconfigured",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+      "case": "ordinaryProfileRetainsExistingAdmission()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.auth.events.PasswordChangedContractTest",
+      "case": "explicitLegacySchemaRemainsValidButCannotPretendToHaveV2Identity()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.auth.events.PasswordChangedContractTest",
+      "case": "passwordChangedEvent_matchesMetadataOnlySchema()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.auth.events.PasswordChangedContractTest",
+      "case": "unlinkedCleanupEventHasOriginalIdentityWithoutFabricatedTelegram()",
+      "status": "PASS",
+      "failure_type": null
+    }
+  ],
+  "xml": [
+    {
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest.xml",
+      "bytes": 2811,
+      "sha256": "d3ae53c783c356359f27dff6c708a059466d2181e99159834cbf41ff3ea7c8fa"
+    },
+    {
+      "name": "test-results-TEST-ru.rutcampustrack.auth.events.PasswordChangedContractTest.xml",
+      "bytes": 835,
+      "sha256": "c9c9ed5cf3bc69e03ee6e7b4a184defa75d10497ab9ead58109a71f76ece14e9"
+    }
+  ],
+  "all_source_inputs_unchanged": true,
+  "changed_paths": [],
+  "private_marker_match_files": 0,
+  "raw_artifacts_private": true,
+  "terminal_sha256": "8d6523e90ba3f8942617c683cd87913ccf79e410150435117210671e00c96cbf",
+  "free_bytes": 8403595264,
+  "utc": "2026-10-12T02:55:19Z"
+}

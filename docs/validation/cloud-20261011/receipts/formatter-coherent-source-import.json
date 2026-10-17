@@ -1,0 +1,10 @@
+{
+  "utc": "2026-10-12T06:26:36.613526+00:00",
+  "worktree_head": "044c247441557fdea393a9863ce112b6ace1ce62",
+  "root_revision": "ced755a0f6e6817ef6f477aeb4f6a964ecfd1810",
+  "non_doc_source_count": 3852,
+  "all_bytes_equal": true,
+  "Root_integrator": "released",
+  "held_transitive_intermediate": "present author history only, never currentexecution orRootancestry",
+  "exact_path_fence": "receipts/exact-path-freeze.json; CI0 existing sharedaliases, statnlink before any write"
+}

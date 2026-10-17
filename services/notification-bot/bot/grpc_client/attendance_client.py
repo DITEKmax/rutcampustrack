@@ -1,6 +1,7 @@
 """Authenticated gRPC client for retained Attendance request attachments."""
 
 import math
+from pathlib import Path
 
 import grpc.aio
 
@@ -16,13 +17,20 @@ class AttendanceRequestGrpcClient:
         port: int,
         grpc_secret: str = "",
         resolve_timeout_seconds: float = 3.0,
+        tls_enabled: bool = False,
+        tls_ca_path: str = "",
     ) -> None:
         if not math.isfinite(resolve_timeout_seconds) or resolve_timeout_seconds <= 0:
             raise ValueError("resolve timeout must be finite and positive")
-        self._channel = grpc.aio.insecure_channel(
-            f"{host}:{port}",
-            options=[("grpc.max_receive_message_length", self.MAX_RECEIVE_BYTES)],
-        )
+        target = f"{host}:{port}"
+        options = [("grpc.max_receive_message_length", self.MAX_RECEIVE_BYTES)]
+        if tls_enabled:
+            if not tls_ca_path or not Path(tls_ca_path).is_file():
+                raise ValueError("ATTENDANCE_GRPC_TLS_CA_PATH must name an existing CA file when TLS is enabled")
+            credentials = grpc.ssl_channel_credentials(root_certificates=Path(tls_ca_path).read_bytes())
+            self._channel = grpc.aio.secure_channel(target, credentials, options=options)
+        else:
+            self._channel = grpc.aio.insecure_channel(target, options=options)
         self._stub = attendance_pb2_grpc.AttendanceRequestBotGrpcServiceStub(self._channel)
         self._metadata = (("x-grpc-secret", grpc_secret),) if grpc_secret else ()
         self._resolve_timeout_seconds = resolve_timeout_seconds

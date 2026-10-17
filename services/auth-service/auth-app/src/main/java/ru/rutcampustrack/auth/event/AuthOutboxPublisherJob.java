@@ -9,8 +9,8 @@ import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 public class AuthOutboxPublisherJob extends OutboxPublisherJob {
-    public AuthOutboxPublisherJob(OutboxStorage storage, OutboxEventSender sender,
-                                  MeterRegistry meterRegistry) {
+    public AuthOutboxPublisherJob(
+            OutboxStorage storage, OutboxEventSender sender, MeterRegistry meterRegistry) {
         super(storage, sender, meterRegistry);
     }
 

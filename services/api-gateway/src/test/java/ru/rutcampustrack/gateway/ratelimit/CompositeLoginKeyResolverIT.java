@@ -1,5 +1,13 @@
 package ru.rutcampustrack.gateway.ratelimit;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,28 +24,21 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.any;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-
 /**
  * M03a Группа 12: composite (ip, login) key-resolver интеграционный тест.
  *
- * <p>Проверяет что {@code ipLoginKeyResolver} правильно изолирует корзины:
- * 10+ запросов с IP-A+login=alice НЕ блокируют IP-B+login=alice (composite isolation).</p>
+ * <p>Проверяет что {@code ipLoginKeyResolver} правильно изолирует корзины: 10+ запросов с
+ * IP-A+login=alice НЕ блокируют IP-B+login=alice (composite isolation).
  *
- * <p>Auth-login route имеет ДВА последовательных RequestRateLimiter: IP-only 5/min
- * + composite 10/min. IP-only срабатывает первым на 6-м запросе с одного IP, поэтому
- * тест отправляет запросы с разных IP чтобы пересечь именно composite-порог.</p>
+ * <p>Auth-login route имеет ДВА последовательных RequestRateLimiter: IP-only 5/min + composite
+ * 10/min. IP-only срабатывает первым на 6-м запросе с одного IP, поэтому тест отправляет запросы с
+ * разных IP чтобы пересечь именно composite-порог.
  */
-@org.junit.jupiter.api.Disabled("M13 G25.21 — composite RL filter временно убран из application.yml "
-        + "(Spring Cloud Gateway 4.x bug: два последовательных RequestRateLimiter "
-        + "trip ReadOnlyHttpHeaders при response-commit). Тест вернётся когда composite "
-        + "будет реализован через custom GlobalFilter без mutation после committed response.")
+@org.junit.jupiter.api.Disabled(
+        "M13 G25.21 — composite RL filter временно убран из application.yml "
+                + "(Spring Cloud Gateway 4.x bug: два последовательных RequestRateLimiter "
+                + "trip ReadOnlyHttpHeaders при response-commit). Тест вернётся когда composite "
+                + "будет реализован через custom GlobalFilter без mutation после committed response.")
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CompositeLoginKeyResolverIT {
@@ -48,25 +49,34 @@ class CompositeLoginKeyResolverIT {
 
     static WireMockServer WIREMOCK;
 
-    @Autowired
-    WebTestClient client;
+    @Autowired WebTestClient client;
 
-    @Autowired
-    ReactiveStringRedisTemplate redis;
+    @Autowired ReactiveStringRedisTemplate redis;
 
     @BeforeAll
     static void startInfra() {
         REDIS.start();
         WIREMOCK = new WireMockServer(wireMockConfig().dynamicPort());
         WIREMOCK.start();
-        WIREMOCK.stubFor(get(urlEqualTo("/auth/public-key")).willReturn(aResponse()
-                .withHeader("Content-Type", "application/json")
-                .withBody("{\"publicKey\":\"-----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw7PZ7h1J+Uth3VnhqF7eG7H/r4v0h3OdW+k3H8Cc5zWWpJs3oQFFxKtMSY6T4Uf7Qm5JtX7sX5+cJF9o+1nD4G3xWwPt2k0gzY5o7a3pFFkYl5gKh4PqQOd3Gg7E8iH+yP5gPj9oMtSj8Mx3f+mKXR8/FiZP7FLFQJ7t2LhJGn7bYhDQLVJLfSg8F7Y4XQ8QqCXVZSxmCJz7xpQO3/ez+LN6I0JaN+P6DYxNBqjZ5v4jV5zV3cN9E9XKbG8p4jGJ+QIDAQAB\\n-----END PUBLIC KEY-----\",\"algorithm\":\"RS256\"}")));
-        WIREMOCK.stubFor(post(urlPathMatching("/auth/login"))
-                .willReturn(aResponse().withStatus(401)  // auth failure (wrong password) — нам важен rate-limit, не auth
-                        .withBody("{\"status\":401,\"title\":\"Unauthorized\"}")));
-        WIREMOCK.stubFor(any(urlPathMatching("/auth/.*")).atPriority(10)
-                .willReturn(aResponse().withStatus(200).withBody("{}")));
+        WIREMOCK.stubFor(
+                get(urlEqualTo("/auth/public-key"))
+                        .willReturn(
+                                aResponse()
+                                        .withHeader("Content-Type", "application/json")
+                                        .withBody(
+                                                "{\"publicKey\":\"-----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw7PZ7h1J+Uth3VnhqF7eG7H/r4v0h3OdW+k3H8Cc5zWWpJs3oQFFxKtMSY6T4Uf7Qm5JtX7sX5+cJF9o+1nD4G3xWwPt2k0gzY5o7a3pFFkYl5gKh4PqQOd3Gg7E8iH+yP5gPj9oMtSj8Mx3f+mKXR8/FiZP7FLFQJ7t2LhJGn7bYhDQLVJLfSg8F7Y4XQ8QqCXVZSxmCJz7xpQO3/ez+LN6I0JaN+P6DYxNBqjZ5v4jV5zV3cN9E9XKbG8p4jGJ+QIDAQAB\\n-----END PUBLIC KEY-----\",\"algorithm\":\"RS256\"}")));
+        WIREMOCK.stubFor(
+                post(urlPathMatching("/auth/login"))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(
+                                                401) // auth failure (wrong password) — нам важен
+                                        // rate-limit, не auth
+                                        .withBody("{\"status\":401,\"title\":\"Unauthorized\"}")));
+        WIREMOCK.stubFor(
+                any(urlPathMatching("/auth/.*"))
+                        .atPriority(10)
+                        .willReturn(aResponse().withStatus(200).withBody("{}")));
     }
 
     @AfterAll
@@ -81,7 +91,8 @@ class CompositeLoginKeyResolverIT {
         r.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
         r.add("spring.data.redis.password", () -> "");
         r.add("gateway.auth-service-url", () -> "http://localhost:" + WIREMOCK.port());
-        r.add("rutcampustrack.security.internal-issuer-client.auth-service-url",
+        r.add(
+                "rutcampustrack.security.internal-issuer-client.auth-service-url",
                 () -> "http://localhost:" + WIREMOCK.port());
         r.add("AUTH_SERVICE_URL", () -> "http://localhost:" + WIREMOCK.port());
         r.add("ACADEMIC_SERVICE_URL", () -> "http://localhost:" + WIREMOCK.port());
@@ -100,26 +111,31 @@ class CompositeLoginKeyResolverIT {
         // 5 запросов с IP-A (IP-RL=5, упрётся в IP-RL на 6-м, но 5 пройдут composite).
         // X-Login НЕ шлём — LoginBodyExtractionFilter вытянет из body (KI-8).
         for (int i = 0; i < 5; i++) {
-            client.post().uri("/api/auth/login")
+            client.post()
+                    .uri("/api/auth/login")
                     .header("X-Forwarded-For", "10.1.1.1")
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue("{\"login\":\"" + loginName + "\",\"password\":\"x\"}")
                     .exchange()
                     // 401 от WireMock (auth failure) — НЕ 429
-                    .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
+                    .expectStatus()
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
         // Первый запрос с IP-B для того же login — должен пройти (composite bucket пустой)
-        client.post().uri("/api/auth/login")
+        client.post()
+                .uri("/api/auth/login")
                 .header("X-Forwarded-For", "10.2.2.2")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"login\":\"" + loginName + "\",\"password\":\"x\"}")
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);  // 401 от downstream, НЕ 429
+                .expectStatus()
+                .isEqualTo(HttpStatus.UNAUTHORIZED); // 401 от downstream, НЕ 429
     }
 
     @Test
-    @DisplayName("KI-8: composite isolates по login внутри одного IP (разные логины — разные buckets)")
+    @DisplayName(
+            "KI-8: composite isolates по login внутри одного IP (разные логины — разные buckets)")
     void compositeIsolatesByLogin_sameIp_KI8() {
         // NB: этот тест проверяет что LoginBodyExtractionFilter ставит X-Login
         // и composite key-resolver использует разные buckets для разных login'ов.
@@ -131,22 +147,26 @@ class CompositeLoginKeyResolverIT {
 
         // alice × 5 из IP-A
         for (int i = 0; i < 5; i++) {
-            client.post().uri("/api/auth/login")
+            client.post()
+                    .uri("/api/auth/login")
                     .header("X-Forwarded-For", "10.5.5.5")
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue("{\"login\":\"alice\",\"password\":\"x\"}")
                     .exchange()
-                    .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
+                    .expectStatus()
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
         }
 
         // bob × 1 из IP-B — composite bucket (10.6.6.6, bob) пустой, IP-RL (10.6.6.6)
         // тоже пустой → 401, НЕ 429.
-        client.post().uri("/api/auth/login")
+        client.post()
+                .uri("/api/auth/login")
                 .header("X-Forwarded-For", "10.6.6.6")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"login\":\"bob\",\"password\":\"x\"}")
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
+                .expectStatus()
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -162,16 +182,20 @@ class CompositeLoginKeyResolverIT {
         int passed = 0;
         for (int i = 0; i < 12; i++) {
             String login = i < 6 ? "alice" : "bob";
-            org.springframework.http.HttpStatusCode status = client.post().uri("/api/auth/login")
-                    .header("X-Forwarded-For", ip)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue("{\"login\":\"" + login + "\",\"password\":\"x\"}")
-                    .exchange()
-                    .returnResult(String.class).getStatus();
+            org.springframework.http.HttpStatusCode status =
+                    client.post()
+                            .uri("/api/auth/login")
+                            .header("X-Forwarded-For", ip)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue("{\"login\":\"" + login + "\",\"password\":\"x\"}")
+                            .exchange()
+                            .returnResult(String.class)
+                            .getStatus();
             if (status.value() == 429) denied++;
             else if (status.value() == 401) passed++;
         }
-        // IP-RL burst=5 → минимум часть запросов должна быть отказана (подтверждает общий IP-bucket)
+        // IP-RL burst=5 → минимум часть запросов должна быть отказана (подтверждает общий
+        // IP-bucket)
         org.assertj.core.api.Assertions.assertThat(denied).isGreaterThan(0);
         org.assertj.core.api.Assertions.assertThat(passed).isGreaterThan(0);
     }

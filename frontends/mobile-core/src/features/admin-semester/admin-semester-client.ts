@@ -13,7 +13,12 @@ export type AdminSemesterArchiveParticipantState =
   | 'RELEASED'
 
 export type AdminSemesterDeletionPriorState = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED'
-export type AdminSemesterDeletionPhase = 'PREPARING' | 'RELEASING' | 'DELETING' | 'COMPLETED' | 'CANCELLED'
+export type AdminSemesterDeletionPhase =
+  | 'PREPARING'
+  | 'RELEASING'
+  | 'DELETING'
+  | 'COMPLETED'
+  | 'CANCELLED'
 
 export interface AdminSemesterDeletionCounts {
   readonly scheduleTemplates: number
@@ -139,7 +144,10 @@ export class AdminSemesterClient {
 
   async listSemesters(signal?: AbortSignal): Promise<readonly AdminSemester[]> {
     const semesters: AdminSemester[] = []
-    let page = await this.request<unknown>(`${AdminSemesterClient.basePath}?size=${AdminSemesterClient.pageSize}`, signal ? { signal } : undefined)
+    let page = await this.request<unknown>(
+      `${AdminSemesterClient.basePath}?size=${AdminSemesterClient.pageSize}`,
+      signal ? { signal } : undefined,
+    )
     let normalized = normalizeSemesterPage(page)
     semesters.push(...normalized.items)
 
@@ -169,8 +177,10 @@ export class AdminSemesterClient {
 
   getSemester(id: number, signal?: AbortSignal): Promise<AdminSemester> {
     assertPositiveInteger(id, 'semesterId')
-    return this.request<unknown>(`${AdminSemesterClient.basePath}/${id}`, signal ? { signal } : undefined)
-      .then(normalizeSemester)
+    return this.request<unknown>(
+      `${AdminSemesterClient.basePath}/${id}`,
+      signal ? { signal } : undefined,
+    ).then(normalizeSemester)
   }
 
   updateSemester(id: number, input: CreateAdminSemesterInput): Promise<AdminSemester> {
@@ -182,7 +192,12 @@ export class AdminSemesterClient {
     }).then(normalizeSemester)
   }
 
-  checkOverlap(from: string, to: string, excludeId?: number, signal?: AbortSignal): Promise<AdminSemesterOverlap> {
+  checkOverlap(
+    from: string,
+    to: string,
+    excludeId?: number,
+    signal?: AbortSignal,
+  ): Promise<AdminSemesterOverlap> {
     const dateFrom = requiredDate(from, 'from')
     const dateTo = requiredDate(to, 'to')
     if (dateTo < dateFrom) throw new RangeError('to must be on or after from')
@@ -191,8 +206,10 @@ export class AdminSemesterClient {
       assertPositiveInteger(excludeId, 'excludeId')
       query.set('excludeId', String(excludeId))
     }
-    return this.request<unknown>(`${AdminSemesterClient.basePath}/overlap?${query.toString()}`, signal ? { signal } : undefined)
-      .then(normalizeOverlap)
+    return this.request<unknown>(
+      `${AdminSemesterClient.basePath}/overlap?${query.toString()}`,
+      signal ? { signal } : undefined,
+    ).then(normalizeOverlap)
   }
 
   /** One PATCH is the complete server-side activation transaction. */
@@ -203,22 +220,34 @@ export class AdminSemesterClient {
     }).then(normalizeSemester)
   }
 
-  archiveSemester(id: number, idempotencyKey: string, signal?: AbortSignal): Promise<AdminSemesterArchiveOperation> {
+  archiveSemester(
+    id: number,
+    idempotencyKey: string,
+    signal?: AbortSignal,
+  ): Promise<AdminSemesterArchiveOperation> {
     return this.changeArchiveState(id, 'ARCHIVE', idempotencyKey, signal)
   }
 
-  restoreSemester(id: number, idempotencyKey: string, signal?: AbortSignal): Promise<AdminSemesterArchiveOperation> {
+  restoreSemester(
+    id: number,
+    idempotencyKey: string,
+    signal?: AbortSignal,
+  ): Promise<AdminSemesterArchiveOperation> {
     return this.changeArchiveState(id, 'RESTORE', idempotencyKey, signal)
   }
 
-  getArchiveOperation(operationId: string, signal?: AbortSignal): Promise<AdminSemesterArchiveOperation> {
+  getArchiveOperation(
+    operationId: string,
+    signal?: AbortSignal,
+  ): Promise<AdminSemesterArchiveOperation> {
     const id = requiredText(operationId, 'operationId')
     return this.request<unknown>(
       `/api/academic/semester-archive-operations/${encodeURIComponent(id)}`,
       signal ? { signal } : undefined,
     ).then((value) => {
       const operation = normalizeArchiveOperation(value)
-      if (operation.operationId !== id) throw new Error('Сервер вернул другую операцию архивации семестра.')
+      if (operation.operationId !== id)
+        throw new Error('Сервер вернул другую операцию архивации семестра.')
       return operation
     })
   }
@@ -236,14 +265,18 @@ export class AdminSemesterClient {
     return typeof scope === 'string' && scope.trim() !== '' ? scope : null
   }
 
-  getSemesterDeletionPreview(id: number, signal?: AbortSignal): Promise<AdminSemesterDeletionPreview> {
+  getSemesterDeletionPreview(
+    id: number,
+    signal?: AbortSignal,
+  ): Promise<AdminSemesterDeletionPreview> {
     assertPositiveInteger(id, 'semesterId')
-    return this.request<unknown>(
-      `${AdminSemesterClient.basePath}/${id}/delete-preview`,
-      { cache: 'no-store', ...(signal ? { signal } : {}) },
-    ).then((value) => {
+    return this.request<unknown>(`${AdminSemesterClient.basePath}/${id}/delete-preview`, {
+      cache: 'no-store',
+      ...(signal ? { signal } : {}),
+    }).then((value) => {
       const preview = normalizeDeletionPreview(value)
-      if (preview.semesterId !== id) throw new Error('Сервер вернул предпросмотр для другого семестра.')
+      if (preview.semesterId !== id)
+        throw new Error('Сервер вернул предпросмотр для другого семестра.')
       return preview
     })
   }
@@ -268,20 +301,25 @@ export class AdminSemesterClient {
       ...(signal ? { signal } : {}),
     }).then((value) => {
       const operation = normalizeDeletionOperation(value)
-      if (operation.semesterId !== id) throw new Error('Сервер вернул операцию удаления для другого семестра.')
+      if (operation.semesterId !== id)
+        throw new Error('Сервер вернул операцию удаления для другого семестра.')
       return operation
     })
   }
 
-  getSemesterDeletionOperation(operationId: string, signal?: AbortSignal): Promise<AdminSemesterDeletionOperation> {
+  getSemesterDeletionOperation(
+    operationId: string,
+    signal?: AbortSignal,
+  ): Promise<AdminSemesterDeletionOperation> {
     const id = requiredText(operationId, 'operationId')
     assertUuid(id, 'operationId')
-    return this.request<unknown>(
-      `/api/academic/semester-deletions/${encodeURIComponent(id)}`,
-      { cache: 'no-store', ...(signal ? { signal } : {}) },
-    ).then((value) => {
+    return this.request<unknown>(`/api/academic/semester-deletions/${encodeURIComponent(id)}`, {
+      cache: 'no-store',
+      ...(signal ? { signal } : {}),
+    }).then((value) => {
       const operation = normalizeDeletionOperation(value)
-      if (operation.operationId !== id) throw new Error('Сервер вернул другую операцию удаления семестра.')
+      if (operation.operationId !== id)
+        throw new Error('Сервер вернул другую операцию удаления семестра.')
       return operation
     })
   }
@@ -310,12 +348,16 @@ export class AdminSemesterClient {
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
     const response = await this.requestResponse(path, init, retried)
-    const value = await response.json() as T
+    const value = (await response.json()) as T
     this.options.assertCurrent?.()
     return value
   }
 
-  private async requestResponse(path: string, init?: RequestInit, retried = false): Promise<Response> {
+  private async requestResponse(
+    path: string,
+    init?: RequestInit,
+    retried = false,
+  ): Promise<Response> {
     this.options.assertCurrent?.()
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
@@ -333,16 +375,15 @@ export class AdminSemesterClient {
     }
     let body: unknown = null
     try {
-      body = await response.json() as unknown
+      body = (await response.json()) as unknown
     } catch {
       // Preserve the HTTP status when a gateway cannot return Problem Details.
     }
     this.options.assertCurrent?.()
-    const problem = isRecord(body) ? body as MobileProblemDetails : null
+    const problem = isRecord(body) ? (body as MobileProblemDetails) : null
     const archiveOperation = response.status === 503 ? findArchiveOperation(body) : null
-    const deletionOperation = response.status === 409 || response.status === 503
-      ? findDeletionOperation(body)
-      : null
+    const deletionOperation =
+      response.status === 409 || response.status === 503 ? findDeletionOperation(body) : null
     throw new AdminSemesterApiError(response, problem, archiveOperation, deletionOperation)
   }
 }
@@ -361,18 +402,18 @@ interface NormalizedSemesterPage {
 }
 
 function normalizeSemesterPage(value: unknown): NormalizedSemesterPage {
-  if (Array.isArray(value)) return { items: value.map(normalizeSemester), number: 0, totalPages: null }
+  if (Array.isArray(value))
+    return { items: value.map(normalizeSemester), number: 0, totalPages: null }
   const record = requiredRecord(value, 'semester page')
   const embedded = record._embedded
-  const items = embedded === undefined || embedded === null
-    ? []
-    : readSemesterItems(embedded)
+  const items = embedded === undefined || embedded === null ? [] : readSemesterItems(embedded)
   const page = record.page
   if (page === undefined || page === null) return { items, number: 0, totalPages: null }
   const pageRecord = requiredRecord(page, 'semester page.page')
   const number = nonNegativeInteger(pageRecord.number, 'semester page.number')
   const totalPages = nonNegativeInteger(pageRecord.totalPages, 'semester page.totalPages')
-  if (number >= totalPages && totalPages > 0) throw new Error('Сервер вернул некорректную страницу семестров.')
+  if (number >= totalPages && totalPages > 0)
+    throw new Error('Сервер вернул некорректную страницу семестров.')
   return { items, number, totalPages }
 }
 
@@ -397,7 +438,10 @@ function normalizeSemester(value: unknown): AdminSemester {
     dateFrom: requiredDate(record.dateFrom, 'semester.dateFrom'),
     dateTo: requiredDate(record.dateTo, 'semester.dateTo'),
     active: requiredBoolean(record.active, 'semester.active'),
-    activationScheduled: record.activationScheduled === undefined ? false : requiredBoolean(record.activationScheduled, 'semester.activationScheduled'),
+    activationScheduled:
+      record.activationScheduled === undefined
+        ? false
+        : requiredBoolean(record.activationScheduled, 'semester.activationScheduled'),
     createdAt: nullableText(record.createdAt),
     archived: requiredBoolean(record.archived, 'semester.archived'),
     transition: requiredTransition(record.transition, 'semester.transition'),
@@ -416,7 +460,11 @@ function normalizeArchiveOperation(value: unknown): AdminSemesterArchiveOperatio
     throw new Error('Сервер вернул некорректное действие архивации семестра.')
   }
   const operationState = record.operationState
-  if (operationState !== 'PENDING' && operationState !== 'COMPLETED' && operationState !== 'ERROR') {
+  if (
+    operationState !== 'PENDING' &&
+    operationState !== 'COMPLETED' &&
+    operationState !== 'ERROR'
+  ) {
     throw new Error('Сервер вернул некорректное состояние архивации семестра.')
   }
   return {
@@ -425,15 +473,27 @@ function normalizeArchiveOperation(value: unknown): AdminSemesterArchiveOperatio
     action,
     operationState,
     retryable: requiredBoolean(record.retryable, 'semester archive operation.retryable'),
-    stateVersion: nonNegativeInteger(record.stateVersion, 'semester archive operation.stateVersion'),
+    stateVersion: nonNegativeInteger(
+      record.stateVersion,
+      'semester archive operation.stateVersion',
+    ),
     transition: requiredTransition(record.transition, 'semester archive operation.transition'),
     active: requiredBoolean(record.active, 'semester archive operation.active'),
     archived: requiredBoolean(record.archived, 'semester archive operation.archived'),
-    releasePending: requiredBoolean(record.releasePending, 'semester archive operation.releasePending'),
+    releasePending: requiredBoolean(
+      record.releasePending,
+      'semester archive operation.releasePending',
+    ),
     academic: requiredParticipantState(record.academic, 'semester archive operation.academic'),
     schedule: requiredParticipantState(record.schedule, 'semester archive operation.schedule'),
-    attendance: requiredParticipantState(record.attendance, 'semester archive operation.attendance'),
-    blockingReason: optionalText(record.blockingReason, 'semester archive operation.blockingReason'),
+    attendance: requiredParticipantState(
+      record.attendance,
+      'semester archive operation.attendance',
+    ),
+    blockingReason: optionalText(
+      record.blockingReason,
+      'semester archive operation.blockingReason',
+    ),
   }
 }
 
@@ -446,8 +506,12 @@ function normalizeArchiveStatus(value: unknown): AdminSemesterArchiveStatus {
     archived: requiredBoolean(record.archived, 'semester archive status.archived'),
     transition: requiredTransition(record.transition, 'semester archive status.transition'),
     stateVersion: nonNegativeInteger(record.stateVersion, 'semester archive status.stateVersion'),
-    releasePending: requiredBoolean(record.releasePending, 'semester archive status.releasePending'),
-    operation: operation === undefined || operation === null ? null : normalizeArchiveOperation(operation),
+    releasePending: requiredBoolean(
+      record.releasePending,
+      'semester archive status.releasePending',
+    ),
+    operation:
+      operation === undefined || operation === null ? null : normalizeArchiveOperation(operation),
   }
   if (status.operation && status.operation.semesterId !== status.semesterId) {
     throw new Error('Сервер вернул операцию для другого семестра.')
@@ -498,8 +562,13 @@ function normalizeDeletionOperation(value: unknown): AdminSemesterDeletionOperat
   const operationId = requiredText(record.operationId, 'semester deletion operation.operationId')
   assertUuid(operationId, 'semester deletion operation.operationId')
   const phase = record.phase
-  if (phase !== 'PREPARING' && phase !== 'RELEASING' && phase !== 'DELETING'
-    && phase !== 'COMPLETED' && phase !== 'CANCELLED') {
+  if (
+    phase !== 'PREPARING' &&
+    phase !== 'RELEASING' &&
+    phase !== 'DELETING' &&
+    phase !== 'COMPLETED' &&
+    phase !== 'CANCELLED'
+  ) {
     throw new Error('Сервер вернул некорректную фазу удаления семестра.')
   }
   const refreshedPreview = record.refreshedPreview
@@ -508,13 +577,20 @@ function normalizeDeletionOperation(value: unknown): AdminSemesterDeletionOperat
     semesterId: positiveInteger(record.semesterId, 'semester deletion operation.semesterId'),
     phase,
     retryable: requiredBoolean(record.retryable, 'semester deletion operation.retryable'),
-    stateVersion: nonNegativeInteger(record.stateVersion, 'semester deletion operation.stateVersion'),
+    stateVersion: nonNegativeInteger(
+      record.stateVersion,
+      'semester deletion operation.stateVersion',
+    ),
     counts: normalizeDeletionCounts(record.counts, 'semester deletion operation.counts'),
     reason: optionalText(record.reason, 'semester deletion operation.reason'),
-    blockingReason: optionalText(record.blockingReason, 'semester deletion operation.blockingReason'),
-    refreshedPreview: refreshedPreview === undefined || refreshedPreview === null
-      ? null
-      : normalizeDeletionPreview(refreshedPreview),
+    blockingReason: optionalText(
+      record.blockingReason,
+      'semester deletion operation.blockingReason',
+    ),
+    refreshedPreview:
+      refreshedPreview === undefined || refreshedPreview === null
+        ? null
+        : normalizeDeletionPreview(refreshedPreview),
   }
 }
 
@@ -536,9 +612,19 @@ function requiredTransition(value: unknown, field: string): AdminSemesterTransit
   throw new Error(`Сервер вернул некорректное поле ${field}.`)
 }
 
-function requiredParticipantState(value: unknown, field: string): AdminSemesterArchiveParticipantState {
-  if (value === 'NOT_STARTED' || value === 'PENDING' || value === 'READY'
-    || value === 'PREPARED_RESTORE' || value === 'RELEASE_PENDING' || value === 'RELEASED') return value
+function requiredParticipantState(
+  value: unknown,
+  field: string,
+): AdminSemesterArchiveParticipantState {
+  if (
+    value === 'NOT_STARTED' ||
+    value === 'PENDING' ||
+    value === 'READY' ||
+    value === 'PREPARED_RESTORE' ||
+    value === 'RELEASE_PENDING' ||
+    value === 'RELEASED'
+  )
+    return value
   throw new Error(`Сервер вернул некорректное поле ${field}.`)
 }
 
@@ -556,7 +642,11 @@ function normalizeSemesterInput(input: CreateAdminSemesterInput): CreateAdminSem
   if (semesterType !== 'AUTUMN' && semesterType !== 'SPRING') {
     throw new RangeError('semesterType must be AUTUMN or SPRING')
   }
-  if (!Number.isInteger(input.academicYear) || input.academicYear < 1 || input.academicYear > 9998) {
+  if (
+    !Number.isInteger(input.academicYear) ||
+    input.academicYear < 1 ||
+    input.academicYear > 9998
+  ) {
     throw new RangeError('academicYear must be an integer from 1 to 9998')
   }
   return { name, dateFrom, dateTo, semesterType, academicYear: input.academicYear }
@@ -596,7 +686,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function requiredText(value: unknown, field: string): string {
-  if (typeof value !== 'string' || value.trim() === '') throw new Error(`Сервер вернул пустое поле ${field}.`)
+  if (typeof value !== 'string' || value.trim() === '')
+    throw new Error(`Сервер вернул пустое поле ${field}.`)
   return value
 }
 
@@ -606,7 +697,8 @@ function nullableText(value: unknown): string | null {
 
 function requiredDate(value: unknown, field: string): string {
   const text = requiredText(value, field)
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) throw new Error(`Сервер вернул некорректную дату ${field}.`)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text))
+    throw new Error(`Сервер вернул некорректную дату ${field}.`)
   return text
 }
 
@@ -630,7 +722,8 @@ function nonNegativeInteger(value: unknown, field: string): number {
 }
 
 function assertPositiveInteger(value: number, field: string): void {
-  if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${field} must be a positive integer`)
+  if (!Number.isSafeInteger(value) || value <= 0)
+    throw new RangeError(`${field} must be a positive integer`)
 }
 
 function assertUuid(value: string, field: string): void {

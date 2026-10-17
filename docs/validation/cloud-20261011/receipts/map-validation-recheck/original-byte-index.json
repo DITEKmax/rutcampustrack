@@ -1,0 +1,480 @@
+{
+  "source": "/workspace/scratch/rct-validation/map_validation_recheck",
+  "manifest": "sha256-manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "original_sha256": "449c318cce8f73581c6735a4c8f3a861e9e4be266d01b216555b9e2092b11f4a",
+      "original_bytes": 1273,
+      "working_sha256": "449c318cce8f73581c6735a4c8f3a861e9e4be266d01b216555b9e2092b11f4a",
+      "working_bytes": 1273,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempts.ndjson",
+      "original_sha256": "b7564f1549887a319dc1f4705db52e743f6c706da8464496ef2aa027d3ea5fbe",
+      "original_bytes": 472,
+      "working_sha256": "b7564f1549887a319dc1f4705db52e743f6c706da8464496ef2aa027d3ea5fbe",
+      "working_bytes": 472,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "audit_evidence.py",
+      "original_sha256": "b6f43edd6417db197f8b1d62e335da53946c6fbc13ad010fbfe1d5333dc8d55e",
+      "original_bytes": 15570,
+      "working_sha256": "b6f43edd6417db197f8b1d62e335da53946c6fbc13ad010fbfe1d5333dc8d55e",
+      "working_bytes": 15570,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "final-receipt.json",
+      "original_sha256": "672dbd01679f1e853934ab8142b0df4e5baac8d97952caf67e12b1a8c1927738",
+      "original_bytes": 3688,
+      "working_sha256": "672dbd01679f1e853934ab8142b0df4e5baac8d97952caf67e12b1a8c1927738",
+      "working_bytes": 3688,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "findings.json",
+      "original_sha256": "5ae1055b4f4eec10c8929e5a73da250bff2b8fd31224aa3865ac01a4138294c6",
+      "original_bytes": 2458,
+      "working_sha256": "5ae1055b4f4eec10c8929e5a73da250bff2b8fd31224aa3865ac01a4138294c6",
+      "working_bytes": 2458,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "findings.md",
+      "original_sha256": "4290f91fa85941d120ab40b473067e0a689e2606bc9fd52756c0e9d0404a6ef4",
+      "original_bytes": 12922,
+      "working_sha256": "4290f91fa85941d120ab40b473067e0a689e2606bc9fd52756c0e9d0404a6ef4",
+      "working_bytes": 12922,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "input-hash-manifest.json",
+      "original_sha256": "3ffa49cb771f17a777ee334449caba8071a99c787fdac407c417e94efc4d5151",
+      "original_bytes": 2750,
+      "working_sha256": "3ffa49cb771f17a777ee334449caba8071a99c787fdac407c417e94efc4d5151",
+      "working_bytes": 2750,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "negative-input-source-bridge.json",
+      "original_sha256": "0c4138db56b5f423ddf183730287fc187c8126e88400d2a40e17606f34fbd449",
+      "original_bytes": 2880,
+      "working_sha256": "0c4138db56b5f423ddf183730287fc187c8126e88400d2a40e17606f34fbd449",
+      "working_bytes": 2880,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-byte-index.json",
+      "original_sha256": "f6f0f48a2d0a7c7d5da909e74690de5fd48e6d7ef6baa9a820ae44d19b67f4e1",
+      "original_bytes": 15224,
+      "working_sha256": "f6f0f48a2d0a7c7d5da909e74690de5fd48e6d7ef6baa9a820ae44d19b67f4e1",
+      "working_bytes": 15224,
+      "transformation": "Original reviewer index has a distinct readable working path; root transfer index is separate to avoid self-hash collision. Exact original remains ZIP member.",
+      "working_path": "reviewer-original-byte-index-readable.json"
+    },
+    {
+      "path": "original-evidence/final-mvr-receipt.json",
+      "original_sha256": "85e850676e251f624ea12b2abb55dde5fac0c6e75c71691114a33739113aecc6",
+      "original_bytes": 5255,
+      "working_sha256": "85e850676e251f624ea12b2abb55dde5fac0c6e75c71691114a33739113aecc6",
+      "working_bytes": 5255,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "original_sha256": "d04667b08f715b9da4be1079991afa82e34f07b1ee1779b9b0bdae2a7a5b32e9",
+      "original_bytes": 569,
+      "working_sha256": "d04667b08f715b9da4be1079991afa82e34f07b1ee1779b9b0bdae2a7a5b32e9",
+      "working_bytes": 569,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "original_sha256": "0e9ca30aa85af1002c16dec6dc981ef23be7ae4326e01f08ca0d781378b55175",
+      "original_bytes": 490,
+      "working_sha256": "0e9ca30aa85af1002c16dec6dc981ef23be7ae4326e01f08ca0d781378b55175",
+      "working_bytes": 490,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "original_sha256": "33e8c80eefa6f477a9bbea5e8d01fb9a72c7ba28a235635fbe6ff1665afa00c8",
+      "original_bytes": 635,
+      "working_sha256": "33e8c80eefa6f477a9bbea5e8d01fb9a72c7ba28a235635fbe6ff1665afa00c8",
+      "working_bytes": 635,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "original_sha256": "ccee4c86cd07adef497ecd14c74ec4d980476019ada5ba7e4518bef77ccdbd61",
+      "original_bytes": 507,
+      "working_sha256": "ccee4c86cd07adef497ecd14c74ec4d980476019ada5ba7e4518bef77ccdbd61",
+      "working_bytes": 507,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "original_sha256": "74a1ede84f8aa98323b0586b9e14b84098254d4fcc495eb6c64cbf98401c0132",
+      "original_bytes": 448559,
+      "working_sha256": "65bfabd12681ee8b78ffcf4c04b1af16bb8726e1a4b01aeff94147f195c2aebb",
+      "working_bytes": 448558,
+      "transformation": "Readable working representation: final newline/mandatory trailing whitespace normalization; two source-hash JSON fields use label/identifier structure. Exact original bytes and original checksum retained only in immutable archive; not runtime source proof."
+    },
+    {
+      "path": "original-evidence/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT.xml",
+      "original_sha256": "8e433c6291a8adc5fdc9f167d12d9a54eb10a7e4e74c0f6a135556169ea354d6",
+      "original_bytes": 20906,
+      "working_sha256": "8e433c6291a8adc5fdc9f167d12d9a54eb10a7e4e74c0f6a135556169ea354d6",
+      "working_bytes": 20906,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-prelaunch.json",
+      "original_sha256": "3faef2dc41627184d58465a1908c65fe8035e48bba89f12d290570055f74cf2c",
+      "original_bytes": 1636,
+      "working_sha256": "3faef2dc41627184d58465a1908c65fe8035e48bba89f12d290570055f74cf2c",
+      "working_bytes": 1636,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-summary.json",
+      "original_sha256": "15c39b31508cdc239d2839f1e6adbee1d56c0b85796023f353744e1152003b42",
+      "original_bytes": 4572,
+      "working_sha256": "15c39b31508cdc239d2839f1e6adbee1d56c0b85796023f353744e1152003b42",
+      "working_bytes": 4572,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-terminal.json",
+      "original_sha256": "3f932ddc5fcde547c71cc9e652a020a27b9a89ccf01cf1cce2b8bfc3e2c4e3d5",
+      "original_bytes": 1709,
+      "working_sha256": "3f932ddc5fcde547c71cc9e652a020a27b9a89ccf01cf1cce2b8bfc3e2c4e3d5",
+      "working_bytes": 1709,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "original_sha256": "3d2f2d377fa3c31e0b42e447272d8ac864c7a0f4f885af781712ce4fa5ab2988",
+      "original_bytes": 571,
+      "working_sha256": "3d2f2d377fa3c31e0b42e447272d8ac864c7a0f4f885af781712ce4fa5ab2988",
+      "working_bytes": 571,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "original_sha256": "fa53a7d6b8000b370a44bfd7ad843c3bf4e0790fc167714e9cd2e4ca673e00e3",
+      "original_bytes": 635,
+      "working_sha256": "fa53a7d6b8000b370a44bfd7ad843c3bf4e0790fc167714e9cd2e4ca673e00e3",
+      "working_bytes": 635,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "original_sha256": "f35e30ef3c6c7f858fa3df96881eaa53186a347b3b65d65583c975abd17f909b",
+      "original_bytes": 505,
+      "working_sha256": "f35e30ef3c6c7f858fa3df96881eaa53186a347b3b65d65583c975abd17f909b",
+      "working_bytes": 505,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.map.CampusMapAdminServiceTest.xml",
+      "original_sha256": "a6a6111fa4d2ae5a0910c2dbac2723801e1c6a85c5c3ea9a0165a36822d1e711",
+      "original_bytes": 1813,
+      "working_sha256": "a6a6111fa4d2ae5a0910c2dbac2723801e1c6a85c5c3ea9a0165a36822d1e711",
+      "working_bytes": 1813,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/green-mvr-06.log",
+      "original_sha256": "2a67721524723199fb5ab342e7d3f05d75e78dd7ce6ea17da22da3e6c256bb89",
+      "original_bytes": 5957,
+      "working_sha256": "2a67721524723199fb5ab342e7d3f05d75e78dd7ce6ea17da22da3e6c256bb89",
+      "working_bytes": 5957,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/mvr-correction-prep.json",
+      "original_sha256": "435d71df6ae2d9b990a98493ac26ac8e910738b0db13d22e2de16d5d9dce1986",
+      "original_bytes": 1831,
+      "working_sha256": "435d71df6ae2d9b990a98493ac26ac8e910738b0db13d22e2de16d5d9dce1986",
+      "working_bytes": 1831,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/mvr-inventory.json",
+      "original_sha256": "b6fda0edd8fd50de86a94da98987d464ec1d7da4790390c94b4f8fa4faa2c0d0",
+      "original_bytes": 1417,
+      "working_sha256": "b6fda0edd8fd50de86a94da98987d464ec1d7da4790390c94b4f8fa4faa2c0d0",
+      "working_bytes": 1417,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/15828b7d2c8f2d818c02bf187898482115eb8417935619983c39eeca03917385.svg",
+      "original_sha256": "15828b7d2c8f2d818c02bf187898482115eb8417935619983c39eeca03917385",
+      "original_bytes": 290,
+      "working_sha256": "8b1b5a0f64d266274735734f3362f6bcaf9328a1410d03d29b67718e7ff2d745",
+      "working_bytes": 291,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/5bafee8a1db3a3b6e80c42228e55ad13ad748234b181838af46864db187f869a.svg",
+      "original_sha256": "5bafee8a1db3a3b6e80c42228e55ad13ad748234b181838af46864db187f869a",
+      "original_bytes": 218,
+      "working_sha256": "88bf0ff2a3a932ae26ff3ec83a51e39b41dff52cf1092c4f60754d60b0956ac5",
+      "working_bytes": 219,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/688f83d5ab272f9475c2439325703a03d6fcb590852d1c72b12f0b45485bcd61.svg",
+      "original_sha256": "688f83d5ab272f9475c2439325703a03d6fcb590852d1c72b12f0b45485bcd61",
+      "original_bytes": 252,
+      "working_sha256": "c7e7e74d8a19c0cdec0ed8565c9308f67ad39201f00d1a83d756b2bff9b42496",
+      "working_bytes": 253,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/6f15d40dc5ddc6a8112b59573f2e3936ca3e3c128bd7dc2147a838f87418e2c3.png",
+      "original_sha256": "6f15d40dc5ddc6a8112b59573f2e3936ca3e3c128bd7dc2147a838f87418e2c3",
+      "original_bytes": 2017,
+      "working_sha256": "6f15d40dc5ddc6a8112b59573f2e3936ca3e3c128bd7dc2147a838f87418e2c3",
+      "working_bytes": 2017,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/740935424eaca32bb28692bad83b3dcd3d56b41d02e0dff061a821afad3f8c8d.svg",
+      "original_sha256": "740935424eaca32bb28692bad83b3dcd3d56b41d02e0dff061a821afad3f8c8d",
+      "original_bytes": 256,
+      "working_sha256": "2fca790a13bbc4b0632cd4e952571f1b3a983aff788854b537e6fad4d0ad38fc",
+      "working_bytes": 257,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/8b6652c37ff1cac9e32c87b535847e16e8d8a44db4f3a347f787542a006e9576.png",
+      "original_sha256": "8b6652c37ff1cac9e32c87b535847e16e8d8a44db4f3a347f787542a006e9576",
+      "original_bytes": 2017,
+      "working_sha256": "8b6652c37ff1cac9e32c87b535847e16e8d8a44db4f3a347f787542a006e9576",
+      "working_bytes": 2017,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/8c05c2c11af0d494f09853a3301da3a0f94e76dd1fce52b52dcf3cf0d6446a51.svg",
+      "original_sha256": "8c05c2c11af0d494f09853a3301da3a0f94e76dd1fce52b52dcf3cf0d6446a51",
+      "original_bytes": 195,
+      "working_sha256": "dd7b3bcec745d2182ded240f472465178cbfe266eca5ae41d76873d06b30b3f2",
+      "working_bytes": 196,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/9cf19260fabdacb3c1b1159bd6a12f2f329a298fb525d82e61bee30a50a69857.svg",
+      "original_sha256": "9cf19260fabdacb3c1b1159bd6a12f2f329a298fb525d82e61bee30a50a69857",
+      "original_bytes": 244,
+      "working_sha256": "8bbc4399ff91f878fe09ad557970d45af17489395ab03311d864d6f1d5039e93",
+      "working_bytes": 245,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/a12abea19a765917e9b2dc30b92115a85854a5ffcd301b5374db7f9415809a20.png",
+      "original_sha256": "a12abea19a765917e9b2dc30b92115a85854a5ffcd301b5374db7f9415809a20",
+      "original_bytes": 130523,
+      "working_sha256": "a12abea19a765917e9b2dc30b92115a85854a5ffcd301b5374db7f9415809a20",
+      "working_bytes": 130523,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/dd9360293a6cadcb958566e7ac42eb9c6d6e39cae97e97d7c69676ed7b42a1d6.svg",
+      "original_sha256": "dd9360293a6cadcb958566e7ac42eb9c6d6e39cae97e97d7c69676ed7b42a1d6",
+      "original_bytes": 218,
+      "working_sha256": "aca1bcd4ca8e1fe03c578130da19c156d574c9e5d4b459cb3e572c0dff07f6f7",
+      "working_bytes": 219,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/ea157e8723bfc1c01756f3337eb3f195644656a318a537681ccad89201927bef.svg",
+      "original_sha256": "ea157e8723bfc1c01756f3337eb3f195644656a318a537681ccad89201927bef",
+      "original_bytes": 223,
+      "working_sha256": "bb6d51478b399b1dc6c999a8addfc2c42b724eddc860cb523c76e6fc0bf90a33",
+      "working_bytes": 224,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/ec9c45362e9c831a9a43bc02fc37ed12e1a6c5606561f9b1efcfd3a1e092ce44.svg",
+      "original_sha256": "ec9c45362e9c831a9a43bc02fc37ed12e1a6c5606561f9b1efcfd3a1e092ce44",
+      "original_bytes": 336,
+      "working_sha256": "e1b17937af7c29b3752cf47c130cd321482a22fb8db95c026df23aa67e7aec8b",
+      "working_bytes": 337,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/edfbba287df805e724c69c0321b2688d8f5394a9dbe69f186e44b9ba183c676a.svg",
+      "original_sha256": "edfbba287df805e724c69c0321b2688d8f5394a9dbe69f186e44b9ba183c676a",
+      "original_bytes": 294,
+      "working_sha256": "ecd7b6e766da8b596e693077ab2120fce3696e49645e18b65c39863bd79f8071",
+      "working_bytes": 295,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-artifacts/f378f42b48506a73fa4b7ae68af4299b7597159ca9f8b48aeafcd0eb551ab656.svg",
+      "original_sha256": "f378f42b48506a73fa4b7ae68af4299b7597159ca9f8b48aeafcd0eb551ab656",
+      "original_bytes": 244,
+      "working_sha256": "f721af1ad8537603975b0f3961d339554e5b22e4a3878358d598ac17bacd44c8",
+      "working_bytes": 245,
+      "transformation": "only final newline normalization"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-prelaunch.json",
+      "original_sha256": "20734700382e89020e8520b75aeab7066ca019b27a58af854db8d44c0e08a734",
+      "original_bytes": 1760,
+      "working_sha256": "20734700382e89020e8520b75aeab7066ca019b27a58af854db8d44c0e08a734",
+      "working_bytes": 1760,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-summary.json",
+      "original_sha256": "37575ad583238d578a855eb7bccb7ac62d4a1ab28aa319ca5597474a20e1177e",
+      "original_bytes": 8548,
+      "working_sha256": "37575ad583238d578a855eb7bccb7ac62d4a1ab28aa319ca5597474a20e1177e",
+      "working_bytes": 8548,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-terminal.json",
+      "original_sha256": "3f78376f7e1b4c634a5555b73a1915cc57595f85c02a601c767d2923749ee825",
+      "original_bytes": 1833,
+      "working_sha256": "3f78376f7e1b4c634a5555b73a1915cc57595f85c02a601c767d2923749ee825",
+      "working_bytes": 1833,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/red-mvr-05-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "original_sha256": "3b6726b17a3dd4a23c23cd1c68996ffb855c9a392034324de83aef6cdb2c371a",
+      "original_bytes": 265209,
+      "working_sha256": "1f9742523a7b2a3800086acf49b56e02f1e4f9f086ee8ed96d468ff76d5b88d3",
+      "working_bytes": 265194,
+      "transformation": "Readable working representation: final newline/mandatory trailing whitespace normalization; two source-hash JSON fields use label/identifier structure. Exact original bytes and original checksum retained only in immutable archive; not runtime source proof."
+    },
+    {
+      "path": "original-evidence/red-mvr-05.log",
+      "original_sha256": "7ae2c3291b1b05339daebcce6825b690f3f723872736e11960f5bd2fe40e696c",
+      "original_bytes": 9387,
+      "working_sha256": "7ae2c3291b1b05339daebcce6825b690f3f723872736e11960f5bd2fe40e696c",
+      "working_bytes": 9387,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-evidence/run-map-check.py",
+      "original_sha256": "7c273e1c4d130a6db2afd3fc5fb4f80a8e469b824f56fb386926e609b10a021b",
+      "original_bytes": 2252,
+      "working_sha256": "7c273e1c4d130a6db2afd3fc5fb4f80a8e469b824f56fb386926e609b10a021b",
+      "working_bytes": 2252,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-log-audit.json",
+      "original_sha256": "15357162e37ebe690c911343b91e566e0fc581559ed04e44178805d0815711de",
+      "original_bytes": 19063,
+      "working_sha256": "15357162e37ebe690c911343b91e566e0fc581559ed04e44178805d0815711de",
+      "working_bytes": 19063,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "original-xml-audit.json",
+      "original_sha256": "61e68fccde5f73c2588654e1a631a97000c890297860c8c344da24899e63abc1",
+      "original_bytes": 26407,
+      "working_sha256": "61e68fccde5f73c2588654e1a631a97000c890297860c8c344da24899e63abc1",
+      "working_bytes": 26407,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "png-budget-audit.json",
+      "original_sha256": "fcd7d9c8317948d4eeaf63bbfae393051a61b5560b075e530c4f3ee1bd5bfd46",
+      "original_bytes": 3698,
+      "working_sha256": "fcd7d9c8317948d4eeaf63bbfae393051a61b5560b075e530c4f3ee1bd5bfd46",
+      "working_bytes": 3698,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "prior-immutable-review-audit.json",
+      "original_sha256": "651459d05f05a35fc53a6f7c7395a51619bdffada05210e56bac0ba393ffa2d4",
+      "original_bytes": 9929,
+      "working_sha256": "651459d05f05a35fc53a6f7c7395a51619bdffada05210e56bac0ba393ffa2d4",
+      "working_bytes": 9929,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "privacy-transfer-audit.json",
+      "original_sha256": "cad005fb1696410d3e25a40b763d55c350c201431534c2c071af35a65c4112d8",
+      "original_bytes": 640,
+      "working_sha256": "cad005fb1696410d3e25a40b763d55c350c201431534c2c071af35a65c4112d8",
+      "working_bytes": 640,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "served-artifact-audit.json",
+      "original_sha256": "1191709f5f237201a364e7e02c25b2c822491fb3541e30e7c184c3d0843c6229",
+      "original_bytes": 9056,
+      "working_sha256": "1191709f5f237201a364e7e02c25b2c822491fb3541e30e7c184c3d0843c6229",
+      "working_bytes": 9056,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "original_sha256": "5b039af3995298b8f81fcaa5eaaeaf372347f7fc5bf999814a1259b7fce4bb86",
+      "original_bytes": 53919,
+      "working_sha256": "5b039af3995298b8f81fcaa5eaaeaf372347f7fc5bf999814a1259b7fce4bb86",
+      "working_bytes": 53919,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+      "original_sha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+      "original_bytes": 7915,
+      "working_sha256": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+      "working_bytes": 7915,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+      "original_sha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+      "original_bytes": 26168,
+      "working_sha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+      "working_bytes": 26168,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+      "original_sha256": "96ffa04d5514d94388099488c92cf775ff77cb838c797cb35f6b2f980d3e9675",
+      "original_bytes": 4914,
+      "working_sha256": "96ffa04d5514d94388099488c92cf775ff77cb838c797cb35f6b2f980d3e9675",
+      "working_bytes": 4914,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+      "original_sha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+      "original_bytes": 85193,
+      "working_sha256": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+      "working_bytes": 85193,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-equivalence.json",
+      "original_sha256": "2690424affa99c571296a53208e8df701bf0ed79b3decee954204c1d83da0557",
+      "original_bytes": 3621,
+      "working_sha256": "2690424affa99c571296a53208e8df701bf0ed79b3decee954204c1d83da0557",
+      "working_bytes": 3621,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "sha256-manifest.json",
+      "original_sha256": "ba03bfbaa63782d9586d16a5c59c431742eace5be2ff9c091d2374c28464a5cb",
+      "original_bytes": 12400,
+      "working_sha256": "ba03bfbaa63782d9586d16a5c59c431742eace5be2ff9c091d2374c28464a5cb",
+      "working_bytes": 12400,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

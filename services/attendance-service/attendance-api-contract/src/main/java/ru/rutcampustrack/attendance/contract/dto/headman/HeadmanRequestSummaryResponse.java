@@ -20,6 +20,4 @@ public record HeadmanRequestSummaryResponse(
         Instant updatedAt,
         Long decisionBy,
         Instant decisionAt,
-        String decisionComment
-) {
-}
+        String decisionComment) {}

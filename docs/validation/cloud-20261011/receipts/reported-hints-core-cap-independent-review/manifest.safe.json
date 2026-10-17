@@ -1,0 +1,20 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 786,
+      "sha256": "b838970d70b08859b67d7628d91f50567d3357b29ddb652987cacb94f67e5135"
+    },
+    {
+      "path": "review.py",
+      "bytes": 7397,
+      "sha256": "b3314084dd32cc87ebbe116dba95f0b1876e75ad39c53f3827ac4bdc9064bd8d"
+    },
+    {
+      "path": "review.safe.json",
+      "bytes": 5005,
+      "sha256": "4b7281bd2603e209071658611066a03c538db2ef42aa9edfc0f0139f633f0bfc"
+    }
+  ]
+}

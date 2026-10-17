@@ -1,0 +1,326 @@
+{
+  "group_id": "ATTENDANCE-CACHE",
+  "criterion": "semester cache invalidation and current projection scope",
+  "related_source_story_ids": [
+    "JS-ADMIN-09",
+    "JS-STUDENT-05",
+    "JS-STUDENT-06",
+    "JS-SYSTEM-14"
+  ],
+  "research_ids": [
+    "L02",
+    "P13"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/geofence/GeofenceServiceTest.java",
+      "class": "ru.rutcampustrack.attendance.geofence.GeofenceServiceTest",
+      "methods": [
+        {
+          "method": "isWithinCampus_usesStaleGeofenceWhenRefreshFailsAfterTtl",
+          "line": 27,
+          "assertion_evidence": [
+            {
+              "line": 37,
+              "expression": "assertThat(service.isWithinCampus(55.788204, 37.606762)).isTrue();"
+            },
+            {
+              "line": 38,
+              "expression": "verify(academicGrpcClient, times(2)).getCampusGeofence();"
+            }
+          ]
+        },
+        {
+          "method": "isWithinCampus_withoutCachedGeofencePropagatesRefreshFailure",
+          "line": 41,
+          "assertion_evidence": [
+            {
+              "line": 48,
+              "expression": "assertThatThrownBy(() -> service.isWithinCampus(55.788204, 37.606762))"
+            },
+            {
+              "line": 49,
+              "expression": ".isInstanceOf(AcademicServiceUnavailableException.class);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+      "class": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+      "methods": [
+        {
+          "method": "joinsOwnMembershipAndUsesFullSemesterCohortForRank",
+          "line": 65,
+          "assertion_evidence": [
+            {
+              "line": 133,
+              "expression": "assertThat(projection.metrics().plannedCount()).isEqualTo(4);"
+            },
+            {
+              "line": 134,
+              "expression": "assertThat(projection.metrics().heldCount()).isEqualTo(3);"
+            },
+            {
+              "line": 135,
+              "expression": "assertThat(projection.metrics().presentCount()).isEqualTo(1);"
+            },
+            {
+              "line": 136,
+              "expression": "assertThat(projection.metrics().absentCount()).isEqualTo(2);"
+            },
+            {
+              "line": 137,
+              "expression": "assertThat(projection.metrics().missingClosedCount()).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "lateJoinerRankUsesCanonicalSemesterDenominator",
+          "line": 164,
+          "assertion_evidence": [
+            {
+              "line": 214,
+              "expression": "assertThat(projection.metrics().heldCount()).isEqualTo(1);"
+            },
+            {
+              "line": 215,
+              "expression": "assertThat(projection.metrics().presentCount()).isEqualTo(1);"
+            },
+            {
+              "line": 218,
+              "expression": "assertThat(projection.ownRank().position()).isEqualTo(2);"
+            },
+            {
+              "line": 219,
+              "expression": "assertThat(projection.ownRank().participantCount()).isEqualTo(2);"
+            },
+            {
+              "line": 220,
+              "expression": "verify(scheduleGrpcClient).getLessonsByGroup("
+            }
+          ]
+        },
+        {
+          "method": "rankingDefaultsToPageContainingOwnRowAndOnlyReturnsAuthorizedCohortNames",
+          "line": 224,
+          "assertion_evidence": [
+            {
+              "line": 294,
+              "expression": "assertThat(page.available()).isTrue();"
+            },
+            {
+              "line": 295,
+              "expression": "assertThat(page.page()).isEqualTo(1);"
+            },
+            {
+              "line": 296,
+              "expression": "assertThat(page.size()).isEqualTo(2);"
+            },
+            {
+              "line": 297,
+              "expression": "assertThat(page.total()).isEqualTo(4);"
+            },
+            {
+              "line": 298,
+              "expression": "assertThat(page.ownPosition()).isEqualTo(3);"
+            }
+          ]
+        },
+        {
+          "method": "hiddenRankingReturnsEmptyUnavailablePageWithoutReadingPeers",
+          "line": 313,
+          "assertion_evidence": [
+            {
+              "line": 334,
+              "expression": "assertThat(page).isEqualTo(new StudentAttendanceProjectionService.RankingPage("
+            },
+            {
+              "line": 336,
+              "expression": "verifyNoInteractions(attendanceReadPort, scheduleGrpcClient);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheServiceTest.java",
+      "class": "ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest",
+      "methods": [
+        {
+          "method": "archiveLastActiveSemesterClearsOldIdAndNextReadFindsNewActivation",
+          "line": 41,
+          "assertion_evidence": [
+            {
+              "line": 50,
+              "expression": "assertThat(cache.getActiveSemesterId()).isEqualTo(11L);"
+            },
+            {
+              "line": 53,
+              "expression": "assertDoesNotThrow(cache::refresh);"
+            },
+            {
+              "line": 54,
+              "expression": "assertThat(cache.getActiveSemesterId()).isNull();"
+            },
+            {
+              "line": 57,
+              "expression": "assertThat(cache.getActiveSemesterId()).isEqualTo(12L);"
+            }
+          ]
+        },
+        {
+          "method": "transportFailurePropagatesOnRefreshAndKeepsExistingCachePolicy",
+          "line": 60,
+          "assertion_evidence": [
+            {
+              "line": 67,
+              "expression": "assertThat(cache.getActiveSemesterId()).isNull();"
+            },
+            {
+              "line": 68,
+              "expression": "assertThat(cache.getActiveSemesterId()).isEqualTo(11L);"
+            },
+            {
+              "line": 70,
+              "expression": "assertThrows(AcademicServiceUnavailableException.class, cache::refresh);"
+            },
+            {
+              "line": 71,
+              "expression": "assertThat(cache.getActiveSemesterId()).isEqualTo(11L);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:attendance-service:attendance-app:test --tests ru.rutcampustrack.attendance.geofence.GeofenceServiceTest --tests ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest --tests ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/attendance-service/attendance-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:attendance-service:attendance-app:test"
+    ],
+    "command_if_java": "./gradlew :services:attendance-service:attendance-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "SemesterCacheServiceTest uses mocked Academic client/manual refresh. It does not simulate lost events, concurrent instances and fresh server request options with new active semester.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

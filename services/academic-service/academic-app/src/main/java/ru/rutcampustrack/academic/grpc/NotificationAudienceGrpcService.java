@@ -11,11 +11,14 @@ public final class NotificationAudienceGrpcService
         extends NotificationAudienceGrpcServiceGrpc.NotificationAudienceGrpcServiceImplBase {
     private final NotificationAudienceResolver resolver;
 
-    public NotificationAudienceGrpcService(NotificationAudienceResolver resolver) { this.resolver = resolver; }
+    public NotificationAudienceGrpcService(NotificationAudienceResolver resolver) {
+        this.resolver = resolver;
+    }
 
     @Override
-    public void resolveNotificationAudience(NotificationAudienceRequest request,
-                                            StreamObserver<NotificationAudienceResponse> observer) {
+    public void resolveNotificationAudience(
+            NotificationAudienceRequest request,
+            StreamObserver<NotificationAudienceResponse> observer) {
         try {
             NotificationAudienceServiceAdmission.require();
             observer.onNext(resolver.resolve(request));
@@ -23,7 +26,10 @@ public final class NotificationAudienceGrpcService
         } catch (StatusRuntimeException error) {
             observer.onError(error);
         } catch (RuntimeException error) {
-            observer.onError(Status.UNAVAILABLE.withDescription("notification authority unavailable").asRuntimeException());
+            observer.onError(
+                    Status.UNAVAILABLE
+                            .withDescription("notification authority unavailable")
+                            .asRuntimeException());
         }
     }
 }

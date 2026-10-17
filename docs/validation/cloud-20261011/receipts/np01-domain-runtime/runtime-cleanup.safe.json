@@ -1,0 +1,62 @@
+{
+  "utc": "2026-10-12T03:15:19.710780+00:00",
+  "own_ids_from_native_xml_only": true,
+  "owned_containers": {
+    "3c01e24d2eedc24ea338e42b3bf90e9353fc1f905862d8a382a6b17ae887133a": {
+      "phase": "pg01",
+      "image": "postgres:16-alpine",
+      "inspect_native_exit": 1,
+      "state": "ABSENT"
+    },
+    "693960f783eec05f3b1ed03f793088782f8516b16bc4bb2afe71941141f0cac0": {
+      "phase": "pg02",
+      "image": "postgres:16-alpine",
+      "inspect_native_exit": 1,
+      "state": "ABSENT"
+    },
+    "a9a9cbf0cbebc8c04925f9f30fecf98545a8e3216243f265d017dac32db9b475": {
+      "phase": "pg03",
+      "image": "postgres:16",
+      "inspect_native_exit": 1,
+      "state": "ABSENT"
+    },
+    "75b59867dc6e5b2fe8fba01ebae782096233d98eb62aaaf9e376ad874116344c": {
+      "phase": "pg03",
+      "image": "postgres:16-alpine",
+      "inspect_native_exit": 1,
+      "state": "ABSENT"
+    },
+    "54f058c7c16428d0a958941e96132a5923a800e4ffd0fa994cb9bc40b21269f0": {
+      "phase": "bridge01",
+      "image": "postgres:16-alpine",
+      "inspect_native_exit": 1,
+      "state": "ABSENT"
+    },
+    "8295d45bba3208b3f0d39d772288d48ab6fe9d63f6b0648ef3b2f1fe478ab544": {
+      "phase": "fault-permission01",
+      "image": "postgres:16-alpine",
+      "inspect_native_exit": 1,
+      "state": "ABSENT"
+    },
+    "0c9fdab0ba56d1308194daa307a119a1c271c540ec175087dc690ebc61230747": {
+      "phase": "fault-enum01",
+      "image": "postgres:16-alpine",
+      "inspect_native_exit": 1,
+      "state": "ABSENT"
+    },
+    "7d76b208ebc61ea7760dcc84bf77457d59906ea5517976f390650290a8b99788": {
+      "phase": "fault-cas01",
+      "image": "postgres:16-alpine",
+      "inspect_native_exit": 1,
+      "state": "ABSENT"
+    },
+    "8a7e8717fe5bf12dfcb53e50846574402f80f53460dbe6639ee9fa6656c1fe53": {
+      "phase": "fault-restored01",
+      "image": "postgres:16-alpine",
+      "inspect_native_exit": 1,
+      "state": "ABSENT"
+    }
+  },
+  "all_owned_pg_absent": true,
+  "no_resource_mutation": true
+}

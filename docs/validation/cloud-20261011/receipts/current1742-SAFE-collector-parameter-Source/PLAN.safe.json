@@ -1,0 +1,95 @@
+{
+  "state": "SOURCE_READY_NO_METADATA_API_OR_DOWNLOAD_AUTHORITY",
+  "runtime_binding": {
+    "path": "/workspace/scratch/rct-validation/ci_1742d1_receipts/run-binding.actual.safe.json",
+    "created": false,
+    "proposed_exact8_keys": [
+      "state",
+      "producer",
+      "event",
+      "run_attempt",
+      "runs",
+      "schema_source_sha",
+      "reporter_sha256",
+      "privacy_sha256"
+    ],
+    "metadata_api_verified": false,
+    "source_template": "/workspace/scratch/rct-validation/ci_1742d1_receipts/checking/run-binding.template.safe.json"
+  },
+  "reader_sources": {
+    "download-safe.py": "5545998d369d9f2f6af19d9376a19b814b7942da0d4085ba6191a05a39ba9dd0",
+    "download-first3-safe.py": "85eb7c53886a4b104a7086a32dfa923b1a9d1ba73387b54518fcf76c4f9411c8",
+    "strict-browser-schema.py": "ea7d341ab0356d9b3235ff748eb62a64dac1cd1a1673315379ea6d215cfc7c7e"
+  },
+  "caller_reference": {
+    "source": "/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py",
+    "sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+    "function": "run_owned",
+    "no_new_executable_or_logic": true,
+    "argv_per_artifact": [
+      "python3",
+      "/workspace/scratch/rct-validation/ci_1742d1_receipts/download-safe.py"
+    ],
+    "first3_when_available": [
+      "python3",
+      "/workspace/scratch/rct-validation/ci_1742d1_receipts/download-first3-safe.py"
+    ],
+    "qualification": "Existing reviewed b78 inline call/resource observation pattern must be bound to fresh Root grant before invoking; no new caller file prepared or execution performed."
+  },
+  "proposed_bounded_resources": {
+    "one_artifact_at_a_time": true,
+    "reader_archive_max_bytes": 33554432,
+    "reader_total_decompressed_max_bytes": 33554432,
+    "request_timeout_seconds": 30,
+    "per_owned_reader_phase_seconds": 45,
+    "term_seconds": 5,
+    "kill_seconds": 5,
+    "cleanup_margin_seconds": 30,
+    "workspace_floor_bytes": 4294967296,
+    "soft_owned_rss_bytes": 536870912,
+    "shared_stop_bytes": 16106127360,
+    "shared_reserve_bytes": 1073741824,
+    "proposed_collection_disk_growth_bytes": 268435456,
+    "private_one_use_request_mode": "0600",
+    "private_request_unlink_in_reader_finally": true,
+    "buffers": "Existing post-read/decompression checks plus sampled RSS; no hard allocation claim"
+  },
+  "metadata_only_artifacts_ready": "UNKNOWN_NO_API_READ_YET",
+  "first3": "NOT_COLLECTED_CURRENT1742",
+  "actual_PR_checkout": "UNKNOWN_PENDING_SAFE_CURRENT_CHECKOUT",
+  "qualification": "No raw XML/log/HTML/request/body/private fields. Exact Attendance8 case/source statuses and checkout must be read from current validated SAFE packets before finite promotion; job success alone insufficient. B013 never retried.",
+  "current_producer": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+  "current_runs_proposed_from_Root": {
+    "ci": 38387263916,
+    "coverage": 38387263972,
+    "security": 38387263915,
+    "openapi": 38387263917
+  },
+  "distinct_push_ci": 38387255561,
+  "fresh_grant_required": true,
+  "total_grant_wall_seconds": 600,
+  "same_supervisor_session_birth_poll_required": true,
+  "closed_stdout_capture_from_start": true,
+  "stderr": "DISCARD_NO_RAW_PRIVATE_OUTPUT",
+  "source_targets": [
+    {
+      "family": "P06",
+      "classname": "ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT",
+      "method": "durableRevokeSurvivesReconstructionAndRealAuthorityOutageFailsClosed",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+      "sourceSha256": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2",
+      "require": "SOURCE_METHOD/PASSED/nonempty/collectionRESULTS/countsConsistent/currenthead+actualcheckout join/no selected SKIP-NOT_EXECUTED-FAIL-ERROR",
+      "acceptance": "NOT_ASSESSED_PENDING_CURRENT_NATIVE_SAFE_OUTCOME"
+    },
+    {
+      "family": "P10",
+      "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+      "method": "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "sourceSha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+      "require": "SOURCE_METHOD/PASSED/nonempty/collectionRESULTS/countsConsistent/currenthead+actualcheckout join/no selected SKIP-NOT_EXECUTED-FAIL-ERROR",
+      "acceptance": "NOT_ASSESSED_PENDING_CURRENT_NATIVE_SAFE_OUTCOME"
+    }
+  ],
+  "first3_qualification": "Exact original14/61/142; eleven DATASET_HTTP contexts are reported serialized hints, not authenticated server HTTP/cause/admission; observer facts retain separate provenance"
+}

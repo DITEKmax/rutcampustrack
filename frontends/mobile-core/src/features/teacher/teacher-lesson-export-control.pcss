@@ -25,8 +25,12 @@
   cursor: pointer;
   @mixin rct-focus-ring;
 }
-.teacher-lesson-export__status-root { min-inline-size: 0; }
-.teacher-lesson-export__status-root:empty { display: none; }
+.teacher-lesson-export__status-root {
+  min-inline-size: 0;
+}
+.teacher-lesson-export__status-root:empty {
+  display: none;
+}
 .teacher-lesson-export__status {
   min-inline-size: 0;
   padding: var(--rct-space-3);
@@ -36,7 +40,9 @@
   border: var(--rct-border-hairline) solid var(--rct-color-border-default);
   @mixin rct-type-lesson-meta;
 }
-.teacher-lesson-export__status p { margin: 0; }
+.teacher-lesson-export__status p {
+  margin: 0;
+}
 .teacher-lesson-export__preparing {
   border-block-start: var(--rct-border-hairline) solid var(--rct-color-accent-now);
   padding-block-start: var(--rct-space-2);
@@ -49,4 +55,10 @@
   border-radius: 0;
 }
 
-.teacher-lesson-export__backdrop { position: fixed; z-index: 19; inset: 0; background: var(--rct-role-overlay-surface); backdrop-filter: blur(calc(var(--rct-mobile-blur) / 6)); }
+.teacher-lesson-export__backdrop {
+  position: fixed;
+  z-index: 19;
+  inset: 0;
+  background: var(--rct-role-overlay-surface);
+  backdrop-filter: blur(calc(var(--rct-mobile-blur) / 6));
+}

@@ -13,14 +13,12 @@ import ru.rutcampustrack.shared.outbox.OutboxStorage;
 /**
  * Записывает Spring ApplicationEvent'ы в schedule_outbox (M02 Группа 5).
  *
- * <p>Изменение относительно v1: раньше был
- * {@code @TransactionalEventListener(AFTER_COMMIT)} → прямой
- * {@code rabbitTemplate.convertAndSend(...)}. Проблема — потеря сообщений
- * при Rabbit outage после коммита (02 P0-6).
+ * <p>Изменение относительно v1: раньше был {@code @TransactionalEventListener(AFTER_COMMIT)} →
+ * прямой {@code rabbitTemplate.convertAndSend(...)}. Проблема — потеря сообщений при Rabbit outage
+ * после коммита (02 P0-6).
  *
- * <p>Новая схема: {@link TransactionPhase#BEFORE_COMMIT} — listener
- * срабатывает ВНУТРИ активной tx. Запись в outbox идёт в той же
- * транзакции, что и доменная операция. {@code OutboxPublisherJob}
+ * <p>Новая схема: {@link TransactionPhase#BEFORE_COMMIT} — listener срабатывает ВНУТРИ активной tx.
+ * Запись в outbox идёт в той же транзакции, что и доменная операция. {@code OutboxPublisherJob}
  * асинхронно публикует pending rows в Rabbit.
  */
 @Component
@@ -32,9 +30,10 @@ public class DomainEventListener extends AbstractEventPublisher {
     private final ObjectMapper objectMapper;
     private final SemesterArchiveEffectLedger semesterArchiveEffectLedger;
 
-    public DomainEventListener(OutboxStorage outboxStorage,
-                               ObjectMapper objectMapper,
-                               SemesterArchiveEffectLedger semesterArchiveEffectLedger) {
+    public DomainEventListener(
+            OutboxStorage outboxStorage,
+            ObjectMapper objectMapper,
+            SemesterArchiveEffectLedger semesterArchiveEffectLedger) {
         super("schedule-service");
         this.outboxStorage = outboxStorage;
         this.objectMapper = objectMapper;
@@ -50,8 +49,11 @@ public class DomainEventListener extends AbstractEventPublisher {
             payload = objectMapper.writeValueAsString(event);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(
-                    "Failed to serialize domain event: type=" + event.getEventType()
-                            + ", id=" + event.getEventId(), e);
+                    "Failed to serialize domain event: type="
+                            + event.getEventType()
+                            + ", id="
+                            + event.getEventId(),
+                    e);
         }
         outboxStorage.save(event.getEventType(), payload);
         semesterArchiveEffectLedger.record(event, payload);

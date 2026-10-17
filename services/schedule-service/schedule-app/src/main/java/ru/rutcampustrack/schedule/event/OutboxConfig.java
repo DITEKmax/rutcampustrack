@@ -1,6 +1,7 @@
 package ru.rutcampustrack.schedule.event;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Clock;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,33 +19,29 @@ import ru.rutcampustrack.shared.outbox.OutboxStorage;
 import ru.rutcampustrack.shared.outbox.jpa.JpaIdempotencyStore;
 import ru.rutcampustrack.shared.outbox.jpa.JpaOutboxStorage;
 
-import java.time.Clock;
-
 /**
  * Собирает outbox-инфраструктуру в schedule-service (M02 Группа 5).
  *
- * <p>M02 Группа 1: существующий {@code SchedulingConfig} уже создаёт
- * LockProvider + {@code @EnableSchedulerLock} для
- * LessonStatusTransitionJob. Здесь создаётся Storage+Publisher, причём
- * Storage активен всегда (нужен DomainEventListener даже в тестах),
- * а Publisher guarded {@code @Profile("!test")}.
+ * <p>M02 Группа 1: существующий {@code SchedulingConfig} уже создаёт LockProvider +
+ * {@code @EnableSchedulerLock} для LessonStatusTransitionJob. Здесь создаётся Storage+Publisher,
+ * причём Storage активен всегда (нужен DomainEventListener даже в тестах), а Publisher guarded
+ * {@code @Profile("!test")}.
  *
  * <p>M13 G24-fix-5 — про LockProvider:
+ *
  * <ul>
- *   <li><b>В prod</b>: {@code SchedulingConfig} активен (Profile != "test"),
- *       создаёт LockProvider. {@code IdempotencyCleanupJob} +
- *       {@code OutboxPublisherJob} + {@code OutboxCleanupJob} в Publisher
- *       блоке используют {@code @SchedulerLock} — работает корректно.</li>
- *   <li><b>В test</b>: оба ({@code SchedulingConfig} + {@code Publisher})
- *       guarded {@code @Profile("!test")} — не активны, LockProvider не
- *       создаётся, но {@code @SchedulerLock} тоже не вызывается (no
- *       jobs scheduled).</li>
+ *   <li><b>В prod</b>: {@code SchedulingConfig} активен (Profile != "test"), создаёт LockProvider.
+ *       {@code IdempotencyCleanupJob} + {@code OutboxPublisherJob} + {@code OutboxCleanupJob} в
+ *       Publisher блоке используют {@code @SchedulerLock} — работает корректно.
+ *   <li><b>В test</b>: оба ({@code SchedulingConfig} + {@code Publisher}) guarded
+ *       {@code @Profile("!test")} — не активны, LockProvider не создаётся, но
+ *       {@code @SchedulerLock} тоже не вызывается (no jobs scheduled).
  * </ul>
- * <p><b>Invariant</b>: schedule-app зависит от SchedulingConfig для
- * LockProvider'а (в отличие от academic, где LockProvider в
- * OutboxConfig.Storage). Если кто-то удалит/перенесёт SchedulingConfig —
- * prod scheduler упадёт «no LockProvider bean defined». Регрессия
- * покрыта {@code OutboxLockProviderIT} (M13 G24-fix-5).
+ *
+ * <p><b>Invariant</b>: schedule-app зависит от SchedulingConfig для LockProvider'а (в отличие от
+ * academic, где LockProvider в OutboxConfig.Storage). Если кто-то удалит/перенесёт SchedulingConfig
+ * — prod scheduler упадёт «no LockProvider bean defined». Регрессия покрыта {@code
+ * OutboxLockProviderIT} (M13 G24-fix-5).
  */
 @Configuration
 public class OutboxConfig {
@@ -78,9 +75,8 @@ public class OutboxConfig {
     @EnableSchedulerLock(defaultLockAtMostFor = "PT5M")
     public static class Publisher {
         @Bean
-        public OutboxPublisherJob outboxPublisherJob(OutboxStorage storage,
-                                                     OutboxEventSender sender,
-                                                     MeterRegistry meterRegistry) {
+        public OutboxPublisherJob outboxPublisherJob(
+                OutboxStorage storage, OutboxEventSender sender, MeterRegistry meterRegistry) {
             return new OutboxPublisherJob(storage, sender, meterRegistry);
         }
 

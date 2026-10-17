@@ -1,3 +1,9 @@
+x-bounded-logs: &bounded-logs
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   # ============================================================
   # INFRASTRUCTURE
@@ -9,21 +15,32 @@ services:
     #   docker buildx imagetools inspect postgres:16
     image: postgres:16@sha256:760ea41aae126965bedd587d35a23de37447bb13a6ac4444bef6ff73b8b72234
     container_name: rct-postgres-academic
+    logging: *bounded-logs
     environment:
       POSTGRES_DB: academic_db
-      POSTGRES_USER: rct_user
-      POSTGRES_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD}
+      POSTGRES_USER: rct_bootstrap
+      POSTGRES_PASSWORD_FILE: /run/secrets/rct-bootstrap-password
     expose:
-      - "5432"
+      - '5432'
     volumes:
+      - ./infra/postgres/init-roles.sh:/docker-entrypoint-initdb.d/10-rct-roles.sh:ro
       - pg-academic-data:/var/lib/postgresql/data
+    secrets:
+    - source: pg-academic-bootstrap-password
+      target: rct-bootstrap-password
+    - source: pg-academic-runtime-password
+      target: rct-runtime-password
+    - source: pg-academic-migration-password
+      target: rct-migration-password
+    - source: pg-academic-monitor-password
+      target: rct-monitor-password
     networks:
       - private_net
     # M09 G7 (NEW-157) — см. docs/resource-limits.md.
     mem_limit: 192m
     mem_reservation: 128m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rct_user -d academic_db"]
+      test: ['CMD-SHELL', 'pg_isready -U rct_user -d academic_db']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -33,22 +50,33 @@ services:
     # M08 G11 — digest-pin.
     image: postgres:16@sha256:760ea41aae126965bedd587d35a23de37447bb13a6ac4444bef6ff73b8b72234
     container_name: rct-postgres-schedule
+    logging: *bounded-logs
     environment:
       POSTGRES_DB: schedule_db
-      POSTGRES_USER: rct_user
-      POSTGRES_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD}
+      POSTGRES_USER: rct_bootstrap
+      POSTGRES_PASSWORD_FILE: /run/secrets/rct-bootstrap-password
       TZ: Europe/Moscow
     expose:
-      - "5432"
+      - '5432'
     volumes:
+      - ./infra/postgres/init-roles.sh:/docker-entrypoint-initdb.d/10-rct-roles.sh:ro
       - pg-schedule-data:/var/lib/postgresql/data
+    secrets:
+    - source: pg-schedule-bootstrap-password
+      target: rct-bootstrap-password
+    - source: pg-schedule-runtime-password
+      target: rct-runtime-password
+    - source: pg-schedule-migration-password
+      target: rct-migration-password
+    - source: pg-schedule-monitor-password
+      target: rct-monitor-password
     networks:
       - private_net
     # M09 G7 (NEW-157).
     mem_limit: 256m
     mem_reservation: 192m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rct_user -d schedule_db"]
+      test: ['CMD-SHELL', 'pg_isready -U rct_user -d schedule_db']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -74,6 +102,7 @@ services:
     #   docker buildx imagetools inspect bitnamilegacy/mongodb:7.0
     image: bitnamilegacy/mongodb:7.0@sha256:16a57fa081f18e7acd1b4de1cd74f3e294cc6de861007e6fe3a418eb61db8a54
     container_name: rct-mongo-attendance
+    logging: *bounded-logs
     environment:
       # Single-node replica set (primary + 0 secondaries).
       MONGODB_REPLICA_SET_MODE: primary
@@ -95,7 +124,9 @@ services:
       MONGO_NOTIFICATION_USER: ${MONGO_NOTIFICATION_USER}
       MONGO_NOTIFICATION_PASSWORD: ${MONGO_NOTIFICATION_PASSWORD}
     expose:
-      - "27017"
+      - '27017'
+    secrets:
+      - mongo-monitor-env
     volumes:
       - mongo-data:/bitnami/mongodb
       - ./infra/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
@@ -106,7 +137,7 @@ services:
     mem_limit: 512m
     mem_reservation: 320m
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -117,11 +148,16 @@ services:
     # M08 G11 — digest-pin. Update: docker buildx imagetools inspect redis:7-alpine
     image: redis:7-alpine@sha256:7aec734b2bb298a1d769fd8729f13b8514a41bf90fcdd1f38ec52267fbaa8ee6
     container_name: rct-redis
+    logging: *bounded-logs
     # M09 G7 — maxmemory чуть ниже mem_limit, allkeys-lru выбрасывает
     # холодные OTP/RBAC-entries раньше, чем OOMKill срубит контейнер.
-    command: redis-server --requirepass "${REDIS_PASSWORD}" --maxmemory 96mb --maxmemory-policy allkeys-lru
+    command: redis-server --aclfile /run/secrets/redis-users-acl --maxmemory 96mb --maxmemory-policy allkeys-lru
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    secrets:
+      - redis-users-acl
     expose:
-      - "6379"
+      - '6379'
     volumes:
       - redis-data:/data
     networks:
@@ -130,7 +166,7 @@ services:
     mem_limit: 128m
     mem_reservation: 64m
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -145,22 +181,24 @@ services:
     # Update: docker buildx imagetools inspect rabbitmq:3.13-management-alpine
     image: rabbitmq:3.13-management-alpine@sha256:606d8c0d6b3c18d1da9afc53bc7cdb2a8d5486df91b5a9830e9e07626c9ae281
     container_name: rct-rabbitmq
+    logging: *bounded-logs
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     expose:
-      - "5672"
+      - '5672'
       # M13 G19 — Prometheus metrics endpoint (rabbitmq_prometheus plugin).
-      - "15692"
+      - '15692'
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+      - ./infra/prometheus/rabbitmq-enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
     networks:
       - private_net
     # M09 G7 (NEW-157). M13 G19: +128m под management/prometheus plugin overhead.
     mem_limit: 384m
     mem_reservation: 256m
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -176,14 +214,30 @@ services:
       dockerfile: services/auth-service/Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/auth-service:${IMAGE_TAG:-latest}
     container_name: rct-auth-service
+    logging: *bounded-logs
     environment:
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/
+      SPRING_DATASOURCE_USERNAME: rct_runtime
+      MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_QUEUE_SIZE: "1024"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_BATCH_SIZE: "128"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_TIMEOUT: 1s
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_SCHEDULE_DELAY: 5s
+      MANAGEMENT_OTLP_TRACING_TIMEOUT: 1s
+      MANAGEMENT_OTLP_TRACING_CONNECT_TIMEOUT: 1s
       SPRING_PROFILES_ACTIVE: prod
+      DEPLOYMENT_ENVIRONMENT: production
+      SERVICE_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_METRICS_TAGS_ENVIRONMENT: production
+      MANAGEMENT_METRICS_TAGS_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
       # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
-      POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: "5672"
+      SPRING_RABBITMQ_PORT: '5672'
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_KEY_DIR: /keys
@@ -197,12 +251,15 @@ services:
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
       # M09 G7 (NEW-157) — heap = 0.75 × mem_limit. См. docs/resource-limits.md.
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+    secrets:
+    - source: pg-academic-runtime-password
+      target: /run/rct-db/POSTGRES_ACADEMIC_PASSWORD
     volumes:
       - jwt-keys:/keys
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
-      - "9090"
+      - '9090'
     networks:
       - private_net
     depends_on:
@@ -232,7 +289,7 @@ services:
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9090/actuator/health || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:9090/actuator/health || exit 1']
       interval: 15s
       timeout: 5s
       retries: 5
@@ -244,15 +301,35 @@ services:
       dockerfile: services/academic-service/academic-app/Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/academic-service:${IMAGE_TAG:-latest}
     container_name: rct-academic-service
+    logging: *bounded-logs
     environment:
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/
+      SPRING_DATASOURCE_USERNAME: rct_runtime
+      SPRING_FLYWAY_USER: rct_migrator
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration,filesystem:/etc/rct/flyway-callbacks
+      MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_QUEUE_SIZE: "1024"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_BATCH_SIZE: "128"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_TIMEOUT: 1s
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_SCHEDULE_DELAY: 5s
+      MANAGEMENT_OTLP_TRACING_TIMEOUT: 1s
+      MANAGEMENT_OTLP_TRACING_CONNECT_TIMEOUT: 1s
       SPRING_PROFILES_ACTIVE: prod
+      DEPLOYMENT_ENVIRONMENT: production
+      SERVICE_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_METRICS_TAGS_ENVIRONMENT: production
+      MANAGEMENT_METRICS_TAGS_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
       # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
-      POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       GRPC_SECRET: ${GRPC_SECRET}
+      ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN: ${ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN:?ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN must be set}
+      INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
       CAMPUS_MAP_USAGE_HMAC_KEY: ${CAMPUS_MAP_USAGE_HMAC_KEY:?CAMPUS_MAP_USAGE_HMAC_KEY must be set}
       ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:?ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN must be set}
       SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN: ${SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN:?SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN must be set}
@@ -260,13 +337,19 @@ services:
       ACADEMIC_GRPC_PRIVATE_KEY: file:/run/rct-academic-tls/academic-server.key
       SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+    secrets:
+    - source: pg-academic-runtime-password
+      target: /run/rct-db/POSTGRES_ACADEMIC_PASSWORD
+    - source: pg-academic-migration-password
+      target: /run/rct-db/spring.flyway.password
     volumes:
+      - ./infra/postgres/flyway-callbacks:/etc/rct/flyway-callbacks:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.key:/run/rct-academic-tls/academic-server.key:ro
     expose:
-      - "9091"
+      - '9091'
     networks:
       - private_net
     depends_on:
@@ -281,7 +364,7 @@ services:
     mem_reservation: 384m
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9091/actuator/health || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:9091/actuator/health || exit 1']
       interval: 15s
       timeout: 5s
       retries: 5
@@ -293,11 +376,29 @@ services:
       dockerfile: services/schedule-service/schedule-app/Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/schedule-service:${IMAGE_TAG:-latest}
     container_name: rct-schedule-service
+    logging: *bounded-logs
     environment:
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/
+      SPRING_DATASOURCE_USERNAME: rct_runtime
+      SPRING_FLYWAY_USER: rct_migrator
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration,filesystem:/etc/rct/flyway-callbacks
+      MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_QUEUE_SIZE: "1024"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_BATCH_SIZE: "128"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_TIMEOUT: 1s
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_SCHEDULE_DELAY: 5s
+      MANAGEMENT_OTLP_TRACING_TIMEOUT: 1s
+      MANAGEMENT_OTLP_TRACING_CONNECT_TIMEOUT: 1s
       SPRING_PROFILES_ACTIVE: prod
+      DEPLOYMENT_ENVIRONMENT: production
+      SERVICE_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_METRICS_TAGS_ENVIRONMENT: production
+      MANAGEMENT_METRICS_TAGS_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
       # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
-      POSTGRES_SCHEDULE_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       GRPC_SECRET: ${GRPC_SECRET}
@@ -309,13 +410,19 @@ services:
       SCHEDULE_GRPC_PRIVATE_KEY: file:/run/rct-schedule-tls/schedule-server.key
       TZ: Europe/Moscow
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+    secrets:
+    - source: pg-schedule-runtime-password
+      target: /run/rct-db/POSTGRES_SCHEDULE_PASSWORD
+    - source: pg-schedule-migration-password
+      target: /run/rct-db/spring.flyway.password
     volumes:
+      - ./infra/postgres/flyway-callbacks:/etc/rct/flyway-callbacks:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.key:/run/rct-schedule-tls/schedule-server.key:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
-      - "9092"
+      - '9092'
     networks:
       - private_net
     depends_on:
@@ -330,7 +437,7 @@ services:
     mem_reservation: 384m
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9092/actuator/health || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:9092/actuator/health || exit 1']
       interval: 15s
       timeout: 5s
       retries: 5
@@ -342,8 +449,23 @@ services:
       dockerfile: services/attendance-service/attendance-app/Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/attendance-service:${IMAGE_TAG:-latest}
     container_name: rct-attendance-service
+    logging: *bounded-logs
     environment:
+      MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_QUEUE_SIZE: "1024"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_BATCH_SIZE: "128"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_TIMEOUT: 1s
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_SCHEDULE_DELAY: 5s
+      MANAGEMENT_OTLP_TRACING_TIMEOUT: 1s
+      MANAGEMENT_OTLP_TRACING_CONNECT_TIMEOUT: 1s
       SPRING_PROFILES_ACTIVE: prod
+      DEPLOYMENT_ENVIRONMENT: production
+      SERVICE_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_METRICS_TAGS_ENVIRONMENT: production
+      MANAGEMENT_METRICS_TAGS_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
       # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       # M13 G7: ?replicaSet=rs0 для MongoTransactionManager multi-doc transactions.
@@ -352,18 +474,19 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       GRPC_SECRET: ${GRPC_SECRET}
+      ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN: ${ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN:?ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN must be set}
       SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
       # M18 hotfix: weekly DOCX export killed prod attendance-service under
       # 512m/75% heap; gateway saw PrematureClose BEFORE response. Keep heap
       # lower and leave room for JVM native memory + DOCX zip buffers.
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=30.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=30.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     volumes:
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
-      - "9093"
+      - '9093'
     networks:
       - private_net
     depends_on:
@@ -381,7 +504,7 @@ services:
     mem_reservation: 384m
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9093/actuator/health || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:9093/actuator/health || exit 1']
       interval: 15s
       timeout: 5s
       retries: 5
@@ -393,21 +516,36 @@ services:
       dockerfile: services/document-renderer-service/document-renderer-app/Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/document-renderer-service:${IMAGE_TAG:-latest}
     container_name: rct-document-renderer-service
+    logging: *bounded-logs
     environment:
+      MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_QUEUE_SIZE: "1024"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_BATCH_SIZE: "128"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_TIMEOUT: 1s
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_SCHEDULE_DELAY: 5s
+      MANAGEMENT_OTLP_TRACING_TIMEOUT: 1s
+      MANAGEMENT_OTLP_TRACING_CONNECT_TIMEOUT: 1s
       SPRING_PROFILES_ACTIVE: prod
+      DEPLOYMENT_ENVIRONMENT: production
+      SERVICE_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_METRICS_TAGS_ENVIRONMENT: production
+      MANAGEMENT_METRICS_TAGS_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
       GRPC_SECRET: ${GRPC_SECRET}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=30.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=30.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     expose:
-      - "9095"
-      - "19095"
+      - '9095'
+      - '19095'
     networks:
       - private_net
     mem_limit: 768m
     mem_reservation: 512m
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9095/actuator/health/liveness || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:9095/actuator/health/liveness || exit 1']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -423,16 +561,31 @@ services:
       dockerfile: services/notification-service/notification-app/Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/notification-web:${IMAGE_TAG:-latest}
     container_name: rct-notification-web
+    logging: *bounded-logs
     environment:
+      MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_QUEUE_SIZE: "1024"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_BATCH_SIZE: "128"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_TIMEOUT: 1s
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_SCHEDULE_DELAY: 5s
+      MANAGEMENT_OTLP_TRACING_TIMEOUT: 1s
+      MANAGEMENT_OTLP_TRACING_CONNECT_TIMEOUT: 1s
       BOT_TO_NOTIFICATION_SERVICE_TOKEN: ${BOT_TO_NOTIFICATION_SERVICE_TOKEN:?BOT_TO_NOTIFICATION_SERVICE_TOKEN must be set}
       SPRING_PROFILES_ACTIVE: prod
+      DEPLOYMENT_ENVIRONMENT: production
+      SERVICE_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_METRICS_TAGS_ENVIRONMENT: production
+      MANAGEMENT_METRICS_TAGS_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
       GRPC_SECRET: ${GRPC_SECRET:?GRPC_SECRET must be set}
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
       # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: "5672"
+      SPRING_RABBITMQ_PORT: '5672'
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       # M14 G9 (CSO HIGH-06): notification-service application.yml использует
@@ -445,7 +598,7 @@ services:
       # Должен совпадать с api-gateway / auth-service INTERNAL_ISSUER_SECRET.
       INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
       REDIS_HOST: redis
-      REDIS_PORT: "6379"
+      REDIS_PORT: '6379'
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       JWT_PUBLIC_KEY_PATH: /keys/public.key
       NOTIFICATION_WS_ALLOWED_ORIGINS: ${NOTIFICATION_WS_ALLOWED_ORIGINS:-https://ruttrack.site}
@@ -461,12 +614,11 @@ services:
       # M10 G1 D4 — retention для notification_history (дней).
       NOTIFICATION_HISTORY_TTL_DAYS: ${NOTIFICATION_HISTORY_TTL_DAYS:-30}
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     volumes:
-      - jwt-keys:/keys:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
-      - "9094"
+      - '9094'
     networks:
       - private_net
     depends_on:
@@ -476,7 +628,7 @@ services:
         condition: service_healthy
       mongo-attendance:
         condition: service_healthy
-      auth-service:          # <-- FIX: ждём пока auth-service сгенерит /keys/public.key
+      auth-service: # Wait for the Auth public-key endpoint.
         condition: service_healthy
     # M09 G7 (NEW-157). M15 hotfix: 256m → 384m. Идентичная OOM проблема как у
     # auth-service: heap 75% от 256m = 192m + non-heap (metaspace, OTel, STOMP
@@ -485,7 +637,7 @@ services:
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9094/actuator/health/liveness || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:9094/actuator/health/liveness || exit 1']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -497,26 +649,38 @@ services:
       dockerfile: Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/notification-bot:${IMAGE_TAG:-latest}
     container_name: rct-notification-bot
+    logging: *bounded-logs
     environment:
+      DEPLOYMENT_ENVIRONMENT: production
+      SERVICE_VERSION: ${IMAGE_TAG:-unknown}
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=production,service.version=${IMAGE_TAG:-unknown}
+      OTEL_BSP_MAX_QUEUE_SIZE: "1024"
+      OTEL_BSP_MAX_EXPORT_BATCH_SIZE: "128"
+      OTEL_BSP_EXPORT_TIMEOUT: "1000"
+      OTEL_EXPORTER_OTLP_TIMEOUT: "1"
+      OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT: "256"
+      OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT: "64"
+      OTEL_SPAN_EVENT_COUNT_LIMIT: "32"
+      OTEL_SPAN_LINK_COUNT_LIMIT: "32"
       BOT_TO_NOTIFICATION_SERVICE_TOKEN: ${BOT_TO_NOTIFICATION_SERVICE_TOKEN:?BOT_TO_NOTIFICATION_SERVICE_TOKEN must be set}
       NOTIFICATION_SERVICE_URL: http://notification-web:9094
       BOT_TOKEN: ${BOT_TOKEN}
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       ACADEMIC_GRPC_HOST: academic-service
-      ACADEMIC_GRPC_PORT: "19091"
-      ACADEMIC_GRPC_TLS_ENABLED: "true"
+      ACADEMIC_GRPC_PORT: '19091'
+      ACADEMIC_GRPC_TLS_ENABLED: 'true'
       ACADEMIC_GRPC_TLS_CA_PATH: /run/rct-academic-tls/academic-server.crt
       REDIS_HOST: redis
-      REDIS_PORT: "6379"
+      REDIS_PORT: '6379'
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-      HEALTH_PORT: "8081"
+      HEALTH_PORT: '8081'
       SCHEDULE_GRPC_HOST: schedule-service
-      SCHEDULE_GRPC_PORT: "19092"
+      SCHEDULE_GRPC_PORT: '19092'
       GRPC_SECRET: ${GRPC_SECRET}
-      SCHEDULE_GRPC_TLS_ENABLED: "true"
+      SCHEDULE_GRPC_TLS_ENABLED: 'true'
       SCHEDULE_GRPC_TLS_CA_PATH: /run/rct-schedule-tls/schedule-server.crt
       AUTH_SERVICE_HOST: auth-service
-      AUTH_SERVICE_PORT: "9090"
+      AUTH_SERVICE_PORT: '9090'
       API_GATEWAY_URL: http://api-gateway:8080
       MINI_APP_URL: ${MINI_APP_URL}
       MINI_APP_WEB_URL: ${MINI_APP_WEB_URL:-https://ruttrack.site/mini-app/}
@@ -543,7 +707,7 @@ services:
     mem_reservation: 128m
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8081/health']
       interval: 15s
       timeout: 5s
       retries: 5
@@ -555,20 +719,37 @@ services:
       dockerfile: services/mobile-bff/mobile-bff-app/Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/mobile-bff:${IMAGE_TAG:-latest}
     container_name: rct-mobile-bff
+    logging: *bounded-logs
     environment:
+      MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_QUEUE_SIZE: "1024"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_BATCH_SIZE: "128"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_TIMEOUT: 1s
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_SCHEDULE_DELAY: 5s
+      MANAGEMENT_OTLP_TRACING_TIMEOUT: 1s
+      MANAGEMENT_OTLP_TRACING_CONNECT_TIMEOUT: 1s
+      SPRING_APPLICATION_NAME: mobile-bff
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       SPRING_PROFILES_ACTIVE: prod
+      DEPLOYMENT_ENVIRONMENT: production
+      SERVICE_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_METRICS_TAGS_ENVIRONMENT: production
+      MANAGEMENT_METRICS_TAGS_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
       AUTH_SERVICE_URL: http://auth-service:9090
       GRPC_SECRET: ${GRPC_SECRET:?GRPC_SECRET must be set}
       SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
       SCHEDULE_GRPC_TLS_AUTHORITY: schedule-service
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     volumes:
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
-      - "9080"
+      - '9080'
     networks:
       - private_net
     depends_on:
@@ -584,7 +765,7 @@ services:
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9080/actuator/health || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:9080/actuator/health || exit 1']
       interval: 15s
       timeout: 5s
       retries: 5
@@ -596,28 +777,44 @@ services:
       dockerfile: services/api-gateway/Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/api-gateway:${IMAGE_TAG:-latest}
     container_name: rct-api-gateway
+    logging: *bounded-logs
     environment:
+      MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
+      MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_QUEUE_SIZE: "1024"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_MAX_BATCH_SIZE: "128"
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_TIMEOUT: 1s
+      MANAGEMENT_TRACING_OPENTELEMETRY_EXPORT_SCHEDULE_DELAY: 5s
+      MANAGEMENT_OTLP_TRACING_TIMEOUT: 1s
+      MANAGEMENT_OTLP_TRACING_CONNECT_TIMEOUT: 1s
+      SPRING_REACTOR_CONTEXT_PROPAGATION: auto
       SPRING_PROFILES_ACTIVE: prod
+      DEPLOYMENT_ENVIRONMENT: production
+      SERVICE_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_METRICS_TAGS_ENVIRONMENT: production
+      MANAGEMENT_METRICS_TAGS_VERSION: ${IMAGE_TAG:-unknown}
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
       # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       AUTH_SERVICE_URL: http://auth-service:9090
       CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN}
       # M03a Group 9: Redis-backed rate-limiter (shared Redis с auth-service)
       REDIS_HOST: redis
-      REDIS_PORT: "6379"
+      REDIS_PORT: '6379'
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       # M03a: Gateway → auth-service token-exchange shared secret
       INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
       # Must equal the static address assigned to the sole Nginx edge below.
       GATEWAY_TRUSTED_PROXY_ADDRESSES: ${GATEWAY_NGINX_IPV4:?GATEWAY_NGINX_IPV4 must be set}
       # PWA hard-update fallback: old clients that still call API get 426.
-      PWA_VERSION_POLICY_ENABLED: "true"
+      PWA_VERSION_POLICY_ENABLED: 'true'
       PWA_VERSION_POLICY_LATEST: 1-${IMAGE_TAG:-0.0.0}
-      PWA_VERSION_POLICY_FORCE: "true"
+      PWA_VERSION_POLICY_FORCE: 'true'
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     expose:
-      - "8080"
+      - '8080'
     networks:
       - private_net
     depends_on:
@@ -643,7 +840,7 @@ services:
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:8080/actuator/health || exit 1']
       interval: 15s
       timeout: 5s
       retries: 5
@@ -653,11 +850,137 @@ services:
   # MONITORING
   # ============================================================
 
+  postgres-academic-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.16.0@sha256:6999a7657e2f2fb0ca6ebf417213eebf6dc7d21b30708c622f6fcb11183a2bb0
+    container_name: rct-postgres-academic-exporter
+    environment:
+      DATA_SOURCE_URI: postgres-academic:5432/academic_db?sslmode=disable
+      DATA_SOURCE_USER: rct_monitor
+      DATA_SOURCE_PASS_FILE: /run/secrets/pg-academic-monitor-password
+    command:
+    - --no-collector.stat_statements
+    - --collector.long_running_transactions
+    secrets:
+    - pg-academic-monitor-password
+    expose:
+    - '9187'
+    networks:
+    - private_net
+    mem_limit: 64m
+    mem_reservation: 16m
+    cpus: 0.25
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    read_only: true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+  postgres-schedule-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.16.0@sha256:6999a7657e2f2fb0ca6ebf417213eebf6dc7d21b30708c622f6fcb11183a2bb0
+    container_name: rct-postgres-schedule-exporter
+    environment:
+      DATA_SOURCE_URI: postgres-schedule:5432/schedule_db?sslmode=disable
+      DATA_SOURCE_USER: rct_monitor
+      DATA_SOURCE_PASS_FILE: /run/secrets/pg-schedule-monitor-password
+    command:
+    - --no-collector.stat_statements
+    - --collector.long_running_transactions
+    secrets:
+    - pg-schedule-monitor-password
+    expose:
+    - '9187'
+    networks:
+    - private_net
+    mem_limit: 64m
+    mem_reservation: 16m
+    cpus: 0.25
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    read_only: true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.41.2@sha256:78b90894cef4bbbec6fe6d3f5694bd3149cec4ef888a24db43e14a09c702756d
+    container_name: rct-mongodb-exporter
+    environment:
+      MONGODB_USER: rct_monitor
+    env_file:
+    - ${MONGO_MONITOR_ENV_FILE:?MONGO_MONITOR_ENV_FILE must be set}
+    command:
+    - --mongodb.uri=mongodb://mongo-attendance:27017/admin?authSource=admin
+    - --collector.diagnosticdata
+    - --collector.replicasetstatus
+    - --collector.dbstats
+    - --collector.collstats-limit=100
+    - --mongodb.connect-timeout-ms=3000
+    - --log.level=error
+    expose:
+    - '9216'
+    networks:
+    - private_net
+    mem_limit: 128m
+    mem_reservation: 32m
+    cpus: 0.25
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    read_only: true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.67.0@sha256:120f7ec77293459ccfdad66bb1db75ab72e8bfeab99f58b1cc2564cadcd7a9e7
+    container_name: rct-redis-exporter
+    command:
+    - --redis.addr=redis://redis:6379
+    - --redis.user=rct_monitor
+    - --redis.password-file=/run/secrets/redis-monitor-password-map
+    - --config-command=-
+    - --disable-exporting-key-values
+    - --exclude-latency-histogram-metrics
+    - --log-format=json
+    secrets:
+    - redis-monitor-password-map
+    expose:
+    - '9121'
+    networks:
+    - private_net
+    mem_limit: 64m
+    mem_reservation: 16m
+    cpus: 0.25
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    read_only: true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+
   node-exporter:
     # M08 G11 — digest-pin (было semver-only M06 P2-9/2). Update:
     #   docker buildx imagetools inspect prom/node-exporter:v1.8.2
     image: prom/node-exporter:v1.8.2@sha256:4032c6d5bfd752342c3e631c2f1de93ba6b86c41db6b167b9a35372c139e7706
     container_name: rct-node-exporter
+    logging: *bounded-logs
     command:
       - '--path.rootfs=/host'
       - '--path.procfs=/host/proc'
@@ -673,7 +996,7 @@ services:
       # Hardware sensors still depend on physical host support.
       - /var/run/dbus:/var/run/dbus:ro,rslave
     expose:
-      - "9100"
+      - '9100'
     networks:
       - private_net
     # M16 G8a — drop NET_RAW (default Docker capability). Без него
@@ -703,6 +1026,7 @@ services:
     # Version: v0.49.1. Update: `docker buildx imagetools inspect gcr.io/cadvisor/cadvisor:<ver>`
     image: gcr.io/cadvisor/cadvisor:v0.49.1@sha256:3cde6faf0791ebf7b41d6f8ae7145466fed712ea6f252c935294d2608b1af388
     container_name: rct-cadvisor
+    logging: *bounded-logs
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -715,7 +1039,7 @@ services:
     devices:
       - /dev/kmsg:/dev/kmsg
     expose:
-      - "8080"
+      - '8080'
     networks:
       - private_net
     # M16 G8a — drop NET_RAW (sniffing capability) для defense-in-depth.
@@ -746,10 +1070,11 @@ services:
   blackbox-exporter:
     image: prom/blackbox-exporter:v0.25.0@sha256:67847e8aaec3c4852a2c7d84d5344e7931521962988c48df00cd980cd1b490a2
     container_name: rct-blackbox-exporter
+    logging: *bounded-logs
     volumes:
       - ./infra/blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
     expose:
-      - "9115"
+      - '9115'
     networks:
       - private_net
     # M16 G8a — drop NET_RAW. Blackbox-exporter probe'ит публичные URL
@@ -768,6 +1093,7 @@ services:
     #   docker buildx imagetools inspect prom/prometheus:v2.55.1
     image: prom/prometheus:v2.55.1@sha256:2659f4c2ebb718e7695cb9b25ffa7d6be64db013daba13e05c875451cf51b0d3
     container_name: rct-prometheus
+    logging: *bounded-logs
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -775,7 +1101,11 @@ services:
       # первичной инсталляции, но для наших 6 сервисов 14d достаточно
       # (incident analysis + weekly review). NEW-66: review по
       # накоплению disk usage.
-      - '--storage.tsdb.retention.time=14d'
+      - '--storage.tsdb.retention.time=35d'
+      - '--storage.tsdb.retention.size=4GB'
+      - '--query.max-concurrency=4'
+      - '--query.max-samples=500000'
+      - '--query.timeout=30s'
       # M13 G14 — UI за nginx reverse-proxy под /prometheus/ с basic-auth.
       # --web.external-url ставит base URL для absolute links в UI; без
       # него Graph/Targets/Alerts пишут absolute "/graph" без prefix'а и
@@ -790,7 +1120,7 @@ services:
       - ./infra/prometheus/rules:/etc/prometheus/rules:ro
       - prometheus-data:/prometheus
     expose:
-      - "9090"
+      - '9090'
     networks:
       - private_net
     depends_on:
@@ -810,34 +1140,19 @@ services:
     # M08 G11 — digest-pin. Update: docker buildx imagetools inspect prom/alertmanager:v0.27.0
     image: prom/alertmanager:v0.27.0@sha256:e13b6ed5cb929eeaee733479dce55e10eb3bc2e9c4586c705a4e8da41e5eacf5
     container_name: rct-alertmanager
+    logging: *bounded-logs
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
-    environment:
-      # Токен для Authorization: Bearer в webhook. Alertmanager читает
-      # файл по пути credentials_file (см. alertmanager.yml).
-      ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET}
+      - '--web.external-url=https://ruttrack.site/alertmanager/'
+      - '--web.route-prefix=/'
     volumes:
       - ./infra/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
       - alertmanager-data:/alertmanager
-    # Записываем secret в volume at startup — alertmanager не поддерживает
-    # env-vars в yaml напрямую, credentials_file единственный путь.
-    # M13 G14 — --web.external-url ставит base URL для absolute links в UI.
-    # --web.route-prefix=/ — alertmanager слушает на / внутри container'а,
-    # nginx strip'ает /alertmanager/ prefix через proxy_pass с trailing slash.
-    entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        mkdir -p /etc/alertmanager && \
-        echo -n "$${ALERT_WEBHOOK_SECRET}" > /etc/alertmanager/secret && \
-        exec /bin/alertmanager \
-          --config.file=/etc/alertmanager/alertmanager.yml \
-          --storage.path=/alertmanager \
-          --web.external-url=https://ruttrack.site/alertmanager/ \
-          --web.route-prefix=/
+    secrets:
+      - alert-webhook-token
     expose:
-      - "9093"
+      - '9093'
     networks:
       - private_net
     # M16 G8a — drop NET_RAW. Alertmanager шлёт webhook'и через HTTP-клиент,
@@ -857,18 +1172,19 @@ services:
     # M08 G11 — digest-pin. Update: docker buildx imagetools inspect grafana/tempo:2.3.1
     image: grafana/tempo:2.3.1@sha256:1c6fb7c74831474f82c9bde218c84b61e5269b676e6505e7dc3c1862dae9b5cc
     container_name: rct-tempo
-    command: ["-config.file=/etc/tempo/tempo.yml"]
+    logging: *bounded-logs
+    command: ['-config.file=/etc/tempo/tempo.yml']
     volumes:
       - ./infra/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
       - tempo-data:/var/tempo
     expose:
-      - "3200"  # HTTP — Grafana datasource
-      - "4317"  # OTLP gRPC — приёмник spans
-      - "4318"  # OTLP HTTP (на будущее)
+      - '3200' # HTTP — Grafana datasource
+      - '4317' # OTLP gRPC — приёмник spans
+      - '4318' # OTLP HTTP (на будущее)
     networks:
       - private_net
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3200/ready || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3200/ready || exit 1']
       interval: 15s
       timeout: 5s
       retries: 5
@@ -884,24 +1200,24 @@ services:
     #   docker buildx imagetools inspect grafana/grafana:11.3.1
     image: grafana/grafana:11.3.1@sha256:fa801ab6e1ae035135309580891e09f7eb94d1abdbd2106bdc288030b028158c
     container_name: rct-grafana
+    logging: *bounded-logs
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
-      GF_ALERTING_TELEGRAM_BOT_TOKEN: ${BOT_ALERT_TOKEN}
       GF_PATHS_PROVISIONING: /etc/grafana/provisioning
     volumes:
       - ./infra/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
       - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
       - grafana-data:/var/lib/grafana
     expose:
-      - "3000"
+      - '3000'
     networks:
       - private_net
     depends_on:
       - prometheus
       - tempo
     # M09 G7 (NEW-157).
-    mem_limit: 96m
-    mem_reservation: 64m
+    mem_limit: 256m
+    mem_reservation: 128m
     restart: unless-stopped
 
   loki:
@@ -910,12 +1226,13 @@ services:
     # Update: docker buildx imagetools inspect grafana/loki:3.2.1
     image: grafana/loki:3.2.1@sha256:09a53b4a4ff81ffcd8f13886df19d33fac7a8d3aaf952e3c7e66cbade5b2fc31
     container_name: rct-loki
+    logging: *bounded-logs
     command: -config.file=/etc/loki/loki.yml
     volumes:
       - ./infra/loki/loki.yml:/etc/loki/loki.yml:ro
       - loki-data:/loki
     expose:
-      - "3100"
+      - '3100'
     networks:
       - private_net
     # M09 G7 (NEW-157).
@@ -925,7 +1242,7 @@ services:
     # до того как ingester готов (root cause `InstancesCount <= 0`).
     # /ready возвращает 200 только после min_ready_duration (15s).
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3100/ready || exit 1"]
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3100/ready || exit 1']
       interval: 10s
       timeout: 3s
       retries: 5
@@ -938,9 +1255,13 @@ services:
     # Version: 3.2.1. Update: `docker buildx imagetools inspect grafana/promtail:<ver>`
     image: grafana/promtail:3.2.1@sha256:bf617e9d67e80247a59f717f9c1ad388d7d32dc0a1d29abd5799516d15e0a9b5
     container_name: rct-promtail
-    command: -config.file=/etc/promtail/promtail.yml
+    logging: *bounded-logs
+    command: -config.file=/etc/promtail/promtail.yml -config.expand-env=true
+    environment:
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:?Compose project identity required}
     volumes:
       - ./infra/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
+      - promtail-positions:/var/lib/promtail
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -965,9 +1286,10 @@ services:
     # M08 G11 — digest-pin. Update: docker buildx imagetools inspect nginx:1.27-alpine
     image: nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
     container_name: rct-nginx
+    logging: *bounded-logs
     ports:
-      - "80:80"
-      - "443:443"
+      - '80:80'
+      - '443:443'
     environment:
       # M11 G4 (NEW-125): bcrypt htpasswd line «swagger:$2y$05$...» из
       # `.env.prod`. На старте контейнера записывается в
@@ -1005,13 +1327,14 @@ services:
     #    когда deploy.yml's explicit `nginx -s reload` step skipped/failed).
     #    Primary reload path: GitHub Actions deploy.yml.
     # 4. Foreground nginx daemon.
-    entrypoint: ["/bin/sh", "/usr/local/bin/entrypoint.sh"]
+    entrypoint: ['/bin/sh', '/usr/local/bin/entrypoint.sh']
 
   certbot:
     # M08 G11 — digest-pin + explicit tag (было implicit :latest, supply-chain риск).
     # Update: docker buildx imagetools inspect certbot/certbot:latest
     image: certbot/certbot:latest@sha256:78a7eaa40af657301e25731297b6e73646c695370d17e9bb03189fa82966d65c
     container_name: rct-certbot
+    logging: *bounded-logs
     volumes:
       - certbot-conf:/etc/letsencrypt
       - certbot-www:/var/www/certbot
@@ -1042,11 +1365,12 @@ services:
         VITE_APP_VERSION: 1-${IMAGE_TAG:-0.0.0}
         VITE_MIN_SUPPORTED_VERSION: ${PWA_MIN_SUPPORTED_VERSION:-}
         VITE_FORCE_UPDATE: ${PWA_FORCE_UPDATE:-true}
-        VITE_MOBILE_FIXTURE_MODE: "false"
+        VITE_MOBILE_FIXTURE_MODE: 'false'
     image: ghcr.io/ditekmax/rutcampustrack/pwa-nginx:${IMAGE_TAG:-latest}
     container_name: rct-pwa-nginx
+    logging: *bounded-logs
     expose:
-      - "80"
+      - '80'
     networks:
       - private_net
     mem_limit: 64m
@@ -1059,11 +1383,12 @@ services:
       dockerfile: tma-vue/Dockerfile
       args:
         VITE_PUBLIC_BASE: /mini-app/
-        VITE_MOBILE_FIXTURE_MODE: "false"
+        VITE_MOBILE_FIXTURE_MODE: 'false'
     image: ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:${IMAGE_TAG:-latest}
     container_name: rct-mini-app-nginx
+    logging: *bounded-logs
     expose:
-      - "80"
+      - '80'
     networks:
       - private_net
     mem_limit: 64m
@@ -1076,8 +1401,9 @@ services:
       dockerfile: Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:${IMAGE_TAG:-latest}
     container_name: rct-web-panel-nginx
+    logging: *bounded-logs
     expose:
-      - "80"
+      - '80'
     networks:
       - private_net
     mem_limit: 64m
@@ -1090,8 +1416,9 @@ services:
       dockerfile: Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/landing-nginx:${IMAGE_TAG:-latest}
     container_name: rct-landing-nginx
+    logging: *bounded-logs
     expose:
-      - "80"
+      - '80'
     networks:
       - private_net
     mem_limit: 64m
@@ -1121,3 +1448,31 @@ volumes:
   loki-data:
   tempo-data:
   alertmanager-data:
+  promtail-positions:
+
+# Keep ALERT_WEBHOOK_SECRET in deployment secret injection; never commit its value.
+secrets:
+  alert-webhook-token:
+    environment: ALERT_WEBHOOK_SECRET
+  pg-academic-monitor-password:
+    file: ${PG_ACADEMIC_MONITOR_PASSWORD_FILE:?PG_ACADEMIC_MONITOR_PASSWORD_FILE must be set}
+  pg-schedule-monitor-password:
+    file: ${PG_SCHEDULE_MONITOR_PASSWORD_FILE:?PG_SCHEDULE_MONITOR_PASSWORD_FILE must be set}
+  redis-monitor-password-map:
+    file: ${REDIS_MONITOR_PASSWORD_MAP_FILE:?REDIS_MONITOR_PASSWORD_MAP_FILE must be set}
+  pg-academic-bootstrap-password:
+    file: ${PG_ACADEMIC_BOOTSTRAP_PASSWORD_FILE:?PG_ACADEMIC_BOOTSTRAP_PASSWORD_FILE must be set}
+  pg-academic-runtime-password:
+    file: ${PG_ACADEMIC_RUNTIME_PASSWORD_FILE:?PG_ACADEMIC_RUNTIME_PASSWORD_FILE must be set}
+  pg-academic-migration-password:
+    file: ${PG_ACADEMIC_MIGRATION_PASSWORD_FILE:?PG_ACADEMIC_MIGRATION_PASSWORD_FILE must be set}
+  pg-schedule-bootstrap-password:
+    file: ${PG_SCHEDULE_BOOTSTRAP_PASSWORD_FILE:?PG_SCHEDULE_BOOTSTRAP_PASSWORD_FILE must be set}
+  pg-schedule-runtime-password:
+    file: ${PG_SCHEDULE_RUNTIME_PASSWORD_FILE:?PG_SCHEDULE_RUNTIME_PASSWORD_FILE must be set}
+  pg-schedule-migration-password:
+    file: ${PG_SCHEDULE_MIGRATION_PASSWORD_FILE:?PG_SCHEDULE_MIGRATION_PASSWORD_FILE must be set}
+  redis-users-acl:
+    file: ${REDIS_SERVER_ACL_FILE:?REDIS_SERVER_ACL_FILE must be set}
+  mongo-monitor-env:
+    file: ${MONGO_MONITOR_ENV_FILE:?MONGO_MONITOR_ENV_FILE must be set}

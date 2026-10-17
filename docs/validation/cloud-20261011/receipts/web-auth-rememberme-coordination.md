@@ -1,0 +1,7 @@
+# Read-only WEB-AUTH-01 coordination
+
+Requested by owner-authorized main chat01a09c09-da2a-7c51-b5a5-1c9c157851dc for web chat01a12d07-98fe-7ad3-8461-fcd3915f1e7f; information only, no audit expansion/new rule/implementation/local environment operations.
+
+No accepted server rememberMe→session/persistent-cookie/lifetime policy or assigned implementation author found in current task decisions/accepted dated product decisions. docs/product/specs/wireframes/shared/001-login.md:45–46 has checkbox data/default, not server persistence rule. Current LoginRequest accepts login/password, AuthController uses configured refresh expiry and AuthCookies sets Max-Age; durable session storage remains current implementation. LoginRequest/AuthController/AuthCookies/JdbcSessionAuthority exactbytes baseline3908=published232f=currente587 verified. Existing secure/HttpOnly/Strict/path cookie controls preserve.
+
+Root coordinates these existing Auth paths; no product writer assigned rememberMe/session-persistence changes. Export author owns separate new export jobs/API/V56 storage, not login persistence. Stable published integration checkpoint232f0210ab65a6750b120e811d81f0e110b9e107 in draftPR https://github.com/DITEKmax/rutcampustrack/pull/2, CI38178275849/Coverage38178275862/Security38178275848success. Main remains3908fad9624f97aec8891fc79338ceb6b0616bf3. Newerreviewedroot e587 andexportcf6 are not published acceptedfullpackages. No external chat tools/messages used.

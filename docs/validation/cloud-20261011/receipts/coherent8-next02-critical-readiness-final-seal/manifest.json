@@ -1,0 +1,63 @@
+{
+  "utc": "2026-10-12T23:39:52.541080+00:00",
+  "cohort": "restart-20261012-next02",
+  "scope": "SAFE readiness, immutable4 copied byteexact and later NEW observation/source-only diagnostics",
+  "entries": [
+    {
+      "path": "artifact-source.safe.json",
+      "sha256": "ed76fc2e51f22831bbf7892204eb0d7e6cfe8196558232db5057e8d7358508b3",
+      "size": 4392,
+      "original": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/artifact-source.safe.json"
+    },
+    {
+      "path": "runtime-mapping.safe.json",
+      "sha256": "bf8de2b8f5e13dd9a325ab62d7045e367984a392f1e3550d8117deb4ad02b806",
+      "size": 8807,
+      "original": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/runtime-mapping.safe.json"
+    },
+    {
+      "path": "stand-readiness.safe.json",
+      "sha256": "d8c28454cfcb7f424329e072fcc7ddd3cb00780b0c4a6c0e6009b7f4a635e335",
+      "size": 3261,
+      "original": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/stand-readiness.safe.json"
+    },
+    {
+      "path": "host-live8.safe.json",
+      "sha256": "599a73b3f906543d1caa4edef55c3562bf116dac0d90ba39379cd0400ae6446b",
+      "size": 4621,
+      "original": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/host-live8.safe.json"
+    },
+    {
+      "path": "critical4-pointers.safe.json",
+      "sha256": "e811cdffe985596b9fc1ff77f8b6c0e8f823b6bce57c20d9977ff7a4c104f120",
+      "size": 928,
+      "original": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/critical4-pointers.safe.json"
+    },
+    {
+      "path": "Academic-migration-prerequisite.safe.json",
+      "sha256": "2ee21af8b5f261f52a5fdbc234180d5e93520c32c296122e4ea19cd1182699ff",
+      "size": 651,
+      "original": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/Academic-migration-prerequisite.safe.json"
+    },
+    {
+      "path": "post-Docker-barrier.safe.json",
+      "sha256": "9777da8b1e075a8c2b024d28221c85ed9aab3560a0dd2365c0cb3b9ba118800f",
+      "size": 460,
+      "original": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/post-Docker-barrier.safe.json"
+    },
+    {
+      "path": "monitor-2337.safe.json",
+      "sha256": "e9e31ae8a060712ba329a52b2d84aec004970b0c2470bb9be7413793b36dc9b6",
+      "size": 3647,
+      "original": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/monitor-2337.safe.json"
+    },
+    {
+      "path": "roster-source-diagnostic.safe.json",
+      "sha256": "cbcdd07bc2ca1b44be8c2056a6717ca3e903c6d46d43a586eb164a3679ddaafa",
+      "size": 3486,
+      "original": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/roster-source-diagnostic.safe.json"
+    }
+  ],
+  "client_acceptance": "separate owner; source/API readiness not whole client PASS",
+  "cleanup_dispatch_by": "2026-10-12T23:46:59.421341+00:00"
+}

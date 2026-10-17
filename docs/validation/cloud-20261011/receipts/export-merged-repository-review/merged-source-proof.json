@@ -1,0 +1,37 @@
+{
+  "revision": "2bca095380f72e8908a2511f2b10f0e795607f05",
+  "root_before": "c4d926b0c5a81ae00b639bd48dd22088991b0f2b",
+  "source_author": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "base": "e51b97c5e9d2663aaf336899db3bb4d9463b9d88",
+  "t001_author": "c115f61996fd415d20286a0787f4985b80a59a24",
+  "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+  "versions": {
+    "merged": {
+      "sha256": "3288e8caf3d87e414c0e4b76a6cc1ab7411163b25b31f9a6c609bef0b0bde9d2",
+      "bytes": 2643
+    },
+    "root_before": {
+      "sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "bytes": 2401
+    },
+    "author": {
+      "sha256": "6cf3dec75b798ec2c6bdfd9985f7fbac87e76ecf54d5888be2d181fda0ecfa7b",
+      "bytes": 2193
+    },
+    "base": {
+      "sha256": "3bb45ef22b5415f0ae9cf9e37e27b63444c47ceb446b08072f53e259a3484d3c",
+      "bytes": 1951
+    },
+    "accepted_t001": {
+      "sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "bytes": 2401
+    }
+  },
+  "teacher_query_block_sha256": "ffa96c38d06d83c98634021b2d873c101debcf61c75db770cb824818a8c07ba1",
+  "teacher_query_byte_identical_to_root_before_and_t001": true,
+  "batch_method_byte_identical_to_author": true,
+  "merged_minus_exact_batch_addition_equals_entire_root_before_file": true,
+  "author_minus_exact_batch_addition_equals_entire_base_file": true,
+  "native_git_merge_file_exit": 0,
+  "native_git_merge_file_matches_committed_root": true
+}

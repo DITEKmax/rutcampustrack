@@ -1,0 +1,48 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "fault-restored01",
+  "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "native_exit": 0,
+  "disk_aborted": false,
+  "seconds": 37.047,
+  "counts": {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "invalidationCannotLoseStableRenderReceiptAndStaleCleanupCasCannotSettle()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "forgedCardTupleAndUnknownOutcomesCannotCompleteOriginalCleanup()",
+      "status": "PASS",
+      "failure_type": null
+    },
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "privateForeignAndUnknownReadModesFailClosed()",
+      "status": "PASS",
+      "failure_type": null
+    }
+  ],
+  "xml": [
+    {
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 13051,
+      "sha256": "92e45c9d332fffaf13b6426aa69e37428ee690ad1eb83c379cad0112f23a943d"
+    }
+  ],
+  "all_source_inputs_unchanged": true,
+  "changed_paths": [],
+  "private_marker_match_files": 0,
+  "raw_artifacts_private": true,
+  "terminal_sha256": "75177659719abf992bc8986faba1146b8c61a0196cfa89f91c8d6d5026a353d6",
+  "free_bytes": 9001148416,
+  "utc": "2026-10-12T03:13:35Z"
+}

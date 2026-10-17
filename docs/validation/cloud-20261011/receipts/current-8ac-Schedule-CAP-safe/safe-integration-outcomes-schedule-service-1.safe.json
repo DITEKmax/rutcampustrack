@@ -1,0 +1,73 @@
+{
+  "artifact_id": 11841044522,
+  "name": "safe-integration-outcomes-schedule-service-1",
+  "archive_bytes": 10905,
+  "archive_sha256": "f46d22e3ede33163a025d82c3bcc0daa4d97672baf0cde56be434586c10e01bb",
+  "producer": "8ac4125263218d6de49bc54931be1b57edc115fe",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "5919120476a4b0a26ead36c80a6d3ef94984fc30",
+        "prHeadSha": "8ac4125263218d6de49bc54931be1b57edc115fe",
+        "service": "schedule-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38454198721",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "failure"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 204,
+        "FAILED": 1,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": {
+        "xmlOrdinal": 23,
+        "suiteOrdinal": 1,
+        "ordinal": 7,
+        "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+        "method": "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert",
+        "status": "FAILED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+        "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0",
+        "failureDiagnostic": {
+          "state": "CLOSED_MARKER",
+          "capturedClass": "PessimisticLockingFailureException",
+          "sqlState": "40P01",
+          "barrier": "NOT_OBSERVED",
+          "stage": "UNKNOWN"
+        }
+      },
+      "failed_or_error_cases": [
+        {
+          "xmlOrdinal": 23,
+          "suiteOrdinal": 1,
+          "ordinal": 7,
+          "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+          "method": "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert",
+          "status": "FAILED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+          "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0",
+          "failureDiagnostic": {
+            "state": "CLOSED_MARKER",
+            "capturedClass": "PessimisticLockingFailureException",
+            "sqlState": "40P01",
+            "barrier": "NOT_OBSERVED",
+            "stage": "UNKNOWN"
+          }
+        }
+      ],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

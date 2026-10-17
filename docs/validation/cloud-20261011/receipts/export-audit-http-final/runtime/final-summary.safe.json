@@ -1,0 +1,295 @@
+{
+  "time": "2026-10-12T03:05:30.372002+00:00",
+  "status": "BOUNDED_AUTH_HTTP_ORACLE_CORRECTION_VERIFIED; not whole task DONE",
+  "source_commit": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "parent_product_commit": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "sole_test_path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+  "canonical_test_sha256": "7116bf1fde7346bbb8dde9ae8d3a6f5bb9e3aa74abedf07e427ba2bfee19dbff",
+  "test_delta": "10added/1removed: legitimate unrelated historicalauditfixture+retention; global count replaced by extras.jobId exact1",
+  "all8_inventory_bytehashes_identical": [
+    {
+      "phase": "before-global",
+      "side": "before",
+      "sha256": "514178d800658ae6c04ffb724339801ccb5e329c062fc8fb2650e1ad73af9427",
+      "tracked_count": 6510
+    },
+    {
+      "phase": "before-global",
+      "side": "after",
+      "sha256": "514178d800658ae6c04ffb724339801ccb5e329c062fc8fb2650e1ad73af9427",
+      "tracked_count": 6510
+    },
+    {
+      "phase": "normal-green",
+      "side": "before",
+      "sha256": "514178d800658ae6c04ffb724339801ccb5e329c062fc8fb2650e1ad73af9427",
+      "tracked_count": 6510
+    },
+    {
+      "phase": "normal-green",
+      "side": "after",
+      "sha256": "514178d800658ae6c04ffb724339801ccb5e329c062fc8fb2650e1ad73af9427",
+      "tracked_count": 6510
+    },
+    {
+      "phase": "duplicate-current",
+      "side": "before",
+      "sha256": "514178d800658ae6c04ffb724339801ccb5e329c062fc8fb2650e1ad73af9427",
+      "tracked_count": 6510
+    },
+    {
+      "phase": "duplicate-current",
+      "side": "after",
+      "sha256": "514178d800658ae6c04ffb724339801ccb5e329c062fc8fb2650e1ad73af9427",
+      "tracked_count": 6510
+    },
+    {
+      "phase": "restored-green",
+      "side": "before",
+      "sha256": "514178d800658ae6c04ffb724339801ccb5e329c062fc8fb2650e1ad73af9427",
+      "tracked_count": 6510
+    },
+    {
+      "phase": "restored-green",
+      "side": "after",
+      "sha256": "514178d800658ae6c04ffb724339801ccb5e329c062fc8fb2650e1ad73af9427",
+      "tracked_count": 6510
+    }
+  ],
+  "all6510canonical_sources_bytes_modes_frozen": "PASS",
+  "other6509sources_byteexact_originalf09": "PASS",
+  "untracked_node_modules_symlink": "PRESERVED",
+  "accepted_spec_bridge": "D006 per-export safe audit fact; original producer complete uses extras.jobId camelCase; unchanged two complete HTTP commands yield exactlyone current fact",
+  "originalCI": {
+    "repo": "DITEKmax/rutcampustrack",
+    "run_id": 38193576638,
+    "job_id": 114631310135,
+    "head_sha": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+    "actual_checkout_merge_sha": "6a581fdbfd0c858eeefa0747d654d726dc488162",
+    "expected_global_count": 1,
+    "actual_global_count": "UNKNOWN; not printed in decoded job log",
+    "lines": [
+      "2026-10-12T01:54:10.5147071Z HEAD is now at 6a581fd Merge 25668e10ffcdcda1848c6fda38429dea7e22a793 into 3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "2026-10-12T01:59:01.6823143Z ExportJobHttpIT > realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation() FAILED",
+      "2026-10-12T01:59:01.6824971Z     org.opentest4j.AssertionFailedError at ExportJobHttpIT.java:77",
+      "2026-10-12T02:00:12.1871576Z 166 tests completed, 1 failed",
+      "2026-10-12T02:00:12.3832088Z BUILD FAILED in 5m 54s"
+    ],
+    "artifact_names": [
+      "jacoco-notification-service",
+      "jacoco-attendance-service",
+      "jacoco-schedule-service",
+      "pytest-coverage-bot",
+      "vitest-lcov-mobile-vue",
+      "jacoco-api-gateway",
+      "jacoco-academic-service"
+    ],
+    "auth_JUnit_artifact_available": false
+  },
+  "originalCI_numericactual": "UNKNOWN; local before/sensitivity actual2 separately qualified",
+  "phases": [
+    {
+      "phase": "before-global",
+      "native": {
+        "launch": "941c7f",
+        "session": 74285,
+        "terminal": "c6949f",
+        "exit": 1
+      },
+      "start": "2026-10-12T02:52:12.553353+00:00",
+      "end": "2026-10-12T02:53:20.568635+00:00",
+      "result": {
+        "phase": "before-global",
+        "native_exit": 1,
+        "status": "ACTUAL_FAIL",
+        "cases": [
+          {
+            "name": "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation()",
+            "class": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+            "outcome": "FAIL",
+            "failure_type": "org.opentest4j.AssertionFailedError",
+            "expected_scalar": 1,
+            "actual_scalar": 2,
+            "source_lines": [
+              "ExportJobHttpIT.java:85"
+            ]
+          }
+        ],
+        "xml_sha256": "e30d8f0bf9673c3a7e8d26b4cbabf4c2fc46e82806190e6433ef4429fccacb97",
+        "xml_bytes": 36163,
+        "tests": "1",
+        "failures": "1",
+        "errors": "0",
+        "skipped": "0"
+      },
+      "classification_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/before-global/classification.safe.json",
+      "cleanup_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/before-global/cleanup.safe.json"
+    },
+    {
+      "phase": "normal-green",
+      "native": {
+        "launch": "4844bd",
+        "session": 82273,
+        "terminal": "751fd5",
+        "exit": 0
+      },
+      "start": "2026-10-12T02:54:28.541720+00:00",
+      "end": "2026-10-12T02:55:41.580233+00:00",
+      "result": {
+        "phase": "normal-green",
+        "native_exit": 0,
+        "status": "PASS",
+        "cases": [
+          {
+            "name": "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation()",
+            "class": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+            "outcome": "PASS"
+          }
+        ],
+        "xml_sha256": "55f33100133608d17c6c684517c6ff6974fa66249b8a1898954b3f529f17d644",
+        "xml_bytes": 35563,
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      "classification_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/normal-green/classification.safe.json",
+      "cleanup_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/normal-green/cleanup.safe.json"
+    },
+    {
+      "phase": "duplicate-current",
+      "native": {
+        "launch": "d788c8",
+        "session": 56239,
+        "terminal": "70c0e4",
+        "exit": 1
+      },
+      "start": "2026-10-12T02:57:04.836664+00:00",
+      "end": "2026-10-12T02:58:03.290825+00:00",
+      "result": {
+        "phase": "duplicate-current",
+        "native_exit": 1,
+        "status": "ACTUAL_FAIL",
+        "cases": [
+          {
+            "name": "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation()",
+            "class": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+            "outcome": "FAIL",
+            "failure_type": "org.opentest4j.AssertionFailedError",
+            "expected_scalar": 1,
+            "actual_scalar": 2,
+            "source_lines": [
+              "ExportJobHttpIT.java:88"
+            ]
+          }
+        ],
+        "xml_sha256": "140ec4cfe1bedb797881cde0096060a16194ad133971063fac99001316fe11bc",
+        "xml_bytes": 36162,
+        "tests": "1",
+        "failures": "1",
+        "errors": "0",
+        "skipped": "0"
+      },
+      "classification_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/duplicate-current/classification.safe.json",
+      "cleanup_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/duplicate-current/cleanup.safe.json"
+    },
+    {
+      "phase": "restored-green",
+      "native": {
+        "launch": "d8de40",
+        "session": 66807,
+        "terminal": "c25f41",
+        "exit": 0
+      },
+      "start": "2026-10-12T02:59:28.413870+00:00",
+      "end": "2026-10-12T03:00:47.725611+00:00",
+      "result": {
+        "phase": "restored-green",
+        "native_exit": 0,
+        "status": "PASS",
+        "cases": [
+          {
+            "name": "realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation()",
+            "class": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+            "outcome": "PASS"
+          }
+        ],
+        "xml_sha256": "f521f0e1090d0d54446df5be6d80a4d5f371547659152b1e64b2d33b845a119d",
+        "xml_bytes": 35562,
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      "classification_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/restored-green/classification.safe.json",
+      "cleanup_path": "/workspace/scratch/rct-validation/export_audit_http_followon/runtime/restored-green/cleanup.safe.json"
+    }
+  ],
+  "resource_release": {
+    "time": "2026-10-12T03:02:48.279441+00:00",
+    "lease": "EXPORT_AUDIT1",
+    "state": "RELEASED",
+    "four_foreground_runners": [
+      {
+        "phase": "before-global",
+        "runner_pid": 185548,
+        "proc_entry_exists": false
+      },
+      {
+        "phase": "normal-green",
+        "runner_pid": 186740,
+        "proc_entry_exists": false
+      },
+      {
+        "phase": "duplicate-current",
+        "runner_pid": 188491,
+        "proc_entry_exists": false
+      },
+      {
+        "phase": "restored-green",
+        "runner_pid": 190043,
+        "proc_entry_exists": false
+      }
+    ],
+    "own_observed_java_pids": [
+      185559,
+      185599,
+      185705,
+      186750,
+      186790,
+      187017,
+      188502,
+      188542,
+      188644,
+      190054,
+      190094,
+      190233
+    ],
+    "own_active_Java_process_count": 0,
+    "foreign_and_oldzombie_java_metadata": [
+      "11771       1 java            Z",
+      "33249       1 java            Z",
+      "33286       1 java            Z",
+      "149519       1 java            Z",
+      "149559       1 java            Z",
+      "163814       1 java            Z"
+    ],
+    "own_all12_container_ids_standardcleaned": true,
+    "no_manualcleanup_no_foreignmutations": true,
+    "source_HEAD": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+    "status": "?? frontends/node_modules",
+    "free_bytes": 9480380416,
+    "remaining": "independent safe review/rootintegration/newremoteall3gates; no further authorheavyallocation",
+    "diagnostic": "prior native6885c4 inspection wrongly asserted globalnoJava and stopped before receipt write; foreign activeDOMAIN allowed, corrected ownership-only check"
+  },
+  "runtime_resources": "Each sequential maxworker1/Gradle768MiB/test768MiB existingAuth AbstractIT PG16/Redis7/Testcontainers+randomAuthHTTP; existingRabbit mock. DOMAIN1 separate foreignPG/TLS preserved. No broker/renderer/browser/appstack. Own12 containers standardRyukcleanup only. Floor4GiB never crossed.",
+  "meaningful_sensitivity": "Oldglobaloracle with valid unrelatedhistory fails expected1actual2; correctedexact1 job oracle detects valid duplicatecurrent durablefact expected1actual2, fixture insertion guard passes; restored normalgreen. No syntax/SQLsetup/infra failures. No expected>=1/skip/historydeletion/product fix.",
+  "qualification": "Originalexports1bb V56 producer/test. Root currentcoherent wholeAuth/V57 not tested here. Independentreview/rootintegration +newremote CI/Coverage/Security allthree remain required. Formatter currentauthored inventory pending root; old onecommit scopedGitleaks/EOF/diff checks reused exactsource, no new formatter claim.",
+  "source_hygiene_prior_exact_reused": {
+    "EOF": true,
+    "size": true,
+    "trailing_whitespace": true,
+    "diff_check": "PASS"
+  },
+  "safe_artifacts": "Only safe JSON/NDJSON/derivedredacted XML and own CURRENT in ZIP; private logs/nativeXML/sourcecopies/overlays/keydirs excluded."
+}

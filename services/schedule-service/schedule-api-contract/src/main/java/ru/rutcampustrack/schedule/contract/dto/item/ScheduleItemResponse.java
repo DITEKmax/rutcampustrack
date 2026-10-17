@@ -1,24 +1,25 @@
 package ru.rutcampustrack.schedule.contract.dto.item;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.util.List;
 import org.springframework.hateoas.RepresentationModel;
+import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 
-import java.time.LocalTime;
-import java.util.List;
-import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-
 /**
- * Response DTO for schedule template items with HATEOAS links.
- * Extends RepresentationModel for HATEOAS Level 3 compliance.
- * No Lombok — contract modules use plain Java classes with explicit constructors and getters.
- * <p>
- * D-16: teacherId removed. Teacher access to journals is resolved via JOIN
- * ScheduleItem × TeacherSubjectGroup, not by slot-level teacher assignment.
+ * Response DTO for schedule template items with HATEOAS links. Extends RepresentationModel for
+ * HATEOAS Level 3 compliance. No Lombok — contract modules use plain Java classes with explicit
+ * constructors and getters.
+ *
+ * <p>D-16: teacherId removed. Teacher access to journals is resolved via JOIN ScheduleItem ×
+ * TeacherSubjectGroup, not by slot-level teacher assignment.
  */
-@Schema(description = "Шаблон пары в расписании (повторяющийся слот: день недели + номер пары + тип недели) с HATEOAS-ссылками")
+@Schema(
+        description =
+                "Шаблон пары в расписании (повторяющийся слот: день недели + номер пары + тип недели) с HATEOAS-ссылками")
 public class ScheduleItemResponse extends RepresentationModel<ScheduleItemResponse> {
 
     private Long id;
@@ -40,17 +41,37 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
     private ScheduleItemLifecyclePreviewResponse lifecycleResult;
     private List<TransferLessonResponse> transfers = List.of();
 
-    public ScheduleItemLifecyclePreviewResponse getLifecycleResult() { return lifecycleResult; }
-    public void setLifecycleResult(ScheduleItemLifecyclePreviewResponse value) { lifecycleResult = value; }
-    public List<TransferLessonResponse> getTransfers() { return transfers; }
-    public void setTransfers(List<TransferLessonResponse> value) { transfers = List.copyOf(value); }
+    public ScheduleItemLifecyclePreviewResponse getLifecycleResult() {
+        return lifecycleResult;
+    }
+
+    public void setLifecycleResult(ScheduleItemLifecyclePreviewResponse value) {
+        lifecycleResult = value;
+    }
+
+    public List<TransferLessonResponse> getTransfers() {
+        return transfers;
+    }
+
+    public void setTransfers(List<TransferLessonResponse> value) {
+        transfers = List.copyOf(value);
+    }
 
     public ScheduleItemResponse() {}
 
-    public ScheduleItemResponse(Long id, Long groupId, Long subjectId,
-                                 Long semesterId, Short dayOfWeek, Short lessonNumber,
-                                 LocalTime startTime, LocalTime endTime, WeekType weekType,
-                                 String room, boolean active, OffsetDateTime createdAt) {
+    public ScheduleItemResponse(
+            Long id,
+            Long groupId,
+            Long subjectId,
+            Long semesterId,
+            Short dayOfWeek,
+            Short lessonNumber,
+            LocalTime startTime,
+            LocalTime endTime,
+            WeekType weekType,
+            String room,
+            boolean active,
+            OffsetDateTime createdAt) {
         this.id = id;
         this.groupId = groupId;
         this.subjectId = subjectId;
@@ -65,14 +86,36 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
         this.createdAt = createdAt;
     }
 
-    public ScheduleItemResponse(Long id, Long assignmentId, Long groupId, Long subjectId,
-                                Long semesterId, Short dayOfWeek, Short lessonNumber,
-                                LocalTime startTime, LocalTime endTime, WeekType weekType,
-                                String room, boolean active, OffsetDateTime createdAt,
-                                Long generatedCount, LocalDate generatedFrom,
-                                LocalDate generatedUntil) {
-        this(id, groupId, subjectId, semesterId, dayOfWeek, lessonNumber,
-                startTime, endTime, weekType, room, active, createdAt);
+    public ScheduleItemResponse(
+            Long id,
+            Long assignmentId,
+            Long groupId,
+            Long subjectId,
+            Long semesterId,
+            Short dayOfWeek,
+            Short lessonNumber,
+            LocalTime startTime,
+            LocalTime endTime,
+            WeekType weekType,
+            String room,
+            boolean active,
+            OffsetDateTime createdAt,
+            Long generatedCount,
+            LocalDate generatedFrom,
+            LocalDate generatedUntil) {
+        this(
+                id,
+                groupId,
+                subjectId,
+                semesterId,
+                dayOfWeek,
+                lessonNumber,
+                startTime,
+                endTime,
+                weekType,
+                room,
+                active,
+                createdAt);
         this.assignmentId = assignmentId;
         this.generatedCount = generatedCount;
         this.generatedFrom = generatedFrom;

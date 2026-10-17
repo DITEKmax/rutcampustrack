@@ -1,0 +1,155 @@
+{
+  "time": "2026-10-12T05:23:51.110572+00:00",
+  "immutable_original_archive_sha256": "b15c87f420d35b8b1b41350537f2f84692ca480493c6f95ebe64bbcd2db59c25",
+  "original36plus_manifest_members_verified": true,
+  "preserved_original_receipt_files": 72,
+  "preserved_manifests": [
+    {
+      "manifest": "/workspace/scratch/rct-validation/current_client_artifacts/manifest.json",
+      "sha256": "840492d38bfd204fe37c9bb46e89d3a3fdbc7957ad31ad1e9ca6ca058523ea7f",
+      "files": 24
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/manifest.json",
+      "sha256": "fac7de9671ce6338b0e28ddd8745918bb04cd2816cd708861685e2d4f3f521cf",
+      "files": 29
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-manifest.json",
+      "sha256": "8159e470b37267bb2e2142e5e772eb0b925e83b50f82a68cfb0842ba28389287",
+      "files": 6
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/manifest.json",
+      "sha256": "04e6355b92c0cd24a6c6b574bde5099de2a26a4b7d87caaf08c9c8c71f4044ba",
+      "files": 13
+    }
+  ],
+  "services": [
+    {
+      "service": "academic",
+      "entries": 1797,
+      "jar_sha256": "c31747249c74bdb696a8333e477b902fc34bbc05d319b46d8c124ac466fb948a",
+      "jar_mode_unchanged": true,
+      "source_modes": {
+        "0o644": 104,
+        "0o600": 1693
+      },
+      "target_modes": {
+        "0o644": 1797
+      },
+      "rounded_undeduplicated_file_bytes": 110944256
+    },
+    {
+      "service": "attendance",
+      "entries": 1745,
+      "jar_sha256": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f",
+      "jar_mode_unchanged": true,
+      "source_modes": {
+        "0o644": 104,
+        "0o600": 1641
+      },
+      "target_modes": {
+        "0o644": 1745
+      },
+      "rounded_undeduplicated_file_bytes": 107065344
+    },
+    {
+      "service": "auth",
+      "entries": 1530,
+      "jar_sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95",
+      "jar_mode_unchanged": true,
+      "source_modes": {
+        "0o644": 104,
+        "0o600": 1426
+      },
+      "target_modes": {
+        "0o644": 1530
+      },
+      "rounded_undeduplicated_file_bytes": 109764608
+    },
+    {
+      "service": "bff",
+      "entries": 1296,
+      "jar_sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea",
+      "jar_mode_unchanged": true,
+      "source_modes": {
+        "0o644": 104,
+        "0o600": 1192
+      },
+      "target_modes": {
+        "0o644": 1296
+      },
+      "rounded_undeduplicated_file_bytes": 58998784
+    },
+    {
+      "service": "gateway",
+      "entries": 291,
+      "jar_sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39",
+      "jar_mode_unchanged": true,
+      "source_modes": {
+        "0o644": 105,
+        "0o600": 186
+      },
+      "target_modes": {
+        "0o644": 291
+      },
+      "rounded_undeduplicated_file_bytes": 63074304
+    },
+    {
+      "service": "notification",
+      "entries": 1400,
+      "jar_sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c",
+      "jar_mode_unchanged": true,
+      "source_modes": {
+        "0o644": 76,
+        "0o600": 1324
+      },
+      "target_modes": {
+        "0o644": 1400
+      },
+      "rounded_undeduplicated_file_bytes": 95756288
+    },
+    {
+      "service": "renderer",
+      "entries": 1260,
+      "jar_sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712",
+      "jar_mode_unchanged": true,
+      "source_modes": {
+        "0o644": 104,
+        "0o600": 1156
+      },
+      "target_modes": {
+        "0o644": 1260
+      },
+      "rounded_undeduplicated_file_bytes": 57483264
+    },
+    {
+      "service": "schedule",
+      "entries": 1515,
+      "jar_sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03",
+      "jar_mode_unchanged": true,
+      "source_modes": {
+        "0o644": 104,
+        "0o600": 1411
+      },
+      "target_modes": {
+        "0o644": 1515
+      },
+      "rounded_undeduplicated_file_bytes": 103141376
+    }
+  ],
+  "all_regular_entries": 10834,
+  "unique_source_mode_SHA_size": 2937,
+  "unique_target_mode_SHA_size": 2937,
+  "logical_unique_bytes": 166383274,
+  "rounded4KiB_unique_file_bytes": 172953600,
+  "source_JARs_mode_metadata_unchanged": true,
+  "traversal_duplicate_nonregular_file_dir_collision_checks": true,
+  "full_4_layer_union_verified": true,
+  "actual_staging": "NOT_RUN",
+  "actual_recovery_bytes": 0,
+  "resource_mutations": false,
+  "internal_directory_paths_excluding8_app_roots": 370,
+  "all_directory_paths_including8_app_roots": 378
+}

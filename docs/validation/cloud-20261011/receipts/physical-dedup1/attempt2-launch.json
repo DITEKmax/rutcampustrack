@@ -1,0 +1,15 @@
+{
+  "utc": "2026-10-12T06:33:32.386591+00:00",
+  "command": [
+    "python3",
+    "/workspace/scratch/rct-validation/physical_dedup1/dedup.py"
+  ],
+  "source_sha256": "4d68920dc0e90de57166f39684ec71c98181c7145b0f0817b38fa60dddda0504",
+  "permission_packet": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-physical-dedup1.md",
+  "writer": "host_runtime_prepare sole DEDUP1",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_model_effort": "UNKNOWN",
+  "fresh_preflight_immediately_before_exact_mutation": true,
+  "retry_reason": "Attempt1 native1 preflight only: historical synthetic symlink target bytes must be verified through separately sealed regular public path; zero resource mutations"
+}

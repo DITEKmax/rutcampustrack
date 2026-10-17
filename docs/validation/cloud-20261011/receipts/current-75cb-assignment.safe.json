@@ -1,0 +1,111 @@
+{
+  "artifact": 11874631310,
+  "producer": "75cb5ed5ae8d731991a5efd447c611b0eb9f65da",
+  "run": 38521397600,
+  "digest": "sha256:7c9418c0ecb76a8f63103e1b855b0e64bdce0c938e2658b95039b0ae2c9e3969",
+  "bytes": 1154,
+  "phases": {
+    "pending": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "assignment-lifecycle.spec.ts",
+          "line": 598,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 262,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    },
+    "prepare": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "assignment-lifecycle.spec.ts",
+          "line": 598,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 16281,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    },
+    "resume": {
+      "status": "failed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "assignment-lifecycle.spec.ts",
+          "line": 598,
+          "project": "chromium",
+          "status": "failed",
+          "expectedStatus": "passed",
+          "durationMs": 1887,
+          "errorCount": 1,
+          "diagnostics": [
+            {
+              "stage": "UNKNOWN",
+              "cause": "UNKNOWN",
+              "httpStatus": 0
+            }
+          ],
+          "errorLocations": [
+            {
+              "file": "assignment-lifecycle.spec.ts",
+              "line": 537
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "lifecycle_closed_diagnostics": {},
+  "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+  "missing_phases": [],
+  "diagnostic_schema": {
+    "pending": [
+      {
+        "caseCode": "ASSIGNMENT_LIFECYCLE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ],
+    "prepare": [
+      {
+        "caseCode": "ASSIGNMENT_LIFECYCLE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ],
+    "resume": [
+      {
+        "caseCode": "ASSIGNMENT_LIFECYCLE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ]
+  },
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+  "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_ALL_THREE_PHASES_AND_SUCCESSFUL_OWNED_SCHEDULE_RESTART_STEP",
+  "closed_reader": {
+    "exit": 0,
+    "reaped": true,
+    "private_input_removed": true
+  }
+}

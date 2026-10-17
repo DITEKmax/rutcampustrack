@@ -1,0 +1,26 @@
+{
+  "status": "SOURCE_READY_RUNTIME_NOT_VERIFIED",
+  "before_commit": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "only_changed_path": {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+    "old_sha256": "639433e7fc5bb3508eacd439ebed24dfdd278441f16452e3f0f6cc4a50750a26",
+    "new_sha256": "7116bf1fde7346bbb8dde9ae8d3a6f5bb9e3aa74abedf07e427ba2bfee19dbff",
+    "bytes": 9849
+  },
+  "all_other_tracked_inputs_byteexact": 6509,
+  "untracked_symlink_retained": true,
+  "oldCI": "166IT/onecase/line77AssertionFailedError; countUNKNOWN inavailablelog/noAuthartifact",
+  "source_oracle": "Currentjob extras.jobId count exactly1 aftertwocomplete calls; historicalrow exactid/jobId count1 retained",
+  "counterexample_status": "PREPARED_NOT_RUN: oldglobal count includes oneotherlegitimate historyrow plus currentjobfact =>>=2 and fails expected1; numericalactualCI unknown",
+  "duplicate_sensitivity_status": "PREPARED_NOT_RUN: secondcurrentjobfact matches same predicate =>count2, expected1 fails; originalproductproducer unchanged",
+  "source_hygiene": {
+    "EOF": true,
+    "size": true,
+    "trailing_whitespace": true,
+    "diff_check": "PASS"
+  },
+  "runtime": "NOT_RUN; noEXPORTaudit lease; noJava/Gradle/Docker/browser",
+  "formatting": "Matches surrounding authorstyle; existing source compressed; scoped formatter later rootlease ifrequired; no formatPASSclaim",
+  "source_commit": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "Gitleaks": "official8.24.3 scopedonecommitPASS/no findings"
+}

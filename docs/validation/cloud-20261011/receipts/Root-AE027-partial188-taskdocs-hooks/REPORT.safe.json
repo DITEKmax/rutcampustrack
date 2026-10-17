@@ -1,0 +1,29 @@
+{
+  "utc": "2026-10-13T09:49:50.071247+00:00",
+  "scope": "ROOT_PARTIAL188_TASKDOCS_CHECKPOINT",
+  "result": "NORMAL_COMMIT_188_TASKDOCS_CHECKS_AND_STAGED_SECRET_SCAN_PASS_EXACT_FIXTURES_PRESERVED",
+  "checkpoint_sha": "d9495004d9eda897d1a48ed95c7beb96ecbd625e",
+  "product_test_revision": "ae027b11fba4908a22039e9c22249836a63df243",
+  "remote_pr_sha": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+  "checks": {
+    "docs": {
+      "native_exit": 0,
+      "passed_markers": 5,
+      "not_applicable_skipped": 1,
+      "failed_markers": 0
+    },
+    "staged_secret_fail": {
+      "native_exit": 1,
+      "passed_markers": 0,
+      "not_applicable_skipped": 0,
+      "failed_markers": 1
+    },
+    "staged_secret_corrected": {
+      "native_exit": 0,
+      "passed_markers": 1,
+      "not_applicable_skipped": 0,
+      "failed_markers": 0
+    }
+  },
+  "qualification": "Normalcommit/nohookbypass/188explicitTaskpaths only. 15349syntax+safeformatPASS; first24833stagedGitleaksFAIL10publicGitSourceSHA identifiednotcredentials/original6JSONexactarchive7a34/22copiesunstaged; corrected65043stagedscannerPASS no detectorallowlistchanges/allownedreaped. No finalD009/DONE, localunpublished/currentCIgatesNOT_RUN. NewoneAuthtest49db/ae027integrated beforethisdoccheckpoint; twoJAR597productioninputsunchanged. First3SourcecorrectiveP2link-finally/recheck thennative7/integrate/push/currentCI remains."
+}

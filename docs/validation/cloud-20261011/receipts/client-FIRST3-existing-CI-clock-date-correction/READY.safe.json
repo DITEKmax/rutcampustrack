@@ -1,0 +1,18 @@
+{
+  "schema": "RCT_FIRST3_CI_CORRECTION_READY_V1",
+  "state": "SOURCE_READY_TARGETED_RECHECK_PENDING",
+  "commit": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "originalCommit": "f5a0d60000332f6560856e527e91e3defcff8a54",
+  "manifestSha256": "3e7d4482b5a9bb0a14765a50369f3e1fa7531de502b9717ed31b16884285f4f1",
+  "archive": "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/first3-ci-correction.safe.zip",
+  "archiveSha256": "9a141bd57a9adad4537d5b8fc4cc5bdfef9cc7a2a275bcdcaafb5ff3ed976d20",
+  "archiveBytes": 46672,
+  "archiveEntries": 21,
+  "native": "NOT_RUN",
+  "nodePlanOnly": true,
+  "clientAcceptance": false,
+  "sourceChecks": 37,
+  "correctionFindings": 2,
+  "worktreeKiB": 864,
+  "runtimeLease": "NONE"
+}

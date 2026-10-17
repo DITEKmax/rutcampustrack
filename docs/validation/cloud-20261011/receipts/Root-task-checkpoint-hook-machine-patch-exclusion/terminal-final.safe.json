@@ -1,0 +1,81 @@
+{
+  "direct_pid": 427697,
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 427697,
+      "start_ticks": 10594580
+    },
+    {
+      "pid": 427709,
+      "start_ticks": 10594583
+    },
+    {
+      "pid": 427736,
+      "start_ticks": 10594610
+    },
+    {
+      "pid": 427742,
+      "start_ticks": 10594670
+    },
+    {
+      "pid": 427764,
+      "start_ticks": 10595114
+    },
+    {
+      "pid": 427824,
+      "start_ticks": 10595587
+    },
+    {
+      "pid": 427821,
+      "start_ticks": 10595587
+    },
+    {
+      "pid": 427823,
+      "start_ticks": 10595587
+    },
+    {
+      "pid": 427892,
+      "start_ticks": 10595607
+    },
+    {
+      "pid": 427893,
+      "start_ticks": 10595607
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": true,
+  "checked_file_count": 547,
+  "closed_hook_outcomes": [
+    {
+      "hook": "Gitleaks secret detection",
+      "state": "PASS"
+    },
+    {
+      "hook": "check yaml",
+      "state": "PASS"
+    },
+    {
+      "hook": "check json",
+      "state": "PASS"
+    },
+    {
+      "hook": "check for added large files",
+      "state": "PASS"
+    },
+    {
+      "hook": "fix end of files",
+      "state": "PASS"
+    },
+    {
+      "hook": "trim trailing whitespace",
+      "state": "PASS"
+    }
+  ]
+}

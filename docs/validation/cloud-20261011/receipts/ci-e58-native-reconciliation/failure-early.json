@@ -1,0 +1,51 @@
+{
+  "time": "2026-10-12T07:32:46.126Z",
+  "producer": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "checkout": "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9",
+  "failures": [
+    {
+      "job_id": 114702916347,
+      "checkout": [
+        "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9"
+      ],
+      "summary": [
+        "2026-10-12T07:18:20.7350707Z 11 files would be reformatted, 99 files already formatted"
+      ],
+      "failures": []
+    },
+    {
+      "job_id": 114702916276,
+      "checkout": [
+        "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9"
+      ],
+      "summary": [
+        "2026-10-12T07:18:31.0141913Z     java.io.IOException at BotCredentialBrokerBridgeIT.java:417",
+        "2026-10-12T07:21:50.0212532Z 446 tests completed, 1 failed",
+        "2026-10-12T07:21:50.4137793Z > Task :services:academic-service:academic-app:integrationTest FAILED",
+        "2026-10-12T07:21:50.4158135Z BUILD FAILED in 5m 38s"
+      ],
+      "failures": [
+        "BotCredentialBrokerBridgeIT > actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards(Path) FAILED"
+      ]
+    },
+    {
+      "job_id": 114702916434,
+      "checkout": [
+        "6ee8f269e0ff5e3035cf01a899ae70ce65006fd9"
+      ],
+      "summary": [
+        "2026-10-12T07:21:23.5108588Z     java.io.IOException at BotCredentialBrokerBridgeIT.java:417",
+        "2026-10-12T07:25:33.9142803Z 446 tests completed, 1 failed",
+        "2026-10-12T07:25:34.3123485Z > Task :services:academic-service:academic-app:integrationTest FAILED",
+        "2026-10-12T07:25:34.4199694Z BUILD FAILED in 6m 49s"
+      ],
+      "failures": [
+        "BotCredentialBrokerBridgeIT > actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards(Path) FAILED"
+      ]
+    }
+  ],
+  "rawArtifactLocalDownload": "AUTO_REVIEW_REJECTED; safe fallback only",
+  "rawArtifactReason": "Reviewer interpreted task as safe receipts only, excluding raw XML/private raw evidence; no bypass or raw local download",
+  "next": "safe collectors/native counts/job log narrow cause markers/source phase",
+  "mutations": false
+}

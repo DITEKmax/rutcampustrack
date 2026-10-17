@@ -1,0 +1,176 @@
+{
+  "utc": "2026-10-12T23:26:32.046347+00:00",
+  "cohort": "restart-20261012-next02",
+  "runtime": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02",
+  "services": [
+    {
+      "service": "mongo-server",
+      "tool_session": 40737,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/mongo-server-process.safe.json",
+      "child_pid": 402626,
+      "members_including_Z": [
+        {
+          "pid": 402626,
+          "state": "S",
+          "ppid": 402553,
+          "pgrp": 402626,
+          "session": 402626,
+          "start_ticks": 10101657
+        }
+      ],
+      "wrapper_identity": {
+        "pid": 402553,
+        "start_ticks": 10101460
+      }
+    },
+    {
+      "service": "academic",
+      "tool_session": 50015,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/academic-process.safe.json",
+      "child_pid": 404364,
+      "members_including_Z": [
+        {
+          "pid": 404364,
+          "state": "S",
+          "ppid": 404360,
+          "pgrp": 404364,
+          "session": 404364,
+          "start_ticks": 10112830
+        }
+      ],
+      "wrapper_identity": {
+        "pid": 404360,
+        "start_ticks": 10112750
+      }
+    },
+    {
+      "service": "auth",
+      "tool_session": 50212,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/auth-process.safe.json",
+      "child_pid": 406640,
+      "members_including_Z": [
+        {
+          "pid": 406640,
+          "state": "S",
+          "ppid": 406637,
+          "pgrp": 406640,
+          "session": 406640,
+          "start_ticks": 10127882
+        }
+      ],
+      "wrapper_identity": {
+        "pid": 406637,
+        "start_ticks": 10127866
+      }
+    },
+    {
+      "service": "schedule",
+      "tool_session": 38098,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/schedule-process.safe.json",
+      "child_pid": 407325,
+      "members_including_Z": [
+        {
+          "pid": 407325,
+          "state": "S",
+          "ppid": 407322,
+          "pgrp": 407325,
+          "session": 407325,
+          "start_ticks": 10133232
+        }
+      ],
+      "wrapper_identity": {
+        "pid": 407322,
+        "start_ticks": 10133219
+      }
+    },
+    {
+      "service": "attendance",
+      "tool_session": 38477,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/attendance-process.safe.json",
+      "child_pid": 407372,
+      "members_including_Z": [
+        {
+          "pid": 407372,
+          "state": "S",
+          "ppid": 407351,
+          "pgrp": 407372,
+          "session": 407372,
+          "start_ticks": 10133800
+        }
+      ],
+      "wrapper_identity": {
+        "pid": 407351,
+        "start_ticks": 10133761
+      }
+    },
+    {
+      "service": "bff",
+      "tool_session": 13205,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/bff-process.safe.json",
+      "child_pid": 407499,
+      "members_including_Z": [
+        {
+          "pid": 407499,
+          "state": "S",
+          "ppid": 407496,
+          "pgrp": 407499,
+          "session": 407499,
+          "start_ticks": 10134410
+        }
+      ],
+      "wrapper_identity": {
+        "pid": 407496,
+        "start_ticks": 10134366
+      }
+    },
+    {
+      "service": "gateway",
+      "tool_session": 96843,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/gateway-process.safe.json",
+      "child_pid": 407604,
+      "members_including_Z": [
+        {
+          "pid": 407604,
+          "state": "S",
+          "ppid": 407598,
+          "pgrp": 407604,
+          "session": 407604,
+          "start_ticks": 10135041
+        }
+      ],
+      "wrapper_identity": {
+        "pid": 407598,
+        "start_ticks": 10134963
+      }
+    },
+    {
+      "service": "notification",
+      "tool_session": 11266,
+      "status_path": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261012-next02/notification-process.safe.json",
+      "child_pid": 407718,
+      "members_including_Z": [
+        {
+          "pid": 407718,
+          "state": "S",
+          "ppid": 407714,
+          "pgrp": 407718,
+          "session": 407718,
+          "start_ticks": 10135725
+        }
+      ],
+      "wrapper_identity": {
+        "pid": 407714,
+        "start_ticks": 10135639
+      }
+    }
+  ],
+  "stop_utc": "2026-10-12T23:47:59.421341+00:00",
+  "cleanup_dispatch_by": "2026-10-12T23:46:59.421341+00:00",
+  "resources": {
+    "workspace_free": 5518393344,
+    "tmp_free": 7509221376,
+    "shared": 10370363392
+  },
+  "critical_TLS_API": "PENDING",
+  "browser_permission": "SEPARATE_NOT_GRANTED"
+}

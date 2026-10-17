@@ -1,0 +1,171 @@
+{
+  "at": "2026-10-11T23:26:16.688635+00:00",
+  "verdict": "APPROVE",
+  "scope": "Bounded actual Clock consumer/context/sensitivity and exact current packaged-artifact evidence",
+  "target_sha": "10a213344673c84af4efc6b501a8084bbf5045be",
+  "blocking_findings": [],
+  "needed_correction": "NONE within reviewed bounded scope",
+  "source_exactness": {
+    "tracked_count": 6599,
+    "all_current_and_restored_match_initial_prelaunch": true,
+    "wrong_clock_changes": "Exactly one test fixture wiring path per negative phase; production guards/security clocks unchanged",
+    "critical_source_identities": [
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/EducationalSessionClockIsolationTest.java",
+        "sha256": "4bb1fe2655c0bdea657d89852db769c07daaf22b24a31da919226ebe9c6d4946",
+        "bytes": 4655
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/EducationalRetentionClockIsolationTest.java",
+        "sha256": "204de1d68bff64c6efc905db39604ed9a9f45e57cf36769385d8bd969f434291",
+        "bytes": 7526
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/error/EducationalProblemClockIsolationTest.java",
+        "sha256": "4868dc86a1afce0cf79e08d082759677f449400017bf633d50963be0d2050fdf",
+        "bytes": 1467
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/shared/shared-web-api/src/main/java/ru/rutcampustrack/shared/web/time/EducationalTime.java",
+        "sha256": "419ebbf9105c8a805a60b3563ccba88864ac18923c7e096153f83d40330aa5a4",
+        "bytes": 319
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/shared/shared-web-api/build.gradle.kts",
+        "sha256": "88c458ed5bac640ad3034b1c89b33a331e5540f51521ce7215aee28eafd7f5ee",
+        "bytes": 1100
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/shared/shared-web/build.gradle.kts",
+        "sha256": "3b763bce4032f304d1f43fdd226c0bfbe14531f35a2a056578aa348b247e0bd3",
+        "bytes": 3645
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/mobile-bff/mobile-bff-app/build.gradle.kts",
+        "sha256": "7e0bd6be45eff9b6b98a43916009d2a7c7598862dccb09fdbb933d31df194d54",
+        "bytes": 2321
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/build.gradle.kts",
+        "sha256": "58d676307ae668e6a4dddecea21a1676e14f00cc74d49cc4f758d3f464cbd8ae",
+        "bytes": 16559
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/shared/shared-web/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports",
+        "sha256": "428f6d40fe9d1f88b0879db34c577ea5b3fcbd7a7686f08c947afc7d9d8ddd40",
+        "bytes": 70
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/ClockInitializer.java",
+        "sha256": "373c3085ad75706bd66a9b4120537d21e95a6b470e55a9e456370711a858e67d",
+        "bytes": 2730
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/FileClock.java",
+        "sha256": "8df7cc0a9df24db5c67ca706bf38f46a926fe1eeef9edcbcf93b113c4f906f95",
+        "bytes": 1431
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/tests/e2e/backend-clock/src/control/java/ru/rutcampustrack/e2e/ClockFixtureControl.java",
+        "sha256": "7e868795d0b933ba975c13d6700746b2e71f6b05d412ec155c8d759586735d11",
+        "bytes": 5219
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/ClockConfig.java",
+        "sha256": "65b30a45ceae379f42b42a7e3d98b53d8d8a836a54910a0d6e4d9a7bbadcb4f7",
+        "bytes": 1366
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/ClockConfig.java",
+        "sha256": "76496b896c589aa030878ffd8d83c8ed934e35552c981714fdbf19a08e908f10",
+        "bytes": 1281
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/ClockConfig.java",
+        "sha256": "78867aee5ddb4939e0f418129d3e3b65eac2d68bdb7119269c7b1d00f9cb1925",
+        "bytes": 738
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/MobileBffRuntimeConfig.java",
+        "sha256": "70adb9601b2cd08d77d52c0028e9cf77489d0d58caf1c6f2daf9eb2add5b54bd",
+        "bytes": 543
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+        "sha256": "47211a3bf2b9b94cda4d12d312dec06d3f24e74d1a3ac8e0fcae557883aeec10",
+        "bytes": 27033
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+        "sha256": "cc8a49b090b7995889ff6c1feea2292d81609d69a5f9ce3f6a59126d1e5817b9",
+        "bytes": 134336
+      },
+      {
+        "path": "/workspace/rct-worktrees/client-runtime/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java",
+        "sha256": "b10e83bcb5b393eb6cd2833187febfd769304594e2c61f643925a83668ee4c80",
+        "bytes": 6771
+      }
+    ]
+  },
+  "actual_author_runs": [
+    {
+      "phase": "compile-green-10a",
+      "session_id": 22199,
+      "native_exit": 0,
+      "terminal_chunk": "8e98cd"
+    },
+    {
+      "phase": "negative-academic-10a",
+      "session_id": 92944,
+      "native_exit": 1,
+      "terminal_chunk": "7dc8c3"
+    },
+    {
+      "phase": "negative-attendance-10a",
+      "session_id": 83426,
+      "native_exit": 1,
+      "terminal_chunk": "2e1fdd"
+    },
+    {
+      "phase": "restored-green-10a",
+      "session_id": 67096,
+      "native_exit": 0,
+      "terminal_chunk": "a34e19"
+    },
+    {
+      "phase": "current-artifacts-10a",
+      "session_id": 94958,
+      "native_exit": 0,
+      "terminal_chunk": "618f32"
+    }
+  ],
+  "bounded_results": {
+    "initial": "Academic4+Attendance6+BFF1, failures/errors/skips0; typed context marker actual",
+    "wrong_clock_expiry": "2selected:1 exact no-throwable failure/1pass/0skip",
+    "wrong_clock_download": "2selected:1 exact no-throwable failure/1pass/0skip",
+    "restored": "Affected10PASS/failures/errors/skips0; unchanged BFF/context initial receipts reused",
+    "artifacts": "4 current production BootJARs/657nested dependency JARs; one exact APIclass each; fixtureabsent; BFF shared-webautoconfig absent by contents",
+    "inspectors": "3534 native0/0",
+    "stale_extra_negative_academic_XML": "2 oldothermoduleXMLs explicitly excluded"
+  },
+  "evidence": [
+    "checks.json",
+    "source-run-bridges.json",
+    "original-xml-reconciliation.json",
+    "sensitivity-restoration.json",
+    "independent-current-artifact-inspection.json",
+    "opened-sources-and-receipts.json",
+    "sealed-prior-review-preservation.json"
+  ],
+  "limits": [
+    "No reviewer runtime/test/generator/Gradle/JVM/app/browser/mutation",
+    "Controlled-port consumer proof is not DB/HTTP/fullstack acceptance",
+    "Source/artifacts frozen10a; root-integrated dependencies/revision require separate source/artifact qualification",
+    "Actual geo/D005/CC03/backend-client/browser NOT_RUN; no blanket family/security/product PASS",
+    "Historical raw tool transcript unavailable; captured argv/cwd/per-file/Git/prelaunch/nativeexit/terminal/log receipts independently checked"
+  ],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "findings": "findings.md"
+}

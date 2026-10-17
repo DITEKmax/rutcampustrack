@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T07:36:24.763098+00:00",
+  "cause": "actual defaultJDK client PUT EOF/Http2Connection; native HTTP1_1 samebody/localendpoint PUT201 and permissions204; defaultProxyDIRECT",
+  "only_changed_path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+  "exact_only_version_builder_delta": true,
+  "sha256": "bf44a550a966709fb266131bb1639c3ddb501f0b292df9c9c8b09eef3ed3e18a",
+  "Python_and_other7047_tracked_bytes_unchanged": true,
+  "product_policy_change": false,
+  "fullsuite_retry": "NOT_RUN_PENDING_ROOT_REVIEW",
+  "failure_evidence": "broker1-attempt01-failure.safe.json; rabbitdiag1-differential.safe.json"
+}

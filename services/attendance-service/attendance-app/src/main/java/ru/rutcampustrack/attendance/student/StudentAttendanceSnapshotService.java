@@ -1,21 +1,5 @@
 package ru.rutcampustrack.attendance.student;
 
-import org.springframework.stereotype.Service;
-import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
-import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
-import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
-import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
-import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
-import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
-import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
-import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
-import ru.rutcampustrack.attendance.student.StudentCheckinException.Code;
-import ru.rutcampustrack.attendance.student.StudentCheckinModels.Identity;
-import ru.rutcampustrack.schedule.grpc.LessonResponse;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -24,6 +8,24 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
+import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
+import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
+import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
+import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+import ru.rutcampustrack.attendance.student.StudentCheckinException.Code;
+import ru.rutcampustrack.attendance.student.StudentCheckinModels.Identity;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 @Service
 public class StudentAttendanceSnapshotService {
@@ -41,8 +43,7 @@ public class StudentAttendanceSnapshotService {
         HEADMAN_USES_JOURNAL
     }
 
-    public record Eligibility(boolean allowed, EligibilityReason reason, Instant retryAt) {
-    }
+    public record Eligibility(boolean allowed, EligibilityReason reason, Instant retryAt) {}
 
     public record Entry(
             long lessonId,
@@ -51,12 +52,9 @@ public class StudentAttendanceSnapshotService {
             Instant markedAt,
             LateCheckinRequest request,
             Instant retryAt,
-            Eligibility eligibility
-    ) {
-    }
+            Eligibility eligibility) {}
 
-    public record Snapshot(List<Entry> entries, Instant serverNow) {
-    }
+    public record Snapshot(List<Entry> entries, Instant serverNow) {}
 
     private static final Duration BUFFER = Duration.ofMinutes(5);
 
@@ -67,14 +65,31 @@ public class StudentAttendanceSnapshotService {
     private final CheckinPairStateRepository pairRepository;
     private final Clock clock;
 
+    @Autowired
     public StudentAttendanceSnapshotService(
             ScheduleGrpcClient scheduleGrpcClient,
             AttendanceRepository attendanceRepository,
             LateCheckinRepository lateCheckinRepository,
             ExcuseRepository excuseRepository,
             CheckinPairStateRepository pairRepository,
-            Clock clock
-    ) {
+            Clock clock,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(
+                scheduleGrpcClient,
+                attendanceRepository,
+                lateCheckinRepository,
+                excuseRepository,
+                pairRepository,
+                educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock());
+    }
+
+    public StudentAttendanceSnapshotService(
+            ScheduleGrpcClient scheduleGrpcClient,
+            AttendanceRepository attendanceRepository,
+            LateCheckinRepository lateCheckinRepository,
+            ExcuseRepository excuseRepository,
+            CheckinPairStateRepository pairRepository,
+            Clock clock) {
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.attendanceRepository = attendanceRepository;
         this.lateCheckinRepository = lateCheckinRepository;
@@ -86,46 +101,73 @@ public class StudentAttendanceSnapshotService {
     public Snapshot getSnapshot(Identity identity, List<Long> lessonIds) {
         validateIdentity(identity);
         if (lessonIds == null || lessonIds.stream().anyMatch(id -> id == null || id <= 0)) {
-            throw new StudentCheckinException(Code.INVALID_REQUEST, "lesson_ids содержит некорректное значение");
+            throw new StudentCheckinException(
+                    Code.INVALID_REQUEST, "lesson_ids содержит некорректное значение");
         }
         Instant now = clock.instant();
         List<LessonResponse> lessons = new ArrayList<>(lessonIds.size());
         for (Long id : lessonIds) {
             LessonResponse lesson = scheduleGrpcClient.getLessonById(id);
             if (lesson.getGroupId() != identity.groupId()) {
-                throw new StudentCheckinException(Code.OUT_OF_SCOPE,
-                        "Запрошенная пара принадлежит другой группе");
+                throw new StudentCheckinException(
+                        Code.OUT_OF_SCOPE, "Запрошенная пара принадлежит другой группе");
             }
             lessons.add(lesson);
         }
 
         List<Entry> entries = new ArrayList<>(lessons.size());
         for (LessonResponse lesson : lessons) {
-            AttendanceDocument attendance = attendanceRepository
-                    .findByLessonIdAndUserId(lesson.getId(), identity.userId()).orElse(null);
-            LateCheckinRequest request = lateCheckinRepository
-                    .findFirstByStudentIdAndLessonIdAndOriginOrderByUpdatedAtDesc(
-                            identity.userId(), lesson.getId(), LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
-                    .orElse(null);
-            LateCheckinRequest pendingRequest = lateCheckinRepository.findFirstByStudentIdAndLessonIdAndStatus(
-                    identity.userId(), lesson.getId(), LateCheckinRequestStatus.PENDING).orElse(null);
-            boolean hasPendingExcuse = excuseRepository.existsByStudentIdAndLessonIdsInAndStatusIn(
-                    identity.userId(), List.of(lesson.getId()), List.of(ExcuseTicketStatus.SUBMITTED));
-            CheckinPairStateDocument pair = pairRepository.findById(
-                    PairWriteCoordinator.pairId(identity.userId(), lesson.getId())).orElse(null);
+            AttendanceDocument attendance =
+                    attendanceRepository
+                            .findByLessonIdAndUserId(lesson.getId(), identity.userId())
+                            .orElse(null);
+            LateCheckinRequest request =
+                    lateCheckinRepository
+                            .findFirstByStudentIdAndLessonIdAndOriginOrderByUpdatedAtDesc(
+                                    identity.userId(),
+                                    lesson.getId(),
+                                    LateCheckinRequestOrigin.AUTO_GEO_FAILURE)
+                            .orElse(null);
+            LateCheckinRequest pendingRequest =
+                    lateCheckinRepository
+                            .findFirstByStudentIdAndLessonIdAndStatus(
+                                    identity.userId(),
+                                    lesson.getId(),
+                                    LateCheckinRequestStatus.PENDING)
+                            .orElse(null);
+            boolean hasPendingExcuse =
+                    excuseRepository.existsByStudentIdAndLessonIdsInAndStatusIn(
+                            identity.userId(),
+                            List.of(lesson.getId()),
+                            List.of(ExcuseTicketStatus.SUBMITTED));
+            CheckinPairStateDocument pair =
+                    pairRepository
+                            .findById(
+                                    PairWriteCoordinator.pairId(identity.userId(), lesson.getId()))
+                            .orElse(null);
             Instant retryAt = pair == null ? null : pair.getRetryAt();
-            EffectiveAttendance effective = EffectiveAttendance.resolve(lesson.getStatus(), attendance != null,
-                    attendance == null ? null : attendance.getStatus(),
-                    attendance == null ? null : attendance.getSource());
-            entries.add(new Entry(
-                    lesson.getId(),
-                    effective.status(),
-                    effective.source(),
-                    attendance == null ? null : attendance.getUpdatedAt(),
-                    request,
-                    retryAt,
-                    eligibility(identity, lesson, attendance, pendingRequest, hasPendingExcuse, retryAt, now)
-            ));
+            EffectiveAttendance effective =
+                    EffectiveAttendance.resolve(
+                            lesson.getStatus(),
+                            attendance != null,
+                            attendance == null ? null : attendance.getStatus(),
+                            attendance == null ? null : attendance.getSource());
+            entries.add(
+                    new Entry(
+                            lesson.getId(),
+                            effective.status(),
+                            effective.source(),
+                            attendance == null ? null : attendance.getUpdatedAt(),
+                            request,
+                            retryAt,
+                            eligibility(
+                                    identity,
+                                    lesson,
+                                    attendance,
+                                    pendingRequest,
+                                    hasPendingExcuse,
+                                    retryAt,
+                                    now)));
         }
         return new Snapshot(List.copyOf(entries), now);
     }
@@ -137,11 +179,12 @@ public class StudentAttendanceSnapshotService {
             LateCheckinRequest pendingRequest,
             boolean hasPendingExcuse,
             Instant retryAt,
-            Instant now
-    ) {
+            Instant now) {
         if (identity.headman()) return disabled(EligibilityReason.HEADMAN_USES_JOURNAL, null);
         if (hasPendingExcuse
-                || (pendingRequest != null && pendingRequest.getOrigin() != LateCheckinRequestOrigin.AUTO_GEO_FAILURE)) {
+                || (pendingRequest != null
+                        && pendingRequest.getOrigin()
+                                != LateCheckinRequestOrigin.AUTO_GEO_FAILURE)) {
             return disabled(EligibilityReason.PENDING_CONFIRMATION, null);
         }
         if ("cancelled".equalsIgnoreCase(lesson.getStatus())) {
@@ -150,7 +193,8 @@ public class StudentAttendanceSnapshotService {
         if (attendance != null && attendance.getStatus() == AttendanceStatus.PRESENT) {
             return disabled(EligibilityReason.ALREADY_PRESENT, null);
         }
-        if (attendance != null && attendance.getStatus() == AttendanceStatus.ABSENT
+        if (attendance != null
+                && attendance.getStatus() == AttendanceStatus.ABSENT
                 && attendance.getSource() == AttendanceSource.HEADMAN) {
             return disabled(EligibilityReason.HEADMAN_ABSENT_REQUIRES_APPEAL, null);
         }
@@ -179,7 +223,8 @@ public class StudentAttendanceSnapshotService {
 
     private static void validateIdentity(Identity identity) {
         if (identity == null || identity.userId() <= 0 || identity.groupId() == null) {
-            throw new StudentCheckinException(Code.INVALID_SESSION, "Не хватает student/group scope");
+            throw new StudentCheckinException(
+                    Code.INVALID_SESSION, "Не хватает student/group scope");
         }
         if (!"STUDENT".equalsIgnoreCase(identity.role())) {
             throw new StudentCheckinException(Code.WRONG_ROLE, "Снимок доступен роли STUDENT");

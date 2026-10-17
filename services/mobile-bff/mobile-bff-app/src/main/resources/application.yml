@@ -1,4 +1,7 @@
 server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
   port: ${MOBILE_BFF_PORT:9080}
 
 spring:
@@ -42,6 +45,25 @@ springdoc:
     version: OPENAPI_3_0
 
 management:
+  tracing:
+    sampling:
+      probability: 1.0
+    baggage:
+      remote-fields: requestId
+      tag-fields: requestId
+      correlation:
+        fields: requestId
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://tempo:4318/v1/traces}
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 2s,3s,30s
   endpoints:
     web:
       exposure:

@@ -1,0 +1,76 @@
+{
+  "artifact_id": 11783020586,
+  "name": "safe-coverage-outcomes-academic-service-1",
+  "archive_bytes": 36668,
+  "archive_sha256": "f9c4114db641c864247774791d7360fd53c3dad553008871561e8a985c037a36",
+  "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 446,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": {
+        "xmlOrdinal": 28,
+        "suiteOrdinal": 1,
+        "ordinal": 12,
+        "classname": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+        "method": "enumDatabaseAndHttpBoundaryRemainCanonicalUnderTurkishLocale",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+        "sourceSha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d"
+      },
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    },
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "academic-service",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 465,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

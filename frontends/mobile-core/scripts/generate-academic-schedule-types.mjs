@@ -13,7 +13,10 @@ for (const service of ['academic', 'schedule']) {
   const generated = header + astToString(ast)
   if (checkOnly) {
     const current = await readFile(outputUrl, 'utf8')
-    if (current.replace(/\r\n/g, '\n') !== generated.replace(/\r\n/g, '\n')) throw new Error(`Canonical ${service} types drifted; run npm run generate:academic-schedule-types in frontends`)
+    if (current.replace(/\r\n/g, '\n') !== generated.replace(/\r\n/g, '\n'))
+      throw new Error(
+        `Canonical ${service} types drifted; run npm run generate:academic-schedule-types in frontends`,
+      )
     console.log(`Canonical ${service} snapshot matches docs/openapi/${service}.json`)
   } else {
     await writeFile(outputUrl, generated, 'utf8')

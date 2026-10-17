@@ -1,0 +1,7 @@
+SOURCE PLAN ONLY. Frozen597716/source13+2author23482 requires genuine standard Academic+Attendance bootJARs; currentoldAcademic96/Attendance908 cannot implement new signedRPC pair. Reuse other6original908 and alldata160/key/5vol/renderer/frontend/browser availability.
+
+Use existing b78/importAPI and standard offline wrapper invocation from PLAN: oneworker/768MiB heap/256MiBmetaspace/2GiBownedRSS, two bootJar tasks ONLYin new own/tmp sparsecheckout787/4,476,062B. Rootfreshgrant before any clone/build; productauthorWT/B013 untouched. Prior96-onlyfixedcaller needs narrowtuple/source/artifact extension and repins, not unchangedexecution or a new framework.
+
+Numericcaps unchanged1.5GiBnewtmp/workspace4GiB/tmp5GiB/shared15reserve1/workspacecache8MiB/900+60. Actualtwofootprint/SHAs/member/librarycounts UNKNOWN; oldAcademicmeasured134,656,000B not a two-build estimate. Futurefullpayload2/spec/result/commit/classpath bindings are separateSTAGE/runtimegrants. Avoid old expensivewalkfrequency; preserve cheapfreshUTC-last/fullentry-final and sampled qualifications with targetedsource review.
+
+CurrentpreDocker deficit recorded; BUILDreadiness is notstandcapacity/readiness/PASS. No ownresourcecleanup authorized here. Exactstand160 DB/key/old5vol metadata authority retained; no rebootstrap/reseed/copy/keybody/ENV values. Onecoherentminimalbuild-stage-bind sourcepacket/targetedreview neededbeforeactualgrant; no broadhistoricalsuites/research or new runner.

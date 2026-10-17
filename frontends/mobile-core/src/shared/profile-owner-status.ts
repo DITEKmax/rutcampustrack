@@ -11,8 +11,10 @@ export function profileOwnerStaleMessage(route: MobileRoute, offline: boolean): 
 }
 
 export function isProfileStaleRoute(route: MobileRoute): boolean {
-  return route.root === 'profile'
-    && (route.kind === 'root' || route.id === 'profile/sessions' || route.id === 'profile/history')
+  return (
+    route.root === 'profile' &&
+    (route.kind === 'root' || route.id === 'profile/sessions' || route.id === 'profile/history')
+  )
 }
 
 export function canRunProfileNetworkAction(offline: boolean): boolean {

@@ -29,7 +29,10 @@ export interface MapApiOptions {
 export class MapApiError extends Error {
   readonly problem: MobileProblemDetails | null
 
-  constructor(readonly response: Response, problem: MobileProblemDetails | null) {
+  constructor(
+    readonly response: Response,
+    problem: MobileProblemDetails | null,
+  ) {
     super(problem?.detail || problem?.title || `HTTP ${response.status}`)
     this.name = 'MapApiError'
     this.problem = problem
@@ -49,11 +52,13 @@ export class CampusMapClient {
   }
 
   isCurrentGeneration(generation: number | undefined): boolean {
-    return generation === undefined
-      || this.options.currentGeneration?.() === generation
+    return generation === undefined || this.options.currentGeneration?.() === generation
   }
 
-  async getManifest(etag?: string, signal?: AbortSignal): Promise<{
+  async getManifest(
+    etag?: string,
+    signal?: AbortSignal,
+  ): Promise<{
     data: MapManifest | null
     etag: string | null
   }> {
@@ -71,7 +76,11 @@ export class CampusMapClient {
     }
   }
 
-  async getFloorPlan(buildingId: string, floorId: string, signal?: AbortSignal): Promise<MapPlan | null> {
+  async getFloorPlan(
+    buildingId: string,
+    floorId: string,
+    signal?: AbortSignal,
+  ): Promise<MapPlan | null> {
     const response = await this.requestResponse(
       `/api/v1/map/buildings/${encodeURIComponent(buildingId)}/floors/${encodeURIComponent(floorId)}/plan`,
       signal ? { signal } : undefined,
@@ -94,8 +103,8 @@ export class CampusMapClient {
   ): Promise<Blob> {
     const generation = this.currentGeneration()
     const response = await this.requestResponse(
-      `/api/v1/map/buildings/${encodeURIComponent(buildingId)}/floors/${encodeURIComponent(floorId)}`
-        + `/plans/${encodeURIComponent(version)}/assets/${format}/${encodeURIComponent(assetId)}`,
+      `/api/v1/map/buildings/${encodeURIComponent(buildingId)}/floors/${encodeURIComponent(floorId)}` +
+        `/plans/${encodeURIComponent(version)}/assets/${format}/${encodeURIComponent(assetId)}`,
       {
         headers: { Accept: format === 'png' ? 'image/png' : 'image/svg+xml' },
         ...(signal ? { signal } : {}),
@@ -129,7 +138,11 @@ export class CampusMapClient {
     await response.arrayBuffer()
   }
 
-  private async requestResponse(path: string, init?: RequestInit, retried = false): Promise<Response> {
+  private async requestResponse(
+    path: string,
+    init?: RequestInit,
+    retried = false,
+  ): Promise<Response> {
     const generation = this.currentGeneration()
     this.assertCurrentGeneration(generation)
     const token = this.options.accessToken()
@@ -146,7 +159,7 @@ export class CampusMapClient {
     }
     let problem: MobileProblemDetails | null = null
     try {
-      problem = await response.json() as MobileProblemDetails
+      problem = (await response.json()) as MobileProblemDetails
     } catch {
       // Keep the response status when a gateway cannot return Problem Details.
     }
@@ -180,55 +193,119 @@ export class AdminMapClient {
   }
 
   private codeQuery(buildingCode: string, floorCode: string, format?: MapFormat): string {
-    if (![buildingCode, floorCode].every(code => /^[1-9][0-9]*$/.test(code) && code.length <= 64)
-      || (format !== undefined && format !== 'png' && format !== 'svg')) throw new TypeError('Укажи положительные номера корпуса и этажа.')
-    return new URLSearchParams({ buildingCode, floorCode, ...(format ? { format } : {}) }).toString()
+    if (
+      ![buildingCode, floorCode].every((code) => /^[1-9][0-9]*$/.test(code) && code.length <= 64) ||
+      (format !== undefined && format !== 'png' && format !== 'svg')
+    )
+      throw new TypeError('Укажи положительные номера корпуса и этажа.')
+    return new URLSearchParams({
+      buildingCode,
+      floorCode,
+      ...(format ? { format } : {}),
+    }).toString()
   }
 
-  async resolvePlanTarget(buildingCode: string, floorCode: string, signal?: AbortSignal): Promise<AdminMapPlanTarget> {
-    const result = await this.request<AdminMapPlanTarget>(`${AdminMapClient.basePath}/plans/target?${this.codeQuery(buildingCode, floorCode)}`, { cache: 'no-store', ...(signal ? { signal } : {}) })
-    if (!result || result.buildingCode !== buildingCode || result.floorCode !== floorCode
-      || (result.status !== 'found' && result.status !== 'absent')
-      || (result.status === 'absent' ? result.floor !== null : !result.floor || result.floor.code !== floorCode)) throw new TypeError('Ответ относится к другой схеме.')
+  async resolvePlanTarget(
+    buildingCode: string,
+    floorCode: string,
+    signal?: AbortSignal,
+  ): Promise<AdminMapPlanTarget> {
+    const result = await this.request<AdminMapPlanTarget>(
+      `${AdminMapClient.basePath}/plans/target?${this.codeQuery(buildingCode, floorCode)}`,
+      { cache: 'no-store', ...(signal ? { signal } : {}) },
+    )
+    if (
+      !result ||
+      result.buildingCode !== buildingCode ||
+      result.floorCode !== floorCode ||
+      (result.status !== 'found' && result.status !== 'absent') ||
+      (result.status === 'absent'
+        ? result.floor !== null
+        : !result.floor || result.floor.code !== floorCode)
+    )
+      throw new TypeError('Ответ относится к другой схеме.')
     return result
   }
 
-  async planDeletionPreview(buildingCode: string, floorCode: string, format?: MapFormat, signal?: AbortSignal): Promise<AdminMapPlanDeletionPreview> {
-    const result = await this.request<AdminMapPlanDeletionPreview>(`${AdminMapClient.basePath}/plans/target/deletion-preview?${this.codeQuery(buildingCode, floorCode, format)}`, { cache: 'no-store', ...(signal ? { signal } : {}) })
-    if (!result || result.buildingCode !== buildingCode || result.floorCode !== floorCode || result.format !== (format ?? null)
-      || typeof result.label !== 'string' || !Number.isSafeInteger(result.files) || result.files < 0
-      || !Number.isSafeInteger(result.bytes) || result.bytes < 0 || !/^[0-9a-f]{64}$/.test(result.previewDigest)) throw new TypeError('Предпросмотр удаления не подтверждён.')
+  async planDeletionPreview(
+    buildingCode: string,
+    floorCode: string,
+    format?: MapFormat,
+    signal?: AbortSignal,
+  ): Promise<AdminMapPlanDeletionPreview> {
+    const result = await this.request<AdminMapPlanDeletionPreview>(
+      `${AdminMapClient.basePath}/plans/target/deletion-preview?${this.codeQuery(buildingCode, floorCode, format)}`,
+      { cache: 'no-store', ...(signal ? { signal } : {}) },
+    )
+    if (
+      !result ||
+      result.buildingCode !== buildingCode ||
+      result.floorCode !== floorCode ||
+      result.format !== (format ?? null) ||
+      typeof result.label !== 'string' ||
+      !Number.isSafeInteger(result.files) ||
+      result.files < 0 ||
+      !Number.isSafeInteger(result.bytes) ||
+      result.bytes < 0 ||
+      !/^[0-9a-f]{64}$/.test(result.previewDigest)
+    )
+      throw new TypeError('Предпросмотр удаления не подтверждён.')
     return result
   }
 
   async deletePlanTarget(payload: AdminMapPlanDeleteRequest): Promise<AdminMapPlanDeletionResult> {
     this.codeQuery(payload.buildingCode, payload.floorCode, payload.format)
-    const result = await this.request<AdminMapPlanDeletionResult>(`${AdminMapClient.basePath}/plans/target/deletion`, { method: 'POST', body: JSON.stringify(payload) }, false)
-    if (!result || result.operationId !== payload.operationId || result.buildingCode !== payload.buildingCode
-      || result.floorCode !== payload.floorCode || result.format !== (payload.format ?? null) || result.status !== 'COMPLETED') throw new TypeError('Подтверждение удаления не получено.')
+    const result = await this.request<AdminMapPlanDeletionResult>(
+      `${AdminMapClient.basePath}/plans/target/deletion`,
+      { method: 'POST', body: JSON.stringify(payload) },
+      false,
+    )
+    if (
+      !result ||
+      result.operationId !== payload.operationId ||
+      result.buildingCode !== payload.buildingCode ||
+      result.floorCode !== payload.floorCode ||
+      result.format !== (payload.format ?? null) ||
+      result.status !== 'COMPLETED'
+    )
+      throw new TypeError('Подтверждение удаления не получено.')
     return result
   }
 
   async updateBuilding(id: string, code: string, label: string): Promise<AdminMapBuildingResponse> {
     return this.request(`${AdminMapClient.basePath}/buildings/${encodeURIComponent(id)}`, {
-      method: 'PUT', body: JSON.stringify({ code, label: label || null }),
+      method: 'PUT',
+      body: JSON.stringify({ code, label: label || null }),
     })
   }
 
   async updateFloor(id: string, code: string, label: string): Promise<AdminMapFloorResponse> {
     return this.request(`${AdminMapClient.basePath}/floors/${encodeURIComponent(id)}`, {
-      method: 'PUT', body: JSON.stringify({ code, label: label || null }),
+      method: 'PUT',
+      body: JSON.stringify({ code, label: label || null }),
     })
   }
 
-  async deletionPreview(type: AdminMapDeletionTarget, id: string): Promise<AdminMapDeletionPreview> {
+  async deletionPreview(
+    type: AdminMapDeletionTarget,
+    id: string,
+  ): Promise<AdminMapDeletionPreview> {
     return this.request(`${this.targetPath(type, id)}/deletion-preview`)
   }
 
-  async deleteInventory(type: AdminMapDeletionTarget, id: string, payload: AdminMapDeleteRequest): Promise<AdminMapDeletionResult> {
-    return this.request(`${this.targetPath(type, id)}/deletion`, {
-      method: 'POST', body: JSON.stringify(payload),
-    }, false)
+  async deleteInventory(
+    type: AdminMapDeletionTarget,
+    id: string,
+    payload: AdminMapDeleteRequest,
+  ): Promise<AdminMapDeletionResult> {
+    return this.request(
+      `${this.targetPath(type, id)}/deletion`,
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+      false,
+    )
   }
 
   private targetPath(type: AdminMapDeletionTarget, id: string): string {
@@ -236,33 +313,59 @@ export class AdminMapClient {
   }
 
   async listBuildings(signal?: AbortSignal): Promise<readonly AdminMapBuildingResponse[]> {
-    return this.request<AdminMapBuildingResponse[]>(`${AdminMapClient.basePath}/buildings`, signal ? { signal } : undefined)
+    return this.request<AdminMapBuildingResponse[]>(
+      `${AdminMapClient.basePath}/buildings`,
+      signal ? { signal } : undefined,
+    )
   }
 
-  async listFloors(buildingId?: string, signal?: AbortSignal): Promise<readonly AdminMapFloorResponse[]> {
+  async listFloors(
+    buildingId?: string,
+    signal?: AbortSignal,
+  ): Promise<readonly AdminMapFloorResponse[]> {
     const query = buildingId ? `?buildingId=${encodeURIComponent(buildingId)}` : ''
-    return this.request<AdminMapFloorResponse[]>(`${AdminMapClient.basePath}/floors${query}`, signal ? { signal } : undefined)
+    return this.request<AdminMapFloorResponse[]>(
+      `${AdminMapClient.basePath}/floors${query}`,
+      signal ? { signal } : undefined,
+    )
   }
 
   async createBuilding(code: string, label?: string): Promise<AdminMapBuildingResponse> {
-    return this.request<AdminMapBuildingResponse>(`${AdminMapClient.basePath}/buildings`, {
-      method: 'POST',
-      body: JSON.stringify({ code, label: label || null }),
-    }, false)
+    return this.request<AdminMapBuildingResponse>(
+      `${AdminMapClient.basePath}/buildings`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ code, label: label || null }),
+      },
+      false,
+    )
   }
 
-  async createFloor(buildingId: string, code: string, label?: string): Promise<AdminMapFloorResponse> {
-    return this.request<AdminMapFloorResponse>(`${AdminMapClient.basePath}/floors`, {
-      method: 'POST',
-      body: JSON.stringify({ buildingId, code, label: label || null }),
-    }, false)
+  async createFloor(
+    buildingId: string,
+    code: string,
+    label?: string,
+  ): Promise<AdminMapFloorResponse> {
+    return this.request<AdminMapFloorResponse>(
+      `${AdminMapClient.basePath}/floors`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ buildingId, code, label: label || null }),
+      },
+      false,
+    )
   }
 
   async uploadPlan(payload: AdminMapPlanUploadRequest): Promise<AdminMapPlanUploadResult> {
-    if (![payload.buildingCode, payload.floorCode].every(code => /^[1-9][0-9]*$/.test(code) && code.length <= 64)) {
+    if (
+      ![payload.buildingCode, payload.floorCode].every(
+        (code) => /^[1-9][0-9]*$/.test(code) && code.length <= 64,
+      )
+    ) {
       throw new TypeError('Укажи положительные номера корпуса и этажа: до 64 цифр без пробелов.')
     }
-    if (payload.label !== undefined && payload.label.length > 255) throw new TypeError('Название схемы слишком длинное.')
+    if (payload.label !== undefined && payload.label.length > 255)
+      throw new TypeError('Название схемы слишком длинное.')
     if (!payload.png && !payload.svg) throw new TypeError('Приложи PNG или SVG.')
     const body = new FormData()
     body.append('buildingCode', payload.buildingCode)
@@ -272,22 +375,42 @@ export class AdminMapClient {
     if (payload.svg) body.append('svg', payload.svg, payload.svg.name)
     const generation = this.currentGeneration()
     // Publication commands must never replay after a lost acknowledgement or 401.
-    const response = await this.requestResponse(`${AdminMapClient.basePath}/plans`, { method: 'POST', body }, false, generation, false)
-    const result = await response.json() as AdminMapPlanUploadResult
+    const response = await this.requestResponse(
+      `${AdminMapClient.basePath}/plans`,
+      { method: 'POST', body },
+      false,
+      generation,
+      false,
+    )
+    const result = (await response.json()) as AdminMapPlanUploadResult
     this.assertCurrentGeneration(generation)
-    if (!result || !['created', 'replaced'].includes(result.status)
-      || response.status !== (result.status === 'created' ? 201 : 200)
-      || typeof result.buildingCreated !== 'boolean' || typeof result.floorCreated !== 'boolean'
-      || (result.status === 'replaced' && (result.buildingCreated || result.floorCreated))
-      || (result.buildingCreated && !result.floorCreated)
-      || !result.plan || ![result.plan.buildingId, result.plan.floorId, result.plan.version, result.plan.catalogRevision]
-        .every(value => typeof value === 'string' && value.length > 0)
-      || !(['png', 'svg'] as const).every(format => {
+    if (
+      !result ||
+      !['created', 'replaced'].includes(result.status) ||
+      response.status !== (result.status === 'created' ? 201 : 200) ||
+      typeof result.buildingCreated !== 'boolean' ||
+      typeof result.floorCreated !== 'boolean' ||
+      (result.status === 'replaced' && (result.buildingCreated || result.floorCreated)) ||
+      (result.buildingCreated && !result.floorCreated) ||
+      !result.plan ||
+      ![
+        result.plan.buildingId,
+        result.plan.floorId,
+        result.plan.version,
+        result.plan.catalogRevision,
+      ].every((value) => typeof value === 'string' && value.length > 0) ||
+      !(['png', 'svg'] as const).every((format) => {
         const slot = result.plan[format]
-        return slot && slot.format === format && ['absent', 'processing', 'ready', 'failed'].includes(slot.state)
-          && slot.contentType === (format === 'png' ? 'image/png' : 'image/svg+xml')
-          && (slot.state !== 'ready' || (typeof slot.id === 'string' && slot.id.length > 0 && slot.bytes > 0))
-      })) {
+        return (
+          slot &&
+          slot.format === format &&
+          ['absent', 'processing', 'ready', 'failed'].includes(slot.state) &&
+          slot.contentType === (format === 'png' ? 'image/png' : 'image/svg+xml') &&
+          (slot.state !== 'ready' ||
+            (typeof slot.id === 'string' && slot.id.length > 0 && slot.bytes > 0))
+        )
+      })
+    ) {
       throw new TypeError('Подтверждение публикации схемы не получено.')
     }
     return result
@@ -302,10 +425,14 @@ export class AdminMapClient {
     if (payload.label) body.append('label', payload.label)
     if (payload.png) body.append('png', payload.png, payload.png.name)
     if (payload.svg) body.append('svg', payload.svg, payload.svg.name)
-    return this.request<AdminMapPlan>(`${AdminMapClient.basePath}/floors/${encodeURIComponent(floorId)}/versions`, {
-      method: 'POST',
-      body,
-    }, false)
+    return this.request<AdminMapPlan>(
+      `${AdminMapClient.basePath}/floors/${encodeURIComponent(floorId)}/versions`,
+      {
+        method: 'POST',
+        body,
+      },
+      false,
+    )
   }
 
   async getVersion(floorId: string, version: string, signal?: AbortSignal): Promise<AdminMapPlan> {
@@ -315,11 +442,16 @@ export class AdminMapClient {
     )
   }
 
-  async downloadAsset(floorId: string, version: string, format: MapFormat, assetId: string): Promise<Blob> {
+  async downloadAsset(
+    floorId: string,
+    version: string,
+    format: MapFormat,
+    assetId: string,
+  ): Promise<Blob> {
     const generation = this.currentGeneration()
     const response = await this.requestResponse(
-      `${AdminMapClient.basePath}/floors/${encodeURIComponent(floorId)}/versions/${encodeURIComponent(version)}`
-        + `/assets/${format}/${encodeURIComponent(assetId)}`,
+      `${AdminMapClient.basePath}/floors/${encodeURIComponent(floorId)}/versions/${encodeURIComponent(version)}` +
+        `/assets/${format}/${encodeURIComponent(assetId)}`,
       { headers: { Accept: format === 'png' ? 'image/png' : 'image/svg+xml' } },
     )
     const body = await response.blob()
@@ -330,13 +462,18 @@ export class AdminMapClient {
   private async request<T>(path: string, init?: RequestInit, allowRetry = true): Promise<T> {
     const generation = this.currentGeneration()
     const response = await this.requestResponse(path, init, false, generation, allowRetry)
-    const body = await response.json() as T
+    const body = (await response.json()) as T
     this.assertCurrentGeneration(generation)
     return body
   }
 
-  private async requestResponse(path: string, init?: RequestInit, retried = false,
-    generation = this.currentGeneration(), allowRetry = true): Promise<Response> {
+  private async requestResponse(
+    path: string,
+    init?: RequestInit,
+    retried = false,
+    generation = this.currentGeneration(),
+    allowRetry = true,
+  ): Promise<Response> {
     this.assertCurrentGeneration(generation)
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
@@ -355,7 +492,7 @@ export class AdminMapClient {
     }
     let problem: MobileProblemDetails | null = null
     try {
-      problem = await response.json() as MobileProblemDetails
+      problem = (await response.json()) as MobileProblemDetails
     } catch {
       // Keep the response status when a gateway cannot return Problem Details.
     }

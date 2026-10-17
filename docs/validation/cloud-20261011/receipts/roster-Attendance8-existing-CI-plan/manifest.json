@@ -1,0 +1,21 @@
+{
+  "utc": "2026-10-13T07:17:49.363843+00:00",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/t008_attendance_ci_readonly/PLAN.safe.json",
+      "sha256": "2ca2c403f25517dd87e9abfc118380808aee27f41a4304f5707ccbd24c46a388",
+      "size": 7632
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/t008_attendance_ci_readonly/source12.safe.json",
+      "sha256": "55628bdb87617ad00fae7412c1b27855a92e9e769107ea6a34fe6bb0a82df76b",
+      "size": 3978
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/t008_attendance_ci_readonly/HANDOFF.md",
+      "sha256": "01e444f42207b4034b1476ff85b5ea2a1f5e2604b5a717a59cd4d685743b81be",
+      "size": 1148
+    }
+  ],
+  "no_private": true
+}

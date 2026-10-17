@@ -1,0 +1,56 @@
+{
+  "direct_pid": 218242,
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 218242,
+      "start_ticks": 4168884
+    },
+    {
+      "pid": 218243,
+      "start_ticks": 4168891
+    },
+    {
+      "pid": 218244,
+      "start_ticks": 4168894
+    },
+    {
+      "pid": 218284,
+      "start_ticks": 4169017
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": true,
+  "utc": "2026-10-12T06:52:10.272923+00:00",
+  "lease": "NP01_COMPILE1",
+  "elapsed_seconds": 34.352,
+  "initial_disk_free": 8598208512,
+  "initial_memory_current": 4397404160,
+  "peaks": {
+    "maximum_memory_current": 5437087744,
+    "minimum_disk_free": 8591998976
+  },
+  "environment_keys": [
+    "GRADLE_USER_HOME",
+    "HTTPS_PROXY",
+    "HTTP_PROXY",
+    "JAVA_HOME",
+    "LANG",
+    "LC_ALL",
+    "NO_PROXY",
+    "PATH",
+    "PYTHONDONTWRITEBYTECODE",
+    "PYTHONNOUSERSITE",
+    "PYTHONSAFEPATH",
+    "SSL_CERT_FILE",
+    "TMPDIR",
+    "TZ"
+  ],
+  "environment_values_dumped": false
+}

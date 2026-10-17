@@ -1,19 +1,7 @@
 package ru.rutcampustrack.attendance.event;
 
-import org.bson.Document;
-import org.bson.types.ObjectId;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import ru.rutcampustrack.shared.outbox.OutboxStorage;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -22,10 +10,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +22,17 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 /** Reads, versions and removes Attendance records owned by one semester. */
 @Component
@@ -50,15 +49,16 @@ public class AttendanceSemesterDeletionData {
     private final OutboxStorage outbox;
     private final ObjectMapper mapper;
 
-    public AttendanceSemesterDeletionData(MongoTemplate mongoTemplate, OutboxStorage outbox, ObjectMapper mapper) {
+    public AttendanceSemesterDeletionData(
+            MongoTemplate mongoTemplate, OutboxStorage outbox, ObjectMapper mapper) {
         this.mongoTemplate = mongoTemplate;
         this.outbox = outbox;
         this.mapper = mapper;
     }
 
     /**
-     * Captures only business rows that a delete participant would remove.
-     * Control-plane fences, receipts, and outbox rows are intentionally absent.
+     * Captures only business rows that a delete participant would remove. Control-plane fences,
+     * receipts, and outbox rows are intentionally absent.
      */
     @Transactional(transactionManager = "mongoTransactionManager", readOnly = true)
     public Snapshot preview(long semesterId) {
@@ -70,38 +70,45 @@ public class AttendanceSemesterDeletionData {
     public Preview previewWithFenceVersion(long semesterId) {
         requireSemesterId(semesterId);
         Snapshot snapshot = snapshot(loadRows(semesterId));
-        SemesterArchiveFenceDocument fence = mongoTemplate.findById(
-                Long.toString(semesterId), SemesterArchiveFenceDocument.class);
+        SemesterArchiveFenceDocument fence =
+                mongoTemplate.findById(
+                        Long.toString(semesterId), SemesterArchiveFenceDocument.class);
         Long stateVersion = fence == null ? null : fence.getStateVersion();
-        SemesterDeletionTombstoneDocument tombstone = mongoTemplate.findById(
-                Long.toString(semesterId), SemesterDeletionTombstoneDocument.class);
-        if (tombstone != null && (stateVersion == null || tombstone.getStateVersion() > stateVersion)) {
+        SemesterDeletionTombstoneDocument tombstone =
+                mongoTemplate.findById(
+                        Long.toString(semesterId), SemesterDeletionTombstoneDocument.class);
+        if (tombstone != null
+                && (stateVersion == null || tombstone.getStateVersion() > stateVersion)) {
             // A permanent tombstone remains authoritative when the fence row
             // is missing or damaged after commit.
             stateVersion = tombstone.getStateVersion();
         }
         if (stateVersion != null && stateVersion < 0) {
-            throw new IllegalStateException("Attendance semester fence version must not be negative");
+            throw new IllegalStateException(
+                    "Attendance semester fence version must not be negative");
         }
         return new Preview(snapshot, stateVersion == null ? 0L : stateVersion);
     }
 
     /**
-     * Deletes the exact scoped row set only when it still matches the sealed
-     * participant digest. The caller owns the surrounding Mongo transaction.
+     * Deletes the exact scoped row set only when it still matches the sealed participant digest.
+     * The caller owns the surrounding Mongo transaction.
      */
     public Snapshot delete(long semesterId, String expectedDigest) {
         requireSemesterId(semesterId);
         if (!TransactionSynchronizationManager.isActualTransactionActive()) {
-            throw new IllegalStateException("Attendance semester deletion requires an active Mongo transaction");
+            throw new IllegalStateException(
+                    "Attendance semester deletion requires an active Mongo transaction");
         }
         if (expectedDigest == null || !expectedDigest.matches("[0-9a-f]{64}")) {
-            throw new IllegalArgumentException("expected participant digest must be lowercase SHA-256");
+            throw new IllegalArgumentException(
+                    "expected participant digest must be lowercase SHA-256");
         }
 
         DomainRows rows = loadRows(semesterId);
         Snapshot current = snapshot(rows);
-        if (!MessageDigest.isEqual(current.participantDigest().getBytes(StandardCharsets.US_ASCII),
+        if (!MessageDigest.isEqual(
+                current.participantDigest().getBytes(StandardCharsets.US_ASCII),
                 expectedDigest.getBytes(StandardCharsets.US_ASCII))) {
             throw new DigestMismatchException(current);
         }
@@ -113,10 +120,13 @@ public class AttendanceSemesterDeletionData {
         removeRows(rows.rows(LATE_CHECKIN_BUDGETS), LATE_CHECKIN_BUDGETS);
         if (current.studentRequests() > 0) {
             try {
-                outbox.save("dashboard.invalidated", mapper.writeValueAsString(
-                        EventEnvelope.build("dashboard.invalidated", Map.of())));
+                outbox.save(
+                        "dashboard.invalidated",
+                        mapper.writeValueAsString(
+                                EventEnvelope.build("dashboard.invalidated", Map.of())));
             } catch (JsonProcessingException failure) {
-                throw new IllegalStateException("Failed to serialize dashboard invalidation", failure);
+                throw new IllegalStateException(
+                        "Failed to serialize dashboard invalidation", failure);
             }
         }
         return current;
@@ -137,7 +147,9 @@ public class AttendanceSemesterDeletionData {
         for (DomainRow mark : marks) {
             long ownerId = positiveLong(mark.document(), "user_id", ATTENDANCES);
             long lessonId = positiveLong(mark.document(), "lesson_id", ATTENDANCES);
-            attachmentOwners.computeIfAbsent(ownerId + ":" + lessonId, ignored -> new HashSet<>()).add(ownerId);
+            attachmentOwners
+                    .computeIfAbsent(ownerId + ":" + lessonId, ignored -> new HashSet<>())
+                    .add(ownerId);
         }
         for (DomainRow request : lateRequests) {
             positiveLong(request.document(), "student_id", LATE_CHECKIN_REQUESTS);
@@ -150,29 +162,39 @@ public class AttendanceSemesterDeletionData {
         attachments.addAll(findLegacyAttachments(attachmentOwners));
         Set<Long> cancelledLessonIds = findCancellationMarkerLessonIds(semesterId);
         attachments.addAll(findMarkerBackedLegacyAttachments(cancelledLessonIds));
-        attachments = attachments.stream()
-                .collect(java.util.stream.Collectors.toMap(DomainRow::identity, row -> row,
-                        (first, ignored) -> first, TreeMap::new))
-                .values().stream().toList();
+        attachments =
+                attachments.stream()
+                        .collect(
+                                java.util.stream.Collectors.toMap(
+                                        DomainRow::identity,
+                                        row -> row,
+                                        (first, ignored) -> first,
+                                        TreeMap::new))
+                        .values()
+                        .stream()
+                        .toList();
         for (DomainRow attachment : attachments) {
             positiveLong(attachment.document(), "owner_student_id", REQUEST_ATTACHMENTS);
             requiredString(attachment.document(), "request_id", REQUEST_ATTACHMENTS);
             if (!hasUsableAttachmentVersion(attachment.document())) {
-                throw new IllegalStateException("Semester deletion found an attachment without a content version");
+                throw new IllegalStateException(
+                        "Semester deletion found an attachment without a content version");
             }
         }
 
-        return new DomainRows(Map.of(
-                ATTENDANCES, marks,
-                EXCUSE_TICKETS, excuses,
-                LATE_CHECKIN_REQUESTS, lateRequests,
-                REQUEST_ATTACHMENTS, attachments,
-                LATE_CHECKIN_BUDGETS, budgets));
+        return new DomainRows(
+                Map.of(
+                        ATTENDANCES, marks,
+                        EXCUSE_TICKETS, excuses,
+                        LATE_CHECKIN_REQUESTS, lateRequests,
+                        REQUEST_ATTACHMENTS, attachments,
+                        LATE_CHECKIN_BUDGETS, budgets));
     }
 
     private List<DomainRow> findRows(String collection, long semesterId) {
-        Query query = Query.query(Criteria.where("semester_id").is(semesterId))
-                .with(Sort.by(Sort.Direction.ASC, "_id"));
+        Query query =
+                Query.query(Criteria.where("semester_id").is(semesterId))
+                        .with(Sort.by(Sort.Direction.ASC, "_id"));
         if (REQUEST_ATTACHMENTS.equals(collection)) {
             // Hash the validated SHA-256 content version without transferring
             // up to 10 MiB of binary data for every attachment in a preview.
@@ -184,8 +206,9 @@ public class AttendanceSemesterDeletionData {
     }
 
     private List<DomainRow> findSemesterAttachments(long semesterId) {
-        Query query = Query.query(Criteria.where("semester_id").is(semesterId))
-                .with(Sort.by(Sort.Direction.ASC, "_id"));
+        Query query =
+                Query.query(Criteria.where("semester_id").is(semesterId))
+                        .with(Sort.by(Sort.Direction.ASC, "_id"));
         query.fields().exclude("data");
         return mongoTemplate.find(query, Document.class, REQUEST_ATTACHMENTS).stream()
                 .map(document -> new DomainRow(REQUEST_ATTACHMENTS, document))
@@ -198,25 +221,34 @@ public class AttendanceSemesterDeletionData {
         }
         Set<Long> ownerIds = new HashSet<>();
         attachmentOwners.values().forEach(ownerIds::addAll);
-        Query query = Query.query(new Criteria().andOperator(
-                        Criteria.where("semester_id").is(null),
-                        Criteria.where("owner_student_id").in(ownerIds),
-                        Criteria.where("request_id").in(attachmentOwners.keySet())))
-                .with(Sort.by(Sort.Direction.ASC, "_id"));
+        Query query =
+                Query.query(
+                                new Criteria()
+                                        .andOperator(
+                                                Criteria.where("semester_id").is(null),
+                                                Criteria.where("owner_student_id").in(ownerIds),
+                                                Criteria.where("request_id")
+                                                        .in(attachmentOwners.keySet())))
+                        .with(Sort.by(Sort.Direction.ASC, "_id"));
         query.fields().exclude("data");
         return mongoTemplate.find(query, Document.class, REQUEST_ATTACHMENTS).stream()
-                .filter(document -> {
-                    String requestId = stringValue(document.get("request_id"));
-                    Long ownerId = nullableLong(document.get("owner_student_id"));
-                    return ownerId != null && attachmentOwners.getOrDefault(requestId, Set.of()).contains(ownerId);
-                })
+                .filter(
+                        document -> {
+                            String requestId = stringValue(document.get("request_id"));
+                            Long ownerId = nullableLong(document.get("owner_student_id"));
+                            return ownerId != null
+                                    && attachmentOwners
+                                            .getOrDefault(requestId, Set.of())
+                                            .contains(ownerId);
+                        })
                 .map(document -> new DomainRow(REQUEST_ATTACHMENTS, document))
                 .toList();
     }
 
     private Set<Long> findCancellationMarkerLessonIds(long semesterId) {
-        Query query = Query.query(Criteria.where("semester_id").is(semesterId))
-                .with(Sort.by(Sort.Direction.ASC, "lesson_id"));
+        Query query =
+                Query.query(Criteria.where("semester_id").is(semesterId))
+                        .with(Sort.by(Sort.Direction.ASC, "lesson_id"));
         return mongoTemplate.find(query, LessonCancellationMarker.class).stream()
                 .map(LessonCancellationMarker::getLessonId)
                 .filter(lessonId -> lessonId != null && lessonId > 0)
@@ -224,37 +256,52 @@ public class AttendanceSemesterDeletionData {
     }
 
     /**
-     * Legacy pair attachments can outlive a deleted mark. A durable cancellation
-     * marker is the only remaining authority that can prove their semester and
-     * physical lesson; owner must still exactly match the pair key.
+     * Legacy pair attachments can outlive a deleted mark. A durable cancellation marker is the only
+     * remaining authority that can prove their semester and physical lesson; owner must still
+     * exactly match the pair key.
      */
     private List<DomainRow> findMarkerBackedLegacyAttachments(Set<Long> lessonIds) {
         if (lessonIds.isEmpty()) {
             return List.of();
         }
-        String lessonAlternation = lessonIds.stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining("|"));
-        Query query = Query.query(new Criteria().andOperator(
-                        Criteria.where("semester_id").is(null),
-                        Criteria.where("request_id").regex("^[1-9][0-9]*:(?:" + lessonAlternation + ")$")))
-                .with(Sort.by(Sort.Direction.ASC, "_id"));
+        String lessonAlternation =
+                lessonIds.stream().map(String::valueOf).collect(Collectors.joining("|"));
+        Query query =
+                Query.query(
+                                new Criteria()
+                                        .andOperator(
+                                                Criteria.where("semester_id").is(null),
+                                                Criteria.where("request_id")
+                                                        .regex(
+                                                                "^[1-9][0-9]*:(?:"
+                                                                        + lessonAlternation
+                                                                        + ")$")))
+                        .with(Sort.by(Sort.Direction.ASC, "_id"));
         query.fields().exclude("data");
         return mongoTemplate.find(query, Document.class, REQUEST_ATTACHMENTS).stream()
-                .filter(document -> {
-                    Long ownerId = exactPositiveOwnerId(document.get("owner_student_id"));
-                    String requestId = stringValue(document.get("request_id"));
-                    return ownerId != null && lessonIds.stream().anyMatch(lessonId ->
-                            PairWriteCoordinator.pairId(ownerId, lessonId).equals(requestId));
-                })
+                .filter(
+                        document -> {
+                            Long ownerId = exactPositiveOwnerId(document.get("owner_student_id"));
+                            String requestId = stringValue(document.get("request_id"));
+                            return ownerId != null
+                                    && lessonIds.stream()
+                                            .anyMatch(
+                                                    lessonId ->
+                                                            PairWriteCoordinator.pairId(
+                                                                            ownerId, lessonId)
+                                                                    .equals(requestId));
+                        })
                 .map(document -> new DomainRow(REQUEST_ATTACHMENTS, document))
                 .toList();
     }
 
     private Snapshot snapshot(DomainRows rows) {
-        List<DomainRow> ordered = rows.allRows().stream()
-                .sorted(Comparator.comparing(DomainRow::collection).thenComparing(DomainRow::identity))
-                .toList();
+        List<DomainRow> ordered =
+                rows.allRows().stream()
+                        .sorted(
+                                Comparator.comparing(DomainRow::collection)
+                                        .thenComparing(DomainRow::identity))
+                        .toList();
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             writeToken(digest, DIGEST_VERSION);
@@ -262,11 +309,14 @@ public class AttendanceSemesterDeletionData {
                 writeToken(digest, row.collection());
                 writeValue(digest, row.document());
             }
-            return new Snapshot(rows.rows(ATTENDANCES).size(),
-                    rows.rows(EXCUSE_TICKETS).size() + (long) rows.rows(LATE_CHECKIN_REQUESTS).size(),
+            return new Snapshot(
+                    rows.rows(ATTENDANCES).size(),
+                    rows.rows(EXCUSE_TICKETS).size()
+                            + (long) rows.rows(LATE_CHECKIN_REQUESTS).size(),
                     hex(digest.digest()));
         } catch (NoSuchAlgorithmException | IOException error) {
-            throw new IllegalStateException("Could not calculate Attendance semester deletion digest", error);
+            throw new IllegalStateException(
+                    "Could not calculate Attendance semester deletion digest", error);
         }
     }
 
@@ -275,10 +325,13 @@ public class AttendanceSemesterDeletionData {
             return;
         }
         List<Object> ids = rows.stream().map(row -> row.document().get("_id")).toList();
-        long deleted = mongoTemplate.remove(Query.query(Criteria.where("_id").in(ids)), collection)
-                .getDeletedCount();
+        long deleted =
+                mongoTemplate
+                        .remove(Query.query(Criteria.where("_id").in(ids)), collection)
+                        .getDeletedCount();
         if (deleted != rows.size()) {
-            throw new IllegalStateException("Attendance semester deletion row set changed during transaction");
+            throw new IllegalStateException(
+                    "Attendance semester deletion row set changed during transaction");
         }
     }
 
@@ -290,7 +343,8 @@ public class AttendanceSemesterDeletionData {
     private static long positiveLong(Document document, String field, String collection) {
         Long value = nullableLong(document.get(field));
         if (value == null || value <= 0) {
-            throw new IllegalStateException("Semester deletion found an unowned " + collection + " row");
+            throw new IllegalStateException(
+                    "Semester deletion found an unowned " + collection + " row");
         }
         return value;
     }
@@ -298,7 +352,8 @@ public class AttendanceSemesterDeletionData {
     private static String requiredString(Document document, String field, String collection) {
         String value = stringValue(document.get(field));
         if (value == null || value.isBlank()) {
-            throw new IllegalStateException("Semester deletion found an unowned " + collection + " row");
+            throw new IllegalStateException(
+                    "Semester deletion found an unowned " + collection + " row");
         }
         return value;
     }
@@ -311,7 +366,8 @@ public class AttendanceSemesterDeletionData {
         if (id instanceof String requestId && !requestId.isBlank()) {
             return requestId;
         }
-        throw new IllegalStateException("Semester deletion found an excuse ticket without its request identity");
+        throw new IllegalStateException(
+                "Semester deletion found an excuse ticket without its request identity");
     }
 
     private static Long nullableLong(Object value) {
@@ -416,11 +472,9 @@ public class AttendanceSemesterDeletionData {
         }
     }
 
-    public record Snapshot(long attendanceMarks, long studentRequests, String participantDigest) {
-    }
+    public record Snapshot(long attendanceMarks, long studentRequests, String participantDigest) {}
 
-    public record Preview(Snapshot snapshot, long observedFenceVersion) {
-    }
+    public record Preview(Snapshot snapshot, long observedFenceVersion) {}
 
     public static final class DigestMismatchException extends RuntimeException {
         private final Snapshot current;

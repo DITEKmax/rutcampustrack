@@ -9,14 +9,13 @@ import java.util.Locale;
 final class HeadmanWeeklyReportFiles {
 
     private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("dd.MM.uuuu");
-    private static final String GAP_SUFFIX = "_\u0421_\u041f\u0420\u041e\u041f\u0423\u0421\u041a\u0410\u041c\u0418";
+    private static final String GAP_SUFFIX =
+            "_\u0421_\u041f\u0420\u041e\u041f\u0423\u0421\u041a\u0410\u041c\u0418";
 
-    private HeadmanWeeklyReportFiles() {
-    }
+    private HeadmanWeeklyReportFiles() {}
 
-    static String buildFileName(String groupCode,
-                                List<LocalDate> weekStarts,
-                                HeadmanWeeklyReportFormat format) {
+    static String buildFileName(
+            String groupCode, List<LocalDate> weekStarts, HeadmanWeeklyReportFormat format) {
         if (weekStarts == null || weekStarts.isEmpty()) {
             throw new IllegalArgumentException("weekStarts must not be empty");
         }
@@ -27,19 +26,21 @@ final class HeadmanWeeklyReportFiles {
 
         String suffix = hasGaps(sorted) ? GAP_SUFFIX : "";
         if (format == HeadmanWeeklyReportFormat.PNG) {
-            return "%s_%s_%s%s_png.zip".formatted(
-                    sanitizeGroupCode(groupCode),
-                    first.format(FILE_DATE),
-                    last.format(FILE_DATE),
-                    suffix);
+            return "%s_%s_%s%s_png.zip"
+                    .formatted(
+                            sanitizeGroupCode(groupCode),
+                            first.format(FILE_DATE),
+                            last.format(FILE_DATE),
+                            suffix);
         }
 
-        return "%s_%s_%s%s.%s".formatted(
-                sanitizeGroupCode(groupCode),
-                first.format(FILE_DATE),
-                last.format(FILE_DATE),
-                suffix,
-                format.extension());
+        return "%s_%s_%s%s.%s"
+                .formatted(
+                        sanitizeGroupCode(groupCode),
+                        first.format(FILE_DATE),
+                        last.format(FILE_DATE),
+                        suffix,
+                        format.extension());
     }
 
     static boolean hasGaps(List<LocalDate> weekStarts) {
@@ -53,10 +54,7 @@ final class HeadmanWeeklyReportFiles {
     }
 
     private static List<LocalDate> sortedDistinct(List<LocalDate> weekStarts) {
-        return weekStarts.stream()
-                .distinct()
-                .sorted(Comparator.naturalOrder())
-                .toList();
+        return weekStarts.stream().distinct().sorted(Comparator.naturalOrder()).toList();
     }
 
     private static String sanitizeGroupCode(String groupCode) {
@@ -64,8 +62,7 @@ final class HeadmanWeeklyReportFiles {
         if (value.isEmpty()) {
             value = "group";
         }
-        return value
-                .replaceAll("\\s+", "_")
+        return value.replaceAll("\\s+", "_")
                 .replaceAll("[\\\\/:*?\"<>|]", "_")
                 .toUpperCase(Locale.ROOT);
     }

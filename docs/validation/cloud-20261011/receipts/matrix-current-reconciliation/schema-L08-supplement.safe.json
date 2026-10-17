@@ -1,0 +1,24 @@
+{
+  "old_map": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/data-lecture-developer/schema-ownership.md",
+  "source_snapshot": "c16a2995",
+  "additive_objects": [
+    {
+      "object": "users.credentials_version, telegram_binding_version",
+      "owner": "Academic V57 shared Flyway chain",
+      "writers_consumers": "Academic version/binding trigger; Auth credential localtx; credential-card/event consumers"
+    },
+    {
+      "object": "bot_credential_messages",
+      "owner": "Academic V57 schema",
+      "writers_consumers": "Academic exact-revision card lifecycle domain; Auth same-PG credential invalidation transaction; metadata only/no login/password/hash"
+    },
+    {
+      "object": "auth_outbox password.changed v2 UID/generation metadata",
+      "owner": "Academic existing schema",
+      "writers_consumers": "Auth same-localtx producer; Rabbit/native bot consumer separate acceptance"
+    }
+  ],
+  "current_local_rollback": "JdbcSessionAuthorityIT.np01OutboxFailureRollsBackCredentialGenerationCardInvalidationAndSessionsTogether EB SOURCE_METHOD pass",
+  "shared_namespace": "Both production academic_db, Academic only Flyway/Auth disabled",
+  "no_history_upgrade_remote_atomicity_or_DBsplit_inference": true
+}

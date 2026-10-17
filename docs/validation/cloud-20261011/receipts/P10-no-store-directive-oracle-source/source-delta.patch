@@ -1,0 +1,28 @@
+diff --git a/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java b/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java
+index dc9014fc..e29484a2 100644
+--- a/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java
++++ b/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java
+@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import java.nio.charset.StandardCharsets;
+ import java.time.Clock;
++import java.util.Arrays;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+@@ -1181,7 +1182,14 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
+     private void assertUnicodePasswordRejection(
+             ResponseEntity<JsonNode> response, String invalid, String proof) throws Exception {
+         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+-        assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
++        String cacheControl = response.getHeaders().getCacheControl();
++        assertThat(
++                        cacheControl != null
++                                && Arrays.stream(cacheControl.split(","))
++                                        .anyMatch(
++                                                directive ->
++                                                        "no-store".equalsIgnoreCase(directive.trim())))
++                .isTrue();
+         assertThat(response.getBody() != null).isTrue();
+         JsonNode body = response.getBody();
+         String rendered = body.toString();

@@ -1,0 +1,57 @@
+{
+  "utc": "2026-10-13T14:24:29.305925+00:00",
+  "session": 26786,
+  "native_exit": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "terminal_utc": "2026-10-13T14:19:50.508487+00:00",
+  "fixed_marker_count": 2,
+  "build_success_lines_count": 2,
+  "recorded_births": [
+    {
+      "pid": 526354,
+      "start_ticks": 15491001,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 526379,
+      "start_ticks": 15491098,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 526381,
+      "start_ticks": 15491117,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 526438,
+      "start_ticks": 15491536,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 526634,
+      "start_ticks": 15495783,
+      "state": "ABSENT"
+    },
+    {
+      "pid": 526668,
+      "start_ticks": 15495922,
+      "state": "ABSENT"
+    }
+  ],
+  "protected_sources_exact": true,
+  "protected_count": 18,
+  "private_tmp_absent": true,
+  "parent_authority_absent": true,
+  "test_sha256": "dc0fd1f3f3636ce5dccc03401036dcfbfc6c62c8aa12dae0932cacf3e2297875",
+  "changed_paths": [
+    "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/PublicKeyProvisioningTest.java"
+  ],
+  "qualification": "Exact one target existing formatter apply/check; closed static markers only, raw private log not emitted; post-run readonly observations after terminal.",
+  "mechanical_commit": "a3a5b3c2841e18901aa265023cf6ca7ad934fc8d",
+  "semantic_commit": "0ec154fd1c352fe41f30ecea6819f1b1e1ac19d1",
+  "target_count": 1,
+  "fixed_marker_explanation": "Two occurrences, apply and check both exact one target.",
+  "readonly_observation_after_stop": true,
+  "normal_commit_hook_output": "NONE_OBSERVED_NO_BYPASS"
+}

@@ -1,0 +1,51 @@
+{
+  "status": "EXPORTS3_RENEWED_FOCUSED_CROSSLAYER_RUNNING",
+  "resources": "one owning maxworker1 Gradle/Auth JVM, existing isolated PG16/Redis7 harness with random ports, JDK HTTP127.0.0.1:0, own synthetic RSA temp dir removed after class; no native/browser/fullstack",
+  "required_read_before_containers": "c4/cloud-environment-runtime references/docker.md",
+  "compile": [
+    ":services:auth-service:auth-api-contract:compileJava",
+    ":services:api-gateway:compileJava",
+    ":services:auth-service:auth-app:compileJava",
+    ":services:auth-service:auth-app:compileTestJava",
+    ":services:api-gateway:compileTestJava"
+  ],
+  "integration_class": "ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT",
+  "unit_classes": [
+    "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+    "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+    "ru.rutcampustrack.auth.export.ExportReportAuthorityTest",
+    "ru.rutcampustrack.auth.events.ExportStateContractTest"
+  ],
+  "followup_integrations": [
+    "ru.rutcampustrack.auth.integration.AuthIT",
+    "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+    "ru.rutcampustrack.auth.integration.OpenApiSnapshotIT"
+  ],
+  "followup_gateway": [
+    "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+    "ru.rutcampustrack.gateway.security.ExportJobWorkerTest"
+  ],
+  "sensitivity": {
+    "EBSR01": "Actual before3 real signed Auth/Gateway worker expected ready but got error, restored focused green pending; additional fixed-clock bounds unit checks min(durable expiry,now+60s) and expiry",
+    "EBSR02": "Actual before3 controlled expiry after real admission produced500 vs404; restored same oracle green pending",
+    "EBSR03": "Actual before3 canonical production enum accepted Auth/Gateway ordinal and numeric string, and Gateway null; restored same oracle green pending, exact test bridge preserves those assertions",
+    "EBSR04": "Actual before3 real teacher/student and wrong-view grant/initiation plus scoped current-profile outage produced200 vs403/503; restored same oracle green pending; DASHBOARD_VIEW fixture setup only classification separate"
+  },
+  "source_evidence": "immediate-prelaunch full relevant authored/build/config dependencies per-file snapshot and terminal same bytes; source inventory bridge to final commit",
+  "logs": "own scratch only, project safe projections exclude raw stdio/properties/parameters/JWT/bodies",
+  "command_prefix": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py"
+  ],
+  "gradle_flags": [
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m"
+  ],
+  "repeat_rule": "Do not rerun existing known red solely for historical recovery; additional run only after product change, fixture integrity correction, or new risk",
+  "standalone_jobs_batch": [
+    "ru.rutcampustrack.auth.export.ExportJobsIT"
+  ],
+  "classpath_qualification": "Existing actual Boot AuthIT login/cookie/refresh/logout checks address added Gateway classpath and Auth bean constructor risks. Standalone internal-admission suite is unrelated and excluded to avoid a second competing PG."
+}

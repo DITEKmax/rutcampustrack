@@ -65,8 +65,8 @@ springdoc:
 
 jwt:
   key-dir: ${JWT_KEY_DIR:./keys}
-  access-token-expiration: 900        # 15 минут
-  refresh-token-expiration: 604800    # 7 дней
+  access-token-expiration: 900 # 15 минут
+  refresh-token-expiration: 604800 # 7 дней
 
 rutcampustrack:
   security:
@@ -144,6 +144,11 @@ management:
   # (SpanExportingPredicate в shared-observability) до OTLP экспорта —
   # health/prometheus probes больше не spam'ят Tempo.
   tracing:
+    baggage:
+      remote-fields: requestId
+      tag-fields: requestId
+      correlation:
+        fields: requestId
     sampling:
       probability: 1.0
   otlp:

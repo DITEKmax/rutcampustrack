@@ -1,0 +1,19 @@
+{
+  "caller_sha256": "0d82b00acc1ca90df2ca0761d40547c9acc11b410ed0d18e60e38af0d7b328cd",
+  "manifest_sha256": "aba63ccbedf1697c17595a3c95cb1bcbc3828ba711fb778b7376ca12489e660b",
+  "source_zip_sha256": "21dff138cd3cd5b6d4e7e508faa4303c37b95c776e23e2494b99eeb64f71719c",
+  "source_zip_CRC": "PASS",
+  "protected_functions_AST_exact": [
+    "free_bytes",
+    "resource_gate",
+    "run",
+    "container_id",
+    "inspect_container",
+    "container"
+  ],
+  "except_finally_AST_exact": true,
+  "resource_caps_exact": true,
+  "four_product_test_pins_unchanged": true,
+  "old_caller_sha256": "5130de07f6d02be0ea427a1b98d91d76aacb8d0327578a350849dde7068615fb",
+  "no_native": true
+}

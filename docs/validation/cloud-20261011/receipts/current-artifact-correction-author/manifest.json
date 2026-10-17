@@ -1,0 +1,125 @@
+{
+  "sealed_at": "2026-10-12T05:26:35.466886+00:00",
+  "scope": "NEW current artifact AR-C01/AR-P01 source/receipt correction plus authorized ownharmlessstdlib controls only",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/CURRENT.json",
+      "sha256": "b7afa31f125c50ac5204b46e4375ec63d3a71b9e86cff476989903c0ae5492bd",
+      "bytes": 265
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/HANDOFF.md",
+      "sha256": "e46135f853baba88ac68bd01ba3f35c44d7ce540762ee026a9319e04e4498176",
+      "bytes": 7350
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/RESULT.json",
+      "sha256": "5fa3e6a0e01d2eb5a027df0a2902c939c5e5cc898cd063302431602d19d4cc5e",
+      "bytes": 1663
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/attempts.ndjson",
+      "sha256": "df815475c692f2d66374cf6712da1173919599ba4f75e72a21ac00521b4b40da",
+      "bytes": 9395
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/before-after-source-proof.json",
+      "sha256": "7336fcc7c2ea21884540ebc8fafe7b61bf4123f430fbda89188d262f2917309a",
+      "bytes": 1590
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/bounded-child.py",
+      "sha256": "7a5420cac523e3a93f671a1ae4839acdbfbb263f7083c61cc81653af5e353a0a",
+      "bytes": 8769
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/controls-attempt1.json",
+      "sha256": "75a83daade670d42c94bf8b8f4caca08b3369e4d827dbfd1bc7ae219caa9654f",
+      "bytes": 786
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/controls-result.json",
+      "sha256": "74db10f32f9ed5e64e9db8216f57c6acfea18ef4dd5db7840b0298d73095f8d2",
+      "bytes": 3742
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/controls.py",
+      "sha256": "d722cb1096505ce7d5ef83cae2614e1545a6de5f61076755af64372e2a41f40c",
+      "bytes": 10913
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/counter-tree.json",
+      "sha256": "1d81b554e511940344c23496c212320088d00dcc8c881a254845ada7ab5912c4",
+      "bytes": 49
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/deadline-tree.json",
+      "sha256": "37be4eb35153c1b21ba8c1043f82c052522c4f111a933671bb69164312c42ee1",
+      "bytes": 49
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/env-policy-control.json",
+      "sha256": "2868a298271a96c719c79827d16a2af041dd79ff90e330062decb2c665b954e3",
+      "bytes": 297
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/harmless-tree.py",
+      "sha256": "a879d65c1cee0e15f370f13f92710c6e0efce2e3011db5261b5985863079fc97",
+      "bytes": 767
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/jdk-provenance-correction.json",
+      "sha256": "2177b2f7f1ec2d42f99d0a154cc355f00f29558f610e21b2eb6e2f813d751e0b",
+      "bytes": 1596
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/normal-tree.json",
+      "sha256": "56b1b888c0a7e2acc7f337ca7397d11edbef78f436420d156aabde6a33df46c6",
+      "bytes": 49
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/preflight.json",
+      "sha256": "eb33b83f8160d53197d1e52d4ea85f81cf47ef381ab997806bbc4e57afdde8db",
+      "bytes": 540
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/preservation-and-old-process-qualification.json",
+      "sha256": "34fe02aced11e4b3fe9d7619dcf0bd839e3af1e42933d06c7190ec352295576b",
+      "bytes": 6975
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/preserve.py",
+      "sha256": "d9b66843f05265df514a7bab5b367c27778055af983fa42ea914bb769b829db3",
+      "bytes": 5106
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/signal-result.json",
+      "sha256": "8752037c0de5a7a3d80bdc0d74f97ddbb99cd74323cc0cab47d7fdbed8788767",
+      "bytes": 546
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/signal-runner.py",
+      "sha256": "8e0159dd195006e01ab8d4cd0cffec2799f2eb2985a1e4eba6aaef1e6b7f4a95",
+      "bytes": 822
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/signal-status.json",
+      "sha256": "5425270722ae554f9d712024f4b4a14f684ffae94f938ec7128d78155bc74489",
+      "bytes": 144
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/signal-tree.json",
+      "sha256": "7f8089d87d3781bb3656af33427438fb871332c680a38db60ba72a0e00467c81",
+      "bytes": 49
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_artifact_corrections/status-failure-tree.json",
+      "sha256": "4de3b9e71f7b3125ab3c7785a5f42057571cde3bc21f7ed9f1dde9752a66324e",
+      "bytes": 49
+    }
+  ],
+  "file_count": 23,
+  "bytes": 61511,
+  "original_artifacts_and_seals_unchanged": true,
+  "application_or_build_runtime": "NOT_RUN"
+}

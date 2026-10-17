@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # M13 G25.3 — генерация self-signed TLS сертификатов для e2e nginx,
-# Schedule gRPC и Academic gRPC. Each gRPC server cert is trusted only by
+# Schedule, Academic и Attendance gRPC. Each gRPC server cert is trusted only by
 # clients of that service.
 #
 # Sertcfffts go в `tests/e2e/infra/certs/` (gitignored). Идемпотентно —
@@ -171,5 +171,23 @@ else
   echo "Academic gRPC test certs already exist in ${CERTS_DIR} — keep them."
 fi
 
+if [ ! -f "${CERTS_DIR}/attendance-server.crt" ] || [ ! -f "${CERTS_DIR}/attendance-server.key" ]; then
+  echo "Generating self-signed RSA-2048 Attendance gRPC cert (SAN=attendance-service) in ${CERTS_DIR}..."
+  ATTENDANCE_SUBJ="/CN=attendance-service"
+  if [ -n "${MSYSTEM:-}" ] || [ -n "${WSL_DISTRO_NAME:-}" ]; then
+    ATTENDANCE_SUBJ="//CN=attendance-service"
+  fi
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "${CERTS_DIR}/attendance-server.key" \
+    -out "${CERTS_DIR}/attendance-server.crt" \
+    -subj "${ATTENDANCE_SUBJ}" \
+    -addext "subjectAltName=DNS:attendance-service"
+  chmod 644 "${CERTS_DIR}/attendance-server.crt"
+  set_server_key_owner "${CERTS_DIR}/attendance-server.key" 10003 10003
+else
+  set_server_key_owner "${CERTS_DIR}/attendance-server.key" 10003 10003
+  echo "Attendance gRPC test certs already exist in ${CERTS_DIR} — keep them."
+fi
+
 echo "Done:"
-ls -l "${CERTS_DIR}/server."* "${CERTS_DIR}/schedule-server."* "${CERTS_DIR}/academic-server."*
+ls -l "${CERTS_DIR}/server."* "${CERTS_DIR}/schedule-server."* "${CERTS_DIR}/academic-server."* "${CERTS_DIR}/attendance-server."*

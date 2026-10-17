@@ -1,0 +1,27 @@
+{
+  "large_file_under_1024KiB": true,
+  "end_of_file": true,
+  "no_trailing_whitespace": true,
+  "diff_check": true,
+  "yaml_json": "N/A: no YAML/JSON files changed",
+  "installed_hook": "ABSENT; no hook configuration changed",
+  "scanner_version": "8.24.3",
+  "scanner_command": [
+    "/workspace/scratch/rct-validation/security_fingerprint/gitleaks",
+    "git",
+    "--pre-commit",
+    "--staged",
+    "--redact=100",
+    "--no-banner",
+    "--no-color",
+    "--report-format=json",
+    "--report-path=/workspace/scratch/rct-validation/security_fingerprint/staged.private-redacted.json",
+    "--gitleaks-ignore-path=/workspace/rct-worktrees/security-fingerprint",
+    "/workspace/rct-worktrees/security-fingerprint"
+  ],
+  "scanner_exit_code": 0,
+  "findings_count": 0,
+  "staged_paths": [
+    ".gitleaksignore"
+  ]
+}

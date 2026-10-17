@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-12T04:29:08.203427+00:00",
+  "inspection_native_exit": 0,
+  "eight_jars": 8,
+  "unfolded_headers_mainclass_and_CRC": "PASS",
+  "recursive_fixture_absence": "PASS",
+  "embedded_git_current_revision": "7EXACT + RendererN/A canonical; all8 freshbuild/source7350 proof",
+  "source7350_after_all_builds_and_inspection": "EXACT",
+  "Vue_production_dist": "2_BUILT_CURRENT_SOURCE",
+  "versions": [
+    {
+      "executable": "/workspace/rct-cloud-setup/jdk21/bin/java",
+      "sha256": "2a207f5e7d075afa01d97f8048389a64432a44c4a5af0f5e77d6e286ec5f401d",
+      "native_exit": 0,
+      "public_version": "openjdk version \"21.0.12.1\" 2026-08-18 LTS\nOpenJDK Runtime Environment Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS)\nOpenJDK 64-Bit Server VM Temurin-21.0.12.1+1 (build 21.0.12.1+1-LTS, mixed mode, sharing)"
+    },
+    {
+      "executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "sha256": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+      "native_exit": 0,
+      "public_version": "v24.19.0"
+    }
+  ],
+  "stage_app_browser_container_keys_TLS": "NOT_RUN"
+}

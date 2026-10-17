@@ -1,0 +1,108 @@
+{
+  "schema": "RCT_SESSION_OFFLINE_DISCOVERY_GATE_NODE02_ACTUAL",
+  "state": "PASS_CAUSAL_THREE_RED_TO_THREE_GREEN",
+  "utc": "2026-10-13T01:53:38.609508+00:00",
+  "tool_chunk": "187172",
+  "tool_native_exit": 0,
+  "running_tool_session": null,
+  "supervisor": {
+    "pid": 436224,
+    "birth_ticks": 11012469,
+    "source": "SESSION_OFFLINE_THREE_CONTROL_NODE_ONLY",
+    "stop_utc": "2026-10-13T01:53:43.879088+00:00"
+  },
+  "all_known_births": [
+    {
+      "pid": 436224,
+      "start_ticks": 11012469
+    },
+    {
+      "pid": 436227,
+      "start_ticks": 11012497
+    },
+    {
+      "pid": 436234,
+      "start_ticks": 11012520
+    }
+  ],
+  "all_known_births_absent_or_replaced": true,
+  "no_signals": true,
+  "phases": [
+    {
+      "phase": "before",
+      "native_exit": 1,
+      "accepted": true
+    },
+    {
+      "phase": "after",
+      "native_exit": 0,
+      "accepted": true
+    }
+  ],
+  "before_controls": {
+    "phase": "DISCOVERY_GATE_THREE_CONTROLS",
+    "mode": "before",
+    "count": 3,
+    "failedControls": 3,
+    "pass": false,
+    "knownBeforeCounterexample": true,
+    "results": [
+      {
+        "code": "ZERO_CASES",
+        "discoveryPass": false,
+        "rejected": false
+      },
+      {
+        "code": "ONE_CASE",
+        "discoveryPass": false,
+        "rejected": false
+      },
+      {
+        "code": "WRONG_LINE",
+        "discoveryPass": false,
+        "rejected": false
+      }
+    ]
+  },
+  "after_controls": {
+    "phase": "DISCOVERY_GATE_THREE_CONTROLS",
+    "mode": "after",
+    "count": 3,
+    "failedControls": 0,
+    "pass": true,
+    "knownBeforeCounterexample": false,
+    "results": [
+      {
+        "code": "ZERO_CASES",
+        "discoveryPass": false,
+        "rejected": true
+      },
+      {
+        "code": "ONE_CASE",
+        "discoveryPass": false,
+        "rejected": true
+      },
+      {
+        "code": "WRONG_LINE",
+        "discoveryPass": false,
+        "rejected": true
+      }
+    ]
+  },
+  "terminal": {
+    "state": "PASS_DISCOVERY_GATE_CONTROLS",
+    "settled": true,
+    "completed_phase_count": 2,
+    "pass": true,
+    "browser_api_network_started": false,
+    "private_tmp_transform_removed": true,
+    "source_intact": true,
+    "peaks": {
+      "owned_rss_bytes": 14315520,
+      "run_allocated_bytes": 28672,
+      "shared_memory_bytes": 9535496192
+    }
+  },
+  "correction_after_sha256": "d9164f8e4f2289cf4e56af388ecf96b16b146211dc25661566bf958c58f47f57",
+  "qualification": "Exactly three public reporter-boundary counterexamples; before native1 accepted only with causal predicates/knownBeforeCounterexampletrue; after native0/three rejections. No formatter/types/full --list/browser/API/seed/service/Docker/credentials. TS2/currentRoot19+own6 sourceintact; prior actual01 preserved. Sampled RSS/TMP/sharedUID not hard bound proof."
+}

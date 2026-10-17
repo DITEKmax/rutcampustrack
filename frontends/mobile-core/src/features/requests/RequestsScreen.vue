@@ -1,74 +1,116 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import RequestCard from './RequestCard.vue'
-import type { RequestAccessState, RequestAttachment, RequestAttachmentViewState, RequestBucket, RequestDetail } from './types'
+import { computed } from 'vue';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import RequestCard from './RequestCard.vue';
+import type {
+  RequestAccessState,
+  RequestAttachment,
+  RequestAttachmentViewState,
+  RequestBucket,
+  RequestDetail,
+} from './types';
 
 type NotificationRequestView =
   | { status: 'loading' }
   | { status: 'available'; detail: RequestDetail }
   | { status: 'unavailable'; message: string }
-  | { status: 'error'; message: string; title?: string }
+  | { status: 'error'; message: string; title?: string };
 
-const props = withDefaults(defineProps<{
-  bucket: RequestBucket
-  requests: readonly RequestDetail[]
-  loading: boolean
-  error: string | null
-  offline: boolean
-  readOnly?: boolean
-  access: RequestAccessState
-  retrying?: boolean
-  cancellingId?: string | null
-  hasNextPage?: boolean
-  loadingMore?: boolean
-  attachmentStates?: Readonly<Record<string, RequestAttachmentViewState | undefined>> | undefined
-  notificationTarget?: NotificationRequestView | null
-}>(), {
-  retrying: false,
-  cancellingId: null,
-  readOnly: false,
-  hasNextPage: false,
-  loadingMore: false,
-  attachmentStates: undefined,
-  notificationTarget: null,
-})
+const props = withDefaults(
+  defineProps<{
+    bucket: RequestBucket;
+    openCount?: number | null;
+    requests: readonly RequestDetail[];
+    loading: boolean;
+    error: string | null;
+    offline: boolean;
+    readOnly?: boolean;
+    access: RequestAccessState;
+    retrying?: boolean;
+    cancellingId?: string | null;
+    hasNextPage?: boolean;
+    loadingMore?: boolean;
+    attachmentStates?: Readonly<Record<string, RequestAttachmentViewState | undefined>> | undefined;
+    notificationTarget?: NotificationRequestView | null;
+  }>(),
+  {
+    openCount: null,
+    retrying: false,
+    cancellingId: null,
+    readOnly: false,
+    hasNextPage: false,
+    loadingMore: false,
+    attachmentStates: undefined,
+    notificationTarget: null,
+  },
+);
 
 const emit = defineEmits<{
-  selectBucket: [bucket: RequestBucket]
-  newRequest: []
-  retry: []
-  cancel: [id: string]
-  openAttachment: [value: { requestId: string; attachment: RequestAttachment }]
-  loadMore: []
-  backTarget: []
-  retryTarget: []
-}>()
+  selectBucket: [bucket: RequestBucket];
+  newRequest: [];
+  retry: [];
+  cancel: [id: string];
+  openAttachment: [value: { requestId: string; attachment: RequestAttachment }];
+  loadMore: [];
+  backTarget: [];
+  retryTarget: [];
+}>();
 
-const isArchive = computed(() => props.bucket === 'archive')
-const isNotificationTarget = computed(() => props.notificationTarget !== null)
-const accessBlocked = computed(() => props.access === 'forbidden' || (!isArchive.value && props.access === 'no-active-semester'))
-const canStartRequest = computed(() => !props.offline && !props.readOnly && props.access === 'allowed')
-const emptyTitle = computed(() => isArchive.value ? 'Архив пуст' : 'Нет заявок на рассмотрении')
-const emptyDescription = computed(() => isArchive.value
-  ? 'Здесь появятся заявки после принятого решения.'
-  : 'Когда ты отправишь заявку, она появится здесь.')
-const accessTitle = computed(() => props.access === 'forbidden' ? 'Раздел недоступен' : 'Нет активного семестра')
-const accessDescription = computed(() => props.access === 'forbidden'
-  ? 'У тебя сейчас нет доступа к заявкам.'
-  : 'Подать заявку можно только в активном семестре.')
-const actionHint = computed(() => props.readOnly
-  ? 'Подача заявок отключена в режиме только чтения.'
-  : props.offline
-    ? 'Подача заявок снова станет доступна онлайн.'
-    : accessDescription.value)
+const isArchive = computed(() => props.bucket === 'archive');
+const isNotificationTarget = computed(() => props.notificationTarget !== null);
+const openTabLabel = computed(() =>
+  !props.offline &&
+  props.access === 'allowed' &&
+  (isArchive.value || !props.loading) &&
+  typeof props.openCount === 'number' &&
+  Number.isSafeInteger(props.openCount) &&
+  props.openCount >= 0
+    ? `Открытые (${props.openCount})`
+    : 'Открытые',
+);
+const accessBlocked = computed(
+  () => props.access === 'forbidden' || (!isArchive.value && props.access === 'no-active-semester'),
+);
+const canStartRequest = computed(
+  () => !props.offline && !props.readOnly && props.access === 'allowed',
+);
+const emptyTitle = computed(() => (isArchive.value ? 'Архив пуст' : 'Нет заявок на рассмотрении'));
+const emptyDescription = computed(() =>
+  isArchive.value
+    ? 'Здесь появятся заявки после принятого решения.'
+    : 'Когда ты отправишь заявку, она появится здесь.',
+);
+const accessTitle = computed(() =>
+  props.access === 'forbidden' ? 'Раздел недоступен' : 'Нет активного семестра',
+);
+const accessDescription = computed(() =>
+  props.access === 'forbidden'
+    ? 'У тебя сейчас нет доступа к заявкам.'
+    : 'Подать заявку можно только в активном семестре.',
+);
+const actionHint = computed(() =>
+  props.readOnly
+    ? 'Подача заявок отключена в режиме только чтения.'
+    : props.offline
+      ? 'Подача заявок снова станет доступна онлайн.'
+      : accessDescription.value,
+);
 function onTabKeydown(event: KeyboardEvent): void {
-  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
-  event.preventDefault()
-  const next = event.key === 'Home' ? 'open' : event.key === 'End' ? 'archive' : props.bucket === 'open' ? 'archive' : 'open'
-  emit('selectBucket', next)
-  const tabs = (event.currentTarget as HTMLElement).querySelectorAll<HTMLButtonElement>('[role="tab"]')
-  tabs[next === 'open' ? 0 : 1]?.focus()
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  event.preventDefault();
+  const next =
+    event.key === 'Home'
+      ? 'open'
+      : event.key === 'End'
+        ? 'archive'
+        : props.bucket === 'open'
+          ? 'archive'
+          : 'open';
+  emit('selectBucket', next);
+  const tabs = (event.currentTarget as HTMLElement).querySelectorAll<HTMLButtonElement>(
+    '[role="tab"]',
+  );
+  tabs[next === 'open' ? 0 : 1]?.focus();
 }
 </script>
 
@@ -162,7 +204,7 @@ function onTabKeydown(event: KeyboardEvent): void {
           :tabindex="!isArchive ? 0 : -1"
           @click="emit('selectBucket', 'open')"
         >
-          Открытые
+          {{ openTabLabel }}
         </button>
         <button
           class="requests-tab"
@@ -180,7 +222,11 @@ function onTabKeydown(event: KeyboardEvent): void {
       <StudentWarningBlock
         v-if="offline || readOnly"
         :title="offline ? 'Нет подключения' : 'Только чтение'"
-        :message="offline ? 'Офлайн · показываем сохранённые данные. Подача заявок снова станет доступна онлайн.' : 'Подача заявок отключена в режиме только чтения.'"
+        :message="
+          offline
+            ? 'Офлайн · показываем сохранённые данные. Подача заявок снова станет доступна онлайн.'
+            : 'Подача заявок отключена в режиме только чтения.'
+        "
       />
 
       <section

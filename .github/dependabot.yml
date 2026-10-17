@@ -4,57 +4,57 @@
 # Разделение concerns: Renovate = freshness, Dependabot = security.
 version: 2
 updates:
-  - package-ecosystem: "gradle"
-    directory: "/"
+  - package-ecosystem: 'gradle'
+    directory: '/'
     schedule:
-      interval: "daily"
+      interval: 'daily'
     open-pull-requests-limit: 5
-    labels: ["security", "dependencies"]
+    labels: ['security', 'dependencies']
     commit-message:
-      prefix: "fix(deps)"
-    versioning-strategy: "auto"
+      prefix: 'fix(deps)'
+    versioning-strategy: 'auto'
 
-  - package-ecosystem: "npm"
-    directory: "/frontends"
+  - package-ecosystem: 'npm'
+    directory: '/frontends'
     schedule:
-      interval: "daily"
+      interval: 'daily'
     open-pull-requests-limit: 5
-    labels: ["security", "dependencies", "frontend-mobile"]
+    labels: ['security', 'dependencies', 'frontend-mobile']
     commit-message:
-      prefix: "fix(deps-mobile)"
+      prefix: 'fix(deps-mobile)'
 
-  - package-ecosystem: "npm"
-    directory: "/frontends/web-panel"
+  - package-ecosystem: 'npm'
+    directory: '/frontends/web-panel'
     schedule:
-      interval: "daily"
+      interval: 'daily'
     open-pull-requests-limit: 5
-    labels: ["security", "dependencies", "frontend-web-panel"]
+    labels: ['security', 'dependencies', 'frontend-web-panel']
     commit-message:
-      prefix: "fix(deps-web-panel)"
+      prefix: 'fix(deps-web-panel)'
 
-  - package-ecosystem: "pip"
-    directory: "/services/notification-bot"
+  - package-ecosystem: 'pip'
+    directory: '/services/notification-bot'
     schedule:
-      interval: "daily"
+      interval: 'daily'
     open-pull-requests-limit: 5
-    labels: ["security", "dependencies", "bot"]
+    labels: ['security', 'dependencies', 'bot']
     commit-message:
-      prefix: "fix(deps-bot)"
+      prefix: 'fix(deps-bot)'
 
-  - package-ecosystem: "docker"
-    directory: "/"
+  - package-ecosystem: 'docker'
+    directory: '/'
     schedule:
-      interval: "daily"
+      interval: 'daily'
     open-pull-requests-limit: 3
-    labels: ["security", "dependencies", "docker"]
+    labels: ['security', 'dependencies', 'docker']
     commit-message:
-      prefix: "fix(deps-docker)"
+      prefix: 'fix(deps-docker)'
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 3
-    labels: ["security", "dependencies", "github-actions"]
+    labels: ['security', 'dependencies', 'github-actions']
     commit-message:
-      prefix: "fix(deps-ci)"
+      prefix: 'fix(deps-ci)'

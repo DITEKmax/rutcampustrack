@@ -1,0 +1,40 @@
+{
+  "schema": "RCT_BOUNDED_READONLY_NODE_ADDENDUM_SAFE_V1",
+  "verdict": "APPROVE_FINITE_NODE_EVIDENCE",
+  "actual_author_tool_session": 41949,
+  "selected": "gpt-6.1-sol/xhigh",
+  "actual": "UNKNOWN",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 350,
+      "sha256": "6217ba1ed7f1ce4a91a5aeac710165acb7a1f5b6be565106ea6705ee8b7eed5a"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 521,
+      "sha256": "fc3e8a406735f8f06f8e2c9971248bdd3420526b1f3a4a0c3160fb3206865b46"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 3782,
+      "sha256": "6236101f93007f66e8ee6d2ad2f132ee4bab637c21cab6621dee625a8fceb260"
+    },
+    {
+      "path": "evidence.safe.json",
+      "bytes": 5348,
+      "sha256": "1a391b1a8c799723a2ad9ec58b5d6c28118da088fd79f378813f5a7d8b838ed4"
+    },
+    {
+      "path": "receipt-ledger.safe.json",
+      "bytes": 3653,
+      "sha256": "e53164bd4800dd10964b9e901c165da505fd64afa638209633cdbfc23dc3b007"
+    },
+    {
+      "path": "restoration.safe.json",
+      "bytes": 1250,
+      "sha256": "119213f0abf99fcad3b8ce6db177d1d21d852f1b39145589394caaec7e9a4830"
+    }
+  ],
+  "self_manifest": "Inner ZIP member; exact bytes bound by outer seal."
+}

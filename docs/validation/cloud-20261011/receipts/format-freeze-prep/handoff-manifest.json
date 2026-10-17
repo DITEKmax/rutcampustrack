@@ -1,0 +1,50 @@
+{
+  "curated-authored-inventory.json": {
+    "sha256": "243c2b81d9898a4e247273e67ace0e72f4aeb5c82b2f72dae71f0b5f8b916e7b",
+    "bytes": 2282020
+  },
+  "current-runner-inventory.json": {
+    "sha256": "7c6f1b2190ab63989d4fa6367e824f65479cbb6016547d8602fb6db55627bebc",
+    "bytes": 1094945
+  },
+  "driver-target-reconciliation.json": {
+    "sha256": "8b74fae096212579e522f644c67043fd7a4700b54f8d0bbf74c52b5272ce4294",
+    "bytes": 3048
+  },
+  "expected-export-inputs.json": {
+    "sha256": "f4ddd4388b60048e18074c7358e7f2fb0ece4353a6ba920d45307198db2f8d85",
+    "bytes": 63125
+  },
+  "inventory.py": {
+    "sha256": "462777888c1941345ced76e57117cfab715fa97f1ee76d16e34338c5b38ff380",
+    "bytes": 10672
+  },
+  "next-pass.md": {
+    "sha256": "1ab6a6fe18125e58508803883d8fc6dfff0518575a31929e8ddf9e12b9a62b24",
+    "bytes": 8187
+  },
+  "prepare-export-classification.mjs": {
+    "sha256": "4585e53b98ef359a483624e0dc03559ad2aeb0fa741cd8a0a077c9f7af228549",
+    "bytes": 931
+  },
+  "root-c4-paths.z": {
+    "sha256": "d0a7eb131d58bfa3e7c116c3d7a0afb3f309fced3c14cfc8a212abbe2b5fbe2a",
+    "bytes": 577629
+  },
+  "root-observed-status.txt": {
+    "sha256": "f1e368b6aaf2af61a9412df5369b4801b67ea7667787776beb9c0c28dfbf7eba",
+    "bytes": 2723
+  },
+  "summary.json": {
+    "sha256": "1380f6bb440229df59eef26936fc82026732ddd49e8af2e0bda761b0e5dcc140",
+    "bytes": 1005
+  },
+  "verification.json": {
+    "sha256": "1a30fc21ad3082abb3e625dcc17bed1166fa54695ec68585db8c4f6ec7a03dca",
+    "bytes": 320
+  },
+  "verified-exact-original-dispositions.json": {
+    "sha256": "cbc534b3c894a8f44acb1b4fe05079da62cb022cab323830156de67383af5d1b",
+    "bytes": 12673
+  }
+}

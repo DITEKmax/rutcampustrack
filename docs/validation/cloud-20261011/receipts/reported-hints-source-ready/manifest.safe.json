@@ -1,0 +1,107 @@
+{
+  "status": "SOURCE_ONLY_NATIVE_NOT_RUN",
+  "entries": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 3075,
+      "sha256": "d1f30ac5ed27bd1f624af84df41ffe9f86c9ab1c152391268a97e53c13afa644",
+      "mode": "0o600"
+    },
+    {
+      "path": "READY.safe.json",
+      "bytes": 3989,
+      "sha256": "c5204b87f7d2909a7afe58107970d675e5711224e25fb8dfe9c7a8f1a972f7fb",
+      "mode": "0o600"
+    },
+    {
+      "path": "after/artifact-privacy.ts",
+      "bytes": 3628,
+      "sha256": "0229fdbea1c4032b98b830a297652fe52482a9bb03f098d449cb282e67cde8c4",
+      "mode": "0o600"
+    },
+    {
+      "path": "after/safe-reporter.ts",
+      "bytes": 12314,
+      "sha256": "810a3742a4d475a57c5edf8815779ea76d0b5e72084959060423d4e79b16023f",
+      "mode": "0o600"
+    },
+    {
+      "path": "before/artifact-privacy.ts",
+      "bytes": 2979,
+      "sha256": "262c6db9dd8ea808138e646290b8a7bed8ab50763682547c5d66ff0c3e647aea",
+      "mode": "0o600"
+    },
+    {
+      "path": "before/safe-reporter.ts",
+      "bytes": 9061,
+      "sha256": "41c0adc7eb3f732400823a3c045f3af6f677b779891edeba346445e5f58e6cc9",
+      "mode": "0o600"
+    },
+    {
+      "path": "before/source-pins.safe.json",
+      "bytes": 2064,
+      "sha256": "8fecc10e2fa400f2163430a039bdcc9aec0d77d00d3dfc4d941318ad04fc2c68",
+      "mode": "0o600"
+    },
+    {
+      "path": "controls/reported-hints.control.spec.ts",
+      "bytes": 1650,
+      "sha256": "e40dec430372a5674eabaec29e1b1870a76a9e61f042570643f13baa2208fec3",
+      "mode": "0o600"
+    },
+    {
+      "path": "hints-controls.cjs",
+      "bytes": 9399,
+      "sha256": "e44e992fd203fcd44996bd32186b394cedd24243f68298b6c97ab2d14afff156",
+      "mode": "0o600"
+    },
+    {
+      "path": "native-plan/PLAN.safe.json",
+      "bytes": 9864,
+      "sha256": "39e341b02838f531c94920a93ebdfe62bd8f261abedf71277ec2b48d314f9be3",
+      "mode": "0o600"
+    },
+    {
+      "path": "native-plan/caller-delta.safe.json",
+      "bytes": 736,
+      "sha256": "1c78c248628dc7697d2fb3e7d0fd950afa552276cce81332614a99d02333bea2",
+      "mode": "0o600"
+    },
+    {
+      "path": "native-plan/grant.template.safe.json",
+      "bytes": 1092,
+      "sha256": "291170712d75a9475fafcf0d7a4b0740d718abd6e54f3f3f8f44aecc1bf5fcb0",
+      "mode": "0o600"
+    },
+    {
+      "path": "native-plan/run-approved-node.py",
+      "bytes": 10642,
+      "sha256": "ade6fc50ee582533d0e42c6cd49021b713672560f35c2f7928f1ecfad06713eb",
+      "mode": "0o600"
+    },
+    {
+      "path": "source-preservation.safe.json",
+      "bytes": 720,
+      "sha256": "f386360364135c0abd2a11c70684ff773f1e88cfaed32fae099ee167ca41a46b",
+      "mode": "0o600"
+    },
+    {
+      "path": "source.diff",
+      "bytes": 7539,
+      "sha256": "14cfbe994936cfb0bb46b8e464ff2cedc783502a963d0a9119d69578153b09a0",
+      "mode": "0o600"
+    },
+    {
+      "path": "worker-control.cjs",
+      "bytes": 4759,
+      "sha256": "9d30fd70ef667f92e41d8348763c08dd3890b4816050c2e216a21c2ecb20dd98",
+      "mode": "0o600"
+    },
+    {
+      "path": "worker-control.config.ts",
+      "bytes": 617,
+      "sha256": "ff08a789a6c56e342264b457da7ff2193f8e4cf5a708410325883849859c6c8c",
+      "mode": "0o600"
+    }
+  ]
+}

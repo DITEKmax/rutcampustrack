@@ -1,13 +1,13 @@
 package ru.rutcampustrack.notification.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class RabbitConfigTest {
 
@@ -45,7 +45,8 @@ class RabbitConfigTest {
     @Test
     void jacksonConverter_isCreatedWithObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
-        Jackson2JsonMessageConverter converter = config.notificationWebJacksonMessageConverter(objectMapper);
+        Jackson2JsonMessageConverter converter =
+                config.notificationWebJacksonMessageConverter(objectMapper);
         assertThat(converter).isNotNull();
         assertThat(converter).isInstanceOf(Jackson2JsonMessageConverter.class);
     }

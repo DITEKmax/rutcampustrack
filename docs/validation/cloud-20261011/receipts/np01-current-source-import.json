@@ -1,0 +1,16 @@
+{
+  "utc": "2026-10-12T06:23:23.596840+00:00",
+  "root_source_revision": "ced755a0f6e6817ef6f477aeb4f6a964ecfd1810",
+  "np_revision": "b4a95a6d4ab11c77733e8e5eaa311d55f8a47aa5",
+  "non_doc_sources_compared": 3852,
+  "all_bytes_equal": true,
+  "imports": [
+    "9c750522",
+    "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+    "b671a956d1bb0b38ec4e44f8144338315f862c9f",
+    "d2e3c1cd"
+  ],
+  "np_clean": true,
+  "ownership": "Root exact integrator RELEASED; new assigned developer owns NP runtime scratch only until confirmed failure/source scope",
+  "frozen_assets": "Root receipts/exact-path-freeze.json applies all32NP shared assets"
+}

@@ -1,0 +1,18 @@
+{
+  "utc": "2026-10-13T09:58:32.816128+00:00",
+  "local_checkpoint": "d9495004d9eda897d1a48ed95c7beb96ecbd625e",
+  "tested_product_test_revision": "ae027b11fba4908a22039e9c22249836a63df243",
+  "remote_pr_head": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+  "families": 218,
+  "status_counts": {
+    "UNKNOWN": 209,
+    "EXCLUDED": 5,
+    "PASS": 2,
+    "DEFECT": 2
+  },
+  "finite_PASS_records": 83,
+  "full_contract_sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+  "active_native": "NONE",
+  "next": "FIRST3linkfinallySourcecorrection/narrowrecheck/fresh7phasegrant; independentP10readonlyreuseplan",
+  "qualification": "Overlappingsource/story/research/clientfamilies, notfunctions orreadinesspercentage. No newparentPASSinferredfromCIorAuthtest. CurrentlocalfullgatesNOT_RUN/remote597CIFAILsoleFIRST3/CovSecsuccesshistorical. SourcecheckingdeadlinecleanupP2notruntimeproductFAIL, B013mandatoryrightsplatformblocker frozen."
+}

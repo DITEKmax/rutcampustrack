@@ -1,0 +1,31 @@
+{
+  "scope": "ACTUAL_STAGE_RESUME01_TERMINAL_PARAMETER_DENIAL",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume01/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "bytes": 576,
+      "sha256": "653b91c644a7958531f6dc46a966bea37a3e3dd6ce19d1f6938ea7e281a05f95"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume01/native-output.safe.json",
+      "name": "native-output.safe.json",
+      "bytes": 406,
+      "sha256": "673b1518dda0618cd8ed1969def6e1be2d8e90ded39dc51b3f6ac2a250e5063d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume01/partial-status.safe.json",
+      "name": "partial-status.safe.json",
+      "bytes": 798,
+      "sha256": "64ee8175d108439322241f02519b0d0c58f85878c9946b09d364b0032ab5662b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_resume_guard_correction/actual-stage-resume01/terminal.safe.json",
+      "name": "terminal.safe.json",
+      "bytes": 770,
+      "sha256": "975b1746094b1b18e28dc8af7e89f2abb603a7c5e816d2d26cd81c3a7a476f7f"
+    }
+  ],
+  "native_lease": "RELEASED",
+  "private_excluded": true
+}

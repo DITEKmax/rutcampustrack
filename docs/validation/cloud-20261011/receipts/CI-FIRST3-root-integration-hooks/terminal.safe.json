@@ -1,0 +1,54 @@
+{
+  "direct_pid": 426282,
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 426282,
+      "start_ticks": 10530389
+    },
+    {
+      "pid": 426294,
+      "start_ticks": 10530392
+    },
+    {
+      "pid": 426301,
+      "start_ticks": 10530415
+    },
+    {
+      "pid": 426320,
+      "start_ticks": 10530435
+    },
+    {
+      "pid": 426327,
+      "start_ticks": 10530503
+    },
+    {
+      "pid": 426346,
+      "start_ticks": 10530513
+    },
+    {
+      "pid": 426347,
+      "start_ticks": 10530521
+    },
+    {
+      "pid": 426369,
+      "start_ticks": 10530534
+    },
+    {
+      "pid": 426389,
+      "start_ticks": 10530548
+    },
+    {
+      "pid": 426409,
+      "start_ticks": 10530564
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": true
+}

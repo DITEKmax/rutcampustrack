@@ -1,0 +1,30 @@
+{
+  "kind": "PREPARATION_ONLY_NOT_RUN",
+  "archive": "/workspace/scratch/rct-validation/client_real_acceptance/client-real-acceptance-run-preparation.safe.zip",
+  "bytes": 11311,
+  "sha256": "54fe8c40761c2bc89fd554b78163290dac33dc7b7026710cb01f1cc001abf111",
+  "members": [
+    {
+      "path": "actual-run-packet.md",
+      "bytes": 15286,
+      "sha256": "11849d67a23bf81b3e03e63657aebb3136d40840a1f2c6ae81fde162bc48f61c"
+    },
+    {
+      "path": "actual-run-preparation.safe.json",
+      "bytes": 7526,
+      "sha256": "1bc7cb4de51fbff815de1d8a5a1164ba0cce8a6a11b0884ba6c5e91ae0fdedff"
+    },
+    {
+      "path": "actual-run-root-dependency-namespace.safe.json",
+      "bytes": 4134,
+      "sha256": "6991f51517bc773a5767e43d1bd487978e25034098675ecc912aaa5721257922"
+    },
+    {
+      "path": "CURRENT.md",
+      "bytes": 1527,
+      "sha256": "7c7e4978d873bd7d6aa2cf6e56f915b2aa0f6414e80d71eaa7ac5bfbe40bcdf2"
+    }
+  ],
+  "Node_API_browser_executed": false,
+  "tracked_source_mutations": 0
+}

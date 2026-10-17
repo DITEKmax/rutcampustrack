@@ -1,0 +1,10 @@
+{
+  "result": "/workspace/scratch/rct-validation/ci_format65_receipts/RESULT.json",
+  "report": "/workspace/scratch/rct-validation/ci_format65_receipts/REPORT.md",
+  "native_summary": "/workspace/scratch/rct-validation/ci_format65_receipts/native-summary-final.json",
+  "broker": "/workspace/scratch/rct-validation/ci_format65_receipts/broker-seven-current65-qualified.json",
+  "chromium": "/workspace/scratch/rct-validation/ci_format65_receipts/chromium-current-source-qualified.json",
+  "critical_failures": "/workspace/scratch/rct-validation/ci_format65_receipts/failure-source-qualified-partial.json",
+  "all_checkout_receipts": "/workspace/scratch/rct-validation/ci_format65_receipts/all-job-checkouts-and-last-native.json",
+  "next": "correct source/gate consistency/oracle then newproducer native receipts; no65receipt promotion to laterfix"
+}

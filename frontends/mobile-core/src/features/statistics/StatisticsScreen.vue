@@ -1,82 +1,111 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
-import MobileShell from '../../shared/components/MobileShell.vue'
-import { createStudentNavigationItems } from '../../shared/mobile-navigation-items'
-import StatisticsSemesterChart from './StatisticsSemesterChart.vue'
-import StatisticsSubjectDetail from './StatisticsSubjectDetail.vue'
+import { computed } from 'vue';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import MobileShell from '../../shared/components/MobileShell.vue';
+import { createStudentNavigationItems } from '../../shared/mobile-navigation-items';
+import StatisticsSemesterChart from './StatisticsSemesterChart.vue';
+import StatisticsSubjectDetail from './StatisticsSubjectDetail.vue';
 import {
   displayPercent,
   type StatisticsGraphRange,
   type StatisticsLessonType,
   type StatisticsOverviewData,
   type StatisticsReadState,
+  type StatisticsRankingData,
   type StatisticsSubjectDetailData,
   type StatisticsTheme,
-} from './statistics-view-model'
-import './statistics-screen.pcss'
+} from './statistics-view-model';
+import './statistics-screen.pcss';
 
-const props = withDefaults(defineProps<{
-  state: StatisticsReadState<StatisticsOverviewData>
-  selectedSubjectId?: string | null
-  detailState?: StatisticsReadState<StatisticsSubjectDetailData> | null
-  range?: StatisticsGraphRange
-  semesterStartsOn?: string
-  semesterEndsOn?: string
-  theme?: StatisticsTheme
-  terminal?: boolean
-  showDock?: boolean
-}>(), {
-  semesterStartsOn: '',
-  semesterEndsOn: '',
-  selectedSubjectId: null,
-  detailState: null,
-  range: 'weeks',
-  theme: 'dark',
-  terminal: false,
-  showDock: false,
-})
+const props = withDefaults(
+  defineProps<{
+    state: StatisticsReadState<StatisticsOverviewData>;
+    selectedSubjectId?: string | null;
+    detailState?: StatisticsReadState<StatisticsSubjectDetailData> | null;
+    range?: StatisticsGraphRange;
+    semesterStartsOn?: string;
+    semesterEndsOn?: string;
+    theme?: StatisticsTheme;
+    terminal?: boolean;
+    showDock?: boolean;
+    rankingVisible?: boolean;
+    rankingState?: StatisticsReadState<StatisticsRankingData> | null;
+  }>(),
+  {
+    semesterStartsOn: '',
+    semesterEndsOn: '',
+    selectedSubjectId: null,
+    detailState: null,
+    range: 'weeks',
+    theme: 'dark',
+    terminal: false,
+    showDock: false,
+    rankingVisible: false,
+    rankingState: null,
+  },
+);
 
 const emit = defineEmits<{
-  'open-subject': [subjectId: string]
-  'set-range': [range: StatisticsGraphRange]
-  'set-types': [types: readonly StatisticsLessonType[]]
-  back: []
-  retry: []
-  'detail-retry': []
-}>()
+  'open-subject': [subjectId: string];
+  'set-range': [range: StatisticsGraphRange];
+  'set-types': [types: readonly StatisticsLessonType[]];
+  back: [];
+  retry: [];
+  'detail-retry': [];
+  'open-ranking': [];
+  'ranking-page': [page: number];
+  'ranking-retry': [];
+}>();
 
-const navItems = createStudentNavigationItems({ homeworkEnabled: true, attendanceEnabled: true, moreEnabled: true, profileEnabled: true })
-const data = computed(() => props.state.status === 'ready' ? props.state.data : null)
-const chartPoints = computed(() => data.value?.semesterSeries ?? [])
-const detailState = computed<StatisticsReadState<StatisticsSubjectDetailData>>(() => props.detailState ?? { status: 'loading' })
+const navItems = createStudentNavigationItems({
+  homeworkEnabled: true,
+  attendanceEnabled: true,
+  moreEnabled: true,
+  profileEnabled: true,
+});
+const data = computed(() => (props.state.status === 'ready' ? props.state.data : null));
+const chartPoints = computed(() => data.value?.semesterSeries ?? []);
+const detailState = computed<StatisticsReadState<StatisticsSubjectDetailData>>(
+  () => props.detailState ?? { status: 'loading' },
+);
 
 function stateTitle(): string {
   switch (props.state.status) {
-    case 'loading': return 'Загружаем статистику…'
-    case 'empty': return 'За этот период данных пока нет'
-    case 'offline': return 'Статистика недоступна офлайн'
-    case 'forbidden': return 'Статистика недоступна'
-    case 'error': return 'Не удалось получить статистику'
-    default: return ''
+    case 'loading':
+      return 'Загружаем статистику…';
+    case 'empty':
+      return 'За этот период данных пока нет';
+    case 'offline':
+      return 'Статистика недоступна офлайн';
+    case 'forbidden':
+      return 'Статистика недоступна';
+    case 'error':
+      return 'Не удалось получить статистику';
+    default:
+      return '';
   }
 }
 
 function stateMessage(): string {
   switch (props.state.status) {
-    case 'offline': return 'Подключись к интернету, чтобы получить актуальные данные.'
-    case 'forbidden': return props.state.reason
-    case 'error': return props.state.message
-    case 'empty': return 'Когда появятся закрытые пары, здесь будет история.'
-    default: return ''
+    case 'offline':
+      return 'Подключись к интернету, чтобы получить актуальные данные.';
+    case 'forbidden':
+      return props.state.reason;
+    case 'error':
+      return props.state.message;
+    case 'empty':
+      return 'Когда появятся закрытые пары, здесь будет история.';
+    default:
+      return '';
   }
 }
 
 function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
   return rank.available && rank.position !== null
     ? `${rank.position} из ${rank.participantCount}`
-    : 'Нет данных'
+    : 'Нет данных';
 }
 </script>
 
@@ -135,6 +164,79 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
       >
         <p>Твоё место в группе</p>
         <strong>{{ rankLabel(data.ownRank) }}</strong>
+        <button
+          class="statistics-ranking__button"
+          type="button"
+          :aria-expanded="rankingVisible"
+          @click="emit('open-ranking')"
+        >
+          Рейтинг группы
+        </button>
+        <template v-if="rankingVisible">
+          <h2>Рейтинг своей группы</h2>
+          <p
+            v-if="!rankingState || rankingState.status === 'loading'"
+            role="status"
+          >
+            Загружаем рейтинг…
+          </p>
+          <template v-else-if="rankingState.status === 'ready'">
+            <ol
+              class="statistics-ranking__rows"
+              aria-label="Рейтинг своей группы"
+            >
+              <li
+                v-for="row in rankingState.data.rows"
+                :key="row.id"
+                class="statistics-ranking__row"
+                :data-self="row.isSelf"
+              >
+                <span>{{ row.position ?? '—' }}</span>
+                <span>{{ row.name }}<strong
+                  v-if="row.isSelf"
+                  class="statistics-ranking__self"
+                >Это я</strong></span>
+                <span>{{ displayPercent(row.percentage) }}</span>
+              </li>
+            </ol>
+            <nav
+              class="statistics-ranking__pages"
+              aria-label="Страницы рейтинга"
+            >
+              <button
+                type="button"
+                class="statistics-ranking__button"
+                :disabled="rankingState.data.page === 0"
+                @click="emit('ranking-page', rankingState.data.page - 1)"
+              >
+                Выше
+              </button>
+              <span>{{ rankingState.data.page + 1 }} / {{ Math.ceil(rankingState.data.total / rankingState.data.size) }}</span>
+              <button
+                type="button"
+                class="statistics-ranking__button"
+                :disabled="(rankingState.data.page + 1) * rankingState.data.size >= rankingState.data.total"
+                @click="emit('ranking-page', rankingState.data.page + 1)"
+              >
+                Ниже
+              </button>
+            </nav>
+          </template>
+          <StudentWarningBlock
+            v-else-if="rankingState.status === 'error' || rankingState.status === 'forbidden'"
+            title="Рейтинг недоступен"
+            severity="error"
+            :message="rankingState.status === 'error' ? rankingState.message : rankingState.reason"
+            :action-label="rankingState.status === 'error' && rankingState.retryable ? 'Повторить' : ''"
+            @action="emit('ranking-retry')"
+          />
+          <p
+            v-else
+            role="status"
+          >
+            {{ rankingState.status === 'offline' ? 'Рейтинг недоступен офлайн' : 'В рейтинге пока нет данных' }}
+          </p>
+        </template>
       </section>
 
       <section
@@ -147,7 +249,15 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
             aria-hidden="true"
           >+</span>
           <span>{{ displayPercent(data.metrics.present.percent) }}</span>
-          <span class="statistics-visually-hidden">был, {{ data.metrics.present.count }}</span>
+          <span class="statistics-metric__count">был, {{ data.metrics.present.count }}</span>
+        </article>
+        <article class="statistics-metric statistics-metric--combined">
+          <span
+            class="statistics-metric__symbol"
+            aria-hidden="true"
+          >+ и у</span>
+          <span>{{ displayPercent(data.metrics.presentOrExcused.percent) }}</span>
+          <span class="statistics-metric__count">был или уважительная причина, {{ data.metrics.presentOrExcused.count }}</span>
         </article>
         <article class="statistics-metric statistics-metric--absent">
           <span
@@ -155,7 +265,7 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
             aria-hidden="true"
           >н</span>
           <span>{{ displayPercent(data.metrics.absent.percent) }}</span>
-          <span class="statistics-visually-hidden">не был, {{ data.metrics.absent.count }}</span>
+          <span class="statistics-metric__count">не был, {{ data.metrics.absent.count }}</span>
         </article>
         <article class="statistics-metric statistics-metric--excused">
           <span
@@ -163,9 +273,13 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
             aria-hidden="true"
           >у</span>
           <span>{{ displayPercent(data.metrics.excused.percent) }}</span>
-          <span class="statistics-visually-hidden">уважительная причина, {{ data.metrics.excused.count }}</span>
+          <span class="statistics-metric__count">уважительная причина, {{ data.metrics.excused.count }}</span>
         </article>
       </section>
+
+      <p class="statistics-counted">
+        Проведено {{ data.metrics.held }} из {{ data.metrics.planned }} пар
+      </p>
 
       <StatisticsSemesterChart
         :points="chartPoints"
@@ -205,17 +319,30 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
                 class="statistics-subject-summary__metrics"
                 aria-label="Метрики посещаемости"
               >
-                <span class="statistics-subject-summary__metric statistics-subject-summary__metric--present">
+                <span
+                  class="statistics-subject-summary__metric statistics-subject-summary__metric--present"
+                >
                   <i aria-hidden="true" />{{ displayPercent(subject.metrics.present.percent) }}
-                  <span class="statistics-visually-hidden"> присутствовал, {{ subject.metrics.present.count }}</span>
+                  <span class="statistics-visually-hidden">
+                    присутствовал, {{ subject.metrics.present.count }}</span>
                 </span>
-                <span class="statistics-subject-summary__metric statistics-subject-summary__metric--excused">
+                <span class="statistics-subject-summary__metric statistics-subject-summary__metric--combined">
+                  + и у {{ displayPercent(subject.metrics.presentOrExcused.percent) }}
+                  <span class="statistics-visually-hidden">был или уважительная причина, {{ subject.metrics.presentOrExcused.count }}</span>
+                </span>
+                <span
+                  class="statistics-subject-summary__metric statistics-subject-summary__metric--excused"
+                >
                   <i aria-hidden="true" />{{ displayPercent(subject.metrics.excused.percent) }}
-                  <span class="statistics-visually-hidden"> уважительная причина, {{ subject.metrics.excused.count }}</span>
+                  <span class="statistics-visually-hidden">
+                    уважительная причина, {{ subject.metrics.excused.count }}</span>
                 </span>
-                <span class="statistics-subject-summary__metric statistics-subject-summary__metric--absent">
+                <span
+                  class="statistics-subject-summary__metric statistics-subject-summary__metric--absent"
+                >
                   <i aria-hidden="true" />{{ displayPercent(subject.metrics.absent.percent) }}
-                  <span class="statistics-visually-hidden"> отсутствовал, {{ subject.metrics.absent.count }}</span>
+                  <span class="statistics-visually-hidden">
+                    отсутствовал, {{ subject.metrics.absent.count }}</span>
                 </span>
               </span>
               <span

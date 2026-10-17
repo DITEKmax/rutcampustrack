@@ -1,13 +1,14 @@
 package ru.rutcampustrack.academic.integration;
 
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.context.annotation.Import;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -16,29 +17,26 @@ import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
-import java.util.List;
-
 /**
- * Base class for event integration tests.
- * Starts Testcontainers PostgreSQL + RabbitMQ. RabbitMQ autoconfiguration is NOT excluded
- * so that the full AMQP stack (RabbitTemplate, DomainEventListener) is wired.
+ * Base class for event integration tests. Starts Testcontainers PostgreSQL + RabbitMQ. RabbitMQ
+ * autoconfiguration is NOT excluded so that the full AMQP stack (RabbitTemplate,
+ * DomainEventListener) is wired.
  *
- * Key differences from AbstractAcademicIntegrationTest:
- * - Adds RabbitMQContainer alongside PostgreSQLContainer
- * - Does NOT exclude RabbitAutoConfiguration -- AMQP stack is needed for event tests (Pitfall 2)
- * - Excludes Redis autoconfiguration (no Redis container needed for event tests per D-12)
- * - Sets grpc.server.port=-1 to disable Netty port binding (matches Phase 07 convention)
+ * <p>Key differences from AbstractAcademicIntegrationTest: - Adds RabbitMQContainer alongside
+ * PostgreSQLContainer - Does NOT exclude RabbitAutoConfiguration -- AMQP stack is needed for event
+ * tests (Pitfall 2) - Excludes Redis autoconfiguration (no Redis container needed for event tests
+ * per D-12) - Sets grpc.server.port=-1 to disable Netty port binding (matches Phase 07 convention)
  *
- * M02 Группа 5: {@code DomainEventListener} пишет в outbox (а не напрямую в
- * Rabbit). Для event-тестов после сервисного вызова нужно явно дёрнуть
- * {@link #flushOutbox()} — эмулирует OutboxPublisherJob tick и публикует
- * pending события в Rabbit. OutboxPublisherJob прод-bean guarded
- * {@code @Profile("!test")}, тест-bean создаётся {@link OutboxTestConfig}.
+ * <p>M02 Группа 5: {@code DomainEventListener} пишет в outbox (а не напрямую в Rabbit). Для
+ * event-тестов после сервисного вызова нужно явно дёрнуть {@link #flushOutbox()} — эмулирует
+ * OutboxPublisherJob tick и публикует pending события в Rabbit. OutboxPublisherJob прод-bean
+ * guarded {@code @Profile("!test")}, тест-bean создаётся {@link OutboxTestConfig}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Import(InternalJwtTestConfig.class)
-@TestExecutionListeners(listeners = AcademicFixtureResetListener.class,
+@TestExecutionListeners(
+        listeners = AcademicFixtureResetListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
 public abstract class AbstractAcademicEventIntegrationTest {
 
@@ -46,45 +44,45 @@ public abstract class AbstractAcademicEventIntegrationTest {
     @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory fixtureTokenFactory;
 
     protected org.springframework.test.web.servlet.request.RequestPostProcessor signedAdmin() {
-        return AcademicTestAdminRequest.signed(new org.springframework.jdbc.core.JdbcTemplate(fixtureDataSource), fixtureTokenFactory);
+        return AcademicTestAdminRequest.signed(
+                new org.springframework.jdbc.core.JdbcTemplate(fixtureDataSource),
+                fixtureTokenFactory);
     }
 
-    @Autowired
-    protected OutboxPublisherJob outboxPublisherJob;
+    @Autowired protected OutboxPublisherJob outboxPublisherJob;
 
     @Autowired(required = false)
     protected OutboxStorage outboxStorage;
 
-    @Autowired
-    private PlatformTransactionManager transactionManager;
+    @Autowired private PlatformTransactionManager transactionManager;
 
     /**
-     * Эмулирует один tick OutboxPublisherJob: читает pending rows из
-     * academic_outbox и публикует в Rabbit. Вызывать в тестах после
-     * service-вызова, который публикует события.
+     * Эмулирует один tick OutboxPublisherJob: читает pending rows из academic_outbox и публикует в
+     * Rabbit. Вызывать в тестах после service-вызова, который публикует события.
      *
-     * <p>{@code publishBatch()} содержит {@code UPDATE} (markSent/markFailed),
-     * требующий активной tx. В проде это обеспечивает {@code @Transactional}
-     * на tick()-методе; в тестах оборачиваем вручную в TransactionTemplate.
+     * <p>{@code publishBatch()} содержит {@code UPDATE} (markSent/markFailed), требующий активной
+     * tx. В проде это обеспечивает {@code @Transactional} на tick()-методе; в тестах оборачиваем
+     * вручную в TransactionTemplate.
      */
     protected void flushOutbox() {
-        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
-                outboxPublisherJob.publishBatch());
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(status -> outboxPublisherJob.publishBatch());
     }
 
     /**
-     * M02: drain leftover pending outbox rows между тестами — academic_outbox
-     * shared через reused Testcontainer. Без этого предыдущий тест может
-     * оставить события, которые flushOutbox() подхватит и пошлёт в Rabbit
-     * next testу.
+     * M02: drain leftover pending outbox rows между тестами — academic_outbox shared через reused
+     * Testcontainer. Без этого предыдущий тест может оставить события, которые flushOutbox()
+     * подхватит и пошлёт в Rabbit next testу.
      */
     @BeforeEach
     void drainOutboxBeforeEach() {
         if (outboxStorage == null) return;
-        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-            List<OutboxRecord> leftover = outboxStorage.findPending(1000);
-            leftover.forEach(r -> outboxStorage.markSent(r.id()));
-        });
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status -> {
+                            List<OutboxRecord> leftover = outboxStorage.findPending(1000);
+                            leftover.forEach(r -> outboxStorage.markSent(r.id()));
+                        });
     }
 
     static final PostgreSQLContainer<?> POSTGRES;
@@ -92,15 +90,17 @@ public abstract class AbstractAcademicEventIntegrationTest {
 
     static {
         // Only this fresh resource may be reset by AcademicFixtureResetListener.
-        POSTGRES = new PostgreSQLContainer<>("postgres:16")
-                .withDatabaseName("academic_ci_" + java.util.UUID.randomUUID().toString().replace("-", ""))
-                .withUsername("rct_user")
-                .withPassword("rct_dev_pass")
-                .withReuse(false);
+        POSTGRES =
+                new PostgreSQLContainer<>("postgres:16")
+                        .withDatabaseName(
+                                "academic_ci_"
+                                        + java.util.UUID.randomUUID().toString().replace("-", ""))
+                        .withUsername("rct_user")
+                        .withPassword("rct_dev_pass")
+                        .withReuse(false);
         POSTGRES.start();
 
-        RABBITMQ = new RabbitMQContainer("rabbitmq:3.13-management-alpine")
-                .withReuse(false);
+        RABBITMQ = new RabbitMQContainer("rabbitmq:3.13-management-alpine").withReuse(false);
         RABBITMQ.start();
     }
 
@@ -118,9 +118,11 @@ public abstract class AbstractAcademicEventIntegrationTest {
         registry.add("spring.rabbitmq.password", RABBITMQ::getAdminPassword);
 
         // Exclude Redis -- not needed for event tests (per D-12)
-        registry.add("spring.autoconfigure.exclude",
-                () -> "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration," +
-                      "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
+        registry.add(
+                "spring.autoconfigure.exclude",
+                () ->
+                        "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
+                                + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
 
         // Disable gRPC server in event tests
         registry.add("grpc.server.port", () -> -1);

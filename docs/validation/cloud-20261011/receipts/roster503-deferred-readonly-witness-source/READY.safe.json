@@ -1,0 +1,15 @@
+{
+  "kind": "SOURCE_ONLY_DEFERRED_ROSTER_WITNESS",
+  "utc": "2026-10-12T23:47:41.038669+00:00",
+  "helperSha256": "2d261bef6a2b547cc047996f36c4c1ab9a24c2365a24f32c9667b224486779f6",
+  "planSha256": "55640dcab9c1bf4213c551ab4da5f5c91f08765184248abb7eca54319684253c",
+  "originalHelperSha256": "8b1ce38b978a7d05ae0baf4e176f23f53c1b32834cf29aaef1bca5e5a175cf9f",
+  "native": "NOT_RUN",
+  "scope": "Existing syntheticFULLADMIN read\u2192source-qualifiedearliestexistingHEADMAN recovery\u2192oneexistinglessonGET\u2192ONErosterGET\u2192closedclassification\u2192logout/dispose; nodomainwrite/reset/reseed",
+  "blockingBoundary": "Hostcleanupdispatched23:45:30. RootexplicitNO_API_NATIVEPROBE due shutdowncohort risk. No launch/ownedprocess/APIeffects occurred.",
+  "sourceParserTypeChecks": "NOT_RUN",
+  "frameworkAdded": false,
+  "originalRoot19AssertionsObserverUnchanged": true,
+  "historicalCauses": "UNKNOWN",
+  "current503DeeperCause": "UNKNOWN"
+}

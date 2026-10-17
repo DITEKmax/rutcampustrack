@@ -1,0 +1,5 @@
+{"operation": "restore_current_full_contract_state_scope", "status": "COMPLETE", "contract_sha256": "e7cbc981e7d1f621f4a6390c0d88f2cbeb5ccfce347a9d324a30389685d2778e"}
+{"operation": "source_lookup", "native_exit": 2, "cause": "historical certificate-tool filename absent; actual canonical_token and Java rule paths resolved with rg"}
+{"operation": "prepare_directional_v3_attempt01", "native_exit": 0, "meaning": "four token replacements valid; own VAPID extra copy qualification in scope-correction.safe.json"}
+{"operation": "scope_filter_and_exact_NEW_redundant_VAPID_cleanup", "native_exit": 0, "original_key_unchanged": true}
+{"operation": "final_selected_source_and_private_copy_validation", "native_exit": 0, "meaning": "canonical pairs/distinct9 ENV copies; no applications"}

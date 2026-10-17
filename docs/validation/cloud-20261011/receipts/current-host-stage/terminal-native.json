@@ -1,0 +1,18 @@
+{
+  "utc": "2026-10-12T06:58:05.818129+00:00",
+  "exec_session": 85425,
+  "native_exit": 0,
+  "pid": 218459,
+  "pid_absent": true,
+  "members": 10834,
+  "physical_layer_app_paths": 21668,
+  "unique_payload_inodes": 2937,
+  "own_allocated_at_terminal": 195670016,
+  "final_cap": 201326592,
+  "transient_owned_files": 0,
+  "max_transient_file": 12093295,
+  "own_peak_RSS": 49770496,
+  "free_now": 8397385728,
+  "children": 0,
+  "no_apps_keys_JVM_Docker": true
+}

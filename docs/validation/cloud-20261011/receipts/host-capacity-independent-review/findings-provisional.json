@@ -1,0 +1,31 @@
+{
+  "time": "2026-10-12T05:20:26.981217+00:00",
+  "provisional_findings": [
+    {
+      "id": "CAP-B01",
+      "priority": 2,
+      "title": "Selected historical evidence contradicts exact exclusion",
+      "rows": 495,
+      "allocated_bytes": 144629760,
+      "paths": "45 .agent/evidence relative paths across11worktrees",
+      "source": "diagnose.py selection excludes docs/validation only",
+      "correction": "Explicitly remove or narrowly reclassify/freeze Root-approved exact historical evidence selection; preserve original36seal"
+    },
+    {
+      "id": "CAP-B02",
+      "priority": 2,
+      "title": "Selected derived dist files contradict exact exclusion",
+      "rows": 231,
+      "allocated_bytes": 67268608,
+      "paths": "21 frontends landing/web-panel dist relative paths across11worktrees",
+      "correction": "Remove or narrowly reclassify Root-approved tracked immutable derived assets, require COW before build/writes"
+    },
+    {
+      "id": "CAP-M01",
+      "priority": 3,
+      "title": "Hardlink metadata changes require explicit receipt",
+      "details": "All4422 candidate mtime differ from reference; replacement changes mtime/inode/nlink, while bytes/path/mode/UID/GID retained. Repeated references nlink increments must be tracked as own known links, not falsely require original reference nlink1 forever."
+    }
+  ],
+  "no_mutation": true
+}

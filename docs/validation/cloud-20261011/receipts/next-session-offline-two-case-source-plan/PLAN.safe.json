@@ -1,0 +1,99 @@
+{
+  "state": "READONLY_SOURCE_PLAN_NO_HARNESS_WRITE_NO_NATIVE",
+  "owner": "client_real_acceptance",
+  "requestedModelEffort": "gpt-6.1-sol/xhigh",
+  "actualModelEffort": "UNKNOWN",
+  "contractSHA": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+  "executionCheckoutProposed": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "group": "PWA_REMOTE_REVOKE_AND_D002_CACHED_HOMEWORK",
+  "cases": [
+    {
+      "source": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "line": 260,
+      "parentIds": [
+        "CLIENT-FE-AUTH-04"
+      ],
+      "sourceStory": "JS-STUDENT-25/job-stories.md:825",
+      "assertions": [
+        "same-user second real session DELETE browser session204",
+        "browser reload shows login and no authenticated navigation",
+        "original bearer GET auth/session401"
+      ]
+    },
+    {
+      "source": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "line": 367,
+      "parentIds": [
+        "CLIENT-FE-OFFLINE-01",
+        "CLIENT-FE-OFFLINE-03",
+        "CLIENT-FE-AUTH-04"
+      ],
+      "boundaryIds": [
+        "BOUNDARY-47"
+      ],
+      "decision": "D002",
+      "assertions": [
+        "real production SW.ready and controller before disconnect",
+        "server revocation204 then genuine offline reload retains own published homework",
+        "offline label visible and completion slider disabled",
+        "reconnect authoritative denial yields login",
+        "foreign-group student sees no prior homework marker",
+        "explicit logout then offline reload has no navigation or prior marker"
+      ]
+    }
+  ],
+  "notDuplicateSmoke": "Existing seven PWA auth-smoke cases use serviceWorkers:block; offline smoke toggles network and recovers online without production warm reload/cache/read-only/foreign-user/logout isolation. No seven-plus-two smoke replay proposed.",
+  "runtimeDependencies": {
+    "reuse": "existing coherent8 stand and6Docker dependencies; no service build/restart here",
+    "mandatory": "real TLS production PWA+SW, Gateway/Auth/Academic/BFF; full unchanged MobileDataset seed additionally Schedule/publication Rabbit/Redis/PG/nativeMongo/notification consumers",
+    "roster503": "Neither selected assertion requests failed attendance/reports/lesson route. Seed remains original accepted one-off-lesson and homework-publication setup; source feasible backed by prior actual homework14, not new readiness proof.",
+    "tmaProvider": "NOT_REQUIRED"
+  },
+  "dataIsolation": "one original worker MobileDataset.initialize: own random marker/two groups/six users; existing active semester reused or original controlled synthetic semester activated; no resets/deletion/borrowed identity. Separate browser context per original case. Dataset owns no cleanup beyond request.dispose; Root owns task dataset/stand lifecycle.",
+  "clock": "reuse teachingClock12Oct06Z/EuropeMoscow, same existing teachingInstant worker option and previously approved page.clock.setFixedTime before navigation; real timers/backend auth/security. No browser absolute-expiry/cooldown/date-rollover acceptance claim.",
+  "artifacts": "canonical SafeReporter only/private700 run+artifacts+supervision; protected automatic fixture/afterEach unchanged; PLAYWRIGHT_NO_COPY_PROMPT1; trace/video/screenshots off; no raw logs/errors/titles/body/IDs/credentials",
+  "prospectiveMinimalOwnSourceScope": [
+    "session-offline.config.ts",
+    "session-offline.spec.ts",
+    "run-session-offline.py parameter-only sibling of reviewed focused3-next96-date-r2 caller"
+  ],
+  "whyMinimalHarnessDeltaNeeded": "Existing FIRST3 config hardcodes three titles/counts and observer maps14/61/142; original real-mobile config has no own-private output/teachingInstant/fixedDate bindings. New private config plus clock-only wrapper select ORIGINAL260/367 with zero assertion/fixture/product edits; same b78/r1 callback/cap/cohort logic only finite source/config/case/namespace parameters. Source write and targeted review require separate Root assignment.",
+  "prospectiveArgv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/cli.js",
+    "test",
+    "--config",
+    "/workspace/scratch/rct-validation/client_real_acceptance/next-session-offline-group-657/session-offline.config.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0"
+  ],
+  "limitsProposed": {
+    "activeSeconds": 360,
+    "cleanupSeconds": 60,
+    "originalDatasetWorkerTimeoutSeconds": 180,
+    "originalTestTimeoutSeconds": 60,
+    "nodeManagedHeapMiB": 512,
+    "ownedRssSampledSoftMiB": 1536,
+    "ownTmpCacheSampledMiB": 32,
+    "workers": 1,
+    "retries": 0
+  },
+  "futureReadiness": "New next03 Root artifact/runtime/critical/live8 four-receipt bind +fresh16distinct births/direct child PPIDs, source/artifact/teaching-clock PWA/SW equality, host deadline and capacity before first mkdir/dispatch. Reuse public Chromium93239 availability and byte-qualified artifacts; no repeat boot/type/discovery/19pin campaign. Browser and API seed only after separate Root grant.",
+  "remainingUnknown": [
+    "actual server session expiry (revocation is different evidence)",
+    "full cached schedule/Moscow day rollover/no attachment or API-cache inspection",
+    "TMA offline D003 proof/D005 manual-absence geo (separate groups)",
+    "role/grant/account-change reconnect and late-retry races",
+    "full all-role/all-session auth families"
+  ],
+  "nativeStatus": "NOT_RUN",
+  "noSourceProductConfigMutation": true,
+  "viewportProposed": {
+    "width": 390,
+    "height": 844,
+    "override": "set config.use and selected project.use after spread, reusing reviewed cloud-accepted viewport correction pattern",
+    "qualification": "One Chromium viewport only; no WebKit/all viewport acceptance claim"
+  }
+}

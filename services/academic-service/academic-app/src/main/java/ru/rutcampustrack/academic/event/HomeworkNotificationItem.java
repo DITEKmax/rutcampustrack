@@ -11,6 +11,4 @@ public record HomeworkNotificationItem(
         String link,
         @JsonProperty("has_link") boolean hasLink,
         @JsonProperty("lesson_date") String lessonDate,
-        @JsonProperty("lesson_number") Integer lessonNumber
-) {
-}
+        @JsonProperty("lesson_number") Integer lessonNumber) {}

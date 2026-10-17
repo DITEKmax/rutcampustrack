@@ -1,0 +1,11 @@
+{
+  "source": "/workspace/rct-worktrees/client-acceptance/frontends/node_modules",
+  "entries": 8272,
+  "all_SHA_bytes_modes_symlink_targets_and_pathset_equal": true,
+  "current_workspace_aliases": {
+    "mobile-core": "/workspace/rct-worktrees/client-current-artifacts/frontends/mobile-core",
+    "pwa-vue": "/workspace/rct-worktrees/client-current-artifacts/frontends/pwa-vue",
+    "tma-vue": "/workspace/rct-worktrees/client-current-artifacts/frontends/tma-vue"
+  },
+  "old_namespace_mutated": false
+}

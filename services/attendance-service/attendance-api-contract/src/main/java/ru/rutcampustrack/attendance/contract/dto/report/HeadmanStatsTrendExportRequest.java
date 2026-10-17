@@ -8,6 +8,4 @@ import jakarta.validation.constraints.Pattern;
 /** Selector for rendering the authoritative current-group trend as a downloadable chart. */
 public record HeadmanStatsTrendExportRequest(
         @NotNull @Valid HeadmanStatsTrendQueryRequest query,
-        @NotBlank @Pattern(regexp = "(?i:png|html)") String format
-) {
-}
+        @NotBlank @Pattern(regexp = "(?i:png|html)") String format) {}

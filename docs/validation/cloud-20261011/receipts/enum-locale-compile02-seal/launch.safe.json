@@ -1,0 +1,18 @@
+{
+  "phase": "compile-only",
+  "argv": [
+    "/bin/bash",
+    "./gradlew",
+    "--offline",
+    "--no-daemon",
+    "--max-workers=1",
+    "--console=plain",
+    ":services:academic-service:academic-app:compileTestJava",
+    "--rerun"
+  ],
+  "test_source_sha256": "5a4a7ad3daceb99d16005bc555bbb460bb6088fbd92cb19e9f49e08970d56e0a",
+  "production_source_sha256": "4f62d5ac9724c9524697145734577954fbdf54c68162bd1af5e0166f376e98f9",
+  "started_ns": 1791830814244380779,
+  "raw_stdout_stderr": "DEVNULL",
+  "test_API_Docker": "NOT_AUTHORIZED"
+}

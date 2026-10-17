@@ -5,10 +5,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.Type;
-import ru.rutcampustrack.academic.config.SubjectTypeUserType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
+import ru.rutcampustrack.academic.config.SubjectTypeUserType;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
 /** Canonical subject lesson type row from V25. */

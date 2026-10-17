@@ -1,0 +1,48 @@
+{
+  "schema": "P10_FAILURE_FRAME_PRIVACY_INDEPENDENT_REVIEW_V1",
+  "utc": "2026-10-13T11:52:07.490557+00:00",
+  "verdict": "FINDINGS",
+  "findings": [
+    {
+      "id": "P10-REQUEST-CLEANUP-MODE",
+      "priority": 2,
+      "source": "logged-green-child.py:313",
+      "cause": "Cleanup omits exact private mode check",
+      "needed": "Require current mode0600; retain and fail on metadata drift"
+    },
+    {
+      "id": "P10-PRIMARY-ERROR-MASKING",
+      "priority": 2,
+      "source": "logged-green-child.py:307",
+      "cause": "Finally cleanup rejection replaces primary; outer handler exposes only new code and parent discards stdout/stderr",
+      "needed": "Preserve separate closed primary and cleanup outcomes in owned safe receipt; cleanup denial retains leaf and fails"
+    }
+  ],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "source_ready_sha256": "93b399431fc7b2aaf227e0e686072a016769c060f7953891593d39ca7a6f7539",
+  "source_manifest_sha256": "14eb04fcbd6f671f1a23a54099be85e62f30caf894ad0f41817d2f257550e505",
+  "source_zip_sha256": "8c3324d42acb89b8314ab585dbea1fd6b5c1355345f3fc2ba8cfe0daa05e8c20",
+  "binding": {
+    "producer": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+    "checkout": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+    "own_head": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+    "source_sha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+    "run_id": 38387263916,
+    "artifact_id": 11806374316
+  },
+  "checks": {
+    "targeted17": "PASS",
+    "additional6": "PASS",
+    "source_pins": "PASS",
+    "lifecycle5": "CONFIRMED_COUNTEREXAMPLES",
+    "native": "NOT_RUN"
+  },
+  "original_artifact_operation_authorized": false,
+  "cause": "UNKNOWN",
+  "private_bodies_read": false,
+  "product_changes": false,
+  "original_source_changed": false,
+  "next": "Same author narrow sibling correction, independent targeted recheck, then fresh separate Root original artifact grant and normal approval; no test replay."
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "RCT_P07_NARROW_PARSER_SEAL_V1",
+  "files": {
+    "READY.safe.json": "aef0dcf0e6926925f431ccba7c263d77aad81d7e8eebe4d999815328dc025370",
+    "REVIEW.md": "7823fcdc988cceec6c4290c78716de838bb37029f29a96ac7aadf84fdb483827",
+    "ancestor-pins.safe.json": "a28d5f02a11fe5e481ea5037cc922e525bbbea00c9bee512b728960586d4e36e",
+    "closed-validator-xml.py": "ff5edff4f42b75dc653ebac04d55d92e69616408397afc4d6e1bdcd29470c65c",
+    "execution-plan.safe.json": "060c4c812b2220272112775203c5fea18e6033aabece4a3be92bf8b11f8bd7eb",
+    "grant.template.safe.json": "ee9d5181d3e92bfa36778467936f3e2673ba1cb4218923cdf69974c8f1567ff8",
+    "logged-validator-child.py": "8ab926807def8d428db4a4b45296dc5565f167a6599af8e011683883a9aea960",
+    "narrow-controls.safe.json": "fd5290a381c5274bacdb932caff74c99c2f3e0a5b21eefbd435613576d5b3fc5",
+    "parser-controls.safe.json": "baef2ac1f68092834ee135ad306205dc83d68b7bf20fceb52bbaa145bf05cb47",
+    "parser-seal.patch": "abb5745007b98af141cb861a363869e5ddf0b2310cd83238cce0d5174e9094de",
+    "run-validator-owned.py": "5ddb54370ddfb0f4bd35619c7d14743145cbba4d8e953cd615c0fd7b28b9b0b8",
+    "source17.safe.json": "daef63d9c253f7e27b580843b10790c925c0c74d3fbbaa5e9693e9f7a4078634"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "toolSession": 86977,
+  "supervisor": {
+    "pid": 425622,
+    "state": "R",
+    "ppid": 425621,
+    "pgrp": 425621,
+    "session": 425621,
+    "start_ticks": 10500129
+  },
+  "nativeExit": 1,
+  "formatWriteExit": 0,
+  "strictProofExit": 1,
+  "strictProofQualification": "Raw complete terminal/scanner inequality preserved; source diff only whitespace and4 trailing commas:1execCall3mapArrayValues. No normalized equality claim.",
+  "remainingChecks": "NOT_RUN",
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 425622,
+      "start_ticks": 10500129,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 425626,
+      "start_ticks": 10500197,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 425637,
+      "start_ticks": 10500279,
+      "exactBirthAbsent": true
+    }
+  ],
+  "sourceBefore": "74ff02435f49e5c334a5f569a6eed5bb4562677fed2841199ceaf0b2a6699066",
+  "sourceAfter": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718",
+  "other3SourceBytesPreserved": true,
+  "sourceMode": "0o600",
+  "sourceNlink": 1,
+  "tmpRemoved": true,
+  "cacheRemoved": true,
+  "lease": "RELEASED",
+  "noAPIorBrowser": true
+}

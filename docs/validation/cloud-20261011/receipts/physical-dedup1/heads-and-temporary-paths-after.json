@@ -1,0 +1,128 @@
+{
+  "utc": "2026-10-12T06:41:17.182018+00:00",
+  "status": "PASS",
+  "rows": [
+    {
+      "root": "/workspace/rct-worktrees/client-current-artifacts",
+      "head": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/np01-config",
+      "head": "579b491847991b20a88986797c1c3baeb0272b7b",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/np01-contract",
+      "head": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/security-fingerprint",
+      "head": "2a1c1f82b3b2a06daf1f666478d796e0a55e3775",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/delivery",
+      "head": "0e717157c20a05bf30d97cedd50d9a05f4192b5a",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/file-boundaries",
+      "head": "c73ef351d1a1b794e600bcdec2e8f8b282c2e558",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/gateway-claims",
+      "head": "2003948d83b2603967aa29f6434217c2a29453e1",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/recovery",
+      "head": "bd430a37e689a523a227ac85b7ac0c4018629efb",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/renderer-files",
+      "head": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/auth-generator",
+      "head": "381543370f08c2251daa00e80c16e3d441cfe072",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/ci-evidence",
+      "head": "4b0d3c2091e3c76babca8a7e7d8bdf89b9111171",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/auth-gateway-test-deps",
+      "head": "6d5c1c58c3b4ba6d1b43a715535f8e08dbb682ee",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/data-lecture",
+      "head": "c115f61996fd415d20286a0787f4985b80a59a24",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/exports",
+      "head": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/notification-provider",
+      "head": "d674ea1ff1d26bf40f2585e0a3438c1896e60a1b",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/security",
+      "head": "0c61bb28a0a98be62abb0333a0137cbf9fe6286e",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "root": "/workspace/rct-worktrees/client-acceptance",
+      "head": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+      "head_unchanged": true,
+      "tracked_clean": true,
+      "tracked_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "exact_temp_paths_checked_absent": 10831,
+  "ordinary_mutator_PIDs_absent": true,
+  "native_git_calls_terminal": true
+}

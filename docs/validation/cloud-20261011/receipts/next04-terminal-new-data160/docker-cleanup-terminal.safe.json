@@ -1,0 +1,28 @@
+{
+  "guard": {
+    "direct_pid": 476752,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 476752,
+        "start_ticks": 11758615
+      },
+      {
+        "pid": 476769,
+        "start_ticks": 11758619
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "six_containers_network_absent": true,
+  "five_volumes_preserved": true,
+  "native_tmp_data_key_preserved": true,
+  "workspace_available": 9423704064
+}

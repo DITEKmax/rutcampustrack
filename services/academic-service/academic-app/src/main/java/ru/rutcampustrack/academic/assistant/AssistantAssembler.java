@@ -1,5 +1,9 @@
 package ru.rutcampustrack.academic.assistant;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
+import java.util.Arrays;
+import java.util.List;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
@@ -8,13 +12,9 @@ import ru.rutcampustrack.academic.contract.enums.AssistantPermission;
 import ru.rutcampustrack.academic.entity.HeadmanAssistant;
 import ru.rutcampustrack.academic.repository.UserRepository;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
-
 @Component
-public class AssistantAssembler implements RepresentationModelAssembler<HeadmanAssistant, EntityModel<AssistantResponse>> {
+public class AssistantAssembler
+        implements RepresentationModelAssembler<HeadmanAssistant, EntityModel<AssistantResponse>> {
 
     private final UserRepository userRepository;
 
@@ -28,9 +28,10 @@ public class AssistantAssembler implements RepresentationModelAssembler<HeadmanA
         String studentName = userOpt.map(u -> u.getDisplayName()).orElse("Unknown");
         String login = userOpt.map(u -> u.getLogin()).orElse(null);
 
-        List<AssistantPermission> permissions = Arrays.stream(assistant.getPermissions())
-                .map(s -> AssistantPermission.valueOf(s.toUpperCase()))
-                .toList();
+        List<AssistantPermission> permissions =
+                Arrays.stream(assistant.getPermissions())
+                        .map(s -> AssistantPermission.valueOf(s.toUpperCase()))
+                        .toList();
 
         AssistantResponse response = new AssistantResponse();
         response.setId(assistant.getId());
@@ -44,8 +45,9 @@ public class AssistantAssembler implements RepresentationModelAssembler<HeadmanA
         response.setAssignedAt(assistant.getAssignedAt());
         response.setRevokedAt(assistant.getRevokedAt());
 
-        return EntityModel.of(response,
-                linkTo(methodOn(AssistantController.class).revokeAssistant(assistant.getId())).withSelfRel()
-        );
+        return EntityModel.of(
+                response,
+                linkTo(methodOn(AssistantController.class).revokeAssistant(assistant.getId()))
+                        .withSelfRel());
     }
 }

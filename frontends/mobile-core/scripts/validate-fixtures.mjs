@@ -11,9 +11,7 @@ const manifestUrl = new URL('../fixtures/manifest.json', import.meta.url)
 
 function resolveRef(root, ref) {
   if (!ref.startsWith('#/')) {
-    throw new Error(
-      'External ref is not allowed in contract fixtures: ' + ref,
-    )
+    throw new Error('External ref is not allowed in contract fixtures: ' + ref)
   }
   return ref
     .slice(2)
@@ -48,9 +46,7 @@ function validationError(root, schema, value, path = '$', seen = new Set()) {
   if (Array.isArray(schema?.oneOf)) {
     const discriminatorName = schema.discriminator?.propertyName
     const discriminatorValue =
-      discriminatorName && typeof value === 'object'
-        ? value?.[discriminatorName]
-        : undefined
+      discriminatorName && typeof value === 'object' ? value?.[discriminatorName] : undefined
     const mappedRef = schema.discriminator?.mapping?.[discriminatorValue]
     if (mappedRef) {
       return validationError(root, { $ref: mappedRef }, value, path, seen)
@@ -59,11 +55,7 @@ function validationError(root, schema, value, path = '$', seen = new Set()) {
       (child) => validationError(root, child, value, path, seen) === null,
     )
     if (matches.length !== 1) {
-      return (
-        path +
-        ': expected exactly one oneOf branch, matched ' +
-        matches.length
-      )
+      return path + ': expected exactly one oneOf branch, matched ' + matches.length
     }
   }
 
@@ -81,19 +73,10 @@ function validationError(root, schema, value, path = '$', seen = new Set()) {
       }
       for (const [name, child] of Object.entries(schema.properties ?? {})) {
         if (!Object.hasOwn(value, name)) continue
-        const error = validationError(
-          root,
-          child,
-          value[name],
-          path + '.' + name,
-          seen,
-        )
+        const error = validationError(root, child, value[name], path + '.' + name, seen)
         if (error) return error
       }
-      if (
-        schema.additionalProperties &&
-        typeof schema.additionalProperties === 'object'
-      ) {
+      if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
         const declared = new Set(Object.keys(schema.properties ?? {}))
         for (const [name, item] of Object.entries(value)) {
           if (declared.has(name)) continue
@@ -150,8 +133,7 @@ function validationError(root, schema, value, path = '$', seen = new Set()) {
       }
       if (
         schema.format === 'date-time' &&
-        (!/[zZ]|[+-]\d{2}:\d{2}$/.test(value) ||
-          Number.isNaN(Date.parse(value)))
+        (!/[zZ]|[+-]\d{2}:\d{2}$/.test(value) || Number.isNaN(Date.parse(value)))
       ) {
         return path + ': expected offset-aware date-time'
       }
@@ -207,14 +189,8 @@ export async function validateAllFixtures() {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const errors = await validateAllFixtures()
   if (errors.length > 0) {
-    throw new Error(
-      'Fixture conformance failed:\n' + errors.join('\n'),
-    )
+    throw new Error('Fixture conformance failed:\n' + errors.join('\n'))
   }
   const { manifest } = await loadContract()
-  console.log(
-    'Validated ' +
-      manifest.fixtures.length +
-      ' fixtures against JS-STUDENT-01-r1',
-  )
+  console.log('Validated ' + manifest.fixtures.length + ' fixtures against JS-STUDENT-01-r1')
 }

@@ -1,15 +1,14 @@
 package ru.rutcampustrack.notification.history;
 
+import java.util.Map;
+import java.util.UUID;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.shared.events.EventIdempotent;
 import ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore;
-
-import java.util.Map;
-import java.util.UUID;
 
 /** Rabbit boundary for durable personal notification history. */
 @Component
@@ -20,8 +19,8 @@ public class NotificationHistoryConsumer {
     private final MongoTemplate mongoTemplate;
     private final NotificationHistoryEventProcessor processor;
 
-    public NotificationHistoryConsumer(MongoTemplate mongoTemplate,
-                                       NotificationHistoryEventProcessor processor) {
+    public NotificationHistoryConsumer(
+            MongoTemplate mongoTemplate, NotificationHistoryEventProcessor processor) {
         this.mongoTemplate = mongoTemplate;
         this.processor = processor;
     }
@@ -39,13 +38,14 @@ public class NotificationHistoryConsumer {
     }
 
     /**
-     * Avoids opening a transaction for the common, already-committed replay
-     * path. A duplicate-key write against an active Mongo transaction can mark
-     * that transaction aborted even when the store converts it to `false`.
+     * Avoids opening a transaction for the common, already-committed replay path. A duplicate-key
+     * write against an active Mongo transaction can mark that transaction aborted even when the
+     * store converts it to `false`.
      */
     private boolean isAlreadyProcessed(String eventId) {
-        Query query = Query.query(Criteria.where("consumer_id").is(CONSUMER_ID)
-                .and("event_id").is(eventId));
+        Query query =
+                Query.query(
+                        Criteria.where("consumer_id").is(CONSUMER_ID).and("event_id").is(eventId));
         return mongoTemplate.exists(query, MongoIdempotencyStore.DEFAULT_COLLECTION);
     }
 

@@ -1,0 +1,62 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "files": [
+    {
+      "name": "CURRENT.json",
+      "path": "/workspace/scratch/rct-validation/webkit_dependency_independent_review/CURRENT.json",
+      "sha256": "6956c0c4456fc25398174444cdc534886c026d0164b1a9cd0b51b6e11c185580",
+      "bytes": 853,
+      "mode": 384
+    },
+    {
+      "name": "HANDOFF.md",
+      "path": "/workspace/scratch/rct-validation/webkit_dependency_independent_review/HANDOFF.md",
+      "sha256": "8a8de5ea5c00ea240acfccbb02aab8c89f65b47852d446cf441fe48437ac42c2",
+      "bytes": 12591,
+      "mode": 384
+    },
+    {
+      "name": "review-public.py",
+      "path": "/workspace/scratch/rct-validation/webkit_dependency_independent_review/review-public.py",
+      "sha256": "198b7319cbcd1becfb1185761774ca2b5ed27ed44b7398aa50b61443d2502356",
+      "bytes": 5686,
+      "mode": 384
+    },
+    {
+      "name": "review-closure-mapping.py",
+      "path": "/workspace/scratch/rct-validation/webkit_dependency_independent_review/review-closure-mapping.py",
+      "sha256": "22b7bac0cb9d8de33acea97234333a32d9ad028683fc0c28859d4874dafbab1f",
+      "bytes": 6026,
+      "mode": 384
+    },
+    {
+      "name": "provenance.safe.json",
+      "path": "/workspace/scratch/rct-validation/webkit_dependency_independent_review/provenance.safe.json",
+      "sha256": "1bf4fd842ce5724ea43ad46ad58cee88ff1190a650b668811ee4be45adbd5d07",
+      "bytes": 4185,
+      "mode": 384
+    },
+    {
+      "name": "closure-mapping.safe.json",
+      "path": "/workspace/scratch/rct-validation/webkit_dependency_independent_review/closure-mapping.safe.json",
+      "sha256": "f6ba312efdd895695e170fa3b02e50505e74893ccec816e12951d57bd2634a73",
+      "bytes": 20034,
+      "mode": 384
+    },
+    {
+      "name": "cache-identity.safe.json",
+      "path": "/workspace/scratch/rct-validation/webkit_dependency_independent_review/cache-identity.safe.json",
+      "sha256": "76ce9c149030fef5a841d376580a5f7c211fc88ff9449b32a44d6a1995f434af",
+      "bytes": 120,
+      "mode": 384
+    },
+    {
+      "name": "apt-warning-classification.safe.json",
+      "path": "/workspace/scratch/rct-validation/webkit_dependency_independent_review/apt-warning-classification.safe.json",
+      "sha256": "6a6672fc5d961695a1e2197c4d9f8de44cad332a7efa7afa608e185cf4bcf27a",
+      "bytes": 380,
+      "mode": 384
+    }
+  ],
+  "private_credentials_context_or_payload_included": false
+}

@@ -1,0 +1,341 @@
+{
+  "scope": "READONLY_TRUSTED_CURRENT_BOOT_PACKAGER_CLASSFILE_PROOF",
+  "gradle_plugin_version": "3.5.16",
+  "cached_plugin": "/workspace/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-gradle-plugin/3.5.16/a0d02e5772d9c71ba744c02cc1825b69c23643db/spring-boot-gradle-plugin-3.5.16.jar",
+  "plugin_sha256": "fd7505a7711c9cd4030e5eaf22c10c808bffe4c1c5b9d2ceb0ae92fda23d6a38",
+  "class_name": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.class",
+  "class_sha256": "9ac6d7c493306a8df02115d65cf57b121486b9198d628d887c0aec066468d7be",
+  "methods": [
+    {
+      "method": "finish",
+      "descriptor": "()V",
+      "code_sha256": "c682ff7d7ea765c8c848023caea2d3cb5c32c0106ce88175830ecb5d7c71d7d1",
+      "code_hex": "2a01b6003e2ab600eb2ab600ee2ab600f12ab600f42ab600f7b1",
+      "field_method_references": [
+        {
+          "offset": 2,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.writeLoaderEntriesIfNecessary(Lorg/gradle/api/file/FileCopyDetails;)V"
+        },
+        {
+          "offset": 6,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.writeJarToolsIfNecessary()V"
+        },
+        {
+          "offset": 10,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.writeSignatureFileIfNecessary()V"
+        },
+        {
+          "offset": 14,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.writeClassPathIndexIfNecessary()V"
+        },
+        {
+          "offset": 18,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.writeNativeImageArgFileIfNecessary()V"
+        },
+        {
+          "offset": 22,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.writeLayersIndexIfNecessary()V"
+        }
+      ]
+    },
+    {
+      "method": "writeJarToolsIfNecessary",
+      "descriptor": "()V",
+      "code_sha256": "3aeba4cee36ddc40efe919be678e492aed30b635dd53f20eb3771cefedb10dac",
+      "code_hex": "2ab40001b40130c600112a2ab40001b40130b20134b6013ab1",
+      "field_method_references": [
+        {
+          "offset": 1,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.this$0Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction;"
+        },
+        {
+          "offset": 4,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction.jarmodeToolsLocationLjava/lang/String;"
+        },
+        {
+          "offset": 12,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.this$0Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction;"
+        },
+        {
+          "offset": 15,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction.jarmodeToolsLocationLjava/lang/String;"
+        },
+        {
+          "offset": 18,
+          "opcode": 178,
+          "reference": "org/springframework/boot/loader/tools/JarModeLibrary.TOOLSLorg/springframework/boot/loader/tools/JarModeLibrary;"
+        },
+        {
+          "offset": 21,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.writeJarModeLibrary(Ljava/lang/String;Lorg/springframework/boot/loader/tools/JarModeLibrary;)V"
+        }
+      ]
+    },
+    {
+      "method": "writeJarModeLibrary",
+      "descriptor": "(Ljava/lang/String;Lorg/springframework/boot/loader/tools/JarModeLibrary;)V",
+      "code_sha256": "3ac513638d73d74cf755dfc7e523c6a2c2d8a1e77627c29ed0412f9bfde7711b",
+      "code_hex": "2b2cb6013eba014100004e2a2d2cb60142b80146032a2cba014c0000b601502ab40001b40025c6001a2ab40001b400252cb601543a042ab4003619042db600dab1",
+      "field_method_references": [
+        {
+          "offset": 2,
+          "opcode": 182,
+          "reference": "org/springframework/boot/loader/tools/JarModeLibrary.getName()Ljava/lang/String;"
+        },
+        {
+          "offset": 14,
+          "opcode": 182,
+          "reference": "org/springframework/boot/loader/tools/JarModeLibrary.openStream()Ljava/io/InputStream;"
+        },
+        {
+          "offset": 17,
+          "opcode": 184,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryContentWriter.fromInputStream(Ljava/io/InputStream;)Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryContentWriter;"
+        },
+        {
+          "offset": 28,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.writeEntry(Ljava/lang/String;Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryContentWriter;ZLorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryCustomizer;)V"
+        },
+        {
+          "offset": 32,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.this$0Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction;"
+        },
+        {
+          "offset": 35,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction.layerResolverLorg/springframework/boot/gradle/tasks/bundling/LayerResolver;"
+        },
+        {
+          "offset": 42,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.this$0Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction;"
+        },
+        {
+          "offset": 45,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction.layerResolverLorg/springframework/boot/gradle/tasks/bundling/LayerResolver;"
+        },
+        {
+          "offset": 49,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/LayerResolver.getLayer(Lorg/springframework/boot/loader/tools/Library;)Lorg/springframework/boot/loader/tools/Layer;"
+        },
+        {
+          "offset": 55,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.layerIndexLorg/springframework/boot/loader/tools/LayersIndex;"
+        },
+        {
+          "offset": 61,
+          "opcode": 182,
+          "reference": "org/springframework/boot/loader/tools/LayersIndex.add(Lorg/springframework/boot/loader/tools/Layer;Ljava/lang/String;)V"
+        }
+      ]
+    },
+    {
+      "method": "writeClassPathIndexIfNecessary",
+      "descriptor": "()V",
+      "code_sha256": "69c11c89c234a55b8541b1467661759bc9d8c422b96ec72036fef7b3c3709e71",
+      "code_hex": "2ab40001b40173b9017701004c2b13017db9017f0200c000534d2cc6003a2ab40017b9018401004e2db901870100ba018b0000b9018e0200b9019401003a042ab40001b401981904b8019b3a052a2c190504b6015fb1",
+      "field_method_references": [
+        {
+          "offset": 1,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.this$0Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction;"
+        },
+        {
+          "offset": 4,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction.manifestLorg/gradle/api/java/archives/Manifest;"
+        },
+        {
+          "offset": 7,
+          "opcode": 185,
+          "reference": "org/gradle/api/java/archives/Manifest.getAttributes()Lorg/gradle/api/java/archives/Attributes;"
+        },
+        {
+          "offset": 17,
+          "opcode": 185,
+          "reference": "org/gradle/api/java/archives/Attributes.get(Ljava/lang/Object;)Ljava/lang/Object;"
+        },
+        {
+          "offset": 31,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.writtenLibrariesLjava/util/Map;"
+        },
+        {
+          "offset": 34,
+          "opcode": 185,
+          "reference": "java/util/Map.keySet()Ljava/util/Set;"
+        },
+        {
+          "offset": 41,
+          "opcode": 185,
+          "reference": "java/util/Set.stream()Ljava/util/stream/Stream;"
+        },
+        {
+          "offset": 51,
+          "opcode": 185,
+          "reference": "java/util/stream/Stream.map(Ljava/util/function/Function;)Ljava/util/stream/Stream;"
+        },
+        {
+          "offset": 56,
+          "opcode": 185,
+          "reference": "java/util/stream/Stream.toList()Ljava/util/List;"
+        },
+        {
+          "offset": 64,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.this$0Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction;"
+        },
+        {
+          "offset": 67,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction.encodingLjava/lang/String;"
+        },
+        {
+          "offset": 72,
+          "opcode": 184,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryContentWriter.fromLines(Ljava/lang/String;Ljava/util/Collection;)Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryContentWriter;"
+        },
+        {
+          "offset": 82,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.writeEntry(Ljava/lang/String;Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryContentWriter;Z)V"
+        }
+      ]
+    },
+    {
+      "method": "writeEntry",
+      "descriptor": "(Ljava/lang/String;Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryContentWriter;Z)V",
+      "code_sha256": "accbc2926a5320962a079d1f02d8257ab5d179e0f7fa5fe377298810d5d41d35",
+      "code_hex": "2a2b2c1db201fab60150b1",
+      "field_method_references": [
+        {
+          "offset": 4,
+          "opcode": 178,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryCustomizer.NONELorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryCustomizer;"
+        },
+        {
+          "offset": 7,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.writeEntry(Ljava/lang/String;Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryContentWriter;ZLorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryCustomizer;)V"
+        }
+      ]
+    },
+    {
+      "method": "writeEntry",
+      "descriptor": "(Ljava/lang/String;Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryContentWriter;ZLorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryCustomizer;)V",
+      "code_sha256": "dad0eb7dbfd93951accaf1a489559fb5e32de2ea11dff2d351b75b02be98db08",
+      "code_hex": "bb0081592bb700863a052a19052b2ab601032ab60106b6009119041905b9020002002ab400211905b600952c2ab40021b9020202002ab40021b6009b1d9900242ab40001b40025c6001a2ab40001b400252bb601243a062ab4003619062bb600dab1",
+      "field_method_references": [
+        {
+          "offset": 5,
+          "opcode": 183,
+          "reference": "org/apache/commons/compress/archivers/zip/ZipArchiveEntry.<init>(Ljava/lang/String;)V"
+        },
+        {
+          "offset": 15,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.getTime()Ljava/lang/Long;"
+        },
+        {
+          "offset": 19,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.getFileMode()I"
+        },
+        {
+          "offset": 22,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.prepareEntry(Lorg/apache/commons/compress/archivers/zip/ZipArchiveEntry;Ljava/lang/String;Ljava/lang/Long;I)V"
+        },
+        {
+          "offset": 29,
+          "opcode": 185,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryCustomizer.customize(Lorg/apache/commons/compress/archivers/zip/ZipArchiveEntry;)V"
+        },
+        {
+          "offset": 35,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.outLorg/apache/commons/compress/archivers/zip/ZipArchiveOutputStream;"
+        },
+        {
+          "offset": 40,
+          "opcode": 182,
+          "reference": "org/apache/commons/compress/archivers/zip/ZipArchiveOutputStream.putArchiveEntry(Lorg/apache/commons/compress/archivers/zip/ZipArchiveEntry;)V"
+        },
+        {
+          "offset": 45,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.outLorg/apache/commons/compress/archivers/zip/ZipArchiveOutputStream;"
+        },
+        {
+          "offset": 48,
+          "opcode": 185,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$ZipEntryContentWriter.writeTo(Lorg/apache/commons/compress/archivers/zip/ZipArchiveOutputStream;)V"
+        },
+        {
+          "offset": 54,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.outLorg/apache/commons/compress/archivers/zip/ZipArchiveOutputStream;"
+        },
+        {
+          "offset": 57,
+          "opcode": 182,
+          "reference": "org/apache/commons/compress/archivers/zip/ZipArchiveOutputStream.closeArchiveEntry()V"
+        },
+        {
+          "offset": 65,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.this$0Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction;"
+        },
+        {
+          "offset": 68,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction.layerResolverLorg/springframework/boot/gradle/tasks/bundling/LayerResolver;"
+        },
+        {
+          "offset": 75,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.this$0Lorg/springframework/boot/gradle/tasks/bundling/BootZipCopyAction;"
+        },
+        {
+          "offset": 78,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction.layerResolverLorg/springframework/boot/gradle/tasks/bundling/LayerResolver;"
+        },
+        {
+          "offset": 82,
+          "opcode": 182,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/LayerResolver.getLayer(Ljava/lang/String;)Lorg/springframework/boot/loader/tools/Layer;"
+        },
+        {
+          "offset": 88,
+          "opcode": 180,
+          "reference": "org/springframework/boot/gradle/tasks/bundling/BootZipCopyAction$Processor.layerIndexLorg/springframework/boot/loader/tools/LayersIndex;"
+        },
+        {
+          "offset": 94,
+          "opcode": 182,
+          "reference": "org/springframework/boot/loader/tools/LayersIndex.add(Lorg/springframework/boot/loader/tools/Layer;Ljava/lang/String;)V"
+        }
+      ]
+    }
+  ],
+  "qualified_provenance": "Public cached Gradle plugin used by the retained standard BUILD; classfile read in RAM, no JVM/decompiler/source fetch or cache mutation. Not a fresh official Git source authentication claim.",
+  "current_generated_artifact": "Original unchanged4bc standard BOOT-INF/classpath.idx contains182 application libraries; separately packaged tools member is retained as183rd nested library.",
+  "effective_rule": "Keep all183 payload members; use exact182 canonical index entries for host classpath, sole fixed tools exclusion, deny any other difference."
+}

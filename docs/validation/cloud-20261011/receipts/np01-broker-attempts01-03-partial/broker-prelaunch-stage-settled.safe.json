@@ -1,0 +1,19 @@
+{
+  "utc": "2026-10-12T07:03:20.173453+00:00",
+  "host_stage_result_path": "/workspace/scratch/rct-validation/current_host_stage/RESULT.json",
+  "host_stage_result_sha256": "9704f89bc356a2b59c63e8d202f1653c2c61cd2be7f91d9f5c443a16a908f676",
+  "host_stage_current_path": "/workspace/scratch/rct-validation/current_host_stage/CURRENT.json",
+  "host_stage_terminal_native0": true,
+  "host_stage_pid": 218459,
+  "host_stage_pid_currently_absent": true,
+  "host_stage_transient_remaining": 0,
+  "host_stage_final_unique_allocation": 195670016,
+  "disk": {
+    "total": 33770192896,
+    "used": 23638577152,
+    "free": 8396853248
+  },
+  "shared_memory_current": 4408410112,
+  "required_BROKER1_prelaunch_free": 6442450944,
+  "NO_BROKER_RUNTIME_GRANT": true
+}

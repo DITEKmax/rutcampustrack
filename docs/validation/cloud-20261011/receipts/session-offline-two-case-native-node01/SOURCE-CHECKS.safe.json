@@ -1,0 +1,14 @@
+{
+  "state": "PASS_SOURCE_CHECKS",
+  "settled": true,
+  "completed_phase_count": 3,
+  "pass": true,
+  "browser_api_network_started": false,
+  "private_tmp_transform_removed": true,
+  "source_intact": true,
+  "peaks": {
+    "owned_rss_bytes": 350703616,
+    "run_allocated_bytes": 1757184,
+    "shared_memory_bytes": 5297401856
+  }
+}

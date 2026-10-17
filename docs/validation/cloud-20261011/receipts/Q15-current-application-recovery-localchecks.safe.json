@@ -1,0 +1,474 @@
+{
+  "at": "2026-10-14T01:21:00.881290+00:00",
+  "base": "a03215a363aee844f42067fcf5243e7d49f85bff",
+  "branch": "codex/rct-validation-app-recovery-current-20261014",
+  "checks": "NOT_RUN pending concrete Root grant; no Docker/browser/process checks",
+  "checks_summary": {
+    "baseline_current_v2_counterexample": true,
+    "browser_docker_runtime": "NOT_RUN",
+    "corrected_tsc_exit": 0,
+    "existing_validator_methods": 7,
+    "existing_validator_suite_exit": 0,
+    "initial_tsc_resolution_exit": 2,
+    "native_application_restore": "NOT_RUN",
+    "python_exact_idempotency": true,
+    "python_formatter_phases": 3,
+    "ts_formatter_passes_reused": true,
+    "ts_formatter_phases": 3
+  },
+  "closed_failed_phase": "tsc",
+  "closed_failure_type": "AssertionError",
+  "coherent_source_pins": {
+    "scripts/test-application-recovery-checks.py": "b2c670de924acb7f64553974ff02d2613b590f726e69f840070f110b655f395d",
+    "scripts/test-application-recovery.py": "8466796677406a7d6dfa653fb2b81f912d680bc8cc6583ea8f64dc74e07dd156",
+    "tests/e2e/fixtures/application-recovery.spec.ts": "85bdb790543e53caa202ea805d9e9cdd8473e7e0df41f7c043d5c19a69afa457"
+  },
+  "commit": "8e789c6189b782e6cd26bc57b41bfd76a5f63941",
+  "committed_at": "2026-10-14T01:33:21.130763+00:00",
+  "created": [
+    "tests/e2e/fixtures/application-recovery.spec.ts"
+  ],
+  "current_commit": "66286851a853e386adcff7a007950018a80fab33",
+  "existing_validator_methods": 7,
+  "git_status_clean": true,
+  "helper_fix": "Current Java V2 UTF16 length-prefixed known-template digest or exact retained DIRECT legacy digest; all original identity/history guards preserved",
+  "helper_old_sha256": "f279da7838205ec97f16757c1d7abc07835e0a9cb2021f6173c6dd0bdab2a284",
+  "helper_scope": "Root extended solewriter to existing application helper/checks for currentv2 versus retainedlegacy request hash compatibility; no product changes",
+  "maximum_sampled_own_rss_bytes": 198811648,
+  "maximum_sampled_remaining_rss_bytes": 329793536,
+  "minimum_observed_remaining_free_bytes": 6281162752,
+  "minimum_observed_workspace_free_bytes": 6281940992,
+  "native_effects": false,
+  "old_helper_counterexample": "old f279 exact validator rejects correct currentV2 hash with RecoveryError; current helper accepts same vector",
+  "owned_dependency_link_removed": true,
+  "owned_tmp_removed": true,
+  "phases": {
+    "admit": "restored app fresh HEADMAN/STUDENT login; two private token files; exact attachment bytes before replay",
+    "attachment": "same restored actor exact bytes after existing Python verifier single replay",
+    "pending": "Root has stopped owned Rabbit; history-before.json/pending.json after real POST202/PENDING",
+    "seed": "own fresh dataset + genuine EXCUSED/MongoBinary attachment + lifecycle CLOSED + future LESSON homework + original request.json + private seed.json"
+  },
+  "placement_review_correction": {
+    "at": "2026-10-14T01:42:23.296731+00:00",
+    "base": "8e789c6189b782e6cd26bc57b41bfd76a5f63941",
+    "behavior": "Require exactly one binding per homework and resulting occurrence/target lesson/binding revision+1 before excluding only three validated placement fields from stable content compare; retain once-only homework revision and original content/history/receipts guards",
+    "checks": [
+      {
+        "adopted_waitpid_receipts": [],
+        "all_members_including_Z_after": [],
+        "all_owned_processes_reaped": true,
+        "direct_pid": 613687,
+        "known_owned_identities": [
+          {
+            "pid": 613687,
+            "start_ticks": 19613327
+          }
+        ],
+        "native_exit": 0,
+        "phase": "placement-format",
+        "phase_success": true,
+        "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/placement-format.private.log",
+        "settled": true,
+        "signal_count": 0,
+        "supervision_error_type": null,
+        "terminal_reason": "NATIVE_TERMINAL"
+      },
+      {
+        "adopted_waitpid_receipts": [],
+        "all_members_including_Z_after": [],
+        "all_owned_processes_reaped": true,
+        "direct_pid": 613696,
+        "known_owned_identities": [
+          {
+            "pid": 613696,
+            "start_ticks": 19613362
+          }
+        ],
+        "native_exit": 0,
+        "phase": "placement-idempotency",
+        "phase_success": true,
+        "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/placement-idempotency.private.log",
+        "settled": true,
+        "signal_count": 0,
+        "supervision_error_type": null,
+        "terminal_reason": "NATIVE_TERMINAL"
+      },
+      {
+        "adopted_waitpid_receipts": [],
+        "all_members_including_Z_after": [],
+        "all_owned_processes_reaped": true,
+        "direct_pid": 613705,
+        "known_owned_identities": [
+          {
+            "pid": 613705,
+            "start_ticks": 19613387
+          }
+        ],
+        "native_exit": 0,
+        "phase": "placement-format-check",
+        "phase_success": true,
+        "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/placement-format-check.private.log",
+        "settled": true,
+        "signal_count": 0,
+        "supervision_error_type": null,
+        "terminal_reason": "NATIVE_TERMINAL"
+      },
+      {
+        "adopted_waitpid_receipts": [],
+        "all_members_including_Z_after": [],
+        "all_owned_processes_reaped": true,
+        "direct_pid": 613714,
+        "known_owned_identities": [
+          {
+            "pid": 613714,
+            "start_ticks": 19613408
+          }
+        ],
+        "native_exit": 0,
+        "phase": "placement-old-counterexample",
+        "phase_success": true,
+        "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/placement-old-counterexample.private.log",
+        "settled": true,
+        "signal_count": 0,
+        "supervision_error_type": null,
+        "terminal_reason": "NATIVE_TERMINAL"
+      },
+      {
+        "adopted_waitpid_receipts": [],
+        "all_members_including_Z_after": [],
+        "all_owned_processes_reaped": true,
+        "direct_pid": 613716,
+        "known_owned_identities": [
+          {
+            "pid": 613716,
+            "start_ticks": 19613476
+          }
+        ],
+        "native_exit": 0,
+        "phase": "placement-original-green",
+        "phase_success": true,
+        "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/placement-original-green.private.log",
+        "settled": true,
+        "signal_count": 0,
+        "supervision_error_type": null,
+        "terminal_reason": "NATIVE_TERMINAL"
+      },
+      {
+        "adopted_waitpid_receipts": [],
+        "all_members_including_Z_after": [],
+        "all_owned_processes_reaped": true,
+        "direct_pid": 613717,
+        "known_owned_identities": [
+          {
+            "pid": 613717,
+            "start_ticks": 19613531
+          }
+        ],
+        "native_exit": 0,
+        "phase": "placement-guard-drop",
+        "phase_success": true,
+        "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/placement-guard-drop.private.log",
+        "settled": true,
+        "signal_count": 0,
+        "supervision_error_type": null,
+        "terminal_reason": "NATIVE_TERMINAL"
+      },
+      {
+        "adopted_waitpid_receipts": [],
+        "all_members_including_Z_after": [],
+        "all_owned_processes_reaped": true,
+        "direct_pid": 613718,
+        "known_owned_identities": [
+          {
+            "pid": 613718,
+            "start_ticks": 19613582
+          }
+        ],
+        "native_exit": 0,
+        "phase": "placement-restored-green",
+        "phase_success": true,
+        "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/placement-restored-green.private.log",
+        "settled": true,
+        "signal_count": 0,
+        "supervision_error_type": null,
+        "terminal_reason": "NATIVE_TERMINAL"
+      }
+    ],
+    "checks_ended": "2026-10-14T01:45:43.275800+00:00",
+    "checks_started": "2026-10-14T01:45:40.325042+00:00",
+    "commit": "66286851a853e386adcff7a007950018a80fab33",
+    "committed_at": "2026-10-14T01:46:21.441012+00:00",
+    "controls": "Existing terminal evidence method now has actual placement columns; valid source\u2192target transition plus seven wrong/missing placement vectors; no V2 test replay planned",
+    "finding": "P1 current coordinator deliberately advances placement identity; old immutable content guard rejects correct transfer",
+    "formatter_exact_idempotency": true,
+    "maximum_sampled_rss_bytes": 24563712,
+    "minimum_observed_free_bytes": 6280900608,
+    "native_effects": false,
+    "negative_vectors": 21,
+    "next_checks": "Ruff2files exactidempotency/check; old8e789 validate_terminal AST RAM rejects correct placement transition, newhelper accepts samefixture; only existing terminal-evidence unittest method",
+    "old_checker_counterexample": "Exact8e789 oldvalidate_terminal rejects correct current placement transition; corrected helper accepts same fixture",
+    "owned_tmp_removed": true,
+    "sensitivity": "Only exactplacementguard removed in RAM: selected method produces7 AssertionError RecoveryError notraised/0infraerrors; callable restored finally, exact finalSource unchanged; selected originalGREEN/restoredGREEN PASS",
+    "source_pins": {
+      "scripts/test-application-recovery-checks.py": "b2c670de924acb7f64553974ff02d2613b590f726e69f840070f110b655f395d",
+      "scripts/test-application-recovery.py": "8466796677406a7d6dfa653fb2b81f912d680bc8cc6583ea8f64dc74e07dd156"
+    },
+    "source_pins_after": {
+      "scripts/test-application-recovery-checks.py": "b2c670de924acb7f64553974ff02d2613b590f726e69f840070f110b655f395d",
+      "scripts/test-application-recovery.py": "8466796677406a7d6dfa653fb2b81f912d680bc8cc6583ea8f64dc74e07dd156"
+    },
+    "status": "COMMITTED_LOCAL_PASS_PENDING_ADDRESSED_RECHECK",
+    "targeted_methods": 1
+  },
+  "proposed_root_config": "import { join } from 'node:path';\nimport { defineConfig } from '@playwright/test';\nimport existing from './playwright.real-mobile.config';\nconst phase = process.env.RCT_APP_RECOVERY_PHASE;\nconst run = process.env.RCT_APP_RECOVERY_RUN;\nif (!run || !phase || !['seed','pending','admit','attachment'].includes(phase)) throw new Error('Explicit recovery phase required');\nexport default defineConfig({ ...existing, testDir:'./fixtures', testMatch:/application-recovery\\.spec\\.ts/, testIgnore:[], grep:undefined, outputDir:join(run,'artifacts',phase), projects:existing.projects?.filter(p=>p.name==='chromium'), workers:1, retries:0, fullyParallel:false, forbidOnly:true });\n",
+  "python_formatter_exact_idempotency": true,
+  "rabbit_source_proof": "TransferWriter\u2192ApplicationEvent\u2192DomainEventListener BEFORE_COMMIT local outbox; async publisher Rabbit; Academic applyBatch only Rabbit consumer production entry and Attendance apply only Rabbit consumer; capture enforces no participant receipts",
+  "remaining_check_ended": "2026-10-14T01:31:59.315788+00:00",
+  "remaining_check_started": "2026-10-14T01:31:54.717938+00:00",
+  "remaining_checks": [
+    {
+      "adopted_waitpid_receipts": [],
+      "all_members_including_Z_after": [],
+      "all_owned_processes_reaped": true,
+      "direct_pid": 612040,
+      "known_owned_identities": [
+        {
+          "pid": 612040,
+          "start_ticks": 19530765
+        }
+      ],
+      "native_exit": 0,
+      "phase": "tsc-fixed",
+      "phase_success": true,
+      "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/tsc-fixed.private.log",
+      "settled": true,
+      "signal_count": 0,
+      "supervision_error_type": null,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "adopted_waitpid_receipts": [],
+      "all_members_including_Z_after": [],
+      "all_owned_processes_reaped": true,
+      "direct_pid": 612047,
+      "known_owned_identities": [
+        {
+          "pid": 612047,
+          "start_ticks": 19530991
+        }
+      ],
+      "native_exit": 0,
+      "phase": "python-format",
+      "phase_success": true,
+      "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/python-format.private.log",
+      "settled": true,
+      "signal_count": 0,
+      "supervision_error_type": null,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "adopted_waitpid_receipts": [],
+      "all_members_including_Z_after": [],
+      "all_owned_processes_reaped": true,
+      "direct_pid": 612056,
+      "known_owned_identities": [
+        {
+          "pid": 612056,
+          "start_ticks": 19531015
+        }
+      ],
+      "native_exit": 0,
+      "phase": "python-idempotency",
+      "phase_success": true,
+      "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/python-idempotency.private.log",
+      "settled": true,
+      "signal_count": 0,
+      "supervision_error_type": null,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "adopted_waitpid_receipts": [],
+      "all_members_including_Z_after": [],
+      "all_owned_processes_reaped": true,
+      "direct_pid": 612065,
+      "known_owned_identities": [
+        {
+          "pid": 612065,
+          "start_ticks": 19531032
+        }
+      ],
+      "native_exit": 0,
+      "phase": "python-format-check",
+      "phase_success": true,
+      "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/python-format-check.private.log",
+      "settled": true,
+      "signal_count": 0,
+      "supervision_error_type": null,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "adopted_waitpid_receipts": [],
+      "all_members_including_Z_after": [],
+      "all_owned_processes_reaped": true,
+      "direct_pid": 612074,
+      "known_owned_identities": [
+        {
+          "pid": 612074,
+          "start_ticks": 19531048
+        }
+      ],
+      "native_exit": 0,
+      "phase": "old-helper-counterexample",
+      "phase_success": true,
+      "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/old-helper-counterexample.private.log",
+      "settled": true,
+      "signal_count": 0,
+      "supervision_error_type": null,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "adopted_waitpid_receipts": [],
+      "all_members_including_Z_after": [],
+      "all_owned_processes_reaped": true,
+      "direct_pid": 612076,
+      "known_owned_identities": [
+        {
+          "pid": 612076,
+          "start_ticks": 19531072
+        }
+      ],
+      "native_exit": 0,
+      "phase": "existing-validator-checks",
+      "phase_success": true,
+      "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/existing-validator-checks.private.log",
+      "settled": true,
+      "signal_count": 0,
+      "supervision_error_type": null,
+      "terminal_reason": "NATIVE_TERMINAL"
+    }
+  ],
+  "reporter": "Existing SafeReporter/artifact privacy source unchanged; new static fixture location fallback; external FIRST3 reader binding must not be reused",
+  "root_direct_cli_inputs": {
+    "backup": "scripts/recovery.py backup --quiesced --no-files --env-file SOURCE_SYNTHETIC --academic-container SRC_A --schedule-container SRC_S --mongo-container SRC_M --output NEW_BUNDLE",
+    "capture": "scripts/test-application-recovery.py capture --quiesced --bundle NEW_BUNDLE --operation-id pending.operationId --request-file RUN/request.json --history-before RUN/history-before.json --history-pointer pending.historyPointer --history-lesson-id pending.historyLessonId --output RUN/capture.private.json",
+    "restore": "scripts/recovery.py restore --no-files --bundle NEW_BUNDLE --env-file TARGET_SYNTHETIC --academic-container DST_A --schedule-container DST_S --mongo-container DST_M --target-project rct-recovery-UNIQUE",
+    "verify": "scripts/test-application-recovery.py verify --baseline RUN/capture.private.json --bundle NEW_BUNDLE --env-file TARGET_SYNTHETIC --academic-container DST_A --schedule-container DST_S --mongo-container DST_M --target-project rct-recovery-UNIQUE --schedule-url https://localhost:8443/api --history-url https://localhost:8443+pending.historyUrl --actor-token-file RUN/actor-token.private --history-token-file RUN/history-token.private --timeout-seconds 130 --output RUN/application-result.private.json"
+  },
+  "shared_config_workflow": "Root sole writer; minimal phase config/direct existing CLI orchestration pending",
+  "source_check_ended": "2026-10-14T01:26:37.559517+00:00",
+  "source_check_started": "2026-10-14T01:26:34.402585+00:00",
+  "source_checks": [
+    {
+      "adopted_waitpid_receipts": [],
+      "all_members_including_Z_after": [],
+      "all_owned_processes_reaped": true,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "fixtures/application-recovery.spec.ts"
+      ],
+      "direct_pid": 611121,
+      "known_owned_identities": [
+        {
+          "pid": 611121,
+          "start_ticks": 19498734
+        }
+      ],
+      "native_exit": 0,
+      "phase": "format",
+      "phase_success": true,
+      "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/format.private.log",
+      "settled": true,
+      "signal_count": 0,
+      "supervision_error_type": null,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "adopted_waitpid_receipts": [],
+      "all_members_including_Z_after": [],
+      "all_owned_processes_reaped": true,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "fixtures/application-recovery.spec.ts"
+      ],
+      "direct_pid": 611132,
+      "known_owned_identities": [
+        {
+          "pid": 611132,
+          "start_ticks": 19498812
+        }
+      ],
+      "native_exit": 0,
+      "phase": "idempotency",
+      "phase_success": true,
+      "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/idempotency.private.log",
+      "settled": true,
+      "signal_count": 0,
+      "supervision_error_type": null,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "adopted_waitpid_receipts": [],
+      "all_members_including_Z_after": [],
+      "all_owned_processes_reaped": true,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "fixtures/application-recovery.spec.ts"
+      ],
+      "direct_pid": 611143,
+      "known_owned_identities": [
+        {
+          "pid": 611143,
+          "start_ticks": 19498856
+        }
+      ],
+      "native_exit": 0,
+      "phase": "format-check",
+      "phase_success": true,
+      "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/format-check.private.log",
+      "settled": true,
+      "signal_count": 0,
+      "supervision_error_type": null,
+      "terminal_reason": "NATIVE_TERMINAL"
+    },
+    {
+      "adopted_waitpid_receipts": [],
+      "all_members_including_Z_after": [],
+      "all_owned_processes_reaped": true,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--project",
+        "/workspace/scratch/rct-validation/native_recovery_actual/application-source.tsconfig.private.json"
+      ],
+      "direct_pid": 611154,
+      "known_owned_identities": [
+        {
+          "pid": 611154,
+          "start_ticks": 19498903
+        }
+      ],
+      "native_exit": 2,
+      "phase": "tsc",
+      "phase_success": false,
+      "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/tsc.private.log",
+      "settled": true,
+      "signal_count": 0,
+      "supervision_error_type": null,
+      "terminal_reason": "NATIVE_TERMINAL"
+    }
+  ],
+  "source_sha256": "85bdb790543e53caa202ea805d9e9cdd8473e7e0df41f7c043d5c19a69afa457",
+  "status": "CORRECTED_SOURCE_LOCAL_PASS_PENDING_ADDRESSED_RECHECK_AND_CI",
+  "tsconfig_path": "/workspace/scratch/rct-validation/native_recovery_actual/application-source.tsconfig.private.json",
+  "tsconfig_sha256": "961998b6f2a222dc7be9609ac2b6e8bb9d356c12ea34393f045ba74e43c3f4e8",
+  "typecheck_failure_classification": "TS2688 own scratch config resolves explicit type libraries relative to scratch; no new fixture TS diagnostic; fix explicit absolute typeRoots only",
+  "workflow_order": "after successful FIRST3+next5, private dirs/marker+publicCA; seed; source ownRabbit stop+verify; pending; quiesce ALL app writers; nativebackup/capture; stop+disconnect own3sourceDB/MQ/Redis endpoints; fresh3labeledDB+freshMQ/Redis externalownednet/aliases initONLY; nativefreshrestore; restart SAMEoldbuiltapps/TLS/keyvol; admit; existingPythonverify130; attachment; safe phase/native-results only; owned stopped-source DB/bundle/artifacts preserved and finally stop own fresh runtime",
+  "worktree": "/workspace/rct-worktrees/recovery"
+}

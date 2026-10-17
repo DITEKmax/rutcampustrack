@@ -11,20 +11,22 @@ import ru.rutcampustrack.academic.grpc.AcademicProjectionErrorDetail;
 /** Maps resolver failures to stable gRPC status codes and typed details. */
 public final class StudentProjectionGrpcErrors {
 
-    private StudentProjectionGrpcErrors() {
-    }
+    private StudentProjectionGrpcErrors() {}
 
     public static RuntimeException toStatus(Throwable error) {
         StudentProjectionException.Code code = codeFor(error);
         AcademicProjectionErrorCode detailCode = toProtoCode(code);
         Status.Code grpcCode = toGrpcCode(code);
-        com.google.rpc.Status status = com.google.rpc.Status.newBuilder()
-                .setCode(grpcCode.value())
-                .setMessage(messageFor(code))
-                .addDetails(Any.pack(AcademicProjectionErrorDetail.newBuilder()
-                        .setCode(detailCode)
-                        .build()))
-                .build();
+        com.google.rpc.Status status =
+                com.google.rpc.Status.newBuilder()
+                        .setCode(grpcCode.value())
+                        .setMessage(messageFor(code))
+                        .addDetails(
+                                Any.pack(
+                                        AcademicProjectionErrorDetail.newBuilder()
+                                                .setCode(detailCode)
+                                                .build()))
+                        .build();
         return StatusProto.toStatusRuntimeException(status);
     }
 
@@ -45,14 +47,20 @@ public final class StudentProjectionGrpcErrors {
             return AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_UNSPECIFIED;
         }
         return switch (code) {
-            case INVALID_REQUEST -> AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_INVALID_REQUEST;
-            case INVALID_SESSION -> AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_INVALID_SESSION;
-            case WRONG_ROLE -> AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_WRONG_ROLE;
-            case OUT_OF_SCOPE -> AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_OUT_OF_SCOPE;
+            case INVALID_REQUEST ->
+                    AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_INVALID_REQUEST;
+            case INVALID_SESSION ->
+                    AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_INVALID_SESSION;
+            case WRONG_ROLE ->
+                    AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_WRONG_ROLE;
+            case OUT_OF_SCOPE ->
+                    AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_OUT_OF_SCOPE;
             case STUDENT_SCOPE_UNRESOLVED ->
-                    AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_STUDENT_SCOPE_UNRESOLVED;
+                    AcademicProjectionErrorCode
+                            .ACADEMIC_PROJECTION_ERROR_CODE_STUDENT_SCOPE_UNRESOLVED;
             case DEPENDENCY_UNAVAILABLE ->
-                    AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_DEPENDENCY_UNAVAILABLE;
+                    AcademicProjectionErrorCode
+                            .ACADEMIC_PROJECTION_ERROR_CODE_DEPENDENCY_UNAVAILABLE;
             case INCONSISTENT_SOURCE ->
                     AcademicProjectionErrorCode.ACADEMIC_PROJECTION_ERROR_CODE_INCONSISTENT_SOURCE;
         };

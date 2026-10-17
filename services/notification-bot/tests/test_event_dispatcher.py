@@ -100,7 +100,8 @@ async def test_dispatch_unknown_event_type_logs_debug(caplog):
     event = {"event_type": "unknown.thing", "payload": {}}
     with caplog.at_level(logging.DEBUG, logger="bot.consumers.event_dispatcher"):
         await dispatcher.dispatch(event)
-    assert any("unknown.thing" in record.message for record in caplog.records)
+    assert any(record.getMessage() == "Unhandled event type: unknown" for record in caplog.records)
+    assert all(event["event_type"] not in record.getMessage() for record in caplog.records)
 
 
 @pytest.mark.asyncio

@@ -1,0 +1,55 @@
+{
+  "state": "NARROW_CORRECTION_SOURCE_READY_NATIVE_NOT_RUN",
+  "files": [
+    {
+      "path": "READY.before-correction.safe.json",
+      "sha256": "d0a0349bddf9295e6ab634ae9003cb9cf48a998eafdf0be8b19ae9a6fefd2020",
+      "bytes": 18565
+    },
+    {
+      "path": "RECHECK-PACKET.md",
+      "sha256": "b9b3c3b46c29097d2b86269e82effe3ca12aaab9dab43922c080ec4039ad27e7",
+      "bytes": 2337
+    },
+    {
+      "path": "SOURCE-READY.safe.json",
+      "sha256": "04a596722e633fd99ca6767114e93e759114db6c225a9ea5efda57e54f06f867",
+      "bytes": 2519
+    },
+    {
+      "path": "controls.cjs",
+      "sha256": "6e5cf019517595e41ea16cffac140d0b243d83567f5927023b31769077e45898",
+      "bytes": 2013
+    },
+    {
+      "path": "discovery-reporter.after.cjs",
+      "sha256": "d9164f8e4f2289cf4e56af388ecf96b16b146211dc25661566bf958c58f47f57",
+      "bytes": 1583
+    },
+    {
+      "path": "discovery-reporter.before.cjs",
+      "sha256": "bf0c9742c44dcf35b8ccc5d4355df784516574cf6a8ac671a9ed0dc0a233ba28",
+      "bytes": 1529
+    },
+    {
+      "path": "node-control-grant02.template.safe.json",
+      "sha256": "8afd6927a572d85899939569902848e6b7f409c9fc2310b5a84ad8f82b3b17bb",
+      "bytes": 2349
+    },
+    {
+      "path": "run-node-controls02.py",
+      "sha256": "a9b60a480520d6ddd67aadc2ce93fd14ac4194c726303d39248296e2b2636d5d",
+      "bytes": 13230
+    },
+    {
+      "path": "source.patch",
+      "sha256": "9e0f993e61da81dcfb0f922315ff4197010de46eb8c2efa8875d17cdf4d5d85d",
+      "bytes": 1041
+    }
+  ],
+  "finding": "SO-DISCOVERY-GATE-001",
+  "two_ts_unchanged": true,
+  "actual01_preserved": true,
+  "helper_only_semantic_diff": true,
+  "python_adapter_ast_parse": true
+}

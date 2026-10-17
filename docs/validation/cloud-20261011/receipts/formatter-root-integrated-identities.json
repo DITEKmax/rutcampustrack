@@ -1,0 +1,10 @@
+{
+  "time": "2026-10-12T10:28:56.842673+00:00",
+  "root_head": "65e0baeff26ac5673420bfc55e51a75085636423",
+  "checked_paths": 2092,
+  "byte_mode_mismatches": 0,
+  "angular_delta": 0,
+  "historical_root_copy": "29c1 preserved",
+  "python_commit": "dee1fb69d4e4f77190468346ecdc814318ff7914",
+  "verification": "exact source approved author identities; Root formatter/type/build/gates still required"
+}

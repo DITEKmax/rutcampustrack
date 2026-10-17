@@ -1,0 +1,12 @@
+[
+  {
+    "path": "/workspace/scratch/rct-validation/ci_e58_receipts/safe-receipts.zip",
+    "bytes": 277296,
+    "sha256": "5218a3287f874df72adbd4e9b9e5f75a6a7a8f395c1add8b8f5b08df465dd8c9"
+  },
+  {
+    "path": "/workspace/scratch/rct-validation/current_server_acceptance_qualification/safe-review.zip",
+    "bytes": 78944,
+    "sha256": "437628bc06cf3b7f52f9990a1466a9af07fa9aa02836a9f1f7f74040c2136ce0"
+  }
+]

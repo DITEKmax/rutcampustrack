@@ -1,0 +1,22 @@
+{
+  "time": "2026-10-11T22:00:31.922529+00:00",
+  "action": "baseline_selected_terminal",
+  "session": 57001,
+  "exit": 0,
+  "sha": "232f0210ab65a6750b120e811d81f0e110b9e107",
+  "tests": {
+    "name": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+    "tests": "35",
+    "skipped": "0",
+    "failures": "0",
+    "errors": "0",
+    "timestamp": "2026-10-11T22:00:19",
+    "hostname": "993a1bc854c1",
+    "time": "1.526"
+  },
+  "xml": "/workspace/scratch/rct-validation/gateway_claims_developer/baseline-selected.xml",
+  "xml_sha256": "22b9e3b9e744d76ddf5057290ac15057caf6f5e6ccb18596564debc86c78a35d",
+  "status": "UNMODIFIED_SELECTED_PASS_LOCAL",
+  "ci_failure": "NOT_REPRODUCED",
+  "product_changes": 0
+}

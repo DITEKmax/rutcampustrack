@@ -1,143 +1,175 @@
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
-import type { ProfilePasswordPolicy, ProfileRequestError, ProfileResolvedTheme } from './profile-types'
-import { DEFAULT_PASSWORD_POLICY, ProfileRequestError as ProfileError, validateNewPassword } from './profile-types'
-import securityHide from './assets/security-hide.svg'
-import securityPrevious from './assets/security-previous.svg'
-import securityShow from './assets/security-show.svg'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import './profile-screen.pcss'
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
+import type {
+  ProfilePasswordPolicy,
+  ProfileRequestError,
+  ProfileResolvedTheme,
+} from './profile-types';
+import {
+  DEFAULT_PASSWORD_POLICY,
+  ProfileRequestError as ProfileError,
+  validateNewPassword,
+} from './profile-types';
+import securityHide from './assets/security-hide.svg';
+import securityPrevious from './assets/security-previous.svg';
+import securityShow from './assets/security-show.svg';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import './profile-screen.pcss';
 
-const props = withDefaults(defineProps<{
-  policy?: ProfilePasswordPolicy
-  error?: ProfileRequestError | null
-  busy?: boolean
-  offline?: boolean
-  onBack?: (() => void | Promise<void>) | undefined
-  onRecover?: (() => void | Promise<void>) | undefined
-  recoveryLabel?: string
-  onChangePassword?: ((input: { currentPassword: string; newPassword: string }) => void | Promise<void>) | undefined
-  theme?: ProfileResolvedTheme
-  ownerKey?: string | null
-}>(), {
-  policy: () => DEFAULT_PASSWORD_POLICY,
-  error: null,
-  busy: false,
-  offline: false,
-  onBack: undefined,
-  onRecover: undefined,
-  recoveryLabel: 'Не помню текущий пароль',
-  onChangePassword: undefined,
-  theme: 'dark',
-  ownerKey: null,
-})
+const props = withDefaults(
+  defineProps<{
+    policy?: ProfilePasswordPolicy;
+    error?: ProfileRequestError | null;
+    busy?: boolean;
+    offline?: boolean;
+    onBack?: (() => void | Promise<void>) | undefined;
+    onRecover?: (() => void | Promise<void>) | undefined;
+    recoveryLabel?: string;
+    onChangePassword?:
+      | ((input: { currentPassword: string; newPassword: string }) => void | Promise<void>)
+      | undefined;
+    theme?: ProfileResolvedTheme;
+    ownerKey?: string | null;
+  }>(),
+  {
+    policy: () => DEFAULT_PASSWORD_POLICY,
+    error: null,
+    busy: false,
+    offline: false,
+    onBack: undefined,
+    onRecover: undefined,
+    recoveryLabel: 'Не помню текущий пароль',
+    onChangePassword: undefined,
+    theme: 'dark',
+    ownerKey: null,
+  },
+);
 
-const currentPassword = ref('')
-const newPassword = ref('')
-const repeatPassword = ref('')
-const showCurrent = ref(false)
-const showNew = ref(false)
-const showRepeat = ref(false)
-const submitted = ref(false)
-const submitting = ref(false)
-const localError = ref<ProfileRequestError | null>(null)
-const currentInput = ref<HTMLInputElement | null>(null)
-const newInput = ref<HTMLInputElement | null>(null)
-const repeatInput = ref<HTMLInputElement | null>(null)
+const currentPassword = ref('');
+const newPassword = ref('');
+const repeatPassword = ref('');
+const showCurrent = ref(false);
+const showNew = ref(false);
+const showRepeat = ref(false);
+const submitted = ref(false);
+const submitting = ref(false);
+const localError = ref<ProfileRequestError | null>(null);
+const currentInput = ref<HTMLInputElement | null>(null);
+const newInput = ref<HTMLInputElement | null>(null);
+const repeatInput = ref<HTMLInputElement | null>(null);
 
-const policyIssues = computed(() => validateNewPassword(newPassword.value, props.policy))
-const hasMismatch = computed(() => repeatPassword.value.length > 0 && newPassword.value !== repeatPassword.value)
-const shouldShowPolicy = computed(() => submitted.value || newPassword.value.length > 0)
-const requestError = computed(() => props.error ?? localError.value)
-const currentPasswordInvalid = computed(() => requestError.value?.code === 'CURRENT_PASSWORD_INVALID')
-const policyRejectedByServer = computed(() => requestError.value?.code === 'PASSWORD_POLICY_VIOLATION')
-const repeatInvalid = computed(() => submitted.value && (repeatPassword.value.length === 0 || hasMismatch.value))
-const isBusy = computed(() => props.busy || submitting.value)
-const invalidatingCodes = new Set(['ACCOUNT_INVALIDATED', 'INVALID_SESSION', 'SESSION_REVOKED', 'REFRESH_REJECTED'])
-const accountInvalidated = computed(() => invalidatingCodes.has(props.error?.code ?? ''))
-let formGeneration = 0
-let disposed = false
+const policyIssues = computed(() => validateNewPassword(newPassword.value, props.policy));
+const hasMismatch = computed(
+  () => repeatPassword.value.length > 0 && newPassword.value !== repeatPassword.value,
+);
+const shouldShowPolicy = computed(() => submitted.value || newPassword.value.length > 0);
+const requestError = computed(() => props.error ?? localError.value);
+const currentPasswordInvalid = computed(
+  () => requestError.value?.code === 'CURRENT_PASSWORD_INVALID',
+);
+const policyRejectedByServer = computed(
+  () => requestError.value?.code === 'PASSWORD_POLICY_VIOLATION',
+);
+const repeatInvalid = computed(
+  () => submitted.value && (repeatPassword.value.length === 0 || hasMismatch.value),
+);
+const isBusy = computed(() => props.busy || submitting.value);
+const invalidatingCodes = new Set([
+  'ACCOUNT_INVALIDATED',
+  'INVALID_SESSION',
+  'SESSION_REVOKED',
+  'REFRESH_REJECTED',
+]);
+const accountInvalidated = computed(() => invalidatingCodes.has(props.error?.code ?? ''));
+let formGeneration = 0;
+let disposed = false;
 
 function clearSensitiveForm(): void {
-  formGeneration += 1
-  submitting.value = false
-  currentPassword.value = ''
-  newPassword.value = ''
-  repeatPassword.value = ''
-  showCurrent.value = false
-  showNew.value = false
-  showRepeat.value = false
-  submitted.value = false
-  localError.value = null
+  formGeneration += 1;
+  submitting.value = false;
+  currentPassword.value = '';
+  newPassword.value = '';
+  repeatPassword.value = '';
+  showCurrent.value = false;
+  showNew.value = false;
+  showRepeat.value = false;
+  submitted.value = false;
+  localError.value = null;
 }
 
 watch(
   () => [props.ownerKey, accountInvalidated.value] as const,
   (value, previous) => {
-    if (value[1] || previous && (previous[1] || value[0] !== previous[0])) clearSensitiveForm()
+    if (value[1] || (previous && (previous[1] || value[0] !== previous[0]))) clearSensitiveForm();
   },
   { immediate: true },
-)
+);
 
 function focusField(field: 'current' | 'new' | 'repeat'): void {
   void nextTick(() => {
-    if (field === 'current') currentInput.value?.focus()
-    if (field === 'new') newInput.value?.focus()
-    if (field === 'repeat') repeatInput.value?.focus()
-  })
+    if (field === 'current') currentInput.value?.focus();
+    if (field === 'new') newInput.value?.focus();
+    if (field === 'repeat') repeatInput.value?.focus();
+  });
 }
 
 function toggle(field: 'current' | 'new' | 'repeat'): void {
-  if (field === 'current') showCurrent.value = !showCurrent.value
-  if (field === 'new') showNew.value = !showNew.value
-  if (field === 'repeat') showRepeat.value = !showRepeat.value
+  if (field === 'current') showCurrent.value = !showCurrent.value;
+  if (field === 'new') showNew.value = !showNew.value;
+  if (field === 'repeat') showRepeat.value = !showRepeat.value;
 }
 
 function policyText(): string {
-  const digit = props.policy.requiresDecimalDigit ? ' включая цифру' : ''
-  const special = props.policy.specialCategories.length > 0 ? ' и специальный знак' : ''
-  return `Не менее ${props.policy.minCodePoints} символов${digit}${special}`
+  const digit = props.policy.requiresDecimalDigit ? ' включая цифру' : '';
+  const special = props.policy.specialCategories.length > 0 ? ' и специальный знак' : '';
+  return `Не менее ${props.policy.minCodePoints} символов${digit}${special}`;
 }
 
 async function submit(): Promise<void> {
-  if (isBusy.value || accountInvalidated.value) return
-  submitted.value = true
-  localError.value = null
+  if (isBusy.value || accountInvalidated.value) return;
+  submitted.value = true;
+  localError.value = null;
   if (currentPassword.value.length === 0) {
-    focusField('current')
-    return
+    focusField('current');
+    return;
   }
   if (policyIssues.value.length > 0) {
-    focusField('new')
-    return
+    focusField('new');
+    return;
   }
   if (repeatPassword.value.length === 0 || hasMismatch.value) {
-    focusField('repeat')
-    return
+    focusField('repeat');
+    return;
   }
-  if (props.offline) return
-  if (!props.onChangePassword) return
-  submitting.value = true
-  const requestGeneration = formGeneration
+  if (props.offline) return;
+  if (!props.onChangePassword) return;
+  submitting.value = true;
+  const requestGeneration = formGeneration;
   try {
-    await props.onChangePassword({ currentPassword: currentPassword.value, newPassword: newPassword.value })
-    if (!disposed && requestGeneration === formGeneration) clearSensitiveForm()
+    await props.onChangePassword({
+      currentPassword: currentPassword.value,
+      newPassword: newPassword.value,
+    });
+    if (!disposed && requestGeneration === formGeneration) clearSensitiveForm();
   } catch (error) {
-    if (disposed || requestGeneration !== formGeneration) return
-    localError.value = error instanceof ProfileError ? error : new ProfileError('NETWORK', 'Не удалось изменить пароль')
+    if (disposed || requestGeneration !== formGeneration) return;
+    localError.value =
+      error instanceof ProfileError
+        ? error
+        : new ProfileError('NETWORK', 'Не удалось изменить пароль');
   } finally {
-    if (!disposed && requestGeneration === formGeneration) submitting.value = false
+    if (!disposed && requestGeneration === formGeneration) submitting.value = false;
   }
 }
 
 function recover(): void {
-  void props.onRecover?.()
+  void props.onRecover?.();
 }
 
 onUnmounted(() => {
-  disposed = true
-  clearSensitiveForm()
-})
+  disposed = true;
+  clearSensitiveForm();
+});
 </script>
 
 <template>
@@ -191,7 +223,9 @@ onUnmounted(() => {
               required
               :disabled="accountInvalidated"
               :aria-invalid="currentPasswordInvalid"
-              :aria-describedby="currentPasswordInvalid ? 'profile-current-password-error' : undefined"
+              :aria-describedby="
+                currentPasswordInvalid ? 'profile-current-password-error' : undefined
+              "
             >
             <button
               class="profile-field__toggle"
@@ -265,7 +299,9 @@ onUnmounted(() => {
               class="profile-field__toggle"
               type="button"
               :disabled="accountInvalidated"
-              :aria-label="showRepeat ? 'Скрыть повтор нового пароля' : 'Показать повтор нового пароля'"
+              :aria-label="
+                showRepeat ? 'Скрыть повтор нового пароля' : 'Показать повтор нового пароля'
+              "
               @click="toggle('repeat')"
             >
               <img
@@ -292,7 +328,10 @@ onUnmounted(() => {
           :data-invalid="shouldShowPolicy && policyIssues.length > 0"
           role="status"
         >
-          <span aria-hidden="true">{{ shouldShowPolicy ? (policyIssues.length === 0 ? '✓' : '×') : '•' }}</span><span>{{ policyText() }}<span v-if="shouldShowPolicy && policyIssues.includes('MAX_UTF8_BYTES')">; не более {{ policy.maxUtf8Bytes }} байт в UTF-8</span>
+          <span aria-hidden="true">{{
+            shouldShowPolicy ? (policyIssues.length === 0 ? '✓' : '×') : '•'
+          }}</span><span>{{ policyText()
+                         }}<span v-if="shouldShowPolicy && policyIssues.includes('MAX_UTF8_BYTES')">; не более {{ policy.maxUtf8Bytes }} байт в UTF-8</span>
             <span v-if="policyRejectedByServer">; сервер отклонил пароль по политике</span></span>
         </p>
 

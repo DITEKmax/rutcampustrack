@@ -1,0 +1,57 @@
+{
+  "utc": "2026-10-12T10:48:50.447051+00:00",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v4/relocation/CURRENT.json",
+      "archive_path": "CURRENT.json",
+      "bytes": 1147,
+      "sha256": "6e07a9d5b480ca653844a587c217a6676d071ae55b6d599d5f65d165f5e99c45"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v4/relocation/copy-verified.safe.json",
+      "archive_path": "copy-verified.safe.json",
+      "bytes": 264,
+      "sha256": "1fdb108579e899dbee8f171ba2455a90074dedada4a726d03612a284c76e1996"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v4/relocation/launch.safe.json",
+      "archive_path": "launch.safe.json",
+      "bytes": 199,
+      "sha256": "1d355056fa2b9fd89b4c98a0ec2309422a5b30686cbf5c971e214e2ff51e5411"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v4/relocation/preflight.safe.json",
+      "archive_path": "preflight.safe.json",
+      "bytes": 1841,
+      "sha256": "cc0884a8d56e3b70d4b411ed3c6932797dd8d450d367d4336dbbbad19f54b399"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v4/relocation/relocate.py",
+      "archive_path": "relocate.py",
+      "bytes": 8163,
+      "sha256": "9a93c28b2aca35156bbfbe628111c0d48aa1fa5445c07168095c6bfbcdfb09e4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v4/relocation/relocation-terminal.safe.json",
+      "archive_path": "relocation-terminal.safe.json",
+      "bytes": 1147,
+      "sha256": "6e07a9d5b480ca653844a587c217a6676d071ae55b6d599d5f65d165f5e99c45"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v4/relocation/retirement-journal.safe.json",
+      "archive_path": "retirement-journal.safe.json",
+      "bytes": 319,
+      "sha256": "35e146b9a5afb1f57a34fd76d1515d81c3263bbd752015b7eb2fb4deecc89d99"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_config_v4/relocation/source-registry.safe.json",
+      "archive_path": "source-registry.safe.json",
+      "bytes": 295195,
+      "sha256": "c8611b6365c0a817a310bedacb086a4a1d6f000b5dffa966eaf1093cceee288e"
+    }
+  ],
+  "file_count": 8,
+  "status": "ACTUAL_OWN_BROWSER_CACHE_RELOCATION_COMPLETE",
+  "pid269569_absent": true,
+  "browser_or_apps": "NOT_RUN"
+}

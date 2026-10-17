@@ -1,0 +1,116 @@
+{
+  "state": "COHERENT_FOLLOWUP_SOURCE_APPROVED_CHECKS_PASS_RUNTIME_NOT_RUN",
+  "parent": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+  "source_inventory": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "39c866dbea41dd989c747bd9bbd7e25dc7aa341b930ce53298fd932faedeeda0"
+    },
+    {
+      "path": "docker-compose.test-restore.yml",
+      "sha256": "ff5ed5a9be41a43f317fef3296ddebcd9ddf211fdcdb7c0cf11d346ae3ec19f7"
+    },
+    {
+      "path": "scripts/test-recovery.py",
+      "sha256": "21282af75f0ad3d79e34f7252ede417182ff61648ca15f00cd97f92c6578d323"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+      "sha256": "b72f4633187df45b620bd6b2a45612a597891796f2e777e371259eec9a755d01"
+    },
+    {
+      "path": "tests/e2e/specs/cloud-accepted-helper-capabilities.spec.ts",
+      "sha256": "7b79defe6f2662cb216bbf7efb9354f166bb4f23508e615484a13340db5eace2"
+    },
+    {
+      "path": "tests/e2e/specs/cloud-accepted-registry-export.spec.ts",
+      "sha256": "4443b666d9a7ece3f36d4ea5fc06ebaeac6cefdf254dd2585c07b9030306573d"
+    },
+    {
+      "path": "tests/e2e/specs/mobile-homework-lifecycle.spec.ts",
+      "sha256": "e00c6cad49f922b1901c6dd6d2afa302ba08197e3abcb3155b909b96e0937805"
+    },
+    {
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "sha256": "c0ce037dff7ae9654894356238b4a5dae709b62de3970cb4c86c0dcb27ec317e"
+    }
+  ],
+  "author_commits": [
+    "f8100e116020ccad4d1814a84e713de1163bb219",
+    "d49bddf9a38b223444a6b9625836caac66049aa7",
+    "3f5c3504ce48db05502626a4417c8cbb0b8cf0f2"
+  ],
+  "independent_reviews": [
+    "receipts/Q06-oneoff-replacement-independent-review.safe.md",
+    "receipts/Q09-Q11-Q14-fixture-corrections-independent-review.safe.md"
+  ],
+  "checks": {
+    "author_formatter_type_lint_controls": "PASS reused exact byte identities; fourclientTSC7.139sec/d49Ruffcontrols/f810formatterhooks",
+    "root": "actionlint1.7.11 +workflowPrettier +sixnormalprecommit hooks PASS; gitdiffcheck/Angularbaselinebytes-modes PASS",
+    "terminal": {
+      "direct_pid": 675850,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 675850,
+          "start_ticks": 22078979
+        },
+        {
+          "pid": 675851,
+          "start_ticks": 22078979
+        },
+        {
+          "pid": 675852,
+          "start_ticks": 22078979
+        },
+        {
+          "pid": 675872,
+          "start_ticks": 22079069
+        },
+        {
+          "pid": 675894,
+          "start_ticks": 22079112
+        },
+        {
+          "pid": 675901,
+          "start_ticks": 22079137
+        },
+        {
+          "pid": 675922,
+          "start_ticks": 22079144
+        },
+        {
+          "pid": 675950,
+          "start_ticks": 22079208
+        },
+        {
+          "pid": 675980,
+          "start_ticks": 22079249
+        },
+        {
+          "pid": 676010,
+          "start_ticks": 22079256
+        },
+        {
+          "pid": 676052,
+          "start_ticks": 22079282
+        },
+        {
+          "pid": 676079,
+          "start_ticks": 22079294
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "collector": "receipts/Q06-close-diagnostic-controls.safe.json"
+  },
+  "actual_after": "NOT_RUN until next realpush normalCI",
+  "qualifications": "eightSource checking-only corrections, publicAPI/proto/productionrecovery.py/oldmigrations unchanged; preserves 503FAIL/originaloracles/datahistory/rights; Q06 causeUNKNOWN"
+}

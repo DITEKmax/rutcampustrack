@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuite name="ru.rutcampustrack.auth.integration.ExportJobHttpIT" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-10-12T02:53:14" hostname="993a1bc854c1" time="4.295">
+  <testcase name="realBearerQueuedClaimReadyTicketAndDownloadDenyAfterLiveRevocation()" classname="ru.rutcampustrack.auth.integration.ExportJobHttpIT" time="4.295">
+    <failure type="org.opentest4j.AssertionFailedError" />
+  </testcase>
+  </testsuite>

@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-12T05:18:28.067545+00:00",
+  "native_exit": 1,
+  "phase": "own harmless control",
+  "failure": "normal settled assertion; own status callback passed duplicate state argument -> TypeError, then interrupted settlement callback",
+  "product_failure": false,
+  "correction": "Store observations under separate callback key; supervisor catches status-report error without aborting owned-child settlement. Add actual callback-failure settlement control.",
+  "controller_fallback": "finally killed/reaped only its own new direct/adopted children and asserted no PPIDself child before restoring localsubreaper; no oldPID1process mutation",
+  "old_counterexample_completed": true,
+  "source_before_sha256": "7c478bad0bf668f1e70564ea292360b2c98beef394eafe3f9e23faf1b76eeb3d"
+}

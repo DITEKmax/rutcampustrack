@@ -1,0 +1,58 @@
+{
+  "state": "SOURCE_ONLY_CORRECTED_OUTER",
+  "utc": "2026-10-13T12:24:12.250499+00:00",
+  "original_manifest_sha256": "d3992a842e95ccb2a5998877d313c9253b54c6b06ceeaa040d7a7066a313b207",
+  "review_manifest_sha256": "1ac0e752957befcb6885aa9c1fc3ddfd8acc009646262db1e7431224e37c7dc9",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source_r1/CURRENT.md",
+      "relative": "CURRENT.md",
+      "bytes": 246,
+      "sha256": "b6fc8635989fcbf725e7870a33dfdd5d42f300f75abf6a29e75f92d9f1330950"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source_r1/HANDOFF.md",
+      "relative": "HANDOFF.md",
+      "bytes": 2125,
+      "sha256": "1e38330deb1db5bc949a25e65ff3c20cee7da1154b5214f0e32d8db69589e8f8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source_r1/READY.safe.json",
+      "relative": "READY.safe.json",
+      "bytes": 593,
+      "sha256": "cf71db7f2dae7f00567c775ffdf0c68969a095e26b3f8b2da680b442e8dbf918"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source_r1/check-fresh-cleanup.py",
+      "relative": "check-fresh-cleanup.py",
+      "bytes": 2914,
+      "sha256": "27c5ac3fb5eb889ad57985315572884d2a725c16abc7d95574c2a392a0747158"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source_r1/delta.safe.json",
+      "relative": "delta.safe.json",
+      "bytes": 645,
+      "sha256": "df1f9065d260770a8109bba22f93ef7f6a4ac884c30a0cf922fecb160f46eb1d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source_r1/fresh-cleanup-controls.safe.json",
+      "relative": "fresh-cleanup-controls.safe.json",
+      "bytes": 1374,
+      "sha256": "67a428ba4feafde34cd2bc25305dc3fe54cb870ecb94d4faa18261c8e2c9c181"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source_r1/grant.template.safe.json",
+      "relative": "grant.template.safe.json",
+      "bytes": 1603,
+      "sha256": "97cadcf7cc319879f408753f09f3c529a9ef1bd0eeea4b5aa92af51cb2008555"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source_r1/read-existing-boot.py",
+      "relative": "read-existing-boot.py",
+      "bytes": 17565,
+      "sha256": "b518931a07594f25245617f67d478b2b97df9f44f02dbeb7b32f04a73c115985"
+    }
+  ],
+  "private_files_included": false,
+  "actual_capture": "NOT_RUN"
+}

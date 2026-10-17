@@ -1,0 +1,46 @@
+# Независимое review notification и recovery
+
+Reviewer `notification_recovery_review`; requested `gpt-6.1-sol/xhigh`, actual metadata `UNKNOWN`. Проверка LIGHT: чтение, Git, SHA256, AST/XML parsing. Продуктовые исходники и shared docs не менялись; тесты, Java/Gradle, Docker, браузер и native DB tools не запускались. Дочерних агентов нет.
+
+## Notification fa02 — CHANGES_REQUESTED
+
+Коммит `fa02ce439dfb989fc28eaddcbf1a8840d16bf9ff`, frozen `e093eb988785ed48f26c4f3a561f168ed4d96401`: ровно шесть путей, A4/M2; единственная продуктовая правка — `otp_requested.py`. Все шесть текущих файлов совпали с Git и авторским inventory. Product fix безопасно поднимает фиксированный `RuntimeError` через `from None`: failure не финализирует tracker, existing consumer освобождает claim, не ставит completed и сохраняет delivery в durable DLQ. Изменение старого swallow-ожидания обосновано реальным loss oracle и существующим контрактом dispatcher/DLQ/manual replay.
+
+**NTR01, P2 — TTL oracle допускает преждевременное истечение ticket.**
+
+- Путь: `/workspace/rct-worktrees/notification-provider/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java`, строки 71–76; ключевая строка 72.
+- Тест проверяет только `remaining > 0 && remaining <= 30000`, затем отсутствие ключа в течение максимум 32 секунд и ответ 404. Нижней границы времени жизни нет; `issued.expiresAt()` также не проверяется.
+- Конкретный source counterexample: ticket с TTL 1 секунда, прочитанный до expiry, удовлетворяет положительному TTL/верхней границе; через секунду Redis удаляет ключ, consume возвращает 404. Все assertions этого метода выполнены, хотя принятый 30-секундный срок сокращён. Пользователь с обычной задержкой между получением capability и socket handshake может потерять доступный ему ticket через одну секунду, а новый test остаётся зелёным.
+- Источник: packet требует actual 30s TTL; `WsTicketService.java:38,87,100` задаёт 30 секунд; `docs/architecture/websocket-flow.md:46,49–50` описывает 30 секунд. Устаревшие детали ключа/транспорта в этом документе не принимаются как текущая реализация.
+- Квалификация: это подтверждённый source/test-oracle finding, **не выполненная mutation и не текущий production TTL defect**. Текущий safe XML честно показывает 30.461 секунды для expiry-case.
+- Нужная correction автором: привязать независимое ожидаемое 30-секундное окно к моментам issuance/read и безопасному bounded tolerance; отклонять преждевременное expiry, сверить заявленный `expiresAt`. Не брать expected duration из изменяемого production `TICKET_TTL`, иначе поломка меняет обе стороны oracle. Доказать чувствительность одного shortened-TTL controlled counterexample либо эквивалентной known-bad revision, затем восстановленный focused PASS с prelaunch/terminal source identity. Сохранять реальные Redis/security clocks; не менять продуктовую TTL-политику. Reviewer finding не исправлял.
+
+Остальные проверенные свойства bounded package:
+
+- NP02 actual red receipt: provider500, attempts1/successes0, completed=true, main ACK1, ready0/unacked0, DLQ0 — конкретная silent loss. Correction receipt: completed=false, claim released, ACK0, durable DLQ1; manual replay того же event после controlled provider recovery даёт successes1 и completed=true; duplicate не создаёт provider effect, итог attempts2/successes1/main ACK2/DLQ0. Management sampling ожидания и окончательные settled counters проверены в harness.
+- В failure-unit случайный provider-marker отсутствует в rendered traceback/captured log; `__cause__ is None`, tracker не финализирован. Actual application stderr сознательно не сохранён; whole-production secret-free logging не заявляется.
+- NP03: actual aiogram/private preferences HTTP, но Academic binding/audience управляемые; 500→retry→success, 429→binding/headman revoke→suppression, 503 unknown→defer, disabled→suppression→recovery. Не доказательство Mongo/Academic/Telegram production chain.
+- NP04 Auth: inherited real PostgreSQL/Redis Testcontainers, HTTP consumers, один 200/один 404 и burned ticket; actual logout invalidates outstanding ticket. Отдельный socket-case использует реальный native WebSocket/STOMP/broker/outbound HTTP с controlled Auth authority; positive delivery A+B, fresh authority read, закрытие revoked A и delivery B наблюдаются. Combined real Auth logout→notification socket path не проверен. Infrastructure-only context failure квалифицирован отдельно; plain Configuration correction не ослабляет production admission.
+- Safe XML: final Python **9** PASS/0 skip (OTP5+provider4), Auth **3** PASS/0 skip в overall process exit1 из-за независимой socket infrastructure failure, corrected socket **1** PASS/0 skip. Повторы не суммируются как уникальное покрытие. NP02 first KeyError — INFRA_ERROR, не product FAIL.
+
+**NP01 остаётся GAP, P2:** принятый private first-start initial credential не доставлен; сохранившийся failing bridge receipt `delivered_initial=false` и два pending source файла вне fa02. Generic `GetUserByTelegramId` сохраняет `.setInitialPassword("")` (`AcademicGrpcServiceImpl.java:1251–1252`). Proposal не реализован и не является разрешением расширить generic RPC.
+
+## Recovery bd430 — APPROVE
+
+Коммит `bd430a37e689a523a227ac85b7ac0c4018629efb`, frozen `232f0210ab65a6750b120e811d81f0e110b9e107`: ровно один новый `scripts/test-recovery-failure-boundaries.py`; продуктовый `scripts/recovery.py` unchanged SHA256 `289df762c439a4f10c428f9ceb53b48b6424d3ed926754a6195618c4ccaab9c2`. Blocking findings в назначенном controlled-function/test-quality scope нет.
+
+Тест действительно вызывает production `backup`/`verify_bundle`/`restore`. В partial-dump случае seam ограничен credentials/check_targets/native commands/inventory: сохранены nonempty Academic и incomplete Schedule bytes, manifest/inventory отсутствуют, partial bundle rejected; same-path retry не запускает dump и не меняет обе сохранённые hashes; fresh path получает проверенный controlled bundle, старый partial остаётся прежним. Для restore production `check_targets` сохранён: controlled inspect metadata исполняет actual disposable-label guard; независимые Schedule count1 и notification Mongo `[0,1]` исполняют actual all-target preflight. Во всех трёх случаях ни одна native write не вызывается, input bundle bytes сохраняются. Assertions непустые, исключения не проглатываются.
+
+Авторские control/restored receipts: 2 метода с тремя preflight subcases, exit0, no skips; второй запуск обоснован восстановлением контроля после sensitivity. Четыре независимых in-memory known-bad controls действительно падают на нужном assertion: premature manifest — строка105 `assertFalse`; disabled Schedule/Mongo/disposable-label guard — строка170 `RecoveryError not raised`, errors0. Mutation harness восстанавливает отдельный модуль на каждый случай и не пишет product source. `compare_restored_inventory` контролируемый, archive bytes — placeholders: вывод production `PASS backup/restore` внутри seam не принимается как native acceptance.
+
+Нативные dump/restore, current migrations/schema, data/indexes/sequences и application readback этим пакетом **не доказаны**: `NOT_RUN`/`UNKNOWN` сохранены. Никаких cleanup/data/backup deletion нет; 126 placeholder artifacts в шести retained directories независимо совпали с ledger. Historical recovery-source equivalence не превращается в current full restored-stack PASS.
+
+## Provenance и границы
+
+Независимо проверены 7 bounded Git/source identities, 15 неизменённых production/test dependencies, 64 notification receipt hashes, 126 controlled recovery artifacts. Original NP02-before product snapshot byte-exact equals frozen e093. Product OTP recovery launch hash совпадает с final bytes; probe после formatting имеет тот же AST body/import multiset, что executed pre-format snapshot; это qualifying bridge, не byte-exact probe replay. Final two Python tests exact prelaunch hashes и safe terminal XML; Java test hashes совпадают с соответствующими launch receipts.
+
+Missing proof честно `UNKNOWN`: у NP02-before actual command нет timestamped prelaunch product/probe hashes; для NP03/NP04 не сохранён полный immediate per-phase dependency hash набор; recovery first control имеет test hash до запуска, но separate immediate final prelaunch hash capture отсутствует. Terminal author receipts и source identities доступны; reviewer их не создавал заново и не запускал checks ради восстановления истории. Cleanup — авторские terminal/resource receipts, без нового Docker/process inspection.
+
+В `immutable-original-review-inputs.zip` 98 original-byte members: governing/accepted sources, семь bounded files, 15 dependencies и выбранные безопасные author receipts/source snapshots. Raw application XML/logs/stdout/stderr, credentials, request bodies, caches и native backup payloads не передаются. Exact member hashes, квалификация source timing и independent identity checks — `source-evidence-manifest.json`; verdict/findings — `review.json`; финальный immutable index — `transfer-manifest.json`.
+
+Next: root передаёт NTR01 автору для bounded test correction/recheck, отдельно может интегрировать approved recovery one-file package с обязательными repository gates. Ни один verdict не означает whole notification/auth/client/recovery DONE. NP01 GAP остаётся открытым.

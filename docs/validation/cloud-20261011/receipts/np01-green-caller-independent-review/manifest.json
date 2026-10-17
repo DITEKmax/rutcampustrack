@@ -1,0 +1,68 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "utc": "2026-10-12T16:35:52.599353+00:00",
+  "reviewed_manifest_sha256": "886c5ce8f68aa3aff26b71ce4425f88d9a60fe96eb02557c3eec18e998e5158e",
+  "entries": [
+    {
+      "path": "CURRENT.md",
+      "sha256": "9d7820fc523fee5b4e3d7fdf41fa5408f57878cac6c94f90624807ae5cff7463",
+      "bytes": 244,
+      "mode": "0600"
+    },
+    {
+      "path": "HANDOFF.md",
+      "sha256": "f48e206c6ab60e948795ee00df10ed312d83df5d23aed22d9020a5060642befd",
+      "bytes": 6537,
+      "mode": "0600"
+    },
+    {
+      "path": "attempts.ndjson",
+      "sha256": "fbd6d850fba257f34e79680e4277b0729bad86be3fc2316c46639c49ff376b3a",
+      "bytes": 465,
+      "mode": "0600"
+    },
+    {
+      "path": "check-green.py",
+      "sha256": "54773d0bc148c4d5c9e2090acad051245f7f279c11545da6ade4088e97da06f5",
+      "bytes": 15810,
+      "mode": "0600"
+    },
+    {
+      "path": "final-readback.safe.json",
+      "sha256": "4b22adc889c3a8b2599e5c1aa1401ed8ab15255d0ee733b6da55c130e4dc034d",
+      "bytes": 1560,
+      "mode": "0600"
+    },
+    {
+      "path": "findings.safe.json",
+      "sha256": "51c6866d4f597a730d573aa94a4e88db6cd845130e966b51a52d71086cc84144",
+      "bytes": 376,
+      "mode": "0600"
+    },
+    {
+      "path": "independent-Gradle812-CP.safe.json",
+      "sha256": "dfc2ca4b4a81087a7247bba61fbdfc1e0e27a297ddd9eac44ee936a2c94be162",
+      "bytes": 450,
+      "mode": "0600"
+    },
+    {
+      "path": "independent-checks.safe.json",
+      "sha256": "779b07b0ecc122d1ea536d7c5f4097aa63a27ea8ddbd685b081dd674d49455ec",
+      "bytes": 670381,
+      "mode": "0600"
+    },
+    {
+      "path": "input-ledger.json",
+      "sha256": "79cc54028ff922a3c04f2d9546209ec239d5a2ace22901476bb246b16d92a156",
+      "bytes": 1500,
+      "mode": "0600"
+    },
+    {
+      "path": "restored-source-provenance.safe.json",
+      "sha256": "8c039d9a63eec04b570a6994dc43ba299a0bafcabba45444496965831399c1c9",
+      "bytes": 1984,
+      "mode": "0600"
+    }
+  ],
+  "native_green": "NOT_RUN"
+}

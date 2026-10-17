@@ -1,0 +1,29 @@
+{
+  "files": [
+    {
+      "bytes": 10840,
+      "sha256": "bf115103115a8cbb5379398f53903b62cc3523078557e9c2fff291c62fc84b9c",
+      "path": "before-r1-witness.cjs"
+    },
+    {
+      "bytes": 11082,
+      "sha256": "4c4ad5626636b50d3183052ded3d4f342ce8bb15ab2b9645fd3b60d45cc997be",
+      "path": "witness-detail-lookup.cjs"
+    },
+    {
+      "bytes": 2629,
+      "sha256": "4b676053d0064c0091bab226a400f6ae98851c7a1367de77107c6081d41c05c8",
+      "path": "cleanup-control.cjs"
+    },
+    {
+      "bytes": 1661,
+      "sha256": "5c08fa4401713b68b4411b06265b00720137da686797ac9512b3fed57eab9102",
+      "path": "delta.patch"
+    },
+    {
+      "bytes": 1316,
+      "sha256": "27a0ac41c0efdeadc574204c264f403dd46c10cb81a82b1d174af79c5b3a4289",
+      "path": "READY.safe.json"
+    }
+  ]
+}

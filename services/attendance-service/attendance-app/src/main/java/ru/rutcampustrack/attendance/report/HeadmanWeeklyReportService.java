@@ -2,8 +2,11 @@ package ru.rutcampustrack.attendance.report;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
@@ -12,8 +15,8 @@ import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportReque
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyWeekOption;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyWeeksResponse;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.ReportExportTooLargeException;
 import ru.rutcampustrack.attendance.exception.ReportExportUnavailableException;
 import ru.rutcampustrack.attendance.exception.ReportValidationException;
@@ -59,11 +62,12 @@ public class HeadmanWeeklyReportService {
 
     private static final int MAX_SELECTED_WEEKS = 64;
     private static final int MAX_EXPORT_RESPONSE_BYTES = 20 * 1024 * 1024;
-    private static final Map<String, String> TYPE_LABELS = Map.of(
-            "lecture", "Лекция",
-            "practice", "Практика",
-            "lab", "Лабораторная",
-            "laboratory", "Лабораторная");
+    private static final Map<String, String> TYPE_LABELS =
+            Map.of(
+                    "lecture", "Лекция",
+                    "practice", "Практика",
+                    "lab", "Лабораторная",
+                    "laboratory", "Лабораторная");
 
     private final AcademicGrpcClient academicGrpcClient;
     private final ScheduleGrpcClient scheduleGrpcClient;
@@ -73,6 +77,7 @@ public class HeadmanWeeklyReportService {
     private final DocumentRendererGrpcClient documentRendererGrpcClient;
     private final RequestContext requestContext;
     private final Clock clock;
+    private final ReportExecution reportExecution;
 
     public HeadmanWeeklyWeeksResponse getActiveSemesterWeeks() {
         ensureHeadman();
@@ -81,7 +86,10 @@ public class HeadmanWeeklyReportService {
 
     public HeadmanWeeklyExportResult exportSingleWeek(LocalDate weekStart, String rawFormat) {
         HeadmanWeeklyReportFormat format = HeadmanWeeklyReportFormat.from(rawFormat);
-        return export(buildReportModels(List.of(weekStart)), format);
+        return reportExecution.execute(
+                ReportExecution.Report.WEEKLY,
+                format,
+                () -> export(buildReportModels(List.of(weekStart)), format));
     }
 
     public HeadmanWeeklyExportResult exportSelectedWeeks(HeadmanWeeklyExportRequest request) {
@@ -92,17 +100,22 @@ public class HeadmanWeeklyReportService {
             throw new ReportValidationException("Можно выбрать не более 64 недель за один раз");
         }
         HeadmanWeeklyReportFormat format = HeadmanWeeklyReportFormat.from(request.format());
-        return export(buildReportModels(request.weekStarts()), format);
+        return reportExecution.execute(
+                ReportExecution.Report.WEEKLY,
+                format,
+                () -> export(buildReportModels(request.weekStarts()), format));
     }
 
-    private HeadmanWeeklyExportResult export(List<TeacherAttendanceExportModel> models,
-                                             HeadmanWeeklyReportFormat format) {
+    private HeadmanWeeklyExportResult export(
+            List<TeacherAttendanceExportModel> models, HeadmanWeeklyReportFormat format) {
         if (models.isEmpty()) {
             throw new ReportValidationException("Выбери хотя бы одну неделю");
         }
-        List<LocalDate> weekStarts = models.stream().map(model -> model.context().periodFrom()).toList();
-        String fileName = HeadmanWeeklyReportFiles.buildFileName(
-                models.get(0).context().groupLabel(), weekStarts, format);
+        List<LocalDate> weekStarts =
+                models.stream().map(model -> model.context().periodFrom()).toList();
+        String fileName =
+                HeadmanWeeklyReportFiles.buildFileName(
+                        models.get(0).context().groupLabel(), weekStarts, format);
         byte[] content;
         switch (format) {
             case DOCX -> content = docxRenderer.render(models);
@@ -110,27 +123,34 @@ public class HeadmanWeeklyReportService {
             case XLSX -> content = tabularRenderer.renderXlsx(models);
             case PDF, PNG -> {
                 byte[] docx = docxRenderer.render(models);
-                TargetFormat target = format == HeadmanWeeklyReportFormat.PDF
-                        ? TargetFormat.PDF
-                        : TargetFormat.PNG_PAGES_ZIP;
+                TargetFormat target =
+                        format == HeadmanWeeklyReportFormat.PDF
+                                ? TargetFormat.PDF
+                                : TargetFormat.PNG_PAGES_ZIP;
                 try {
-                        content = documentRendererGrpcClient.convertDocxForHeadmanWeeklyExport(docx, target);
-                    } catch (StatusRuntimeException ex) {
-                        if (ex.getStatus().getCode() == Status.Code.RESOURCE_EXHAUSTED) {
-                            throw new ReportExportTooLargeException(
-                                    "Экспорт превышает лимит передачи сервиса преобразования. Попробуй скачать меньше недель или выбери HTML/XLSX.");
-                        }
+                    content =
+                            documentRendererGrpcClient.convertDocxForHeadmanWeeklyExport(
+                                    docx, target);
+                } catch (StatusRuntimeException ex) {
+                    if (ex.getStatus().getCode() == Status.Code.RESOURCE_EXHAUSTED) {
+                        throw new ReportExportTooLargeException(
+                                "Экспорт превышает лимит передачи сервиса преобразования. Попробуй"
+                                        + " скачать меньше недель или выбери HTML/XLSX.");
+                    }
                     throw ex;
                 }
             }
-            default -> throw new IllegalStateException("Unsupported weekly report format: " + format);
+            default ->
+                    throw new IllegalStateException("Unsupported weekly report format: " + format);
         }
         if (content == null || content.length == 0) {
-            throw new ReportExportUnavailableException("Сервер формирования не вернул файл журнала");
+            throw new ReportExportUnavailableException(
+                    "Сервер формирования не вернул файл журнала");
         }
         if (content.length > MAX_EXPORT_RESPONSE_BYTES) {
             throw new ReportExportTooLargeException(
-                    "Экспорт превышает общий лимит ответа 20 МиБ. Выбери меньше недель или формат HTML/XLSX.");
+                    "Экспорт превышает общий лимит ответа 20 МиБ. Выбери меньше недель или формат"
+                            + " HTML/XLSX.");
         }
         return new HeadmanWeeklyExportResult(fileName, format.contentType(), content);
     }
@@ -141,9 +161,11 @@ public class HeadmanWeeklyReportService {
         LocalDate semesterStart = parseUpstreamDate(semester.getDateFrom(), "semester date_from");
         LocalDate semesterEnd = parseUpstreamDate(semester.getDateTo(), "semester date_to");
         if (semesterEnd.isBefore(semesterStart)) {
-            throw new AcademicServiceUnavailableException("Academic returned an invalid active-semester date range");
+            throw new AcademicServiceUnavailableException(
+                    "Academic returned an invalid active-semester date range");
         }
-        List<LocalDate> weekStarts = normalizeWeekStarts(requestedWeekStarts, semester, LocalDate.now(clock));
+        List<LocalDate> weekStarts =
+                normalizeWeekStarts(requestedWeekStarts, semester, LocalDate.now(clock));
         Long contextGroupId = requestContext.getGroupId();
         if (contextGroupId == null || contextGroupId <= 0) {
             throw new AccessDeniedException("Headman group is not available in request context");
@@ -151,16 +173,26 @@ public class HeadmanWeeklyReportService {
         long groupId = contextGroupId;
         GroupResponse group = academicGrpcClient.getGroup(groupId);
         if (group == null || group.getId() != groupId || group.getName().isBlank()) {
-            throw new AcademicServiceUnavailableException("Academic returned incomplete group display metadata");
+            throw new AcademicServiceUnavailableException(
+                    "Academic returned incomplete group display metadata");
         }
         var generatedAt = clock.instant();
         return weekStarts.stream()
-                .map(weekStart -> buildSingleWeekModel(groupId, group.getName(), semester,
-                        semesterStart, semesterEnd, weekStart, generatedAt))
+                .map(
+                        weekStart ->
+                                buildSingleWeekModel(
+                                        groupId,
+                                        group.getName(),
+                                        semester,
+                                        semesterStart,
+                                        semesterEnd,
+                                        weekStart,
+                                        generatedAt))
                 .toList();
     }
 
-    static HeadmanWeeklyWeeksResponse buildWeeksResponse(SemesterResponse semester, LocalDate today) {
+    static HeadmanWeeklyWeeksResponse buildWeeksResponse(
+            SemesterResponse semester, LocalDate today) {
         SemesterResponse active = requireActiveSemester(semester);
         LocalDate semesterStart = parseUpstreamDate(active.getDateFrom(), "semester date_from");
         LocalDate semesterEnd = parseUpstreamDate(active.getDateTo(), "semester date_to");
@@ -168,14 +200,20 @@ public class HeadmanWeeklyReportService {
             throw new ReportValidationException("Active semester end date is before start date");
         }
         return new HeadmanWeeklyWeeksResponse(
-                active.getId(), active.getName(), semesterStart, semesterEnd,
-                activeSemesterWeeks(semesterStart, semesterEnd, today), HeadmanWeeklyReportFormat.catalogue());
+                active.getId(),
+                active.getName(),
+                semesterStart,
+                semesterEnd,
+                activeSemesterWeeks(semesterStart, semesterEnd, today),
+                HeadmanWeeklyReportFormat.catalogue());
     }
 
-    static List<HeadmanWeeklyWeekOption> activeSemesterWeeks(LocalDate semesterStart,
-                                                            LocalDate semesterEnd,
-                                                            LocalDate today) {
-        if (semesterStart == null || semesterEnd == null || semesterEnd.isBefore(semesterStart) || today == null) {
+    static List<HeadmanWeeklyWeekOption> activeSemesterWeeks(
+            LocalDate semesterStart, LocalDate semesterEnd, LocalDate today) {
+        if (semesterStart == null
+                || semesterEnd == null
+                || semesterEnd.isBefore(semesterStart)
+                || today == null) {
             throw new ReportValidationException("Invalid active-semester week range");
         }
         if (today.isBefore(semesterStart)) return List.of();
@@ -189,62 +227,295 @@ public class HeadmanWeeklyReportService {
             LocalDate weekEnd = weekStart.plusDays(6);
             boolean current = !today.isBefore(weekStart) && !today.isAfter(weekEnd);
             int isoWeek = weekStart.get(WeekFields.ISO.weekOfWeekBasedYear());
-            result.add(new HeadmanWeeklyWeekOption(
-                    weekOfSemester,
-                    isoWeek,
-                    "Н" + weekOfSemester,
-                    weekStart,
-                    weekEnd,
-                    current));
+            result.add(
+                    new HeadmanWeeklyWeekOption(
+                            weekOfSemester,
+                            isoWeek,
+                            "Н" + weekOfSemester,
+                            weekStart,
+                            weekEnd,
+                            current));
             weekStart = weekStart.plusWeeks(1);
             weekOfSemester++;
         }
         return List.copyOf(result);
     }
 
-    private TeacherAttendanceExportModel buildSingleWeekModel(long groupId,
-                                                               String groupName,
-                                                               SemesterResponse semester,
-                                                               LocalDate semesterStart,
-                                                               LocalDate semesterEnd,
-                                                               LocalDate weekStart,
-                                                               java.time.Instant generatedAt) {
-        LocalDate weekEnd = weekStart.plusDays(6);
-        LessonsResponse response = scheduleGrpcClient.getLessonsByGroup(
-                groupId, semester.getId(), weekStart.toString(), weekEnd.toString());
-        List<WeeklyLesson> lessons = validateLessons(response, groupId, semester.getId(),
-                semesterStart, semesterEnd, weekStart, weekEnd);
-        Map<Long, AcademicGrpcClient.SubjectDetails> subjects = academicGrpcClient.getSubjectDetailsByIds(
-                lessons.stream().map(lesson -> lesson.lesson().getSubjectId()).distinct().toList());
-        List<Column> columns = lessons.stream().map(lesson -> {
-            AcademicGrpcClient.SubjectDetails subject = subjects.get(lesson.lesson().getSubjectId());
-            if (subject == null || subject.name() == null || subject.name().isBlank()) {
-                throw new AcademicServiceUnavailableException("Academic returned missing subject display metadata");
-            }
-            String lessonType = normalize(lesson.lesson().getLessonType());
-            return new Column(
-                    lesson.lesson().getId(), lesson.date(), lesson.startTime(), lesson.lesson().getLessonNumber(),
-                    lesson.lesson().getSubjectId(), subject.name(), lessonType, typeLabel(lessonType),
-                    lesson.timing().status());
-        }).toList();
+    public HeadmanWeeklyExportResult exportSubjectJournal(
+            ru.rutcampustrack.attendance.contract.dto.report.HeadmanSubjectJournalExportRequest
+                    request) {
+        HeadmanWeeklyReportFormat format =
+                HeadmanWeeklyReportFormat.from(request == null ? null : request.format());
+        return reportExecution.execute(
+                ReportExecution.Report.SUBJECT_JOURNAL,
+                format,
+                () -> exportSubjectJournalOnce(request, format));
+    }
+
+    private HeadmanWeeklyExportResult exportSubjectJournalOnce(
+            ru.rutcampustrack.attendance.contract.dto.report.HeadmanSubjectJournalExportRequest
+                    request,
+            HeadmanWeeklyReportFormat format) {
+        TeacherAttendanceExportModel model = buildSubjectJournalModel(request);
+        byte[] bytes =
+                switch (format) {
+                    case DOCX -> docxRenderer.render(model);
+                    case HTML -> tabularRenderer.renderHtml(List.of(model));
+                    case XLSX -> tabularRenderer.renderXlsx(List.of(model));
+                    case PDF, PNG -> {
+                        try {
+                            yield documentRendererGrpcClient.convertDocxForHeadmanWeeklyExport(
+                                    docxRenderer.render(model),
+                                    format == HeadmanWeeklyReportFormat.PDF
+                                            ? TargetFormat.PDF
+                                            : TargetFormat.PNG_PAGES_ZIP);
+                        } catch (io.grpc.StatusRuntimeException failure) {
+                            if (failure.getStatus().getCode() == Status.Code.RESOURCE_EXHAUSTED) {
+                                throw new ReportExportTooLargeException(
+                                        "Журнал превышает лимит рендеринга");
+                            }
+                            throw new ReportExportUnavailableException(
+                                    "Не удалось сформировать файл журнала");
+                        }
+                    }
+                };
+        if (bytes == null || bytes.length == 0)
+            throw new ReportExportUnavailableException("Файл журнала не сформирован");
+        if (bytes.length > MAX_EXPORT_RESPONSE_BYTES)
+            throw new ReportExportTooLargeException("Журнал превышает лимит ответа");
+        String name =
+                "journal_"
+                        + model.context().groupId()
+                        + "_"
+                        + model.context().subjectId()
+                        + "_"
+                        + model.context().periodFrom()
+                        + "_"
+                        + model.context().periodTo()
+                        + "."
+                        + format.extension();
+        return new HeadmanWeeklyExportResult(name, format.contentType(), bytes);
+    }
+
+    TeacherAttendanceExportModel buildSubjectJournalModel(
+            ru.rutcampustrack.attendance.contract.dto.report.HeadmanSubjectJournalExportRequest
+                    request) {
+        ensureHeadman();
+        if (request == null
+                || request.subjectId() == null
+                || request.subjectId() <= 0
+                || request.lessonTypes() == null
+                || request.lessonTypes().isEmpty()
+                || request.lessonTypes().size() > 3
+                || request.lessonTypes().stream().anyMatch(Objects::isNull)) {
+            throw new ReportValidationException("Выбери предмет и типы занятий");
+        }
+        long groupId = requestContext.getGroupId();
+        SemesterResponse semester = requireActiveSemester(academicGrpcClient.getActiveSemester());
+        LocalDate from = parseUpstreamDate(semester.getDateFrom(), "semester date_from");
+        LocalDate end = parseUpstreamDate(semester.getDateTo(), "semester date_to");
+        if (end.isBefore(from))
+            throw new AcademicServiceUnavailableException("Некорректный период семестра");
+        LocalDate to = mondayOf(LocalDate.now(clock)).plusDays(6);
+        if (to.isAfter(end)) to = end;
+        if (to.isBefore(from)) throw new ReportValidationException("Семестр ещё не начался");
+        var subject =
+                academicGrpcClient
+                        .getSubjectDetailsByIds(List.of(request.subjectId()))
+                        .get(request.subjectId());
+        if (subject == null || subject.groupId() != groupId)
+            throw new AccessDeniedException("Предмет не принадлежит твоей группе");
+        if (subject.name() == null || subject.name().isBlank() || subject.lessonTypes().isEmpty()) {
+            throw new AcademicServiceUnavailableException("Не получены типы выбранного предмета");
+        }
+        List<String> types =
+                request.lessonTypes().stream()
+                        .map(HeadmanWeeklyReportService::normalizeType)
+                        .distinct()
+                        .sorted()
+                        .toList();
+        Set<String> actual =
+                subject.lessonTypes().stream()
+                        .map(HeadmanWeeklyReportService::normalizeType)
+                        .collect(java.util.stream.Collectors.toSet());
+        if (!actual.containsAll(types)
+                || types.stream()
+                        .anyMatch(type -> !Set.of("lecture", "practice", "lab").contains(type))) {
+            throw new ReportValidationException("Выбери существующие типы занятий предмета");
+        }
+        Set<LocalDate> weeks =
+                request.weekStarts() == null || request.weekStarts().isEmpty()
+                        ? Set.of()
+                        : Set.copyOf(
+                                normalizeWeekStarts(
+                                        request.weekStarts(), semester, LocalDate.now(clock)));
+        GroupResponse group = academicGrpcClient.getGroup(groupId);
+        if (group == null || group.getId() != groupId || group.getName().isBlank()) {
+            throw new AcademicServiceUnavailableException("Не получены данные группы");
+        }
+        var model =
+                buildPeriodModel(
+                        groupId,
+                        group.getName(),
+                        semester,
+                        from,
+                        end,
+                        from,
+                        to,
+                        clock.instant(),
+                        request.subjectId(),
+                        types,
+                        weeks,
+                        true);
+        return new TeacherAttendanceExportModel(
+                new Context(
+                        ReportKind.HEADMAN_SUBJECT_JOURNAL,
+                        semester.getId(),
+                        semester.getName(),
+                        groupId,
+                        group.getName(),
+                        request.subjectId(),
+                        subject.name(),
+                        from,
+                        to,
+                        types.stream().map(HeadmanWeeklyReportService::typeLabel).toList(),
+                        clock.instant(),
+                        weeks == null ? List.of() : weeks.stream().sorted().toList()),
+                model.columns(),
+                model.rows());
+    }
+
+    private static String normalizeType(String value) {
+        String type = normalize(value);
+        return "laboratory".equals(type) ? "lab" : type;
+    }
+
+    private TeacherAttendanceExportModel buildSingleWeekModel(
+            long groupId,
+            String groupName,
+            SemesterResponse semester,
+            LocalDate semesterStart,
+            LocalDate semesterEnd,
+            LocalDate weekStart,
+            java.time.Instant generatedAt) {
+        return buildPeriodModel(
+                groupId,
+                groupName,
+                semester,
+                semesterStart,
+                semesterEnd,
+                weekStart,
+                weekStart.plusDays(6),
+                generatedAt,
+                null,
+                List.of(),
+                Set.of(),
+                false);
+    }
+
+    private TeacherAttendanceExportModel buildPeriodModel(
+            long groupId,
+            String groupName,
+            SemesterResponse semester,
+            LocalDate semesterStart,
+            LocalDate semesterEnd,
+            LocalDate weekStart,
+            LocalDate weekEnd,
+            java.time.Instant generatedAt,
+            Long subjectId,
+            List<String> types,
+            Set<LocalDate> weeks,
+            boolean includeCancelled) {
+        LessonsResponse response =
+                scheduleGrpcClient.getLessonsByGroup(
+                        groupId, semester.getId(), weekStart.toString(), weekEnd.toString());
+        List<WeeklyLesson> lessons =
+                validateLessons(
+                                response,
+                                groupId,
+                                semester.getId(),
+                                semesterStart,
+                                semesterEnd,
+                                weekStart,
+                                weekEnd,
+                                includeCancelled)
+                        .stream()
+                        .filter(
+                                value ->
+                                        subjectId == null
+                                                || value.lesson().getSubjectId() == subjectId)
+                        .filter(
+                                value ->
+                                        types.isEmpty()
+                                                || types.contains(
+                                                        normalizeType(
+                                                                value.lesson().getLessonType())))
+                        .filter(value -> weeks.isEmpty() || weeks.contains(mondayOf(value.date())))
+                        .toList();
+        Map<Long, AcademicGrpcClient.SubjectDetails> subjects =
+                academicGrpcClient.getSubjectDetailsByIds(
+                        lessons.stream()
+                                .map(lesson -> lesson.lesson().getSubjectId())
+                                .distinct()
+                                .toList());
+        List<Column> columns =
+                lessons.stream()
+                        .map(
+                                lesson -> {
+                                    AcademicGrpcClient.SubjectDetails subject =
+                                            subjects.get(lesson.lesson().getSubjectId());
+                                    if (subject == null
+                                            || subject.name() == null
+                                            || subject.name().isBlank()) {
+                                        throw new AcademicServiceUnavailableException(
+                                                "Academic returned missing subject display"
+                                                        + " metadata");
+                                    }
+                                    String lessonType = normalize(lesson.lesson().getLessonType());
+                                    return new Column(
+                                            lesson.lesson().getId(),
+                                            lesson.date(),
+                                            lesson.startTime(),
+                                            lesson.lesson().getLessonNumber(),
+                                            lesson.lesson().getSubjectId(),
+                                            subject.name(),
+                                            lessonType,
+                                            typeLabel(lessonType),
+                                            lesson.timing().status());
+                                })
+                        .toList();
 
         Map<LocalDate, GroupMembersResponse> rosterByDate = new HashMap<>();
         Map<Long, WeeklyStudent> rowsById = new LinkedHashMap<>();
         Map<Long, Set<Long>> membersByLesson = new HashMap<>();
         for (WeeklyLesson lesson : lessons) {
-            GroupMembersResponse roster = rosterByDate.computeIfAbsent(lesson.date(), date -> {
-                GroupMembersResponse value = academicGrpcClient.getGroupMembers(groupId, date, semester.getId());
-                validateHistoricalRoster(value, date, semester.getId());
-                return value;
-            });
+            GroupMembersResponse roster =
+                    rosterByDate.computeIfAbsent(
+                            lesson.date(),
+                            date -> {
+                                GroupMembersResponse value =
+                                        academicGrpcClient.getGroupMembers(
+                                                groupId, date, semester.getId());
+                                validateHistoricalRoster(value, date, semester.getId());
+                                return value;
+                            });
             Set<Long> memberIds = new HashSet<>();
             for (StudentInfo student : roster.getStudentsList()) {
-                if (student.getUserId() <= 0 || student.getDisplayName().isBlank() || !memberIds.add(student.getUserId())) {
+                if (student.getUserId() <= 0
+                        || student.getDisplayName().isBlank()
+                        || !memberIds.add(student.getUserId())) {
                     throw new AcademicServiceUnavailableException(
-                            "Academic returned an invalid historical group member for the attendance journal");
+                            "Academic returned an invalid historical group member for the"
+                                    + " attendance journal");
                 }
-                WeeklyStudent row = rowsById.computeIfAbsent(
-                        student.getUserId(), ignored -> new WeeklyStudent(student.getUserId(), student.getDisplayName(), lesson.date()));
+                WeeklyStudent row =
+                        rowsById.computeIfAbsent(
+                                student.getUserId(),
+                                ignored ->
+                                        new WeeklyStudent(
+                                                student.getUserId(),
+                                                student.getDisplayName(),
+                                                lesson.date()));
                 if (!lesson.date().isBefore(row.nameAsOf)) {
                     row.displayName = student.getDisplayName();
                     row.nameAsOf = lesson.date();
@@ -254,16 +525,26 @@ public class HeadmanWeeklyReportService {
         }
 
         Map<AttendanceKey, AttendanceRecord> attendance = new HashMap<>();
-        Set<Long> lessonIds = lessons.stream().map(value -> value.lesson().getId())
-                .collect(java.util.stream.Collectors.toSet());
+        Set<Long> lessonIds =
+                lessons.stream()
+                        .map(value -> value.lesson().getId())
+                        .collect(java.util.stream.Collectors.toSet());
         Map<Long, WeeklyLesson> lessonsById = new HashMap<>();
         lessons.forEach(lesson -> lessonsById.put(lesson.lesson().getId(), lesson));
-        for (AttendanceRecord record : attendanceReadPort.findByGroupAndDateRange(groupId, weekStart, weekEnd)) {
-            if (record == null || record.lessonId() == null || record.userId() == null || record.groupId() == null
-                    || record.subjectId() == null || record.lessonDate() == null || record.lessonNumber() == null) {
-                throw new ReportExportUnavailableException("Attendance returned an incomplete journal record");
+        for (AttendanceRecord record :
+                attendanceReadPort.findByGroupAndDateRange(groupId, weekStart, weekEnd)) {
+            if (record == null
+                    || record.lessonId() == null
+                    || record.userId() == null
+                    || record.groupId() == null
+                    || record.subjectId() == null
+                    || record.lessonDate() == null
+                    || record.lessonNumber() == null) {
+                throw new ReportExportUnavailableException(
+                        "Attendance returned an incomplete journal record");
             }
-            if (!lessonIds.contains(record.lessonId()) || !Objects.equals(record.groupId(), groupId)) continue;
+            if (!lessonIds.contains(record.lessonId())
+                    || !Objects.equals(record.groupId(), groupId)) continue;
             WeeklyLesson lesson = lessonsById.get(record.lessonId());
             if (lesson == null) {
                 throw new ReportExportUnavailableException("Attendance returned an unknown lesson");
@@ -271,102 +552,158 @@ public class HeadmanWeeklyReportService {
             if (lesson.lesson().getSubjectId() != record.subjectId()
                     || lesson.lesson().getLessonNumber() != record.lessonNumber()
                     || !lesson.date().equals(record.lessonDate())) {
-                throw new ReportExportUnavailableException("Attendance returned a mismatched journal record");
+                throw new ReportExportUnavailableException(
+                        "Attendance returned a mismatched journal record");
             }
             AttendanceKey key = new AttendanceKey(record.lessonId(), record.userId());
             if (attendance.putIfAbsent(key, record) != null) {
-                throw new ReportExportUnavailableException("Attendance returned duplicate records for a journal cell");
+                throw new ReportExportUnavailableException(
+                        "Attendance returned duplicate records for a journal cell");
             }
         }
 
-        List<Row> rows = rowsById.values().stream()
-                .sorted(Comparator.comparing((WeeklyStudent row) -> row.displayName, String.CASE_INSENSITIVE_ORDER)
-                        .thenComparingLong(row -> row.studentId))
-                .map(student -> {
-                    Map<Long, Cell> cells = new LinkedHashMap<>();
-                    for (WeeklyLesson lesson : lessons) {
-                        long lessonId = lesson.lesson().getId();
-                        if (!membersByLesson.getOrDefault(lessonId, Set.of()).contains(student.studentId)
-                                || !lesson.timing().hasStarted(generatedAt)) continue;
-                        AttendanceRecord mark = attendance.get(new AttendanceKey(lessonId, student.studentId));
-                        if (mark == null || mark.status() == null || mark.status() == AttendanceStatus.CANCELLED) continue;
-                        cells.put(lessonId, new Cell(symbolFor(mark.status()), mark.status(), true));
-                    }
-                    return new Row(student.studentId, student.displayName, cells, Optional.empty());
-                })
-                .toList();
+        List<Row> rows =
+                rowsById.values().stream()
+                        .sorted(
+                                Comparator.comparing(
+                                                (WeeklyStudent row) -> row.displayName,
+                                                String.CASE_INSENSITIVE_ORDER)
+                                        .thenComparingLong(row -> row.studentId))
+                        .map(
+                                student -> {
+                                    Map<Long, Cell> cells = new LinkedHashMap<>();
+                                    for (WeeklyLesson lesson : lessons) {
+                                        long lessonId = lesson.lesson().getId();
+                                        if (!membersByLesson
+                                                        .getOrDefault(lessonId, Set.of())
+                                                        .contains(student.studentId)
+                                                || !lesson.timing().hasStarted(generatedAt)
+                                                || "CANCELLED".equals(lesson.timing().status()))
+                                            continue;
+                                        AttendanceRecord mark =
+                                                attendance.get(
+                                                        new AttendanceKey(
+                                                                lessonId, student.studentId));
+                                        if (mark == null
+                                                || mark.status() == null
+                                                || mark.status() == AttendanceStatus.CANCELLED)
+                                            continue;
+                                        cells.put(
+                                                lessonId,
+                                                new Cell(
+                                                        symbolFor(mark.status()),
+                                                        mark.status(),
+                                                        true));
+                                    }
+                                    return new Row(
+                                            student.studentId,
+                                            student.displayName,
+                                            cells,
+                                            Optional.empty());
+                                })
+                        .toList();
         LinkedHashSet<String> typeLabels = new LinkedHashSet<>();
-        columns.stream().map(Column::typeLabel).filter(value -> !value.isBlank()).forEach(typeLabels::add);
+        columns.stream()
+                .map(Column::typeLabel)
+                .filter(value -> !value.isBlank())
+                .forEach(typeLabels::add);
         return new TeacherAttendanceExportModel(
-                new Context(ReportKind.WEEKLY_ATTENDANCE, semester.getId(), semester.getName(),
-                        groupId, groupName, null, "", weekStart, weekEnd,
-                        List.copyOf(typeLabels), generatedAt),
-                columns, rows);
+                new Context(
+                        ReportKind.WEEKLY_ATTENDANCE,
+                        semester.getId(),
+                        semester.getName(),
+                        groupId,
+                        groupName,
+                        null,
+                        "",
+                        weekStart,
+                        weekEnd,
+                        List.copyOf(typeLabels),
+                        generatedAt),
+                columns,
+                rows);
     }
 
-    private List<WeeklyLesson> validateLessons(LessonsResponse response,
-                                               long groupId,
-                                               long semesterId,
-                                               LocalDate semesterStart,
-                                               LocalDate semesterEnd,
-                                               LocalDate weekStart,
-                                               LocalDate weekEnd) {
+    private List<WeeklyLesson> validateLessons(
+            LessonsResponse response,
+            long groupId,
+            long semesterId,
+            LocalDate semesterStart,
+            LocalDate semesterEnd,
+            LocalDate weekStart,
+            LocalDate weekEnd,
+            boolean includeCancelled) {
         if (response == null) {
-            throw new AcademicServiceUnavailableException("Schedule returned no weekly lesson response");
+            throw new AcademicServiceUnavailableException(
+                    "Schedule returned no weekly lesson response");
         }
         List<WeeklyLesson> result = new ArrayList<>();
         Set<Long> lessonIds = new HashSet<>();
         for (LessonResponse lesson : response.getLessonsList()) {
-            if (lesson.getId() <= 0 || lesson.getGroupId() != groupId || lesson.getSemesterId() != semesterId
-                    || lesson.getSubjectId() <= 0 || lesson.getLessonNumber() <= 0
+            if (lesson.getId() <= 0
+                    || lesson.getGroupId() != groupId
+                    || lesson.getSemesterId() != semesterId
+                    || lesson.getSubjectId() <= 0
+                    || lesson.getLessonNumber() <= 0
                     || !lessonIds.add(lesson.getId())) {
-                throw new AcademicServiceUnavailableException("Schedule returned a mismatched or duplicate weekly lesson");
+                throw new AcademicServiceUnavailableException(
+                        "Schedule returned a mismatched or duplicate weekly lesson");
             }
             JournalLessonPolicy.Timing timing;
             try {
                 timing = JournalLessonPolicy.requireTiming(lesson);
             } catch (RuntimeException invalid) {
-                throw new AcademicServiceUnavailableException("Schedule returned incomplete weekly lesson timing");
+                throw new AcademicServiceUnavailableException(
+                        "Schedule returned incomplete weekly lesson timing");
             }
-            if (timing.date().isBefore(weekStart) || timing.date().isAfter(weekEnd)
-                    || timing.date().isBefore(semesterStart) || timing.date().isAfter(semesterEnd)) {
-                throw new AcademicServiceUnavailableException("Schedule returned a lesson outside the selected report context");
+            if (timing.date().isBefore(weekStart)
+                    || timing.date().isAfter(weekEnd)
+                    || timing.date().isBefore(semesterStart)
+                    || timing.date().isAfter(semesterEnd)) {
+                throw new AcademicServiceUnavailableException(
+                        "Schedule returned a lesson outside the selected report context");
             }
-            if ("CANCELLED".equals(timing.status())) continue;
-            result.add(new WeeklyLesson(lesson, timing, timing.date(), LocalTime.parse(lesson.getStartTime())));
+            if (!includeCancelled && "CANCELLED".equals(timing.status())) continue;
+            result.add(
+                    new WeeklyLesson(
+                            lesson, timing, timing.date(), LocalTime.parse(lesson.getStartTime())));
         }
-        result.sort(Comparator.comparing(WeeklyLesson::date)
-                .thenComparing(WeeklyLesson::startTime)
-                .thenComparingInt(value -> value.lesson().getLessonNumber())
-                .thenComparingLong(value -> value.lesson().getId()));
+        result.sort(
+                Comparator.comparing(WeeklyLesson::date)
+                        .thenComparing(WeeklyLesson::startTime)
+                        .thenComparingInt(value -> value.lesson().getLessonNumber())
+                        .thenComparingLong(value -> value.lesson().getId()));
         if (result.size() > 5_000) {
-            throw new ReportExportTooLargeException("В выбранной неделе слишком много пар для передачи. Выбери другой диапазон.");
+            throw new ReportExportTooLargeException(
+                    "В выбранной неделе слишком много пар для передачи. Выбери другой диапазон.");
         }
         return List.copyOf(result);
     }
 
-    private List<LocalDate> normalizeWeekStarts(List<LocalDate> requestedWeekStarts,
-                                               SemesterResponse semester,
-                                               LocalDate today) {
-        if (requestedWeekStarts == null || requestedWeekStarts.isEmpty()
+    private List<LocalDate> normalizeWeekStarts(
+            List<LocalDate> requestedWeekStarts, SemesterResponse semester, LocalDate today) {
+        if (requestedWeekStarts == null
+                || requestedWeekStarts.isEmpty()
                 || requestedWeekStarts.stream().anyMatch(Objects::isNull)) {
             throw new ReportValidationException("Выбери хотя бы одну неделю");
         }
         if (requestedWeekStarts.size() > MAX_SELECTED_WEEKS) {
             throw new ReportValidationException("Можно выбрать не более 64 недель за один раз");
         }
-        Set<LocalDate> available = activeSemesterWeeks(
-                parseUpstreamDate(semester.getDateFrom(), "semester date_from"),
-                parseUpstreamDate(semester.getDateTo(), "semester date_to"), today).stream()
-                .map(HeadmanWeeklyWeekOption::getWeekStart)
-                .collect(java.util.stream.Collectors.toSet());
-        List<LocalDate> normalized = requestedWeekStarts.stream()
-                .distinct()
-                .sorted(Comparator.naturalOrder())
-                .toList();
+        Set<LocalDate> available =
+                activeSemesterWeeks(
+                                parseUpstreamDate(semester.getDateFrom(), "semester date_from"),
+                                parseUpstreamDate(semester.getDateTo(), "semester date_to"),
+                                today)
+                        .stream()
+                        .map(HeadmanWeeklyWeekOption::getWeekStart)
+                        .collect(java.util.stream.Collectors.toSet());
+        List<LocalDate> normalized =
+                requestedWeekStarts.stream().distinct().sorted(Comparator.naturalOrder()).toList();
         for (LocalDate weekStart : normalized) {
             if (!available.contains(weekStart)) {
-                throw new ReportValidationException("Week is outside the available active-semester range: " + weekStart);
+                throw new ReportValidationException(
+                        "Week is outside the available active-semester range: " + weekStart);
             }
         }
         return normalized;
@@ -374,20 +711,27 @@ public class HeadmanWeeklyReportService {
 
     private static SemesterResponse requireActiveSemester(SemesterResponse semester) {
         if (semester == null || semester.getId() <= 0 || semester.getName().isBlank()) {
-            throw new AcademicServiceUnavailableException("Academic returned incomplete active-semester metadata");
+            throw new AcademicServiceUnavailableException(
+                    "Academic returned incomplete active-semester metadata");
         }
         return semester;
     }
 
-    private static void validateHistoricalRoster(GroupMembersResponse roster, LocalDate asOfDate, long semesterId) {
-        if (roster == null || !roster.hasAsOfDate() || !roster.hasSemesterId()
-                || !asOfDate.toString().equals(roster.getAsOfDate()) || roster.getSemesterId() != semesterId) {
-            throw new AcademicServiceUnavailableException("Academic returned a missing or mismatched historical roster echo");
+    private static void validateHistoricalRoster(
+            GroupMembersResponse roster, LocalDate asOfDate, long semesterId) {
+        if (roster == null
+                || !roster.hasAsOfDate()
+                || !roster.hasSemesterId()
+                || !asOfDate.toString().equals(roster.getAsOfDate())
+                || roster.getSemesterId() != semesterId) {
+            throw new AcademicServiceUnavailableException(
+                    "Academic returned a missing or mismatched historical roster echo");
         }
         Set<Long> studentIds = new HashSet<>();
         for (StudentInfo student : roster.getStudentsList()) {
             if (student.getUserId() <= 0 || !studentIds.add(student.getUserId())) {
-                throw new AcademicServiceUnavailableException("Academic returned duplicate or invalid historical student identity");
+                throw new AcademicServiceUnavailableException(
+                        "Academic returned duplicate or invalid historical student identity");
             }
         }
     }
@@ -448,8 +792,7 @@ public class HeadmanWeeklyReportService {
             LessonResponse lesson,
             JournalLessonPolicy.Timing timing,
             LocalDate date,
-            LocalTime startTime
-    ) {}
+            LocalTime startTime) {}
 
     private record AttendanceKey(long lessonId, long userId) {}
 }

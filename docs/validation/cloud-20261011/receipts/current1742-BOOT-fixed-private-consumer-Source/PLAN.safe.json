@@ -1,0 +1,26 @@
+{
+  "state": "SOURCE_ONLY_UNBOUND_NO_RUNTIME_GRANT",
+  "python_executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+  "prepare_argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-B",
+    "/workspace/scratch/rct-validation/current1742_boot_mcp_private_consumer_source/private-bridge.py",
+    "prepare"
+  ],
+  "consume_argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-B",
+    "/workspace/scratch/rct-validation/current1742_boot_mcp_private_consumer_source/private-bridge.py",
+    "consume"
+  ],
+  "fixed_grant_path": "/workspace/scratch/rct-validation/current1742_boot_mcp_private_consumer_source/private/bridge-grant.json",
+  "external_supervision": "EXACT_UNCHANGED_B78_OWNED_CALLBACK_ROOT_DISPATCH_REQUIRED",
+  "phase_seconds": 45,
+  "term_grace_seconds": 5,
+  "kill_grace_seconds": 5,
+  "cleanup_margin_seconds": 30,
+  "root_writes_after_awaited_tool_and_patch": "connector-returned.safe.json",
+  "raw_parser_one_call": "e7a6.consume_private(private_directory_fd,binding3be4)",
+  "old_bridge_manifest_sha256": "310c33cf1af15d258635fcbabc245d1dabf7d2e045e86324b7a1a65cf1c96a5a",
+  "actual_call": false
+}

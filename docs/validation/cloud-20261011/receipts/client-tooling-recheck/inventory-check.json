@@ -1,0 +1,8 @@
+{
+  "kind": "pure-current-classifier-source-check",
+  "tracked": 6313,
+  "matchesAuthorInventory": true,
+  "authoredTSHelperTargets": 9,
+  "historicalFlywayTargets": 0,
+  "canonicalLandingDistTargets": 6
+}

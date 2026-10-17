@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-10-12T00:28:35.292371+00:00",
+  "status": "PASS",
+  "checks": [
+    "12 ZIP SHA256 equal native GitHub digest",
+    "Single safe member paths/type/CRC inspected",
+    "All safe schema and observed/declaration consistency",
+    "Required exact L05 source method PASSED, no skips",
+    "Actual CI merge native full-tree identity to636",
+    "Native actual-checkout SubjectList source exact SHA256",
+    "320 bounded source bridge with2 explicit changed paths",
+    "19-column single-row finite PASS proposal",
+    "No full-family/boundary promotion",
+    "No stdio/properties/signed URLs in preserved CI receipts"
+  ],
+  "runtimeReruns": 0,
+  "scope": "Own scratch outputs only"
+}

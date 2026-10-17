@@ -1,0 +1,11 @@
+{
+  "job_id": 114702916276,
+  "knownEOFMarkers": {
+    "literal_EOF_reached": false,
+    "HTTP_header_parser_no_bytes": false,
+    "EOFException": true
+  },
+  "exceptionCauses": [
+    "java.io.EOFException"
+  ]
+}

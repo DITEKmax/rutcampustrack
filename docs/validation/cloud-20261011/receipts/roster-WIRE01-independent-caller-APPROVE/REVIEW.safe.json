@@ -1,0 +1,72 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "finding_ids": [],
+  "ready_sha256": "d58d2fc3539e5bea179e1bc0c4a1558e4af847f8a0f54d9a8cc1d4ce86d4f3b4",
+  "producer_source": "23482bb599540d4f35ead68cae6d988e25d8b80f",
+  "pins": {
+    "run-wire-mutation-owned.py": "54e30a20cb2599dcf05dc770dba0abfa5ae2040c60217d42e221150ebbcfd639",
+    "logged-wire-mutation-child.py": "50cb86841bc5a87ea7636be35ff352aff4f6bd0b4f7b09d6179bd10d60e0de2a",
+    "wire-mutation-plan.safe.json": "d7572e9fa6e2c83be1cb193fac31021832f4fdbba72662038c7f57fcefcaeea9",
+    "wire-mutation-source-controls.py": "8541eef989849dcda776ab3b87bb1051485a1f2a73f811250626788f4365f98a",
+    "wire-mutation-source-controls.safe.json": "8438887e33e4661c67d80cc2b9d685b92baca96d48798d21478c0fb355638ca6",
+    "wire-old-call.before-source.java": "de5280c787caa48245c2c882d303744006d4cf3735769154285de186aba1f741",
+    "wire-old-call.mutant-source.java": "5f7b83a49f3bbcdbcf7bf806cdbad813ec16c61407109dcbe52132c30f88e624",
+    "wire-old-call.source-only.patch": "4b29677cd44edda08192172c7d6e23afff23d8d89fa2135142f6fbd1c1b4885d",
+    "formatted-source13-manifest.safe.json": "f8cf8c4be77550d86de02f4687c508742e84b05171600c62bccc61149c1641a9"
+  },
+  "author_zip_sha256": "0668201f5ad261bd753873dcb07d770be4e3264c8bcb8ce6e2b8dbf3e6177160",
+  "scope_checks": {
+    "ready9pins_exact": true,
+    "source13_protected2_exact": true,
+    "sole_wrapper_original_bytes_and_current_original_class_hash_equal": true,
+    "mutant_exact_single_rpc_request_hunk": true,
+    "original_test_expectations_unchanged": true,
+    "parent5_reused_resource_functions_byte_exact": true,
+    "live_private_grant_parent_birth_direct_ppid_argv_admission_before_each_stage": true,
+    "child_finally_source_restore_plus_parent_finally_backstop": true,
+    "class_restore_hash_AND_phase_success_required_for_parent_zero": true
+  },
+  "causal_oracle": "Only same unchanged realNetty positive method selected. Mutant must produce fresh1FAIL/0errors-skips/native1/ResponseStatusException401/current method frame/non-original compiled wrapper; infrastructure503/other exception/stale XML/original class cannot count. Old-RPC TLS rejection is source-qualified, not directly observed TLS description. Restored same case requires fresh1PASS/native0/exact original compiled wrapper; actual compile/task metadata remain evidence acceptance requirements.",
+  "interruption_erratum": {
+    "initial_hypothesis": "Missing local SIGTERM handler could skip parent finally",
+    "disposition": "WITHDRAWN_NO_BLOCKER",
+    "critical_inherited_source": "/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py",
+    "critical_inherited_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+    "reason": "b78 installs SIGINT/SIGTERM handlers before Popen (107-110), queues STOP_REQUEST, settles owned descendants in finally (183-212), then returns through caller source-restore finally. Default-handler hypothesis omitted this inherited protection.",
+    "qualification": "SIGKILL/host loss cannot guarantee source restoration; interruption outside active guard and missing/unrestored compiled class require UNKNOWN/no integration until exact recovery evidence."
+  },
+  "independent_controls": "14 actual selected public Source AST controls: private XML projection with public synthetic files, exception-finally bytes/mode, inherited b78 SIGTERM/SIGINT handler queue/pre-Popen order. No real signals or native/helper module imports. Temporary synthetic files removed.",
+  "qualification": [
+    "Source approval only; actual mutant causal RED/exact restoration/fresh compiled GREEN/birth reap/source unchanged/real resource floor NOT_RUN by reviewer",
+    "Prior semantic81ced/formatterffec/actual44 outcomes reused; no full product review",
+    "Two stages share540+60 scope and same fresh UTC admission; deadline/resource failure remains failure/compiled MUTANT_OR_UNKNOWN and blocks integration",
+    "Existing sampled resource/log/RSS checks and same-UID accidental-bypass qualification preserved; no hard-allocation or cryptographic isolation claim",
+    "No DB/Docker/stand data/key/ENV/log/grant/real XML access or mutation by reviewer"
+  ],
+  "native": "NOT_RUN",
+  "governing": {
+    "TASK-CONTRACT.md": {
+      "bytes": 90897,
+      "sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c"
+    },
+    "CURRENT.md": {
+      "bytes": 11459,
+      "sha256": "7064ba227c56834b3a2108042d72c1e21d94b1fd2dc8206ffae349e5fea5f6e5"
+    },
+    "decisions.md": {
+      "bytes": 30371,
+      "sha256": "c16636705581c2b2c60722a6559eb13f560e3cce734553aa5d49369592f2a261"
+    },
+    "questions.md": {
+      "bytes": 11028,
+      "sha256": "edf6526f0266abc95a8bf6cc36e04a964f503ca33b1f03a48acb8ab046fdb324"
+    },
+    "resources.md": {
+      "bytes": 25405,
+      "sha256": "c4f4dba58a1fb0e95637e76a75360bd936fd4ad5ec127388350b67e0fb806a92"
+    }
+  },
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "timestamp_utc": "2026-10-13T06:37:04.593907+00:00"
+}

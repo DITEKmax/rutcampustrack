@@ -1,0 +1,95 @@
+{
+  "artifact": 11881470859,
+  "producer": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+  "run": 38536484758,
+  "digest": "sha256:9e5b712228da7174be5393c08bfe138ff0c376a410662d2842340f508dcffab4",
+  "bytes": 1103,
+  "phases": {
+    "pending": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "assignment-lifecycle.spec.ts",
+          "line": 598,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 259,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    },
+    "prepare": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "assignment-lifecycle.spec.ts",
+          "line": 598,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 59154,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    },
+    "resume": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "assignment-lifecycle.spec.ts",
+          "line": 598,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 2092,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    }
+  },
+  "lifecycle_closed_diagnostics": {},
+  "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+  "missing_phases": [],
+  "diagnostic_schema": {
+    "pending": [
+      {
+        "caseCode": "ASSIGNMENT_LIFECYCLE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ],
+    "prepare": [
+      {
+        "caseCode": "ASSIGNMENT_LIFECYCLE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ],
+    "resume": [
+      {
+        "caseCode": "ASSIGNMENT_LIFECYCLE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ]
+  },
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+  "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_ALL_THREE_PHASES_AND_SUCCESSFUL_OWNED_SCHEDULE_RESTART_STEP"
+}

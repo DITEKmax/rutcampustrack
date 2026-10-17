@@ -1,0 +1,122 @@
+{
+  "utc": "2026-10-12T07:19:52.845407+00:00",
+  "namespace": "np01_62c9ebeabcb541d2b4320815d116cf11",
+  "failure": null,
+  "active_container_ids": [],
+  "known_owned_resources": {
+    "5d19b72ab1e8d2096bbed350188b423e88b6af0ce3ca76897e8f511a79916fe3": {
+      "id": "5d19b72ab1e8d2096bbed350188b423e88b6af0ce3ca76897e8f511a79916fe3",
+      "image": "sha256:81bd698b4594e751a3269e4dcd3e03a4a0ec0daf7b72e7aa1abd43cce9887542",
+      "labels": {
+        "org.testcontainers": "true",
+        "org.testcontainers.lang": "java",
+        "org.testcontainers.sessionId": "06f4b6a2-52e3-44ac-9721-89868b746385",
+        "org.testcontainers.version": "1.20.4",
+        "rct.validation.owner": "np01_62c9ebeabcb541d2b4320815d116cf11"
+      },
+      "pid": 220536,
+      "running": true,
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "32777"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "Destination": "/var/lib/postgresql/data",
+          "Driver": "local",
+          "Mode": "",
+          "Name": "35a31cd56428bc90ac2493af0f34bdaf5d8230db9b2d542cd9577d70995e451e",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/35a31cd56428bc90ac2493af0f34bdaf5d8230db9b2d542cd9577d70995e451e/_data",
+          "Type": "volume"
+        }
+      ],
+      "captured_utc": "2026-10-12T07:19:48.611406+00:00",
+      "ownership_basis": "empty baseline/exclusive Root lease/reviewed source random namespace/exact allowed image",
+      "process_birth_ticks": 4336706
+    },
+    "96edc1b4a095ae7413ed7a9182788d49ab94c05c8705c4e525ab0250f19a9e5e": {
+      "id": "96edc1b4a095ae7413ed7a9182788d49ab94c05c8705c4e525ab0250f19a9e5e",
+      "image": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+      "labels": {
+        "org.testcontainers": "true",
+        "org.testcontainers.lang": "java",
+        "org.testcontainers.sessionId": "06f4b6a2-52e3-44ac-9721-89868b746385",
+        "org.testcontainers.version": "1.20.4",
+        "rct.validation.owner": "np01_62c9ebeabcb541d2b4320815d116cf11"
+      },
+      "pid": 220681,
+      "running": true,
+      "ports": {
+        "15671/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "32780"
+          }
+        ],
+        "15672/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "32781"
+          }
+        ],
+        "15691/tcp": null,
+        "15692/tcp": null,
+        "25672/tcp": null,
+        "4369/tcp": null,
+        "5671/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "32778"
+          }
+        ],
+        "5672/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "32779"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "Destination": "/var/lib/rabbitmq",
+          "Driver": "local",
+          "Mode": "",
+          "Name": "ffd67c2a81d44cd16fd6c21c66a511bb9c14e76b0713d33509107d127f6b6835",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/ffd67c2a81d44cd16fd6c21c66a511bb9c14e76b0713d33509107d127f6b6835/_data",
+          "Type": "volume"
+        }
+      ],
+      "captured_utc": "2026-10-12T07:19:48.610889+00:00",
+      "ownership_basis": "empty baseline/exclusive Root lease/reviewed source random namespace/exact allowed image",
+      "process_birth_ticks": 4337324
+    }
+  },
+  "native_metadata_commands": 15,
+  "metadata_client_pids_waited": [
+    220258,
+    220267,
+    220355,
+    220378,
+    220396,
+    220405,
+    220472,
+    220496,
+    220632,
+    220641,
+    220853,
+    220862,
+    220885,
+    220895,
+    221168
+  ],
+  "readonly_redis_samples": [],
+  "environment_or_sensitive_data_inspected": false
+}

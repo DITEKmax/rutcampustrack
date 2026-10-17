@@ -1,0 +1,117 @@
+[
+  {
+    "source": "TS_OBSERVER",
+    "rowCount": 43,
+    "omitted": 0,
+    "addedGroupCount": 14,
+    "groupKindsByOwner": [
+      {
+        "owner": "record",
+        "kind": "AsExpression",
+        "count": 1
+      },
+      {
+        "owner": "idEqual",
+        "kind": "BinaryExpression",
+        "count": 1
+      },
+      {
+        "owner": "arrayItems",
+        "kind": "AsExpression",
+        "count": 1
+      },
+      {
+        "owner": "domFacts",
+        "kind": "AwaitExpression",
+        "count": 10
+      },
+      {
+        "owner": "hasMarkPermission",
+        "kind": "BinaryExpression",
+        "count": 1
+      }
+    ],
+    "scalarCount": 29,
+    "scalarKeySets": [
+      [
+        "multiLine"
+      ]
+    ],
+    "scalarNodeKinds": [
+      "ArrayLiteralExpression",
+      "Block",
+      "ObjectLiteralExpression"
+    ],
+    "otherCount": 0
+  },
+  {
+    "source": "JS_COMMONJS",
+    "rowCount": 25,
+    "omitted": 0,
+    "addedGroupCount": 12,
+    "groupKindsByOwner": [
+      {
+        "owner": "idEqual",
+        "kind": "BinaryExpression",
+        "count": 1
+      },
+      {
+        "owner": "domFacts",
+        "kind": "AwaitExpression",
+        "count": 10
+      },
+      {
+        "owner": "hasMarkPermission",
+        "kind": "BinaryExpression",
+        "count": 1
+      }
+    ],
+    "scalarCount": 13,
+    "scalarKeySets": [
+      [
+        "multiLine"
+      ]
+    ],
+    "scalarNodeKinds": [
+      "ArrayLiteralExpression",
+      "Block",
+      "ObjectLiteralExpression"
+    ],
+    "otherCount": 0
+  },
+  {
+    "source": "JS_ESNEXT",
+    "rowCount": 25,
+    "omitted": 0,
+    "addedGroupCount": 12,
+    "groupKindsByOwner": [
+      {
+        "owner": "idEqual",
+        "kind": "BinaryExpression",
+        "count": 1
+      },
+      {
+        "owner": "domFacts",
+        "kind": "AwaitExpression",
+        "count": 10
+      },
+      {
+        "owner": "hasMarkPermission",
+        "kind": "BinaryExpression",
+        "count": 1
+      }
+    ],
+    "scalarCount": 13,
+    "scalarKeySets": [
+      [
+        "multiLine"
+      ]
+    ],
+    "scalarNodeKinds": [
+      "ArrayLiteralExpression",
+      "Block",
+      "ObjectLiteralExpression"
+    ],
+    "otherCount": 0
+  }
+]

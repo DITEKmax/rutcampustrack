@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-10-11T23:02:47.772081+00:00",
+  "command": "LIGHT static parser/hash/archive validation",
+  "exit": 0,
+  "bounded_and_dependency_sources_match_original_snapshot": 22,
+  "archive_original_bytes_and_CRC": "PASS98members",
+  "JSON_AST_parse": "PASS",
+  "runtime_replay": "NOT_RUN",
+  "static_ttl_predicate_witness": "all4true; not actual mutation",
+  "reviewer_write_scope": "/workspace/scratch/rct-validation/notification_recovery_review",
+  "known_helper_failure": "Initial inline read/hash helper had SyntaxError before execution; corrected helper succeeded; no reviewed code or resources executed."
+}

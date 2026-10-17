@@ -1,0 +1,24 @@
+{
+  "state": "LAUNCHING",
+  "prepared_source_sha": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+  "execution_checkout_sha": "ebc2d18226a2f931f2daab454c195c391c7b7f3b",
+  "ready_sha256": "157fcf615e954c9bd7efd11f125ddc5721c04e9fe107a5b45681aa1851f64c44",
+  "grant_sha256": "48c2e4b63e03f8d6e9cc819130650ddba8cf872bc38988b8e7bcfcd796d9cd68",
+  "issued_at": "2026-10-12T19:16:47.437364+00:00",
+  "absolute_stop_at": "2026-10-12T19:19:35.495423+00:00",
+  "deadline_seconds": 60,
+  "project": "webkit",
+  "case_count": 0,
+  "phases": [
+    "PUBLIC_WEBKIT_BROWSER_ONLY"
+  ],
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/scratch/rct-validation/client_real_acceptance/webkit-public-boot-r2/probe.cjs"
+  ],
+  "no_API_login_dataset_seed": true,
+  "requested_tool_context": "actor1000 root0 native context; require_escalated if masked",
+  "own_driver_pid": 371772,
+  "own_driver_birth": 8640023
+}

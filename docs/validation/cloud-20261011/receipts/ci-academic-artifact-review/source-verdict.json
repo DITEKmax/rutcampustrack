@@ -1,0 +1,35 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "scope": "one Academic module build.gradle.kts source only; no runtime or graph-resolution acceptance",
+  "base": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+  "author_final": "74bca165963b5fd719ad1d817b326105c408e4eb",
+  "root_input_revision": "ef12375e2d9e4616cc9d355076c2e1f37d8be510",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "owned_path": "services/academic-service/academic-app/build.gradle.kts",
+  "before_sha256": "406ba7c9712cab325ea3b8c8e2ce7f74446b9eaedfee1f76ae4698a25b81d9f1",
+  "after_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+  "net_change": "exact5lines IT1g heap block + exact4lines Auth artifact-only TEST edge; removing both restores baseline bytes",
+  "source_inventory": [
+    "services/academic-service/academic-app/build.gradle.kts"
+  ],
+  "unchanged_by_exact_removal": [
+    "unit/root/global heap",
+    "JUnit engines",
+    "test filters/discovery",
+    "integration naming/ArchUnit rules",
+    "reports/assertions/skips",
+    "all previous main/test dependencies/security/version declarations",
+    "API/generator/migration/locks"
+  ],
+  "heap": "bounded1GiB candidate for Academic integrationTest only; source-evidenced prior default512MiB and native ArchUnit heap exhaustion, not a measured sufficient minimum",
+  "dependency": "isTransitive=false affects only new Academic→Auth main TEST edge; actual Auth main compilation keeps its own unchanged production dependencies; no new application starters/security excludes/component-scan or auto-configuration disablement",
+  "held_candidate": "34c0bd739e5092e693e35a19a144fb9df6970d91 full-transitive is not approved for root integration/run. Transfer finalnetbytes; original author history preserved.",
+  "findings": [],
+  "runtime": "NOT_RUN",
+  "children": 0,
+  "product_shared_source_writes": 0,
+  "author_final_manifest_sha256": "d435100e9e8298f5e36707b6e941b5bb2d6de20654130ca6a61a4eefbdb06ef5",
+  "source_graph_limit": "Main artifact carries Auth classes/resources even without transitives. Actual external component/hash/security graph equality, resource order and duplicated canonical proto byte equality remain mandatory."
+}

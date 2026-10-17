@@ -1,0 +1,69 @@
+{
+  "artifact": "raw-it-auth.zip",
+  "failure_types": {
+    "org.opentest4j.AssertionFailedError": 2
+  },
+  "examples": [
+    {
+      "test_class": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+      "test_name": "passwordResetIsPurposeBoundAtomicAndRevokesEverySession()",
+      "type": "org.opentest4j.AssertionFailedError",
+      "body_length": 481,
+      "frames": [
+        "app//ru.rutcampustrack.auth.integration.AuthOtpFlowIT.passwordResetIsPurposeBoundAtomicAndRevokesEverySession(AuthOtpFlowIT.java:304)"
+      ],
+      "causes": [],
+      "numeric_boolean_assertion": [
+        [
+          "expected",
+          "1"
+        ],
+        [
+          "but was",
+          "4"
+        ],
+        [
+          "expected",
+          "1"
+        ],
+        [
+          "but was",
+          "4"
+        ]
+      ],
+      "xml": "auth-service/auth-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.auth.integration.AuthOtpFlowIT.xml",
+      "xml_sha256": "d24165edee458e832e60d634379f989f391ee6b0060ab23a7b6ffaea8d91c1e7"
+    },
+    {
+      "test_class": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+      "test_name": "passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart()",
+      "type": "org.opentest4j.AssertionFailedError",
+      "body_length": 486,
+      "frames": [
+        "app//ru.rutcampustrack.auth.integration.AuthOtpFlowIT.passwordChangeIntentSurvivesBrokerFailureAndPublisherRestart(AuthOtpFlowIT.java:360)"
+      ],
+      "causes": [],
+      "numeric_boolean_assertion": [
+        [
+          "expected",
+          "1"
+        ],
+        [
+          "but was",
+          "4"
+        ],
+        [
+          "expected",
+          "1"
+        ],
+        [
+          "but was",
+          "4"
+        ]
+      ],
+      "xml": "auth-service/auth-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.auth.integration.AuthOtpFlowIT.xml",
+      "xml_sha256": "d24165edee458e832e60d634379f989f391ee6b0060ab23a7b6ffaea8d91c1e7"
+    }
+  ],
+  "all_causes": {}
+}

@@ -1,0 +1,359 @@
+[
+  {
+    "id": "EO-Q005-D005",
+    "affected_ids": [
+      "BOUNDARY-26",
+      "BOUNDARY-27",
+      "JS-STUDENT-01",
+      "JS-HEADMAN-02",
+      "EV02",
+      "ATTENDANCE-CHECKIN"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+        "sha256": "7bc59b1f0302a4dd469191434f5c4709493ee24447d8df25e1c47b4e7eebfddf",
+        "fragment": "D005"
+      },
+      {
+        "path": "/workspace/rutcampustrack/docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+        "sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+        "fragment": "541–555 archived manualABSENT overwrite source fork"
+      }
+    ],
+    "supersedes_historical_oracle": "Historical Q005 PENDING/manualABSENT successfulgeo overwrite",
+    "current_executable_oracle": "Existing HEADMAN manualABSENT prohibits both successful geo and automatic_failed_geo request through that blocked attempt; snapshot/client eligibility disabled. Ordinary permitted failedgeo creates automatic unlimited/nonexpiring request without manualquota; accepted separate past appeal unchanged.",
+    "remaining_queue_ids": [
+      "ATTENDANCE-CHECKIN",
+      "CLIENT-STUDENT-GEO-REQUESTS"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-STABLE-LOGIN",
+    "affected_ids": [
+      "JS-SYSTEM-01",
+      "JS-ADMIN-01",
+      "BOUNDARY-11"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+        "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+        "fragment": "JS-ADMIN-01:167–174 role-prefix scheme explicitly cancelled"
+      }
+    ],
+    "supersedes_historical_oracle": "student00001/teacher00001 raw source-family example",
+    "current_executable_oracle": "One unique role-independent stable account login; add/change roles does not create second login or rename account; collisions handled by current accepted generator. No import/mass account creation.",
+    "remaining_queue_ids": [
+      "ACADEMIC-ADMIN",
+      "AUTH-SESSION"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-OFFLINE-D002",
+    "affected_ids": [
+      "JS-STUDENT-10",
+      "BOUNDARY-47",
+      "CLIENT-FE-OFFLINE-01",
+      "CLIENT-FE-OFFLINE-02",
+      "CLIENT-FE-OFFLINE-03",
+      "CLIENT-FE-OFFLINE-04"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+        "sha256": "7bc59b1f0302a4dd469191434f5c4709493ee24447d8df25e1c47b4e7eebfddf",
+        "fragment": "D002"
+      },
+      {
+        "path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+        "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+        "fragment": "JS-STUDENT-10 offline statistics legacy clause"
+      }
+    ],
+    "supersedes_historical_oracle": "All statistics offline or current-session validation required before any cached read",
+    "current_executable_oracle": "Only last verified STUDENT PWA schedule/homework read-only offline until fresh reconnect admission; no offline writes/newattachments/role switch/TMAoffline. Explicitlogout and account isolation; entire story retained with superseded clause.",
+    "remaining_queue_ids": [
+      "CLIENT-OFFLINE-D002"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-TMA-D003",
+    "affected_ids": [
+      "RESEARCH-SD-TMA",
+      "BOUNDARY-06",
+      "CLIENT-FE-TMA-02",
+      "JS-SYSTEM-13"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+        "sha256": "7bc59b1f0302a4dd469191434f5c4709493ee24447d8df25e1c47b4e7eebfddf",
+        "fragment": "D003"
+      }
+    ],
+    "supersedes_historical_oracle": "Replay decision unresolved or singleuse/idempotent-same-session mandatory",
+    "current_executable_oracle": "Valid signed initData reusable within inclusive86400seconds with fresh binding/grants/session authority per admission; malformed/tampered/future/expired invalid. Neutral bootstrap is not selected-role access. No new idempotent session or singleuse promise.",
+    "remaining_queue_ids": [
+      "AUTH-QR-TMA",
+      "CLIENT-TMA-PROVIDER"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-MAP-D004",
+    "affected_ids": [
+      "JS-STUDENT-24",
+      "JS-TEACHER-11",
+      "MAP-06",
+      "CLIENT-FE-MAP-LEGEND-01",
+      "BOUNDARY-45"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+        "sha256": "7bc59b1f0302a4dd469191434f5c4709493ee24447d8df25e1c47b4e7eebfddf",
+        "fragment": "D004"
+      }
+    ],
+    "supersedes_historical_oracle": "Entire map can be removed because legend deferred, or mandatory invented legend icons",
+    "current_executable_oracle": "Only iconlegendcatalogue/filling excluded until owner dataset. Accepted map catalog/buildingfloor/version/upload/sanitize/history/view/download remain required.",
+    "remaining_queue_ids": [
+      "ACADEMIC-MAP",
+      "CLIENT-MAP-FILES-EXPORTS"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-ADMIN-EXPORT-D006-D007",
+    "affected_ids": [
+      "JS-ADMIN-13",
+      "BOUNDARY-46"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+        "sha256": "7bc59b1f0302a4dd469191434f5c4709493ee24447d8df25e1c47b4e7eebfddf",
+        "fragment": "D006/D007"
+      },
+      {
+        "path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+        "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+        "fragment": "JS-ADMIN-13:253–259 five-format filtered registry acceptance"
+      }
+    ],
+    "supersedes_historical_oracle": "Admin export fields/audit or LIMITED bulkgrant unresolved; initialpassword display permits export",
+    "current_executable_oracle": "Five table formats of full current allowed filtered/sorted user/group registry. User ordinaryname/login/roles/status/group/staffnumber/bindingstate; TelegramID FULLonly; no passwords/recovery. Auditactor/time/kind/rowcount nofilecontents. LIMITED liveUSERS_VIEW/GROUPS_VIEW atinit/read/download/revoke; no newgrants or adminattendance screen.",
+    "remaining_queue_ids": [
+      "EXPORT-ASYNC-CORE",
+      "EXPORT-ROSTER-ADMIN-MODELS",
+      "CLIENT-ADMIN"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-MANUAL-QUOTA",
+    "affected_ids": [
+      "AT-11",
+      "JS-STUDENT-06",
+      "JS-HEADMAN-43",
+      "BOUNDARY-27",
+      "BOUNDARY-28"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+        "sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+        "fragment": "R-02:93–112 manual fivepairs quota, automatic requests distinct"
+      }
+    ],
+    "supersedes_historical_oracle": "Historical AT-11 three manualrequests or autoexpiry/charges",
+    "current_executable_oracle": "Manual five lesson submissions per semester, charge atsubmit once onexactretry, no refund decline/cancel, resubmission after rejection charges again. Automatic failedgeo unlimited/nonexpiring and notmanualcharge; D005 blocked branch takes precedence.",
+    "remaining_queue_ids": [
+      "ATTENDANCE-REQUESTS",
+      "ATTENDANCE-CHECKIN"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-CANCEL-HISTORY",
+    "affected_ids": [
+      "JS-HEADMAN-11",
+      "JS-HEADMAN-22",
+      "BOUNDARY-23"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+        "sha256": "701ebfb7c91906f1ef57b2d6ed5b54202a38475a1e246c3172fadb1ab6646dd8",
+        "fragment": "R-07 cancel/restore invalidates marks but retains history"
+      }
+    ],
+    "supersedes_historical_oracle": "Delete existing markhistory when cancel",
+    "current_executable_oracle": "Cancel excludes marks from current metrics but retains history; restore empty current marks/current eligible teacher; related homework archived and new visible homework empty by acceptedbinding.",
+    "remaining_queue_ids": [
+      "SCHEDULE-TRANSFER-CANCEL",
+      "ACADEMIC-HOMEWORK"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-TEACHER-GROUP-HISTORY",
+    "affected_ids": [
+      "JS-TEACHER-03",
+      "JS-TEACHER-07",
+      "JS-TEACHER-10",
+      "BOUNDARY-22",
+      "BOUNDARY-31"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md",
+        "sha256": "38db8d7630fd2d33392a6fb0bc5032006a980dc6c0af8320a0421f2042f0ff33",
+        "fragment": "active current group assignment grants past group attendance; historical-only does not"
+      }
+    ],
+    "supersedes_historical_oracle": "Only lessons personally taught/current assignmentstart required for allread",
+    "current_executable_oracle": "Current active group assignment permits group attendance history including preassignment dates; historical-only assignment does not permit current access. Subject/ticketselectedscope constraints remain.",
+    "remaining_queue_ids": [
+      "ACADEMIC-ASSIGNMENT",
+      "ATTENDANCE-READ-REPORT",
+      "CLIENT-TEACHER"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-TEACHER-EXPORT-PERIOD",
+    "affected_ids": [
+      "JS-TEACHER-07",
+      "BOUNDARY-46"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/sources/manifest.yaml",
+        "sha256": "62f1e377fedc5c8d9da9a5f0b2f457f6dc970806416759437fe482bcdc6553a2",
+        "fragment": "delivery_source_resolution_20260924_teacher_export_period"
+      }
+    ],
+    "supersedes_historical_oracle": "Only to-today for every teacherexport/default future columns forbidden",
+    "current_executable_oracle": "Full-semester default journal/export retains blank futurecolumns; future excludedmetrics. Current mobile pastOnly/exactlesson selector independent accepted current carrier; compare correct selection, no blanket UIdefect.",
+    "remaining_queue_ids": [
+      "EXPORT-STATS-TEACHER-MODELS",
+      "CLIENT-TEACHER"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-HELPER-NAMED-STATS",
+    "affected_ids": [
+      "JS-HEADMAN-18",
+      "JS-HEADMAN-19",
+      "JS-HEADMAN-32",
+      "BOUNDARY-33",
+      "BOUNDARY-46"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/product/decisions/2026-09-24-assistant-report-export.md",
+        "sha256": "986278530c3406667cbd17f66e285cd1e4fd9e52ed5341367fc21a5923d8cef7",
+        "fragment": "VIEW_STATS own journal/statistical downloads; roster excluded"
+      },
+      {
+        "path": "/workspace/rutcampustrack/docs/sources/manifest.yaml",
+        "sha256": "62f1e377fedc5c8d9da9a5f0b2f457f6dc970806416759437fe482bcdc6553a2",
+        "fragment": "delivery_source_resolution_20260925_headman_stats"
+      }
+    ],
+    "supersedes_historical_oracle": "VIEW_STATS statistics assumed anonymised or grants roster/credentials/files",
+    "current_executable_oracle": "Named own-group statistical rows/journal downloads permitted by liveVIEW_STATS; separate roster/credentials/attachments not granted. Ordinary helper remains STUDENT with permissionarray, notHEADMAN.",
+    "remaining_queue_ids": [
+      "ATTENDANCE-READ-REPORT",
+      "EXPORT-HEADMAN-MODELS",
+      "EXPORT-STATS-TEACHER-MODELS",
+      "EXPORT-ROSTER-ADMIN-MODELS"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-NONMANDATORY-SURFACES",
+    "affected_ids": [
+      "JS-STUDENT-16",
+      "AT-17",
+      "CLIENT-FE-STUDENT-04",
+      "JS-HEADMAN-35",
+      "JS-STUDENT-WEB-10"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+        "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981",
+        "fragment": "751–753 selfexport idea explicitly unconfirmed;685–692 adminadds student, adjacentedit unconfirmed"
+      },
+      {
+        "path": "/workspace/rutcampustrack/docs/architecture/reference-rutcampustrack-design/backend-requests.md",
+        "sha256": "40a13a9ddb8cc2e8a2ab8c7cec2aec9f0ddfe7f6de10dfbc6e779423046330d3",
+        "fragment": "AT-17 explicit deferred idea"
+      },
+      {
+        "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+        "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
+        "fragment": "section3 no newwebfront-end; existingPWA/TMA equivalents"
+      }
+    ],
+    "supersedes_historical_oracle": "Registered147 means147 mandatoryfunctions; studentexport or headmanstudentedit/newwebpanelUI automatically required",
+    "current_executable_oracle": "Keep sourceproposal/excludedselfexport; studentstats remain required without selfexport. HEADMAN cannotaddnewstudent; adjacentprofileedit notaccepted grant. WEB-only newpanel carrier excluded byowner; backendsemantics and existingreadyPWA/TMA equivalents preserved. No separate teacherpersonalroster export accepted.",
+    "remaining_queue_ids": [
+      "ATTENDANCE-READ-REPORT",
+      "ACADEMIC-ADMIN",
+      "CLIENT-HEADMAN",
+      "CLIENT-INSTALL-PUSH"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  },
+  {
+    "id": "EO-ASYNC-EXPORT",
+    "affected_ids": [
+      "JS-HEADMAN-19",
+      "JS-TEACHER-07",
+      "JS-ADMIN-13",
+      "BOUNDARY-46"
+    ],
+    "effective_sources": [
+      {
+        "path": "/workspace/rutcampustrack/docs/architecture/reference-rutcampustrack-design/TRANSPORT.md",
+        "sha256": "37f2c5f6fd1ce6a4d676870887ad0dfcc49e4f947f9054f608190192d4382985",
+        "fragment": "33 queue→generation→readyevent→browserfile, no sync file;59 fiveformats and graphPNG/HTML"
+      },
+      {
+        "path": "/workspace/rutcampustrack/docs/product/reference-rutcampustrack-design/COMPONENT_REGISTRY.md",
+        "sha256": "0b18a2d420dbd1245b5199620166ae96780f885ebbb58d9437a410ee0b153e7a",
+        "fragment": "210 ExportButton queued/preparing/ready/error with filters/order"
+      }
+    ],
+    "supersedes_historical_oracle": "Raw converter/nativePASS establishes every domainexport; olddocx-only or no-mobile clauses override current formats",
+    "current_executable_oracle": "Accepted asynchronous core and distinct model/content/role/filter oracles; five tabularformats, graphPNG/HTML. Reuse shared nativeconverter proof but execute missing models and asyncready/download. No newsavedresultretention/crosssession promise.",
+    "remaining_queue_ids": [
+      "EXPORT-ASYNC-CORE",
+      "EXPORT-HEADMAN-MODELS",
+      "EXPORT-STATS-TEACHER-MODELS",
+      "EXPORT-ROSTER-ADMIN-MODELS"
+    ],
+    "runtime_status": "UNKNOWN except explicitly linked PASS child",
+    "historical_receipt_policy": "Preserve original receipts unchanged; root applies this new overlay to executable acceptance view."
+  }
+]

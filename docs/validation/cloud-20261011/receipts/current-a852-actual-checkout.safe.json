@@ -1,0 +1,14 @@
+{
+  "head": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+  "actual_checkout": "a932aae335267d6774a39f8b1c2284795b8ac54c",
+  "producer_evidence": "Auth integration SAFE metadata checkoutSha",
+  "parents": [
+    "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc"
+  ],
+  "head_tree": "c043b4925cd57e26223e75dcc8fddca5a9f8b0c7",
+  "checkout_tree": "c043b4925cd57e26223e75dcc8fddca5a9f8b0c7",
+  "equal_tree": true,
+  "main_unchanged": true,
+  "fetch_native_exit": 0
+}

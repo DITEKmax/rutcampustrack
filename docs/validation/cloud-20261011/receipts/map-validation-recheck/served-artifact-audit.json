@@ -1,0 +1,269 @@
+{
+  "14_unique_exact_artifacts": true,
+  "oracle": "XML diagnostics and unchanged test helper: actual 201, real PG one asset, GET200 exact input bytes",
+  "artifacts": [
+    {
+      "format": "png",
+      "bytes": 2017,
+      "sha256": "8b6652c37ff1cac9e32c87b535847e16e8d8a44db4f3a347f787542a006e9576",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/8b6652c37ff1cac9e32c87b535847e16e8d8a44db4f3a347f787542a006e9576.png",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "header": {
+        "width": 1,
+        "height": 1000001,
+        "depth": 1,
+        "color": 0,
+        "interlace": 0
+      },
+      "budget": {
+        "decoded_bytes": 2000002,
+        "pass_rows": 1000001,
+        "passes": [
+          {
+            "columns": 1,
+            "rows": 1000001,
+            "scanline_bytes": 2
+          }
+        ],
+        "accepted_budget": false
+      },
+      "chunks_crc_valid": true,
+      "image_inflation": "NOT_RUN"
+    },
+    {
+      "format": "png",
+      "bytes": 130523,
+      "sha256": "a12abea19a765917e9b2dc30b92115a85854a5ffcd301b5374db7f9415809a20",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/a12abea19a765917e9b2dc30b92115a85854a5ffcd301b5374db7f9415809a20.png",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "header": {
+        "width": 134217728,
+        "height": 1,
+        "depth": 8,
+        "color": 0,
+        "interlace": 0
+      },
+      "budget": {
+        "decoded_bytes": 134217729,
+        "pass_rows": 1,
+        "passes": [
+          {
+            "columns": 134217728,
+            "rows": 1,
+            "scanline_bytes": 134217729
+          }
+        ],
+        "accepted_budget": false
+      },
+      "chunks_crc_valid": true,
+      "image_inflation": "NOT_RUN"
+    },
+    {
+      "format": "png",
+      "bytes": 2017,
+      "sha256": "6f15d40dc5ddc6a8112b59573f2e3936ca3e3c128bd7dc2147a838f87418e2c3",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/6f15d40dc5ddc6a8112b59573f2e3936ca3e3c128bd7dc2147a838f87418e2c3.png",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "header": {
+        "width": 2,
+        "height": 666667,
+        "depth": 1,
+        "color": 0,
+        "interlace": 1
+      },
+      "budget": {
+        "decoded_bytes": 2000002,
+        "pass_rows": 1000001,
+        "passes": [
+          {
+            "columns": 1,
+            "rows": 83334,
+            "scanline_bytes": 2
+          },
+          {
+            "columns": 1,
+            "rows": 83333,
+            "scanline_bytes": 2
+          },
+          {
+            "columns": 1,
+            "rows": 166667,
+            "scanline_bytes": 2
+          },
+          {
+            "columns": 1,
+            "rows": 333334,
+            "scanline_bytes": 2
+          },
+          {
+            "columns": 2,
+            "rows": 333333,
+            "scanline_bytes": 2
+          }
+        ],
+        "accepted_budget": false
+      },
+      "chunks_crc_valid": true,
+      "image_inflation": "NOT_RUN"
+    },
+    {
+      "format": "svg",
+      "bytes": 290,
+      "sha256": "15828b7d2c8f2d818c02bf187898482115eb8417935619983c39eeca03917385",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/15828b7d2c8f2d818c02bf187898482115eb8417935619983c39eeca03917385.svg",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "xml_well_formed": true
+    },
+    {
+      "format": "svg",
+      "bytes": 294,
+      "sha256": "edfbba287df805e724c69c0321b2688d8f5394a9dbe69f186e44b9ba183c676a",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/edfbba287df805e724c69c0321b2688d8f5394a9dbe69f186e44b9ba183c676a.svg",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "xml_well_formed": true
+    },
+    {
+      "format": "svg",
+      "bytes": 244,
+      "sha256": "9cf19260fabdacb3c1b1159bd6a12f2f329a298fb525d82e61bee30a50a69857",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/9cf19260fabdacb3c1b1159bd6a12f2f329a298fb525d82e61bee30a50a69857.svg",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "xml_well_formed": true
+    },
+    {
+      "format": "svg",
+      "bytes": 256,
+      "sha256": "740935424eaca32bb28692bad83b3dcd3d56b41d02e0dff061a821afad3f8c8d",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/740935424eaca32bb28692bad83b3dcd3d56b41d02e0dff061a821afad3f8c8d.svg",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "xml_well_formed": true
+    },
+    {
+      "format": "svg",
+      "bytes": 336,
+      "sha256": "ec9c45362e9c831a9a43bc02fc37ed12e1a6c5606561f9b1efcfd3a1e092ce44",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/ec9c45362e9c831a9a43bc02fc37ed12e1a6c5606561f9b1efcfd3a1e092ce44.svg",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "xml_well_formed": true
+    },
+    {
+      "format": "svg",
+      "bytes": 244,
+      "sha256": "f378f42b48506a73fa4b7ae68af4299b7597159ca9f8b48aeafcd0eb551ab656",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/f378f42b48506a73fa4b7ae68af4299b7597159ca9f8b48aeafcd0eb551ab656.svg",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "xml_well_formed": true
+    },
+    {
+      "format": "svg",
+      "bytes": 252,
+      "sha256": "688f83d5ab272f9475c2439325703a03d6fcb590852d1c72b12f0b45485bcd61",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/688f83d5ab272f9475c2439325703a03d6fcb590852d1c72b12f0b45485bcd61.svg",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "xml_well_formed": true
+    },
+    {
+      "format": "svg",
+      "bytes": 218,
+      "sha256": "5bafee8a1db3a3b6e80c42228e55ad13ad748234b181838af46864db187f869a",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/5bafee8a1db3a3b6e80c42228e55ad13ad748234b181838af46864db187f869a.svg",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "xml_well_formed": true
+    },
+    {
+      "format": "svg",
+      "bytes": 218,
+      "sha256": "dd9360293a6cadcb958566e7ac42eb9c6d6e39cae97e97d7c69676ed7b42a1d6",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/dd9360293a6cadcb958566e7ac42eb9c6d6e39cae97e97d7c69676ed7b42a1d6.svg",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "xml_well_formed": true
+    },
+    {
+      "format": "svg",
+      "bytes": 195,
+      "sha256": "8c05c2c11af0d494f09853a3301da3a0f94e76dd1fce52b52dcf3cf0d6446a51",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/8c05c2c11af0d494f09853a3301da3a0f94e76dd1fce52b52dcf3cf0d6446a51.svg",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "xml_well_formed": true
+    },
+    {
+      "format": "svg",
+      "bytes": 223,
+      "sha256": "ea157e8723bfc1c01756f3337eb3f195644656a318a537681ccad89201927bef",
+      "upload": 201,
+      "served": 200,
+      "stored_assets": 1,
+      "byte_equality": true,
+      "artifact": "/workspace/scratch/rct-validation/file_boundaries_developer/red-mvr-05-artifacts/ea157e8723bfc1c01756f3337eb3f195644656a318a537681ccad89201927bef.svg",
+      "actual_hash_equal": true,
+      "actual_length_equal": true,
+      "xml_well_formed": true
+    }
+  ],
+  "no_inflation": true
+}

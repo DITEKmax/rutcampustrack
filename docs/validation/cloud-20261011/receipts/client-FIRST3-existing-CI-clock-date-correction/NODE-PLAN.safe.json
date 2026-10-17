@@ -1,0 +1,146 @@
+{
+  "kind": "PROSPECTIVE_NODE_ONLY_PLAN_NOT_EXECUTED",
+  "sourceStatus": "CLOCK_MODE_CORRECTED_AWAIT_REVIEW",
+  "phases": [
+    "format-check",
+    "scoped-types",
+    "source-discovery"
+  ],
+  "guardsReused": {
+    "source": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-preparation-5ced-r1/run-source-checks.py",
+    "guard": "/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py",
+    "guardSha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+    "reuse": "same run_owned/status/observe/identity settlement; grant/source roots+three argv parameterization, no new supervisor or CI launcher"
+  },
+  "packages": {
+    "@playwright/test": {
+      "source": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/@playwright/test",
+      "version": "1.59.1",
+      "packageSha256": "6a1bfbf979df620c080e4b0b0506e6fc53a070e2280a971b189839b1a481ac01",
+      "target": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules/@playwright/test"
+    },
+    "playwright": {
+      "source": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/playwright",
+      "version": "1.59.1",
+      "packageSha256": "f5c873af32da3a56849a77a73eb4e6acf9629d58564ba420077feea88800225c",
+      "target": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules/playwright"
+    },
+    "playwright-core": {
+      "source": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/playwright-core",
+      "version": "1.59.1",
+      "packageSha256": "d4b8727c495ff2632084e922ee1c7f19a608ed23d86e8f3b0ba0ff317eea58ec",
+      "target": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules/playwright-core"
+    },
+    "@types/node": {
+      "source": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/@types/node",
+      "version": "22.19.17",
+      "packageSha256": "403e706113a09b27f38e95f1a4d9d04081d9744d349840e2521820e35d50db68",
+      "target": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules/@types/node"
+    },
+    "undici-types": {
+      "source": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/undici-types",
+      "version": "6.21.0",
+      "packageSha256": "11f873b423b96a5ad444a099685ca6b9de1379dcd83fd8d368e757ddb53658e4",
+      "target": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules/undici-types"
+    },
+    "@axe-core/playwright": {
+      "source": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/@axe-core/playwright",
+      "version": "4.11.2",
+      "packageSha256": "1156c42aeefc8ef879874b67d1d93de43d295adf2bb637ffa6c022d0147982a5",
+      "target": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules/@axe-core/playwright"
+    },
+    "axe-core": {
+      "source": "/workspace/rct-worktrees/client-acceptance/tests/e2e/node_modules/axe-core",
+      "version": "4.11.3",
+      "packageSha256": "2efb3a6c40e263a5cf7fc2c2950db551104b3b73fa1c67c9f19930dfd62645c7",
+      "target": "/workspace/rct-worktrees/client-ci-first3/tests/e2e/node_modules/axe-core"
+    }
+  },
+  "linksState": "PROPOSED_ONLY_NO_WHOLE_DIR_LINK_NO_SOURCE_ALIASES",
+  "limits": {
+    "nodeHeapMiB": 512,
+    "ownedTotalRssBytes": 1073741824,
+    "ownTmpCacheBytes": 33554432,
+    "phaseDeadlineSeconds": 180,
+    "serial": true,
+    "cleanupMarginSeconds": 60
+  },
+  "expected": {
+    "typesErrors": 0,
+    "discoveryCases": 3,
+    "sourceLines": [
+      14,
+      61,
+      142
+    ],
+    "project": "chromium",
+    "fixturesOrApiOrBrowserRun": false
+  },
+  "commands": [
+    [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "--max-old-space-size=512",
+      "/workspace/rct-worktrees/client-current-artifacts/frontends/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "--config",
+      "/workspace/rct-worktrees/client-ci-first3/.prettierrc.json",
+      "/workspace/rct-worktrees/client-ci-first3/.github/workflows/ci.yml",
+      "/workspace/rct-worktrees/client-ci-first3/tests/e2e/playwright.first3.config.ts",
+      "/workspace/rct-worktrees/client-ci-first3/tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "/workspace/rct-worktrees/client-ci-first3/tests/e2e/fixtures/first3-observer.ts"
+    ],
+    [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "--max-old-space-size=512",
+      "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/typecheck-safe.cjs"
+    ],
+    [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "--max-old-space-size=512",
+      "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/cli.js",
+      "test",
+      "--list",
+      "--config",
+      "/workspace/scratch/rct-validation/client_real_acceptance/ci-first3-db177-r1/source-discovery.config.ts",
+      "--project=chromium"
+    ]
+  ],
+  "explicitEnv": {
+    "PATH": "/usr/bin:/bin",
+    "LANG": "C.UTF-8",
+    "TZ": "UTC",
+    "CI": "true",
+    "E2E_BASE_URL": "https://localhost:8443",
+    "RCT_E2E_SYNTHETIC_SEED": "true",
+    "PLAYWRIGHT_NO_COPY_PROMPT": "1",
+    "RCT_FOCUS3_RUN": "<fresh-own-attempt-private700>",
+    "RCT_FOCUS3_OBSERVATIONS": "<run>/supervision/observations.safe.json",
+    "RCT_FOCUS3_TYPES_OUTPUT": "<run>/supervision/types.safe.json",
+    "RCT_FOCUS3_LIST_OUTPUT": "<run>/supervision/list.safe.json",
+    "RCT_E2E_TEACHING_CLOCK_DIR": "/workspace/scratch/rct-validation/current_host_config_v4/teaching-clock",
+    "TMPDIR": "<run>/private-tmp",
+    "TMP": "<run>/private-tmp",
+    "TEMP": "<run>/private-tmp",
+    "PWTEST_CACHE_DIR": "<run>/transform-cache"
+  },
+  "noInheritedCredentialsDebugReporterEnv": true,
+  "safeHandling": "guard suppresses stdout/stderr; types output closed error codes/count; discovery closed source/line/project and enforces pass; only safe metadata files; no raw errors or titles",
+  "failurePolicy": "Stop on unexpected/native failure. --check may expose real format violations; preserve result, no automatic --write/changed-source rerun under same seal. Fresh permission for mechanical correction+strict AST/comment/emit bridge if necessary.",
+  "actual": "NOT_RUN",
+  "formatConfigProvenance": {
+    "RootConfig": "/workspace/rutcampustrack/.prettierrc.json",
+    "ownConfig": "/workspace/rct-worktrees/client-ci-first3/.prettierrc.json",
+    "why": "Current Root config bytes matched; root at OWN worktree for tests/e2e TS override matching.",
+    "sameCurrentRootBytes": true,
+    ".editorconfigExists": false,
+    ".prettierignoreExists": false
+  },
+  "sourceCommit": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "nativeDispatchState": "COMMAND_PLAN_ONLY_FRESH_ROOT_PARAMETERS_AND_EXISTING_GUARD_REQUIRED",
+  "helperHashes": {
+    "typecheck-safe.cjs": "1125fbe3ccb4ab4c752bedee2c27cf0dd47a4998442c0885bebbf4acecccff00",
+    "tsconfig.ci-first3.json": "b16b2b1630c9eda2cde7af01152465e86077ba96db713ba59ec03cc96c92986a",
+    "discovery-reporter.cjs": "3cc737ed7002cfb35c1d9650bc033418e09fc21e8f7e0543a3ad34a3519365a6",
+    "source-discovery.config.ts": "5bd006be502f38b46f829c3409d48660731a0969948dda0f7898c3059331136d"
+  }
+}

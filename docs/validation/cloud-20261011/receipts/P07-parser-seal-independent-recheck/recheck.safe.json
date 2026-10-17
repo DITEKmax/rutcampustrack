@@ -1,0 +1,25 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "scope": "P07-PARSER-SEAL-BEFORE-EXEC_ONLY",
+  "child_sha256": "8ab926807def8d428db4a4b45296dc5565f167a6599af8e011683883a9aea960",
+  "author_manifest_sha256": "0dffb44ce67684a2ad6e78299741120221f811334ea2da4cfaf322dbdf29f18a",
+  "whole_inverse_old_child_byte_exact": true,
+  "unchanged_parent_parser_plan_source17": true,
+  "selected_actual_AST_RAM_controls": {
+    "old_changed": {
+      "loader_entered": true,
+      "refused": false
+    },
+    "new_changed": {
+      "loader_entered": false,
+      "refused": true
+    },
+    "new_exact": {
+      "loader_entered": true,
+      "refused": false
+    }
+  },
+  "old_review_manifest": "db7e7fd878c205d09f138fb7af5e06cb6eb9ef6df973ce6159a85685bf397312",
+  "native_private_XML_helper_execution": "NOT_RUN",
+  "qualification": "Same pinned helper checked immediately before execution. Existing Root grant/actual capacity/fresh native15/source preservation/reap requirements remain; P07 parent UNKNOWN."
+}

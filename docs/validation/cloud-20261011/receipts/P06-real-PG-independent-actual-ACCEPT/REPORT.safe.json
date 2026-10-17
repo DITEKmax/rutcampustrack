@@ -1,0 +1,32 @@
+{
+  "schema": "RCT_P06_ONE_ACTUAL_PG_INDEPENDENT_RECHECK_V1",
+  "verdict": "ACCEPT_FINITE_ACTUAL_CASE_PASS",
+  "findings": [],
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "producer_receipt": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/P06-real-PG-one-actual-PASS",
+  "checks": {
+    "report_sha256": "d02086694afd80efcbbd64b4726e161a4da57d9fe728e732166f90da1567b249",
+    "manifest_sha256": "012ef6f88a94d6c73e510d85012655742f82b2cf6a9341801033877c97d15b81",
+    "archive_sha256": "31e385836449b1bdec199cf98726cade935286eefdb0ba80eac0916ffbb5d170",
+    "manifest_and_archive_members_match": true,
+    "exact_selected_class_method_match": true,
+    "actual_counts_exact1_zeroFES": true,
+    "fresh_nonempty_projection_flags": true,
+    "source_commit_hash_match": true,
+    "current_public_source16_and_supplement60_match": true,
+    "callback_and_plan_current_pins_match": true,
+    "eight_identity_records_complete_unique_consistent": true,
+    "native0_normal_no_signals_settled": true,
+    "container_pg1_ryuk1_probe0_session1": true,
+    "foreign_restored_tmp_removed_lease_released": true,
+    "terminal_before_stop_after_grant": true,
+    "actual_seconds": 11.493,
+    "raw_private_artifacts_read": false,
+    "native_retest": false
+  },
+  "assessment": "Safe closed projection identifies exactly the reviewed method, one PASS/zero failures-errors-skips in 11.493s at unchanged test0669/commit4db89. Combined with prior independently reviewed sequential production JDBC/controller assertions, this supports actual committed A-revoke surviving authority reconstruction while B remains valid; exact-owned PG pause gives otherwise-valid B503 AUTHORITY_UNAVAILABLE/no-store/no internalToken and refresh-unavailable; recovery keeps A denied/Bvalid and session/JTI/event tuples unchanged, with retained B JTI still valid. This is a real dependency outage case, not a mocked outage seam or empty/skip-only run.",
+  "cleanup": "Safe records consistently bind seven child identities plus supervisor to eight absent births, normal native0/no signals/no supervision error/settled terminal before stop; actualPG1/Ryuk1/probe0/session1, owned containers settled, foreign volumes/networks restored, TMP/envelope removed and lease released. Metadata71 client callbacks were waited synchronously but their births were NOT_CAPTURED; no stronger birth claim.",
+  "limits": "Private XML/log/body/keys/credentials were not read or hashed. Counts/freshness/cleanup are accepted from the safe closed producer projection; public source/callback/supplement/archive pins were independently recomputed. No new native execution/retest. Focused mutation NOT_RUN; parentP06 UNKNOWN. Java authority reconstruction is not full OS Auth restart, standalone MockMvc is not Gateway/PWA/TMA, one STUDENT does not prove all roles.",
+  "effects": "Own safe review receipt/manifest/archive only; no source/shared writes or children."
+}

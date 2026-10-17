@@ -1,0 +1,53 @@
+{
+  "schema": "RCT_P06_REAL_PG_ONE_INDEPENDENT_SOURCE_REVIEW_V1",
+  "verdict": "APPROVE_SOURCE_FRESH_BOUND_ROOT_GRANT_REQUIRED",
+  "findings": [],
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "scope": "Narrow Source effects review of ONE existing accepted Auth realPG test caller; prior critical-test/cleanup review and actual mechanical-format/compile evidence reused.",
+  "source_commit": "4db89b1876ee7aa8a80b021dabdb7e664a4a0da3",
+  "test_sha256": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2",
+  "checks": {
+    "ready_sha256": "2d464a6e9fff87fd66c1ed0e38e56b4c4952e17bcb62c5e72d5667264bfa6b37",
+    "manifest_sha256": "5d22d1f3ff478cbfa22731334969354f5b08ef292de0baafb8eb8df6cee6949d",
+    "archive_sha256": "b1e48b213b26edc699881150e984429f1f082a1e6ee0817c8ed8f6905893253f",
+    "all_ready8_and_manifest_pins_match": true,
+    "three_callbacks_byte_identical": {
+      "run-it-owned.py": true,
+      "logged-it-child.py": true,
+      "it_container_observer.py": true
+    },
+    "three_callbacks_python_ast_valid": true,
+    "manifest_source16_match": true,
+    "supplement60_pins_match": true,
+    "migration57_count": 57,
+    "migration_inventory_complete": true,
+    "extra_build3_count": 3,
+    "head_matches4db89": true,
+    "worktree_clean": true,
+    "template_six_keys_exact": true,
+    "template_unused_lists_empty": true,
+    "template_three_allowed_roles_unbound": true,
+    "template_authority_false": true,
+    "actual_source_allowed_comprehension_three_roles_only": true,
+    "unused_synthetic_images_rejected_by_allowed_map": true,
+    "only_one_method_selector": true,
+    "exact_one_case_expected": true,
+    "reuse_false_timeout60_jdbc2_cleanup_preserved": true,
+    "run_namespace_absent": true,
+    "guard_pin_match": true,
+    "native_executed": false
+  },
+  "assessment": {
+    "selector": "Exactly existing Auth integrationTest --tests InternalSessionAdmissionIT.durableRevokeSurvivesReconstructionAndRealAuthorityOutageFailsClosed, expected one testcase; existing timeout60s/local JDBC2s/reusefalse/default checks/Ryuk and exact-owned pause-unpause/primary-suppressed cleanup preserved.",
+    "resources": "Parent requires exactly six image role keys. Future fresh grant must keep mongo/rabbitmq/redis EMPTY and bind actual existing ID/tag/size only for postgres16, matching default cached Ryuk, alpine3.17. Current allowed role lists are NULL placeholders and both authorization flags false; Source approval does not permit dispatch. Actual observer allowed-map AST comprehension with synthetic exact IDs admits only PG/Ryuk/probe, excludes unused dependency images; constructor requires distinct/pre-existing exact image IDs and no pull. Parent grant requires exclusive Docker creation plus own cleanup.",
+    "limits": "Inherited observer ENFORCES at most one PG, two Ryuk, four probes, two sessions, and two probes/session. Plan cardinality one Ryuk/one session/two probes is an EXPECTATION, not a newly enforced stricter limit; Root grant and acceptance must report actual counts honestly. No adapter or tightened/relaxed observer added.",
+    "ownership": "Observer requires new creation within phase, exact allowed image/default SDK/language/session labels, bounded public SDK probe class hash and own read-only privateTMP probe mount, exact Ryuk socket bind, or new anonymous data volume. Foreign baseline metadata/volume/network inventory preserved; no existing stand/old volumes/nativeMongo/data160 source read or mutation is selected.",
+    "cleanup": "Candidate session/resource ledger validates before commit; rejected inputs do not pollute admitted IDs. Parent attempts observer settle after settled process run; observer rechecks exact admitted ID/session/image/mount before rm -fv of only admitted leftovers. Unknown late resources remain unadmitted and require separately reviewed fresh metadata before cleanup; no automatic foreign cleanup. Resource termination cannot imply product failure. Normal test finally unpause plus original AfterAll PG stop and default Ryuk remain.",
+    "pins": "All8 READY and author manifest file pins match; callbacks5b27/130e/0dec byte-identical to accepted backend originals, parsed as AST only. Source16 plus complete existing 57-SQL inventory and 3 build pins match; worktree HEAD4db89 clean, new run namespace absent, guardb78 unchanged.",
+    "result": "PLAN requires private owned regular/no-follow bounded XML<=1MiB, fresh mtime after admitted stage, unchanged source, no DTD/ENTITY, exact one suite/class/method and tests1/zero failures/errors/skips plus no testcase failure/error/skipped; output finite known source-method/counters/flags only. Actual XML/log was neither read nor hashed; author10 RAM controls are Source proposals, not actual test evidence. Native0 alone insufficient: source/supplement/callback proof, all births absent, own resources gone, foreign inventory exact, privateTMP/envelope removed required.",
+    "authorization": "Current fresh Root exact grant/resource binding and normal platform approval still required; exclusive creation lease separate from any other active work. No mutation in caller/packet, no preparation or reuse of blocked T008 journal rights action."
+  },
+  "limitations": "Actual PostgreSQL/Docker/JDBC/timeouts/cleanup/closed XML result NOT_RUN by reviewer; sampled/sameUID controls are not hard isolation. Fresh authority reconstruction is not OS process restart; standalone MockMvc is not Gateway/PWA/TMA; one active STUDENT does not close all roles or parentP06.",
+  "effects": "Created only own safe receipt/manifest/archive; Source/AST/data checks and synthetic allowed-map expression only, no callback import/invocation/private bodies/XML/log/keys/env/native/API/product/shared-doc writes or children."
+}

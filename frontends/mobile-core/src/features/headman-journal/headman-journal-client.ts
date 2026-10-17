@@ -4,7 +4,13 @@ import {
   type ReportDownloadTicketRequest,
 } from '../../shared/report-download-client'
 
-export type HeadmanJournalLessonStatus = 'PLANNED' | 'ACTIVE' | 'CLOSED' | 'CANCELLED' | 'TRANSFERRED' | 'UNSUPPORTED'
+export type HeadmanJournalLessonStatus =
+  | 'PLANNED'
+  | 'ACTIVE'
+  | 'CLOSED'
+  | 'CANCELLED'
+  | 'TRANSFERRED'
+  | 'UNSUPPORTED'
 export type HeadmanLessonTransferState = 'PENDING' | 'COMPLETED' | 'ERROR'
 export type HeadmanLessonTransferErrorCode =
   | 'TARGET_DATA_CONFLICT'
@@ -13,7 +19,13 @@ export type HeadmanLessonTransferErrorCode =
   | 'INVALID_SNAPSHOT'
   | 'DEPENDENCY_UNAVAILABLE'
   | 'ARCHIVED_SEMESTER'
-export type HeadmanJournalAttendanceStatus = 'PRESENT' | 'ABSENT' | 'EXCUSED' | 'EMPTY' | 'CANCELLED' | 'UNSUPPORTED'
+export type HeadmanJournalAttendanceStatus =
+  | 'PRESENT'
+  | 'ABSENT'
+  | 'EXCUSED'
+  | 'EMPTY'
+  | 'CANCELLED'
+  | 'UNSUPPORTED'
 export type HeadmanJournalExcuseType =
   | 'ILLNESS'
   | 'MEDICAL_EXAMINATION'
@@ -35,6 +47,7 @@ export interface HeadmanJournalLesson {
   readonly endTime: string | null
   readonly room: string | null
   readonly lessonType: string | null
+  readonly blockedByHeadman?: boolean
   readonly occurrenceId?: string | null
   readonly occurrenceRevision: string | null
   readonly current: boolean
@@ -87,8 +100,18 @@ export function createHeadmanLessonTransferRequest(
   })
 }
 
-export interface HeadmanLessonRoomInput { readonly room: string | null; readonly expectedRevision: string }
-export interface HeadmanLessonRoomReceipt { readonly operationId: string; readonly state: 'COMPLETED'; readonly lessonId: string; readonly occurrenceId: string; readonly revision: string; readonly room: string | null }
+export interface HeadmanLessonRoomInput {
+  readonly room: string | null
+  readonly expectedRevision: string
+}
+export interface HeadmanLessonRoomReceipt {
+  readonly operationId: string
+  readonly state: 'COMPLETED'
+  readonly lessonId: string
+  readonly occurrenceId: string
+  readonly revision: string
+  readonly room: string | null
+}
 
 export interface HeadmanJournalApprovedTicket {
   readonly kind: 'EXCUSE' | 'LATE_CHECKIN'
@@ -128,11 +151,11 @@ export interface HeadmanJournalReport {
 export type HeadmanJournalMarkCommand =
   | { readonly status: 'PRESENT' | 'ABSENT' }
   | {
-    readonly status: 'EXCUSED'
-    readonly excuseType: HeadmanJournalExcuseType
-    readonly comment?: string | null
-    readonly file?: File | null
-  }
+      readonly status: 'EXCUSED'
+      readonly excuseType: HeadmanJournalExcuseType
+      readonly comment?: string | null
+      readonly file?: File | null
+    }
 
 export interface HeadmanJournalMarkAck {
   readonly status: 'PRESENT' | 'ABSENT' | 'EXCUSED'
@@ -152,7 +175,12 @@ export interface HeadmanJournalClearCondition {
 }
 
 export interface HeadmanJournalWritePort {
-  mark(lessonId: number, userId: number, command: HeadmanJournalMarkCommand, condition?: HeadmanJournalMarkCondition): Promise<HeadmanJournalMarkAck>
+  mark(
+    lessonId: number,
+    userId: number,
+    command: HeadmanJournalMarkCommand,
+    condition?: HeadmanJournalMarkCondition,
+  ): Promise<HeadmanJournalMarkAck>
   clear(lessonId: number, userId: number, condition?: HeadmanJournalClearCondition): Promise<void>
 }
 
@@ -236,7 +264,10 @@ export class HeadmanJournalApiError extends Error {
 export class HeadmanJournalApi implements HeadmanJournalWritePort {
   private readonly fetcher: typeof fetch
 
-  constructor(private readonly options: HeadmanJournalApiOptions, private readonly writePort: HeadmanJournalWritePort | null = null) {
+  constructor(
+    private readonly options: HeadmanJournalApiOptions,
+    private readonly writePort: HeadmanJournalWritePort | null = null,
+  ) {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
   }
 
@@ -244,23 +275,31 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     return true
   }
 
-  listLessons(groupId: number, dateFrom: string, dateTo: string): Promise<readonly HeadmanJournalLesson[]> {
+  listLessons(
+    groupId: number,
+    dateFrom: string,
+    dateTo: string,
+  ): Promise<readonly HeadmanJournalLesson[]> {
     assertPositiveInteger(groupId, 'groupId')
     assertDate(dateFrom, 'dateFrom')
     assertDate(dateTo, 'dateTo')
     if (dateFrom > dateTo) throw new RangeError('dateFrom must be before or equal to dateTo')
-    return this.requestPaged((page) => {
-      const query = new URLSearchParams({
-        dateFrom,
-        dateTo,
-        page: String(page),
-        size: '100',
-      })
-      for (const status of ['PLANNED', 'ACTIVE', 'CLOSED', 'CANCELLED', 'TRANSFERRED'] as const) {
-        query.append('status', status)
-      }
-      return `/api/schedule/groups/${groupId}/lessons?${query.toString()}`
-    }, 'lessonResponseList', normalizeLesson)
+    return this.requestPaged(
+      (page) => {
+        const query = new URLSearchParams({
+          dateFrom,
+          dateTo,
+          page: String(page),
+          size: '100',
+        })
+        for (const status of ['PLANNED', 'ACTIVE', 'CLOSED', 'CANCELLED', 'TRANSFERRED'] as const) {
+          query.append('status', status)
+        }
+        return `/api/schedule/groups/${groupId}/lessons?${query.toString()}`
+      },
+      'lessonResponseList',
+      normalizeLesson,
+    )
   }
 
   async getLessonAttendance(lessonId: number): Promise<HeadmanJournalReport> {
@@ -272,7 +311,9 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
   async downloadAttachment(lessonId: number, userId: number): Promise<Blob> {
     assertPositiveInteger(lessonId, 'lessonId')
     assertPositiveInteger(userId, 'userId')
-    const response = await this.response(`/api/attendance/lessons/${lessonId}/students/${userId}/attachment`)
+    const response = await this.response(
+      `/api/attendance/lessons/${lessonId}/students/${userId}/attachment`,
+    )
     if (!response.ok) throw await this.apiError(response)
     const blob = await response.blob()
     this.options.assertCurrent?.()
@@ -310,11 +351,24 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     }
   }
 
+  async setHeadmanBlock(lessonId: number, blocked: boolean): Promise<HeadmanJournalLesson> {
+    assertPositiveInteger(lessonId, 'lessonId')
+    const value = await this.request<unknown>(`/api/schedule/lessons/${lessonId}/blockage`, {
+      method: blocked ? 'POST' : 'DELETE',
+    })
+    const lesson = normalizeLesson(value)
+    if (!lesson || lesson.id !== lessonId || lesson.blockedByHeadman !== blocked) {
+      throw new Error('Сервер не подтвердил состояние геоблокировки выбранной пары.')
+    }
+    return lesson
+  }
+
   async cancelLesson(lessonId: number, reason: string): Promise<HeadmanJournalLesson> {
     assertPositiveInteger(lessonId, 'lessonId')
     const normalizedReason = reason.trim()
     if (!normalizedReason) throw new RangeError('Причина отмены обязательна')
-    if (Array.from(normalizedReason).length > 512) throw new RangeError('Причина отмены не может быть длиннее 512 символов')
+    if (Array.from(normalizedReason).length > 512)
+      throw new RangeError('Причина отмены не может быть длиннее 512 символов')
     const value = await this.request<unknown>(`/api/schedule/lessons/${lessonId}/cancel`, {
       method: 'PATCH',
       body: JSON.stringify({ reason: normalizedReason }),
@@ -334,7 +388,10 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     return lesson
   }
 
-  async transferLesson(lessonId: number, request: HeadmanLessonTransferRequest): Promise<HeadmanLessonTransferResponse> {
+  async transferLesson(
+    lessonId: number,
+    request: HeadmanLessonTransferRequest,
+  ): Promise<HeadmanLessonTransferResponse> {
     assertPositiveInteger(lessonId, 'lessonId')
     const payload = snapshotHeadmanLessonTransferRequest(request)
     const response = await this.response(`/api/schedule/lessons/${lessonId}/transfer`, {
@@ -350,27 +407,50 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     if (result.targetDate !== payload.targetDate) {
       throw new Error('Сервер вернул другую дату целевого переноса.')
     }
-    if ((response.status === 200 && result.state !== 'COMPLETED')
-      || (response.status === 202 && result.state !== 'PENDING')) {
+    if (
+      (response.status === 200 && result.state !== 'COMPLETED') ||
+      (response.status === 202 && result.state !== 'PENDING')
+    ) {
       throw new Error('Сервер вернул состояние переноса, не соответствующее HTTP-ответу.')
     }
     return result
   }
 
-  async changeLessonRoom(lessonId: number, input: HeadmanLessonRoomInput, key: string): Promise<HeadmanLessonRoomReceipt> {
-    assertPositiveInteger(lessonId, 'lessonId'); assertUuid(key, 'Idempotency-Key'); assertPositiveDecimalString(input.expectedRevision, 'expectedRevision')
-    if (input.room !== null && (typeof input.room !== 'string' || input.room.trim().length > 64)) throw new RangeError('Аудитория — до 64 символов.')
+  async changeLessonRoom(
+    lessonId: number,
+    input: HeadmanLessonRoomInput,
+    key: string,
+  ): Promise<HeadmanLessonRoomReceipt> {
+    assertPositiveInteger(lessonId, 'lessonId')
+    assertUuid(key, 'Idempotency-Key')
+    assertPositiveDecimalString(input.expectedRevision, 'expectedRevision')
+    if (input.room !== null && (typeof input.room !== 'string' || input.room.trim().length > 64))
+      throw new RangeError('Аудитория — до 64 символов.')
     const room = input.room?.trim() || null
-    const value = await this.request<unknown>(`/api/schedule/lessons/${lessonId}/room`, { method: 'PATCH', headers: { 'Idempotency-Key': key }, body: JSON.stringify({ room, expectedRevision: input.expectedRevision }) })
-    if (!isRecord(value) || value.state !== 'COMPLETED' || value.lessonId !== String(lessonId) || value.room !== room) throw new Error('Сервер не подтвердил исходное изменение аудитории.')
-    assertUuid(value.operationId as string, 'operationId'); assertPositiveDecimalString(value.occurrenceId as string, 'occurrenceId'); assertPositiveDecimalString(value.revision as string, 'revision')
+    const value = await this.request<unknown>(`/api/schedule/lessons/${lessonId}/room`, {
+      method: 'PATCH',
+      headers: { 'Idempotency-Key': key },
+      body: JSON.stringify({ room, expectedRevision: input.expectedRevision }),
+    })
+    if (
+      !isRecord(value) ||
+      value.state !== 'COMPLETED' ||
+      value.lessonId !== String(lessonId) ||
+      value.room !== room
+    )
+      throw new Error('Сервер не подтвердил исходное изменение аудитории.')
+    assertUuid(value.operationId as string, 'operationId')
+    assertPositiveDecimalString(value.occurrenceId as string, 'occurrenceId')
+    assertPositiveDecimalString(value.revision as string, 'revision')
     return value as unknown as HeadmanLessonRoomReceipt
   }
 
   async getLessonTransfer(operationId: string): Promise<HeadmanLessonTransferResponse> {
     assertUuid(operationId, 'operationId')
     const result = normalizeHeadmanLessonTransferResponse(
-      await this.request<unknown>(`/api/schedule/lesson-transfers/${encodeURIComponent(operationId)}`),
+      await this.request<unknown>(
+        `/api/schedule/lesson-transfers/${encodeURIComponent(operationId)}`,
+      ),
     )
     if (result.operationId !== operationId) {
       throw new Error('Сервер вернул состояние другой операции переноса.')
@@ -378,10 +458,19 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     return result
   }
 
-  mark(lessonId: number, userId: number, command: HeadmanJournalMarkCommand, condition?: HeadmanJournalMarkCondition): Promise<HeadmanJournalMarkAck> {
-    if (condition && (!['EMPTY', 'PRESENT', 'ABSENT', 'EXCUSED'].includes(condition.expectedStatus)
-      || typeof condition.expectedRevision !== 'string' || condition.expectedRevision.length === 0
-      || (condition.expectedStatus === 'EMPTY' && condition.expectedRevision !== 'EMPTY'))) {
+  mark(
+    lessonId: number,
+    userId: number,
+    command: HeadmanJournalMarkCommand,
+    condition?: HeadmanJournalMarkCondition,
+  ): Promise<HeadmanJournalMarkAck> {
+    if (
+      condition &&
+      (!['EMPTY', 'PRESENT', 'ABSENT', 'EXCUSED'].includes(condition.expectedStatus) ||
+        typeof condition.expectedRevision !== 'string' ||
+        condition.expectedRevision.length === 0 ||
+        (condition.expectedStatus === 'EMPTY' && condition.expectedRevision !== 'EMPTY'))
+    ) {
       throw new TypeError('Для записи отметки нужны текущий статус и серверная версия.')
     }
     if (this.writePort) return this.writePort.mark(lessonId, userId, command, condition)
@@ -407,15 +496,23 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
   }
 
   clear(lessonId: number, userId: number, condition?: HeadmanJournalClearCondition): Promise<void> {
-    if (condition && (!['PRESENT', 'ABSENT', 'EXCUSED'].includes(condition.expectedStatus)
-      || typeof condition.expectedRevision !== 'string' || condition.expectedRevision.length === 0)) {
+    if (
+      condition &&
+      (!['PRESENT', 'ABSENT', 'EXCUSED'].includes(condition.expectedStatus) ||
+        typeof condition.expectedRevision !== 'string' ||
+        condition.expectedRevision.length === 0)
+    ) {
       throw new TypeError('Для снятия отметки нужны её статус и серверная версия.')
     }
     if (this.writePort) return this.writePort.clear(lessonId, userId, condition)
     assertPositiveInteger(lessonId, 'lessonId')
     assertPositiveInteger(userId, 'userId')
-    const query = condition ? `?${new URLSearchParams({ expectedStatus: condition.expectedStatus, expectedRevision: condition.expectedRevision }).toString()}` : ''
-    return this.request<void>(`/api/attendance/lessons/${lessonId}/students/${userId}${query}`, { method: 'DELETE' })
+    const query = condition
+      ? `?${new URLSearchParams({ expectedStatus: condition.expectedStatus, expectedRevision: condition.expectedRevision }).toString()}`
+      : ''
+    return this.request<void>(`/api/attendance/lessons/${lessonId}/students/${userId}${query}`, {
+      method: 'DELETE',
+    })
   }
 
   private async requestPaged<T>(
@@ -427,7 +524,11 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     let nextPath = path(0)
     for (let page = 0; page < 100; page += 1) {
       const value = await this.request<unknown>(nextPath)
-      items.push(...embeddedItems(value, embeddedKey).map(normalize).filter((item): item is T => item !== null))
+      items.push(
+        ...embeddedItems(value, embeddedKey)
+          .map(normalize)
+          .filter((item): item is T => item !== null),
+      )
       const metadata = pageMetadata(value)
       if (metadata !== null && metadata.totalPages > page + 1) {
         nextPath = path(page + 1)
@@ -450,7 +551,7 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
         this.options.assertCurrent?.()
         return undefined as T
       }
-      const value = await response.json() as T
+      const value = (await response.json()) as T
       this.options.assertCurrent?.()
       return value
     }
@@ -461,7 +562,8 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-    if (typeof init?.body === 'string' && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+    if (typeof init?.body === 'string' && !headers.has('Content-Type'))
+      headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
     if (response.status === 401 && !retried && this.options.onUnauthorized) {
@@ -510,7 +612,8 @@ export function createGenerationBoundHeadmanJournalApi(
       assertCurrent()
     },
   }
-  const transport = fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
+  const transport =
+    fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
   options.fetcher = async (input, init) => {
     assertCurrent()
     const response = await transport(input, init)
@@ -528,7 +631,11 @@ function normalizeLesson(value: unknown): HeadmanJournalLesson | null {
   if (id === null || date === null) return null
   const status = normalizeLessonStatus(record.status)
   const occurrenceRevision = positiveDecimalValue(record.occurrenceRevision)
-  if (record.occurrenceRevision !== null && record.occurrenceRevision !== undefined && occurrenceRevision === null) {
+  if (
+    record.occurrenceRevision !== null &&
+    record.occurrenceRevision !== undefined &&
+    occurrenceRevision === null
+  ) {
     throw new Error('Сервер вернул некорректную revision пары в расписании.')
   }
   const transferOperationId = nullableUuid(record.transferOperationId, 'transferOperationId')
@@ -547,7 +654,12 @@ function normalizeLesson(value: unknown): HeadmanJournalLesson | null {
     endTime: stringValue(record.endTime),
     room: stringValue(record.room),
     lessonType: stringValue(record.lessonType),
-    ...(record.occurrenceId === undefined ? {} : { occurrenceId: positiveDecimalValue(record.occurrenceId) }),
+    ...(record.occurrenceId === undefined
+      ? {}
+      : { occurrenceId: positiveDecimalValue(record.occurrenceId) }),
+    ...(typeof record.blockedByHeadman === 'boolean'
+      ? { blockedByHeadman: record.blockedByHeadman }
+      : {}),
     occurrenceRevision,
     current: booleanValue(record.current) ?? false,
     transferOperationId,
@@ -567,30 +679,63 @@ function normalizeHeadmanLessonTransferResponse(value: unknown): HeadmanLessonTr
   const revision = positiveDecimalValue(record.revision)
   const retryable = booleanValue(record.retryable)
   const errorCode = nullableTransferErrorCode(record.errorCode)
-  if (operationId === null || state === null || occurrenceId === null || sourceLessonId === null
-    || targetLessonId === null || targetDate === null || revision === null || retryable === null || errorCode === undefined) {
+  if (
+    operationId === null ||
+    state === null ||
+    occurrenceId === null ||
+    sourceLessonId === null ||
+    targetLessonId === null ||
+    targetDate === null ||
+    revision === null ||
+    retryable === null ||
+    errorCode === undefined
+  ) {
     throw new Error('Сервер вернул неполный ответ о переносе пары.')
   }
   if ((state === 'ERROR') !== (errorCode !== null) || retryable !== (state === 'PENDING')) {
     throw new Error('Сервер вернул противоречивое состояние операции переноса.')
   }
-  return { operationId, state, occurrenceId, sourceLessonId, targetLessonId, targetDate, revision, retryable, errorCode }
+  return {
+    operationId,
+    state,
+    occurrenceId,
+    sourceLessonId,
+    targetLessonId,
+    targetDate,
+    revision,
+    retryable,
+    errorCode,
+  }
 }
 
-function snapshotHeadmanLessonTransferRequest(value: HeadmanLessonTransferRequest): HeadmanLessonTransferRequest {
+function snapshotHeadmanLessonTransferRequest(
+  value: HeadmanLessonTransferRequest,
+): HeadmanLessonTransferRequest {
   if (!value || typeof value !== 'object') throw new TypeError('request обязателен')
   assertDate(value.targetDate, 'targetDate')
-  if (!Number.isInteger(value.targetLessonNumber) || value.targetLessonNumber < 1 || value.targetLessonNumber > 8) {
+  if (
+    !Number.isInteger(value.targetLessonNumber) ||
+    value.targetLessonNumber < 1 ||
+    value.targetLessonNumber > 8
+  ) {
     throw new RangeError('targetLessonNumber должен быть от 1 до 8')
   }
   assertPositiveDecimalString(value.expectedRevision, 'expectedRevision')
   assertUuid(value.requestKey, 'requestKey')
   const hasStart = value.targetStartTime !== null
   const hasEnd = value.targetEndTime !== null
-  if (hasStart !== hasEnd || (hasStart && (!isTimeValue(value.targetStartTime) || !isTimeValue(value.targetEndTime)))) {
-    throw new RangeError('targetStartTime и targetEndTime должны задаваться вместе корректным временем')
+  if (
+    hasStart !== hasEnd ||
+    (hasStart && (!isTimeValue(value.targetStartTime) || !isTimeValue(value.targetEndTime)))
+  ) {
+    throw new RangeError(
+      'targetStartTime и targetEndTime должны задаваться вместе корректным временем',
+    )
   }
-  if (value.targetRoom !== null && (typeof value.targetRoom !== 'string' || Array.from(value.targetRoom).length > 64)) {
+  if (
+    value.targetRoom !== null &&
+    (typeof value.targetRoom !== 'string' || Array.from(value.targetRoom).length > 64)
+  ) {
     throw new RangeError('targetRoom не может быть длиннее 64 символов')
   }
   return Object.freeze({
@@ -611,19 +756,34 @@ function normalizeWeeklyExportOptions(value: unknown): HeadmanWeeklyExportOption
   const semesterName = stringValue(record.semesterName)
   const semesterDateFrom = isoDateValue(record.semesterDateFrom)
   const semesterDateTo = isoDateValue(record.semesterDateTo)
-  if (semesterId === null || semesterName === null || semesterDateFrom === null || semesterDateTo === null) {
+  if (
+    semesterId === null ||
+    semesterName === null ||
+    semesterDateFrom === null ||
+    semesterDateTo === null
+  ) {
     throw new Error('Сервер вернул неполный контекст семестра.')
   }
   if (!Array.isArray(record.weeks) || !Array.isArray(record.formats)) {
     throw new Error('Сервер не вернул список недель и форматов.')
   }
-  const weeks = record.weeks.map(normalizeWeeklyWeek).filter((item): item is HeadmanWeeklyWeekOption => item !== null)
-  const formats = record.formats.map(normalizeWeeklyFormat).filter((item): item is HeadmanWeeklyExportFormat => item !== null)
-  if (weeks.length !== record.weeks.length || formats.length !== record.formats.length || formats.length === 0) {
+  const weeks = record.weeks
+    .map(normalizeWeeklyWeek)
+    .filter((item): item is HeadmanWeeklyWeekOption => item !== null)
+  const formats = record.formats
+    .map(normalizeWeeklyFormat)
+    .filter((item): item is HeadmanWeeklyExportFormat => item !== null)
+  if (
+    weeks.length !== record.weeks.length ||
+    formats.length !== record.formats.length ||
+    formats.length === 0
+  ) {
     throw new Error('Сервер вернул некорректный список недель или форматов.')
   }
-  if (new Set(weeks.map((week) => week.weekStart)).size !== weeks.length
-    || new Set(formats.map((format) => format.code)).size !== formats.length) {
+  if (
+    new Set(weeks.map((week) => week.weekStart)).size !== weeks.length ||
+    new Set(formats.map((format) => format.code)).size !== formats.length
+  ) {
     throw new Error('Сервер вернул повторяющиеся недели или форматы.')
   }
   return {
@@ -644,8 +804,18 @@ function normalizeWeeklyWeek(value: unknown): HeadmanWeeklyWeekOption | null {
   const weekStart = isoDateValue(value.weekStart)
   const weekEnd = isoDateValue(value.weekEnd)
   const current = booleanValue(value.current)
-  if (weekOfSemester === null || weekOfSemester <= 0 || isoWeek === null || isoWeek <= 0
-    || label === null || weekStart === null || weekEnd === null || current === null || weekStart > weekEnd) return null
+  if (
+    weekOfSemester === null ||
+    weekOfSemester <= 0 ||
+    isoWeek === null ||
+    isoWeek <= 0 ||
+    label === null ||
+    weekStart === null ||
+    weekEnd === null ||
+    current === null ||
+    weekStart > weekEnd
+  )
+    return null
   return { weekOfSemester, isoWeek, label, weekStart, weekEnd, current }
 }
 
@@ -655,8 +825,15 @@ function normalizeWeeklyFormat(value: unknown): HeadmanWeeklyExportFormat | null
   const label = stringValue(value.label)
   const contentType = stringValue(value.contentType)
   const extension = stringValue(value.extension)
-  if (code === null || label === null || contentType === null || extension === null
-    || !/^[a-z0-9-]+$/.test(code) || !/^[a-z0-9]+$/.test(extension)) return null
+  if (
+    code === null ||
+    label === null ||
+    contentType === null ||
+    extension === null ||
+    !/^[a-z0-9-]+$/.test(code) ||
+    !/^[a-z0-9]+$/.test(extension)
+  )
+    return null
   return { code, label, contentType, extension }
 }
 
@@ -701,8 +878,13 @@ function normalizeReport(value: unknown, fallbackLessonId: number): HeadmanJourn
 }
 
 function normalizeApprovedTicket(value: unknown): HeadmanJournalApprovedTicket | null {
-  if (!isRecord(value) || (value.kind !== 'EXCUSE' && value.kind !== 'LATE_CHECKIN')
-    || value.status !== 'APPROVED' || !stringValue(value.id)) return null
+  if (
+    !isRecord(value) ||
+    (value.kind !== 'EXCUSE' && value.kind !== 'LATE_CHECKIN') ||
+    value.status !== 'APPROVED' ||
+    !stringValue(value.id)
+  )
+    return null
   return { kind: value.kind, id: value.id as string, status: 'APPROVED' }
 }
 
@@ -710,22 +892,24 @@ function normalizeEntry(value: unknown, reportEditable: boolean): HeadmanJournal
   if (!isRecord(value)) return null
   const userId = positiveInteger(value.userId)
   if (userId === null) return null
-  const rawStatus = typeof value.status === 'string'
-    ? value.status.trim().toUpperCase()
-    : value.status === null
-      ? ''
-      : 'UNSUPPORTED'
-  const status: HeadmanJournalAttendanceStatus = rawStatus === 'PRESENT'
-    ? 'PRESENT'
-    : rawStatus === 'ABSENT'
-      ? 'ABSENT'
-      : rawStatus === 'EXCUSED'
-        ? 'EXCUSED'
-      : rawStatus === 'CANCELLED'
-          ? 'CANCELLED'
-          : rawStatus === ''
-            ? 'EMPTY'
-            : 'UNSUPPORTED'
+  const rawStatus =
+    typeof value.status === 'string'
+      ? value.status.trim().toUpperCase()
+      : value.status === null
+        ? ''
+        : 'UNSUPPORTED'
+  const status: HeadmanJournalAttendanceStatus =
+    rawStatus === 'PRESENT'
+      ? 'PRESENT'
+      : rawStatus === 'ABSENT'
+        ? 'ABSENT'
+        : rawStatus === 'EXCUSED'
+          ? 'EXCUSED'
+          : rawStatus === 'CANCELLED'
+            ? 'CANCELLED'
+            : rawStatus === ''
+              ? 'EMPTY'
+              : 'UNSUPPORTED'
   return {
     userId,
     displayName: stringValue(value.displayName) ?? `Студент #${userId}`,
@@ -747,8 +931,13 @@ function normalizeEntry(value: unknown, reportEditable: boolean): HeadmanJournal
 
 function normalizeLessonStatus(value: unknown): HeadmanJournalLessonStatus {
   const status = typeof value === 'string' ? value.trim().toUpperCase() : ''
-  return status === 'PLANNED' || status === 'ACTIVE' || status === 'CLOSED'
-    || status === 'CANCELLED' || status === 'TRANSFERRED' ? status : 'UNSUPPORTED'
+  return status === 'PLANNED' ||
+    status === 'ACTIVE' ||
+    status === 'CLOSED' ||
+    status === 'CANCELLED' ||
+    status === 'TRANSFERRED'
+    ? status
+    : 'UNSUPPORTED'
 }
 
 function unwrapContent(value: unknown): Record<string, unknown> | null {
@@ -779,7 +968,8 @@ function nextPageHref(value: unknown): string | null {
 }
 
 function assertPositiveInteger(value: number, name: string): void {
-  if (!Number.isSafeInteger(value) || value <= 0) throw new RangeError(`${name} must be a positive integer`)
+  if (!Number.isSafeInteger(value) || value <= 0)
+    throw new RangeError(`${name} must be a positive integer`)
 }
 
 function assertDate(value: string, name: string): void {
@@ -793,14 +983,19 @@ function assertPositiveDecimalString(value: string, name: string): void {
 }
 
 function assertUuid(value: string, name: string): void {
-  if (typeof value !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)) {
+  if (
+    typeof value !== 'string' ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+  ) {
     throw new RangeError(`${name} must be a UUID`)
   }
 }
 
 function positiveDecimalValue(value: unknown): string | null {
   if (typeof value === 'string' && /^[1-9][0-9]*$/.test(value)) return value
-  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0 ? String(value) : null
+  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0
+    ? String(value)
+    : null
 }
 
 function nullableUuid(value: unknown, name: string): string | null {
@@ -820,17 +1015,28 @@ function nullableTransferState(value: unknown): HeadmanLessonTransferState | nul
   throw new Error('Сервер вернул неподдерживаемое состояние переноса пары.')
 }
 
-function nullableTransferErrorCode(value: unknown): HeadmanLessonTransferErrorCode | null | undefined {
+function nullableTransferErrorCode(
+  value: unknown,
+): HeadmanLessonTransferErrorCode | null | undefined {
   if (value === null || value === undefined || value === '') return null
-  if (value === 'TARGET_DATA_CONFLICT' || value === 'SOURCE_STATE_CONFLICT' || value === 'SCOPE_MISMATCH'
-    || value === 'INVALID_SNAPSHOT' || value === 'DEPENDENCY_UNAVAILABLE' || value === 'ARCHIVED_SEMESTER') {
+  if (
+    value === 'TARGET_DATA_CONFLICT' ||
+    value === 'SOURCE_STATE_CONFLICT' ||
+    value === 'SCOPE_MISMATCH' ||
+    value === 'INVALID_SNAPSHOT' ||
+    value === 'DEPENDENCY_UNAVAILABLE' ||
+    value === 'ARCHIVED_SEMESTER'
+  ) {
     return value
   }
   return undefined
 }
 
 function isTimeValue(value: unknown): value is string {
-  return typeof value === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,9})?)?$/.test(value)
+  return (
+    typeof value === 'string' &&
+    /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,9})?)?$/.test(value)
+  )
 }
 
 function positiveInteger(value: unknown): number | null {
@@ -859,7 +1065,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function problemDetail(value: unknown): string | null {
   if (!isRecord(value)) return null
-  return typeof value.detail === 'string' ? value.detail : typeof value.title === 'string' ? value.title : null
+  return typeof value.detail === 'string'
+    ? value.detail
+    : typeof value.title === 'string'
+      ? value.title
+      : null
 }
 
 function markPayload(command: HeadmanJournalMarkCommand): Record<string, string> {
@@ -878,22 +1088,29 @@ function markPayload(command: HeadmanJournalMarkCommand): Record<string, string>
 
 function optionalComment(value: string | null | undefined): string | undefined {
   if (value === null || value === undefined || value.trim() === '') return undefined
-  if (Array.from(value).length > 1000) throw new RangeError('comment не может быть длиннее 1000 символов')
+  if (Array.from(value).length > 1000)
+    throw new RangeError('comment не может быть длиннее 1000 символов')
   return value
 }
 
 function isHeadmanJournalExcuseType(value: string): value is HeadmanJournalExcuseType {
-  return value === 'ILLNESS'
-    || value === 'MEDICAL_EXAMINATION'
-    || value === 'COMPETITION_PARTICIPATION'
-    || value === 'FAMILY_CIRCUMSTANCES'
-    || value === 'SUMMONS'
-    || value === 'UNIVERSITY_ORDER'
-    || value === 'EXEMPTION'
-    || value === 'OTHER'
+  return (
+    value === 'ILLNESS' ||
+    value === 'MEDICAL_EXAMINATION' ||
+    value === 'COMPETITION_PARTICIPATION' ||
+    value === 'FAMILY_CIRCUMSTANCES' ||
+    value === 'SUMMONS' ||
+    value === 'UNIVERSITY_ORDER' ||
+    value === 'EXEMPTION' ||
+    value === 'OTHER'
+  )
 }
 
-function normalizeMarkAck(value: unknown, fallbackLessonId: number, fallbackUserId: number): HeadmanJournalMarkAck {
+function normalizeMarkAck(
+  value: unknown,
+  fallbackLessonId: number,
+  fallbackUserId: number,
+): HeadmanJournalMarkAck {
   const record = unwrapContent(value)
   const status = typeof record?.status === 'string' ? record.status.toUpperCase() : ''
   if (status !== 'PRESENT' && status !== 'ABSENT' && status !== 'EXCUSED') {

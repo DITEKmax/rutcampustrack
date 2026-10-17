@@ -1,0 +1,1300 @@
+[
+  {
+    "id": "JS-TEACHER-01",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:341"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "revised",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "веб-панель"
+      ]
+    },
+    "prestate": "я захожу в веб-панель",
+    "action": "видеть выпадающий список только своих групп, а внутри каждой группы — выпадающий список только своих предметов",
+    "expected_result": "быстро найти нужный журнал.",
+    "accepted_source_text": "✏️ **УТОЧНЕНО (чат 6).** Когда я захожу в веб-панель, я хочу видеть выпадающий список только своих групп, а внутри каждой группы — выпадающий список только своих предметов, чтобы быстро найти нужный журнал.\n> Цепочка подтверждена прим. 1 скана 122: **группа → предмет (подтягиваются автоматически из группы) → тип занятия** (неактивен, пока не выбран предмет). На ПК-121 это **не селекторы, а списки-ссылки**: главная задаёт контекст навигацией, 122 и 123 — фильтрами.",
+    "accepted_criteria_before_overlay": [
+      "✏️ **УТОЧНЕНО (чат 6).** Когда я захожу в веб-панель, я хочу видеть выпадающий список только своих групп, а внутри каждой группы — выпадающий список только своих предметов, чтобы быстро найти нужный журнал.",
+      "> Цепочка подтверждена прим. 1 скана 122: **группа → предмет (подтягиваются автоматически из группы) → тип занятия** (неактивен, пока не выбран предмет). На ПК-121 это **не селекторы, а списки-ссылки**: главная задаёт контекст навигацией, 122 и 123 — фильтрами."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-26",
+      "DEC-2026-09-23-teacher-replacement-and-group-attendance"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:358",
+      "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "✏️ **УТОЧНЕНО (чат 6).** Когда я захожу в веб-панель, я хочу видеть выпадающий список только своих групп, а внутри каждой группы — выпадающий список только своих предметов, чтобы быстро найти нужный журнал.",
+        "> Цепочка подтверждена прим. 1 скана 122: **группа → предмет (подтягиваются автоматически из группы) → тип занятия** (неактивен, пока не выбран предмет). На ПК-121 это **не селекторы, а списки-ссылки**: главная задаёт контекст навигацией, 122 и 123 — фильтрами."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-26",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:358",
+          "rules": "### Р-26. Назначение как отдельная сущность\n\n🆕 **Решено 12.08.2026.** Закрывает AC-07, блокировавший роль teacher целиком\nи экраны 116.1, 117, 121, 122, 123.\n\n**Было:** преподаватель привязан к предмету целиком — «Иванов ↔ Матанализ».\nТип занятия в связи не участвует. Следствие: «мои пары» отобрать не из чего,\nстроки «Матанализ · лекция» и «Матанализ · практика» неразличимы, «типа нет»\nне отличается от «тип есть, но веду не я».\n\n**Стало: назначение — самостоятельная сущность со своим идентификатором.**\nСостав: группа × предмет × тип занятия × семестр × преподаватель.\n\n```\nИТ-201 · Матанализ · лекция       · осень 2026 · Иванов\nИТ-201 · Матанализ · практика     · осень 2026 · Петрова\nИТ-201 · Матанализ · лабораторная · осень 2026 · Сидоров\nИТ-201 · Матанализ · лабораторная · осень 2026 · Кузнецов\n```\n\n**Преподавателей на один тип занятия может быть сколько угодно** — двое, трое\nи больше; ограничения сверху нет. Отдельной механики для этого нет: каждый преподаватель — своя строка\nназначения. Прежняя связь «предмет ↔ преподаватель» уходит: она становится\nчастным случаем назначения.\n\n**Связь только по идентификаторам.** Пара расписания ссылается на назначение\nпо его идентификатору, а не на кортеж «предмет + тип + группа». Правило проекта\nдействует и здесь: **идентификатор — это uuid или инкрементный ключ, никогда\nне текст и никогда не комбинация полей.** Названия предмета, группы и типа\nзанятия — отображаемые данные, не ключи.\n\n**Смена преподавателя не переписывает прошлое.** Назначение не редактируется\nна живую и не удаляется: у него есть период действия. При смене прежнее\nзакрывается датой окончания, новое заводится с датой начала. Пары ссылаются\nна конкретное назначение по идентификатору, поэтому пара, проведённая при\nпрежнем преподавателе, **навсегда сохраняет, кто её вёл**. Журналы, статистика\nи выгрузки прошлых периодов от смены не меняются.\n\n**В расписании преподавателя группа пишется всегда** — это следует из состава\nназначения и требования SC-03: поля разреза по преподавателю включают\nидентификатор группы и её название.\n\n**Обогащение `GET /academic/assignments/my`** (AC-21): возвращаются не голые\nидентификаторы, а названия группы и предмета вместе с типом занятия,\nотфильтрованные **по активному семестру на сервере**. Иначе экран покажет\nпрошлогодние назначения как текущие — переключателя семестра на макетах нет."
+        },
+        {
+          "id": "DEC-2026-09-23-teacher-replacement-and-group-attendance",
+          "source_ref": "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md:1",
+          "rules": "# Смена преподавателя и чтение посещаемости группы\n\nРешение владельца в главном чате, 2026-09-23. Приоритет выше прежних ограничений спецификации и текущей реализации. Запись решения не означает готовность реализации.\n\n## Принятое поведение\n\n1. При смене преподавателя все ещё не проведённые занятия начиная с выбранной даты переходят новому преподавателю.\n2. Прошедшие занятия, посещаемость и история остаются у прежнего преподавателя. История замены сохраняется.\n3. Все преподаватели с активным назначением в группе видят посещаемость всей группы, включая результаты занятий до своего назначения. Доступ к чтению не ограничивается только собственными занятиями преподавателя.\n\nДословное дополнение владельца: «посещаемость за всю группу видят все преподаватели которые активны в группе. назначенный после генерации пар преподаватель видит результат прошлых пар».\n\n## Границы реализации\n\n- Это решение расширяет чтение посещаемости, но не даёт новых прав изменять отметки, чужие занятия или домашние задания.\n- Активное назначение и доступ к конкретной группе проверяет сервер. Сам факт исторического назначения не доказывает текущего права на чтение.\n- Существующий запрет закрытия назначения при любых сохранённых будущих занятиях не обеспечивает утверждённую смену преподавателя. Нужен согласованный переход будущих занятий с сохранением истории и защитой от повторного запроса и конкурирующей генерации.\n- Способ хранения истории замены и технический протокол определяются в контракте реализации. Этот документ не разрешает удаление производственных данных, развёртывание или миграцию production.\n\n## Проверяемый результат\n\nСтароста меняет преподавателя с даты D → будущие непроведённые занятия с D относятся к новому преподавателю → после обновления результат сохраняется → прошлые занятия и отметки сохраняют прежнюю историю. Новый преподаватель с активным назначением открывает посещаемость всей своей группы и видит также прошлые занятия; пользователь без активного назначения в этой группе не получает доступ на основании этого правила.\n\nВладельцы реализации: assignment lifecycle — `headman_requests_delivery`; teacher read authority/statistics — `admin_semester_delivery`. Приёмка и последовательная интеграция в main — главный чат.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-02",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:345"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "я веду лекцию на потоке из нескольких групп",
+    "action": "видеть посещаемость каждой группы отдельно по одному предмету",
+    "expected_result": "не путать данные разных групп.",
+    "accepted_source_text": "Когда я веду лекцию на потоке из нескольких групп, я хочу видеть посещаемость каждой группы отдельно по одному предмету, чтобы не путать данные разных групп.\n> 🆕 **Следствие (чат 6):** поток — это **несколько назначений и несколько пар**, по одной на группу. На 121 они видны отдельными строками, в срезе дня — отдельными строками с указанием группы. Склейки «поток» в продукте нет.",
+    "accepted_criteria_before_overlay": [
+      "Когда я веду лекцию на потоке из нескольких групп, я хочу видеть посещаемость каждой группы отдельно по одному предмету, чтобы не путать данные разных групп.",
+      "> 🆕 **Следствие (чат 6):** поток — это **несколько назначений и несколько пар**, по одной на группу. На 121 они видны отдельными строками, в срезе дня — отдельными строками с указанием группы. Склейки «поток» в продукте нет."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [],
+    "owner_overlay_refs": [],
+    "effective_criteria": {
+      "source_clauses": [
+        "Когда я веду лекцию на потоке из нескольких групп, я хочу видеть посещаемость каждой группы отдельно по одному предмету, чтобы не путать данные разных групп.",
+        "> 🆕 **Следствие (чат 6):** поток — это **несколько назначений и несколько пар**, по одной на группу. На 121 они видны отдельными строками, в срезе дня — отдельными строками с указанием группы. Склейки «поток» в продукте нет."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": []
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-03",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:349"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "я открываю журнал",
+    "action": "видеть таблицу: строки — студенты, столбцы — даты пар, ячейки — статусы",
+    "expected_result": "оценить картину посещаемости за семестр.",
+    "accepted_source_text": "✏️ **Уточнение.** Когда я открываю журнал, я хочу видеть таблицу: строки — студенты, столбцы — даты пар, ячейки — статусы, чтобы оценить картину посещаемости за семестр.\n> Статусы в ячейках: `+`, `н`, `у` и «отменена». Прежнее обозначение «б/н/у/сп» неактуально — «сп» (свободное посещение) отменено.\n> ✏️ **Чат 6:** столбец — это **пара, а не дата**: подпись столбца — дата, а тип занятия появляется в подписи, **только когда выбрано несколько типов** (в один день у предмета может быть и ЛК, и ПЗ). Список студентов — **строго по алфавиту, без сортировки и фильтров** (прим. 1 скана 122). Ячейка обязана различать `pending` (по паре есть активная заявка) и `auto-absent` («н» проставлен автоматически при закрытии пары): без этого преподаватель делает выводы о студенте по машинной отметке.",
+    "accepted_criteria_before_overlay": [
+      "✏️ **Уточнение.** Когда я открываю журнал, я хочу видеть таблицу: строки — студенты, столбцы — даты пар, ячейки — статусы, чтобы оценить картину посещаемости за семестр.",
+      "> Статусы в ячейках: `+`, `н`, `у` и «отменена». Прежнее обозначение «б/н/у/сп» неактуально — «сп» (свободное посещение) отменено.",
+      "> ✏️ **Чат 6:** столбец — это **пара, а не дата**: подпись столбца — дата, а тип занятия появляется в подписи, **только когда выбрано несколько типов** (в один день у предмета может быть и ЛК, и ПЗ). Список студентов — **строго по алфавиту, без сортировки и фильтров** (прим. 1 скана 122). Ячейка обязана различать `pending` (по паре есть активная заявка) и `auto-absent` («н» проставлен автоматически при закрытии пары): без этого преподаватель делает выводы о студенте по машинной отметке."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "> Статусы в ячейках: `+`, `н`, `у` и «отменена». Прежнее обозначение «б/н/у/сп» неактуально — «сп» (свободное посещение) отменено.",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-16",
+      "R-28",
+      "DEC-2026-09-23-teacher-replacement-and-group-attendance",
+      "DEC-2026-10-06-teacher-removal-without-replacement"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:227",
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:431",
+      "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md:1",
+      "docs/product/decisions/2026-10-06-teacher-removal-without-replacement.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "✏️ **Уточнение.** Когда я открываю журнал, я хочу видеть таблицу: строки — студенты, столбцы — даты пар, ячейки — статусы, чтобы оценить картину посещаемости за семестр.",
+        "> Статусы в ячейках: `+`, `н`, `у` и «отменена». Прежнее обозначение «б/н/у/сп» неактуально — «сп» (свободное посещение) отменено.",
+        "> ✏️ **Чат 6:** столбец — это **пара, а не дата**: подпись столбца — дата, а тип занятия появляется в подписи, **только когда выбрано несколько типов** (в один день у предмета может быть и ЛК, и ПЗ). Список студентов — **строго по алфавиту, без сортировки и фильтров** (прим. 1 скана 122). Ячейка обязана различать `pending` (по паре есть активная заявка) и `auto-absent` («н» проставлен автоматически при закрытии пары): без этого преподаватель делает выводы о студенте по машинной отметке."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-16",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:227",
+          "rules": "### Р-16. Фильтр и сортировка у колонки\n\nПравило: **у каждой колонки есть фильтр и сортировка**. Структура описания — §3.1\n`table-filters.md`; описание приходит с бэкенда, фронт колонки и перечни значений\nне зашивает.\n\n**Три исключения, подтверждённые явно:**\n\n1. **Состав группы на 116** — ни фильтров, ни сортировки; порядок алфавитный.\n2. **Список семестров на 134** — фильтр по статусу есть, сортировки по колонкам нет.\n3. **Колонка «Почему черновик» на 133** — без фильтра: внутри разреза причина одна."
+        },
+        {
+          "id": "R-28",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:431",
+          "rules": "### Р-28. Метрики посещаемости — один серверный расчёт\n\n🆕 **Решено 15.08.2026.** Найдено при сборке блоков 122 и 123.\n\n**Было:** одни и те же четыре метрики берутся из разных мест. На 122 они\nприходят вместе с журнальной сеткой; на 123 нужен собственный источник,\nкоторого не существует. Разные наборы данных дают расхождение цифр —\nи расходятся они именно в отчёте, уходящем на кафедру.\n\n**Стало: считает сервер, одним расчётом.** 122 отдаёт метрики вместе с сеткой.\n123 запрашивает агрегат в двух разрезах — по студентам внутри назначения\nи по группам преподавателя. Клиентский расчёт исключён на обоих экранах;\nэто частный случай уже действующего правила «клиентский отбор отменён везде».\n\n**«Учтено пар» приходит тем же ответом, что таблица разреза.** Отдельного\nзапроса ради одного числа не заводится: шапка отчёта принадлежит отчёту.\n\n**Что этим не закрывается.** Кросс-групповая идентичность предмета: предмет\nпринадлежит группе (Р-15), сравнивать группы «по одному предмету» не по чему.\nОтбор по предмету в разрезе по группам остаётся недоступным с текстовой\nпричиной — решение не переоткрывается."
+        },
+        {
+          "id": "DEC-2026-09-23-teacher-replacement-and-group-attendance",
+          "source_ref": "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md:1",
+          "rules": "# Смена преподавателя и чтение посещаемости группы\n\nРешение владельца в главном чате, 2026-09-23. Приоритет выше прежних ограничений спецификации и текущей реализации. Запись решения не означает готовность реализации.\n\n## Принятое поведение\n\n1. При смене преподавателя все ещё не проведённые занятия начиная с выбранной даты переходят новому преподавателю.\n2. Прошедшие занятия, посещаемость и история остаются у прежнего преподавателя. История замены сохраняется.\n3. Все преподаватели с активным назначением в группе видят посещаемость всей группы, включая результаты занятий до своего назначения. Доступ к чтению не ограничивается только собственными занятиями преподавателя.\n\nДословное дополнение владельца: «посещаемость за всю группу видят все преподаватели которые активны в группе. назначенный после генерации пар преподаватель видит результат прошлых пар».\n\n## Границы реализации\n\n- Это решение расширяет чтение посещаемости, но не даёт новых прав изменять отметки, чужие занятия или домашние задания.\n- Активное назначение и доступ к конкретной группе проверяет сервер. Сам факт исторического назначения не доказывает текущего права на чтение.\n- Существующий запрет закрытия назначения при любых сохранённых будущих занятиях не обеспечивает утверждённую смену преподавателя. Нужен согласованный переход будущих занятий с сохранением истории и защитой от повторного запроса и конкурирующей генерации.\n- Способ хранения истории замены и технический протокол определяются в контракте реализации. Этот документ не разрешает удаление производственных данных, развёртывание или миграцию production.\n\n## Проверяемый результат\n\nСтароста меняет преподавателя с даты D → будущие непроведённые занятия с D относятся к новому преподавателю → после обновления результат сохраняется → прошлые занятия и отметки сохраняют прежнюю историю. Новый преподаватель с активным назначением открывает посещаемость всей своей группы и видит также прошлые занятия; пользователь без активного назначения в этой группе не получает доступ на основании этого правила.\n\nВладельцы реализации: assignment lifecycle — `headman_requests_delivery`; teacher read authority/statistics — `admin_semester_delivery`. Приёмка и последовательная интеграция в main — главный чат.\n"
+        },
+        {
+          "id": "DEC-2026-10-06-teacher-removal-without-replacement",
+          "source_ref": "docs/product/decisions/2026-10-06-teacher-removal-without-replacement.md:1",
+          "rules": "# Снятие преподавателя без замены\n\nПрямое решение владельца 6 октября 2026 в главном чате:\n«сохраняем будущие пары без преподавателя но при этом новому будет доступна вся история до назначения».\n\n- Снятие связи преподавателя с типом занятия сохраняет будущие пары без назначения преподавателя. Это не отмена или удаление занятия.\n- Прошедшие занятия, посещаемость и история сохраняются.\n- Новый активный преподаватель группы видит всю историю посещаемости группы, включая занятия до его назначения, согласно ранее принятому правилу доступа преподавателей.\n- Снятие без замены — отдельная операция; существующая замена преподавателя с обязательным целевым назначением не подменяет её.\n- Клиент не объявляет снятие успешным до подтверждения серверной операции. Частичный сбой и повтор запроса должны продолжать ту же операцию, сохраняя историю.\n\nПервоначальное состояние до реализации: DELETE возвращал `assignment-closure-not-ready`. Эта заметка историческая и больше не описывает состояние принятой операции.\n\n## Состояние реализации на 8 октября 2026\n\nStandalone closure уже реализован и принят на локальном реальном API: MAIN `0e69f0a922085f5c5fb312efe67cafdfc499d162`, источник артефактов `4b3434a722da9fa5033dbecdf26e4f15487fb879`. [Сохранённая приёмка](../../../.agent/evidence/backend-continuation-20261006/headman/ASSIGNMENT-RUNTIME-ACCEPTED.md): закрытие и повтор с тем же ключом вернули 204; семь будущих пар сохранили ID без преподавателя, три прежние сохранили назначения; новый преподаватель получил все десять пар, включая прежние.\n\nТекущий контракт старосты: `DELETE /api/academic/assignments/{id}?validUntilExclusive=YYYY-MM-DD`, UUID в `Idempotency-Key`; аналогичный маршрут связи предмета требует также `assignmentId`. Успех — 204 после подтверждения; 503 `assignment-closure-pending` требует повторить исходную команду с тем же ключом и датой, а не создавать новую операцию. Контракт и проверки полномочий находятся в `AssignmentApi`, `SubjectApi`, `AssignmentClosureService` и `AssignmentController`.\n\nВладелец повторно подтвердил исходное правило в главном чате 8 октября. Оно относится к назначению преподавателя на предмет/тип занятия, а не к удалению глобальной роли TEACHER из аккаунта. Приёмка серверной операции не означает приёмку новых экранов администратора или установку нового клиента. Решение не разрешает удаление исторических данных, production-миграцию или публикацию.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-04",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:356"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "Source prestate: ✅ **ПОДТВЕРЖДЕНО ВЛАДЕЛЬЦЕМ (чат 6).** Преподаватель НЕ может редактировать посещаемость. Журнал доступен только для чтения.",
+    "action": "✅ ПОДТВЕРЖДЕНО ВЛАДЕЛЬЦЕМ (чат 6). Преподаватель НЕ может редактировать посещаемость. Журнал доступен только для чтения.\n> Владелец: «Преподаватель не ставит посещаемость, посещаемостью занимается староста (в будущем реализуем данный функционал или возможность данного функционала)».\n> Следствия: на экранах teacher ячейка — `AttendanceStatusBadge`, не `AttendanceStatusPicker`; `PUT /attendance/lessons/{lessonId}/students/{userId}` роли teacher не выдаётся; строка пары на 121 ведёт в просмотр, а не в отметку.\n> 🆕 Массовой отметки нет вообще — ни у одной роли (расширение решения чата 4, где она снималась только у старосты). `POST /attendance/marks/batch` фронтом не использует никто. Возврат механики — отдельное продуктовое решение.",
+    "expected_result": "✅ **ПОДТВЕРЖДЕНО ВЛАДЕЛЬЦЕМ (чат 6).** Преподаватель НЕ может редактировать посещаемость. Журнал доступен только для чтения.",
+    "accepted_source_text": "✅ **ПОДТВЕРЖДЕНО ВЛАДЕЛЬЦЕМ (чат 6).** Преподаватель НЕ может редактировать посещаемость. Журнал доступен только для чтения.\n> **Владелец:** «Преподаватель не ставит посещаемость, посещаемостью занимается староста (в будущем реализуем данный функционал или возможность данного функционала)».\n> Следствия: на экранах teacher ячейка — `AttendanceStatusBadge`, не `AttendanceStatusPicker`; `PUT /attendance/lessons/{lessonId}/students/{userId}` роли teacher не выдаётся; строка пары на 121 ведёт в **просмотр**, а не в отметку.\n> 🆕 **Массовой отметки нет вообще — ни у одной роли** (расширение решения чата 4, где она снималась только у старосты). `POST /attendance/marks/batch` фронтом не использует никто. Возврат механики — отдельное продуктовое решение.",
+    "accepted_criteria_before_overlay": [
+      "✅ **ПОДТВЕРЖДЕНО ВЛАДЕЛЬЦЕМ (чат 6).** Преподаватель НЕ может редактировать посещаемость. Журнал доступен только для чтения.",
+      "> **Владелец:** «Преподаватель не ставит посещаемость, посещаемостью занимается староста (в будущем реализуем данный функционал или возможность данного функционала)».",
+      "> Следствия: на экранах teacher ячейка — `AttendanceStatusBadge`, не `AttendanceStatusPicker`; `PUT /attendance/lessons/{lessonId}/students/{userId}` роли teacher не выдаётся; строка пары на 121 ведёт в **просмотр**, а не в отметку.",
+      "> 🆕 **Массовой отметки нет вообще — ни у одной роли** (расширение решения чата 4, где она снималась только у старосты). `POST /attendance/marks/batch` фронтом не использует никто. Возврат механики — отдельное продуктовое решение."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "✅ **ПОДТВЕРЖДЕНО ВЛАДЕЛЬЦЕМ (чат 6).** Преподаватель НЕ может редактировать посещаемость. Журнал доступен только для чтения.",
+      "> Следствия: на экранах teacher ячейка — `AttendanceStatusBadge`, не `AttendanceStatusPicker`; `PUT /attendance/lessons/{lessonId}/students/{userId}` роли teacher не выдаётся; строка пары на 121 ведёт в **просмотр**, а не в отметку.",
+      "> 🆕 **Массовой отметки нет вообще — ни у одной роли** (расширение решения чата 4, где она снималась только у старосты). `POST /attendance/marks/batch` фронтом не использует никто. Возврат механики — отдельное продуктовое решение.",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [],
+    "owner_overlay_refs": [],
+    "effective_criteria": {
+      "source_clauses": [
+        "✅ **ПОДТВЕРЖДЕНО ВЛАДЕЛЬЦЕМ (чат 6).** Преподаватель НЕ может редактировать посещаемость. Журнал доступен только для чтения.",
+        "> **Владелец:** «Преподаватель не ставит посещаемость, посещаемостью занимается староста (в будущем реализуем данный функционал или возможность данного функционала)».",
+        "> Следствия: на экранах teacher ячейка — `AttendanceStatusBadge`, не `AttendanceStatusPicker`; `PUT /attendance/lessons/{lessonId}/students/{userId}` роли teacher не выдаётся; строка пары на 121 ведёт в **просмотр**, а не в отметку.",
+        "> 🆕 **Массовой отметки нет вообще — ни у одной роли** (расширение решения чата 4, где она снималась только у старосты). `POST /attendance/marks/batch` фронтом не использует никто. Возврат механики — отдельное продуктовое решение."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": []
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-05",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:300",
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:362"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "revised",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "Telegram",
+        "бота",
+        "ботает",
+        "ботом",
+        "веб-панель"
+      ]
+    },
+    "prestate": "Source prestate: ✏️ **ИЗМЕНЕНО (чат 6).**  **Telegram у преподавателя опционален:** по запросу привязку делает администратор, и тогда преподаватель пользуется ботом наравне со студентом. По умолчанию у него только веб-панель.",
+    "action": "✏️ ИЗМЕНЕНО (чат 6).  Telegram у преподавателя опционален: по запросу привязку делает администратор, и тогда преподаватель пользуется ботом наравне со студентом. По умолчанию у него только веб-панель.\n> Причина правки: решение владельца в чате 6. Прежняя формулировка «бота нет вовсе» неверна.\n>  Следствия новые: состояние `not-linked` применимо к преподавателю; вход по OTP и QR (ПК-001) для привязанного преподавателя работает; у непривязанного восстановление доступа идёт через администратора — см. JS-TEACHER-15.",
+    "expected_result": "✏️ **ИЗМЕНЕНО (чат 6).**  **Telegram у преподавателя опционален:** по запросу привязку делает администратор, и тогда преподаватель пользуется ботом наравне со студентом. По умолчанию у него только веб-панель.",
+    "accepted_source_text": "✏️ **ИЗМЕНЕНО (чат 6).**  **Telegram у преподавателя опционален:** по запросу привязку делает администратор, и тогда преподаватель пользуется ботом наравне со студентом. По умолчанию у него только веб-панель.\n> Причина правки: решение владельца в чате 6. Прежняя формулировка «бота нет вовсе» неверна.\n>  Следствия новые: состояние `not-linked` применимо к преподавателю; вход по OTP и QR (ПК-001) для привязанного преподавателя **работает**; у непривязанного восстановление доступа идёт через администратора — см. JS-TEACHER-15.",
+    "accepted_criteria_before_overlay": [
+      "✏️ **ИЗМЕНЕНО (чат 6).**  **Telegram у преподавателя опционален:** по запросу привязку делает администратор, и тогда преподаватель пользуется ботом наравне со студентом. По умолчанию у него только веб-панель.",
+      "> Причина правки: решение владельца в чате 6. Прежняя формулировка «бота нет вовсе» неверна.",
+      ">  Следствия новые: состояние `not-linked` применимо к преподавателю; вход по OTP и QR (ПК-001) для привязанного преподавателя **работает**; у непривязанного восстановление доступа идёт через администратора — см. JS-TEACHER-15."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "✏️ **ИЗМЕНЕНО (чат 6).**  **Telegram у преподавателя опционален:** по запросу привязку делает администратор, и тогда преподаватель пользуется ботом наравне со студентом. По умолчанию у него только веб-панель.",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [],
+    "owner_overlay_refs": [],
+    "effective_criteria": {
+      "source_clauses": [
+        "✏️ **ИЗМЕНЕНО (чат 6).**  **Telegram у преподавателя опционален:** по запросу привязку делает администратор, и тогда преподаватель пользуется ботом наравне со студентом. По умолчанию у него только веб-панель.",
+        "> Причина правки: решение владельца в чате 6. Прежняя формулировка «бота нет вовсе» неверна.",
+        ">  Следствия новые: состояние `not-linked` применимо к преподавателю; вход по OTP и QR (ПК-001) для привязанного преподавателя **работает**; у непривязанного восстановление доступа идёт через администратора — см. JS-TEACHER-15."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": []
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-06",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:369"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "revised",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "я хочу понять тренд",
+    "action": "понять тренд, я хочу видеть процент посещаемости по каждому предмету и группе",
+    "expected_result": "сравнить между группами и заметить проблемные.",
+    "accepted_source_text": "✏️ **УТОЧНЕНО (чат 6).** Когда я хочу понять тренд, я хочу видеть процент посещаемости по каждому предмету и группе, чтобы сравнить между группами и заметить проблемные.\n> ⚠️ Сравнение групп **по одному предмету** сейчас невозможно: предмет принадлежит группе, связи по id, сопоставление по названию запрещено (чат 5). До решения бэкенда сравнение идёт по всем моим парам в каждой группе.",
+    "accepted_criteria_before_overlay": [
+      "✏️ **УТОЧНЕНО (чат 6).** Когда я хочу понять тренд, я хочу видеть процент посещаемости по каждому предмету и группе, чтобы сравнить между группами и заметить проблемные.",
+      "> ⚠️ Сравнение групп **по одному предмету** сейчас невозможно: предмет принадлежит группе, связи по id, сопоставление по названию запрещено (чат 5). До решения бэкенда сравнение идёт по всем моим парам в каждой группе."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "> ⚠️ Сравнение групп **по одному предмету** сейчас невозможно: предмет принадлежит группе, связи по id, сопоставление по названию запрещено (чат 5). До решения бэкенда сравнение идёт по всем моим парам в каждой группе.",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-15",
+      "R-28",
+      "DEC-2026-09-23-teacher-replacement-and-group-attendance"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:212",
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:431",
+      "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "✏️ **УТОЧНЕНО (чат 6).** Когда я хочу понять тренд, я хочу видеть процент посещаемости по каждому предмету и группе, чтобы сравнить между группами и заметить проблемные.",
+        "> ⚠️ Сравнение групп **по одному предмету** сейчас невозможно: предмет принадлежит группе, связи по id, сопоставление по названию запрещено (чат 5). До решения бэкенда сравнение идёт по всем моим парам в каждой группе."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-15",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:212",
+          "rules": "### Р-15. Границы данных и каталог дисциплин\n\nКаждая роль видит только относящееся к ней: староста — свою группу и свои предметы,\nпреподаватель — предметы, к которым его привязали. Всё видит только администратор.\nСвязи везде по `id`/`uuid`; текстовое сопоставление не используется нигде.\n\n**Общего каталога дисциплин не будет.** Староста заводит предметы своей группы\nвручную и сам следит за их составом. Подсказка названий из общего пула (AC-06)\nснимается: наполнить её нечем, не нарушая границ данных.\n\n**Следствие для 123:** «Предмет 1» в разных группах — разные записи. Преподаватель\nв разрезе «по моим группам» не может выбрать один предмет и увидеть его сразу\nпо всем группам; предмет выбирается внутри каждой группы отдельно. AC-05\n(кросс-групповая идентичность предмета) снимается."
+        },
+        {
+          "id": "R-28",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:431",
+          "rules": "### Р-28. Метрики посещаемости — один серверный расчёт\n\n🆕 **Решено 15.08.2026.** Найдено при сборке блоков 122 и 123.\n\n**Было:** одни и те же четыре метрики берутся из разных мест. На 122 они\nприходят вместе с журнальной сеткой; на 123 нужен собственный источник,\nкоторого не существует. Разные наборы данных дают расхождение цифр —\nи расходятся они именно в отчёте, уходящем на кафедру.\n\n**Стало: считает сервер, одним расчётом.** 122 отдаёт метрики вместе с сеткой.\n123 запрашивает агрегат в двух разрезах — по студентам внутри назначения\nи по группам преподавателя. Клиентский расчёт исключён на обоих экранах;\nэто частный случай уже действующего правила «клиентский отбор отменён везде».\n\n**«Учтено пар» приходит тем же ответом, что таблица разреза.** Отдельного\nзапроса ради одного числа не заводится: шапка отчёта принадлежит отчёту.\n\n**Что этим не закрывается.** Кросс-групповая идентичность предмета: предмет\nпринадлежит группе (Р-15), сравнивать группы «по одному предмету» не по чему.\nОтбор по предмету в разрезе по группам остаётся недоступным с текстовой\nпричиной — решение не переоткрывается."
+        },
+        {
+          "id": "DEC-2026-09-23-teacher-replacement-and-group-attendance",
+          "source_ref": "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md:1",
+          "rules": "# Смена преподавателя и чтение посещаемости группы\n\nРешение владельца в главном чате, 2026-09-23. Приоритет выше прежних ограничений спецификации и текущей реализации. Запись решения не означает готовность реализации.\n\n## Принятое поведение\n\n1. При смене преподавателя все ещё не проведённые занятия начиная с выбранной даты переходят новому преподавателю.\n2. Прошедшие занятия, посещаемость и история остаются у прежнего преподавателя. История замены сохраняется.\n3. Все преподаватели с активным назначением в группе видят посещаемость всей группы, включая результаты занятий до своего назначения. Доступ к чтению не ограничивается только собственными занятиями преподавателя.\n\nДословное дополнение владельца: «посещаемость за всю группу видят все преподаватели которые активны в группе. назначенный после генерации пар преподаватель видит результат прошлых пар».\n\n## Границы реализации\n\n- Это решение расширяет чтение посещаемости, но не даёт новых прав изменять отметки, чужие занятия или домашние задания.\n- Активное назначение и доступ к конкретной группе проверяет сервер. Сам факт исторического назначения не доказывает текущего права на чтение.\n- Существующий запрет закрытия назначения при любых сохранённых будущих занятиях не обеспечивает утверждённую смену преподавателя. Нужен согласованный переход будущих занятий с сохранением истории и защитой от повторного запроса и конкурирующей генерации.\n- Способ хранения истории замены и технический протокол определяются в контракте реализации. Этот документ не разрешает удаление производственных данных, развёртывание или миграцию production.\n\n## Проверяемый результат\n\nСтароста меняет преподавателя с даты D → будущие непроведённые занятия с D относятся к новому преподавателю → после обновления результат сохраняется → прошлые занятия и отметки сохраняют прежнюю историю. Новый преподаватель с активным назначением открывает посещаемость всей своей группы и видит также прошлые занятия; пользователь без активного назначения в этой группе не получает доступ на основании этого правила.\n\nВладельцы реализации: assignment lifecycle — `headman_requests_delivery`; teacher read authority/statistics — `admin_semester_delivery`. Приёмка и последовательная интеграция в main — главный чат.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-07",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:374"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "revised",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "нужен отчёт для кафедры",
+    "action": "выгрузить журнал посещаемости и сводку в нужном формате.",
+    "expected_result": "✏️ **ВОССТАНОВЛЕНО И РАСШИРЕНО (чат 6).** Когда нужен отчёт для кафедры, я хочу выгрузить журнал посещаемости и сводку в нужном формате.",
+    "accepted_source_text": "✏️ **ВОССТАНОВЛЕНО И РАСШИРЕНО (чат 6).** Когда нужен отчёт для кафедры, я хочу выгрузить журнал посещаемости и сводку в нужном формате.\n>  **Отменено владельцем в чате 6:** Excel возвращён. Итоговый перечень — **docx · pdf · png · html · xlsx**, приходит с сервера **как данные**; фронт его не зашивает, но дизайн и шаблоны рассчитываются на пять форматов (прим. 4 скана 122: «шаблон надо будет сделать»).\n> Шаблонов у роли **три**: журнал предмета (122), сводка по студентам и сводка по группам (123). xlsx требует **табличной** модели отчёта, а не рендера картинки.",
+    "accepted_criteria_before_overlay": [
+      "✏️ **ВОССТАНОВЛЕНО И РАСШИРЕНО (чат 6).** Когда нужен отчёт для кафедры, я хочу выгрузить журнал посещаемости и сводку в нужном формате.",
+      ">  **Отменено владельцем в чате 6:** Excel возвращён. Итоговый перечень — **docx · pdf · png · html · xlsx**, приходит с сервера **как данные**; фронт его не зашивает, но дизайн и шаблоны рассчитываются на пять форматов (прим. 4 скана 122: «шаблон надо будет сделать»).",
+      "> Шаблонов у роли **три**: журнал предмета (122), сводка по студентам и сводка по группам (123). xlsx требует **табличной** модели отчёта, а не рендера картинки."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      ">  **Отменено владельцем в чате 6:** Excel возвращён. Итоговый перечень — **docx · pdf · png · html · xlsx**, приходит с сервера **как данные**; фронт его не зашивает, но дизайн и шаблоны рассчитываются на пять форматов (прим. 4 скана 122: «шаблон надо будет сделать»).",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-03",
+      "R-23"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:115",
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:302"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "✏️ **ВОССТАНОВЛЕНО И РАСШИРЕНО (чат 6).** Когда нужен отчёт для кафедры, я хочу выгрузить журнал посещаемости и сводку в нужном формате.",
+        ">  **Отменено владельцем в чате 6:** Excel возвращён. Итоговый перечень — **docx · pdf · png · html · xlsx**, приходит с сервера **как данные**; фронт его не зашивает, но дизайн и шаблоны рассчитываются на пять форматов (прим. 4 скана 122: «шаблон надо будет сделать»).",
+        "> Шаблонов у роли **три**: журнал предмета (122), сводка по студентам и сводка по группам (123). xlsx требует **табличной** модели отчёта, а не рендера картинки."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-03",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:115",
+          "rules": "### Р-3. Выгрузки\n\nПеречень форматов: **excel · docx · pdf · png · html**. Таблицы выгружаются во все пять,\nвключая png — это большое изображение, собранное из html-макета. **График выгружается\nтолько как png и html**; html-версия интерактивна (наведение показывает значения,\nразрезы по неделям и другим осям).\n\nГенерация вынесена в **отдельный сервис и выполняется асинхронно**: файл отдаётся\nпо готовности. Шаблоны предоставляются позже; вероятная схема — один html-макет\nкак источник остальных форматов. Точная привязка форматов к разрезам решается\nна этапе рендера и шаблонов, не сейчас."
+        },
+        {
+          "id": "R-23",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:302",
+          "rules": "### Р-23. Фильтры в выгрузке и в адресе\n\nВыбранные в таблице фильтры **уходят в файл выгрузки**: выгружается то, что видно\nна экране, с теми же фильтрами и в том же порядке.\n\nФильтры **пишутся в адрес страницы**, чтобы перезагрузка и кнопка «Назад»\nне сбрасывали отбор. Структура значений одна и та же в запросе, в адресе\nи в параметрах выгрузки. Невалидные значения в адресе сбрасываются к умолчанию\nс пояснением.\n\n**Правило доступа, действующее независимо от адреса:** по ссылке показывается только\nто, что относится к текущему пользователю; чужие данные не открываются никогда —\nсервер отвечает 404, а не отфильтрованным чужим набором. Передача ссылки другому\nчеловеку смысла не имеет и сценарием не является."
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [
+      "X-01"
+    ],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-08",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:381"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "retained",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "PWA",
+        "мобильно"
+      ]
+    },
+    "prestate": "Source prestate: Когда преподаватель открывает PWA на планшете/телефоне между парами, он видит журнал посещаемости текущей группы в мобильно-адаптированном виде.",
+    "action": "Когда преподаватель открывает PWA на планшете/телефоне между парами, он видит журнал посещаемости текущей группы в мобильно-адаптированном виде.\n> Этап 7. PWA — отдельная поверхность со своими экранами, не адаптив десктопа.",
+    "expected_result": "Когда преподаватель открывает PWA на планшете/телефоне между парами, он видит журнал посещаемости текущей группы в мобильно-адаптированном виде.",
+    "accepted_source_text": "Когда преподаватель открывает PWA на планшете/телефоне между парами, он видит журнал посещаемости текущей группы в мобильно-адаптированном виде.\n> Этап 7. PWA — отдельная поверхность со своими экранами, не адаптив десктопа.",
+    "accepted_criteria_before_overlay": [
+      "Когда преподаватель открывает PWA на планшете/телефоне между парами, он видит журнал посещаемости текущей группы в мобильно-адаптированном виде.",
+      "> Этап 7. PWA — отдельная поверхность со своими экранами, не адаптив десктопа."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "DEC-2026-09-28-figma-conformance-stage"
+    ],
+    "owner_overlay_refs": [
+      "docs/product/decisions/2026-09-28-figma-conformance-stage.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "Когда преподаватель открывает PWA на планшете/телефоне между парами, он видит журнал посещаемости текущей группы в мобильно-адаптированном виде.",
+        "> Этап 7. PWA — отдельная поверхность со своими экранами, не адаптив десктопа."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "DEC-2026-09-28-figma-conformance-stage",
+          "source_ref": "docs/product/decisions/2026-09-28-figma-conformance-stage.md:1",
+          "rules": "# Сверка PWA/TMA с Figma — решение владельца 28 сентября 2026\nВладелец подтвердил: существующие отклонения от Figma нужно устранить после функционального этапа. Сейчас отдельный фиксинг дизайна не начинать.\nДо объявления продукта завершённым сверить все целевые экраны и состояния PWA/TMA с соответствующими принятыми фреймами: структура, размеры, размещение, типографика, цвета, иконки, интервалы, навигация, фильтры и действия. Добиться визуального совпадения при размерах макета и корректной адаптации; отсутствующие существенные состояния согласовать, не придумывать молча.\nКонкретный обнаруженный пример: TeacherStatsScreen сейчас использует таблицу и дополнительные элементы управления, тогда как показанный владельцем макет FAMILY/32 использует карточки студентов/групп, цветные отметки, компактные значения и другое расположение фильтров. Функциональная приёмка API/состояния одной группы не является приёмкой дизайна этого экрана.\nФункциональные исправления продолжаются. Они должны сохранять имеющийся согласованный дизайн и не расширяться в самостоятельный редизайн. Полная визуальная сверка остаётся обязательной частью готового продукта; наличие рабочего API её не заменяет."
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-09",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:387"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "new",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "я захожу в систему",
+    "action": "сразу видеть свои группы и свои пары «предмет × тип занятия»",
+    "expected_result": "одним нажатием попасть в нужный журнал или в статистику нужной группы.",
+    "accepted_source_text": "🆕 Когда я захожу в систему, я хочу сразу видеть свои группы и свои пары «предмет × тип занятия», чтобы одним нажатием попасть в нужный журнал или в статистику нужной группы.\n> По скану ПК-121: два блока-хаба. Нажатие на строку «Моих предметов» открывает посещаемость **с предустановленными фильтрами** (прим. 3), нажатие на группу — статистику по этой группе (прим. 4). Чисел на экране нет: **дашборд-агрегат роли не нужен**.",
+    "accepted_criteria_before_overlay": [
+      "🆕 Когда я захожу в систему, я хочу сразу видеть свои группы и свои пары «предмет × тип занятия», чтобы одним нажатием попасть в нужный журнал или в статистику нужной группы.",
+      "> По скану ПК-121: два блока-хаба. Нажатие на строку «Моих предметов» открывает посещаемость **с предустановленными фильтрами** (прим. 3), нажатие на группу — статистику по этой группе (прим. 4). Чисел на экране нет: **дашборд-агрегат роли не нужен**."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-26"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:358"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "🆕 Когда я захожу в систему, я хочу сразу видеть свои группы и свои пары «предмет × тип занятия», чтобы одним нажатием попасть в нужный журнал или в статистику нужной группы.",
+        "> По скану ПК-121: два блока-хаба. Нажатие на строку «Моих предметов» открывает посещаемость **с предустановленными фильтрами** (прим. 3), нажатие на группу — статистику по этой группе (прим. 4). Чисел на экране нет: **дашборд-агрегат роли не нужен**."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-26",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:358",
+          "rules": "### Р-26. Назначение как отдельная сущность\n\n🆕 **Решено 12.08.2026.** Закрывает AC-07, блокировавший роль teacher целиком\nи экраны 116.1, 117, 121, 122, 123.\n\n**Было:** преподаватель привязан к предмету целиком — «Иванов ↔ Матанализ».\nТип занятия в связи не участвует. Следствие: «мои пары» отобрать не из чего,\nстроки «Матанализ · лекция» и «Матанализ · практика» неразличимы, «типа нет»\nне отличается от «тип есть, но веду не я».\n\n**Стало: назначение — самостоятельная сущность со своим идентификатором.**\nСостав: группа × предмет × тип занятия × семестр × преподаватель.\n\n```\nИТ-201 · Матанализ · лекция       · осень 2026 · Иванов\nИТ-201 · Матанализ · практика     · осень 2026 · Петрова\nИТ-201 · Матанализ · лабораторная · осень 2026 · Сидоров\nИТ-201 · Матанализ · лабораторная · осень 2026 · Кузнецов\n```\n\n**Преподавателей на один тип занятия может быть сколько угодно** — двое, трое\nи больше; ограничения сверху нет. Отдельной механики для этого нет: каждый преподаватель — своя строка\nназначения. Прежняя связь «предмет ↔ преподаватель» уходит: она становится\nчастным случаем назначения.\n\n**Связь только по идентификаторам.** Пара расписания ссылается на назначение\nпо его идентификатору, а не на кортеж «предмет + тип + группа». Правило проекта\nдействует и здесь: **идентификатор — это uuid или инкрементный ключ, никогда\nне текст и никогда не комбинация полей.** Названия предмета, группы и типа\nзанятия — отображаемые данные, не ключи.\n\n**Смена преподавателя не переписывает прошлое.** Назначение не редактируется\nна живую и не удаляется: у него есть период действия. При смене прежнее\nзакрывается датой окончания, новое заводится с датой начала. Пары ссылаются\nна конкретное назначение по идентификатору, поэтому пара, проведённая при\nпрежнем преподавателе, **навсегда сохраняет, кто её вёл**. Журналы, статистика\nи выгрузки прошлых периодов от смены не меняются.\n\n**В расписании преподавателя группа пишется всегда** — это следует из состава\nназначения и требования SC-03: поля разреза по преподавателю включают\nидентификатор группы и её название.\n\n**Обогащение `GET /academic/assignments/my`** (AC-21): возвращаются не голые\nидентификаторы, а названия группы и предмета вместе с типом занятия,\nотфильтрованные **по активному семестру на сервере**. Иначе экран покажет\nпрошлогодние назначения как текущие — переключателя семестра на макетах нет."
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [
+      "AC-07"
+    ],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-10",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:391"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "new",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "я хочу понять, что у меня сегодня",
+    "action": "понять, что у меня сегодня, я хочу видеть список пар выбранного дня — группа, предмет, тип занятия, время, аудитория и пометка, если пара разовая или перенесённая, — и листать дни, а нажав на пару, увидеть посещаемость **именно этой пары за этот день**.",
+    "expected_result": "🆕 Когда я хочу понять, что у меня сегодня, я хочу видеть список пар выбранного дня — группа, предмет, тип занятия, время, аудитория и пометка, если пара разовая или перенесённая, — и листать дни, а нажав на пару, увидеть посещаемость **именно этой пары за этот день**.",
+    "accepted_source_text": "🆕 Когда я хочу понять, что у меня сегодня, я хочу видеть список пар выбранного дня — группа, предмет, тип занятия, время, аудитория и пометка, если пара разовая или перенесённая, — и листать дни, а нажав на пару, увидеть посещаемость **именно этой пары за этот день**.\n> Решение владельца (чат 6), на скане отсутствует. День **кросс-групповой**, порядок строго по времени. Отменённая пара показывается, но ссылкой не является: при отмене отметки стираются, смотреть нечего.\n> ⚠️ **Блокирующее для бэкенда:** отобрать «мои» пары на клиенте невозможно — расписание отдаётся по группе целиком, а связи «предмет × тип занятия × преподаватель» в модели нет.",
+    "accepted_criteria_before_overlay": [
+      "🆕 Когда я хочу понять, что у меня сегодня, я хочу видеть список пар выбранного дня — группа, предмет, тип занятия, время, аудитория и пометка, если пара разовая или перенесённая, — и листать дни, а нажав на пару, увидеть посещаемость **именно этой пары за этот день**.",
+      "> Решение владельца (чат 6), на скане отсутствует. День **кросс-групповой**, порядок строго по времени. Отменённая пара показывается, но ссылкой не является: при отмене отметки стираются, смотреть нечего.",
+      "> ⚠️ **Блокирующее для бэкенда:** отобрать «мои» пары на клиенте невозможно — расписание отдаётся по группе целиком, а связи «предмет × тип занятия × преподаватель» в модели нет."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "> Решение владельца (чат 6), на скане отсутствует. День **кросс-групповой**, порядок строго по времени. Отменённая пара показывается, но ссылкой не является: при отмене отметки стираются, смотреть нечего.",
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-26",
+      "R-27"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:358",
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:405"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "🆕 Когда я хочу понять, что у меня сегодня, я хочу видеть список пар выбранного дня — группа, предмет, тип занятия, время, аудитория и пометка, если пара разовая или перенесённая, — и листать дни, а нажав на пару, увидеть посещаемость **именно этой пары за этот день**.",
+        "> Решение владельца (чат 6), на скане отсутствует. День **кросс-групповой**, порядок строго по времени. Отменённая пара показывается, но ссылкой не является: при отмене отметки стираются, смотреть нечего.",
+        "> ⚠️ **Блокирующее для бэкенда:** отобрать «мои» пары на клиенте невозможно — расписание отдаётся по группе целиком, а связи «предмет × тип занятия × преподаватель» в модели нет."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-26",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:358",
+          "rules": "### Р-26. Назначение как отдельная сущность\n\n🆕 **Решено 12.08.2026.** Закрывает AC-07, блокировавший роль teacher целиком\nи экраны 116.1, 117, 121, 122, 123.\n\n**Было:** преподаватель привязан к предмету целиком — «Иванов ↔ Матанализ».\nТип занятия в связи не участвует. Следствие: «мои пары» отобрать не из чего,\nстроки «Матанализ · лекция» и «Матанализ · практика» неразличимы, «типа нет»\nне отличается от «тип есть, но веду не я».\n\n**Стало: назначение — самостоятельная сущность со своим идентификатором.**\nСостав: группа × предмет × тип занятия × семестр × преподаватель.\n\n```\nИТ-201 · Матанализ · лекция       · осень 2026 · Иванов\nИТ-201 · Матанализ · практика     · осень 2026 · Петрова\nИТ-201 · Матанализ · лабораторная · осень 2026 · Сидоров\nИТ-201 · Матанализ · лабораторная · осень 2026 · Кузнецов\n```\n\n**Преподавателей на один тип занятия может быть сколько угодно** — двое, трое\nи больше; ограничения сверху нет. Отдельной механики для этого нет: каждый преподаватель — своя строка\nназначения. Прежняя связь «предмет ↔ преподаватель» уходит: она становится\nчастным случаем назначения.\n\n**Связь только по идентификаторам.** Пара расписания ссылается на назначение\nпо его идентификатору, а не на кортеж «предмет + тип + группа». Правило проекта\nдействует и здесь: **идентификатор — это uuid или инкрементный ключ, никогда\nне текст и никогда не комбинация полей.** Названия предмета, группы и типа\nзанятия — отображаемые данные, не ключи.\n\n**Смена преподавателя не переписывает прошлое.** Назначение не редактируется\nна живую и не удаляется: у него есть период действия. При смене прежнее\nзакрывается датой окончания, новое заводится с датой начала. Пары ссылаются\nна конкретное назначение по идентификатору, поэтому пара, проведённая при\nпрежнем преподавателе, **навсегда сохраняет, кто её вёл**. Журналы, статистика\nи выгрузки прошлых периодов от смены не меняются.\n\n**В расписании преподавателя группа пишется всегда** — это следует из состава\nназначения и требования SC-03: поля разреза по преподавателю включают\nидентификатор группы и её название.\n\n**Обогащение `GET /academic/assignments/my`** (AC-21): возвращаются не голые\nидентификаторы, а названия группы и предмета вместе с типом занятия,\nотфильтрованные **по активному семестру на сервере**. Иначе экран покажет\nпрошлогодние назначения как текущие — переключателя семестра на макетах нет."
+        },
+        {
+          "id": "R-27",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:405",
+          "rules": "### Р-27. Расписание преподавателя за диапазон\n\n🆕 **Решено 15.08.2026.** Найдено при сборке `block/TeacherDay` (экран 121).\n\n**Было:** запроса «мои пары» у преподавателя нет. Обход — по одному\n`GET /schedule/groups/{groupId}/lessons` на каждую свою группу. Р-26 сделал\nтакой обход технически возможным: пары ссылаются на назначение, а назначение\nзнает преподавателя. Но веер запросов он не убрал — восемь групп означают\nвосемь запросов, частичные ошибки и невозможность показать срез дня **одним\nобъяснённым состоянием**, как требует спека 121 §5.\n\n**Стало: один запрос «мои пары за диапазон».** Границы диапазона — параметры;\nотбор по назначениям активного преподавателя выполняет сервер. Не «за день»:\nна 121 срез дневной, но листалка ходит по дням, а 122 работает семестром —\nдиапазон закрывает оба случая одним контрактом.\n\n**Состав пары в ответе** следует из Р-26 и SC-03: идентификатор назначения,\nгруппа (идентификатор и название), предмет, тип занятия, время, аудитория,\nи признаки состояния пары — разовая, перенесена, отменена (Р-25). Признаки\nотображаются текстом, не иконками.\n\n**Активный семестр фильтрует на сервере**, тем же основанием, что обогащение\n`assignments/my` в Р-26: переключателя семестра на макетах нет.\n\n---"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [
+      "AC-07"
+    ],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-11",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:396"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "new",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [
+      {
+        "criterion": "textual icon legend and MAP-06 common icon catalogue only",
+        "owner_decision": "D004",
+        "source": "docs/product/decisions/2026-10-11-map-legend-deferred.md:1",
+        "status": "EXCLUDED",
+        "retained": "access/upload/sanitization/view/download/version/history remain required"
+      }
+    ],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "мне нужно найти аудиторию",
+    "action": "🆕 Когда мне нужно найти аудиторию, я открываю карту корпусов — ту же, что у студента и старосты.\n> Прим. 2 скана 121: «абсолютно аналогичная». ПК-105 = ПК-115 = карта преподавателя, отдельного экрана не заводим.",
+    "expected_result": "🆕 Когда мне нужно найти аудиторию, я открываю карту корпусов — ту же, что у студента и старосты.",
+    "accepted_source_text": "🆕 Когда мне нужно найти аудиторию, я открываю карту корпусов — ту же, что у студента и старосты.\n> Прим. 2 скана 121: «абсолютно аналогичная». **ПК-105 = ПК-115 = карта преподавателя**, отдельного экрана не заводим.",
+    "accepted_criteria_before_overlay": [
+      "🆕 Когда мне нужно найти аудиторию, я открываю карту корпусов — ту же, что у студента и старосты.",
+      "> Прим. 2 скана 121: «абсолютно аналогичная». **ПК-105 = ПК-115 = карта преподавателя**, отдельного экрана не заводим."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-05",
+      "R-30",
+      "DEC-2026-10-11-map-legend-deferred"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:134",
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:480",
+      "docs/product/decisions/2026-10-11-map-legend-deferred.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "🆕 Когда мне нужно найти аудиторию, я открываю карту корпусов — ту же, что у студента и старосты.",
+        "> Прим. 2 скана 121: «абсолютно аналогичная». **ПК-105 = ПК-115 = карта преподавателя**, отдельного экрана не заводим."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-05",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:134",
+          "rules": "### Р-5. Аудитории этажа\n\nСправочника аудиторий нет и на этом этапе не будет; в будущем возможен.\nТекстовой альтернативы к схеме не добавляем — оговаривать, что карта только\nдля просмотра, не нужно.\n\n**Следствие принимается сознательно:** схема этажа на 105 остаётся изображением\nбез текстового содержания. Записывается в файл требований A11Y как известное\nи датированное ограничение. MAP-07 остаётся отложенным."
+        },
+        {
+          "id": "R-30",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:480",
+          "rules": "### Р-30. Схемы корпусов — одна подсистема\n\n🆕 **Решено 15.08.2026.** Найдено при сборке `FloorPlansRegistry`\nи `FloorPlanUpload` (экран 135).\n\n**Было:** у экрана схем нет ни одного описанного эндпоинта — ни реестра,\nни загрузки, ни метрики спроса. Экран существует в макетах, в контрактах его нет.\n\n**Стало: одна подсистема, три операции.**\n\n- **Реестр** — список схем: корпус, этаж, форматы, статусы загрузки каждого\n  формата, спрос, дата обновления. Два формата (**PNG и SVG**) — независимые\n  статусы у одной записи, а не два разных объекта: на 1280 они и показываются\n  одной ячейкой с подписями форматов.\n- **Загрузка и замена** — одна операция с двумя ветками. Замена не удаляет\n  прошлую схему молча: у записи есть версия, прежняя остаётся доступной,\n  иначе ссылки на аудитории в расписании укажут в пустоту.\n- **Спрос считает сервер.** Это метрика обращений к схеме, а не поле записи;\n  клиент её не выводит и не накапливает.\n\n**Ограничение аудиторий признано ранее (Р-5)** и здесь не переоткрывается:\nсправочника аудиторий нет, схема — картинка с зонами, а не структура данных.\n\n---"
+        },
+        {
+          "id": "DEC-2026-10-11-map-legend-deferred",
+          "source_ref": "docs/product/decisions/2026-10-11-map-legend-deferred.md:1",
+          "rules": "# Отсрочка текстовой легенды иконок карты\n\nРешение владельца от 2026-10-11 в Cloud-чате, Q003: «Сохранить отсрочку легенды до отдельной сессии с принятым набором иконок (рекомендую)».\n\nОбщий справочник иконок MAP-06 и заполнение текстовой легенды карты отложены до отдельной сессии, где будет принят набор иконок и их текстовых значений. В текущей Cloud-проверке этот критерий JS-STUDENT-24 и общей карты преподавателя исключён со ссылкой на это решение.\n\nОстальные принятые критерии карты — права, загрузка и санитизация, просмотр, скачивание, версии и история — сохраняются. Отсрочка не отменяет будущую потребность в текстовой доступной легенде и не разрешает придумать значения иконок.\n\nEvidence: `docs/validation/cloud-20261011/decisions.md`, D004.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-12",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:402"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "new",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "в журнале стоит «у»",
+    "action": "при наведении увидеть подсказку с типом причины, а по нажатию — карточку заявки: ФИО, дату подачи, дату подтверждения старостой, тип причины, комментарий и вложения.",
+    "expected_result": "🆕 Когда в журнале стоит «у», я хочу при наведении увидеть подсказку с типом причины, а по нажатию — карточку заявки: ФИО, дату подачи, дату подтверждения старостой, тип причины, комментарий и вложения.",
+    "accepted_source_text": "🆕 Когда в журнале стоит «у», я хочу при наведении увидеть подсказку с типом причины, а по нажатию — карточку заявки: ФИО, дату подачи, дату подтверждения старостой, тип причины, комментарий и вложения.\n> Прим. 3 скана 122. Карточка **раскрывается на странице**, не модалкой. Решение владельца (вариант «б»): преподаватель видит **только те пары тикета, что входят в его предмет**; пары по чужим предметам не показываются даже количеством. Урезание собирает **сервер** — фильтрация на клиенте границей данных не является.\n> Тикет при этом остаётся **неделимым**: решение по нему принимает староста целиком, у преподавателя нет ни кнопок, ни прав. Возможен случай, когда «у» проставлен старостой вручную и заявки не существует, — карточка обязана это сказать, а не показывать пустые поля.",
+    "accepted_criteria_before_overlay": [
+      "🆕 Когда в журнале стоит «у», я хочу при наведении увидеть подсказку с типом причины, а по нажатию — карточку заявки: ФИО, дату подачи, дату подтверждения старостой, тип причины, комментарий и вложения.",
+      "> Прим. 3 скана 122. Карточка **раскрывается на странице**, не модалкой. Решение владельца (вариант «б»): преподаватель видит **только те пары тикета, что входят в его предмет**; пары по чужим предметам не показываются даже количеством. Урезание собирает **сервер** — фильтрация на клиенте границей данных не является.",
+      "> Тикет при этом остаётся **неделимым**: решение по нему принимает староста целиком, у преподавателя нет ни кнопок, ни прав. Возможен случай, когда «у» проставлен старостой вручную и заявки не существует, — карточка обязана это сказать, а не показывать пустые поля."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-14"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:206"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "🆕 Когда в журнале стоит «у», я хочу при наведении увидеть подсказку с типом причины, а по нажатию — карточку заявки: ФИО, дату подачи, дату подтверждения старостой, тип причины, комментарий и вложения.",
+        "> Прим. 3 скана 122. Карточка **раскрывается на странице**, не модалкой. Решение владельца (вариант «б»): преподаватель видит **только те пары тикета, что входят в его предмет**; пары по чужим предметам не показываются даже количеством. Урезание собирает **сервер** — фильтрация на клиенте границей данных не является.",
+        "> Тикет при этом остаётся **неделимым**: решение по нему принимает староста целиком, у преподавателя нет ни кнопок, ни прав. Возможен случай, когда «у» проставлен старостой вручную и заявки не существует, — карточка обязана это сказать, а не показывать пустые поля."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-14",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:206",
+          "rules": "### Р-14. Согласующий в тикетах\n\nРешение принимает только староста (и помощник с правом `manage_excuses`).\nПреподаватель тикет **читает** в урезанном сервером представлении (AT-39).\nАдминистратор в согласовании не участвует."
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-13",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:407"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "new",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "я смотрю сводку по группе",
+    "action": "сортировать её по любому столбцу",
+    "expected_result": "быстро увидеть тех, у кого дела хуже всех.",
+    "accepted_source_text": "🆕 Когда я смотрю сводку по группе, я хочу сортировать её по любому столбцу, чтобы быстро увидеть тех, у кого дела хуже всех.\n> Решение владельца (чат 6). Дефолт — по `%+` по возрастанию: проблемные сверху. **На журнале (122) сортировки нет** (прим. 1 скана) — журнал читают по конкретному студенту, сводку по крайним значениям.",
+    "accepted_criteria_before_overlay": [
+      "🆕 Когда я смотрю сводку по группе, я хочу сортировать её по любому столбцу, чтобы быстро увидеть тех, у кого дела хуже всех.",
+      "> Решение владельца (чат 6). Дефолт — по `%+` по возрастанию: проблемные сверху. **На журнале (122) сортировки нет** (прим. 1 скана) — журнал читают по конкретному студенту, сводку по крайним значениям."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-16",
+      "R-17",
+      "R-28"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:227",
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:239",
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:431"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "🆕 Когда я смотрю сводку по группе, я хочу сортировать её по любому столбцу, чтобы быстро увидеть тех, у кого дела хуже всех.",
+        "> Решение владельца (чат 6). Дефолт — по `%+` по возрастанию: проблемные сверху. **На журнале (122) сортировки нет** (прим. 1 скана) — журнал читают по конкретному студенту, сводку по крайним значениям."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-16",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:227",
+          "rules": "### Р-16. Фильтр и сортировка у колонки\n\nПравило: **у каждой колонки есть фильтр и сортировка**. Структура описания — §3.1\n`table-filters.md`; описание приходит с бэкенда, фронт колонки и перечни значений\nне зашивает.\n\n**Три исключения, подтверждённые явно:**\n\n1. **Состав группы на 116** — ни фильтров, ни сортировки; порядок алфавитный.\n2. **Список семестров на 134** — фильтр по статусу есть, сортировки по колонкам нет.\n3. **Колонка «Почему черновик» на 133** — без фильтра: внутри разреза причина одна."
+        },
+        {
+          "id": "R-17",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:239",
+          "rules": "### Р-17. Отбор, порядок, сброс\n\n- **Всё на сервере. Везде.** Фильтрация, сортировка и пагинация — серверные,\n  включая наборы, приходящие целиком (123, 134). Клиентского режима в продукте нет.\n  Списки отдаются с HATEOAS и постраничностью там, где она нужна.\n- **Мультисортировка без предела:** ключей столько, сколько колонок включил\n  пользователь; порядок применения — **в порядке включения**; **приоритет ключа\n  показывается в заголовке колонки**.\n- **Кнопка «Сбросить»** появляется, как только активен хотя бы один фильтр\n  или хотя бы одна сортировка, и сбрасывает **всё сразу** — и фильтры, и сортировки.\n- Инварианты списочной операции, следующие из «всё на сервере»: порядок применения\n  **фильтр → сортировка → страница**; `total` и счётчик результата считаются\n  **по отфильтрованному набору**; последним ключом сортировки всегда идёт\n  **уникальный разрешитель**, иначе строки дублируются и пропадают между страницами."
+        },
+        {
+          "id": "R-28",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:431",
+          "rules": "### Р-28. Метрики посещаемости — один серверный расчёт\n\n🆕 **Решено 15.08.2026.** Найдено при сборке блоков 122 и 123.\n\n**Было:** одни и те же четыре метрики берутся из разных мест. На 122 они\nприходят вместе с журнальной сеткой; на 123 нужен собственный источник,\nкоторого не существует. Разные наборы данных дают расхождение цифр —\nи расходятся они именно в отчёте, уходящем на кафедру.\n\n**Стало: считает сервер, одним расчётом.** 122 отдаёт метрики вместе с сеткой.\n123 запрашивает агрегат в двух разрезах — по студентам внутри назначения\nи по группам преподавателя. Клиентский расчёт исключён на обоих экранах;\nэто частный случай уже действующего правила «клиентский отбор отменён везде».\n\n**«Учтено пар» приходит тем же ответом, что таблица разреза.** Отдельного\nзапроса ради одного числа не заводится: шапка отчёта принадлежит отчёту.\n\n**Что этим не закрывается.** Кросс-групповая идентичность предмета: предмет\nпринадлежит группе (Р-15), сравнивать группы «по одному предмету» не по чему.\nОтбор по предмету в разрезе по группам остаётся недоступным с текстовой\nпричиной — решение не переоткрывается."
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [
+      "X-02"
+    ],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-14",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:411"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "new",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": []
+    },
+    "prestate": "я веду один предмет в нескольких группах",
+    "action": "переключить сводку в разрез «по моим группам» — строки-группы с теми же метриками и количеством учтённых пар, — чтобы понять, какая группа проблемная, и провалиться в неё до конкретных студентов.",
+    "expected_result": "понять, какая группа проблемная, и провалиться в неё до конкретных студентов.",
+    "accepted_source_text": "🆕 Когда я веду один предмет в нескольких группах, я хочу переключить сводку в разрез «по моим группам» — строки-группы с теми же метриками и количеством учтённых пар, — чтобы понять, какая группа проблемная, и провалиться в неё до конкретных студентов.\n> Решение владельца (чат 6), вариант «б». Колонка «пар учтено» обязательна: 60 % при четырёх парах и при тридцати — разные утверждения. Если группа у преподавателя одна, разрез показывает пояснение, а не таблицу из одной строки.",
+    "accepted_criteria_before_overlay": [
+      "🆕 Когда я веду один предмет в нескольких группах, я хочу переключить сводку в разрез «по моим группам» — строки-группы с теми же метриками и количеством учтённых пар, — чтобы понять, какая группа проблемная, и провалиться в неё до конкретных студентов.",
+      "> Решение владельца (чат 6), вариант «б». Колонка «пар учтено» обязательна: 60 % при четырёх парах и при тридцати — разные утверждения. Если группа у преподавателя одна, разрез показывает пояснение, а не таблицу из одной строки."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [
+      "R-15",
+      "R-28",
+      "DEC-2026-09-23-teacher-replacement-and-group-attendance"
+    ],
+    "owner_overlay_refs": [
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:212",
+      "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:431",
+      "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md:1"
+    ],
+    "effective_criteria": {
+      "source_clauses": [
+        "🆕 Когда я веду один предмет в нескольких группах, я хочу переключить сводку в разрез «по моим группам» — строки-группы с теми же метриками и количеством учтённых пар, — чтобы понять, какая группа проблемная, и провалиться в неё до конкретных студентов.",
+        "> Решение владельца (чат 6), вариант «б». Колонка «пар учтено» обязательна: 60 % при четырёх парах и при тридцати — разные утверждения. Если группа у преподавателя одна, разрез показывает пояснение, а не таблицу из одной строки."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": [
+        {
+          "id": "R-15",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:212",
+          "rules": "### Р-15. Границы данных и каталог дисциплин\n\nКаждая роль видит только относящееся к ней: староста — свою группу и свои предметы,\nпреподаватель — предметы, к которым его привязали. Всё видит только администратор.\nСвязи везде по `id`/`uuid`; текстовое сопоставление не используется нигде.\n\n**Общего каталога дисциплин не будет.** Староста заводит предметы своей группы\nвручную и сам следит за их составом. Подсказка названий из общего пула (AC-06)\nснимается: наполнить её нечем, не нарушая границ данных.\n\n**Следствие для 123:** «Предмет 1» в разных группах — разные записи. Преподаватель\nв разрезе «по моим группам» не может выбрать один предмет и увидеть его сразу\nпо всем группам; предмет выбирается внутри каждой группы отдельно. AC-05\n(кросс-групповая идентичность предмета) снимается."
+        },
+        {
+          "id": "R-28",
+          "source_ref": "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:431",
+          "rules": "### Р-28. Метрики посещаемости — один серверный расчёт\n\n🆕 **Решено 15.08.2026.** Найдено при сборке блоков 122 и 123.\n\n**Было:** одни и те же четыре метрики берутся из разных мест. На 122 они\nприходят вместе с журнальной сеткой; на 123 нужен собственный источник,\nкоторого не существует. Разные наборы данных дают расхождение цифр —\nи расходятся они именно в отчёте, уходящем на кафедру.\n\n**Стало: считает сервер, одним расчётом.** 122 отдаёт метрики вместе с сеткой.\n123 запрашивает агрегат в двух разрезах — по студентам внутри назначения\nи по группам преподавателя. Клиентский расчёт исключён на обоих экранах;\nэто частный случай уже действующего правила «клиентский отбор отменён везде».\n\n**«Учтено пар» приходит тем же ответом, что таблица разреза.** Отдельного\nзапроса ради одного числа не заводится: шапка отчёта принадлежит отчёту.\n\n**Что этим не закрывается.** Кросс-групповая идентичность предмета: предмет\nпринадлежит группе (Р-15), сравнивать группы «по одному предмету» не по чему.\nОтбор по предмету в разрезе по группам остаётся недоступным с текстовой\nпричиной — решение не переоткрывается."
+        },
+        {
+          "id": "DEC-2026-09-23-teacher-replacement-and-group-attendance",
+          "source_ref": "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md:1",
+          "rules": "# Смена преподавателя и чтение посещаемости группы\n\nРешение владельца в главном чате, 2026-09-23. Приоритет выше прежних ограничений спецификации и текущей реализации. Запись решения не означает готовность реализации.\n\n## Принятое поведение\n\n1. При смене преподавателя все ещё не проведённые занятия начиная с выбранной даты переходят новому преподавателю.\n2. Прошедшие занятия, посещаемость и история остаются у прежнего преподавателя. История замены сохраняется.\n3. Все преподаватели с активным назначением в группе видят посещаемость всей группы, включая результаты занятий до своего назначения. Доступ к чтению не ограничивается только собственными занятиями преподавателя.\n\nДословное дополнение владельца: «посещаемость за всю группу видят все преподаватели которые активны в группе. назначенный после генерации пар преподаватель видит результат прошлых пар».\n\n## Границы реализации\n\n- Это решение расширяет чтение посещаемости, но не даёт новых прав изменять отметки, чужие занятия или домашние задания.\n- Активное назначение и доступ к конкретной группе проверяет сервер. Сам факт исторического назначения не доказывает текущего права на чтение.\n- Существующий запрет закрытия назначения при любых сохранённых будущих занятиях не обеспечивает утверждённую смену преподавателя. Нужен согласованный переход будущих занятий с сохранением истории и защитой от повторного запроса и конкурирующей генерации.\n- Способ хранения истории замены и технический протокол определяются в контракте реализации. Этот документ не разрешает удаление производственных данных, развёртывание или миграцию production.\n\n## Проверяемый результат\n\nСтароста меняет преподавателя с даты D → будущие непроведённые занятия с D относятся к новому преподавателю → после обновления результат сохраняется → прошлые занятия и отметки сохраняют прежнюю историю. Новый преподаватель с активным назначением открывает посещаемость всей своей группы и видит также прошлые занятия; пользователь без активного назначения в этой группе не получает доступ на основании этого правила.\n\nВладельцы реализации: assignment lifecycle — `headman_requests_delivery`; teacher read authority/statistics — `admin_semester_delivery`. Приёмка и последовательная интеграция в main — главный чат.\n"
+        }
+      ]
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [
+      "AC-05"
+    ],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  },
+  {
+    "id": "JS-TEACHER-15",
+    "kind": "story",
+    "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "source_refs": [
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:294",
+      "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:415"
+    ],
+    "source_identity_verified": true,
+    "decision_status_in_preparation_registry": "new",
+    "status": "UNKNOWN",
+    "exclusion_source": [],
+    "excluded_criteria": [],
+    "role": "teacher",
+    "roles_and_grants": [
+      {
+        "role": "TEACHER",
+        "grants": [
+          "active selected TEACHER",
+          "current active group assignment for attendance read"
+        ],
+        "negative": "no attendance writes or ticket decisions; no credentials/foreign-group data; ticket detail remains subject-filtered"
+      }
+    ],
+    "grant_source_refs": {
+      "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+    },
+    "client": {
+      "source_surface": "mobile-or-web: source statement needs first-story routing",
+      "scope": "backend semantics + existing PWA/TMA equivalents; new web UI excluded by TASK-CONTRACT section 3",
+      "source_mentions": [
+        "Telegram"
+      ]
+    },
+    "prestate": "я забыл пароль",
+    "action": "🆕 Когда я забыл пароль, я обращаюсь к администратору: он присылает ссылку для смены пароля либо генерирует новый пароль.\n> Решение владельца (чат 6), заменяет прежнее следствие JS-TEACHER-05. Если Telegram привязан, доступны и обычные пути восстановления. Показ и регенерация пароля третьим лицом — тема аудита безопасности, как и `initial`-пароль на ПК-116.",
+    "expected_result": "🆕 Когда я забыл пароль, я обращаюсь к администратору: он присылает ссылку для смены пароля либо генерирует новый пароль.",
+    "accepted_source_text": "🆕 Когда я забыл пароль, я обращаюсь к администратору: он присылает ссылку для смены пароля либо генерирует новый пароль.\n> Решение владельца (чат 6), заменяет прежнее следствие JS-TEACHER-05. Если Telegram привязан, доступны и обычные пути восстановления. Показ и регенерация пароля третьим лицом — тема аудита безопасности, как и `initial`-пароль на ПК-116.",
+    "accepted_criteria_before_overlay": [
+      "🆕 Когда я забыл пароль, я обращаюсь к администратору: он присылает ссылку для смены пароля либо генерирует новый пароль.",
+      "> Решение владельца (чат 6), заменяет прежнее следствие JS-TEACHER-05. Если Telegram привязан, доступны и обычные пути восстановления. Показ и регенерация пароля третьим лицом — тема аудита безопасности, как и `initial`-пароль на ПК-116."
+    ],
+    "required_states_from_registry": [
+      "not-enumerated: design packet is required before UI implementation"
+    ],
+    "required_data_from_registry": [],
+    "forbidden_cases": [
+      "foreign scope",
+      "missing/revoked grant",
+      "terminal read-only mutation",
+      "malformed input must not cause unexpected 5xx"
+    ],
+    "owner_overlay_ids": [],
+    "owner_overlay_refs": [],
+    "effective_criteria": {
+      "source_clauses": [
+        "🆕 Когда я забыл пароль, я обращаюсь к администратору: он присылает ссылку для смены пароля либо генерирует новый пароль.",
+        "> Решение владельца (чат 6), заменяет прежнее следствие JS-TEACHER-05. Если Telegram привязан, доступны и обычные пути восстановления. Показ и регенерация пароля третьим лицом — тема аудита безопасности, как и `initial`-пароль на ПК-116."
+      ],
+      "precedence": "later owner decisions override relevant original clauses; R source decisions override preparation registry text",
+      "owner_rule_overlays": []
+    },
+    "interpretation": "Use owner overlays before literal story wording; backend findings need current symbols and runtime evidence.",
+    "request_ids_direct_source_associations": [],
+    "request_ids_candidate_associations": [],
+    "verification": "real API/DB/events plus actual PWA/TMA user path where implemented; positive/negative/boundary/retry/revoke; pinned synthetic data and Europe/Moscow educational clock",
+    "runtime_evidence": [],
+    "runtime_status": "NOT_RUN",
+    "existing_test_evidence": "preparation test paths unassigned; tests must be linked by concrete runtime packet; no PASS inferred"
+  }
+]

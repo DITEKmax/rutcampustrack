@@ -1,25 +1,25 @@
 package ru.rutcampustrack.academic.golden;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.academic.entity.User;
 
-import java.util.concurrent.ThreadLocalRandom;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * M08 Группа 4 (P2-8/4) — property-based tests для {@link User#getDisplayName()}.
  *
  * <p>Invariants:
+ *
  * <ol>
- *   <li><b>nameFormatterStable</b> — call getDisplayName() 100 раз на одном
- *       user'е даёт тот же результат (no side-effects, deterministic).</li>
- *   <li><b>lastNameAlwaysFirst</b> — формат строго «lastName firstName ...»,
- *       lastName — первый токен через split(' ').</li>
- *   <li><b>noMiddleNameIfBlank</b> — null/""/whitespace middleName → result НЕ
- *       содержит trailing space.</li>
+ *   <li><b>nameFormatterStable</b> — call getDisplayName() 100 раз на одном user'е даёт тот же
+ *       результат (no side-effects, deterministic).
+ *   <li><b>lastNameAlwaysFirst</b> — формат строго «lastName firstName ...», lastName — первый
+ *       токен через split(' ').
+ *   <li><b>noMiddleNameIfBlank</b> — null/""/whitespace middleName → result НЕ содержит trailing
+ *       space.
  * </ol>
  */
 class DisplayNamePropertyTest {
@@ -53,22 +53,19 @@ class DisplayNamePropertyTest {
         String display = user.getDisplayName();
         String[] tokens = display.split(" ");
 
-        assertThat(tokens[0])
-                .as("Первый токен displayName должен быть lastName")
-                .isEqualTo(last);
-        assertThat(tokens[1])
-                .as("Второй токен displayName должен быть firstName")
-                .isEqualTo(first);
+        assertThat(tokens[0]).as("Первый токен displayName должен быть lastName").isEqualTo(last);
+        assertThat(tokens[1]).as("Второй токен displayName должен быть firstName").isEqualTo(first);
     }
 
     @RepeatedTest(50)
     @DisplayName("noMiddleNameIfBlank — null/blank middleName → no trailing space")
     void noMiddleNameIfBlank() {
-        String blank = switch (ThreadLocalRandom.current().nextInt(3)) {
-            case 0 -> null;
-            case 1 -> "";
-            default -> "   ";
-        };
+        String blank =
+                switch (ThreadLocalRandom.current().nextInt(3)) {
+                    case 0 -> null;
+                    case 1 -> "";
+                    default -> "   ";
+                };
         User user = userOf("Анна", "Петрова", blank);
 
         String display = user.getDisplayName();

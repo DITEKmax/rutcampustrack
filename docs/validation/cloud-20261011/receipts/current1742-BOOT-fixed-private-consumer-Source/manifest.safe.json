@@ -1,0 +1,47 @@
+{
+  "state": "SOURCE_ONLY_INDEPENDENT_ROOT_REVIEW_PENDING",
+  "entries": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 7732,
+      "sha256": "e171f4f4786d5f0a58f4a1725b433a1b533ae091db191231f6492bbc6d8862df"
+    },
+    {
+      "path": "PLAN.safe.json",
+      "bytes": 1233,
+      "sha256": "1411eeecfbd2e607b4a0daf685e45443abdafeb638eaa65cdb1c5972fe8d3d8c"
+    },
+    {
+      "path": "READY.safe.json",
+      "bytes": 861,
+      "sha256": "b0e944c35ae9e3533987db1e84f6ec4d0c2b83bd78c699943cb62e31e8b5b93e"
+    },
+    {
+      "path": "check-private-source.py",
+      "bytes": 5953,
+      "sha256": "23361947d5f9d15019216ce4e46e7b5d97f68f3f6245b04ad9f2e85534acd538"
+    },
+    {
+      "path": "controls.safe.json",
+      "bytes": 1440,
+      "sha256": "d2fdb86d94b0ed8b0f40caed9120a3bab5a73ba936ef3454750f419b77f96036"
+    },
+    {
+      "path": "grant.template.safe.json",
+      "bytes": 1381,
+      "sha256": "254750fa45657730d5b0a0a0a29a388a49c3b6ac1c8e2c669ab7c132d3733a2e"
+    },
+    {
+      "path": "private-bridge.py",
+      "bytes": 14577,
+      "sha256": "d15666183a74ad6caacdd25f16815131d818f2b2a04b2a99786f105a29d1fd44"
+    },
+    {
+      "path": "producer.template.safe.json",
+      "bytes": 282,
+      "sha256": "889d3f6c116a425709daa4ba717e32155d16a70bf4198da7fea6d494ccb501de"
+    }
+  ],
+  "actual_connector_called": false,
+  "actual_native_helper": false
+}

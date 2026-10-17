@@ -1,0 +1,17 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "files": {
+    "RECHECK.safe.json": {
+      "bytes": 2845,
+      "sha256": "9bd3f711f1112e3e16b20db860c21b9556e6e9ef7fce3997c1f77d91cb4237ea"
+    },
+    "REPORT.md": {
+      "bytes": 874,
+      "sha256": "7a7324370b78ac9509c767795d3aa333af16359b554bea61006750b1c178e479"
+    },
+    "independent-ledger-controls.safe.json": {
+      "bytes": 1790,
+      "sha256": "5212e1320c0c059bc2511d04a197c39565346a1a76d17c4c68b0193f7086d3d6"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T03:32:11.548675+00:00",
+  "root_before": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+  "author_source": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "review_manifest_sha256": "e0e2389960bf29632ead19a07d2222c2b660d47ebd4a7ee87868f9b02f09864f",
+  "review": "APPROVE 0 findings; actual4native/sourceclassbridge independentlyverified",
+  "sole_path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+  "before_source_equal_author_parent": true,
+  "approved_source_sha256": "7116bf1fde7346bbb8dde9ae8d3a6f5bb9e3aa74abedf07e427ba2bfee19dbff",
+  "operation": "normal git cherry-pick one exact test commit; preserve rootdocs/currentotherWIP; mandatory6sourcehooks afterward; currentwholeAuthV57 newremote gates stillrequired"
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "test": "auth-service-TEST-ru.rutcampustrack.auth.config.LowercaseEnumConverterTest.xml",
+    "kind": "test",
+    "tests": "2",
+    "failures": "0",
+    "skipped": "0"
+  },
+  {
+    "test": "auth-service-TEST-ru.rutcampustrack.auth.controller.PasswordResetValidationExceptionHandlerTest.xml",
+    "kind": "test",
+    "tests": "1",
+    "failures": "0",
+    "skipped": "0"
+  },
+  {
+    "test": "auth-service-TEST-ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest.xml",
+    "kind": "test",
+    "tests": "2",
+    "failures": "0",
+    "skipped": "0"
+  },
+  {
+    "test": "auth-service-TEST-ru.rutcampustrack.auth.service.TmaServiceTest.xml",
+    "kind": "test",
+    "tests": "3",
+    "failures": "0",
+    "skipped": "0"
+  },
+  {
+    "test": "academic-service-TEST-ru.rutcampustrack.academic.config.LowercaseEnumConverterTest.xml",
+    "kind": "test",
+    "tests": "2",
+    "failures": "0",
+    "skipped": "0"
+  },
+  {
+    "test": "academic-service-TEST-ru.rutcampustrack.academic.config.WebConfigEnumConversionTest.xml",
+    "kind": "test",
+    "tests": "1",
+    "failures": "0",
+    "skipped": "0"
+  },
+  {
+    "test": "auth-service-TEST-ru.rutcampustrack.auth.integration.QrLoginFlowIT.xml",
+    "kind": "integrationTest",
+    "tests": "5",
+    "failures": "0",
+    "skipped": "0"
+  },
+  {
+    "test": "auth-service-TEST-ru.rutcampustrack.auth.integration.TmaIT.xml",
+    "kind": "integrationTest",
+    "tests": "16",
+    "failures": "0",
+    "skipped": "0"
+  },
+  {
+    "test": "academic-service-TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+    "kind": "integrationTest",
+    "tests": "2",
+    "failures": "1",
+    "skipped": "0"
+  },
+  {
+    "test": "schedule-service-TEST-ru.rutcampustrack.schedule.integration.LessonApiIT.xml",
+    "kind": "integrationTest",
+    "tests": "1",
+    "failures": "0",
+    "skipped": "0"
+  }
+]

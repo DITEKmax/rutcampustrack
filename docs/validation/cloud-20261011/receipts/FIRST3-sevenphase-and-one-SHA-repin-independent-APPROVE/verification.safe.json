@@ -1,0 +1,120 @@
+{
+  "schema": "RCT_FINITE_ACTUAL_REPIN_INDEPENDENT_VERIFICATION_V1",
+  "native_sealed_files_exact": 39,
+  "actual_sha256": "33b084dfeeb295a2c7557c6c0d41290b0a19e5f64a7e0724ff4cdb2835b86347",
+  "actual_manifest_sha256": "856b67f8f15bb8978d8123e82e84bafc77878c67cf9171452b73a738a8abd7e6",
+  "phases": [
+    {
+      "phase": "dataset-red",
+      "native_exit": 1,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "dataset-green",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "worker",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "privacy",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "format-write",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "format-check",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    },
+    {
+      "phase": "types",
+      "native_exit": 0,
+      "accepted": true,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "signals": 0,
+      "supervision_error_type": null
+    }
+  ],
+  "red_exact4of6": true,
+  "green40_allpassed": true,
+  "worker_privacy_types_closed_oracles_verified": true,
+  "known_births_union_exact16": true,
+  "known_births_fresh_absence16": true,
+  "link_and3cache_absent": true,
+  "native_terminal_mtimes_within_grant": {
+    "OUTCOME.safe.json": "2026-10-13T10:22:14.879901+00:00",
+    "dataset-red-terminal.safe.json": "2026-10-13T10:21:29.550795+00:00",
+    "dataset-green-terminal.safe.json": "2026-10-13T10:21:31.086566+00:00",
+    "worker-terminal.safe.json": "2026-10-13T10:21:33.765897+00:00",
+    "privacy-terminal.safe.json": "2026-10-13T10:22:10.326123+00:00",
+    "format-write-terminal.safe.json": "2026-10-13T10:22:11.183422+00:00",
+    "format-check-terminal.safe.json": "2026-10-13T10:22:11.879920+00:00",
+    "types-terminal.safe.json": "2026-10-13T10:22:14.878914+00:00"
+  },
+  "UTC_qualification": "Filesystem completion timestamps corroborate bounded use-time; reviewed caller admission/observer UTC-last enforces live grant, exact CPU execution timestamps not recorded here",
+  "formatter_whole_source_inverse_exact": "one object linewrap plus optional trailing comma; no value/regex/property meaning change; raw token list gains one comma",
+  "mobile_sha256": "726335954deae1f4ee1add1b0a9dfa3d9af7b849344b532ec4a6a536516a9642",
+  "consumer_one_literal_inverse_exact": true,
+  "consumer_source_head": "UNBOUND_FUTURE_ROOT_PUSH",
+  "consumer_sha256": "e47e3636b6843641b96ceac59b13e9c7988060f87128829f52e92bf8e73b7c22",
+  "consumer_manifest_sha256": "defb9fa39e11a5b0f231d139ea7ec593795eee9cf1fcdf1f29396552335cdb61",
+  "immutable26pins_exact": true,
+  "archives": [
+    {
+      "path": "/workspace/scratch/rct-validation/first3_dataset_call_source/first3-sevenphase-actual-r1-attempt01.safe.zip",
+      "sha256": "445be0d9525ad5d7afe359d5667127f2f52052b2cc1667d0c5e2a7cde7e73254",
+      "members": 40,
+      "crc_ok": true
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/first3_dataset_consumer_schema_formatter_repin/safe-repin-source.zip",
+      "sha256": "b80290d23788046f8efdc7b2427b89721b49a3fce916023416281e1def1a38d8",
+      "members": 4,
+      "crc_ok": true
+    }
+  ],
+  "old_independent_source_manifest": "e2d91778706bff82bda52ff21f690637fb5220f70d0cd378a97e2d1ebc6df735",
+  "governing": {
+    "TASK-CONTRACT.md": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c",
+    "CURRENT.md": "90d5aef20dad73d37b7e7110b1bd1ee2a609da41609cec22869786a0510c7a1b",
+    "decisions.md": "feafc4ffc89220ac932433d92d8b293e25c0ca288a48f61920ef9832de069da4",
+    "questions.md": "9a31f631bae3f062e5daa139aa09f863399b34bba80c55457b1bacf49773b20e",
+    "resources.md": "e3901ed3a822d99d8620011d70fee7c05a0a3ca510d0c342909a3857c522ca61"
+  },
+  "actual_current_CI_cause": "UNKNOWN",
+  "real_client_acceptance": false,
+  "reviewer_native_reruns": 0
+}

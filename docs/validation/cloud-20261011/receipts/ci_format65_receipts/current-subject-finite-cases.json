@@ -1,0 +1,80 @@
+[
+  {
+    "collector": "safe-integration-outcomes-academic-service-1.json",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "academic-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "case": {
+      "xmlOrdinal": 28,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+      "method": "getSubjectsByIds_returnsSubjectNamesAndTypes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "sourceSha256": "88bb5c967d08f851ea9e827112ca7404ff444ebaa2ef760bd6c4ff3e31bc5df5"
+    },
+    "xml_sha256": "9f3e1b84d61754a0ffa311a850ed6bdc1d68983190659a50448db0ac80585d41"
+  },
+  {
+    "collector": "safe-integration-outcomes-academic-service-1.json",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "academic-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "case": {
+      "xmlOrdinal": 60,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+      "method": "legalPageSizesPreserveExactOwnRowsTypesAssignmentsAndTotals",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "sourceSha256": "8eaa871417dae52ccb9a2a1631b82c17d4b655a87a3d17b84224d96fda41aeb3"
+    },
+    "xml_sha256": "a32cd9e6e7b002efb65f0e7d9a17a88744b978072f0d74ab905c1d8413bf6a7c"
+  },
+  {
+    "collector": "safe-integration-outcomes-academic-service-1.json",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "academic-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "case": {
+      "xmlOrdinal": 60,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+      "method": "teacherListDoesNotPublishPendingAdoptionBeforeExactResume",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "sourceSha256": "8eaa871417dae52ccb9a2a1631b82c17d4b655a87a3d17b84224d96fda41aeb3"
+    },
+    "xml_sha256": "a32cd9e6e7b002efb65f0e7d9a17a88744b978072f0d74ab905c1d8413bf6a7c"
+  }
+]

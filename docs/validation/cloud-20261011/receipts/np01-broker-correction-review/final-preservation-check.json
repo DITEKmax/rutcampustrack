@@ -1,0 +1,26 @@
+{
+  "source": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "observed_working_head": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "broker2_working_bytes": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "cb778_equal": true
+    },
+    {
+      "path": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+      "cb778_equal": true
+    }
+  ],
+  "old24_current_mismatches": [
+    "services/notification-bot/bot/__main__.py",
+    "services/notification-bot/bot/notifications/password_changed.py",
+    "services/notification-bot/tests/test_bot_credential_cards.py",
+    "services/notification-bot/tests/np01_bridge_runner.py"
+  ],
+  "old24_immutable_originals": "retained independently even if future assigned author corrections modify other paths",
+  "original9f13_manifest_and_zip_exact": true,
+  "DOMAIN1_original65_archive_b4cd_exact": true,
+  "earlier_six_reviews_safe_files_exact": 92,
+  "runtime": "NOT_RUN",
+  "frozen_cb778_old24_exact_aa713": true
+}

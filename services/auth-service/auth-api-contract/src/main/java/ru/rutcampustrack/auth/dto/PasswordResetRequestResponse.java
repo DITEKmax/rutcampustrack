@@ -4,5 +4,4 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record PasswordResetRequestResponse(
         @JsonProperty("challengeId") String challengeId,
-        @JsonProperty("ttlSeconds") int ttlSeconds
-) {}
+        @JsonProperty("ttlSeconds") int ttlSeconds) {}

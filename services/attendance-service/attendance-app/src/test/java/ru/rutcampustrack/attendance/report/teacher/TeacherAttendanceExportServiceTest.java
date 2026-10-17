@@ -1,5 +1,26 @@
 package ru.rutcampustrack.attendance.report.teacher;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
@@ -18,29 +39,6 @@ import ru.rutcampustrack.teacher.grpc.TeacherJournalCell;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalStudent;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 class TeacherAttendanceExportServiceTest {
     private static final long TEACHER_ID = 71L;
     private static final long SEMESTER_ID = 9L;
@@ -52,11 +50,13 @@ class TeacherAttendanceExportServiceTest {
     void htmlExportReadsAllJournalBatchesAndLeavesFutureMarksBlank() {
         Fixture fixture = fixture(100, true);
 
-        TeacherAttendanceExportResponse response = fixture.service().export(request("html"), TEACHER_ID);
+        TeacherAttendanceExportResponse response =
+                fixture.service().export(request("html"), TEACHER_ID);
 
         String html = response.getContent().toStringUtf8();
         assertThat(fixture.batches().stream().map(List::size).toList()).containsExactly(100, 1);
-        assertThat(html).contains("2026-01-01 — 2026-12-31")
+        assertThat(html)
+                .contains("2026-01-01 — 2026-12-31")
                 .contains("2026-10-01")
                 .contains("09:00 · Лекция")
                 .contains("Запланировано")
@@ -64,25 +64,31 @@ class TeacherAttendanceExportServiceTest {
                 .contains("overflow:auto")
                 .contains("Иван Петров")
                 .contains("100/100 (100%)");
-        assertThat(occurrences(html, "<th scope=\"col\">" )).isEqualTo(106);
+        assertThat(occurrences(html, "<th scope=\"col\">")).isEqualTo(106);
         assertThat(occurrences(html, "<td>+</td>")).isEqualTo(100);
         assertThat(occurrences(html, "<td></td>")).isEqualTo(1);
         assertThat(response.getContentType()).isEqualTo("text/html; charset=UTF-8");
         assertThat(response.getFileName()).endsWith(".html");
-        verify(fixture.schedule()).getLessonsByGroup(GROUP_ID, SEMESTER_ID, "2026-01-01", "2026-12-31");
+        verify(fixture.schedule())
+                .getLessonsByGroup(GROUP_ID, SEMESTER_ID, "2026-01-01", "2026-12-31");
     }
 
     @Test
     void xlsxHasFrozenHeadingsAndNumericMetricCells() throws Exception {
         Fixture fixture = fixture(1, true);
 
-        TeacherAttendanceExportResponse response = fixture.service().export(request("xlsx"), TEACHER_ID);
+        TeacherAttendanceExportResponse response =
+                fixture.service().export(request("xlsx"), TEACHER_ID);
 
         Map<String, byte[]> entries = unzip(response.getContent().toByteArray());
         assertThat(entries.keySet()).contains("xl/worksheets/sheet1.xml", "xl/styles.xml");
         for (byte[] xml : entries.values()) parseXml(xml);
-        String sheet = new String(entries.get("xl/worksheets/sheet1.xml"), java.nio.charset.StandardCharsets.UTF_8);
-        assertThat(sheet).contains("xSplit=\"1\" ySplit=\"6\"")
+        String sheet =
+                new String(
+                        entries.get("xl/worksheets/sheet1.xml"),
+                        java.nio.charset.StandardCharsets.UTF_8);
+        assertThat(sheet)
+                .contains("xSplit=\"1\" ySplit=\"6\"")
                 .contains("width=\"30\"")
                 .contains("width=\"14\"")
                 .contains("width=\"18\"")
@@ -101,21 +107,33 @@ class TeacherAttendanceExportServiceTest {
         Fixture fixture = fixture(1, false);
         LocalDate from = LocalDate.parse("2026-09-10");
         LocalDate to = LocalDate.parse("2026-09-20");
-        when(fixture.schedule().getLessonsByGroup(GROUP_ID, SEMESTER_ID, from.toString(), to.toString()))
-                .thenReturn(LessonsResponse.newBuilder()
-                        .addLessons(lesson(301L, LocalDate.parse("2026-09-09"), "CLOSED", 1))
-                        .addLessons(lesson(302L, LocalDate.parse("2026-09-15"), "CLOSED", 2))
-                        .addLessons(lesson(303L, LocalDate.parse("2026-09-21"), "CLOSED", 3))
-                        .build());
-        TeacherAttendanceExportRequest request = request("html").toBuilder()
-                .setDateFrom(from.toString()).setDateTo(to.toString()).build();
+        when(fixture.schedule()
+                        .getLessonsByGroup(GROUP_ID, SEMESTER_ID, from.toString(), to.toString()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(
+                                        lesson(301L, LocalDate.parse("2026-09-09"), "CLOSED", 1))
+                                .addLessons(
+                                        lesson(302L, LocalDate.parse("2026-09-15"), "CLOSED", 2))
+                                .addLessons(
+                                        lesson(303L, LocalDate.parse("2026-09-21"), "CLOSED", 3))
+                                .build());
+        TeacherAttendanceExportRequest request =
+                request("html").toBuilder()
+                        .setDateFrom(from.toString())
+                        .setDateTo(to.toString())
+                        .build();
 
         TeacherAttendanceExportResponse response = fixture.service().export(request, TEACHER_ID);
         String html = response.getContent().toStringUtf8();
 
-        assertThat(html).contains("2026-09-10 — 2026-09-20").contains("2026-09-15")
-                .doesNotContain("2026-09-09").doesNotContain("2026-09-21");
-        verify(fixture.schedule()).getLessonsByGroup(GROUP_ID, SEMESTER_ID, from.toString(), to.toString());
+        assertThat(html)
+                .contains("2026-09-10 — 2026-09-20")
+                .contains("2026-09-15")
+                .doesNotContain("2026-09-09")
+                .doesNotContain("2026-09-21");
+        verify(fixture.schedule())
+                .getLessonsByGroup(GROUP_ID, SEMESTER_ID, from.toString(), to.toString());
     }
 
     @Test
@@ -126,10 +144,16 @@ class TeacherAttendanceExportServiceTest {
         TeacherAcademicGrpcClient teacherAcademic = mock(TeacherAcademicGrpcClient.class);
         DocumentRendererGrpcClient renderer = mock(DocumentRendererGrpcClient.class);
         when(report.getTeacherStats(any(), eq(TEACHER_ID)))
-                .thenThrow(new AccessDeniedException("teacher is not active in the selected group"));
-        TeacherAttendanceExportService service = new TeacherAttendanceExportService(
-                report, schedule, academic, teacherAcademic, renderer,
-                (teacherId, lessonIds) -> TeacherJournalResponse.getDefaultInstance());
+                .thenThrow(
+                        new AccessDeniedException("teacher is not active in the selected group"));
+        TeacherAttendanceExportService service =
+                new TeacherAttendanceExportService(
+                        report,
+                        schedule,
+                        academic,
+                        teacherAcademic,
+                        renderer,
+                        (teacherId, lessonIds) -> TeacherJournalResponse.getDefaultInstance());
 
         assertThatThrownBy(() -> service.export(request("html"), TEACHER_ID))
                 .isInstanceOf(AccessDeniedException.class);
@@ -144,16 +168,30 @@ class TeacherAttendanceExportServiceTest {
         assertThat(fixture.batches()).containsExactly(List.of(10_001L));
         assertThat(fixture.completedRequests()).containsExactly(true);
         assertThat(html).contains("2026-01-02").doesNotContain("2026-10-01");
-        assertThat(occurrences(html, "<th scope=\"col\">" )).isEqualTo(6);
+        assertThat(occurrences(html, "<th scope=\"col\">")).isEqualTo(6);
         for (long id : List.of(20_000L, 99_999L)) {
-            assertThatThrownBy(() -> fixture.service().export(selected.toBuilder().setLessonId(id).build(), TEACHER_ID))
+            assertThatThrownBy(
+                            () ->
+                                    fixture.service()
+                                            .export(
+                                                    selected.toBuilder().setLessonId(id).build(),
+                                                    TEACHER_ID))
                     .isInstanceOf(ru.rutcampustrack.attendance.exception.BadRequestException.class);
         }
         var closed = lesson(301L, LocalDate.parse("2026-01-01"), "CLOSED", 1);
-        when(fixture.schedule().getLessonsByGroup(GROUP_ID, SEMESTER_ID, "2026-01-01", "2026-12-31"))
-                .thenReturn(LessonsResponse.newBuilder().addLessons(closed.toBuilder().setId(302L))
-                        .addLessons(closed.toBuilder().setSubjectId(SUBJECT_ID + 1)) .build());
-        assertThatThrownBy(() -> fixture.service().export(selected.toBuilder().setLessonId(301L).build(), TEACHER_ID))
+        when(fixture.schedule()
+                        .getLessonsByGroup(GROUP_ID, SEMESTER_ID, "2026-01-01", "2026-12-31"))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(closed.toBuilder().setId(302L))
+                                .addLessons(closed.toBuilder().setSubjectId(SUBJECT_ID + 1))
+                                .build());
+        assertThatThrownBy(
+                        () ->
+                                fixture.service()
+                                        .export(
+                                                selected.toBuilder().setLessonId(301L).build(),
+                                                TEACHER_ID))
                 .isInstanceOf(ru.rutcampustrack.attendance.exception.BadRequestException.class);
     }
 
@@ -173,33 +211,53 @@ class TeacherAttendanceExportServiceTest {
         }
         when(schedule.getLessonsByGroup(GROUP_ID, SEMESTER_ID, "2026-01-01", "2026-12-31"))
                 .thenReturn(LessonsResponse.newBuilder().addAllLessons(lessons).build());
-        when(teacherAcademic.fullSemesterAssignments(SEMESTER_ID)).thenReturn(TeacherAssignmentsResponse.newBuilder()
-                .setSemesterDateFrom("2026-01-01")
-                .setSemesterDateTo("2026-12-31")
-                .build());
-        when(academic.getGroup(GROUP_ID)).thenReturn(GroupResponse.newBuilder()
-                .setId(GROUP_ID).setName("УИТ-311").build());
+        when(teacherAcademic.fullSemesterAssignments(SEMESTER_ID))
+                .thenReturn(
+                        TeacherAssignmentsResponse.newBuilder()
+                                .setSemesterDateFrom("2026-01-01")
+                                .setSemesterDateTo("2026-12-31")
+                                .build());
+        when(academic.getGroup(GROUP_ID))
+                .thenReturn(GroupResponse.newBuilder().setId(GROUP_ID).setName("УИТ-311").build());
         when(academic.getSubjectDetailsByIds(List.of(SUBJECT_ID)))
-                .thenReturn(Map.of(SUBJECT_ID, new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));
+                .thenReturn(
+                        Map.of(
+                                SUBJECT_ID,
+                                new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));
         ReportService.TeacherStatsResult emptyStats = stats(List.of());
         ReportService.TeacherStatsResult selectedStats = stats(List.of(student(pastLessonCount)));
-        when(report.getTeacherStats(any(), eq(TEACHER_ID))).thenAnswer(invocation -> {
-            ReportService.TeacherStatsQuery query = invocation.getArgument(0);
-            return query.lessonIds().isEmpty() ? emptyStats : selectedStats;
-        });
+        when(report.getTeacherStats(any(), eq(TEACHER_ID)))
+                .thenAnswer(
+                        invocation -> {
+                            ReportService.TeacherStatsQuery query = invocation.getArgument(0);
+                            return query.lessonIds().isEmpty() ? emptyStats : selectedStats;
+                        });
         List<List<Long>> batches = new ArrayList<>();
         List<Boolean> completedRequests = new ArrayList<>();
-        TeacherAttendanceExportService service = new TeacherAttendanceExportService(
-                report, schedule, academic, teacherAcademic, renderer,
-                (teacherId, ids, pastOnly) -> {
-                    completedRequests.add(pastOnly);
-                    batches.add(List.copyOf(ids));
-                    TeacherJournalStudent.Builder student = TeacherJournalStudent.newBuilder()
-                            .setStudentId(501L).setDisplayName("Иван Петров");
-                    ids.forEach(id -> student.addCells(TeacherJournalCell.newBuilder()
-                            .setLessonId(id).setStatus("PRESENT").setSymbol("+").setRecordPresent(true)));
-                    return TeacherJournalResponse.newBuilder().addStudents(student).build();
-                });
+        TeacherAttendanceExportService service =
+                new TeacherAttendanceExportService(
+                        report,
+                        schedule,
+                        academic,
+                        teacherAcademic,
+                        renderer,
+                        (teacherId, ids, pastOnly) -> {
+                            completedRequests.add(pastOnly);
+                            batches.add(List.copyOf(ids));
+                            TeacherJournalStudent.Builder student =
+                                    TeacherJournalStudent.newBuilder()
+                                            .setStudentId(501L)
+                                            .setDisplayName("Иван Петров");
+                            ids.forEach(
+                                    id ->
+                                            student.addCells(
+                                                    TeacherJournalCell.newBuilder()
+                                                            .setLessonId(id)
+                                                            .setStatus("PRESENT")
+                                                            .setSymbol("+")
+                                                            .setRecordPresent(true)));
+                            return TeacherJournalResponse.newBuilder().addStudents(student).build();
+                        });
         return new Fixture(service, schedule, batches, completedRequests);
     }
 
@@ -217,15 +275,26 @@ class TeacherAttendanceExportServiceTest {
                 .build();
     }
 
-    private static ReportService.TeacherStatsResult stats(List<ReportService.TeacherStudentStats> students) {
-        return new ReportService.TeacherStatsResult(ReportService.TeacherStatsScope.STUDENTS,
-                SEMESTER_ID, null, null, 0, students, List.of(), List.of(), NOW);
+    private static ReportService.TeacherStatsResult stats(
+            List<ReportService.TeacherStudentStats> students) {
+        return new ReportService.TeacherStatsResult(
+                ReportService.TeacherStatsScope.STUDENTS,
+                SEMESTER_ID,
+                null,
+                null,
+                0,
+                students,
+                List.of(),
+                List.of(),
+                NOW);
     }
 
     private static ReportService.TeacherStudentStats student(int denominator) {
-        ReportService.TeacherMetric present = new ReportService.TeacherMetric(denominator, denominator, 100.0);
+        ReportService.TeacherMetric present =
+                new ReportService.TeacherMetric(denominator, denominator, 100.0);
         ReportService.TeacherMetric zero = new ReportService.TeacherMetric(0, denominator, 0.0);
-        return new ReportService.TeacherStudentStats(501L, "Иван Петров", present, present, zero, zero);
+        return new ReportService.TeacherStudentStats(
+                501L, "Иван Петров", present, present, zero, zero);
     }
 
     private static TeacherAttendanceExportRequest request(String format) {
@@ -235,7 +304,8 @@ class TeacherAttendanceExportServiceTest {
                 .setSubjectId(SUBJECT_ID)
                 .addLessonTypes("lecture")
                 .setFormat(format)
-                .setReportKind(TeacherAttendanceReportKind.TEACHER_ATTENDANCE_REPORT_KIND_SUBJECT_JOURNAL)
+                .setReportKind(
+                        TeacherAttendanceReportKind.TEACHER_ATTENDANCE_REPORT_KIND_SUBJECT_JOURNAL)
                 .build();
     }
 
@@ -263,8 +333,9 @@ class TeacherAttendanceExportServiceTest {
         factory.newDocumentBuilder().parse(new ByteArrayInputStream(value));
     }
 
-    private record Fixture(TeacherAttendanceExportService service,
-                           ScheduleGrpcClient schedule,
-                           List<List<Long>> batches, List<Boolean> completedRequests) {
-    }
+    private record Fixture(
+            TeacherAttendanceExportService service,
+            ScheduleGrpcClient schedule,
+            List<List<Long>> batches,
+            List<Boolean> completedRequests) {}
 }

@@ -1,0 +1,83 @@
+{
+  "root_sources": "affe13286ca25ef282955a71a94b0aec67b281f5",
+  "paths": [
+    ".github/workflows/ci.yml",
+    "docs/validation/cloud-20261011/CURRENT.md",
+    "docs/validation/cloud-20261011/attempts.ndjson",
+    "docs/validation/cloud-20261011/defects.md",
+    "docs/validation/cloud-20261011/receipts/Auth-only-dependency-refresh-package.safe.json",
+    "docs/validation/cloud-20261011/receipts/FIRST3-editability-diagnostic-red-restored-green.safe.json",
+    "docs/validation/cloud-20261011/receipts/P09-and-FIRST3-independent-review.safe.md",
+    "docs/validation/cloud-20261011/receipts/P09-real-auth-open-socket-red-restored-green.safe.json",
+    "docs/validation/cloud-20261011/receipts/clock-next5-a852-real-push-readback.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-a852-AuthIT-no-results.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-a852-AuthIT-pretest-diagnosis.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-a852-CI-terminal.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-a852-FIRST3.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-a852-actual-checkout.safe.json",
+    "docs/validation/cloud-20261011/receipts/schedule-current-upgrade-independent-review.safe.md",
+    "docs/validation/cloud-20261011/receipts/schedule-current-upgrade-red-restored-green.safe.json",
+    "docs/validation/cloud-20261011/resources.md",
+    "docs/validation/cloud-20261011/source-ledger.json",
+    "docs/validation/cloud-20261011/verified-cases.csv",
+    "services/auth-service/auth-app/build.gradle.kts",
+    "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+    "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts",
+    "tests/e2e/fixtures/first3-observer.ts"
+  ],
+  "terminal": {
+    "direct_pid": 591835,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 591835,
+        "start_ticks": 18801958
+      },
+      {
+        "pid": 591847,
+        "start_ticks": 18801961
+      },
+      {
+        "pid": 591875,
+        "start_ticks": 18801996
+      },
+      {
+        "pid": 591882,
+        "start_ticks": 18802061
+      },
+      {
+        "pid": 591903,
+        "start_ticks": 18802068
+      },
+      {
+        "pid": 591931,
+        "start_ticks": 18802090
+      },
+      {
+        "pid": 591957,
+        "start_ticks": 18802096
+      },
+      {
+        "pid": 592004,
+        "start_ticks": 18802118
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "applicable_hooks": {
+    "PASS": 6,
+    "FAIL": 0,
+    "SKIP": 0
+  },
+  "private_log": "/workspace/scratch/rct-validation/root_current_coherent_publish_checks/hooks.private.log",
+  "source_checks": "author scopedformat/parser/type/nativeactuals + one independentwholereview+recheck retained",
+  "branch_only": "codex/server-validation-20261011"
+}

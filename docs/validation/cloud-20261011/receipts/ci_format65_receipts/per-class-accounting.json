@@ -1,0 +1,3482 @@
+[
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+    "statuses": {
+      "PASSED": 14
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+    "sourceSha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.admin.AdminPermissionRpcIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminPermissionRpcIT.java",
+    "sourceSha256": "555a2d4f03506c434b7a7b2261cbf7aca14d8be82671aa9891f969de4fa05e18"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": null,
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": null,
+    "sourceSha256": null
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityIT.java",
+    "sourceSha256": "55811404653e9c1d0e5d06b5b3414860e62dda46530d7144c6e779d50fdad6d1"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.assignment.AssignmentReplacementIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentReplacementIT.java",
+    "sourceSha256": "ec339a6e275d86955c662e521874216041f012a591de6d76eea4a09fa9962cab"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "sourceSha256": "ac58bd3b01a8816a38a0bdc1abbefd3e484389b116e3b2048a42dd82a8105547"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+    "statuses": {
+      "PASSED": 19
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialLifecycleIT.java",
+    "sourceSha256": "b43213ddc05d9a74a8f5f3b9d0e8f79ed3155e5ceea14b1658c95de74ee770f0"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialPythonBridgeIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialPythonBridgeIT.java",
+    "sourceSha256": "4cffb9e389a96a19104c049ba3c56b0f92d0df96989cc49dd486271a3f71e88f"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.dashboard.DashboardInvalidationIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/dashboard/DashboardInvalidationIT.java",
+    "sourceSha256": "1e4e259f181f7143cf6ec3f5f8f915624b52d8154fc82db92f4e566a9aef3cf9"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.events.GroupUpdatedContractIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/GroupUpdatedContractIT.java",
+    "sourceSha256": "141da85470b62adfa5a3c911ed022153884988abc8968331aee68b79dc7ed1dd"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.events.HomeworkNotificationContractIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/events/HomeworkNotificationContractIT.java",
+    "sourceSha256": "6182b11ade92ab040b67f397eccacffbdee7e78e2510ecb24ca6df25928e2b7d"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.export.AdminRegistryExportsIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/export/AdminRegistryExportsIT.java",
+    "sourceSha256": "21ef07836bfeb82e531616e7c7f78195fc9ea5db10c7dc2c725ea7a7451ce185"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.group.AdministrativeNotificationGroupCycleIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/AdministrativeNotificationGroupCycleIT.java",
+    "sourceSha256": "affc19f5f72ba8664cdd05a01880c92c7cf8304088e2c89e85a5145670e20da7"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.group.GroupHeadmanAssignmentIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+    "sourceSha256": "ebfcadd193ad9ca82d5d54cf5175c83386bc611736546f0f821131feabbd3ada"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.group.GroupPromotionCycleIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java",
+    "sourceSha256": "5419c3e67888de5f56082423b9735dee4e9fc26df02bf6dbe752e72ed72eeadc"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.group.GroupRegistryIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+    "sourceSha256": "2db8ae5e5bb67bfb62477dee374b89a7da94786f750864fea6afd80505db034b"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcIT.java",
+    "sourceSha256": "2296eeab1ecfa872eab2a5876eeeb83412eb96d2bc520ec372e4beb86d0721ca"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.homework.HomeworkBindingArchiveIT",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveIT.java",
+    "sourceSha256": "5c17045405a8475789c647e688798439f908346175e567c11adf54af10342224"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.homework.HomeworkBindingTransferIT",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkBindingTransferIT.java",
+    "sourceSha256": "85aa72e82eb3696ae4ca0a14ea08f5ebfc0e40c378878f8252ad60272e887ed6"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.homework.HomeworkControllerIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkControllerIT.java",
+    "sourceSha256": "dc29a48e168cefaf2c9231199370feb452ce5226edc71af724ff9eb259f0e176"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.homework.HomeworkEditLifecycleIT",
+    "statuses": {
+      "PASSED": 11
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java",
+    "sourceSha256": "742f5738502273c562fbd43078c2fb50614dd3fefbffad4ddce72dd01caaa2a7"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.homework.HomeworkMigrationIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkMigrationIT.java",
+    "sourceSha256": "8475e0ca82ee80e0a941f79fa9b717a45053ff78266e85ad6904322768adae19"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.homework.HomeworkStudentCompletionConcurrencyIT",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentCompletionConcurrencyIT.java",
+    "sourceSha256": "032f636003eba9dacf59dafafa52a8a41bc9524b47cdb91905c27772b21529e6"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.homework.HomeworkTeacherReadIT",
+    "statuses": {
+      "PASSED": 24
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkTeacherReadIT.java",
+    "sourceSha256": "b6bcd28918f6eaf4d52592837a980897e32c63621153296cb70425f6d23eab51"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+    "statuses": {
+      "PASSED": 21
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+    "sourceSha256": "88bb5c967d08f851ea9e827112ca7404ff444ebaa2ef760bd6c4ff3e31bc5df5"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.AcademicPerformanceIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicPerformanceIT.java",
+    "sourceSha256": "bd44508105533d6ca327db0efee58822e7c6e094aa4c268626b81ab3e8af4370"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.ActuatorIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/ActuatorIT.java",
+    "sourceSha256": "302e1bc12b614256c59fb9115c51b2dad4246585a0d62ae44b6f8f91935bf77f"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.CacheIT",
+    "statuses": {
+      "PASSED": 11
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java",
+    "sourceSha256": "39e55c15d771852c957cfb74d239744827ece24877e3bba17a2211b824044e8b"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.EntityMappingIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EntityMappingIT.java",
+    "sourceSha256": "5b83bdbb4db842fda68903fe59af50fc181f5452bd85cef7df41bda2b3595ce1"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.EventIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java",
+    "sourceSha256": "0559f08cafd1c71f23e53cd34bacc1fb5f178dce93d616394efe7918270669b3"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.GroupRenameEventIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/GroupRenameEventIT.java",
+    "sourceSha256": "948cf4fcbbf4f1e0a2b7f986df2530a584555d5bdaacc1efeb8ec1ac1665913f"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.HeadmanStatsScopeIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanStatsScopeIT.java",
+    "sourceSha256": "6bdae6bba67a4c1e0e9418003847cd4314dd1e29f694c6c99f6a1d3a36ff07e6"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.HealthDegradationIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HealthDegradationIT.java",
+    "sourceSha256": "c10291580587cf6e6b51ac7d9723df31f086d443d0f669c05b0867693aa178b3"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+    "sourceSha256": "1cfdb58a2d25b8bdc246bb1855c5f8857af1cf3090ff86efbe187e246bc59fac"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.InitialPasswordBoundaryIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InitialPasswordBoundaryIT.java",
+    "sourceSha256": "790c3f01dfe4b5f4b6b38b9e68e0893cb31a8d4a5afacc3d8b982656f42930b4"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.OpenApiErrorResponsesIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiErrorResponsesIT.java",
+    "sourceSha256": "d8ea7cb03f22ab31c2fe0a00326018029df3430861aeca97b2dce4a82af312a8"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.OpenApiSnapshotIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java",
+    "sourceSha256": "833b5aa459e826ebd9976bd8b12d9f08d5e790dc8f664c4307554351fb4ea514"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.OutboxBrokerConfirmIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxBrokerConfirmIT.java",
+    "sourceSha256": "032cb2f50fdb086f49d386fea69c345b7de4d604a1a982e86ba8352629306b12"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.OutboxCleanupIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxCleanupIT.java",
+    "sourceSha256": "947c16dedfcbc668bd084910566e173b5f6e4f907f40c45d95c37b003b523bc2"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.PaginationCapIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/PaginationCapIT.java",
+    "sourceSha256": "5699ad8cd7ed4b9a2b3f9a6c77cbe7ae22a3bd7cea29109af6f09fcd81692f2c"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.RbacCacheIT",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RbacCacheIT.java",
+    "sourceSha256": "2f0f51dac423d008dfc35e320307e2c99503a4820f572da24531739b96e5ea7b"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.RestApiIT",
+    "statuses": {
+      "PASSED": 12
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java",
+    "sourceSha256": "98f149e8c8e8dd903512965ef4fe8dae082ae6dbdf8d9fb45fad6005f2150516"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+    "sourceSha256": "dddf474ce95a7018477ce74636bc727f06317a1bac6ed5c610b4e72310abf46b"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+    "sourceSha256": "922cdcb41bbac46ccc6807f791a68b536f78bc276f0fc6543eba3bc755043f86"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT",
+    "statuses": {
+      "PASSED": 37
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+    "sourceSha256": "b26ac3e8cbfbf1f919cc1e8f411fcad27c93fa8ca8c3a653824299e7b404622a"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT",
+    "statuses": {
+      "PASSED": 18
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+    "sourceSha256": "131f54824b23478d8c5766ef55f8071987d8d89abcaabc11c8386371adb220ea"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+    "statuses": {
+      "PASSED": 14
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+    "sourceSha256": "9e7ec0425e1be7d86dfcf7b04492488d0dd15c2048f42f70bd53d24df32f13f7"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.migration.FlywayMigrationIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/FlywayMigrationIT.java",
+    "sourceSha256": "d29f0a04b0c4cb0970c6ca06dbc34df0185c13db6cd27d10bcea638e49e5e33e"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.migration.StudentFoundationMigrationIT",
+    "statuses": {
+      "PASSED": 16
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/StudentFoundationMigrationIT.java",
+    "sourceSha256": "839b81269f3119fb0f66439df408db8c0b818d55b81735cc3586eafbef7fe4a8"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.notification.NotificationAudienceIT",
+    "statuses": {
+      "PASSED": 28
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/notification/NotificationAudienceIT.java",
+    "sourceSha256": "cb13b85dac3ae485f28174cec220feaaf726b82d9411a0840266e60ff3a9043f"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.security.AcademicUserContextFilterIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/AcademicUserContextFilterIT.java",
+    "sourceSha256": "bf784f9729c6fb47e6faa157f6bc0995c05805ab2960055cd439a84d28d447d6"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.security.AcademicUserContextFilterStrictModeIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/AcademicUserContextFilterStrictModeIT.java",
+    "sourceSha256": "415a3bd2ce6ed6f9926cb5f743bb3b0389822b922401302ed4ce540e732ab541"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.security.SecurityIdorIT",
+    "statuses": {
+      "PASSED": 15
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/SecurityIdorIT.java",
+    "sourceSha256": "da43bb6145cf8da9a2f4ae812b9b18cd62d3cf3d80c259e6c77133a5debf5c00"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.semester.SemesterAssignmentAuthorityIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentAuthorityIT.java",
+    "sourceSha256": "cdb0413e06202ec96ea110e2fac4a9abd6e2da4745b70d5e4fd7b0bbcbef7831"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.studentprojection.StudentProjectionQueryAdapterIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQueryAdapterIT.java",
+    "sourceSha256": "33e58146eff4e2556889fe6890e1d0c1742b8ee1d6492b1572a38a0ae517bc98"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityIT",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityIT.java",
+    "sourceSha256": "b0ed8fc3c1fdce3ae683f947debc0cb17a89f4ffbd3fec1c08add8cd415a4918"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.subject.SubjectListDataIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+    "sourceSha256": "8eaa871417dae52ccb9a2a1631b82c17d4b655a87a3d17b84224d96fda41aeb3"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.subject.SubjectSchemaIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectSchemaIT.java",
+    "sourceSha256": "ef94009e2f0ec13ce56aed8a5a56bf538853b9eae0d257157752f4d3e9589b20"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.subject.SubjectServiceIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectServiceIT.java",
+    "sourceSha256": "44e5aa2722b0f035c7ac2027f9c6c67c64c64be297b03a1e992592967be8f3e4"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.user.UserByIdsApiIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserByIdsApiIT.java",
+    "sourceSha256": "b32d0389b157f4f0f2c305f9bd5000a2cc5865b50b09279c5188dfc21e1211bd"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.user.UserRepositorySearchIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserRepositorySearchIT.java",
+    "sourceSha256": "ccd3fb2dce042be6ae075572c54968e5ed444b9822f08e1e2da7f44a3f17de0d"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.user.UserRepositorySortIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserRepositorySortIT.java",
+    "sourceSha256": "a8660b6cdebb0ac39b5319cee855c32311e34032e53f42253d5f1f5e1a82dd32"
+  },
+  {
+    "service": "academic-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.academic.user.UserSearchIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java",
+    "sourceSha256": "807c19ddffa196d8f843c27622af8eb54f892e8f88ca4b4e9a2acc63420850fe"
+  },
+  {
+    "service": "api-gateway",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+    "statuses": {
+      "SKIPPED": 3
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+    "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+  },
+  {
+    "service": "api-gateway",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.gateway.ratelimit.FailOpenIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenIT.java",
+    "sourceSha256": "6d4673a9099ccafd426af8c0b787ea781f938b76679aeab9a6f5a69e18aa402c"
+  },
+  {
+    "service": "api-gateway",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java",
+    "sourceSha256": "f412e3a79d28b56cc9d0f818f2666cdcb7f6d923dde6f9718169fe3f0a9585c2"
+  },
+  {
+    "service": "api-gateway",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerIT.java",
+    "sourceSha256": "81349d03003dfad101b323ac43d1d269075468639b231c40a1e8a25d90e9d53b"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": null,
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": null,
+    "sourceSha256": null
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.audit.LessonActionAuditIT",
+    "statuses": {
+      "PASSED": 21
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/audit/LessonActionAuditIT.java",
+    "sourceSha256": "6bbb7a7db6a59573159455ef41332a6c984ffc13a3e298e1a263bfb937dbab77"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.event.AttendanceSemesterDeletionDataIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/AttendanceSemesterDeletionDataIT.java",
+    "sourceSha256": "9604e682247657f7d112b631a0124bf23bcc34d7177d599f8193c585f03574c5"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.event.EventIdempotentIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/EventIdempotentIT.java",
+    "sourceSha256": "6f61523956db8f12afd3736556d995980d458116bae3cf263e8277cdb27ca885"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.event.LessonTransferParticipantIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonTransferParticipantIT.java",
+    "sourceSha256": "4d1c3e8220de961530829450604cc96234cc556d445274f9621fe665180a5ede"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.event.OneOffLessonCancelledConsumerIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/OneOffLessonCancelledConsumerIT.java",
+    "sourceSha256": "010fac0c143aa3aa150698e017dd885a6e404e7b3624b6d0b008c29f48acd870"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.event.SemesterDeletionParticipantIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/SemesterDeletionParticipantIT.java",
+    "sourceSha256": "8d3ffe79fe0986eccfacadd9beeb350f92f67fdb0a315c6f16912131dbf40474"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.events.AttendanceMarkedContractIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/events/AttendanceMarkedContractIT.java",
+    "sourceSha256": "caa6a901e211d22056629c0e22ee016912d8c2ac3eb5ac0b189e4cd1caa55a1f"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.excuse.ExcuseControllerIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseControllerIT.java",
+    "sourceSha256": "5531b8b556c6ad270211ba5bb8423c4d30d79c6b744b3f8b1ee4bd0c1599ddef"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.excuse.ExcuseEventContractIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventContractIT.java",
+    "sourceSha256": "b5f152fa1386663d781c53157316eab9d611ee9c236945b46b40b516d056f845"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.excuse.ExcuseRepositoryIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseRepositoryIT.java",
+    "sourceSha256": "83979f08116b31394067c500f22f4bd7e475acdb434cbfd2d092df672dfbfa62"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.excuse.ExcuseServiceApproveIT",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceApproveIT.java",
+    "sourceSha256": "5282475a028647468dc6ab487f1020ccc439c3bcf4c258207e67c5295e3d6e9d"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.grpc.AdminActivityGrpcIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AdminActivityGrpcIT.java",
+    "sourceSha256": "32d98b879dbe4d5e8c9c57017da75fac5062577317c1c21191ff283eadaf6a90"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcBatchTransferIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcBatchTransferIT.java",
+    "sourceSha256": "df5499716ddfa95b0587f93e2d814697efcecc86f88dfbaeb062f83164a1492c"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.grpc.UserImpactIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/UserImpactIT.java",
+    "sourceSha256": "9137404bd556343e9ea6f163e8096cc72fe4084b2683602e2c3889363d842eb5"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.ActuatorIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ActuatorIT.java",
+    "sourceSha256": "2402a1ad34eb10660d48d5a145b1e191fad8fb47c7c9c5c158493ee258458d58"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.CheckinIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/CheckinIT.java",
+    "sourceSha256": "021020d2e35c8c37e4f174ce9ed20e651fbf2954a49a2bd512a9bc768024f9da"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.EnumSerializationIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EnumSerializationIT.java",
+    "sourceSha256": "a6fbc936ded92ec4ff4d8a75d304531fe3d606307e306bcbc81a4b56ed2809aa"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.EventConsumerIT",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/EventConsumerIT.java",
+    "sourceSha256": "1b78baf72274aa139671574291ba71006a95a8142ff5443ecf58ce523f7bacb8"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.LateCheckinPerformanceIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/LateCheckinPerformanceIT.java",
+    "sourceSha256": "6c945d900d7f341a66cd01e55a0c7ba7b2ed5d1c03c9f566bd0d9f391865d69f"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.MarkingIT",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MarkingIT.java",
+    "sourceSha256": "977d3c68b605fa5a336753050d111c0fb7d6163e3757166466453cc5a18cd2dc"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.MongoIndexIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/MongoIndexIT.java",
+    "sourceSha256": "7c8873de4a0054b589bc952a02f1c77512c36ddd91ef6b63cef9124ff4e0a8c3"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java",
+    "sourceSha256": "23e181aca2b3fcdd5d1758ed420126b92ef529f3e6f7b4b98f1d7513d8dfb35e"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.OutboxAtomicityIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/OutboxAtomicityIT.java",
+    "sourceSha256": "302189727ee5d7a1a4b60e3a59893199289b9d1fab5c565556da4d041097cd6d"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.PaginationCapIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/PaginationCapIT.java",
+    "sourceSha256": "a566b622ac193148d426e0d6354e36f45550aba7030cfdfd4ed437153f331472"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.RabbitConsumerIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitConsumerIT.java",
+    "sourceSha256": "17ac73b1a80aff478cf66011582c2e87a3c1293cd6b8654c3a47ff33c3675ee6"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java",
+    "sourceSha256": "16fb2d0760380cf6913ddf792048685e96b307fc3976e00e9ca8856ecae2e638"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.ReportIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/ReportIT.java",
+    "sourceSha256": "f690be3afeb11a54d744cac2d17a4de619f72beeabcb60d434fd5334a98c0bd4"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.SecuritySmokeIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/SecuritySmokeIT.java",
+    "sourceSha256": "5bc0c8a5bce3285c38e22f61a3dea462b083729f3e66eae6dec3090e9f1d2562"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.integration.StartupOrphanCleanupRemovedIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/StartupOrphanCleanupRemovedIT.java",
+    "sourceSha256": "46f6d8b032ef8c16cda1bcb8c49d504eb36fcc2a38e563b4227cc23565b8ad0f"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinControllerIT",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinControllerIT.java",
+    "sourceSha256": "bb03bd8d06c5438b20b7edaba2d499a0c9c37586d4aa22387b461b5b32f94389"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportControllerIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportControllerIT.java",
+    "sourceSha256": "d42d064da4ca14ab16044cda5a22f1141271dab603d9cb67b340271b0ff097fa"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterIT.java",
+    "sourceSha256": "f9989b7d1447e1f316d660f58166e08bb802740576d948606cfbb80a85d23bde"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.security.AttendanceUserContextFilterStrictModeIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/AttendanceUserContextFilterStrictModeIT.java",
+    "sourceSha256": "490c47cdd352d43bca9b6a2920b410cb72ec063f4266f1dcbc891aaab4a59548"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.security.SecurityIdorIT",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/security/SecurityIdorIT.java",
+    "sourceSha256": "0319a508722ff7c2fd159c6b7ee71071e3afe5add27d41fe7a77d8ff7be1e72d"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.semester.SemesterCacheRequestOptionsIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheRequestOptionsIT.java",
+    "sourceSha256": "06bcf69c81c7bd0f1177e51286989de7ea7090cb977d2cb3d1ed94f19a0689b6"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.student.StudentCheckinTransactionIT",
+    "statuses": {
+      "PASSED": 27
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentCheckinTransactionIT.java",
+    "sourceSha256": "55a0eb35da8b6ba8295086096e497066d90dd65ecbf5c4130cc3cd369e406e4d"
+  },
+  {
+    "service": "attendance-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+    "statuses": {
+      "PASSED": 42
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestDomainIT.java",
+    "sourceSha256": "dd9891b3af76102b906b3b3431df6d1de68ddc3fb114becfdd9245b00fa89e99"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": null,
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": null,
+    "sourceSha256": null
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.export.ExportJobsIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportJobsIT.java",
+    "sourceSha256": "923926273e26f1d740427a7e9db5ce2d4d52338676484c18c3681d4d3b5ea164"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.ActuatorIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorIT.java",
+    "sourceSha256": "fb6195e56a63d264f797dfeebbef8fb5d8dbbf6037f878c4f3f8da7ab9311fde"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.ActuatorSpanFilterIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ActuatorSpanFilterIT.java",
+    "sourceSha256": "0e50027f71f7ee5e1437a3b3288eba87263627c4aa1f98f26e8aa0e833291707"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.AuthIT",
+    "statuses": {
+      "PASSED": 11
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthIT.java",
+    "sourceSha256": "33046ce94aac46b3b0055cd46b81d49107dab3536b503780f8f9b646868fa446"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "sourceSha256": "271de110d7fb420314cdee82732bcfa08e872339b41353a7f355dc14411bcddd"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.BcryptDoSMitigationIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/BcryptDoSMitigationIT.java",
+    "sourceSha256": "8523d95864e22376d76e69917f82576357054d197cd5e04cd1c60ee0bde8d26e"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT",
+    "statuses": {
+      "PASSED": 18
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+    "sourceSha256": "f36e784b51839891fef5894649cde0a072afe70b7c264d6100503d318ce0468f"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+    "sourceSha256": "c2cf11bd1d53bb58f9c0302dbf558b05e8c4f8cef36f8adbc07e2b76f4ecc241"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT",
+    "statuses": {
+      "PASSED": 11
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+    "sourceSha256": "ed055a5fc45c1d970033c01566acabca00fec57ce2e47611a1611379c097cfe5"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.LoginRateLimiterIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LoginRateLimiterIT.java",
+    "sourceSha256": "b35a50f99a639c8068eb22fd6d6ba0bc60abe66bf3c12d283a9a292d14a20cf7"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.LogoutLifecycleIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LogoutLifecycleIT.java",
+    "sourceSha256": "45b7b8165fd243617794a98fac5c6f172b1874dc3e14a9337d43666fdc8ded86"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.OpenApiSnapshotIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java",
+    "sourceSha256": "6dca62d732385786a6fec5c18a6b49efcbcc243bbd3ffe976ab6475a4a004e65"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.OtpIT",
+    "statuses": {
+      "PASSED": 11
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OtpIT.java",
+    "sourceSha256": "1c7adc7e89ff6dbd55d8166ff2efac77aede6d1cdb828ae5c389e5679ddc6631"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.QrLoginFlowIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+    "sourceSha256": "f9660422c25624bdffbbf31b0ad9505b933164df8c332e6480d29129c2beb88e"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.ReportProofValidationIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ReportProofValidationIT.java",
+    "sourceSha256": "5f7ad12adfbf9d35cf1f83433ff5ee10c32e513c94546c556b3b56b38987b72e"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.SameSiteCookieContractIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SameSiteCookieContractIT.java",
+    "sourceSha256": "796e278dc49cbc61acafe043daeb8a7c4e329a5c6da12e7b83f75d75225dc753"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+    "sourceSha256": "12782449226348a9f3e154c6c862e91538d5d1016367a0c2dd86babe61afd832"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.TmaIT",
+    "statuses": {
+      "PASSED": 16
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/TmaIT.java",
+    "sourceSha256": "c3a819f34c4ba0efb8907afb6e883d8f5922346d91806a221eab5dc152d3f0f4"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.WsTicketConcurrencyBoundaryIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketConcurrencyBoundaryIT.java",
+    "sourceSha256": "01456fa7cadeda093733e4a7f0ce382f26c87efccc36687250e37be004bb8410"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.integration.WsTicketIT",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/WsTicketIT.java",
+    "sourceSha256": "b25e835a8d363cb9aff47423dd075058f51c52f525e9eacc055143c886d3b5de"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.session.jdbc.JdbcAuthSessionQueryAdapterIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapterIT.java",
+    "sourceSha256": "6a83f1138c525907e76fd98d696171c3756f45dfe86ecd8ac556f8a36f978c15"
+  },
+  {
+    "service": "auth-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+    "statuses": {
+      "PASSED": 33
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+    "sourceSha256": "1a2626b77562a95917f8b3c0e4b539111397d6f0cb982571b723d9d15cdc5024"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.NotificationLoggingIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/NotificationLoggingIT.java",
+    "sourceSha256": "8c6dfee25e379911e279e5f9f450a84e2ea58507692e46b5a38ea6de63f0c2ca"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.OpenApiSnapshotIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java",
+    "sourceSha256": "c5ac16387716733dcae9f2748e988470e4b742d25913b95d7a154b1fd8e298ea"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.config.PrivateWsTransportIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/PrivateWsTransportIT.java",
+    "sourceSha256": "f80db53a814a33caad1952554e299eb77048aa474539bdb4071046e4d296672e"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.csp.CspReportIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportIT.java",
+    "sourceSha256": "56da68c5ed77dc5c1b12c17185edb9f6dd4e241422cebd776f3c034ee7923bdd"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.event.EventIdempotentIT",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventIdempotentIT.java",
+    "sourceSha256": "7d718070f785408c7f8ad18ec91ca9873f6d22ebd8b21be791dfa9dfbaf0e1ff"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.exception.NotificationErrorHandlingIT",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/exception/NotificationErrorHandlingIT.java",
+    "sourceSha256": "fa96e11ff4a239c0d07549f36a8b5ed1c7e127bf12c35bc2a58953063328e14d"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerIT.java",
+    "sourceSha256": "8577f8ba192dee3feeee8991c0d2f65976b01d9f21590d9f4e1819fdc4cb1476"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.history.NotificationMongoIndexesIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationMongoIndexesIT.java",
+    "sourceSha256": "b840287ac4ea990925342e7fd616d5ffe1a7293573623b16a6a4e7210520c74b"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.history.NotificationStateV2IT",
+    "statuses": {
+      "PASSED": 15
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationStateV2IT.java",
+    "sourceSha256": "46447bb94b3290d5741c69792f3b238a4a2431344a416c9c26c17091243f593a"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.preferences.DurableNotificationPreferencesIT",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/DurableNotificationPreferencesIT.java",
+    "sourceSha256": "f1109458f6f07189151dc710cf0acf494d06f27612e3e366e338f7a8447794c2"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.push.PushSubscriptionCleanupJobIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionCleanupJobIT.java",
+    "sourceSha256": "d8fad8a77b20c2b7713f5224db08b23a2fde99d9ab8223826ee54b963a274a3b"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.security.SecurityIdorIT",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityIdorIT.java",
+    "sourceSha256": "c813bcede37442ed976d4e5816ad318716cd48b71068033b6f7652818651a535"
+  },
+  {
+    "service": "notification-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.notification.ws.StompIntegrationIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/ws/StompIntegrationIT.java",
+    "sourceSha256": "e1fbf111bdf1fbe28ead79523f23655d5e7ce71ef960ed0fa9900515c2db75a1"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": null,
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": null,
+    "sourceSha256": null
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.event.EventIdempotentIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/event/EventIdempotentIT.java",
+    "sourceSha256": "61371384165c67d9c87c5ba7e00cd95bc1735344192085666bede69806831ec1"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.events.LessonBlockedContractIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonBlockedContractIT.java",
+    "sourceSha256": "76b9cba6a6e8372608d5e88d976f02b80a9310282a7742479f095fdbb69aee06"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.events.LessonCancelledContractIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonCancelledContractIT.java",
+    "sourceSha256": "626cf33b834e6f18a564180d5c2ceb043c359172cd278e89c933d74fa81f2b2a"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.events.LessonReminderContractIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonReminderContractIT.java",
+    "sourceSha256": "6dcc2262e2e098d299066aaf9b49d7aa21029fc6879e3a49b40b48f478c92408"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.events.LessonStartedContractIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/events/LessonStartedContractIT.java",
+    "sourceSha256": "49f9f8ce8af21ec6064c3d05f0a6f38b7bfd013d4fbab3450694392100179378"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.grpc.HomeworkBindingServiceIT",
+    "statuses": {
+      "PASSED": 13
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/HomeworkBindingServiceIT.java",
+    "sourceSha256": "59ac3a633a2d53f9052bcd4581321f353eb970ae838534d8f415aef4c9ef2117"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.grpc.LessonsByIdsGrpcIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/LessonsByIdsGrpcIT.java",
+    "sourceSha256": "bb335cdb64bfd21d0c09bd8ad99d178bb8c69f4b379797ede6c4c344e28e48b6"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcResolveLessonIT",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcResolveLessonIT.java",
+    "sourceSha256": "03d13af229d83253473ab66b3ac35cb477c34d6c36b9a3ecbb387e7a3241aad5"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImplIT",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImplIT.java",
+    "sourceSha256": "70491d60e4a2a1097cddba4cca2e6cd8b4d498ba1645fe6b4704298a7504308e"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.ActuatorIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ActuatorIT.java",
+    "sourceSha256": "d4ade9f973b1639c11a7585b02c7ff73d473edace24ab80173354049ad8d1a9b"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.AssignmentReplacementServiceIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/AssignmentReplacementServiceIT.java",
+    "sourceSha256": "dfd96427378a93fa9edc346b4e192804a5c70dd0ab106f82325e985450b65c2c"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.EntityMappingIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/EntityMappingIT.java",
+    "sourceSha256": "9646fdfdcab71ce991e3735f716df038fb214866270d4be8ffddc6c8f38f3e3b"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.LessonApiIT",
+    "statuses": {
+      "PASSED": 24
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+    "sourceSha256": "8c295a6d55e6c37e591e941ed360f951ec1e14768ec7979d6f0613053ff200bd"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.LessonCancelEventIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonCancelEventIT.java",
+    "sourceSha256": "d48a097f004723cccbbc09d49626caa8b1e8ec489d044161bbfa4f5f2e7589a8"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.LessonGenerationIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonGenerationIT.java",
+    "sourceSha256": "e609d66aedfa9609cdd2356149242f81e2f41cfa036b5fe1caaf71cf7e34c231"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.LessonPerformanceIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonPerformanceIT.java",
+    "sourceSha256": "8e65f7c29a49a4c93d46340541f7f58a046566ecdb84f9fa012bcf1c388afb74"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.OpenApiSnapshotIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/OpenApiSnapshotIT.java",
+    "sourceSha256": "21533c19787367da1e04bba0f052e48eb28e560710af418d387d74ce930c2df4"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.PaginationCapIT",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/PaginationCapIT.java",
+    "sourceSha256": "e00e070ab10cd92e97393dfea47812b83d5eddb121e2978dd94f4c3b80e5ec76"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+    "statuses": {
+      "PASSED": 29
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+    "sourceSha256": "155e101972daeec228def4dd5b89e1f405a21f24fbf6e1909e612e6418e74723"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.ScheduleItemApiIT",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleItemApiIT.java",
+    "sourceSha256": "4659639d60ce35ae84d9c7a5a229575c5e3f72fcf4addec4dc2e1baed8f31625"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.ScheduleViewIT",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ScheduleViewIT.java",
+    "sourceSha256": "9975f6ab7e4879a1236c5e7cf064d941d6e4b6d3a85be459c2867052349255a9"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.SecuritySmokeIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/SecuritySmokeIT.java",
+    "sourceSha256": "0f9c90297a2f64398bd78ed2a56aba13d40603b79e97d863399ff241cb8259c6"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.integration.ShedLockSmokeIT",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/ShedLockSmokeIT.java",
+    "sourceSha256": "7228e69c418eb0d0ba96a76eab83f341ab3994beac78c28d9cc2ee5683266f4c"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.lesson.LessonRoomChangeIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonRoomChangeIT.java",
+    "sourceSha256": "f0e032ae37dd363c4101b0199b4884476880b632cb90903bf1bc86491064c65d"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJobIT",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJobIT.java",
+    "sourceSha256": "309501dcb924512d5338b2ceef9a4751c210b3848bef79664ff5b152dd0b04e1"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.lesson.LessonTransferWriterIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriterIT.java",
+    "sourceSha256": "58615395dbb8ccfa490fd0974cef729fb1759cd4b2e0b92115e46d3c78c13967"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.migration.FlywayMigrationIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/FlywayMigrationIT.java",
+    "sourceSha256": "adf06af5b67e968062a7f0747902316c4eae543e0255b0f59c2b5748b5dd7ff8"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.migration.StudentOccurrenceMigrationIT",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/StudentOccurrenceMigrationIT.java",
+    "sourceSha256": "02a7a2d01f569ef14c6ec9aab31aeff927e460a430d15d90dc1534f02cd93396"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+    "statuses": {
+      "PASSED": 11
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonControllerIT.java",
+    "sourceSha256": "c319b03e5c53ffb51fc652eede6055426cd6f53bbb08c7c599b450c1e9f9237c"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonEventPublisherIT",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonEventPublisherIT.java",
+    "sourceSha256": "72ee14d2d4aa0a3ae06655337b1373ee06c0b1547c42f628fbf7fa6c5977b082"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.oneoff.OneOffLessonSchemaIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonSchemaIT.java",
+    "sourceSha256": "5a045df614351998bfb41f22ae61845c4775d3033987ea9689998e0964e49ffb"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterIT",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterIT.java",
+    "sourceSha256": "68148b3f9aadc496b341eb99955ff807c1077257f89d6b45c67d77f786487af8"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterStrictModeIT",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java",
+    "sourceSha256": "b7122f85ca3458dc9778b103f20c26dbd095c650545ff2c17bb67e235d9d953c"
+  },
+  {
+    "service": "schedule-service",
+    "task": "integrationTest",
+    "classname": "ru.rutcampustrack.schedule.security.SecurityIdorIT",
+    "statuses": {
+      "PASSED": 11
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/SecurityIdorIT.java",
+    "sourceSha256": "a3d28041a2081f76e978553b0db394b8b411ddf20d55032c4aec39c139deb7c1"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.admin.AuthConfirmationErrorsTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AuthConfirmationErrorsTest.java",
+    "sourceSha256": "8afb2abcc3053ee60b23c034b5551405a6dfcec9c01f7e3a50095f18dd37642a"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": null,
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": null,
+    "sourceSha256": null
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityContractTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentAuthorityContractTest.java",
+    "sourceSha256": "ef09d0cd39d73fe13ff0a662f74230099430f3c946d23b9c0d85f5e1ea1ec6d4"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.assignment.AssignmentClosureContractTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/assignment/AssignmentClosureContractTest.java",
+    "sourceSha256": "6f89546682615909db2ebc0751a8ba8d93ad83b8846e2afb58553769e1113b19"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptorTest",
+    "statuses": {
+      "PASSED": 10
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialServiceIdentityInterceptorTest.java",
+    "sourceSha256": "78028195594530490ebbf35f775352adc530ec20fab90850fde6cd0fc6576ae5"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.config.LowercaseEnumConverterTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/LowercaseEnumConverterTest.java",
+    "sourceSha256": "62d6ffdc6d85e549cc42fb95c3ed0c33109d1d3b728835922d106dd7b5e9ccf8"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.config.SubjectTypeUserTypeTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/SubjectTypeUserTypeTest.java",
+    "sourceSha256": "a51f1bd6d4fd41a9ecd9955a8387ddef4a972224f0197f69d62fda0053124975"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.config.WebConfigEnumConversionTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/WebConfigEnumConversionTest.java",
+    "sourceSha256": "c8e7784c62b1ebc5855f10e57bcde382e14cad923181a0e82107775226c98c47"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.dashboard.DashboardActivityServiceTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/dashboard/DashboardActivityServiceTest.java",
+    "sourceSha256": "c14a76bd4dffa7bc80a1128f7cb9fffd81c68d8e58b88002f89fc126697c3f2c"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.exception.GlobalExceptionHandlerTest",
+    "statuses": {
+      "PASSED": 12
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandlerTest.java",
+    "sourceSha256": "db50a24a5cc0c8853a55573ebe263e8cdc10e399fad40b0736d016ec13ca5598"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.golden.DisplayNameGoldenTest",
+    "statuses": {
+      "PASSED": 12
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/golden/DisplayNameGoldenTest.java",
+    "sourceSha256": "5b4499f0a15b584e66a0d31fa1cd49c299dfa259dd36eab35003b24c2002239a"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.golden.DisplayNamePropertyTest",
+    "statuses": {
+      "PASSED": 101
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/golden/DisplayNamePropertyTest.java",
+    "sourceSha256": "a2db718aac8a176181f8bc2c3aa5f04c26861c6791f95c1b68903afed719d498"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.group.GroupArchivalServiceTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupArchivalServiceTest.java",
+    "sourceSha256": "8dda759c90958eff59d7353e219f8272b9802e7b52292169b2f19c2e696b51e7"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.group.GroupNameParserTest",
+    "statuses": {
+      "PASSED": 15
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupNameParserTest.java",
+    "sourceSha256": "7154fdbdab17fe10087162a6ec1a99bdf4d87e3bb104604a63c22aa0c33cad18"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.group.GroupPromotionServiceTest",
+    "statuses": {
+      "PASSED": 16
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionServiceTest.java",
+    "sourceSha256": "437b25e16eb2e0468eb4f507fe1998397f24fbeff536d91f49a0ec58dd76e8cc"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.group.GroupServiceTest",
+    "statuses": {
+      "PASSED": 26
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupServiceTest.java",
+    "sourceSha256": "2686e1f6e891af9099f1dc9caf901b241fdb69a54ad19f75721337e2f6c982dc"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.grpc.AcademicAssignmentGrpcContractTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AcademicAssignmentGrpcContractTest.java",
+    "sourceSha256": "52550ef25557cb26212906293396a0c2c4d00c421c4501abc8f6cf9bc61abb5e"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+    "sourceSha256": "1d218aaab64a506cbc1846ac399924f2c3e7483591edaa5d597b2b3616f00af9"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.grpc.CampusMapGrpcReadTest",
+    "statuses": {
+      "PASSED": 12
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/CampusMapGrpcReadTest.java",
+    "sourceSha256": "55a680d7ddff159e14a55d0433d1f446e48afb07559026fc74ac6dd830bbfec3"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.grpc.HistoricalMembershipGrpcTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HistoricalMembershipGrpcTest.java",
+    "sourceSha256": "61ff0ef8964ad8f340cefafbff9e8cd5382d47d5106a62ca20a4d78c9d792466"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.grpc.InMemoryHeadmanRateLimiterTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/InMemoryHeadmanRateLimiterTest.java",
+    "sourceSha256": "ad5ac82a5d06c406900f0aeb5422b3e854f756f6b8db1019b93eadd7114aac9e"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.grpc.RedisHeadmanRateLimiterTest",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/RedisHeadmanRateLimiterTest.java",
+    "sourceSha256": "31d8d7b5394385b3e87da38fe02f6a09f7aa0a0e02313521f875fa91a6b4502b"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptorTest",
+    "statuses": {
+      "PASSED": 26
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptorTest.java",
+    "sourceSha256": "ed0cb9c9f68f87b67bce942a270e83ab2d113c7a6215926d91d636e78054698a"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.grpc.StudentProjectionGrpcServiceTest",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/StudentProjectionGrpcServiceTest.java",
+    "sourceSha256": "2a90a9535e4c6b12973b4c9c25ed59a4379a52cbcfcb6be178309d724d144ec0"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.grpc.TeacherAcademicReadGrpcServiceTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/TeacherAcademicReadGrpcServiceTest.java",
+    "sourceSha256": "9adc9d2de76e856d6a18bf7e6e4747fa15e3cd042e8b116305f90d460bad0b50"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.history.HistoricalMembershipServiceTest",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/history/HistoricalMembershipServiceTest.java",
+    "sourceSha256": "e136ec8839aed27e151ed8f8869f5359a448da1620d2924ae47d106f8aa3b7fd"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.homework.HomeworkNotificationJobTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkNotificationJobTest.java",
+    "sourceSha256": "5b13d1cf4cb9b85321fcdc3ca30ba04be571e23bf941d3d94d2ce58474b983b8"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.homework.HomeworkServiceTest",
+    "statuses": {
+      "PASSED": 11
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkServiceTest.java",
+    "sourceSha256": "31b4fff1d555a8676895160c08152afabdb582e1dff706d02b158bec23cecbf2"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.homework.HomeworkStudentServiceTest",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/homework/HomeworkStudentServiceTest.java",
+    "sourceSha256": "0571cf17ab0d75ca27f01424419e2206946d0e13439f979f7d35f85fee58e073"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.map.CampusMapAdminServiceTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+    "sourceSha256": "897f39d931ac4b98c7d32815227cbe96cb8573f5221e53490f1f2bf08be5b686"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.map.CampusMapOwnerHmacProviderTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapOwnerHmacProviderTest.java",
+    "sourceSha256": "4be0337fcadfe94db0ed1fb3a063e772f941d7f54e24f0c369f94be954e31b27"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.map.CampusMapReadServiceTest",
+    "statuses": {
+      "PASSED": 70
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadServiceTest.java",
+    "sourceSha256": "768562ca4bfcfbc450429f81d37762225a2bb2bfde89e3eb26fbe12d898ea9e9"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.map.CampusMapUsageServiceTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapUsageServiceTest.java",
+    "sourceSha256": "c282c95e1f8f8067f02eb080d9925ae8081f7e43292c8c8f29780c815b3e531e"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.migration.MigrationConcurrentlyTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/MigrationConcurrentlyTest.java",
+    "sourceSha256": "41dedb7a6134b19dcd27b477a66d3f02e9b05744d3139d3230b4c5511f7588c4"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.security.RoleCheckAspectTest",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/security/RoleCheckAspectTest.java",
+    "sourceSha256": "dad1602363b71dc994388c5626b16b8538221b92d13150f443e12ae62f555d15"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.semester.SemesterAssignmentLockContractTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterAssignmentLockContractTest.java",
+    "sourceSha256": "f9a583440437e1c542c11c6e089211888d247dd20a8d4faf908bf2898bbe123f"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.semester.SemesterServiceTest",
+    "statuses": {
+      "PASSED": 15
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java",
+    "sourceSha256": "63178449edc26921655437503b76c73b0f0e2ffb02e28e747369fc4fcf48da07"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.studentprojection.EducationalSessionClockIsolationTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/EducationalSessionClockIsolationTest.java",
+    "sourceSha256": "75a561fcfe7a8f66c9f5697688dc832b945e5b0882a57bd1fa58e968a873d7ee"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeServiceTest",
+    "statuses": {
+      "PASSED": 19
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeServiceTest.java",
+    "sourceSha256": "e97c1087bda66fe08eec1ca0bd39d7dd4cc46d8dd65e53173d6dfe6820326d5d"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.subject.SubjectAssignmentAuthorityContractTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectAssignmentAuthorityContractTest.java",
+    "sourceSha256": "0fdbbb2ac31723067b64c273181f42481583f530b055d0e3979b6f352d348ffb"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.user.UserServiceConflictTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceConflictTest.java",
+    "sourceSha256": "c909632dfa2763512e1964dbe2e637a569df75d769db2018f29337941a7b15d7"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.user.UserServiceListTest",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceListTest.java",
+    "sourceSha256": "b6dac82a380d933476c15b38fbfdca19622ea7e2f7e01162c07aefb3ab1de702"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.user.UserServicePatchProfileTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServicePatchProfileTest.java",
+    "sourceSha256": "0efcc18682fa7afcc15f65350383aa1e94c556da7414d7ef261a6a804b96e2fa"
+  },
+  {
+    "service": "academic-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.academic.user.UserServiceTelegramRequiredTest",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserServiceTelegramRequiredTest.java",
+    "sourceSha256": "ddd1a12bd137f6f26a8bc1f10952caeeb630742d14ee83c06863cff056934a56"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpFilterTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpFilterTest.java",
+    "sourceSha256": "df7fa767a7bd5a01bcdcb61d8127d278490eb7e5bd50603fdd1cdd373bf0092a"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.clientip.TrustedClientIpResolverTest",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/clientip/TrustedClientIpResolverTest.java",
+    "sourceSha256": "e612ae1f4476677a8dbfb66555d8c406863141c28b13238bd84d837daadb35c4"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.config.PublicKeyConfigTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/config/PublicKeyConfigTest.java",
+    "sourceSha256": "c87e2f0a3d741cf8931a72ed99e7ee33b612b83cdbc17f16ee70474e2110a860"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.filter.JwtAuthenticationFilterTest",
+    "statuses": {
+      "PASSED": 63
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/JwtAuthenticationFilterTest.java",
+    "sourceSha256": "f4ad40c3c9ca983ebfce8fa481d65eb83f0476e9041a58f5e0cae4130ab174f0"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.filter.LoginBodyExtractionFilterTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/LoginBodyExtractionFilterTest.java",
+    "sourceSha256": "9335711a174d7aa67e3b26be1cff5d5c8db7a8bc33c10a83476505485ba66cda"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.filter.PwaVersionPolicyFilterTest",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/PwaVersionPolicyFilterTest.java",
+    "sourceSha256": "451b072e1fb4e43c2f4c30686b26646b8d4c0f059cb5c4f4e76e2dc35208ddef"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.filter.StreamingRequestSizeGatewayFilterFactoryTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StreamingRequestSizeGatewayFilterFactoryTest.java",
+    "sourceSha256": "209d5163c58c7ac12de341e66469226355765da460ef80ad291834ab4feecd54"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.filter.StudentRequestsNoStoreFilterTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/filter/StudentRequestsNoStoreFilterTest.java",
+    "sourceSha256": "17b09f644686f3e2d70b8e8ae6aa374ae4269dcf1145eabfa0e980623568095d"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.ratelimit.FailOpenRateLimiterTest",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/FailOpenRateLimiterTest.java",
+    "sourceSha256": "1263ec688031f3c341d8354c3dee34f0d15f8ecaf656bb45ce0dad6ce2556be7"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilterTest",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitProblemDetailsFilterTest.java",
+    "sourceSha256": "a09479f6c1aed128c9823a08888c74910b91d6453bc9622ab5d991ff24e91134"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.ratelimit.RedisRateLimiterConfigTest",
+    "statuses": {
+      "PASSED": 10
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RedisRateLimiterConfigTest.java",
+    "sourceSha256": "e44d5a4a959fdca420cf4969e909b8745eb0c344c8212cae71cb65d70b29d4ed"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.security.ExportJobWorkerTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ExportJobWorkerTest.java",
+    "sourceSha256": "90a38ac52c3c34dd3335936307df015a8c7e66391ac5e365b8b7d15f6d51e77e"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.security.InternalIssuerClientPropertiesTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalIssuerClientPropertiesTest.java",
+    "sourceSha256": "b9957595e481f6e26bd8aa70aac5e117327ba6485214fd08806343cd40523352"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerClientTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClientTest.java",
+    "sourceSha256": "38f421db38155ddf822597206430ebe2d8d309269ba275d9d2326816cdc68598"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.security.InternalJwtIssuerFilterTest",
+    "statuses": {
+      "PASSED": 11
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilterTest.java",
+    "sourceSha256": "5abb4c771ec11e43de3874112c557de1267cbde9d7c764f3bc1d1a621fe5246b"
+  },
+  {
+    "service": "api-gateway",
+    "task": "test",
+    "classname": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+    "statuses": {
+      "PASSED": 23
+    },
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+    "sourceSha256": "0e965805d50a577819f33a8b654a5a075d6544b34ab4e04b3051c6e9ddfd68fe"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": null,
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": null,
+    "sourceSha256": null
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.checkin.CheckinServiceTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/checkin/CheckinServiceTest.java",
+    "sourceSha256": "da0aedf45a76f6bd5d447cddea7434e6b186ab63e642ad3fb1cbccd7ca83d063"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.event.EventConsumerTest",
+    "statuses": {
+      "PASSED": 16
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/EventConsumerTest.java",
+    "sourceSha256": "27e86d072750186d1ad84b97aba1e4b29fa7de83890c30b334b487f618050d9b"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.event.LessonEventServiceParallelTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceParallelTest.java",
+    "sourceSha256": "a242e5fc4cb54263b6277bd8f6bc4228663faa3a68a997b1dfd3de8e70403bb3"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.event.LessonEventServiceTest",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonEventServiceTest.java",
+    "sourceSha256": "a74e7a5e9fea79a77ab7a2af9a3c4e9f9fcdebd243d74696017c4308400cc2a3"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.event.LessonGenerationMergeTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/event/LessonGenerationMergeTest.java",
+    "sourceSha256": "efce8222e0c7e4094aaa1630d6b8f6eb9ce75cc16e55d4fcd06a79a18aecd8e3"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.excuse.ExcuseEventPublisherTest",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseEventPublisherTest.java",
+    "sourceSha256": "40f41ea0d22d6fa47642de91e623ed6fbf9e84a9560ee448eca41451a596069f"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.excuse.ExcuseServiceTest",
+    "statuses": {
+      "PASSED": 10
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/excuse/ExcuseServiceTest.java",
+    "sourceSha256": "65abec8afe15d531257a20c340ce9189beaad6e1ba89a51c9e8cad7e824e4b4d"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.geofence.GeoUtilsTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/geofence/GeoUtilsTest.java",
+    "sourceSha256": "99d917808e057f49d5c86f50e187c5b82905fb1b84d68752dfa4a2a05303d8a6"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.geofence.GeofenceServiceTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/geofence/GeofenceServiceTest.java",
+    "sourceSha256": "147bb9fcb2b89480d0eb7ca6bd6b86aceaec07b74ca90cd2d8a757ff57e78dc9"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.grpc.AcademicGrpcClientTest",
+    "statuses": {
+      "PASSED": 17
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+    "sourceSha256": "eea669177769a06c3607083aae08af0491280ab960595d0cdb1fc22a4d3dcf54"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.grpc.AttendanceSemesterDeletionGrpcSecurityTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceSemesterDeletionGrpcSecurityTest.java",
+    "sourceSha256": "2d226deac5fbf711fa90dd9abda76583a8696c84d48c7b8aa485f18d787991dd"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcProjectionTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcProjectionTest.java",
+    "sourceSha256": "1ab37828845057c7db808033b6fb902314b0cc746428f27af9e94be567aee4fb"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcRequestReadOnlyTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcRequestReadOnlyTest.java",
+    "sourceSha256": "2b5b422958920a754825d84757df9fc7125ecfe6e704170ebd8adea688248126"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceTest",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceTest.java",
+    "sourceSha256": "8d13e14f74ec7b71fb7abc3fffc97002468f09d8c14d7a0b5f1faffcb29566ab"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.grpc.ScheduleGrpcClientTest",
+    "statuses": {
+      "PASSED": 10
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClientTest.java",
+    "sourceSha256": "d4038f9462883029359a472dcaff193e354417bbbd12b56a50c74c1de049c4fd"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.grpc.StudentGrpcBoundaryTest",
+    "statuses": {
+      "PASSED": 15
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentGrpcBoundaryTest.java",
+    "sourceSha256": "f4cd6be4a63df7da9b10cadb54a6f6e3c410c1539072678fba7d982fde5186bb"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.grpc.StudentRequestGrpcErrorsTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcErrorsTest.java",
+    "sourceSha256": "4bc6689b399445fa7121768ee531c078c5992ae7d68a3c0e488c9efda4372859"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.grpc.StudentRequestGrpcMapperTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/StudentRequestGrpcMapperTest.java",
+    "sourceSha256": "a249497781284e10a3ed0ac4f330ae76af2c4ccaf3d9730e9642080bd321de46"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.grpc.TeacherAttendanceReadGrpcServiceTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcServiceTest.java",
+    "sourceSha256": "208827413ce80518844666df7c3592f96489b30c7f02a5b45f968682dc85b4e3"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinEventContractTest",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinEventContractTest.java",
+    "sourceSha256": "0726a056cf92bb22c8abd282d4266882abb7f32f9b85a5065f52f966c900cf0d"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.latecheckin.LateCheckinServiceTest",
+    "statuses": {
+      "PASSED": 21
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinServiceTest.java",
+    "sourceSha256": "5b7c74a89d0f9617535eefded8f02771c93227f9806404a9e5b68ed4711791ca"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.marking.MarkingServiceTest",
+    "statuses": {
+      "PASSED": 17
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/marking/MarkingServiceTest.java",
+    "sourceSha256": "4d29f1d80339f18c3cfd74d69668bf50f6d6aa86899297dda3a1169e0a1eeb6a"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.ratelimit.CheckinRateLimiterTest",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/ratelimit/CheckinRateLimiterTest.java",
+    "sourceSha256": "4774dfda0980e0b5b09fbf7195995a494f00761721e2109f2304855c23ed2ea7"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.DocxRendererTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/DocxRendererTest.java",
+    "sourceSha256": "d6c1ee2b1928d11b2ec4ae9b2d2c2f7411b6d28ebebeb174f4e62dd76232c9d4"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.HeadmanGroupCompositionServiceTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanGroupCompositionServiceTest.java",
+    "sourceSha256": "50ba0fa1666bfc9e159eea0638edf52c5a38a9e17bddced07bff8db5f59b0f79"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.HeadmanStatsRendererTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsRendererTest.java",
+    "sourceSha256": "8562689e8a2d8a75a2d2af27dfb3caf241e51d856040a27ad0f5e859d25fd684"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.HeadmanStatsServiceTest",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsServiceTest.java",
+    "sourceSha256": "ababae14ba9c6033ba011694d4ec74c6c54ed8b3d136a766bf702fdf40bf61d5"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.HeadmanStatsTrendRendererTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanStatsTrendRendererTest.java",
+    "sourceSha256": "3bac3e38c2f8e506e62f9fad7fbb9f7a716ab82872b0c6e5c27e1510aeedbb53"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.HeadmanSubjectJournalServiceTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanSubjectJournalServiceTest.java",
+    "sourceSha256": "71881b0132485f7e3f6939375c566b0c054f44e2c6594a88aa51bb02b03652b3"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyReportServiceTest",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportServiceTest.java",
+    "sourceSha256": "5921227f1ff5982dca65764a52b09c4d6e66b858b67f089d321a090a3fee6fe5"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.HeadmanWeeklyTemplateSmokeTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyTemplateSmokeTest.java",
+    "sourceSha256": "6bacde567e7340bfc257b50d7ac6041b361676e20411794c55cb18b11c943c3a"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.ReportControllerMvcTest",
+    "statuses": {
+      "PASSED": 10
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportControllerMvcTest.java",
+    "sourceSha256": "d1e1691793e34f894aee9501edc4c23c33f9afedefb420d5609feaa758932674"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.ReportServiceTest",
+    "statuses": {
+      "PASSED": 34
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportServiceTest.java",
+    "sourceSha256": "1e08590df55895433b31159bafe7dcf7dfe507c5a7ee7d90c1aaa10ddb4c8d74"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.studentprojection.AttendanceMetricCalculatorTest",
+    "statuses": {
+      "PASSED": 10
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/AttendanceMetricCalculatorTest.java",
+    "sourceSha256": "fa887a3d8fb15fa57f223726559bb97874aa21ec6b436b495365550a0c3b2379"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.studentprojection.OwnRankCalculatorTest",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/OwnRankCalculatorTest.java",
+    "sourceSha256": "3375521ad06fdc4bb4e116c9b6a90286b7e2822af4cd1d6a8a57aac7f7991cfc"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionServiceTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionServiceTest.java",
+    "sourceSha256": "cf72d8646210f9a64b85dc6b869d275d722d861a6436ca58213620f7f3ae7fbd"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceDocxRendererTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceDocxRendererTest.java",
+    "sourceSha256": "498d40fb7737b1551a14ec54224c6d69f207d1d1d6d1fb840bf22e7cd5b3624f"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportServiceTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceExportServiceTest.java",
+    "sourceSha256": "a9080671e351c0e03ea4cc925290381a5ee199cc4ec1637602565cf3b64dfe46"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.report.teacher.TeacherStatsExportServiceTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/teacher/TeacherStatsExportServiceTest.java",
+    "sourceSha256": "46fc26ccab485023c3f46446e8046833b62f14eb62716b1edd13b7a09c6b25a2"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.semester.SemesterCacheServiceTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/semester/SemesterCacheServiceTest.java",
+    "sourceSha256": "39ea34737675f19fa5ccdb01b124a21e0173ff06cfbd4ed7b0af241b446cf6f4"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.student.StudentAttendanceSnapshotServiceTest",
+    "statuses": {
+      "PASSED": 12
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/student/StudentAttendanceSnapshotServiceTest.java",
+    "sourceSha256": "f4f39e0ac81ef98fc0f5611d20e1986b8940778533770cd0869eb90a2b8b849a"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.studentrequest.EducationalRetentionClockIsolationTest",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/EducationalRetentionClockIsolationTest.java",
+    "sourceSha256": "38cca010f8562bda67354f45173f4490846efb406a65503037872643d438f2b3"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.studentrequest.HeadmanRequestControllerMvcTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestControllerMvcTest.java",
+    "sourceSha256": "ee9433755907012476a71eaad8f1512b60d05dff27006f86701855243a7e9b05"
+  },
+  {
+    "service": "attendance-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.attendance.studentrequest.StudentRequestServiceAuthorizationTest",
+    "statuses": {
+      "PASSED": 18
+    },
+    "source": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestServiceAuthorizationTest.java",
+    "sourceSha256": "46f600a6fcfd9c503d84d74696581a449004613581680e1b0f7d80706e477826"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": null,
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": null,
+    "sourceSha256": null
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.config.InternalIssuerPropertiesTest",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/InternalIssuerPropertiesTest.java",
+    "sourceSha256": "19ac9aae50960f87adee5778034de2ca2b45e76f8dcdd0bf3574c5dcb5d34c9a"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.config.JwtAuthenticationFilterPurposeTest",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilterPurposeTest.java",
+    "sourceSha256": "7fbae0526d3c9cd98847e700dca2515cfcd2baa68b706b6e62f2e29874629903"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.config.LowercaseEnumConverterTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/LowercaseEnumConverterTest.java",
+    "sourceSha256": "6b4a19d6b6b0d2ac42211dada11ae2e84bd566d891cd241d320a5d2097ca31ff"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.contract.AuthTokenDtoRedactionTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/contract/AuthTokenDtoRedactionTest.java",
+    "sourceSha256": "71aa9d891c0e9d610dcbc706e546ba541c6723aeaf8666cd8abe41fcc3823f3b"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.controller.AuthSessionControllerTest",
+    "statuses": {
+      "PASSED": 9
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/AuthSessionControllerTest.java",
+    "sourceSha256": "e5a63b8cd6f95a3f8bc782da5b7a397a9146ee8909786b59b65fd45646b82950"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.controller.PasswordResetValidationExceptionHandlerTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/PasswordResetValidationExceptionHandlerTest.java",
+    "sourceSha256": "73a02b24f7af0e308585f57a248fa3f232ab57265fc894f1f6c33fdea12db26e"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/QrLoginValidationExceptionHandlerTest.java",
+    "sourceSha256": "043e38570982dec1a03876ff09dead5ac5b0c99e25423acad0b2a2d6ad67d13d"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketValidationTest.java",
+    "sourceSha256": "db62f46e479d968ae1d04c1ee7d997ad0140d2bf92846cd0b3b24f1c2660bdb8"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.events.ExportStateContractTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/ExportStateContractTest.java",
+    "sourceSha256": "e1c5009afb6939c29942a2b83d607ab16eca227703bde6428ed2f7fbd2f75d7f"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.events.OtpRequestedContractTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/OtpRequestedContractTest.java",
+    "sourceSha256": "346190271c76c455e7d2af18a0d20cce02c906b0f21fc1505534a9b780a370c0"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.events.PasswordChangedContractTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/PasswordChangedContractTest.java",
+    "sourceSha256": "4013d2fb0c83ba42dfe5b9287b736aeb94a67fc7ee28c13bb282908a32edcfa9"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.export.ExportReportAuthorityTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportReportAuthorityTest.java",
+    "sourceSha256": "a8b5f3aeb72c124455131c175473d95782db5a4d701853f51d656448d5777dd8"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.service.AuthServiceRepositoryFailureTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/AuthServiceRepositoryFailureTest.java",
+    "sourceSha256": "0dd427c1cb39c9b982b469fb1a8aabf25f5b128de23c818b4b6ff41b200e7fd0"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.service.JwtTokenPurposeTest",
+    "statuses": {
+      "PASSED": 15
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/JwtTokenPurposeTest.java",
+    "sourceSha256": "a4753030d7dda9854a03db3b10cd48588137b9f80c08247dc322a2e1b0853ad2"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.service.LoginRateLimiterTest",
+    "statuses": {
+      "PASSED": 11
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/LoginRateLimiterTest.java",
+    "sourceSha256": "f84163f98c0e90959f17fcf055598cb0ba4341544b74d2fde33d3ea3c61c6435"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.service.OtpServiceTest",
+    "statuses": {
+      "PASSED": 13
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/OtpServiceTest.java",
+    "sourceSha256": "ade99a4dbbd76cf32962b4c5ade9f1998ce30cbde0e1fc8eaf61d2932b33f1a0"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.service.RedisReportDownloadTicketStoreContextTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/RedisReportDownloadTicketStoreContextTest.java",
+    "sourceSha256": "5f0406a9fb5980b8e21aa4fd8b42eff832adec22597e606c7740f593ad68ae9b"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+    "sourceSha256": "02093f2403915975ce2bb01029a17956bbd4c68a98e761222005b3beeebebb4d"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.service.TmaServiceRepositoryFailureTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceRepositoryFailureTest.java",
+    "sourceSha256": "fd247cfdd3e392a08e0253f18efb2d3d4b83ed2fa9053ef8543d38104bf65522"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.service.TmaServiceTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceTest.java",
+    "sourceSha256": "e037c2da6c52e2e39968f7a3a2c7092ad010a188ae000bfffb731cf8d30a97b3"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.session.ActiveRolePolicyTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/ActiveRolePolicyTest.java",
+    "sourceSha256": "0efc621295aedb83bdcadf597a90a9a605f8fa32c69f18130e5dd5028a06a5d1"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.session.PasswordPolicyTest",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+    "sourceSha256": "b5406ca280b77b16f16e33d1e0e91b74dbe048086028cdc8959ed167e8b2903e"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.session.SessionAdmissionServiceTest",
+    "statuses": {
+      "PASSED": 13
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionAdmissionServiceTest.java",
+    "sourceSha256": "95761c733852b93f446f2dcf7d801278c416d9aa213e221bc94075c07199cda7"
+  },
+  {
+    "service": "auth-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.auth.session.SessionLifecycleServiceTest",
+    "statuses": {
+      "PASSED": 11
+    },
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/SessionLifecycleServiceTest.java",
+    "sourceSha256": "e09c84211d114c524c3605cf68c1d9212fc29d7777e8b621794006abbaf20c83"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.alert.AlertControllerTest",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+    "sourceSha256": "2a0494f8314e77d5c68539ffe72b7d5053671eb0e19836f5efc07f2e510d6181"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.config.RabbitConfigTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/RabbitConfigTest.java",
+    "sourceSha256": "9e6809aafed2482553adb869959cd6e74c68c75a4526685902dd803c19948864"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.config.SubscriptionAuthInterceptorTest",
+    "statuses": {
+      "PASSED": 7
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+    "sourceSha256": "0f16ea543a6273d00e173c4d19c7e55572ccb8819e1e135c1efccd5ec823176a"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+    "statuses": {
+      "PASSED": 14
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+    "sourceSha256": "523f0ed7ba6932aa73e3677eba08ab8e0729fb1e9ad0d24846be4c37654b8bea"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.config.WebSocketConfigTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WebSocketConfigTest.java",
+    "sourceSha256": "64079e586010080c5f573af7867a852d81da8a45037c82d4f7292365341b4bdb"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.config.WsSessionAdmissionOutboundInterceptorTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+    "sourceSha256": "a062817d2a3c07ab2973e662826dc8f79e344c6a5cc3b636dfddc5fde3231285"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.config.WsSessionBindingRegistryTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistryTest.java",
+    "sourceSha256": "22ea3334e23f6d5e035a11304b781610ecfe92e2a4fa0d9efe35bb6b780a47cd"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+    "statuses": {
+      "PASSED": 15
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+    "sourceSha256": "901eb98a6cdf259debfb839831f03adb3331ce8b1a4f53f0fb67301b8a8e092d"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.event.EventConsumerTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventConsumerTest.java",
+    "sourceSha256": "ceae46cf3c926f33da20da688c745f11d2d858e80f8d1a09bd5b056d9d2448bc"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.event.ExportReadyEventConsumerTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumerTest.java",
+    "sourceSha256": "7a48de84cbc20b4bd2f5f30795e43c049a2a0c6ac9bcd4d3a0b7696fdb1c46ea"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.event.GroupEventTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/GroupEventTest.java",
+    "sourceSha256": "0931efb61489b2c74cc3ed71fa6825b4f06bb6c5803f3da175c697ea144b59a6"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.exception.NotificationUnavailableBoundaryTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/exception/NotificationUnavailableBoundaryTest.java",
+    "sourceSha256": "c507d3dc496194a7c01ca97478ff59026c356405112ae224fe952b05a5b97137"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.history.NotificationAudienceAdmissionTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationAudienceAdmissionTest.java",
+    "sourceSha256": "e9e0b005ca02adedc551e3b2a678bd68bb504a1c509fa7df4320ad3c98659141"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.history.NotificationControllerTest",
+    "statuses": {
+      "PASSED": 5
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationControllerTest.java",
+    "sourceSha256": "b4afc1e8a8a7ba9e4769442e720ba0e8e8fcdcfab521adc6de927c9d29184878"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+    "statuses": {
+      "PASSED": 17
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+    "sourceSha256": "2dc0e25eac12f25e3a3fe0b4ad7b426dae3c776feb355acf3935202a6a5d5b2b"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerTest.java",
+    "sourceSha256": "b0cc33e0092c8f58b6fc2a044d290e565c9b4ab16b9c9a7975aff60c15aaf310"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.history.NotificationHistoryEventProcessorTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryEventProcessorTest.java",
+    "sourceSha256": "a2acff43570232cccc9dd595981005c0bf5c6e42621e770cd7f8924fbeddaa7d"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.history.NotificationHistoryServiceTest",
+    "statuses": {
+      "PASSED": 6
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryServiceTest.java",
+    "sourceSha256": "bdc26e82036c377340087964653b1593181096d60b7d6a6522c3d6bd4da67884"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.history.NotificationV2SerializationTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationV2SerializationTest.java",
+    "sourceSha256": "b5d8b1b19d3d587f4e796b85ecda0593308cec292922f31beae66d6e33732a64"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.preferences.NotificationPreferencesServiceTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/NotificationPreferencesServiceTest.java",
+    "sourceSha256": "53f06946d1cf5e1d511094d322566e6608808e98a7755db755be3019dcc47881"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+    "statuses": {
+      "PASSED": 10
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+    "sourceSha256": "e3274eb795148b3a12a04f23dec5a33889f3e4ef21b21f9f12cdd0184a79e170"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java",
+    "sourceSha256": "9a42872fbc1387aea8c6f0c8afae95381434bca778b8f34e735cca4f5eb68805"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.push.PushSubscriptionRepositoryTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionRepositoryTest.java",
+    "sourceSha256": "275542cf1f999d848c53627c12be9956b7931376b8832c8a32437db2951a8ca3"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest",
+    "statuses": {
+      "PASSED": 3
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/WebPushDeliveryServiceTest.java",
+    "sourceSha256": "da01dc6399ed8200f450b3dcfa9bf916db665d12b0d1268408a63f91ab9a7f87"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.security.NotificationSignedContextTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/NotificationSignedContextTest.java",
+    "sourceSha256": "15664e7080043b5f09315509087aa82d0277fa6be5ee2625d1ddc4ca8833fc6c"
+  },
+  {
+    "service": "notification-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.notification.security.SecurityInfrastructureTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityInfrastructureTest.java",
+    "sourceSha256": "395f6d30e4a323125f1462719cfb80ddbfb83430f76c44a16aaf6ba0bcd4fe16"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": null,
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": null,
+    "sourceSha256": null
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.arch.ScheduledLockRuleNegativeTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/arch/ScheduledLockRuleNegativeTest.java",
+    "sourceSha256": "d1f324d5ddf2dd19ff56df25601952c2ef5d453eb7c485082b54aa94dcff45de"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.config.SchedulingConfigStructureTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/config/SchedulingConfigStructureTest.java",
+    "sourceSha256": "8a4d58e00aa6773d376050f5dbabec983d0672b7d875679a425bd5e6dd834abd"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+    "statuses": {
+      "PASSED": 22
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+    "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+    "statuses": {
+      "PASSED": 201
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+    "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+    "statuses": {
+      "PASSED": 8
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+    "sourceSha256": "d44ac9bcdc322d9e3bbdd6c6cb01f8f1850fbb281e2a38069bdb98ba81df8415"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.item.ScheduleItemEntityTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemEntityTest.java",
+    "sourceSha256": "68a28f7b96972b87424405a8cb0be93bee5d699c618f2ab854e8e71469b7c2b3"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.item.ScheduleItemSecurityTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java",
+    "sourceSha256": "e0adce82b77baf57613b92b0c42fce6e5c7ff96898629a07b8426077fff0c3c2"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.lesson.LessonControllerTransferTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonControllerTransferTest.java",
+    "sourceSha256": "4039958a337c230b3bf763b85c728040fb30df22ed05b7a199d3ef3d3d966d38"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+    "statuses": {
+      "PASSED": 10
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+    "sourceSha256": "f76b5949657a79a1ed3812af3226c469a7838a8176f69ae5803677c3c6e5b211"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.lesson.LessonSlotTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonSlotTest.java",
+    "sourceSha256": "287497de9f970d68a376f781dce7b07685447cbf1c32d292798f3b9ffdb3b60b"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.migration.MigrationConcurrentlyTest",
+    "statuses": {
+      "PASSED": 2
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/MigrationConcurrentlyTest.java",
+    "sourceSha256": "795fb2f451e837f784c6856627daf0b891ba5cff1d62380016ec825345cdedbe"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.recurring.RecurringDateCalculatorTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringDateCalculatorTest.java",
+    "sourceSha256": "8702d2bc0b79f59d96baa5886931c7bfa127b3f0c41872e74d3e3e5366fe87eb"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.recurring.RecurringLifecycleGateTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringLifecycleGateTest.java",
+    "sourceSha256": "5c8673bb010c42d2e3cfb7e441fe7a5bec8c8d6d1d109205184804db349dec39"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.recurring.RecurringScheduleItemCoordinatorTest",
+    "statuses": {
+      "PASSED": 1
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringScheduleItemCoordinatorTest.java",
+    "sourceSha256": "10502176d9c1e507bf22a23ca0f17ef009ce93c1781b2811c94df865bafb3c6b"
+  },
+  {
+    "service": "schedule-service",
+    "task": "test",
+    "classname": "ru.rutcampustrack.schedule.week.AcademicWeekPolicyControllerTest",
+    "statuses": {
+      "PASSED": 4
+    },
+    "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/week/AcademicWeekPolicyControllerTest.java",
+    "sourceSha256": "c08cf62b01dba0cff7ee8eb0b5018205b1171bcd130783a061cf4f0d79f3871f"
+  }
+]

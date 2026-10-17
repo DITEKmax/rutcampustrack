@@ -1,0 +1,121 @@
+{
+  "schema": "P10_CLEANUP_FORMAT_ACTUAL03_V1",
+  "utc": "2026-10-13T17:31:36.870283+00:00",
+  "session": 4478,
+  "start_chunk": "831a6a",
+  "final_chunk": "82a69c",
+  "grant_sha256": "e03c7ebe062471d0aa5415fdb53c0c3c1ce9667cdc5cb6480e4d61907f96e920",
+  "terminal": {
+    "direct_pid": 536350,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 536350,
+        "start_ticks": 16640575,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 536351,
+        "start_ticks": 16640580,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 536385,
+        "start_ticks": 16640740,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 536481,
+        "start_ticks": 16642353,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 536513,
+        "start_ticks": 16642488,
+        "same_birth_absent": true
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T17:30:46.148904+00:00",
+    "peaks": {
+      "memory": 5870997504,
+      "min_workspace_free": 7013584896,
+      "owned_rss": 523743232,
+      "log_bytes": 997
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Scoped formatter and source result requires post-run evidence"
+  },
+  "child_exit": {
+    "native_exit": 0
+  },
+  "closed_marker_counts": {
+    "RCT_P06_FORMAT_TARGETS_1": 1,
+    "BUILD SUCCESSFUL": 2,
+    "BUILD FAILED": 0,
+    "spotlessJavaApply": 1,
+    "spotlessJavaCheck": 1
+  },
+  "known_task_statuses": {
+    ":spotlessJavaApply": [
+      "EXECUTED"
+    ],
+    ":spotlessJavaCheck": [
+      "UP-TO-DATE"
+    ]
+  },
+  "all6_births_fresh_absent": true,
+  "births": [
+    {
+      "pid": 536346,
+      "start_ticks": 16640546,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 536350,
+      "start_ticks": 16640575,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 536351,
+      "start_ticks": 16640580,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 536385,
+      "start_ticks": 16640740,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 536481,
+      "start_ticks": 16642353,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 536513,
+      "start_ticks": 16642488,
+      "same_birth_absent": true
+    }
+  ],
+  "TMP_absent": true,
+  "authority_absent": true,
+  "all18_source_pins_match": true,
+  "protected17_match": true,
+  "semantic_and_formatted_bytes_identical": true,
+  "tokens_strings_imports_equivalence_by_full_byte_identity": true,
+  "mechanical_commit": "NOT_NEEDED_NO_BYTE_CHANGE",
+  "source_sha256": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+  "before_active_margin": true,
+  "before_hard_stop": true,
+  "margin_remaining": 187.269319,
+  "no_private_log_text_or_values_hash_export": true,
+  "HTTP_after_cleanup_fix": "NOT_RUN"
+}

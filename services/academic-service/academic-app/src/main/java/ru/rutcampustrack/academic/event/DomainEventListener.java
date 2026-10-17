@@ -11,25 +11,20 @@ import ru.rutcampustrack.shared.events.AbstractEventPublisher;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 /**
- * Перехватывает Spring ApplicationEvent'ы от service-слоя и записывает их
- * в outbox-таблицу (M02 Группа 5, 02-Q3).
+ * Перехватывает Spring ApplicationEvent'ы от service-слоя и записывает их в outbox-таблицу (M02
+ * Группа 5, 02-Q3).
  *
- * <p>Изменение относительно v1: раньше был
- * {@code @TransactionalEventListener(AFTER_COMMIT)} → прямой
- * {@code rabbitTemplate.convertAndSend(...)}. Проблема — если БД-tx
- * закоммитилась, а Rabbit в этот момент недоступен, событие теряется
- * (02 P0-6 message loss).
+ * <p>Изменение относительно v1: раньше был {@code @TransactionalEventListener(AFTER_COMMIT)} →
+ * прямой {@code rabbitTemplate.convertAndSend(...)}. Проблема — если БД-tx закоммитилась, а Rabbit
+ * в этот момент недоступен, событие теряется (02 P0-6 message loss).
  *
- * <p>Новая схема: {@link TransactionPhase#BEFORE_COMMIT} — listener
- * срабатывает ВНУТРИ активной tx, перед реальным commit'ом БД. Запись в
- * {@code academic_outbox} идёт в той же транзакции что и доменная
- * операция. Если outbox.save() бросает — tx откатывается (домен и outbox
- * либо оба, либо никак). Если tx откатывается по другой причине — запись
- * в outbox тоже откатывается.
+ * <p>Новая схема: {@link TransactionPhase#BEFORE_COMMIT} — listener срабатывает ВНУТРИ активной tx,
+ * перед реальным commit'ом БД. Запись в {@code academic_outbox} идёт в той же транзакции что и
+ * доменная операция. Если outbox.save() бросает — tx откатывается (домен и outbox либо оба, либо
+ * никак). Если tx откатывается по другой причине — запись в outbox тоже откатывается.
  *
- * <p>Публикацию в Rabbit делает {@code OutboxPublisherJob} (shared-outbox)
- * асинхронно — при недоступности Rabbit row остаётся {@code pending},
- * следующий tick подхватывает.
+ * <p>Публикацию в Rabbit делает {@code OutboxPublisherJob} (shared-outbox) асинхронно — при
+ * недоступности Rabbit row остаётся {@code pending}, следующий tick подхватывает.
  */
 @Component
 public class DomainEventListener extends AbstractEventPublisher {
@@ -55,8 +50,11 @@ public class DomainEventListener extends AbstractEventPublisher {
             payload = objectMapper.writeValueAsString(event);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(
-                    "Failed to serialize domain event: type=" + event.getEventType()
-                            + ", id=" + event.getEventId(), e);
+                    "Failed to serialize domain event: type="
+                            + event.getEventType()
+                            + ", id="
+                            + event.getEventId(),
+                    e);
         }
         outboxStorage.save(event.getEventType(), payload);
         log.debug("Outbox saved: type={}, id={}", event.getEventType(), event.getEventId());

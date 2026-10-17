@@ -1,0 +1,36 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "fault-permission01",
+  "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "native_exit": 1,
+  "disk_aborted": false,
+  "seconds": 59.089,
+  "counts": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "privateForeignAndUnknownReadModesFailClosed()",
+      "status": "FAIL",
+      "failure_type": "java.lang.AssertionError"
+    }
+  ],
+  "xml": [
+    {
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 13346,
+      "sha256": "361efb89feff0ae453486053b9517300f73834674b8146c81043e91f732e196e"
+    }
+  ],
+  "all_source_inputs_unchanged": true,
+  "changed_paths": [],
+  "private_marker_match_files": 0,
+  "raw_artifacts_private": true,
+  "terminal_sha256": "c5b29964ae705df04fa7ebac68917efb04aef98e24831e15f8d155d468e1be1d",
+  "free_bytes": 9008246784,
+  "utc": "2026-10-12T03:09:35Z"
+}

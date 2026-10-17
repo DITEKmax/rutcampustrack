@@ -1,24 +1,47 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { TodayLesson } from '../../api/types'
-import MobileIcon from './MobileIcon.vue'
-import './student-lesson-card.pcss'
+import { computed } from 'vue';
+import type { TodayLesson } from '../../api/types';
+import MobileIcon from './MobileIcon.vue';
+import './student-lesson-card.pcss';
 
-const props = withDefaults(defineProps<{
-  lesson: TodayLesson
-  current?: boolean
-  pending?: boolean
-  requestMessage?: string | null
-  expanded?: boolean
-  interactive?: boolean
-  headingLevel?: 2 | 3
-}>(), { current: false, pending: false, requestMessage: null, expanded: false, interactive: false, headingLevel: 3 })
-const emit = defineEmits<{ activate: [] }>()
-const status = computed(() => props.lesson.attendance?.status ?? null)
-const statusLabel = computed(() => status.value === 'PRESENT' ? 'Отметка подтверждена' : status.value === 'EXCUSED' ? 'Уважительная причина' : 'Пропуск')
-const symbol = computed(() => status.value === 'PRESENT' ? '+' : status.value === 'EXCUSED' ? 'у' : 'н')
-const kind = computed(() => ({ LECTURE: 'Лекция', PRACTICE: 'Практика', LAB: 'Лабораторная' })[props.lesson.schedule.subject.type])
-const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED')
+const props = withDefaults(
+  defineProps<{
+    lesson: TodayLesson;
+    current?: boolean;
+    pending?: boolean;
+    requestMessage?: string | null;
+    expanded?: boolean;
+    interactive?: boolean;
+    headingLevel?: 2 | 3;
+  }>(),
+  {
+    current: false,
+    pending: false,
+    requestMessage: null,
+    expanded: false,
+    interactive: false,
+    headingLevel: 3,
+  },
+);
+const emit = defineEmits<{ activate: [] }>();
+const status = computed(() => props.lesson.attendance?.status ?? null);
+const statusLabel = computed(() =>
+  status.value === 'PRESENT'
+    ? 'Отметка подтверждена'
+    : status.value === 'EXCUSED'
+      ? 'Уважительная причина'
+      : 'Пропуск',
+);
+const symbol = computed(() =>
+  status.value === 'PRESENT' ? '+' : status.value === 'EXCUSED' ? 'у' : 'н',
+);
+const kind = computed(
+  () =>
+    ({ LECTURE: 'Лекция', PRACTICE: 'Практика', LAB: 'Лабораторная' })[
+      props.lesson.schedule.subject.type
+    ],
+);
+const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED');
 </script>
 
 <template>
@@ -45,7 +68,11 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED')
       </component>
       <p class="student-lesson__meta">
         <MobileIcon name="room" />
-        <span :class="{ 'student-lesson__room--changed': lesson.schedule.room.changeState === 'CHANGED' }">{{ lesson.schedule.room.current ?? 'Аудитория уточняется' }}</span>
+        <span
+          :class="{
+            'student-lesson__room--changed': lesson.schedule.room.changeState === 'CHANGED',
+          }"
+        >{{ lesson.schedule.room.current ?? 'Аудитория уточняется' }}</span>
         <s
           v-if="lesson.schedule.room.previous"
           class="student-lesson__previous-room"
@@ -66,7 +93,8 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED')
         <span
           class="student-lesson__status"
           :data-status="status"
-        >{{ symbol }}<MobileIcon
+        >{{ symbol
+        }}<MobileIcon
           v-if="pending"
           name="clock"
           class="student-lesson__pending"
@@ -77,7 +105,8 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED')
         class="student-lesson__status"
         :data-status="status"
         :aria-label="pending ? `${statusLabel}. Запрос на рассмотрении` : statusLabel"
-      >{{ symbol }}<MobileIcon
+      >{{ symbol
+      }}<MobileIcon
         v-if="pending"
         name="clock"
         class="student-lesson__pending"

@@ -1,0 +1,20 @@
+{
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "checkpoint": "c16a2995a3a830e5c0c4a0acf9cba4073aa212a2",
+  "classification": "path-based area; changes can combine semantic and formatting edits; no source-only semantic claim",
+  "paths": 4766,
+  "counts": {
+    "docs/evidence / Modified": 6,
+    "shared configuration/tooling / Modified": 31,
+    "shared configuration/tooling / Created": 10,
+    "docs/evidence / Created": 2584,
+    "tests/harness / Created": 89,
+    "client / Modified": 537,
+    "client / Created": 6,
+    "tests/harness / Modified": 419,
+    "API/proto / Modified": 1,
+    "product/server / Modified": 1047,
+    "product/server / Created": 36
+  },
+  "angular_changed_paths": 0
+}

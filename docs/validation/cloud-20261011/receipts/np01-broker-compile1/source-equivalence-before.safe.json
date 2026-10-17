@@ -1,0 +1,6 @@
+{
+  "definition": "all tracked except docs/ and .agent/",
+  "files": 3852,
+  "root_NP_byte_mismatch": [],
+  "coordinator_checks_metadata_excluded": ".agent/checks.json is local scope check-state, preserved"
+}

@@ -26,9 +26,15 @@ describe('assistant homework create intent', () => {
       description: 'Конспект',
       link: 'https://example.test/material',
     }
-    let intent = reuseOrCreateAssistantHomeworkIntent(null, context, firstInput, () => 'request-key-a')
+    let intent = reuseOrCreateAssistantHomeworkIntent(
+      null,
+      context,
+      firstInput,
+      () => 'request-key-a',
+    )
     expect(intent).not.toBeNull()
-    const createHomework = vi.fn()
+    const createHomework = vi
+      .fn()
       .mockRejectedValueOnce(new TypeError('connection lost after send'))
       .mockResolvedValueOnce(null)
 
@@ -39,11 +45,16 @@ describe('assistant homework create intent', () => {
     }
 
     expect(intent).not.toBeNull()
-    const retry = reuseOrCreateAssistantHomeworkIntent(intent, context, {
-      title: 'Changed after uncertain save',
-      description: '',
-      link: '',
-    }, () => 'request-key-b')
+    const retry = reuseOrCreateAssistantHomeworkIntent(
+      intent,
+      context,
+      {
+        title: 'Changed after uncertain save',
+        description: '',
+        link: '',
+      },
+      () => 'request-key-b',
+    )
     expect(retry).toBe(intent)
     expect(Object.isFrozen(retry)).toBe(true)
     expect(Object.isFrozen(retry!.context)).toBe(true)
@@ -52,29 +63,85 @@ describe('assistant homework create intent', () => {
     expect(createHomework).toHaveBeenCalledTimes(2)
     expect(createHomework.mock.calls[0]?.[0]).toBe(createHomework.mock.calls[1]?.[0])
     expect(retry!.input.requestKey).toBe('request-key-a')
-    expect(sameAssistantHomeworkDraftContext(retry!.context, { ...context, lessonId: 301 })).toBe(false)
-    expect(reuseOrCreateAssistantHomeworkIntent(retry, { ...context, lessonId: 301 }, firstInput, () => 'request-key-c'))
-      .toBeNull()
+    expect(sameAssistantHomeworkDraftContext(retry!.context, { ...context, lessonId: 301 })).toBe(
+      false,
+    )
+    expect(
+      reuseOrCreateAssistantHomeworkIntent(
+        retry,
+        { ...context, lessonId: 301 },
+        firstInput,
+        () => 'request-key-c',
+      ),
+    ).toBeNull()
   })
 
   it('clears a rejected validation intent but preserves a 409 conflict key', () => {
-    const intent = reuseOrCreateAssistantHomeworkIntent(null, context, {
-      title: 'Тема 2', description: '', link: '',
-    }, () => 'request-key-a')
+    const intent = reuseOrCreateAssistantHomeworkIntent(
+      null,
+      context,
+      {
+        title: 'Тема 2',
+        description: '',
+        link: '',
+      },
+      () => 'request-key-a',
+    )
     expect(intentAfterHomeworkCreateFailure(intent, 409)).toBe(intent)
     expect(intentAfterHomeworkCreateFailure(intent, 422)).toBeNull()
   })
 
   it('freezes DATE placement without a fictitious lesson, and freezes edit revision across retries', () => {
-    const dateContext: AssistantHomeworkDraftContext = { ...context, lessonId: null, lessonNumber: null, bindingMode: 'DATE' }
-    const values = { title: 'На дату', description: 'Материалы', link: 'https://example.test/material' }
-    const created = reuseOrCreateAssistantHomeworkIntent(null, dateContext, values, () => 'create-key')!
-    expect(created.input).toMatchObject({ bindingMode: 'DATE', lessonNumber: null, lessonDate: context.selectedDate })
-    const edit = reuseOrCreateAssistantHomeworkEditIntent(null, dateContext, 91, 4, values, () => 'edit-key')!
-    const retry = reuseOrCreateAssistantHomeworkEditIntent(edit, dateContext, 91, 5, { ...values, title: 'Другой вариант' }, () => 'other-key')
+    const dateContext: AssistantHomeworkDraftContext = {
+      ...context,
+      lessonId: null,
+      lessonNumber: null,
+      bindingMode: 'DATE',
+    }
+    const values = {
+      title: 'На дату',
+      description: 'Материалы',
+      link: 'https://example.test/material',
+    }
+    const created = reuseOrCreateAssistantHomeworkIntent(
+      null,
+      dateContext,
+      values,
+      () => 'create-key',
+    )!
+    expect(created.input).toMatchObject({
+      bindingMode: 'DATE',
+      lessonNumber: null,
+      lessonDate: context.selectedDate,
+    })
+    const edit = reuseOrCreateAssistantHomeworkEditIntent(
+      null,
+      dateContext,
+      91,
+      4,
+      values,
+      () => 'edit-key',
+    )!
+    const retry = reuseOrCreateAssistantHomeworkEditIntent(
+      edit,
+      dateContext,
+      91,
+      5,
+      { ...values, title: 'Другой вариант' },
+      () => 'other-key',
+    )
     expect(retry).toBe(edit)
     expect(retry!.input).toEqual({ ...values, expectedRevision: 4, requestKey: 'edit-key' })
     expect(Object.isFrozen(retry!.input)).toBe(true)
-    expect(reuseOrCreateAssistantHomeworkEditIntent(edit, { ...dateContext, userId: 42 }, 91, 4, values, () => 'another-key')).toBeNull()
+    expect(
+      reuseOrCreateAssistantHomeworkEditIntent(
+        edit,
+        { ...dateContext, userId: 42 },
+        91,
+        4,
+        values,
+        () => 'another-key',
+      ),
+    ).toBeNull()
   })
 })

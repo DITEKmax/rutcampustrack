@@ -1,0 +1,10 @@
+{
+  "metadata_parse": "PASS",
+  "supported_author_hash_guard": "PASS",
+  "supported_inputs_guarded": 2625,
+  "root_head_now": "c4d926b0c5a81ae00b639bd48dd22088991b0f2b",
+  "source_edits": 0,
+  "format_checks": "NOT_RUN",
+  "reason": "Read-only prep only; no frozen semantic assignment",
+  "no_heavy_or_children": true
+}

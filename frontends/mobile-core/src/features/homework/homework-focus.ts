@@ -32,7 +32,10 @@ export function canRestoreHomeworkFocus(options: {
   ownerKey: string | null
 }): boolean {
   const { request, item, pending, activeElement, documentBody, feedIdentity, ownerKey } = options
-  if (pending || request.feedIdentity !== feedIdentity || request.ownerKey !== ownerKey) return false
+  if (pending || request.feedIdentity !== feedIdentity || request.ownerKey !== ownerKey)
+    return false
   if (!isHomeworkCompletionConfirmed(item, request.expectedCompleted)) return false
-  return activeElement === null || activeElement === documentBody || activeElement === request.origin
+  return (
+    activeElement === null || activeElement === documentBody || activeElement === request.origin
+  )
 }

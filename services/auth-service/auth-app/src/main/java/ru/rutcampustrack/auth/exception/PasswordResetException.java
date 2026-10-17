@@ -37,8 +37,12 @@ public final class PasswordResetException extends RuntimeException {
 
     @Override
     public String toString() {
-        return "PasswordResetException[code=" + code
-                + ", attemptsRemaining=" + attemptsRemaining
-                + ", retryAfterSeconds=" + retryAfterSeconds + ']';
+        return "PasswordResetException[code="
+                + code
+                + ", attemptsRemaining="
+                + attemptsRemaining
+                + ", retryAfterSeconds="
+                + retryAfterSeconds
+                + ']';
     }
 }

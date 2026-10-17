@@ -1,0 +1,378 @@
+{
+  "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+  "parent": "1226d13b4ef9a8b96af2ba44d68ebf54771600e6",
+  "files": [
+    {
+      "path": "docs/openapi/academic.json",
+      "bytes": 448698,
+      "sha256": "270be56bc2ef230c97c797469838710b1c9f6d0e22ca6ad181ebfd5d522d76fc",
+      "author_equivalent": true
+    },
+    {
+      "path": "docs/openapi/attendance.json",
+      "bytes": 211603,
+      "sha256": "328f19a60af362ecf6bd626bb8197da76860b78971cd964f8cb78145ddc0c447",
+      "author_equivalent": true
+    },
+    {
+      "path": "docs/openapi/auth.json",
+      "bytes": 122678,
+      "sha256": "e929f282fe088766cc38c26ad45e9e7bed0b0bf4cfacf93fb03ac66d4aef2b4a",
+      "author_equivalent": true
+    },
+    {
+      "path": "event-schemas/export.state.changed.json",
+      "bytes": 1200,
+      "sha256": "a6e3801d24ee86aa8c16dd2ce7fb69bd21097019cbdfe5f370f96263762a9ab6",
+      "author_equivalent": true
+    },
+    {
+      "path": "proto/academic.proto",
+      "bytes": 17104,
+      "sha256": "33d15cb27f4812b16ff1bca9a1dd73acf1d18af4c595c5507f5989c766abcc49",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/RegistryExportApi.java",
+      "bytes": 1192,
+      "sha256": "5bd173ad0e7ac3677a50be89d90ebe5135bef4aac874ff00e35de90eb96ec0d6",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/export/RegistryExportModels.java",
+      "bytes": 1731,
+      "sha256": "c35ae3fc3713daebd44ca1699716b0f8322813dd3c6f9779efc861d37a536845",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/export/StrictRegistryEnumDeserializer.java",
+      "bytes": 1685,
+      "sha256": "b5d5709c045c3ab295477e52b445f611614141234d728d20119b16cb8cecd3e0",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/AdminRegistryExportService.java",
+      "bytes": 12312,
+      "sha256": "ac55bb6d900e411cf6fed1b086e82b16f3df405796d4eaead970256cf382d478",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryDocumentClient.java",
+      "bytes": 1503,
+      "sha256": "a61d4bab9c4938ba03360362c37c085ee53b4fc49873d4295a6f6f583587141f",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportController.java",
+      "bytes": 2349,
+      "sha256": "76e287f74df6d5c73072320015d38a06ec2ba7bf535cf8cfccc81be8f65b2789",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportExceptionAdvice.java",
+      "bytes": 1856,
+      "sha256": "20d5a5fa9fee5483fb84df5e0d563aa840643adc8ed4d6ec422eebd8f7533427",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryExportFormat.java",
+      "bytes": 1499,
+      "sha256": "d7cecdaae9488678a42eba08fe3e9b9cc8066f289b96fb61014b43f4abb39810",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/export/RegistryTableRenderer.java",
+      "bytes": 7947,
+      "sha256": "327fa2ea938eaed9cb7fdc39de0b73a4fa0565e2a14ef152f3f9f106bb98c3f9",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "bytes": 77247,
+      "sha256": "fea33cfe019f9cedc2e89715ce57a1648ef64954df167761ae2fd45970301f7f",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "bytes": 2193,
+      "sha256": "6cf3dec75b798ec2c6bdfd9985f7fbac87e76ecf54d5888be2d181fda0ecfa7b",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V56__durable_export_jobs.sql",
+      "bytes": 1261,
+      "sha256": "7122e81ef30143e1b98749817d10251ab019289d87743852c980b83693575d3b",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/export/AdminRegistryExportsIT.java",
+      "bytes": 11038,
+      "sha256": "8f4bf86db778ed09fe8c5cf5603a48e5f7a9197be191fed28c7ac95f8460593e",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "bytes": 8169,
+      "sha256": "5944fa5e4b0979d82f957a1e4e7da4e8c01bc48e0b07a2eb3206a30970d2db50",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "bytes": 32233,
+      "sha256": "ac5d454c23c9b98826ea4930b0208a2a659cb4a740eb83401ec41514f4b83ebe",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ExportJobWorker.java",
+      "bytes": 2402,
+      "sha256": "878b6b6115dadfd3c48f9ec9c0510604d6f54a62a18aea0e41278ef6771afca7",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java",
+      "bytes": 19015,
+      "sha256": "440053c8767b61ef20fefe5108c40fef71967def0a7f24f87d067339b3dae9f8",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ReportDownloadBackendProperties.java",
+      "bytes": 2567,
+      "sha256": "b63e54d169f72877d84845782b3b211a57a374783067696d8d53e0825f0f6684",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilter.java",
+      "bytes": 29251,
+      "sha256": "78196b389521b44f28ba89dee49b4121efc648952f7dc58fa9e77356506fb79c",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ExportJobWorkerTest.java",
+      "bytes": 2655,
+      "sha256": "f06f84172b353df2ee26bbd62fa2f29166306df7d1a04bfbad60f78b31a17403",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/security/ReportDownloadTicketDownloadFilterTest.java",
+      "bytes": 37979,
+      "sha256": "d26c4af44467f02fee462834756834e66afb2c474fe17dd583584ea1d1b25417",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/api/ReportApi.java",
+      "bytes": 20308,
+      "sha256": "583028f3ad89780110c625388478de4f3fadce5fa39bf1825003ae6197b043fb",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/attendance-service/attendance-api-contract/src/main/java/ru/rutcampustrack/attendance/contract/dto/report/HeadmanSubjectJournalExportRequest.java",
+      "bytes": 633,
+      "sha256": "8f4b14620eba9820cf09bdee39fa8840c32b4f9845c0651034dcad9f34c93b1f",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+      "bytes": 19960,
+      "sha256": "50b58f7423aa1e4996b89555a1c637369dd45c5a125c24a300351e0fa4d5d995",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportService.java",
+      "bytes": 31934,
+      "sha256": "920bcd8f49ecfb199a040732181515ae428ebed4386e364dc40c49e44717f1c7",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyTabularRenderer.java",
+      "bytes": 16736,
+      "sha256": "951c6c5cba168b4ff96b2952995c33ecd0aa880ae4fda549d625aa198a536c4b",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportController.java",
+      "bytes": 12337,
+      "sha256": "46ebffcd5756fd91eef23ab5b78f361bdd3d995cf1f92c2e25450dd763c9b28f",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceDocxRenderer.java",
+      "bytes": 26141,
+      "sha256": "ce2eee4d46a7d070d71470aab7ada8cf61efed9a5fcc0886e24df7796b4f0222",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/teacher/TeacherAttendanceExportModel.java",
+      "bytes": 5832,
+      "sha256": "29f62c9e04c2cac7c1d8f3a8c53e75989a74a3836a0e0312c721240d04898a82",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClientTest.java",
+      "bytes": 9714,
+      "sha256": "a5d630f58b7821fd3f463e8a1aa6d48d0fb9dbf5ab91111d1b491afe7bf7c8d4",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/HeadmanSubjectJournalServiceTest.java",
+      "bytes": 8961,
+      "sha256": "572746e579482f577f5edd29b9f37d8de34a884f60b219ef3623733731e15bdb",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/ReportControllerMvcTest.java",
+      "bytes": 11916,
+      "sha256": "cb78ab3ca58cecffc44108ba97a7ec1a9cb780497caa978bc529bff4385f0310",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/ExportJobApi.java",
+      "bytes": 847,
+      "sha256": "59dca00e57c0944d110807ae8378edb36dcc113525494e0868033d08a742abb1",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/InternalExportJobApi.java",
+      "bytes": 972,
+      "sha256": "cc5351d1366675ef75ed78998c332da8aaa5f3e3e892b8af2e84f89dfd9c09e8",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ExportJobModels.java",
+      "bytes": 1782,
+      "sha256": "0711b0258cf588b87b51eacebf92a42166c71cdaec1143ca722100d4ce157a52",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+      "bytes": 23661,
+      "sha256": "1a84375b09d1794f7513c3d51e3e161e75e7dee173ecd675151193fa0ec6b854",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+      "bytes": 392,
+      "sha256": "b1c94cc315352dd80a80d512fd8ab253bc6f526ae69d1bfb67a8396e71582066",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadTicketRedemptionResponse.java",
+      "bytes": 1055,
+      "sha256": "aa6964059d43a68d34ca0eee88ee5344d03d91a4221ad8e102436513733813cc",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobController.java",
+      "bytes": 2266,
+      "sha256": "1534c6cb51816ba1301b9e0a1700ec4e0fe00ddac2c5b4366e4325485f3dc354",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobExceptionAdvice.java",
+      "bytes": 1911,
+      "sha256": "c74376ac5e0319ff5667e4bceee73a81b99730eb20488ad3cbf3dbc5ba1be8e2",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+      "bytes": 13559,
+      "sha256": "0dbc807e848d466cbff48b91b4a7050d57281e43176efb7c0fefe3362530bc0f",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportNoStoreFilter.java",
+      "bytes": 1814,
+      "sha256": "6ef673d3e3252b4641ad836ef6871b4fbd4bba5c7e4ad844d3f621ed7f810a1c",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportReportAuthority.java",
+      "bytes": 2163,
+      "sha256": "fbffe57319864cc2c3962b81f58839c1da805194a73f2d611bad01cd8f0e34dd",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportStateEvent.java",
+      "bytes": 681,
+      "sha256": "64ccc230bf508b159cab13311b5123170f5b79b305fdcc2faca509ffba5274f4",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/InternalExportJobController.java",
+      "bytes": 2346,
+      "sha256": "f43b6feafd9acf47920ea6478257415dc73cd91d37bae5d975a8a28d9b38c651",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+      "bytes": 17238,
+      "sha256": "46f8dc20b5951c4b8d8886897462def7c6849a602117c35e35ef0d36ce0e7d3e",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/StoredReportDownloadTicket.java",
+      "bytes": 2605,
+      "sha256": "ecda9eae2f9f0f619f7cf63ef412332767b408a13f29855b33e0166b02e64b6d",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/events/ExportStateContractTest.java",
+      "bytes": 1838,
+      "sha256": "1399edc9c564d8627d854dd138da43ace9517338ee298a485868ee8337d4ea79",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportJobsIT.java",
+      "bytes": 12093,
+      "sha256": "ef149ec5b3be6f8a17cf5675080ed271481233f551b5d66da499c15ea738276b",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/export/ExportReportAuthorityTest.java",
+      "bytes": 2222,
+      "sha256": "7736a54950d86fa0c9fccdd034a16160d0d75ef6b595c2ec09c781623ed95945",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+      "bytes": 8959,
+      "sha256": "639433e7fc5bb3508eacd439ebed24dfdd278441f16452e3f0f6cc4a50750a26",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "bytes": 17760,
+      "sha256": "8a97fe8093077dc5dfafbe7826738db2809d7400e5d488a6c3bde48efa63e243",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptor.java",
+      "bytes": 2822,
+      "sha256": "d163fed7f2c018466027dbe6c5fd091677b74e86a0288e7940f4e864e773ac96",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsTicketClient.java",
+      "bytes": 5164,
+      "sha256": "e745c7de279d71836733100abc5e4c0aad57ec1f22d57ecc52493e3925bf12a5",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumer.java",
+      "bytes": 4104,
+      "sha256": "f7aef1ad5022c224c21619c135e02870ac8294b7b4d00c65227af2d28ff343df",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+      "bytes": 6733,
+      "sha256": "8d0dc2a7d8ef275e58a79372d6d1bd632a95ceb70aa43a17a59c9cbfcf5663fd",
+      "author_equivalent": true
+    },
+    {
+      "path": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumerTest.java",
+      "bytes": 5859,
+      "sha256": "190ef5ef9c6a1cf72495b9980213c16ff58935e7f234cfffe37de5b70d389289",
+      "author_equivalent": true
+    }
+  ]
+}

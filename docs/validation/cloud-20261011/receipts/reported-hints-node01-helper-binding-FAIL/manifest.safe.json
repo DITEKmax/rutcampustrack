@@ -1,0 +1,44 @@
+{
+  "files": [
+    {
+      "path": "OUTCOME.safe.json",
+      "bytes": 322,
+      "sha256": "ed728a32b011b6c92eb991282bad8dbb11b414f76d353b6547ec0aecee0bf2b5"
+    },
+    {
+      "path": "REPORT.safe.json",
+      "bytes": 1496,
+      "sha256": "0425ac565b57dd55899c1a44a752894687f6c0164a3d66d4db0ac4538ea4ae91"
+    },
+    {
+      "path": "priority-red-launch.safe.json",
+      "bytes": 339,
+      "sha256": "2a8858d02502d2fb913f36dc3a080908b2db7c3fba94b0ff2ab615baaddf6a4e"
+    },
+    {
+      "path": "priority-red-outcome.safe.json",
+      "bytes": 97,
+      "sha256": "d877fc184cca1e09bb3c947f5d44058996e3ab11f96d04cdb7339350a9ceacd4"
+    },
+    {
+      "path": "priority-red-process.safe.json",
+      "bytes": 147,
+      "sha256": "6e911a1b12a6b3378eef99f6ae8271c163c942a7620d822340b78eba1e495815"
+    },
+    {
+      "path": "priority-red-terminal.safe.json",
+      "bytes": 568,
+      "sha256": "4060fda27d11e9f6d7226662b419047421f55a43a06c4aca91d7632a8773b10f"
+    },
+    {
+      "path": "priority-red.safe.json",
+      "bytes": 1408,
+      "sha256": "91bb13bf22ea48749eebeb0c0464b8ffba41000d5bb0a1a5466836fcba1c9318"
+    },
+    {
+      "path": "supervisor.safe.json",
+      "bytes": 117,
+      "sha256": "7d4e3e28f4ad6cbdaacd15fe6bc5f918f276bf1de06a5ce62b1a2702e71ff3ac"
+    }
+  ]
+}

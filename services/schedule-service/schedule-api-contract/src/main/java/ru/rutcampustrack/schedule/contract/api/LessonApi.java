@@ -6,6 +6,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,19 +27,14 @@ import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
 import ru.rutcampustrack.schedule.contract.dto.lesson.NextHomeworkLessonResponse;
-import ru.rutcampustrack.schedule.contract.enums.LessonType;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+import ru.rutcampustrack.schedule.contract.enums.LessonType;
 
 /**
- * REST API contract for lesson operations and schedule view.
- * HTTP mappings are defined ONLY here per contract-first rule.
- * Controllers implement this interface without duplicating annotations.
+ * REST API contract for lesson operations and schedule view. HTTP mappings are defined ONLY here
+ * per contract-first rule. Controllers implement this interface without duplicating annotations.
  */
 @Tag(name = "Lessons", description = "Управление уроками и расписание")
 @RequestMapping("/schedule")
@@ -44,20 +42,26 @@ public interface LessonApi {
 
     @Operation(summary = "Изменить аудиторию одной будущей пары (HEADMAN/ADMIN)")
     @PatchMapping("/lessons/{id}/room")
-    ResponseEntity<ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomResponse> changeLessonRoom(
-            @PathVariable @Positive Long id,
-            @org.springframework.web.bind.annotation.RequestHeader("Idempotency-Key") String requestKey,
-            @Valid @RequestBody ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomRequest request);
+    ResponseEntity<ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomResponse>
+            changeLessonRoom(
+                    @PathVariable @Positive Long id,
+                    @org.springframework.web.bind.annotation.RequestHeader("Idempotency-Key")
+                            String requestKey,
+                    @Valid @RequestBody
+                            ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomRequest
+                                    request);
 
-    @Operation(summary = "Ближайшая подходящая пара для ДЗ начиная с fromDate включительно",
-            description = "Возвращает текущую физическую пару предмета и типа без ограничения горизонта. "
-                    + "Сегодняшняя пара доступна до конца пары + 5 минут по Москве. "
-                    + "Результат — снимок выбора; запись ДЗ повторно проверяет occurrenceRevision.")
+    @Operation(
+            summary = "Ближайшая подходящая пара для ДЗ начиная с fromDate включительно",
+            description =
+                    "Возвращает текущую физическую пару предмета и типа без ограничения горизонта. "
+                            + "Сегодняшняя пара доступна до конца пары + 5 минут по Москве. "
+                            + "Результат — снимок выбора; запись ДЗ повторно проверяет occurrenceRevision.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Ближайшая подходящая пара"),
-            @ApiResponse(responseCode = "204", description = "Подходящих пар нет"),
-            @ApiResponse(responseCode = "400", description = "Некорректные параметры"),
-            @ApiResponse(responseCode = "403", description = "Нет права управлять ДЗ этой группы")
+        @ApiResponse(responseCode = "200", description = "Ближайшая подходящая пара"),
+        @ApiResponse(responseCode = "204", description = "Подходящих пар нет"),
+        @ApiResponse(responseCode = "400", description = "Некорректные параметры"),
+        @ApiResponse(responseCode = "403", description = "Нет права управлять ДЗ этой группы")
     })
     @GetMapping("/lessons/next")
     ResponseEntity<NextHomeworkLessonResponse> getNextHomeworkLesson(
@@ -69,81 +73,93 @@ public interface LessonApi {
 
     @Operation(summary = "Перенести будущую пару с сохранением её логической истории")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Перенос завершён обеими системами"),
-            @ApiResponse(responseCode = "202", description = "Перенос принят, применение участниками ожидается"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Пара не найдена"),
-            @ApiResponse(responseCode = "409", description = "Версия или новый слот конфликтуют")
+        @ApiResponse(responseCode = "200", description = "Перенос завершён обеими системами"),
+        @ApiResponse(
+                responseCode = "202",
+                description = "Перенос принят, применение участниками ожидается"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Пара не найдена"),
+        @ApiResponse(responseCode = "409", description = "Версия или новый слот конфликтуют")
     })
     @PostMapping("/lessons/{id}/transfer")
     ResponseEntity<TransferLessonResponse> transferLesson(
-            @PathVariable Long id,
-            @Valid @RequestBody TransferLessonRequest request);
+            @PathVariable Long id, @Valid @RequestBody TransferLessonRequest request);
 
     @Operation(summary = "Прочитать состояние операции переноса")
     @ApiResponse(responseCode = "200", description = "Состояние операции переноса")
     @GetMapping("/lesson-transfers/{operationId}")
-    ResponseEntity<TransferLessonResponse> getLessonTransfer(
-            @PathVariable UUID operationId);
+    ResponseEntity<TransferLessonResponse> getLessonTransfer(@PathVariable UUID operationId);
 
     @Operation(summary = "Отменить урок (HEADMAN/ADMIN). Допускается отмена PLANNED/ACTIVE/CLOSED.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Урок отменён"),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Урок не найден"),
-            @ApiResponse(responseCode = "422", description = "Урок уже отменён")
+        @ApiResponse(responseCode = "200", description = "Урок отменён"),
+        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Урок не найден"),
+        @ApiResponse(responseCode = "422", description = "Урок уже отменён")
     })
     @PatchMapping("/lessons/{id}/cancel")
     ResponseEntity<EntityModel<LessonResponse>> cancelLesson(
-            @PathVariable Long id,
-            @Valid @RequestBody CancelLessonRequest request);
+            @PathVariable Long id, @Valid @RequestBody CancelLessonRequest request);
 
     @Operation(summary = "Восстановить отменённый урок (HEADMAN/ADMIN)")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Урок восстановлен"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Урок не найден"),
-            @ApiResponse(responseCode = "422", description = "Недопустимый переход статуса")
+        @ApiResponse(responseCode = "200", description = "Урок восстановлен"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Урок не найден"),
+        @ApiResponse(responseCode = "422", description = "Недопустимый переход статуса")
     })
     @PatchMapping("/lessons/{id}/restore")
     ResponseEntity<EntityModel<LessonResponse>> restoreLesson(@PathVariable Long id);
 
     @Operation(summary = "Включить/выключить гео-блокировку урока (HEADMAN/ADMIN)")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Гео-блокировка изменена"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Урок не найден")
+        @ApiResponse(responseCode = "200", description = "Гео-блокировка изменена"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Урок не найден")
     })
     @PatchMapping("/lessons/{id}/geo-block")
     ResponseEntity<EntityModel<LessonResponse>> toggleGeoBlock(
-            @PathVariable Long id,
-            @Valid @RequestBody GeoBlockRequest request);
+            @PathVariable Long id, @Valid @RequestBody GeoBlockRequest request);
 
-    @Operation(summary = "Заблокировать пару старостой — запретить геоотметку, посещаемость ставит только староста вручную (HEADMAN)")
+    @Operation(
+            summary =
+                    "Заблокировать пару старостой — запретить геоотметку, посещаемость ставит только староста вручную (HEADMAN)")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Пара заблокирована"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Урок не найден"),
-            @ApiResponse(responseCode = "422", description = "Нельзя заблокировать прошедшую или отменённую пару")
+        @ApiResponse(responseCode = "200", description = "Пара заблокирована"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Урок не найден"),
+        @ApiResponse(
+                responseCode = "422",
+                description = "Нельзя заблокировать прошедшую или отменённую пару")
     })
     @PostMapping("/lessons/{id}/blockage")
     ResponseEntity<EntityModel<LessonResponse>> blockLesson(@PathVariable Long id);
 
     @Operation(summary = "Снять блокировку пары старостой (HEADMAN)")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Блокировка снята"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "404", description = "Урок не найден")
+        @ApiResponse(responseCode = "200", description = "Блокировка снята"),
+        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Урок не найден")
     })
     @DeleteMapping("/lessons/{id}/blockage")
     ResponseEntity<EntityModel<LessonResponse>> unblockLesson(@PathVariable Long id);
 
     @Operation(summary = "Получить расписание группы за диапазон дат (все роли)")
-    @ApiResponse(responseCode = "200", description = "Расписание группы")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Расписание группы; semesterId добавляет полный прогресс семестра",
+            content =
+                    @io.swagger.v3.oas.annotations.media.Content(
+                            schema =
+                                    @io.swagger.v3.oas.annotations.media.Schema(
+                                            implementation =
+                                                    ru.rutcampustrack.schedule.contract.dto.lesson
+                                                            .LessonListResponse.class)))
     @GetMapping("/groups/{groupId}/lessons")
     ResponseEntity<PagedModel<EntityModel<LessonResponse>>> getLessons(
             @PathVariable Long groupId,
+            @RequestParam(required = false) @Positive Long semesterId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
             @RequestParam(required = false) List<LessonStatus> status,

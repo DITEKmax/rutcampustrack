@@ -1,0 +1,176 @@
+{
+  "independent_arithmetic": "Python integers and range cardinality; no image generation/inflation",
+  "controls": {
+    "row_limit": {
+      "decoded_bytes": 2000000,
+      "pass_rows": 1000000,
+      "passes": [
+        {
+          "columns": 1,
+          "rows": 1000000,
+          "scanline_bytes": 2
+        }
+      ],
+      "accepted_budget": true
+    },
+    "byte_limit": {
+      "decoded_bytes": 134217728,
+      "pass_rows": 1,
+      "passes": [
+        {
+          "columns": 134217727,
+          "rows": 1,
+          "scanline_bytes": 134217728
+        }
+      ],
+      "accepted_budget": true
+    },
+    "row_over": {
+      "decoded_bytes": 2000002,
+      "pass_rows": 1000001,
+      "passes": [
+        {
+          "columns": 1,
+          "rows": 1000001,
+          "scanline_bytes": 2
+        }
+      ],
+      "accepted_budget": false
+    },
+    "byte_over": {
+      "decoded_bytes": 134217729,
+      "pass_rows": 1,
+      "passes": [
+        {
+          "columns": 134217728,
+          "rows": 1,
+          "scanline_bytes": 134217729
+        }
+      ],
+      "accepted_budget": false
+    },
+    "adam7_over": {
+      "decoded_bytes": 2000002,
+      "pass_rows": 1000001,
+      "passes": [
+        {
+          "columns": 1,
+          "rows": 83334,
+          "scanline_bytes": 2
+        },
+        {
+          "columns": 1,
+          "rows": 83333,
+          "scanline_bytes": 2
+        },
+        {
+          "columns": 1,
+          "rows": 166667,
+          "scanline_bytes": 2
+        },
+        {
+          "columns": 1,
+          "rows": 333334,
+          "scanline_bytes": 2
+        },
+        {
+          "columns": 2,
+          "rows": 333333,
+          "scanline_bytes": 2
+        }
+      ],
+      "accepted_budget": false
+    },
+    "maximal_rgba16": {
+      "decoded_bytes": 36893488115206848519,
+      "pass_rows": 2147483647,
+      "passes": [
+        {
+          "columns": 2147483647,
+          "rows": 2147483647,
+          "scanline_bytes": 17179869177
+        }
+      ],
+      "accepted_budget": false
+    },
+    "wide_existing": {
+      "decoded_bytes": 100001,
+      "pass_rows": 1,
+      "passes": [
+        {
+          "columns": 100000,
+          "rows": 1,
+          "scanline_bytes": 100001
+        }
+      ],
+      "accepted_budget": true
+    },
+    "small_gray": {
+      "decoded_bytes": 10,
+      "pass_rows": 5,
+      "passes": [
+        {
+          "columns": 7,
+          "rows": 5,
+          "scanline_bytes": 2
+        }
+      ],
+      "accepted_budget": true
+    },
+    "small_adam7_gray": {
+      "decoded_bytes": 22,
+      "pass_rows": 11,
+      "passes": [
+        {
+          "columns": 1,
+          "rows": 1,
+          "scanline_bytes": 2
+        },
+        {
+          "columns": 1,
+          "rows": 1,
+          "scanline_bytes": 2
+        },
+        {
+          "columns": 2,
+          "rows": 1,
+          "scanline_bytes": 2
+        },
+        {
+          "columns": 2,
+          "rows": 2,
+          "scanline_bytes": 2
+        },
+        {
+          "columns": 4,
+          "rows": 1,
+          "scanline_bytes": 2
+        },
+        {
+          "columns": 3,
+          "rows": 3,
+          "scanline_bytes": 2
+        },
+        {
+          "columns": 7,
+          "rows": 2,
+          "scanline_bytes": 2
+        }
+      ],
+      "accepted_budget": true
+    }
+  },
+  "proof": "Validated positive int IHDR, samples<=4/depth<=16 keeps per-row long safe; compare rows against remainingBytes/scanlineBytes before rows*scanlineBytes, only subtract admitted bounded products",
+  "before_inflater_lines": [
+    528,
+    543
+  ],
+  "bounded_stream_lines": [
+    544,
+    546
+  ],
+  "compressed_upload_limit_lines": [
+    428,
+    438
+  ]
+}

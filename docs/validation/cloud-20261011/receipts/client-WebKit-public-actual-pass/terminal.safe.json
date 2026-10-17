@@ -1,0 +1,50 @@
+{
+  "direct_pid": 371776,
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 371776,
+      "start_ticks": 8640116
+    },
+    {
+      "pid": 371788,
+      "start_ticks": 8640172
+    },
+    {
+      "pid": 371790,
+      "start_ticks": 8640272
+    },
+    {
+      "pid": 371802,
+      "start_ticks": 8640357
+    },
+    {
+      "pid": 371804,
+      "start_ticks": 8640359
+    }
+  ],
+  "adopted_waitpid_receipts": [
+    {
+      "pid": 371804,
+      "start_ticks": 8640359,
+      "native_exit": 0
+    }
+  ],
+  "supervision_error_type": null,
+  "phase_success": true,
+  "peaks": {
+    "owned_rss_bytes": 444289024,
+    "run_allocated_bytes": 2711552,
+    "shared_memory_bytes": 5129433088
+  },
+  "private_tmp_removed": true,
+  "case_count": 0,
+  "project": "webkit",
+  "prepared_source_sha": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+  "execution_checkout_sha": "ebc2d18226a2f931f2daab454c195c391c7b7f3b"
+}

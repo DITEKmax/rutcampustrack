@@ -8,7 +8,9 @@ function requestFile(id: string, name: string, type: string, file: File): Reques
 
 describe('request attachment preview URL lifecycle', () => {
   it('reuses selected URLs and releases removed, replaced, and unmounted files', () => {
-    const createObjectURL = vi.fn((file: Blob) => `blob:${file.size}:${createObjectURL.mock.calls.length}`)
+    const createObjectURL = vi.fn(
+      (file: Blob) => `blob:${file.size}:${createObjectURL.mock.calls.length}`,
+    )
     const revokeObjectURL = vi.fn()
     const urls = new RequestAttachmentPreviewUrls({ createObjectURL, revokeObjectURL })
     const first = new File(['first'], 'proof.png', { type: 'image/png' })

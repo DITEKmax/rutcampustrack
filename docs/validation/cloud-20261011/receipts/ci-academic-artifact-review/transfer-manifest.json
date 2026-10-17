@@ -1,0 +1,54 @@
+{
+  "scope": "independent source review only",
+  "files": [
+    {
+      "file": "REPORT.md",
+      "bytes": 8355,
+      "sha256": "a2ec6f9434c7dfaab95815bcb493494c4274b1a1c811334064791b090f11e90e"
+    },
+    {
+      "file": "author-seal-audit.json",
+      "bytes": 5730,
+      "sha256": "844925dc8d5a6bda083a48cff2a0a8e9b54af3ec2f3d34c5e9696c1eb12a3b3d"
+    },
+    {
+      "file": "input-source-identities.json",
+      "bytes": 4398,
+      "sha256": "5b9f15c8259d4ee6f8506815bb6da2b01252104fa38aed32cfba40117e02a36f"
+    },
+    {
+      "file": "mandatory-runtime-proof-plan.json",
+      "bytes": 9255,
+      "sha256": "99294049e53aed0b85c73c6f188fc0dd509f7b2ded335dee956b9473dd466fd9"
+    },
+    {
+      "file": "needed-auth-source-closure.json",
+      "bytes": 9448,
+      "sha256": "b296e1973ec10b7d19e93b2af09d6dcd79b1e9e37b8d386ee6d7bcd981854975"
+    },
+    {
+      "file": "review.py",
+      "bytes": 10916,
+      "sha256": "017e6753b289ae3f7080f8c60c1231a131f21950e15fa1bcd16b7519f1723ed6"
+    },
+    {
+      "file": "reviewed-build.gradle.kts.txt",
+      "bytes": 6129,
+      "sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454"
+    },
+    {
+      "file": "reviewed-net.patch",
+      "bytes": 1144,
+      "sha256": "6d453af5621551e6ef14496e8b129479b4086f4ca0d9d964cb1bcceb344342bb"
+    },
+    {
+      "file": "source-verdict.json",
+      "bytes": 2241,
+      "sha256": "b3649cda463eefc4ab540a8b1063c20df780954c9d047cd8ac79abcdea4e4c02"
+    }
+  ],
+  "verdict": "APPROVE_SOURCE",
+  "runtime": "NOT_RUN",
+  "children": 0,
+  "shared_source_writes": 0
+}

@@ -1,7 +1,23 @@
 package ru.rutcampustrack.gateway.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -15,23 +31,6 @@ import reactor.test.StepVerifier;
 import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
 import ru.rutcampustrack.gateway.config.PublicKeyConfig;
 import ru.rutcampustrack.gateway.filter.JwtAuthenticationFilter;
-
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
-import java.security.Signature;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
 class InternalJwtIssuerFilterTest {
 
@@ -65,8 +64,8 @@ class InternalJwtIssuerFilterTest {
         StepVerifier.create(filter.filter(exchange, chain)).verifyComplete();
 
         assertThat(forwarded.get()).isNotNull();
-        assertThat(forwarded.get().getRequest().getHeaders()
-                .getFirst("X-Internal-Token")).isEqualTo(response.internalToken());
+        assertThat(forwarded.get().getRequest().getHeaders().getFirst("X-Internal-Token"))
+                .isEqualTo(response.internalToken());
         assertThat(forwarded.get().getRequest().getHeaders().getFirst("X-User-Id")).isNull();
         assertThat(forwarded.get().getRequest().getHeaders().getFirst("X-User-Role")).isNull();
         assertThat(forwarded.get().getRequest().getHeaders().getFirst("X-Login")).isNull();
@@ -74,7 +73,13 @@ class InternalJwtIssuerFilterTest {
                 .noneMatch(name -> name.equalsIgnoreCase("X-Group-Id"));
         assertThat(forwarded.get().getRequest().getHeaders().keySet())
                 .noneMatch(name -> name.equalsIgnoreCase("X-Is-Headman"));
-        assertThat((String) forwarded.get().getAttribute(JwtAuthenticationFilter.AUTHENTICATED_USER_ID_ATTRIBUTE))
+        assertThat(
+                        (String)
+                                forwarded
+                                        .get()
+                                        .getAttribute(
+                                                JwtAuthenticationFilter
+                                                        .AUTHENTICATED_USER_ID_ATTRIBUTE))
                 .isEqualTo("42");
     }
 
@@ -107,7 +112,8 @@ class InternalJwtIssuerFilterTest {
 
         StepVerifier.create(filter.filter(exchange, chain)).verifyComplete();
 
-        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(exchange.getResponse().getStatusCode())
+                .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Test
@@ -123,27 +129,33 @@ class InternalJwtIssuerFilterTest {
 
         StepVerifier.create(filter.filter(exchange, chain)).verifyComplete();
 
-        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(exchange.getResponse().getStatusCode())
+                .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Test
     void missingAccessExpectations_returns503WithoutAuthorityCall() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(
-                MockServerHttpRequest.get("/api/academic/users").build());
-        exchange.getAttributes().put(JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE,
-                ACCESS_TOKEN);
+        MockServerWebExchange exchange =
+                MockServerWebExchange.from(
+                        MockServerHttpRequest.get("/api/academic/users").build());
+        exchange.getAttributes()
+                .put(JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE, ACCESS_TOKEN);
         GatewayFilterChain chain = ex -> Mono.error(new AssertionError("chain should not run"));
 
         StepVerifier.create(filter.filter(exchange, chain)).verifyComplete();
 
-        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(exchange.getResponse().getStatusCode())
+                .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
         verifyNoInteractions(client);
     }
 
     @Test
     void authorityDenial_returnsTypedPublicResponseWithoutDownstreamCall() {
-        when(client.admit(ACCESS_TOKEN)).thenReturn(Mono.error(
-                new InternalAdmissionDeniedException(HttpStatus.FORBIDDEN, "WRONG_ROLE")));
+        when(client.admit(ACCESS_TOKEN))
+                .thenReturn(
+                        Mono.error(
+                                new InternalAdmissionDeniedException(
+                                        HttpStatus.FORBIDDEN, "WRONG_ROLE")));
         MockServerWebExchange exchange = exchangeWithExpectations();
         GatewayFilterChain chain = mock(GatewayFilterChain.class);
 
@@ -166,7 +178,8 @@ class InternalJwtIssuerFilterTest {
 
         StepVerifier.create(filter.filter(exchange, chain)).verifyComplete();
 
-        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(exchange.getResponse().getStatusCode())
+                .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Test
@@ -174,7 +187,9 @@ class InternalJwtIssuerFilterTest {
         Instant accessExpiry = Instant.ofEpochSecond(Instant.now().getEpochSecond() + 120);
         Instant tokenExpiry = accessExpiry.minusSeconds(60);
         Map<String, Object> claims = validClaims(tokenExpiry);
-        claims.put("exp", BigDecimal.valueOf(tokenExpiry.getEpochSecond()).add(BigDecimal.valueOf(0.5)));
+        claims.put(
+                "exp",
+                BigDecimal.valueOf(tokenExpiry.getEpochSecond()).add(BigDecimal.valueOf(0.5)));
         String token = signedRawToken(claims);
         AuthAdmissionResponse response = response(token, tokenExpiry);
         when(client.admit(ACCESS_TOKEN)).thenReturn(Mono.just(response));
@@ -183,7 +198,8 @@ class InternalJwtIssuerFilterTest {
 
         StepVerifier.create(filter.filter(exchange, chain)).verifyComplete();
 
-        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(exchange.getResponse().getStatusCode())
+                .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Test
@@ -203,8 +219,8 @@ class InternalJwtIssuerFilterTest {
 
     @Test
     void noAccessTokenAttribute_passesThroughWithoutAuthorityCall() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(
-                MockServerHttpRequest.get("/api/auth/login").build());
+        MockServerWebExchange exchange =
+                MockServerWebExchange.from(MockServerHttpRequest.get("/api/auth/login").build());
         AtomicReference<ServerWebExchange> forwarded = new AtomicReference<>();
         GatewayFilterChain chain = forwardedChain(forwarded);
 
@@ -225,13 +241,33 @@ class InternalJwtIssuerFilterTest {
     }
 
     private AuthAdmissionResponse response(String internalToken, Instant expiresAt) {
-        return new AuthAdmissionResponse(internalToken, expiresAt, SESSION_ID, "42", "7", "3",
-                "STUDENT", "ACTIVE", null, false, false);
+        return new AuthAdmissionResponse(
+                internalToken,
+                expiresAt,
+                SESSION_ID,
+                "42",
+                "7",
+                "3",
+                "STUDENT",
+                "ACTIVE",
+                null,
+                false,
+                false);
     }
 
     private AuthAdmissionResponse headmanResponse(String internalToken, Instant expiresAt) {
-        return new AuthAdmissionResponse(internalToken, expiresAt, SESSION_ID, "42", "7", "3",
-                "HEADMAN", "ACTIVE", null, true, false);
+        return new AuthAdmissionResponse(
+                internalToken,
+                expiresAt,
+                SESSION_ID,
+                "42",
+                "7",
+                "3",
+                "HEADMAN",
+                "ACTIVE",
+                null,
+                true,
+                false);
     }
 
     private MockServerWebExchange exchangeWithExpectations() {
@@ -240,23 +276,26 @@ class InternalJwtIssuerFilterTest {
     }
 
     private MockServerWebExchange exchangeWithExpectations(Instant accessExpiry) {
-        MockServerHttpRequest request = MockServerHttpRequest.get("/api/academic/users")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + ACCESS_TOKEN)
-                .header("X-User-Id", "666")
-                .header("X-User-Role", "ADMIN")
-                .header("X-Login", "forged")
-                .header("x-GrOuP-Id", "666")
-                .header("X-iS-hEaDmAn", "true")
-                .build();
+        MockServerHttpRequest request =
+                MockServerHttpRequest.get("/api/academic/users")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + ACCESS_TOKEN)
+                        .header("X-User-Id", "666")
+                        .header("X-User-Role", "ADMIN")
+                        .header("X-Login", "forged")
+                        .header("x-GrOuP-Id", "666")
+                        .header("X-iS-hEaDmAn", "true")
+                        .build();
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
-        exchange.getAttributes().put(JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE,
-                ACCESS_TOKEN);
+        exchange.getAttributes()
+                .put(JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE, ACCESS_TOKEN);
         exchange.getAttributes().put(JwtAuthenticationFilter.EXPECTED_USER_ID_ATTRIBUTE, "42");
-        exchange.getAttributes().put(JwtAuthenticationFilter.EXPECTED_SESSION_ID_ATTRIBUTE, SESSION_ID);
-        exchange.getAttributes().put(JwtAuthenticationFilter.EXPECTED_SESSION_VERSION_ATTRIBUTE, "7");
+        exchange.getAttributes()
+                .put(JwtAuthenticationFilter.EXPECTED_SESSION_ID_ATTRIBUTE, SESSION_ID);
+        exchange.getAttributes()
+                .put(JwtAuthenticationFilter.EXPECTED_SESSION_VERSION_ATTRIBUTE, "7");
         exchange.getAttributes().put(JwtAuthenticationFilter.EXPECTED_ROLES_VERSION_ATTRIBUTE, "3");
-        exchange.getAttributes().put(JwtAuthenticationFilter.ORIGINAL_ACCESS_EXPIRY_ATTRIBUTE,
-                accessExpiry);
+        exchange.getAttributes()
+                .put(JwtAuthenticationFilter.ORIGINAL_ACCESS_EXPIRY_ATTRIBUTE, accessExpiry);
         return exchange;
     }
 
@@ -272,7 +311,9 @@ class InternalJwtIssuerFilterTest {
         return Jwts.builder()
                 .subject("42")
                 .issuer("rutcampustrack-auth")
-                .audience().add("rutcampustrack-internal").and()
+                .audience()
+                .add("rutcampustrack-internal")
+                .and()
                 .claim("token_use", "internal")
                 .claim("sid", SESSION_ID)
                 .claim("sv", "7")
@@ -308,8 +349,9 @@ class InternalJwtIssuerFilterTest {
     private String signedRawToken(Map<String, Object> claims) {
         try {
             Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
-            String header = encoder.encodeToString("{\"alg\":\"RS256\",\"typ\":\"JWT\"}"
-                    .getBytes(StandardCharsets.UTF_8));
+            String header =
+                    encoder.encodeToString(
+                            "{\"alg\":\"RS256\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
             String payload = encoder.encodeToString(new ObjectMapper().writeValueAsBytes(claims));
             String signingInput = header + "." + payload;
             Signature signature = Signature.getInstance("SHA256withRSA");

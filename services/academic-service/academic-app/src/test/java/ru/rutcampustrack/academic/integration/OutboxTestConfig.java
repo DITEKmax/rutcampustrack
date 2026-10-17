@@ -10,21 +10,19 @@ import ru.rutcampustrack.shared.outbox.OutboxStorage;
 /**
  * Test-side аналог {@code OutboxConfig.Publisher} (M02 Группа 5).
  *
- * <p>Продакшн-{@code OutboxConfig.Publisher} guarded {@code @Profile("!test")}
- * — в тестах он не стартует (чтобы {@code @Scheduled} tick не пулял events
- * в фоне). Но интеграционные event-тесты хотят дёргать
- * {@link OutboxPublisherJob#publishBatch()} вручную для контролируемой
- * проверки. Этот config даёт им {@link OutboxPublisherJob} bean БЕЗ
- * {@code @EnableScheduling} / {@code @EnableSchedulerLock} — scheduler
- * не активируется, но bean доступен для {@code @Autowired}.
+ * <p>Продакшн-{@code OutboxConfig.Publisher} guarded {@code @Profile("!test")} — в тестах он не
+ * стартует (чтобы {@code @Scheduled} tick не пулял events в фоне). Но интеграционные event-тесты
+ * хотят дёргать {@link OutboxPublisherJob#publishBatch()} вручную для контролируемой проверки. Этот
+ * config даёт им {@link OutboxPublisherJob} bean БЕЗ {@code @EnableScheduling} /
+ * {@code @EnableSchedulerLock} — scheduler не активируется, но bean доступен для
+ * {@code @Autowired}.
  */
 @Configuration
 @Profile("test")
 public class OutboxTestConfig {
 
     @Bean
-    public OutboxPublisherJob outboxPublisherJob(OutboxStorage storage,
-                                                 OutboxEventSender sender) {
+    public OutboxPublisherJob outboxPublisherJob(OutboxStorage storage, OutboxEventSender sender) {
         return new OutboxPublisherJob(storage, sender);
     }
 }

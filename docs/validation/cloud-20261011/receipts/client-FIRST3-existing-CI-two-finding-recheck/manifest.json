@@ -1,0 +1,25 @@
+{
+  "scope": "FIRST3_TWO_P2_TARGETED_RECHECK_AND_PROSPECTIVE_DISCOVERY_PATH",
+  "runtime_source_verdict": "APPROVE_SOURCE_ONLY",
+  "original_findings": "CLOSED_SOURCE",
+  "prospective_discovery_helper": "CHANGES_REQUESTED",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "files": [
+    {
+      "path": "check.py",
+      "bytes": 8141,
+      "sha256": "20f5376eed95e683193b190d6a4a319e44f8aca2a7b25590139db7cbfca8267a"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 2820,
+      "sha256": "877096b7a1589f401dd93d882e079a66502e8f653485ea79937b78cec3fb6160"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 4638,
+      "sha256": "2e6bfaa3d7eec7c90b2d04bcb19eb52c766ad3f7e728931d6816e5940d3f4aa6"
+    }
+  ]
+}

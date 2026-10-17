@@ -1,0 +1,37 @@
+{
+  "schema": "RCT_PRECREDENTIAL_SOURCE_MANIFEST_V1",
+  "files": [
+    {
+      "path": "probe.cjs",
+      "sha256": "5a99ac70d692eeebc7ab973a8c792c87d4b824365d84904bbfff71aa298f13ed",
+      "bytes": 5697,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "run-probe.py",
+      "sha256": "7413c81c3c498acaf4a339506ec7624ed76b0259376f5960ad8efa90bf1c5002",
+      "bytes": 11604,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "PLAN.md",
+      "sha256": "5306e7452a8586a7efdfe98a65762eff4d2b804694519ad44980e419864cd302",
+      "bytes": 3685,
+      "mode": "0o600",
+      "nlink": 1
+    },
+    {
+      "path": "READY.safe.json",
+      "sha256": "762e55474293636bf26a943968f44403e3245c49dcc7c5ecccc1c3ad052d029e",
+      "bytes": 2002,
+      "mode": "0o600",
+      "nlink": 1
+    }
+  ],
+  "root19_unchanged": true,
+  "r1_source13_unchanged": true,
+  "runtime": "NOT_RUN",
+  "unsafe_bodies_errors_credentials_included": false
+}

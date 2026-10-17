@@ -1,44 +1,43 @@
 package ru.rutcampustrack.schedule.oneoff;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import ru.rutcampustrack.shared.outbox.OutboxStorage;
-import ru.rutcampustrack.schedule.events.EventSchemaValidator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.AssignmentInfo;
-import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
+import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
+import ru.rutcampustrack.schedule.events.EventSchemaValidator;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
 import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 /**
  * Integration test verifying that creating / deleting a one-off lesson publishes
  * OneOffLessonCreatedEvent / exact LessonCancelledEvent to the durable outbox.
  *
- * Uses @Autowired OneOffLessonService directly to avoid HTTP auth complexity.
- * NOT @Transactional — the writer commits the BEFORE_COMMIT outbox entry.
+ * <p>Uses @Autowired OneOffLessonService directly to avoid HTTP auth complexity. NOT @Transactional
+ * — the writer commits the BEFORE_COMMIT outbox entry.
  */
 class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
 
@@ -49,51 +48,65 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
     private static final LocalDate TARGET_DATE = LocalDate.of(2026, 4, 20); // Monday
     private static final short TARGET_LESSON = (short) 3;
 
-    @Autowired
-    OneOffLessonService oneOffLessonService;
+    @Autowired OneOffLessonService oneOffLessonService;
 
-    @Autowired
-    OneOffLessonRepository oneOffLessonRepository;
+    @Autowired OneOffLessonRepository oneOffLessonRepository;
 
-    @MockitoBean
-    AcademicGrpcClient academicGrpcClient;
+    @MockitoBean AcademicGrpcClient academicGrpcClient;
 
-    @MockitoBean
-    RequestContext requestContext;
+    @MockitoBean RequestContext requestContext;
 
     @MockitoSpyBean(name = "outboxStorage")
     OutboxStorage actionOutbox;
 
     @Autowired ObjectMapper mapper;
 
-    private static final SemesterResponse MOCK_SEMESTER = SemesterResponse.newBuilder()
-            .setId(SEMESTER_ID)
-            .setName("Spring 2026")
-            .setDateFrom("2026-02-02")
-            .setDateTo("2026-06-30")
-            .setFirstWeekType("odd")
-            .build();
+    private static final SemesterResponse MOCK_SEMESTER =
+            SemesterResponse.newBuilder()
+                    .setId(SEMESTER_ID)
+                    .setName("Spring 2026")
+                    .setDateFrom("2026-02-02")
+                    .setDateTo("2026-06-30")
+                    .setFirstWeekType("odd")
+                    .build();
 
     @BeforeEach
     void setUp() {
         resetScheduleData();
 
         when(academicGrpcClient.getActiveSemester()).thenReturn(MOCK_SEMESTER);
-        when(academicGrpcClient.parseSemesterFirstWeekType(MOCK_SEMESTER))
-                .thenReturn(WeekType.ODD);
+        when(academicGrpcClient.parseSemesterFirstWeekType(MOCK_SEMESTER)).thenReturn(WeekType.ODD);
         when(academicGrpcClient.validateGroup(GROUP_ID))
-                .thenReturn(GroupResponse.newBuilder()
-                        .setId(GROUP_ID).setName("G").setIsActive(true).build());
+                .thenReturn(
+                        GroupResponse.newBuilder()
+                                .setId(GROUP_ID)
+                                .setName("G")
+                                .setIsActive(true)
+                                .build());
 
         // ADMIN role bypasses headman gRPC round-trip.
         when(requestContext.getRole()).thenReturn(UserRole.ADMIN);
         when(requestContext.getUserId()).thenReturn(USER_ID);
         when(requestContext.isHeadman()).thenReturn(false);
         when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID))
-                .thenReturn(SemesterStateResponse.newBuilder().setId(SEMESTER_ID).setActive(true).build());
-        when(academicGrpcClient.getAssignmentsByIds(List.of(501L))).thenReturn(List.of(AssignmentInfo.newBuilder()
-                .setId(501L).setTeacherId(700L).setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID).setSemesterId(SEMESTER_ID)
-                .setLessonType("lecture").setValidFrom("2026-02-02").setValidUntilExclusive("2026-07-01").build()));
+                .thenReturn(
+                        SemesterStateResponse.newBuilder()
+                                .setId(SEMESTER_ID)
+                                .setActive(true)
+                                .build());
+        when(academicGrpcClient.getAssignmentsByIds(List.of(501L)))
+                .thenReturn(
+                        List.of(
+                                AssignmentInfo.newBuilder()
+                                        .setId(501L)
+                                        .setTeacherId(700L)
+                                        .setGroupId(GROUP_ID)
+                                        .setSubjectId(SUBJECT_ID)
+                                        .setSemesterId(SEMESTER_ID)
+                                        .setLessonType("lecture")
+                                        .setValidFrom("2026-02-02")
+                                        .setValidUntilExclusive("2026-07-01")
+                                        .build()));
     }
 
     @AfterEach
@@ -104,11 +117,22 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
     @Test
     void publishesCreatedEventOnCreate() throws Exception {
         UUID key = UUID.randomUUID();
-        var request = new CreateOneOffLessonRequest(GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE,
-                TARGET_LESSON, null, null, "D-404");
+        var request =
+                new CreateOneOffLessonRequest(
+                        GROUP_ID,
+                        SUBJECT_ID,
+                        501L,
+                        TARGET_DATE,
+                        TARGET_LESSON,
+                        null,
+                        null,
+                        "D-404");
         var created = oneOffLessonService.createOneOffLesson(request, key);
         oneOffLessonService.createOneOffLesson(request, key);
-        var facts = outboxStorage.findPending(10).stream().filter(r -> "lesson.one_off.created".equals(r.eventType())).toList();
+        var facts =
+                outboxStorage.findPending(10).stream()
+                        .filter(r -> "lesson.one_off.created".equals(r.eventType()))
+                        .toList();
         assertThat(facts).hasSize(1);
         var payload = mapper.readTree(facts.getFirst().payload()).path("payload");
         assertThat(payload.path("one_off_lesson_id").asLong()).isEqualTo(created.getId());
@@ -124,50 +148,114 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
     @Test
     void actionSnapshotsAreDurableTruthfulAndCreationReplayDoesNotDuplicate() throws Exception {
         UUID key = UUID.randomUUID();
-        var request = new CreateOneOffLessonRequest(GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE,
-                TARGET_LESSON, null, null, "D-404");
+        var request =
+                new CreateOneOffLessonRequest(
+                        GROUP_ID,
+                        SUBJECT_ID,
+                        501L,
+                        TARGET_DATE,
+                        TARGET_LESSON,
+                        null,
+                        null,
+                        "D-404");
         OneOffLesson created = oneOffLessonService.createOneOffLesson(request, key);
-        var first = outboxStorage.findPending(100).stream()
-                .filter(r -> "schedule.action-recorded".equals(r.eventType())).toList();
+        var first =
+                outboxStorage.findPending(100).stream()
+                        .filter(r -> "schedule.action-recorded".equals(r.eventType()))
+                        .toList();
         assertThat(first).hasSize(1);
-        assertThat(EventSchemaValidator.validate("schedule.action-recorded.json", first.getFirst().payload())).isEmpty();
+        assertThat(
+                        EventSchemaValidator.validate(
+                                "schedule.action-recorded.json", first.getFirst().payload()))
+                .isEmpty();
         var event = mapper.readTree(first.getFirst().payload());
         assertThat(event.path("payload").path("before").isNull()).isTrue();
         long lessonId = created.getPhysicalLessonId();
         assertThat(event.path("payload").path("lesson_id").asLong()).isEqualTo(lessonId);
-        assertThat(event.path("payload").path("after").path("room_snapshot").asText()).isEqualTo("D-404");
+        assertThat(event.path("payload").path("after").path("room_snapshot").asText())
+                .isEqualTo("D-404");
         oneOffLessonService.createOneOffLesson(request, key);
-        assertThat(outboxStorage.findPending(100).stream()
-                .filter(r -> "schedule.action-recorded".equals(r.eventType())).map(r -> r.payload()).toList())
+        assertThat(
+                        outboxStorage.findPending(100).stream()
+                                .filter(r -> "schedule.action-recorded".equals(r.eventType()))
+                                .map(r -> r.payload())
+                                .toList())
                 .containsExactly(first.getFirst().payload());
         oneOffLessonService.deleteOneOffLesson(created.getId());
-        var cancelled = outboxStorage.findPending(100).stream()
-                .filter(r -> "schedule.action-recorded".equals(r.eventType()))
-                .map(r -> { try { return mapper.readTree(r.payload()); } catch (Exception e) { throw new AssertionError(e); } })
-                .filter(e -> "LESSON_CANCELLED".equals(e.path("payload").path("action").asText())).findFirst().orElseThrow();
-        assertThat(cancelled.path("payload").path("before").path("status").asText()).isEqualTo("planned");
-        assertThat(cancelled.path("payload").path("after").path("status").asText()).isEqualTo("cancelled");
-        assertThat(cancelled.path("payload").path("actor").path("user_id").asLong()).isEqualTo(USER_ID);
-        assertThat(cancelled.path("payload").path("after").path("cancelled_by").asLong()).isEqualTo(USER_ID);
+        var cancelled =
+                outboxStorage.findPending(100).stream()
+                        .filter(r -> "schedule.action-recorded".equals(r.eventType()))
+                        .map(
+                                r -> {
+                                    try {
+                                        return mapper.readTree(r.payload());
+                                    } catch (Exception e) {
+                                        throw new AssertionError(e);
+                                    }
+                                })
+                        .filter(
+                                e ->
+                                        "LESSON_CANCELLED"
+                                                .equals(e.path("payload").path("action").asText()))
+                        .findFirst()
+                        .orElseThrow();
+        assertThat(cancelled.path("payload").path("before").path("status").asText())
+                .isEqualTo("planned");
+        assertThat(cancelled.path("payload").path("after").path("status").asText())
+                .isEqualTo("cancelled");
+        assertThat(cancelled.path("payload").path("actor").path("user_id").asLong())
+                .isEqualTo(USER_ID);
+        assertThat(cancelled.path("payload").path("after").path("cancelled_by").asLong())
+                .isEqualTo(USER_ID);
     }
 
     @Test
     void failedActionOutboxAppendRollsBackLessonOccurrenceAndReplayTogether() {
-        doThrow(new IllegalStateException("synthetic action outbox failure")).when(actionOutbox)
+        doThrow(new IllegalStateException("synthetic action outbox failure"))
+                .when(actionOutbox)
                 .save(eq("schedule.action-recorded"), anyString());
-        assertThatThrownBy(() -> oneOffLessonService.createOneOffLesson(new CreateOneOffLessonRequest(
-                GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE, TARGET_LESSON, null, null, "D-404"), UUID.randomUUID()))
-                .isInstanceOf(IllegalStateException.class).hasMessageContaining("synthetic action outbox failure");
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lessons", Long.class)).isZero();
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lesson_occurrences", Long.class)).isZero();
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM schedule_one_off_create_replay", Long.class)).isZero();
+        assertThatThrownBy(
+                        () ->
+                                oneOffLessonService.createOneOffLesson(
+                                        new CreateOneOffLessonRequest(
+                                                GROUP_ID,
+                                                SUBJECT_ID,
+                                                501L,
+                                                TARGET_DATE,
+                                                TARGET_LESSON,
+                                                null,
+                                                null,
+                                                "D-404"),
+                                        UUID.randomUUID()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("synthetic action outbox failure");
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM lessons", Long.class))
+                .isZero();
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM lesson_occurrences", Long.class))
+                .isZero();
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM schedule_one_off_create_replay", Long.class))
+                .isZero();
         assertThat(outboxStorage.findPending(100)).isEmpty();
     }
 
     @Test
     void publishesCancelledEventOnDelete() throws Exception {
-        OneOffLesson saved = oneOffLessonService.createOneOffLesson(new CreateOneOffLessonRequest(
-                GROUP_ID, SUBJECT_ID, 501L, TARGET_DATE, TARGET_LESSON, null, null, "D-404"), UUID.randomUUID());
+        OneOffLesson saved =
+                oneOffLessonService.createOneOffLesson(
+                        new CreateOneOffLessonRequest(
+                                GROUP_ID,
+                                SUBJECT_ID,
+                                501L,
+                                TARGET_DATE,
+                                TARGET_LESSON,
+                                null,
+                                null,
+                                "D-404"),
+                        UUID.randomUUID());
 
         // Act
         oneOffLessonService.deleteOneOffLesson(saved.getId());
@@ -175,8 +263,12 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
         // Exact physical cancellation, without the old destructive natural-key event.
         assertThat(outboxStorage.findPending(10))
                 .anyMatch(r -> "lesson.cancelled".equals(r.eventType()));
-        assertThat(outboxStorage.findPending(10)).noneMatch(r -> "lesson.one_off.cancelled".equals(r.eventType()));
-        var facts = outboxStorage.findPending(10).stream().filter(r -> "lesson.cancelled".equals(r.eventType())).toList();
+        assertThat(outboxStorage.findPending(10))
+                .noneMatch(r -> "lesson.one_off.cancelled".equals(r.eventType()));
+        var facts =
+                outboxStorage.findPending(10).stream()
+                        .filter(r -> "lesson.cancelled".equals(r.eventType()))
+                        .toList();
         assertThat(facts).hasSize(1);
         var payload = mapper.readTree(facts.getFirst().payload()).path("payload");
         assertThat(payload.path("lesson_id").asLong()).isEqualTo(saved.getPhysicalLessonId());

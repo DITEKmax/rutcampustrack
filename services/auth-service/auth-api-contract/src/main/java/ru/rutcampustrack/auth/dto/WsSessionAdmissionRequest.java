@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
-
 import java.util.Objects;
 import java.util.UUID;
 
@@ -21,8 +20,7 @@ public record WsSessionAdmissionRequest(
         @NotBlank String status,
         @JsonProperty("group_id") @Positive Long groupId,
         @JsonProperty("is_headman") boolean isHeadman,
-        @JsonProperty("read_only") boolean readOnly
-) {
+        @JsonProperty("read_only") boolean readOnly) {
     public WsSessionAdmissionRequest {
         if (userId <= 0 || sessionVersion <= 0 || rolesVersion <= 0) {
             throw new IllegalArgumentException("session identity values must be positive");

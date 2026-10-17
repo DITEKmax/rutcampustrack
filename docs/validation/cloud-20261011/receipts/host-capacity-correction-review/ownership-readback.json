@@ -1,0 +1,51 @@
+{
+  "time": "2026-10-12T05:56:03.414840+00:00",
+  "source_records": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "captured_sha": "da75d6e53e8f5dfd3aa73be0944e2042f363deba9ba3205ed6e53e9a3e50a21b",
+      "current_sha": "da75d6e53e8f5dfd3aa73be0944e2042f363deba9ba3205ed6e53e9a3e50a21b",
+      "status": "EXACT"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-host-capacity-correction.md",
+      "captured_sha": "1be063990c3d292f135e0a813fb8dffa294e8e1365ae2ecbf2bfc46b68f91907",
+      "current_sha": "1be063990c3d292f135e0a813fb8dffa294e8e1365ae2ecbf2bfc46b68f91907",
+      "status": "EXACT"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/data-lecture-developer/CURRENT.md",
+      "captured_sha": "9faca0c89d637ca82d81024fd888b735bc6f8c89c81bbde20f3e6fda1a79bbcc",
+      "current_sha": "9faca0c89d637ca82d81024fd888b735bc6f8c89c81bbde20f3e6fda1a79bbcc",
+      "status": "EXACT"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/security-developer/CURRENT.md",
+      "captured_sha": "8bfe9fad0fe054ec19c36df739203dc019e7011498be08e33785e4651cc246dd",
+      "current_sha": "8bfe9fad0fe054ec19c36df739203dc019e7011498be08e33785e4651cc246dd",
+      "status": "EXACT"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/integration-patch-equivalence.json",
+      "captured_sha": "c7956307eaab2db1a1572e847ea26406ebe6fc0897bb0048c77f6be36dbd2309",
+      "current_sha": "c7956307eaab2db1a1572e847ea26406ebe6fc0897bb0048c77f6be36dbd2309",
+      "status": "EXACT"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/notification-ntr-integrated-bridge.json",
+      "captured_sha": "de8f9da3fe4cda5ac9d7f73842a2b5397a2a7090c913a05d50c3d5f0cc4cda2e",
+      "current_sha": "de8f9da3fe4cda5ac9d7f73842a2b5397a2a7090c913a05d50c3d5f0cc4cda2e",
+      "status": "EXACT"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-audit-http-final/runtime/lease-release.safe.json",
+      "captured_sha": "a30c6bef760997d42ffd890ef0da3bd1fcc4460374a9eaa88f58e07ec61eac88",
+      "current_sha": "a30c6bef760997d42ffd890ef0da3bd1fcc4460374a9eaa88f58e07ec61eac88",
+      "status": "EXACT"
+    }
+  ],
+  "history12line_hash_excludes_terminal_newline": true,
+  "history_facts_exact": 12,
+  "current_Root_packet_explicit16completed_scope_ownership": true,
+  "future_bothside_allalias_freeze": "REQUIRED_BEFORE_MUTATION"
+}

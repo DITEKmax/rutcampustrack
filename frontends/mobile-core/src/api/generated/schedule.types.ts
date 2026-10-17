@@ -694,12 +694,29 @@ export interface components {
         PagedResourcesAssemblerLessonResponse: {
             forceFirstAndLastRels?: boolean;
         };
-        PagedModelEntityModelLessonResponse: {
+        LessonListResponse: {
             _embedded?: {
                 lessonResponseList?: components["schemas"]["EntityModelLessonResponse"][];
             };
             _links?: components["schemas"]["Links"];
+            semesterProgress?: components["schemas"]["SemesterProgress"];
             page?: components["schemas"]["PageMetadata"];
+        };
+        SemesterProgress: {
+            /** Format: int64 */
+            semesterId?: number;
+            /** Format: date-time */
+            generatedAt?: string;
+            items?: components["schemas"]["TypeProgress"][];
+        };
+        TypeProgress: {
+            /** Format: int64 */
+            subjectId?: number;
+            lessonType?: string;
+            /** Format: int64 */
+            done?: number;
+            /** Format: int64 */
+            total?: number;
         };
         AcademicWeekPolicyResponse: {
             /** Format: date */
@@ -2551,6 +2568,7 @@ export interface operations {
     getLessons: {
         parameters: {
             query: {
+                semesterId?: number;
                 dateFrom: string;
                 dateTo: string;
                 status?: ("PLANNED" | "ACTIVE" | "CLOSED" | "CANCELLED" | "TRANSFERRED")[];
@@ -2565,13 +2583,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Расписание группы */
+            /** @description Расписание группы; semesterId добавляет полный прогресс семестра */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PagedModelEntityModelLessonResponse"];
+                    "*/*": components["schemas"]["LessonListResponse"];
                 };
             };
             /** @description Ошибка валидации запроса */

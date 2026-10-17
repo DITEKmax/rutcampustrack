@@ -1,0 +1,12 @@
+{
+  "phase": "ebsr-auth-compatibility-1",
+  "producer_head": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "exit_code": 0,
+  "status": "PASS",
+  "result_sha256": "83f2aad30cf5dce2e135dfd6334e5343ad0bd2b169bcbed5a7a484e7d22caf52",
+  "log_sha256": "fba5f4e93566c708504237afe94336cb177c81e2147d85809bfa95ab4f1d074b",
+  "task_execution": {
+    ":services:auth-service:auth-app:integrationTest": "> Task :services:auth-service:auth-app:integrationTest"
+  },
+  "source_files_unchanged_during_run": true
+}

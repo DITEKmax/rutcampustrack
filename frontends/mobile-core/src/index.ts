@@ -1,18 +1,19 @@
 import type {} from './vue-runtime-dom.d.ts'
 import type { components, operations, paths } from './api/generated/mobile-bff'
-export type { components as authComponents, operations as authOperations, paths as authPaths } from './api/generated/auth'
+export type {
+  components as authComponents,
+  operations as authOperations,
+  paths as authPaths,
+} from './api/generated/auth'
 
 export type { components, operations, paths }
 
 export type StudentSession = components['schemas']['StudentSession']
 export type StudentToday = components['schemas']['StudentToday']
-export type StudentSemesterSchedule =
-  components['schemas']['StudentSemesterSchedule']
-export type StudentCheckinCommand =
-  components['schemas']['StudentCheckinCommand']
+export type StudentSemesterSchedule = components['schemas']['StudentSemesterSchedule']
+export type StudentCheckinCommand = components['schemas']['StudentCheckinCommand']
 export type StudentCheckinAck = components['schemas']['StudentCheckinAck']
-export type MobileProblemDetails =
-  components['schemas']['MobileProblemDetails']
+export type MobileProblemDetails = components['schemas']['MobileProblemDetails']
 export * from './api/student-client'
 export * from './api/map-client'
 export * from './features/admin-semester/admin-semester-client'
@@ -109,9 +110,13 @@ export * from './shared/theme-preference'
 export * from './shared/shell-contract'
 export * from './shared/session-owner'
 export * from './shared/report-download-client'
+export * from './shared/report-download-browser'
 export type * from './shared/host'
 
-export { NotificationsUnreadState, type NotificationsUnreadView } from './features/notifications/notifications-unread'
+export {
+  NotificationsUnreadState,
+  type NotificationsUnreadView,
+} from './features/notifications/notifications-unread'
 
 export * from './features/headman-journal/headman-journal-actions-client'
 export * from './features/headman-journal/headman-journal-actions'
@@ -128,3 +133,6 @@ export * from './features/notifications/notifications-v2-models'
 export * from './features/notifications/notifications-v2-client'
 export * from './features/notifications/notifications-actions'
 export * from './features/notifications/notifications-launch'
+
+export * from './features/admin-attendance/admin-attendance-client'
+export { default as AdminAttendanceScreen } from './features/admin-attendance/AdminAttendanceScreen.vue'

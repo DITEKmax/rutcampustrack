@@ -1,0 +1,24 @@
+{
+  "utc": "2026-10-13T10:33:15.288221+00:00",
+  "scope": "ROOT_FIRST3_INTEGRATION_FINAL",
+  "result": "EXACT_TWO_TS_INTEGRATED_SCOPED_HOOKS_PASS_SEMANTIC_AND_MECHANICAL",
+  "semantic_sha": "b57420c4d403b3242bd1e1f3daf56318ee41c701",
+  "mechanical_sha": "a80edb0e649548ed8f8de285beede775f2890007",
+  "source_mapping": {
+    "tests/e2e/fixtures/mobile-dataset.ts": "726335954deae1f4ee1add1b0a9dfa3d9af7b849344b532ec4a6a536516a9642",
+    "tests/e2e/fixtures/safe-reporter.ts": "2b6cc3ae15566b50e61428f7c533bedf23651c9206cdef5b6d23a96a7e8cb336"
+  },
+  "hooks": {
+    "semantic": {
+      "passed": 4,
+      "not_applicable_skipped": 2,
+      "failed": false
+    },
+    "mechanical": {
+      "passed": 4,
+      "not_applicable_skipped": 2,
+      "failed": false
+    }
+  },
+  "qualification": "Author2ffd/8ca6/a544 retained; Rootfinalbytesa544 exact. Formatterlayout+oneoptionaltrailingcomma mechanicallyseparate. Semantic61820/mechanical16489 native0/allownedreaped/superabsent/nohookbypass/Angular0/docsWIPpreserved. Earlierpostapply2-vs1stagedpathbookkeepingassert correctedsourceunchanged. Newlocal currentgatesNOT_RUN, remotePRstill597; realpush/currentFIRST3 next. ParentclientsUNKNOWN."
+}

@@ -1,0 +1,17 @@
+{
+  "scope": "STATUS_SHAPE004_PARAMETER_EXPRESSION_AND_CONTROLS_ONLY",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "finding": "CLOSED_SOURCE",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 1250,
+      "sha256": "7a21a526b5985d553ce39a96e13ed23c9b025a26ad72b631c5cddd52440620ed"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 2263,
+      "sha256": "bcbdeadc6f196e56b18056692072a5e2282c9b9c2f1f4592cfda673817daab43"
+    }
+  ]
+}

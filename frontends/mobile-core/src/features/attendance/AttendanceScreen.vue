@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
-import attendanceTab from '../../assets/attendance-tab.svg'
-import chevronDown from '../../assets/chevron-down.svg'
-import moreTab from '../../assets/more-tab.svg'
-import profileTab from '../../assets/profile-tab.svg'
-import scheduleTab from '../../assets/schedule-tab.svg'
-import AttendanceGraph from './AttendanceGraph.vue'
-import AttendanceLessonRow from './AttendanceLessonRow.vue'
-import AttendanceSubjectList from './AttendanceSubjectList.vue'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import { attendanceBounds, calendarWeek, graphPeriods, monday, shiftDate, shortDate } from './attendance-periods'
+import { computed, nextTick, ref, watch } from 'vue';
+import attendanceTab from '../../assets/attendance-tab.svg';
+import chevronDown from '../../assets/chevron-down.svg';
+import moreTab from '../../assets/more-tab.svg';
+import profileTab from '../../assets/profile-tab.svg';
+import scheduleTab from '../../assets/schedule-tab.svg';
+import AttendanceGraph from './AttendanceGraph.vue';
+import AttendanceLessonRow from './AttendanceLessonRow.vue';
+import AttendanceSubjectList from './AttendanceSubjectList.vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import {
+  attendanceBounds,
+  calendarWeek,
+  graphPeriods,
+  monday,
+  shiftDate,
+  shortDate,
+} from './attendance-periods';
 import {
   displayPercent,
   findAttendanceLesson,
@@ -22,135 +29,169 @@ import {
   type AttendanceRequestOption,
   type AttendanceTheme,
   type AttendanceViewModel,
-} from './attendance-view-model'
-import './attendance-screen.pcss'
+} from './attendance-view-model';
+import './attendance-screen.pcss';
 
 export interface AttendanceRequestFormSlotContext {
-  readonly selectedLesson: AttendanceLesson
-  readonly requestOption: AttendanceRequestOption | null
-  readonly requestOptions: readonly AttendanceRequestOption[]
-  readonly onClose: () => void
-  readonly onCompleted: () => void
+  readonly selectedLesson: AttendanceLesson;
+  readonly requestOption: AttendanceRequestOption | null;
+  readonly requestOptions: readonly AttendanceRequestOption[];
+  readonly onClose: () => void;
+  readonly onCompleted: () => void;
 }
 
-const props = withDefaults(defineProps<{
-  state: AttendanceReadState<AttendanceViewModel>
-  selectedDate: string
-  mode?: AttendanceMode
-  graphRange?: AttendanceGraphRange
-  expandedSubjectId?: string | null
-  actionLessonId?: string | null
-  focusedLessonId?: string | null
-  requestLessonId?: string | null
-  requestOptionId?: string | null
-  theme?: AttendanceTheme
-  terminal?: boolean
-  showDock?: boolean
-}>(), {
-  mode: 'days',
-  graphRange: 'days',
-  expandedSubjectId: null,
-  actionLessonId: null,
-  focusedLessonId: null,
-  requestLessonId: null,
-  requestOptionId: null,
-  theme: 'dark',
-  terminal: false,
-  showDock: false,
-})
+const props = withDefaults(
+  defineProps<{
+    state: AttendanceReadState<AttendanceViewModel>;
+    selectedDate: string;
+    mode?: AttendanceMode;
+    graphRange?: AttendanceGraphRange;
+    expandedSubjectId?: string | null;
+    actionLessonId?: string | null;
+    focusedLessonId?: string | null;
+    requestLessonId?: string | null;
+    requestOptionId?: string | null;
+    theme?: AttendanceTheme;
+    terminal?: boolean;
+    showDock?: boolean;
+  }>(),
+  {
+    mode: 'days',
+    graphRange: 'days',
+    expandedSubjectId: null,
+    actionLessonId: null,
+    focusedLessonId: null,
+    requestLessonId: null,
+    requestOptionId: null,
+    theme: 'dark',
+    terminal: false,
+    showDock: false,
+  },
+);
 
 const emit = defineEmits<{
-  'select-date': [date: string]
-  'set-mode': [mode: AttendanceMode]
-  'set-graph-range': [range: AttendanceGraphRange]
-  'toggle-subject': [subjectId: string]
-  'toggle-actions': [lessonId: string]
-  'open-request': [lesson: AttendanceLesson, option: AttendanceRequestOption]
-  back: []
-  retry: []
-  'request-completed': [lessonId: string]
-}>()
+  'select-date': [date: string];
+  'set-mode': [mode: AttendanceMode];
+  'set-graph-range': [range: AttendanceGraphRange];
+  'toggle-subject': [subjectId: string];
+  'toggle-actions': [lessonId: string];
+  'open-request': [lesson: AttendanceLesson, option: AttendanceRequestOption];
+  back: [];
+  retry: [];
+  'request-completed': [lessonId: string];
+}>();
 
 defineSlots<{
-  'request-form'?: (context: AttendanceRequestFormSlotContext) => unknown
-}>()
+  'request-form'?: (context: AttendanceRequestFormSlotContext) => unknown;
+}>();
 
-const data = computed(() => props.state.status === 'ready' ? props.state.data : null)
-const readyData = computed(() => data.value ?? emptyViewModel)
-const selectedLessons = computed(() => data.value?.days.find((day) => day.date === props.selectedDate)?.lessons ?? [])
-const selectedLesson = computed(() => findAttendanceLesson(data.value ?? emptyViewModel, props.requestLessonId))
+const data = computed(() => (props.state.status === 'ready' ? props.state.data : null));
+const readyData = computed(() => data.value ?? emptyViewModel);
+const selectedLessons = computed(
+  () => data.value?.days.find((day) => day.date === props.selectedDate)?.lessons ?? [],
+);
+const selectedLesson = computed(() =>
+  findAttendanceLesson(data.value ?? emptyViewModel, props.requestLessonId),
+);
 const selectedRequestOption = computed(() => {
-  const lesson = selectedLesson.value
-  if (!lesson) return null
-  return lesson.requestOptions.find((option) => option.id === props.requestOptionId) ?? null
-})
-const graphPoints = computed(() => data.value ? graphPeriods(data.value, props.graphRange) : [])
-const weekDate = ref(props.selectedDate)
-watch(() => props.selectedDate, (date) => { weekDate.value = date })
-const weekDays = computed(() => calendarWeek(readyData.value, weekDate.value))
-const railDays = computed(() => weekDays.value.slice(0, 6))
-const sunday = computed(() => weekDays.value[6])
-const bounds = computed(() => attendanceBounds(readyData.value))
+  const lesson = selectedLesson.value;
+  if (!lesson) return null;
+  return lesson.requestOptions.find((option) => option.id === props.requestOptionId) ?? null;
+});
+const graphPoints = computed(() => (data.value ? graphPeriods(data.value, props.graphRange) : []));
+const weekDate = ref(props.selectedDate);
+watch(
+  () => props.selectedDate,
+  (date) => {
+    weekDate.value = date;
+  },
+);
+const weekDays = computed(() => calendarWeek(readyData.value, weekDate.value));
+const railDays = computed(() => weekDays.value.slice(0, 6));
+const selectedWeek = computed(
+  () => data.value?.weeks?.find((week) => week.dateFrom === monday(weekDate.value)) ?? null,
+);
+const sunday = computed(() => weekDays.value[6]);
+const bounds = computed(() => attendanceBounds(readyData.value));
 function canPageWeek(delta: number): boolean {
-  const next = shiftDate(monday(weekDate.value), delta * 7)
-  return Boolean(bounds.value && next <= bounds.value.to && shiftDate(next, 6) >= bounds.value.from)
+  const next = shiftDate(monday(weekDate.value), delta * 7);
+  return Boolean(
+    bounds.value && next <= bounds.value.to && shiftDate(next, 6) >= bounds.value.from,
+  );
 }
 function pageWeek(delta: number): void {
-  if (!canPageWeek(delta)) return
-  weekDate.value = shiftDate(monday(weekDate.value), delta * 7)
-  const date = bounds.value && weekDate.value < bounds.value.from ? bounds.value.from : weekDate.value
-  emit('select-date', date)
+  if (!canPageWeek(delta)) return;
+  weekDate.value = shiftDate(monday(weekDate.value), delta * 7);
+  const date =
+    bounds.value && weekDate.value < bounds.value.from ? bounds.value.from : weekDate.value;
+  emit('select-date', date);
 }
-function dateWithinSemester(date: string): boolean { return !bounds.value || (date >= bounds.value.from && date <= bounds.value.to) }
+function dateWithinSemester(date: string): boolean {
+  return !bounds.value || (date >= bounds.value.from && date <= bounds.value.to);
+}
 function railKeyboard(event: KeyboardEvent): void {
-  const offset = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : 0
-  if (!offset && event.key !== 'Home' && event.key !== 'End') return
-  event.preventDefault()
-  const current = event.currentTarget as HTMLButtonElement
-  const buttons = Array.from(current.parentElement?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [])
-  const index = buttons.indexOf(current)
-  const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : Math.max(0, Math.min(buttons.length - 1, index + offset))
-  const target = buttons[next]
-  target?.click()
-  target?.focus()
-  target?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  const offset = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : 0;
+  if (!offset && event.key !== 'Home' && event.key !== 'End') return;
+  event.preventDefault();
+  const current = event.currentTarget as HTMLButtonElement;
+  const buttons = Array.from(
+    current.parentElement?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [],
+  );
+  const index = buttons.indexOf(current);
+  const next =
+    event.key === 'Home'
+      ? 0
+      : event.key === 'End'
+        ? buttons.length - 1
+        : Math.max(0, Math.min(buttons.length - 1, index + offset));
+  const target = buttons[next];
+  target?.click();
+  target?.focus();
+  target?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 }
-const isInlineRequest = computed(() => Boolean(selectedLesson.value) && props.requestLessonId !== null)
-const screenRoot = ref<HTMLElement | null>(null)
-const backButton = ref<HTMLButtonElement | null>(null)
-let requestReturnLessonId: string | null = null
+const isInlineRequest = computed(
+  () => Boolean(selectedLesson.value) && props.requestLessonId !== null,
+);
+const screenRoot = ref<HTMLElement | null>(null);
+const backButton = ref<HTMLButtonElement | null>(null);
+let requestReturnLessonId: string | null = null;
 
 function focusRequestTrigger(lessonId: string): void {
-  const trigger = Array.from(screenRoot.value?.querySelectorAll<HTMLButtonElement>('[data-request-trigger]') ?? [])
-    .find((candidate) => candidate.dataset.requestTrigger === lessonId)
-  trigger?.focus()
+  const trigger = Array.from(
+    screenRoot.value?.querySelectorAll<HTMLButtonElement>('[data-request-trigger]') ?? [],
+  ).find((candidate) => candidate.dataset.requestTrigger === lessonId);
+  trigger?.focus();
 }
 
-watch(() => props.requestLessonId, (nextLessonId, previousLessonId) => {
-  if (nextLessonId !== null) {
-    if (previousLessonId === null) requestReturnLessonId = nextLessonId
-    void nextTick(() => backButton.value?.focus())
-    return
-  }
-  if (previousLessonId !== null) {
-    const returnLessonId = requestReturnLessonId ?? previousLessonId
-    requestReturnLessonId = null
-    void nextTick(() => focusRequestTrigger(returnLessonId))
-  }
-})
+watch(
+  () => props.requestLessonId,
+  (nextLessonId, previousLessonId) => {
+    if (nextLessonId !== null) {
+      if (previousLessonId === null) requestReturnLessonId = nextLessonId;
+      void nextTick(() => backButton.value?.focus());
+      return;
+    }
+    if (previousLessonId !== null) {
+      const returnLessonId = requestReturnLessonId ?? previousLessonId;
+      requestReturnLessonId = null;
+      void nextTick(() => focusRequestTrigger(returnLessonId));
+    }
+  },
+);
 
 watch(
   () => [props.focusedLessonId, props.selectedDate, props.mode] as const,
   ([lessonId, , mode]) => {
-    if (!lessonId || mode !== 'days') return
+    if (!lessonId || mode !== 'days') return;
     void nextTick(() => {
-      const row = Array.from(screenRoot.value?.querySelectorAll<HTMLElement>('[data-lesson-id]') ?? [])
-        .find((candidate) => candidate.dataset.lessonId === lessonId)
-      row?.querySelector<HTMLElement>('[data-notification-target]')?.focus()
-    })
+      const row = Array.from(
+        screenRoot.value?.querySelectorAll<HTMLElement>('[data-lesson-id]') ?? [],
+      ).find((candidate) => candidate.dataset.lessonId === lessonId);
+      row?.querySelector<HTMLElement>('[data-notification-target]')?.focus();
+    });
   },
   { flush: 'post', immediate: true },
-)
+);
 
 const emptyViewModel: AttendanceViewModel = {
   metrics: {
@@ -164,37 +205,50 @@ const emptyViewModel: AttendanceViewModel = {
   days: [],
   subjects: [],
   graph: { days: [], weeks: [] },
-}
+};
 
 function onRequestCompleted(): void {
-  if (selectedLesson.value) emit('request-completed', selectedLesson.value.id)
+  if (selectedLesson.value) emit('request-completed', selectedLesson.value.id);
 }
 
 function stateTitle(): string {
   switch (props.state.status) {
-    case 'loading': return 'Загружаем посещаемость…'
-    case 'empty': return 'За этот период данных пока нет'
-    case 'offline': return 'Посещаемость недоступна офлайн'
-    case 'forbidden': return 'Посещаемость недоступна'
-    case 'error': return 'Не удалось получить посещаемость'
-    case 'no-semester': return 'Нет активного семестра'
-    default: return ''
+    case 'loading':
+      return 'Загружаем посещаемость…';
+    case 'empty':
+      return 'За этот период данных пока нет';
+    case 'offline':
+      return 'Посещаемость недоступна офлайн';
+    case 'forbidden':
+      return 'Посещаемость недоступна';
+    case 'error':
+      return 'Не удалось получить посещаемость';
+    case 'no-semester':
+      return 'Нет активного семестра';
+    default:
+      return '';
   }
 }
 
 function stateMessage(): string {
   switch (props.state.status) {
-    case 'offline': return 'Подключись к интернету, чтобы получить актуальные данные.'
-    case 'forbidden': return props.state.reason
-    case 'error': return props.state.message
-    case 'empty': return 'Когда появятся закрытые пары, здесь будет история.'
-    case 'no-semester': return 'Посещаемость появится, когда начнётся семестр.'
-    default: return ''
+    case 'offline':
+      return 'Подключись к интернету, чтобы получить актуальные данные.';
+    case 'forbidden':
+      return props.state.reason;
+    case 'error':
+      return props.state.message;
+    case 'empty':
+      return 'Когда появятся закрытые пары, здесь будет история.';
+    case 'no-semester':
+      return 'Посещаемость появится, когда начнётся семестр.';
+    default:
+      return '';
   }
 }
 
 function dateLabel(date: string): string {
-  return formatDayDate(date)
+  return formatDayDate(date);
 }
 </script>
 
@@ -264,7 +318,9 @@ function dateLabel(date: string): string {
       </header>
 
       <StudentWarningBlock
-        v-if="state.status === 'error' || state.status === 'forbidden' || state.status === 'offline'"
+        v-if="
+          state.status === 'error' || state.status === 'forbidden' || state.status === 'offline'
+        "
         :title="stateTitle()"
         :message="stateMessage()"
         :severity="state.status === 'offline' ? 'warning' : 'error'"
@@ -430,7 +486,16 @@ function dateLabel(date: string): string {
             >
               ‹
             </button>
-            <span role="status">{{ shortDate(railDays[0]!.date) }} — {{ shortDate(railDays[5]!.date) }}</span>
+            <span
+              class="attendance-week-pager__label"
+              role="status"
+            >
+              <span>{{ shortDate(railDays[0]!.date) }} — {{ shortDate(railDays[5]!.date) }}</span>
+              <span
+                v-if="selectedWeek"
+                class="attendance-week-pager__metadata"
+              >Неделя {{ selectedWeek.weekOfSemester }} · Чётность {{ selectedWeek.parityLabel }}</span>
+            </span>
             <button
               type="button"
               aria-label="Следующая неделя"

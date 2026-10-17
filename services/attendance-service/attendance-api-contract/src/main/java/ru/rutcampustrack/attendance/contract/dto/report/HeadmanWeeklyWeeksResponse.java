@@ -1,10 +1,9 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.hateoas.RepresentationModel;
-
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.hateoas.RepresentationModel;
 
 @Schema(description = "Weeks of the active semester available for headman weekly report export")
 public class HeadmanWeeklyWeeksResponse extends RepresentationModel<HeadmanWeeklyWeeksResponse> {
@@ -16,12 +15,13 @@ public class HeadmanWeeklyWeeksResponse extends RepresentationModel<HeadmanWeekl
     private final List<HeadmanWeeklyWeekOption> weeks;
     private final List<HeadmanWeeklyExportFormatOption> formats;
 
-    public HeadmanWeeklyWeeksResponse(Long semesterId,
-                                      String semesterName,
-                                      LocalDate semesterDateFrom,
-                                      LocalDate semesterDateTo,
-                                      List<HeadmanWeeklyWeekOption> weeks,
-                                      List<HeadmanWeeklyExportFormatOption> formats) {
+    public HeadmanWeeklyWeeksResponse(
+            Long semesterId,
+            String semesterName,
+            LocalDate semesterDateFrom,
+            LocalDate semesterDateTo,
+            List<HeadmanWeeklyWeekOption> weeks,
+            List<HeadmanWeeklyExportFormatOption> formats) {
         this.semesterId = semesterId;
         this.semesterName = semesterName;
         this.semesterDateFrom = semesterDateFrom;

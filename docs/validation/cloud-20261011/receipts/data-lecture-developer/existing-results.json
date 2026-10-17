@@ -1,0 +1,80 @@
+{
+  "session": 41957,
+  "captured_exit": 0,
+  "elapsed": "2m 10s",
+  "rows": [
+    {
+      "class": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+      "method": "scheduledMethodsMustHaveLockOrExplicitWaiver",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+      "method": "grpcClientsMustSetDeadline",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT",
+      "method": "archiveAndActivation_areSerializedAndKeepAtMostOneActiveSemester()",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+      "method": "integrationTestsMustEndWithIT",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "method": "entitiesMustNotUseJpaRelations",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "method": "repositoriesReturningCollectionsMustGuardNPlusOne",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+      "method": "injectedFailureAfterPasswordEventRollsBackCredentialFlagsSessionsAndEvent()",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+      "method": "snapshotWaitsForHeldGrantWriterLockAndReturnsWhollyNewTuple()",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+      "method": "injectedFailureAfterPasswordSessionRevokeRollsBackCredentialAndSessions()",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.auth.arch.IntegrationTestNamingConventionIT",
+      "method": "integrationTestsMustEndWithIT",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.auth.arch.AuthApiContractTest",
+      "method": "controllersMustNotCarryClassLevelMapping",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.auth.arch.AuthApiContractTest",
+      "method": "controllerMethodsMustNotCarryMappings",
+      "status": "PASS"
+    },
+    {
+      "class": "ru.rutcampustrack.auth.arch.AuthApiContractTest",
+      "method": "restControllersMustImplementContractInterface",
+      "status": "PASS"
+    }
+  ],
+  "safe_jwt_markers": 0,
+  "container_ids": [],
+  "owned_container_ids": {
+    "e46a39a36327d6dd198e3e97cc61ded18757e65d5afbc40c767b1bf7da6c7b6c": "testcontainers/ryuk:0.11.0",
+    "30d03fc37e715cec2de6bf3ac83ef63831446751fd0f6b824354bd3617e0df65": "postgres:16",
+    "cc685fcc4f9a5d835d920fa50c27ece6dae326d48f7eff2a91b3c3648a7472d4": "testcontainers/ryuk:0.11.0",
+    "74d62b3bb9dbed6596833aff7c9260df0567bedbd77d8b1ac9d7a89a6fe403f7": "postgres:16"
+  }
+}

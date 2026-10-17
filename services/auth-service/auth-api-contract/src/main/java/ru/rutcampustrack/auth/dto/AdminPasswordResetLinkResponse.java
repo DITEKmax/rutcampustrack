@@ -6,7 +6,10 @@ import java.time.Instant;
 public record AdminPasswordResetLinkResponse(String url, Instant expiresAt, int expiresInSeconds) {
     @Override
     public String toString() {
-        return "AdminPasswordResetLinkResponse[url=<redacted>, expiresAt=" + expiresAt
-                + ", expiresInSeconds=" + expiresInSeconds + "]";
+        return "AdminPasswordResetLinkResponse[url=<redacted>, expiresAt="
+                + expiresAt
+                + ", expiresInSeconds="
+                + expiresInSeconds
+                + "]";
     }
 }

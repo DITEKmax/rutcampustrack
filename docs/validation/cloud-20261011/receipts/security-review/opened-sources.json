@@ -1,0 +1,790 @@
+{
+  "review_target": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "captured_at_utc": "2026-10-11T20:03:41.057267+00:00",
+  "model": {
+    "requested": "gpt-6.1-sol",
+    "requested_effort": "xhigh",
+    "actual": "UNKNOWN"
+  },
+  "note": "Extent records excerpts/searches honestly; file hash identifies original, not a claim of whole-file reading. Mutable task/receipt hashes captured at review completion. Original testcase XML read without publishing bodies or credentials.",
+  "files": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-security-review.md",
+      "read_extent": "full",
+      "purpose": "authoritative scoped contract/state",
+      "revision": "task-working-tree",
+      "sha256": "7b9dda9effbf5e0f89b2e845129fa80cd3622b3d5deaa39f63f9500cda0c37ce"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "read_extent": "full",
+      "purpose": "authoritative scoped contract/state",
+      "revision": "task-working-tree",
+      "sha256": "ebf1d8865bf9866395a5661c5d4d885dbb0e79270ba08a8dbbc13378b10c2081"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "read_extent": "full",
+      "purpose": "authoritative scoped contract/state",
+      "revision": "task-working-tree",
+      "sha256": "7dd84768702b8d0ce46fc4a85143316b70819af303d3926ef545eac4568e5e13"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "read_extent": "full",
+      "purpose": "authoritative scoped contract/state",
+      "revision": "task-working-tree",
+      "sha256": "178a9f4e0c020efbdd287c76a199595dd222161e49fb8e763166d569fbf1ffde"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "read_extent": "full",
+      "purpose": "authoritative scoped contract/state",
+      "revision": "task-working-tree",
+      "sha256": "5b8446b7467775a28245a228be7c38bcbf0d50a61427e78518f0e471787d3fa0"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "read_extent": "full",
+      "purpose": "authoritative scoped contract/state",
+      "revision": "task-working-tree",
+      "sha256": "7fd6ebf71989cdaec5a42de24a2f3d8b609a1d76e3b9329f382e69d672ebff90"
+    },
+    {
+      "path": "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "read_extent": "full",
+      "purpose": "canonical delivery/ownership rules",
+      "revision": "task-working-tree",
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-11-tma-init-data-reuse.md",
+      "read_extent": "full",
+      "purpose": "canonical D003 proof reuse/live authority",
+      "revision": "task-working-tree",
+      "sha256": "893544fe7acc85efff1971d50f3fa86077992f7f055c04109f3ce95ccc43d279"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/AGENTS.md",
+      "read_extent": "full",
+      "purpose": "applicable process scope",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/AGENTS.md",
+      "read_extent": "full",
+      "purpose": "applicable process scope",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "1ebb1fcbc64ed548980cb2b303519138d7b6294fb498e55759a75c937fb20ba3"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/tests/AGENTS.md",
+      "read_extent": "full",
+      "purpose": "applicable process scope",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/docs/agent-workflow.md",
+      "read_extent": "full",
+      "purpose": "applicable process scope",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/docs/product/READINESS.md",
+      "read_extent": "source authority and completeness methodology excerpts",
+      "purpose": "canonical source routing; not readiness counts",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "2ceb491f46df6d830be9c70d01df92756c1547db3eb631652da50a7700cfb836"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/docs/product/job-stories.md",
+      "read_extent": "targeted search excerpts",
+      "purpose": "historical corroboration only; superseded by canonical source",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "0fdb93456790f4453e94765a74a827dad7a91bb6260d824c973eb0e9015c762d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "read_extent": "JS-HEADMAN14/15/16/17, helper roles, JS-SYSTEM13 excerpts",
+      "purpose": "canonical accepted capability and own-group scope",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "9bb96fad983eecc330c76d8ff0b679c554ebfc81302a3770e1cc44b3cfcf1b28"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/LowercaseEnumConverter.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "d521b52898f5f02df5b938bdae3c2e110fea6fba52cf79825934db0c2ba97cf6"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/WebConfig.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "06e04d55fd2f5ebfcf7d4e5fa522507c6a66a443bd62e1641cc64c1c3bbae477"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/LowercaseEnumConverterTest.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "e92ff4f479859e9a9c7fc2515b90674a46a36d30debb20307b4a54433a1fac10"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/config/WebConfigEnumConversionTest.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "780290bca4ef4a725af87dbde154877b71d3709fe4c2bd318712097fd1fe9191"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "5fe91e9e2bc1bba88651cb77ba51c1e10cd3e8b3ec6fea5aa084d0b93b67fd65"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/LowercaseEnumConverter.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "e779b1a418834bd2d99f9a37c32de578303cd16f8fa2e88879d33be781541c78"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/TmaService.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "e723345c6def48bb8b0ad01a35fb7124be278849c355cd8ca452f8cad9363dc4"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/config/LowercaseEnumConverterTest.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "5dab0d412338196aa79a81ee83e6047e69694478b688ee870e9500ddb185f02d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/controller/QrLoginValidationExceptionHandlerTest.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "13b25c99d622ae767416a2447a213582afa14bce7f686b3aed8e140df638a3ff"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "3dfb4d30ad7d6344452d541bf9eee0fdf2d7f4d33665f4d7121aa0a45f6cb31c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/TmaIT.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "f59c97fdc079b150a5f97e8589a043548a9b04c91d3c7bc60c64650072439643"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceTest.java",
+      "read_extent": "full diff and critical original symbols/fixture sections",
+      "purpose": "reviewed package product/test inventory",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "81a8e520a13256268b522f5172780bb2924de939ed868ab99a0df343c0913b72"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+      "read_extent": "100-238 shared issuance and current authority",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "70ae6d3f2b5f25f86d3a46783a1a2408d1fd31ad551bab940d00935ff634d86f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionService.java",
+      "read_extent": "1-240 live selected permission admission",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "89ae726537b778ab769935a858ae542415870f8c3972330b17456ae09923490a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "read_extent": "1-255,314-380 and targeted symbol search; locked row/snapshot/session transaction",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcAuthSessionQueryAdapter.java",
+      "read_extent": "1-200 fresh LoginAuthority SQL/mapping",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "30c34f7c8d3f77a5f6ac4b3ca37f76fa6e40aea2a9b1e646849edf2320e6abd1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionLifecycleService.java",
+      "read_extent": "1-170 role policy and state-port seam",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "18c206319e26d0191cbccfcb98b5a447ee677a0d0c099f6e6620621e00e8dc85"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/ActiveRolePolicy.java",
+      "read_extent": "full neutral bootstrap/selectable grants",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "7f3f6d9b2f78bed99b22d89b8f943481cd4db5fbd672ee977d39533418fabd13"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/TmaProperties.java",
+      "read_extent": "full configured age window",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "e6c1c846163cca393b31b1fbadfaa045cd912ecad6bd553aebc6c7eb9826bf8c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/EnumConverters.java",
+      "read_extent": "full autoApply mapping",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "8b05c8d490d6af54e328cd001614a5dbaf358a0d6ef49c33b7b47f26d4619168"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/EnumConverters.java",
+      "read_extent": "full autoApply mapping",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "d6babe83b02f5fb52331d5205fec9634062116882f61ec9cbd0cdb80e10d0708"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/entity/User.java",
+      "read_extent": "1-160 legacy role/status and binding",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "9b0046f6a3a1e9f65e972c00db7ce1185dd8efe541c7ec4d7cdbf17b3580475c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/repository/UserRepository.java",
+      "read_extent": "full linked identity lookup",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "7e5f2e0a088b514ef3e36e1f1ec2d37d1fea69d738364d6d7684548ef8ec3cac"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/entity/enums/UserRole.java",
+      "read_extent": "full canonical existing codes",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "df14c54ac43e107a1f4c3937756464578563d076b96a70d7d907a859ea48d940"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/entity/enums/AccountStatus.java",
+      "read_extent": "full canonical existing codes",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "3371e35b38d5a0c352018f2e31699c3c3939297b4b97955faaeee1db94e7cb38"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java",
+      "read_extent": "1-170 TMA exception401 and generic safe errors",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "b9d29e4a17a6250f445050067db8b76c23d0f2a5ade6bd31441884c933483bf8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/exception/QrLoginExceptionHandler.java",
+      "read_extent": "full scoped invalid/malformed400/no-store/redaction",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "05efed922ad8c795ed07893c316e4cdac791c52bcbb422fdc7be02932e8c7159"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/QrLoginController.java",
+      "read_extent": "full handler-bound actual controllers",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "561665f2f0647f8fc094a35c6d2f63bcaee6e30d0dbb2607fb0c7c2c7df32c32"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthController.java",
+      "read_extent": "TMA cookie-response entrypoint71-91 and targeted symbol search",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "7fb6a294b33c9d895ca65f6e038bcd5a4e206da2901b93207f9159beac3d99e1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/AuthApi.java",
+      "read_extent": "71-98 validated public TMA contract",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "d8ae422756f4a9035c7a52fed380d86948b2e98bf21608636799f7569847aa24"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/TmaAuthRequest.java",
+      "read_extent": "full proof body validation",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "4d3d9567dad7ec2695d4f5f5fb47d44222563109de93ff67ef9b2893b2277b3b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginProofRequest.java",
+      "read_extent": "full proof constraints and safe toString",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "a72e25d99d1dbe6db0f870c62bff7205426a35f727f6b8b33407679c0b7286e7"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginApprovalRequest.java",
+      "read_extent": "full proof constraints and safe toString",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "261b8a7f80e7bea80b5bdacf286e2fa415ed99428ff5a43b75f9bc1ee593284b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/QrLoginDecisionRequest.java",
+      "read_extent": "full decision constraints and safe toString",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "e2cb496c29163e91ce9b261fc35d71ff8996342af860c4457b941d35103b3305"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandler.java",
+      "read_extent": "55-110 actual unprotected standalone control rejected-value behavior",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "e2ee6eff43ca09772be21db7fc2e65d314b58f822275ad578905500c1c20d8de"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "read_extent": "700-752 protected actor-free assistant RPC/error behavior",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "233098652924be91f3be8c5888a328d6d1077bf7982f947399aaa4940730b5e1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java",
+      "read_extent": "full context actor source",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "4da9e957b5c54175808f4deedf9363333272a5309b019318ed636b14018c0667"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+      "read_extent": "21-88 CheckAssistantPermission protected JWT policy",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "df77ebde1c598dcf80ccd3404c70392b308216e93a12d6a06885906f3656346b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java",
+      "read_extent": "1-150 durable own-group grant query",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "53a29ffd6292fb20768e54ee8158a1662d1c18170dcfa0dad77400db4c1edb9d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/notification/NotificationAudienceResolver.java",
+      "read_extent": "45-105,135-181 current helper recipient catalogue",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "1c65ff8008483c1710d9f89596a4fba644a0ce602a0d83b8f9c0e940523423ef"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java",
+      "read_extent": "90-160 next-homework consumer/scope/permission",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "16d0bc04efb7d97cbfb01292a95ec1be112271c6b1e871549c2ef59370efe793"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AcademicGrpcClient.java",
+      "read_extent": "137-176 actual permission forwarding/transport failure handling",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "ff1e21a5fd99452c46222e2a039a6506d334c62c7363bec29b1b102d50963967"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java",
+      "read_extent": "224-259 and696-849 profile/status/binding update",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "b53c51d9e480f68c7ac11bfce02752c7e77168a9dc4dd4c6eafc6f0d1f24863d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserSpecifications.java",
+      "read_extent": "119-129 exact optional status filter",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "97643d47757a2fbc425ea2355794ef83116b78b7828e9d863d3a3590c75fe598"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/api/UserApi.java",
+      "read_extent": "55-84 public typed status parameter",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "bcc383a8d3b97c6c7add5111abe94be4eac13c0d2a371c99c3254ece470d48de"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/UserRole.java",
+      "read_extent": "full stable API enum codes",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "1738cd94c6b0f2c398eaa74bd0a61d3b68f3d79d5e951aa3b6f3b66cbb5419bd"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AccountStatus.java",
+      "read_extent": "full stable API enum codes",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "52fcfb60ef279d691c67b7ba54982c91d6dca7b9a25c1428415199a703091680"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/SubjectType.java",
+      "read_extent": "full stable API enum codes",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "e8b7d6efbc1072b3e67dd82ebd1ca10cf93dc350c4fbbc3d2e0bc43c5debdc83"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "read_extent": "full accepted5 capability set",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "46622682400cab89a3034aff642e4c80adbbdcd897071c82170159c2bb931338"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/resources/db/migration/V1__baseline.sql",
+      "read_extent": "1-65 immutable constrained PostgreSQL codes",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "24182109ffedf9a8103d23d2ce908858a66123174d24873f8cc5097943b08882"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/main/resources/db/migration/V24__auth_session_authority.sql",
+      "read_extent": "targeted constraints/version/trigger symbol search",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "1d15418fa4869d1288b3fa25f688a237087294f360aea6729f524de2f5b67f90"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java",
+      "read_extent": "full fresh owned PostgreSQL/Redis and synthetic config",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "70818a8583283092cb7199be3a80d0f84cd97b499d0aad6ffc93bb78cd2ac29f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/resources/sql/set-telegram-id.sql",
+      "read_extent": "full synthetic binding fixture",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "0943d5bea82027a85c87050fc64975f4a6438f46c915435f2ada39895918a406"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/auth-service/auth-app/src/test/resources/sql/clear-telegram-id.sql",
+      "read_extent": "full synthetic binding cleanup",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "f2d8ecb120b58843421b53d70f8f5de0233cc90f5fb81caa0f6a7619fec1e4f1"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java",
+      "read_extent": "full fresh owned PostgreSQL/reset wiring",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicTestAdminRequest.java",
+      "read_extent": "full established selected existing ADMIN session fixture",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "0abf409370e3dfd3f20510eaa087c14c53918073a9ed2641e9399cdb954347f5"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "read_extent": "1-120 ownership-limited reset and transaction failure cleanup",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/LessonApiIT.java",
+      "read_extent": "232-328 existing observable lesson/scope/assistant consumer test",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "0b77301079bc824c4b4ca9771578e0fbe0870c31bf52a9fd404b0dabcef30ef0"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/proto/academic.proto",
+      "read_extent": "228-258 unchanged wire fields/no actor override",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "25ea5e2105de4aaa473b6dec9c6114ac99569a5da57aaa6c8072d3d1dbed1060"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/frontends/mobile-core/src/api/generated/academic.types.ts",
+      "read_extent": "targeted generated enum/permission contract lines",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "34d4a5a2d07df3593d678168dbd0e104e3d96d6517e15de5a670900fa811b123"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/build.gradle.kts",
+      "read_extent": "66-100 test/integrationTest selection and reports",
+      "purpose": "independently opened critical original",
+      "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+      "sha256": "5304f8bc9b710d9ce09e42d07cb873f2fbb02d6d4e88cb33efb180fa3cad2d32"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "fa763aaf8714cc423aedb749a4b938f0053fced91140b1b9c6c39f101fdbcff2"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "715bf49e92ed0397a5adf2e1734a052e28844ccd24ef09d66741962e2d55ed33"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04-xml/TEST-ru.rutcampustrack.auth.service.TmaServiceTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "a5b06263d18c8d9e297219128c229afc3bf212257350a60d7a173878ca3349bf"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/academic-service-TEST-ru.rutcampustrack.academic.config.LowercaseEnumConverterTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "75f769671737c2f4f283dd7491f51a95e09c4af8fe764e55d070aecd0640466d"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/academic-service-TEST-ru.rutcampustrack.academic.config.WebConfigEnumConversionTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "10570938c768f1b5c45c5d54b2404352d5e749f88f57c5c84010fe68615ec86c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/academic-service-TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "ff5af4db9b22e6073b323537044e6d743ba26c3a2f0bf8bdb3c093dffe4515e5"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.config.LowercaseEnumConverterTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "f7a61fde373ea652d92f612b0a8184ea07a0a886b423115d7e43760a111b102f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.controller.PasswordResetValidationExceptionHandlerTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "8be813dbaefb1cb058d2e5ea3ab6193de3423bb4e72995feed7e5f8ce104ebc0"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "c9f85f0a136c3d8e9d674d4dc6a8309de13739fc635cd24a77c67be6497fad64"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.integration.QrLoginFlowIT.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "8b3f12189b9a63274a86de53d2f9bb1e065cafc4c5f18a76fcb96b38dc0fd5b4"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.integration.TmaIT.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "2a0b616f4a84162cb3768cc2c1973289eb82f47278f105a08fc04bd59513969b"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/auth-service-TEST-ru.rutcampustrack.auth.service.TmaServiceTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "3c399565134c87ca8e703fc216880eb30ad14eea562383f89e333b0ebda16c73"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03-xml/schedule-service-TEST-ru.rutcampustrack.schedule.integration.LessonApiIT.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "a414ed92fa2b13c1257a85af76c23bc2420abf4202b90b211d9f0a5f7b7f9a2e"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/red-runtime-02-xml/TEST-ru.rutcampustrack.academic.integration.AcademicGrpcIT.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "f6ca7c07a0cfeee7976e41502c63b66ff7a9f24ed4ca4086c41d9fab09a0f7cd"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/red-runtime-02-xml/TEST-ru.rutcampustrack.auth.integration.QrLoginFlowIT.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "955e26cdf62ef81a192e4cbdda840fd3333ca4ca6c7da0883688dbb6a9436264"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/red-runtime-02-xml/TEST-ru.rutcampustrack.auth.integration.TmaIT.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "c66506271cf713c8827f6fe1105c66332ba0b47b5e401995461fe400a7c4d18a"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/red-unit-01-xml/academic-TEST-ru.rutcampustrack.academic.config.LowercaseEnumConverterTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "110149eb8051f9b1b9137d014d85daec1f97bdb961c7e1192556a4c2bcc9f0a8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/red-unit-01-xml/academic-TEST-ru.rutcampustrack.academic.config.WebConfigEnumConversionTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "9fac53d16d5233e949956ec1ba6d2763e5d70a3748b32719e05528ac704abddb"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/red-unit-01-xml/auth-TEST-ru.rutcampustrack.auth.config.LowercaseEnumConverterTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "3f55ae86d9c5c28260831ea0fb8e2210ed5de7d81da327f0c04419cb4eb003fa"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/red-unit-01-xml/auth-TEST-ru.rutcampustrack.auth.controller.PasswordResetValidationExceptionHandlerTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "c1a9d8ef9d0e0ac7256dfb874c119f3bbffbdabed78dd058342f22839d7192e8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/red-unit-01-xml/auth-TEST-ru.rutcampustrack.auth.controller.QrLoginValidationExceptionHandlerTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "f4ca121f02953335d66ff1c01f046f460c87344ee5ff8f7a9a728c16b962549f"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/red-unit-01-xml/auth-TEST-ru.rutcampustrack.auth.service.TmaServiceTest.xml",
+      "read_extent": "parsed full XML tree/testcase outcomes and fail messages",
+      "purpose": "author actual run evidence; no reviewer runtime",
+      "revision": "author association via review packet",
+      "sha256": "727f99857b6d4f25cbe9f287ffe602f19f79ba09845f46e8199a15c84aacadbb"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/fixture-control-04.log",
+      "read_extent": "read log statistics/outcome and relevant failure locations",
+      "purpose": "terminal author invocation reconciliation",
+      "revision": "author association via review packet",
+      "sha256": "a3aea1182efeb3b6d3e76959631092728d633b7ab5c7a457888dab11474ad97c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/green-03.log",
+      "read_extent": "read log statistics/outcome and relevant failure locations",
+      "purpose": "terminal author invocation reconciliation",
+      "revision": "author association via review packet",
+      "sha256": "97fbe5f7501e4731f54caf284e448cb188ec02541165faa12660d688e21ce4e8"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/red-runtime-02.log",
+      "read_extent": "read log statistics/outcome and relevant failure locations",
+      "purpose": "terminal author invocation reconciliation",
+      "revision": "author association via review packet",
+      "sha256": "84356818a34e5f5073555da9d0e045bf69e6e45a295c443abffec4af98dbd144"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security/.agent/evidence/security-validation/red-unit-01.log",
+      "read_extent": "read log statistics/outcome and relevant failure locations",
+      "purpose": "terminal author invocation reconciliation",
+      "revision": "author association via review packet",
+      "sha256": "2c9a97b07719d768819c56046701434c5513cb2ea7beeb4522be05ff5ec66f28"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_developer/review-packet.md",
+      "read_extent": "full",
+      "purpose": "author bounded receipt, independently corroborated where material",
+      "revision": "receipt-working-tree",
+      "sha256": "ab60cac9e37b67dd39bde6288d402660cfa7e7bbb6b24994f18daefa2f9bff3c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_developer/CURRENT.md",
+      "read_extent": "full",
+      "purpose": "author bounded receipt, independently corroborated where material",
+      "revision": "receipt-working-tree",
+      "sha256": "8bfe9fad0fe054ec19c36df739203dc019e7011498be08e33785e4651cc246dd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_developer/findings.md",
+      "read_extent": "full",
+      "purpose": "author bounded receipt, independently corroborated where material",
+      "revision": "receipt-working-tree",
+      "sha256": "67e199efccc31011196da74cf314a2faf1034fa964cb1709f73c000948ab20a9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_developer/inventory.json",
+      "read_extent": "full",
+      "purpose": "author bounded receipt, independently corroborated where material",
+      "revision": "receipt-working-tree",
+      "sha256": "9d182bad392d5cfc1dac8a71e6c9abccff0447cb8284f22106d06662dcd636f2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_developer/green-03.json",
+      "read_extent": "full",
+      "purpose": "author bounded receipt, independently corroborated where material",
+      "revision": "receipt-working-tree",
+      "sha256": "38d58fd3be842a6e5915fa1e9c1bc6985d9cd0b34aeb08df1fab6bf3170319a3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_developer/fixture-control-04.json",
+      "read_extent": "full",
+      "purpose": "author bounded receipt, independently corroborated where material",
+      "revision": "receipt-working-tree",
+      "sha256": "dfa445a59181bcf570344c23955856a809e04665d143dc19d0d39a9ae0b131ce"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_developer/scenarios.json",
+      "read_extent": "full",
+      "purpose": "author bounded receipt, independently corroborated where material",
+      "revision": "receipt-working-tree",
+      "sha256": "b7f159d4cc9c54a2ab7fc8576875241aa8d5a23e2ff51357b289becdedd8ad2c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_developer/attempts.ndjson",
+      "read_extent": "full",
+      "purpose": "author bounded receipt, independently corroborated where material",
+      "revision": "receipt-working-tree",
+      "sha256": "8374f89d42d25f827b3318f8fbfac1f7f87f1cd625730d1633754eaa911116e6"
+    }
+  ]
+}

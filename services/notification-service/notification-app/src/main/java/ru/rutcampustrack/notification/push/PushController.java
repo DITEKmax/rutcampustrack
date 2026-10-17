@@ -1,6 +1,7 @@
 package ru.rutcampustrack.notification.push;
 
 import jakarta.validation.Valid;
+import java.time.Instant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -15,16 +16,14 @@ import ru.rutcampustrack.notification.contract.enums.UserRole;
 import ru.rutcampustrack.notification.security.RequestContext;
 import ru.rutcampustrack.notification.security.RequireRole;
 
-import java.time.Instant;
-
 /**
  * REST controller implementing the PushApi contract for Web Push subscription management.
  *
- * Per D-11/D-12: Controller implements PushApi interface; URL mappings are in the interface only.
- * Per T-27-01: userId and groupId come from RequestContext (Gateway-injected headers),
- *              NOT from request body — prevents subscribing as another user.
- * Account-owned enrollment accepts every supported signed selected role; group/headman fields are metadata only.
- * Per T-27-07: Unsubscribe scoped to current userId+endpoint — cannot delete another user's subscription.
+ * <p>Per D-11/D-12: Controller implements PushApi interface; URL mappings are in the interface
+ * only. Per T-27-01: userId and groupId come from RequestContext (Gateway-injected headers), NOT
+ * from request body — prevents subscribing as another user. Account-owned enrollment accepts every
+ * supported signed selected role; group/headman fields are metadata only. Per T-27-07: Unsubscribe
+ * scoped to current userId+endpoint — cannot delete another user's subscription.
  */
 @RestController
 public class PushController implements PushApi {
@@ -56,12 +55,16 @@ public class PushController implements PushApi {
         requestContext.requireSelectedRole();
         Instant now = Instant.now();
         Long userId = requestContext.getUserId();
-        PushSubscriptionDocument doc = repository.findByUserIdAndEndpoint(userId, request.endpoint())
-                .orElseGet(() -> PushSubscriptionDocument.builder()
-                        .userId(userId)
-                        .endpoint(request.endpoint())
-                        .createdAt(now)
-                        .build());
+        PushSubscriptionDocument doc =
+                repository
+                        .findByUserIdAndEndpoint(userId, request.endpoint())
+                        .orElseGet(
+                                () ->
+                                        PushSubscriptionDocument.builder()
+                                                .userId(userId)
+                                                .endpoint(request.endpoint())
+                                                .createdAt(now)
+                                                .build());
 
         doc.setGroupId(requestContext.getGroupId());
         doc.setP256dh(request.keys().p256dh());

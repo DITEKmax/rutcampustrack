@@ -1,0 +1,5 @@
+Existing CI already executes Attendance selected8:7 ReportIT +1historicalMarking method. Integrate reviewed23482 source, push, then retain same-source actual CI java-integration-test attendance and/or Coverage java-coverage attendance SAFE outcomes. No workflow/filter/dependency changes or local VFS rerun proposed.
+
+Require all8 exact SOURCE_METHOD PASSED/noSKIP/consistentnonempty XML and source/hash+PRhead/actualcheckoutjoin; rootfailOnNoMatching=false means greenjob alone insufficient. Generic CI/Coverage may fail unrelatedtests while selected8pass; do not call required gates green unless actualwholejobs/workflows success. No liveTLS/gRPC/serverclient acceptance from mockedAcademic/Schedule bases; separate44wire/3AcademicSQL proofs retained, parentdefect/matrix stillopen.
+
+Plan and 12publicsource/hash ledger are SOURCE-only; no native/network/Docker/ENV/key/rawlog/data reads or mutations performed. Dependencies are existingMongo7/Rabbit3.13/Redis7.2/defaultTCchecks/Ryuk with freshCI containers, noPostgres/manualseed forAttendance8. Educational Apr1fixture and Europe/Moscow realClock/legacyheaders/inmemorykeytestlimits explicit.

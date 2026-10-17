@@ -1,0 +1,43 @@
+{
+  "schema": "P10_IMMUTABLE_AUDIT_CLEANUP_INDEPENDENT_SOURCE_REVIEW_V1",
+  "disposition": "APPROVE_SOURCE_ONLY",
+  "requested_selected_model": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "reviewer": "p06_test_review",
+  "native": "NOT_RUN_AFTER_CORRECTION",
+  "parent_P10": "UNKNOWN",
+  "findings": [],
+  "source_before_sha256": "2129fdbcb971197a886839c100e3cc336b2ee0ed3902a136d705b19c1c7e1efc",
+  "source_after_sha256": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+  "ready_sha256": "5aa2d95721b0ebd49c64fe36845e456671c86512e0bad3c51186bf989fa1cdd3",
+  "delta_sha256": "1080dc54d43391f6a01d9ce8c96889faabd7e68ac810cdc61d17a732b8ed616a",
+  "bindings_sha256": "91c1dca800a4ba9476f2ea31cd65d12237887577c98503df1b3decaac6ab27ed",
+  "migration_sha256": "1d15418fa4869d1288b3fa25f688a237087294f360aea6729f524de2f5b67f90",
+  "fixture_sha256": "d37de3ee2b857ce3a0f6a802ea70e87489d679571607dae0bf2a8339c48d52d2",
+  "safe_cause_sha256": "e3ec6e5e623064e3e5ea947391dcded133db72b57e527d4f55d383cec089bbf6",
+  "checks": {
+    "outside_helper_byte_exact": true,
+    "helper_inverse_exact_removing_only_four_deletes_and_new_comments": true,
+    "outer_primary_cleanup_aggregation_byte_exact": true,
+    "mutable_deletes_parameterized_actor_scoped": true,
+    "V24_trigger_and_RESTRICT_FK_directly_read": true,
+    "fresh_PG_Redis_Rabbit_withReuse_false_directly_read": true,
+    "unique_UUID_actors_and_fixed_student_SQL_hooks_read": true,
+    "within_class_global_outbox_and_actor_scoped_counters_read": true,
+    "all_twelve_runtime_parameter_pins_exact": true,
+    "numeric_limits_exact_and_templates_unauthorized": true,
+    "formatter_single_java_targets_and_protected17_exact": true,
+    "only_one_assigned_WIP": true
+  },
+  "format_plan_sha256": "b662cc7903222f00133c1799c8fff05742fb88e33b6b3422440c1e4c748c7cbc",
+  "http_plan_sha256": "74920917f79f21486a056aff1b6f153984f0e936778bacc6079b4bede1f665e1",
+  "format_manifest_sha256": "dc58cfa17040c49ab77c701afb1c8c57e86fe2e42160162f2690fea1ffab4286",
+  "http_manifest_sha256": "280a05e55f2777839e21b53e15c16e95de610b3a49a6351c712c79aebf9b89ac",
+  "qualifications": [
+    "prior26642FAIL preserved; bodyGREEN UNKNOWN",
+    "fresh disposable fixture contains retained audit-linked actors; no universal ordering proof",
+    "postformat clean source/head/hash manifest rebind and fresh Root grant required before HTTP02",
+    "ordinary full Auth CI required; parent P10 UNKNOWN"
+  ],
+  "report_sha256": "aaa0c9eeca87679aa56791bafa34e55aa24ef508347e54510587aad7b7cac599"
+}

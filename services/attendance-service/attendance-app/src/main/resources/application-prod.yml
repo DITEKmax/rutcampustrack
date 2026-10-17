@@ -18,6 +18,11 @@ management:
 # prod. Trust material is supplied by the deployment, with no plaintext
 # fallback when the prod profile is active.
 grpc:
+  server:
+    security:
+      enabled: true
+      certificate-chain: ${ATTENDANCE_GRPC_CERTIFICATE_CHAIN}
+      private-key: ${ATTENDANCE_GRPC_PRIVATE_KEY}
   client:
     schedule-service:
       negotiation-type: TLS

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
-import StatisticsSemesterChart from './StatisticsSemesterChart.vue'
-import StatisticsTypeCard from './StatisticsTypeCard.vue'
+import { computed } from 'vue';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import StatisticsSemesterChart from './StatisticsSemesterChart.vue';
+import StatisticsTypeCard from './StatisticsTypeCard.vue';
 import {
   seriesForRange,
   statisticsTypeLabel,
@@ -14,70 +14,86 @@ import {
   type StatisticsReadState,
   type StatisticsSubjectDetailData,
   type StatisticsTheme,
-} from './statistics-view-model'
+} from './statistics-view-model';
 
-const props = withDefaults(defineProps<{
-  state: StatisticsReadState<StatisticsSubjectDetailData>
-  theme?: StatisticsTheme
-  range?: StatisticsGraphRange
-  semesterStartsOn?: string
-  semesterEndsOn?: string
-  terminal?: boolean
-}>(), {
-  semesterStartsOn: '',
-  semesterEndsOn: '',
-  theme: 'dark',
-  range: 'weeks',
-  terminal: false,
-})
+const props = withDefaults(
+  defineProps<{
+    state: StatisticsReadState<StatisticsSubjectDetailData>;
+    theme?: StatisticsTheme;
+    range?: StatisticsGraphRange;
+    semesterStartsOn?: string;
+    semesterEndsOn?: string;
+    terminal?: boolean;
+  }>(),
+  {
+    semesterStartsOn: '',
+    semesterEndsOn: '',
+    theme: 'dark',
+    range: 'weeks',
+    terminal: false,
+  },
+);
 
 const emit = defineEmits<{
-  back: []
-  retry: []
-  'set-types': [types: readonly StatisticsLessonType[]]
-  'set-range': [range: StatisticsGraphRange]
-}>()
+  back: [];
+  retry: [];
+  'set-types': [types: readonly StatisticsLessonType[]];
+  'set-range': [range: StatisticsGraphRange];
+}>();
 
-const data = computed(() => props.state.status === 'ready' ? props.state.data : null)
-const availableTypes = computed(() => data.value
-  ? STATISTICS_TYPE_ORDER.filter((type) => data.value?.availableTypes.includes(type))
-  : [])
+const data = computed(() => (props.state.status === 'ready' ? props.state.data : null));
+const availableTypes = computed(() =>
+  data.value
+    ? STATISTICS_TYPE_ORDER.filter((type) => data.value?.availableTypes.includes(type))
+    : [],
+);
 const orderedCards = computed(() => {
-  if (!data.value) return []
-  return STATISTICS_TYPE_ORDER
-    .map((type) => data.value?.typeCards.find((card) => card.type === type))
-    .filter((card): card is NonNullable<typeof card> => Boolean(card))
-})
-const chartPoints = computed(() => data.value ? seriesForRange(data.value, props.range) : [])
+  if (!data.value) return [];
+  return STATISTICS_TYPE_ORDER.map((type) =>
+    data.value?.typeCards.find((card) => card.type === type),
+  ).filter((card): card is NonNullable<typeof card> => Boolean(card));
+});
+const chartPoints = computed(() => (data.value ? seriesForRange(data.value, props.range) : []));
 
 function stateTitle(): string {
   switch (props.state.status) {
-    case 'loading': return 'Загружаем статистику…'
-    case 'empty': return 'За этот период данных пока нет'
-    case 'offline': return 'Статистика недоступна офлайн'
-    case 'forbidden': return 'Статистика недоступна'
-    case 'error': return 'Не удалось получить статистику'
-    default: return ''
+    case 'loading':
+      return 'Загружаем статистику…';
+    case 'empty':
+      return 'За этот период данных пока нет';
+    case 'offline':
+      return 'Статистика недоступна офлайн';
+    case 'forbidden':
+      return 'Статистика недоступна';
+    case 'error':
+      return 'Не удалось получить статистику';
+    default:
+      return '';
   }
 }
 
 function stateMessage(): string {
   switch (props.state.status) {
-    case 'offline': return 'Подключись к интернету, чтобы получить актуальные данные.'
-    case 'forbidden': return props.state.reason
-    case 'error': return props.state.message
-    case 'empty': return 'Когда появятся закрытые пары, здесь будет история.'
-    default: return ''
+    case 'offline':
+      return 'Подключись к интернету, чтобы получить актуальные данные.';
+    case 'forbidden':
+      return props.state.reason;
+    case 'error':
+      return props.state.message;
+    case 'empty':
+      return 'Когда появятся закрытые пары, здесь будет история.';
+    default:
+      return '';
   }
 }
 
 function isSelected(type: StatisticsLessonType): boolean {
-  return data.value?.selectedTypes.includes(type) ?? false
+  return data.value?.selectedTypes.includes(type) ?? false;
 }
 
 function toggleType(type: StatisticsLessonType): void {
-  if (!data.value) return
-  emit('set-types', toggleTypeSelection(data.value.selectedTypes, type))
+  if (!data.value) return;
+  emit('set-types', toggleTypeSelection(data.value.selectedTypes, type));
 }
 </script>
 
@@ -127,7 +143,9 @@ function toggleType(type: StatisticsLessonType): void {
         :hidden-graph="data.selectedTypes.length === 0"
         :points="chartPoints"
         :loading="data.graphStatus === 'loading'"
-        :error-message="data.graphStatus === 'error' ? data.graphMessage ?? 'Попробуй ещё раз.' : null"
+        :error-message="
+          data.graphStatus === 'error' ? (data.graphMessage ?? 'Попробуй ещё раз.') : null
+        "
         :range="range"
         :semester-starts-on="semesterStartsOn"
         :semester-ends-on="semesterEndsOn"

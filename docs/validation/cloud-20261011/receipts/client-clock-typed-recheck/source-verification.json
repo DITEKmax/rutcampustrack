@@ -1,0 +1,235 @@
+{
+  "at": "2026-10-11T22:27:54.450024+00:00",
+  "revision": "db9e1a1fcf9bd50db2e6f2e81286c08cc9ff1dfe",
+  "parent_frozen_review": "6e2376c39fa733a0e645d5d929f132a6448a953d",
+  "worktree_clean": true,
+  "exact_delta": {
+    "file": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/EducationalSessionClockIsolationTest.java",
+    "insertions": 1,
+    "deletions": 1,
+    "line": 64,
+    "old": "LocalDate.of(2026, 1, 1)",
+    "new": "LocalDate.of(2024, 1, 1)",
+    "rest_of_test_bytes_equal": true
+  },
+  "fixture_sha256": "4bb1fe2655c0bdea657d89852db769c07daaf22b24a31da919226ebe9c6d4946",
+  "expired_INVALID_SESSION_oracle": "UNCHANGED",
+  "main_and_all_other_tracked_source_delta": "NONE",
+  "prior_combined_clock_paths_preserved": [
+    {
+      "path": "build.gradle.kts",
+      "sha256": "a3bc671b8a76c85a821d7e11b1550a7048b58dfab8c0063aba993a6fcbc84218"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/ClockConfig.java",
+      "sha256": "65b30a45ceae379f42b42a7e3d98b53d8d8a836a54910a0d6e4d9a7bbadcb4f7"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+      "sha256": "47211a3bf2b9b94cda4d12d312dec06d3f24e74d1a3ac8e0fcae557883aeec10"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/ClockConfig.java",
+      "sha256": "76496b896c589aa030878ffd8d83c8ed934e35552c981714fdbf19a08e908f10"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/MarkingService.java",
+      "sha256": "b6c72492247236c177cb5647ae260030e5ef73f6b3f0fe652e8c5e8c921fbc35"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/StudentAttendanceSnapshotService.java",
+      "sha256": "d865f5cd7f3febd5e3048b057ed767a05a9af7b8e4f647555a58c4060b774e40"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/StudentCheckinService.java",
+      "sha256": "b7b0e8a5abef6456b10a5fff8b1e664b6cfeac7dd1612bfb7a7eaa17d32a6179"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "sha256": "cc8a49b090b7995889ff6c1feea2292d81609d69a5f9ce3f6a59126d1e5817b9"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/EducationalRetentionClockIsolationTest.java",
+      "sha256": "204de1d68bff64c6efc905db39604ed9a9f45e57cf36769385d8bd969f434291"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/MobileBffRuntimeConfig.java",
+      "sha256": "70adb9601b2cd08d77d52c0028e9cf77489d0d58caf1c6f2daf9eb2add5b54bd"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java",
+      "sha256": "b10e83bcb5b393eb6cd2833187febfd769304594e2c61f643925a83668ee4c80"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+      "sha256": "af02aae65c403bfd9df8a11793c6b1379282b056af879e89739935ab4d506830"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/error/EducationalProblemClockIsolationTest.java",
+      "sha256": "4868dc86a1afce0cf79e08d082759677f449400017bf633d50963be0d2050fdf"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/ClockConfig.java",
+      "sha256": "78867aee5ddb4939e0f418129d3e3b65eac2d68bdb7119269c7b1d00f9cb1925"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java",
+      "sha256": "0ec4baa33d20efb5dd69e0e01161df641941d2f43d2b22f355fce94ef608a20a"
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/time/EducationalTime.java",
+      "sha256": "419ebbf9105c8a805a60b3563ccba88864ac18923c7e096153f83d40330aa5a4"
+    },
+    {
+      "path": "tests/e2e/backend-clock/README.md",
+      "sha256": "c6eb43b4865c260e54b38e906b4f371a1d1217e3ea0d5fffd3a2e1a7119c4d29"
+    },
+    {
+      "path": "tests/e2e/backend-clock/prepare-clock.mjs",
+      "sha256": "6f81108e3fa95acbf915636732a99aae7061a05ca0f1b24642142adf6af442db"
+    },
+    {
+      "path": "tests/e2e/backend-clock/src/control/java/ru/rutcampustrack/e2e/ClockFixtureControl.java",
+      "sha256": "7e868795d0b933ba975c13d6700746b2e71f6b05d412ec155c8d759586735d11"
+    },
+    {
+      "path": "tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/ClockInitializer.java",
+      "sha256": "373c3085ad75706bd66a9b4120537d21e95a6b470e55a9e456370711a858e67d"
+    },
+    {
+      "path": "tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/FileClock.java",
+      "sha256": "8df7cc0a9df24db5c67ca706bf38f46a926fe1eeef9edcbcf93b113c4f906f95"
+    },
+    {
+      "path": "tests/e2e/backend-clock/verify-jar-isolation-control.py",
+      "sha256": "1fea29bee736da492862abe90b70b1f6c56e3e8c24a3c52fb34149425f1cc9d7"
+    },
+    {
+      "path": "tests/e2e/backend-clock/verify-jar-isolation.py",
+      "sha256": "2c1fb3a2722eef29ff536682068151488684a3e59b348d4fc6a1c698f82406e0"
+    },
+    {
+      "path": "tests/e2e/clock-specs/teaching-clock-geo.spec.ts",
+      "sha256": "bb1e59ca4fe5d4d0c352b394fa237baa6ab832303e456378ac3e5ff3e20fb9a4"
+    },
+    {
+      "path": "tests/e2e/fixtures/mobile-dataset.ts",
+      "sha256": "cd56a51aaad51adbb228fd65894a4ea41fe7b9b5ae3dbeb672043586ad9eeaf6"
+    },
+    {
+      "path": "tests/e2e/fixtures/teaching-clock.ts",
+      "sha256": "514bf9d9de8135b11f823f11e9ea61af958b080b48408f46f6da04e5bc8ab454"
+    },
+    {
+      "path": "tests/e2e/infra/docker-compose.clock-fixture.yml",
+      "sha256": "2dccd3a20bba8938b4dacbaa97d02128a579780f9634e68668b6a2505c46e9a7"
+    },
+    {
+      "path": "tests/e2e/playwright.teaching-clock.config.ts",
+      "sha256": "7c1158a1a3606a07744e7f4832f2d3901b31e7b66def0c33708cfd586b30b182"
+    },
+    {
+      "path": "tests/e2e/tsconfig.real-mobile.json",
+      "sha256": "5c314fbb420d7dc2db15ae33f1de2e04efeead7cb82014007d0f427d450379b6"
+    }
+  ],
+  "all58_main_Clock_mention_file_hashes_match_prior_review": true,
+  "critical_non_enrolled_security_retention_hashes_match_prior_review": true,
+  "prior9_review_receipts_sha256": "ALL_PRESERVED",
+  "prior_manifest_sha256": "8fba7105f6c9abd46181e1b6f25907302546f36a6dba5c715636d2a3237c2a0e",
+  "date_analysis": {
+    "source_only": true,
+    "joinedAt": "2024-01-01",
+    "leftAt": null,
+    "teachingMoscowDates": [
+      "2025-09-15",
+      "2030-09-15"
+    ],
+    "both_currentGroupAt_date_predicates_include_row": true,
+    "semester2026_membership_clip_nonempty": true,
+    "single_untransferred_group10_matches_claims": true,
+    "live_real_time_before_refresh_expiry": true,
+    "expired_real_time_denied_before_history": true
+  },
+  "relevant_wrong_clock_source_counterexamples": {
+    "future_teaching2030_with_live_real2026": "Using teaching clock for expiry would throw INVALID_SESSION and fail positive resolver assertion.",
+    "past_teaching2025_with_expired_real2026": "Using teaching clock for expiry would admit session; repaired valid history allows resolver success and fails expected INVALID_SESSION assertion.",
+    "actual_execution": "NOT_RUN"
+  },
+  "artifact": {
+    "path": "/workspace/rct-worktrees/client-runtime/build/e2e-clock/clock-fixture.jar",
+    "admission": "DO_NOT_LAUNCH stale049ab; fresh typed build required",
+    "sha256": "6a474b4f95e9bdde92acff655a2a7f0d3120e369a3f9ea240eb8a1908dcf6806",
+    "equals_prior_verified049ab_artifact": true
+  },
+  "evidence_inputs": [
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_clock_typed_review/transfer-manifest.json",
+      "sha256": "8fba7105f6c9abd46181e1b6f25907302546f36a6dba5c715636d2a3237c2a0e",
+      "bytes": 1652
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_clock_typed_review/findings.md",
+      "sha256": "c6f8cb7844da7f7def71920f09cc2cf30ce01134536907bac12c66255a72ca28",
+      "bytes": 6023
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_clock_typed_review/clock-boundary-audit.md",
+      "sha256": "8ed056e9017315dbf71474a4bc1581c6e48c9dc76e93516180aaeac1cb767371",
+      "bytes": 7647
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_clock_typed_review/review.json",
+      "sha256": "3f65fde5a80180b660378d9c8b1ff529e7ca60d11783dcf7011cd59b2cef7083",
+      "bytes": 4394
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/ctr01-fixture-correction.md",
+      "sha256": "1517660aa24e6c53a609a9e88c8310338f561e1931464509159683b33547c9ce",
+      "bytes": 733
+    },
+    {
+      "absolute_path": "/workspace/scratch/rct-validation/client_runtime_developer/ctr01-fixture-correction.json",
+      "sha256": "3dd58b96fb4a94d98a5b211d48c70c0071eec32633ebd724c865c0440792ac37",
+      "bytes": 990
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "a448a2995eb1181a826435ff684ca62f49dd0447d176ec53b4fc33d5e8ed954b",
+      "bytes": 82004,
+      "restored_and_read": true
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "0e270de2b90712cce74b9fd00fcf616c135bc28ae5d5a3c125da23a0f8d768c5",
+      "bytes": 8412,
+      "restored_and_read": true
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "7bc59b1f0302a4dd469191434f5c4709493ee24447d8df25e1c47b4e7eebfddf",
+      "bytes": 7182,
+      "restored_and_read": true
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "3e4a0b297be4ae895394119b94d25899eb0cbd244202ab938cb8db90dc613929",
+      "bytes": 6335,
+      "restored_and_read": true
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "eede6de6fea738b0a14434b26040203cabceabb803d10564892ed333af1d4fba",
+      "bytes": 2604,
+      "restored_and_read": true
+    },
+    {
+      "absolute_path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-clock-typed-recheck.md",
+      "sha256": "fe4d2422f532e5b726ee5624d1b20f1decb7cd751245cf52497ac782076bf153",
+      "bytes": 3707,
+      "restored_and_read": true
+    }
+  ],
+  "reviewer_runtime": "NOT_RUN Java/Gradle/Docker/apps/browser/test execution/mutations/children",
+  "verification_kind": "Independent Git delta/source byte equality/SHA256 and date arithmetic, not Java compiler or consumer runtime"
+}

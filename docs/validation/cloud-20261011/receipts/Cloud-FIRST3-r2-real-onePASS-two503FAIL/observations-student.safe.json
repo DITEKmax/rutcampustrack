@@ -1,0 +1,156 @@
+{
+  "schema": "RCT_FOCUS3_CLOSED_V1",
+  "caseCode": "STUDENT",
+  "events": [
+    {
+      "caseCode": "STUDENT",
+      "phase": "BEGIN",
+      "facts": {
+        "diagnosticState": "OBSERVING"
+      }
+    },
+    {
+      "caseCode": "STUDENT",
+      "phase": "UI_RESPONSE",
+      "endpoint": "LOGIN",
+      "facts": {
+        "httpStatus": "200",
+        "bodyParsed": true,
+        "uiTokenCaptured": true
+      }
+    },
+    {
+      "caseCode": "STUDENT",
+      "phase": "UI_RESPONSE",
+      "endpoint": "SESSION",
+      "facts": {
+        "httpStatus": "200",
+        "bodyParsed": true,
+        "bodyShapeKnown": true,
+        "actorMatchesTarget": true,
+        "actorMatchesTeacher": false,
+        "activeRole": "STUDENT",
+        "activeRoleExpected": true,
+        "requiredRoleSelectable": true
+      }
+    },
+    {
+      "caseCode": "STUDENT",
+      "phase": "UI_RESPONSE",
+      "endpoint": "HELPER_PERMISSIONS",
+      "facts": {
+        "httpStatus": "200",
+        "bodyParsed": true,
+        "markPermission": false
+      }
+    },
+    {
+      "caseCode": "STUDENT",
+      "phase": "UI_RESPONSE",
+      "endpoint": "HOMEWORK_DEFAULT",
+      "facts": {
+        "httpStatus": "200",
+        "bodyParsed": true,
+        "bodyShapeKnown": true,
+        "itemsIsArray": true,
+        "itemCount": 1,
+        "targetCount": 1,
+        "targetPresent": true,
+        "targetTitleEqual": true,
+        "semesterEqual": true,
+        "rangeContainsTarget": true,
+        "serverDateEqual": false
+      }
+    },
+    {
+      "caseCode": "STUDENT",
+      "phase": "UI_RESPONSE",
+      "endpoint": "COMPLETION_WRITE",
+      "facts": {
+        "httpStatus": "200"
+      }
+    },
+    {
+      "caseCode": "STUDENT",
+      "phase": "UI_RESPONSE",
+      "endpoint": "SESSION",
+      "facts": {
+        "httpStatus": "200",
+        "bodyParsed": true,
+        "bodyShapeKnown": true,
+        "actorMatchesTarget": true,
+        "actorMatchesTeacher": false,
+        "activeRole": "STUDENT",
+        "activeRoleExpected": true,
+        "requiredRoleSelectable": true
+      }
+    },
+    {
+      "caseCode": "STUDENT",
+      "phase": "UI_RESPONSE",
+      "endpoint": "HELPER_PERMISSIONS",
+      "facts": {
+        "httpStatus": "200",
+        "bodyParsed": true,
+        "markPermission": false
+      }
+    },
+    {
+      "caseCode": "STUDENT",
+      "phase": "UI_RESPONSE",
+      "endpoint": "HOMEWORK_DEFAULT",
+      "facts": {
+        "httpStatus": "200",
+        "bodyParsed": true,
+        "bodyShapeKnown": true,
+        "itemsIsArray": true,
+        "itemCount": 1,
+        "targetCount": 1,
+        "targetPresent": true,
+        "targetTitleEqual": true,
+        "semesterEqual": true,
+        "rangeContainsTarget": true,
+        "serverDateEqual": false
+      }
+    },
+    {
+      "caseCode": "STUDENT",
+      "phase": "DOM",
+      "facts": {
+        "journalCount": 0,
+        "rowCount": 0,
+        "targetRowCount": 0,
+        "targetButtonCount": 0,
+        "clearButtonCount": 0,
+        "homeworkCount": 2,
+        "homeworkCompleteCount": 1,
+        "homeworkIncompleteCount": 0,
+        "alertCount": 0,
+        "loginVisible": false,
+        "navigationVisible": true,
+        "rolePickerVisible": false,
+        "targetRowVisible": false,
+        "targetButtonVisible": false,
+        "targetButtonEnabled": false,
+        "clearButtonVisible": false,
+        "clearButtonEnabled": false,
+        "homeworkVisible": true,
+        "homeworkCompleteVisible": true,
+        "homeworkIncompleteVisible": false,
+        "domStatus": "ABSENT_ROW",
+        "targetNameEqual": false,
+        "journalBusy": false
+      }
+    },
+    {
+      "caseCode": "STUDENT",
+      "phase": "END",
+      "facts": {
+        "testStatus": "passed",
+        "diagnosticCompleted": true,
+        "droppedEventCount": 0
+      }
+    }
+  ],
+  "droppedEventCount": 0
+}

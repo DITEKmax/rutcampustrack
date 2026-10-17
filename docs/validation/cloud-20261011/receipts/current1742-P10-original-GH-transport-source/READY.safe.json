@@ -1,0 +1,80 @@
+{
+  "schema": "P10_FIXED_ORIGINAL_GH_ARCHIVE_SOURCE_READY_V1",
+  "status": "SOURCE_READY_NATIVE_NOT_RUN",
+  "scope": "Exactly three checking seams: normal approved GH environment, fixed stdout-only capped exec capture, settled parent capture read with byte-identical closed selector. Product/test frozen.",
+  "pins": {
+    "check-seams-ram.py": "25921dd20e60c1b9586d91c1bd7aff35d248536214ffd1d06443d808281881c3",
+    "checks.safe.json": "7bc74ac0eb9299bba96cf1c1b4d0faedadde3fe56350ecc3cd6376e563edad87",
+    "grant-template.private.json": "c8eb69fb56359909ab963480c5c50a9660c3cec44d74ba3f386c3e3877c68fd3",
+    "green-plan.safe.json": "5dae02eaf83dd4df4137f04bd483f57421ec13dfb217bc64efbb1f4ae1953b47",
+    "logged-green-child.py": "88f1a6a13e4b0515d14f0a27da5507a7944ca3967220a8910c0753b0f98e75de",
+    "metadata.safe.json": "8223cdb62e70a1e12683a1fff383241c90dfbc417d07fa08aaa1ff80ef0513d5",
+    "run-green-owned.py": "c7c91634dac0ed6df56db86aa9e672c96989caa8b4570ba4606ea8056fbe89e6",
+    "selector94.py": "94e957778be9f03cbe6ec4320aae64050d9764a15e6a8c0f72006c3eb2e5cac7",
+    "source-delta.patch": "00dbe356394ae83eb804de3952e98916435145005bd2ba495368263f7ad0abbc",
+    "source-manifest.safe.json": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780"
+  },
+  "artifact": {
+    "run_id": 38387263916,
+    "artifact_id": 11806374316,
+    "name": "integration-test-reports-auth-service",
+    "size_bytes": 192040,
+    "expired": false,
+    "head_sha": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+    "qualification": "Artifactmetadataonly/noarchiveURL/body/log/XMLread"
+  },
+  "actual_checkout": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+  "worktree_head": "5dac5d8b3b7d6e9ff7c2317e1587f87c57680022",
+  "test_sha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+  "exact_source_inputs": 18,
+  "worktree_clean": true,
+  "run_namespace_absent": true,
+  "reuse_proofs": {
+    "selector94_byte_exact": true,
+    "four_child_admission_functions_byte_exact": true,
+    "five_parent_existing_callbacks_byte_exact": true,
+    "prior_approved_boot_ENV_KEYS_and_explicit_environment_byte_exact": true,
+    "old_limits_byte_equal": true,
+    "old_sources_retained": true
+  },
+  "targeted_controls": {
+    "selected_AST_RAM_checks": 6,
+    "PASS": true,
+    "actual_private_archive_or_env_values_read": false,
+    "native_or_network_effects": false
+  },
+  "launch": {
+    "argv": [
+      "/usr/bin/python3",
+      "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-gh-original-archive-source/run-green-owned.py",
+      "<fresh_root_private600_grant>",
+      "<exact_grant_sha256>"
+    ],
+    "approval": "Normal require_escalated caller; approved actor1000/native root metadata0, no bypass",
+    "false_template": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-gh-original-archive-source/grant-template.private.json",
+    "wall_seconds_proposal": 360,
+    "native_phase_seconds": 60,
+    "cleanup_margin_seconds": 60,
+    "b78_term_seconds": 15,
+    "b78_kill_seconds": 10,
+    "fixed_gh_argv": [
+      "/usr/bin/gh",
+      "api",
+      "--method",
+      "GET",
+      "repos/DITEKmax/rutcampustrack/actions/artifacts/11806374316/zip"
+    ],
+    "stdout_hard_cap_bytes": 1048576,
+    "exact_archive_bytes_required": 192040,
+    "stderr": "DEVNULL; no message/status parsing",
+    "native0_settled_and_all_known_births_absent_before_zip_read": true
+  },
+  "closed_output": "Known case identity/first numeric known file frame/helper enum only, independent primary+cleanup finite lifecycle, native status/process births/resources. No body/message/stack/password/URI/env/auth/private-content hash; http_status0 because CLI stderr discarded.",
+  "cleanup": "Only journaled own regular600 UID/nlink1 dev+ino archive after settlement. Unsafe identity retains leaf; primary preserved and explicit reconciliation required. Selected XML600 remains unhashed if projection succeeds.",
+  "required_before_effects": [
+    "independent narrow transport/privacy source review",
+    "fresh Root grant with source hashes and new transport authorized",
+    "fresh resources/current source joins; exact new namespace"
+  ],
+  "qualification": "Current CI Unicode failure cause UNKNOWN. Original CI case remains FAILED; observation is not replay/test PASS. Transport/native actual NOT_RUN."
+}

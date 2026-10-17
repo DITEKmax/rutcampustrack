@@ -1,13 +1,14 @@
 package ru.rutcampustrack.academic.entity;
 
 import jakarta.persistence.*;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "homework_completions",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"homework_id", "student_id"}))
+@Table(
+        name = "homework_completions",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"homework_id", "student_id"}))
 @Getter
 @NoArgsConstructor
 public class HomeworkCompletion {

@@ -1,0 +1,26 @@
+{
+  "scope": "INDEPENDENT_SCHEDULE_SAFE_DIAGNOSTIC_FOUR_PATH_SOURCE_REVIEW",
+  "verdict": "CHANGES_REQUESTED",
+  "finding": "SCD-MARKER-CUTOFF-001 P2",
+  "source_manifest_sha256": "9cafda102559d0f2b062fc0bfda816611d331121cee8e5c75a3412c761a0d3c9",
+  "files": [
+    {
+      "path": "check.py",
+      "bytes": 11352,
+      "sha256": "b261743519f421a84bac912acd9f9bc7f86bf6de7928b6be5d8ac947238114d2",
+      "mode": "0o400"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 1941,
+      "sha256": "59660180c573665b3c9929d104119ce3c0bdeec0095f9d7dc29eee8f9d75ec06",
+      "mode": "0o400"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 6960,
+      "sha256": "bff4ae420cb8da6efcbe0e2b8a28c487f733a1da3e1bc98f8970ca9df5c2b3f7",
+      "mode": "0o400"
+    }
+  ]
+}

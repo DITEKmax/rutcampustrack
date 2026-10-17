@@ -1,26 +1,31 @@
 package ru.rutcampustrack.auth.session.port;
 
-import ru.rutcampustrack.auth.session.model.SecurityEvent;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import ru.rutcampustrack.auth.session.model.SecurityEvent;
 
 /** One atomic credential update plus all-session revocation operation. */
 public interface CredentialSessionTransactionPort {
 
     /**
-     * One user-row transaction: re-check expectedCurrentHash under lock, then
-     * update the credential/password flags, revoke every own session including
-     * current, and append PASSWORD_CHANGED before commit. A compare failure or
-     * authority failure returns typed failure with no partial revoke/update.
+     * One user-row transaction: re-check expectedCurrentHash under lock, then update the
+     * credential/password flags, revoke every own session including current, and append
+     * PASSWORD_CHANGED before commit. A compare failure or authority failure returns typed failure
+     * with no partial revoke/update.
      */
     ChangePasswordResult changePassword(ChangePasswordCommand command);
 
-    /** Under the user lock, atomically supersede prior reset tickets and store only the new one-way hash. */
+    /**
+     * Under the user lock, atomically supersede prior reset tickets and store only the new one-way
+     * hash.
+     */
     boolean issuePasswordResetTicket(long userId, CredentialHash ticketHash, Instant expiresAt);
 
-    /** Consume the ticket, replace the credential, revoke every prior session, and append the event atomically. */
+    /**
+     * Consume the ticket, replace the credential, revoke every prior session, and append the event
+     * atomically.
+     */
     PasswordResetResult completePasswordReset(PasswordResetCommand command);
 
     enum FailureCode {
@@ -51,29 +56,35 @@ public interface CredentialSessionTransactionPort {
             CredentialHash expectedCurrentHash,
             CredentialHash replacementHash,
             Instant now,
-            SecurityEvent passwordChangedEvent
-    ) {
+            SecurityEvent passwordChangedEvent) {
         public ChangePasswordCommand {
             if (userId <= 0) {
                 throw new IllegalArgumentException("userId must be positive");
             }
             currentSessionId = Objects.requireNonNull(currentSessionId, "currentSessionId");
-            expectedCurrentHash = Objects.requireNonNull(expectedCurrentHash, "expectedCurrentHash");
+            expectedCurrentHash =
+                    Objects.requireNonNull(expectedCurrentHash, "expectedCurrentHash");
             replacementHash = Objects.requireNonNull(replacementHash, "replacementHash");
             now = Objects.requireNonNull(now, "now");
-            passwordChangedEvent = Objects.requireNonNull(passwordChangedEvent, "passwordChangedEvent");
+            passwordChangedEvent =
+                    Objects.requireNonNull(passwordChangedEvent, "passwordChangedEvent");
             if (passwordChangedEvent.type() != SecurityEvent.Type.PASSWORD_CHANGED
                     || passwordChangedEvent.userId() != userId
                     || !currentSessionId.equals(passwordChangedEvent.sessionId())) {
-                throw new IllegalArgumentException("password command requires matching PASSWORD_CHANGED event");
+                throw new IllegalArgumentException(
+                        "password command requires matching PASSWORD_CHANGED event");
             }
         }
 
         @Override
         public String toString() {
-            return "ChangePasswordCommand[userId=" + userId
-                    + ", currentSessionId=" + currentSessionId
-                    + ", expectedCurrentHash=<redacted>, replacementHash=<redacted>, now=" + now + ']';
+            return "ChangePasswordCommand[userId="
+                    + userId
+                    + ", currentSessionId="
+                    + currentSessionId
+                    + ", expectedCurrentHash=<redacted>, replacementHash=<redacted>, now="
+                    + now
+                    + ']';
         }
     }
 
@@ -83,7 +94,8 @@ public interface CredentialSessionTransactionPort {
                 throw new IllegalArgumentException("revokedSessionCount must not be negative");
             }
             if ((revokedSessionCount == 0) != (failureCode != null)) {
-                throw new IllegalArgumentException("failure must be explicit and success must revoke at least one session");
+                throw new IllegalArgumentException(
+                        "failure must be explicit and success must revoke at least one session");
             }
         }
 
@@ -104,10 +116,7 @@ public interface CredentialSessionTransactionPort {
     }
 
     record PasswordResetCommand(
-            CredentialHash ticketHash,
-            CredentialHash replacementHash,
-            Instant now
-    ) {
+            CredentialHash ticketHash, CredentialHash replacementHash, Instant now) {
         public PasswordResetCommand {
             ticketHash = Objects.requireNonNull(ticketHash, "ticketHash");
             replacementHash = Objects.requireNonNull(replacementHash, "replacementHash");
@@ -116,7 +125,9 @@ public interface CredentialSessionTransactionPort {
 
         @Override
         public String toString() {
-            return "PasswordResetCommand[ticketHash=<redacted>, replacementHash=<redacted>, now=" + now + ']';
+            return "PasswordResetCommand[ticketHash=<redacted>, replacementHash=<redacted>, now="
+                    + now
+                    + ']';
         }
     }
 
@@ -127,13 +138,15 @@ public interface CredentialSessionTransactionPort {
     }
 
     /** A valid reset may revoke zero sessions when the user had none. */
-    record PasswordResetResult(long userId, int revokedSessionCount, PasswordResetFailureCode failureCode) {
+    record PasswordResetResult(
+            long userId, int revokedSessionCount, PasswordResetFailureCode failureCode) {
         public PasswordResetResult {
             if (userId < 0 || revokedSessionCount < 0) {
                 throw new IllegalArgumentException("result counts must not be negative");
             }
             if ((failureCode == null) != (userId > 0)) {
-                throw new IllegalArgumentException("success must identify the updated user; failure must be typed");
+                throw new IllegalArgumentException(
+                        "success must identify the updated user; failure must be typed");
             }
             if (failureCode != null && revokedSessionCount != 0) {
                 throw new IllegalArgumentException("failed reset cannot report revoked sessions");

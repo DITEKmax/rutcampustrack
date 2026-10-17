@@ -1,0 +1,173 @@
+{
+  "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "source_refs": {
+    "admin": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+    "assistant": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+    "assistant_authority": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java"
+  },
+  "admin_story_grants": {
+    "01": [
+      "USERS_MANAGE",
+      "USERS_VIEW",
+      "FULL when creating ADMIN"
+    ],
+    "02": [
+      "USERS_MANAGE",
+      "USERS_VIEW",
+      "FULL when changing ADMIN"
+    ],
+    "03": [
+      "USERS_MANAGE",
+      "USERS_VIEW"
+    ],
+    "04": [
+      "USERS_ARCHIVE",
+      "USERS_VIEW"
+    ],
+    "05": [
+      "GROUPS_MANAGE",
+      "GROUPS_VIEW"
+    ],
+    "06": [
+      "GROUPS_MANAGE",
+      "GROUPS_VIEW"
+    ],
+    "07": [
+      "GROUPS_MANAGE",
+      "GROUPS_VIEW"
+    ],
+    "08": [
+      "SEMESTERS_MANAGE",
+      "SEMESTERS_VIEW"
+    ],
+    "09": [
+      "SEMESTERS_MANAGE",
+      "SEMESTERS_VIEW"
+    ],
+    "10": [
+      "SEMESTERS_MANAGE",
+      "SEMESTERS_VIEW",
+      "DATA_DELETE",
+      "operation-bound password confirmation"
+    ],
+    "11": [
+      "DASHBOARD_VIEW"
+    ],
+    "12": [
+      "DASHBOARD_VIEW; exact accepted report route still requires selection"
+    ],
+    "13": [
+      "USERS_VIEW or GROUPS_VIEW for list export; attendance report route unresolved"
+    ],
+    "14": [
+      "external operation only; no in-product ADMIN credential recovery"
+    ],
+    "15": [
+      "GROUPS_VIEW"
+    ],
+    "16": [
+      "GROUPS_MANAGE",
+      "GROUPS_VIEW"
+    ],
+    "17": [
+      "GROUPS_MANAGE",
+      "GROUPS_VIEW"
+    ],
+    "18": [
+      "permission for owning domain + DATA_DELETE for final delete; previews must not bypass domain authority"
+    ],
+    "19": [
+      "USERS_MANAGE",
+      "USERS_VIEW",
+      "FULL for ADMIN grants"
+    ],
+    "20": [
+      "USER_CREDENTIALS_MANAGE",
+      "USERS_VIEW",
+      "LIMITED cannot target active ADMIN"
+    ],
+    "21": [
+      "USERS_MANAGE",
+      "USERS_VIEW"
+    ],
+    "22": [
+      "DASHBOARD_VIEW"
+    ],
+    "23": [
+      "CAMPUS_MAP_MANAGE"
+    ],
+    "24": [
+      "CAMPUS_MAP_MANAGE"
+    ],
+    "25": [
+      "CAMPUS_MAP_MANAGE"
+    ],
+    "26": [
+      "selected active ADMIN + current FULL/LIMITED authority; other role operations denied until switch"
+    ]
+  },
+  "assistant_story_grants": {
+    "MARK_ATTENDANCE": [
+      "JS-HEADMAN-01",
+      "JS-HEADMAN-06",
+      "JS-HEADMAN-WEB-05"
+    ],
+    "MANAGE_EXCUSES": [
+      "JS-HEADMAN-04",
+      "JS-HEADMAN-05",
+      "JS-HEADMAN-07",
+      "JS-HEADMAN-43",
+      "JS-HEADMAN-44",
+      "JS-HEADMAN-WEB-06",
+      "JS-HEADMAN-WEB-07"
+    ],
+    "MANAGE_HOMEWORK": [
+      "JS-HEADMAN-16",
+      "JS-HEADMAN-17",
+      "JS-HEADMAN-27",
+      "JS-HEADMAN-28",
+      "JS-HEADMAN-29",
+      "JS-HEADMAN-WEB-09"
+    ],
+    "CANCEL_LESSONS": [
+      "JS-HEADMAN-09",
+      "JS-HEADMAN-41",
+      "JS-HEADMAN-42"
+    ],
+    "VIEW_STATS": [
+      "JS-HEADMAN-18",
+      "JS-HEADMAN-19",
+      "JS-HEADMAN-30",
+      "JS-HEADMAN-31",
+      "JS-HEADMAN-33",
+      "JS-HEADMAN-WEB-08"
+    ]
+  },
+  "catalog_sources": [
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "text": "package ru.rutcampustrack.shared.security.admin;\n\nimport java.util.*;\n\n/** Closed, server-owned R1 catalogue. FULL is a separate authority mode. */\npublic enum AdminPermission {\n    DASHBOARD_VIEW(\"Просмотр сводки\", \"Сводная статистика\", \"overview\"),\n    USERS_VIEW(\"Просмотр пользователей\", \"Карточки и списки без начальных паролей\", \"users\"),\n    USERS_MANAGE(\"Управление пользователями\", \"Создание и изменение обычных пользователей\", \"users\", USERS_VIEW),\n    USER_CREDENTIALS_MANAGE(\"Начальные пароли и восстановление доступа\", \"Начальные пароли и ссылки восстановления обычных пользователей\", \"users\", USERS_VIEW),\n    USERS_ARCHIVE(\"Архивирование и восстановление пользователей\", \"Защищённое архивирование и восстановление обычных пользователей\", \"users\", USERS_VIEW),\n    GROUPS_VIEW(\"Просмотр групп\", \"Реестр и карточки групп\", \"groups\"),\n    GROUPS_MANAGE(\"Управление группами\", \"Создание, изменение, старосты, продвижение и архив групп\", \"groups\", GROUPS_VIEW),\n    SEMESTERS_VIEW(\"Просмотр семестров\", \"Список и карточки семестров\", \"semesters\"),\n    SEMESTERS_MANAGE(\"Управление семестрами\", \"Создание, изменение, активация и архив семестров\", \"semesters\", SEMESTERS_VIEW),\n    CAMPUS_MAP_MANAGE(\"Управление картой\", \"Здания, этажи и планы кампуса\", \"map\"),\n    DATA_DELETE(\"Окончательное удаление данных\", \"Дополнительно требует управление областью и защищённое подтверждение\", \"dangerous\"),\n    ADMIN_ACCESS_MANAGE(\"Управление администраторами и их правами\", \"Доступно только полному администратору\", \"administration\");\n    private final String label, description, group;\n    private final List<String> requires;\n    AdminPermission(String label, String description, String group, AdminPermission... requires) {\n        this.label=label; this.description=description; this.group=group;\n        this.requires=Arrays.stream(requires).map(Enum::name).toList();\n    }\n    public Entry entry() { return new Entry(name(),label,description,group,requires,this==ADMIN_ACCESS_MANAGE); }\n    public record Entry(String code,String label,String description,String group,List<String> requires,boolean fullOnly) {}\n    public static List<String> allCodes() { return Arrays.stream(values()).map(Enum::name).toList(); }\n    public static List<String> validate(String mode,List<String> input) {\n        if (input==null || !(\"FULL\".equals(mode)||\"LIMITED\".equals(mode))) throw AdminAccessException.invalid();\n        if (\"FULL\".equals(mode)) {\n            if (!input.isEmpty()) throw AdminAccessException.invalid();\n            return List.of();\n        }\n        if (input.isEmpty() || input.stream().anyMatch(Objects::isNull)) throw AdminAccessException.invalid();\n        Set<String> unique=new HashSet<>(input);\n        if (unique.size()!=input.size() || unique.contains(ADMIN_ACCESS_MANAGE.name())) throw AdminAccessException.invalid();\n        for(String code:input) {\n            AdminPermission value;\n            try { value=valueOf(code); } catch(IllegalArgumentException e) { throw AdminAccessException.invalid(); }\n            if(!unique.containsAll(value.requires)) throw AdminAccessException.invalid();\n        }\n        return allCodes().stream().filter(unique::contains).toList();\n    }\n}\n"
+    },
+    {
+      "path": "services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/enums/AssistantPermission.java",
+      "text": "package ru.rutcampustrack.academic.contract.enums;\n\npublic enum AssistantPermission {\n    MARK_ATTENDANCE,\n    MANAGE_EXCUSES,\n    MANAGE_HOMEWORK,\n    CANCEL_LESSONS,\n    VIEW_STATS;\n}\n"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java",
+      "text": "package ru.rutcampustrack.academic.assistant;\n\nimport org.springframework.stereotype.Service;\nimport ru.rutcampustrack.academic.contract.enums.AssistantPermission;\nimport ru.rutcampustrack.academic.entity.HeadmanAssistant;\nimport ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;\nimport ru.rutcampustrack.academic.repository.UserRepository;\nimport ru.rutcampustrack.academic.repository.UserRoleGrantRepository;\nimport ru.rutcampustrack.shared.security.InternalJwtClaims;\n\nimport java.util.Arrays;\nimport java.util.Locale;\nimport java.util.Set;\n\n/**\n * Fresh durable authority for assistant actions.\n *\n * <p>The actor is always taken from the validated internal JWT.  The request\n * only supplies the target group and closed permission name; neither a user\n * id nor an isHeadman flag from the caller can elevate the actor.  Repository\n * reads are intentionally uncached so revocation is visible on the next RPC.\n */\n@Service\npublic class AssistantPermissionAuthority {\n\n    private static final Set<String> RPC_PERMISSIONS = Set.of(\n            AssistantPermission.MARK_ATTENDANCE.name(),\n            AssistantPermission.MANAGE_EXCUSES.name(),\n            AssistantPermission.CANCEL_LESSONS.name(),\n            AssistantPermission.VIEW_STATS.name());\n\n    private final UserRoleGrantRepository grantRepository;\n    private final UserRepository userRepository;\n    private final HeadmanAssistantRepository assistantRepository;\n\n    public AssistantPermissionAuthority(UserRoleGrantRepository grantRepository,\n                                        UserRepository userRepository,\n                                        HeadmanAssistantRepository assistantRepository) {\n        this.grantRepository = grantRepository;\n        this.userRepository = userRepository;\n        this.assistantRepository = assistantRepository;\n    }\n\n    public boolean allows(InternalJwtClaims claims, long targetGroupId, String rawPermission) {\n        if (claims == null || claims.userId() <= 0 || targetGroupId <= 0\n                || claims.groupId() == null || !claims.groupId().equals(targetGroupId)\n                || claims.readOnly() || !\"ACTIVE\".equalsIgnoreCase(claims.status())) {\n            return false;\n        }\n        String permission = rawPermission == null\n                ? \"\"\n                : rawPermission.trim().toUpperCase(Locale.ROOT);\n        if (!RPC_PERMISSIONS.contains(permission)) {\n            return false;\n        }\n\n        if (\"HEADMAN\".equalsIgnoreCase(claims.role())) {\n            return grantRepository.findByUserIdAndRoleAndStatus(\n                            claims.userId(), \"headman\", \"active\")\n                    .stream()\n                    .anyMatch(grant -> targetGroupId == (grant.getGroupId() == null\n                            ? Long.MIN_VALUE : grant.getGroupId()));\n        }\n        if (!\"STUDENT\".equalsIgnoreCase(claims.role())) {\n            return false;\n        }\n\n        return durableStudentAllows(claims.userId(), targetGroupId, permission);\n    }\n\n    /** Fresh recipient authority; permission is chosen by the server's event catalogue. */\n    public boolean allowsRecipient(long userId, long targetGroupId, String permission) {\n        if (userId <= 0 || targetGroupId <= 0 || !RPC_PERMISSIONS.contains(permission)\n                || userRepository.findById(userId).isEmpty()) return false;\n        return durableStudentAllows(userId, targetGroupId, permission);\n    }\n\n    private boolean durableStudentAllows(long userId, long targetGroupId, String permission) {\n        Long studentGroupId = userRepository.findActiveStudentGrantGroupId(userId)\n                .orElse(null);\n        if (!Long.valueOf(targetGroupId).equals(studentGroupId)) {\n            return false;\n        }\n        return assistantRepository.findByGroupIdAndStudentIdAndIsActiveTrue(targetGroupId, userId)\n                .map(assistant -> hasPermission(assistant, permission))\n                .orElse(false);\n    }\n\n    private static boolean hasPermission(HeadmanAssistant assistant, String permission) {\n        String expected = permission.toLowerCase(Locale.ROOT);\n        return assistant.getPermissions() != null\n                && Arrays.stream(assistant.getPermissions())\n                .filter(value -> value != null)\n                .map(value -> value.trim().toLowerCase(Locale.ROOT))\n                .anyMatch(expected::equals);\n    }\n}\n"
+    }
+  ],
+  "global_constraints": [
+    "current active selected role",
+    "durable authority and target scope",
+    "revocation visible on subsequent request",
+    "authority unavailable fail closed",
+    "LIMITED does not imply FULL",
+    "ADMIN_ACCESS_MANAGE FULL only",
+    "last active FULL admin preserved including concurrency",
+    "USERS_VIEW does not grant credentials",
+    "VIEW_STATS does not grant roster personal data export",
+    "teacher read expansion does not grant writes or unfiltered ticket details"
+  ],
+  "runtime_status": "NOT_RUN"
+}

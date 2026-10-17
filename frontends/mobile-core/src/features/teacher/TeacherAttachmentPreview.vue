@@ -1,18 +1,54 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onBeforeUnmount, shallowRef, watch } from 'vue'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import type { TeacherApi, TeacherExcuseAttachment } from './teacher-client'
-import { TeacherAttachmentPreview, type TeacherAttachmentState } from './teacher-attachment-preview'
-const AttachmentPdfPreview = defineAsyncComponent(() => import('../../shared/components/AttachmentPdfPreview.vue'))
-const props = defineProps<{ api: TeacherApi | null; requestId: string; attachment: TeacherExcuseAttachment }>()
-const state = shallowRef<TeacherAttachmentState>({status:'idle',url:null,mime:null,error:null})
-const preview = new TeacherAttachmentPreview(() => props, value => { state.value = value })
-const image = computed(() => state.value.mime === 'image/png' || state.value.mime === 'image/jpeg')
-const expired = computed(() => state.value.status !== 'loading' && props.attachment.expiresAt !== null && (!Number.isFinite(Date.parse(props.attachment.expiresAt)) || Date.parse(props.attachment.expiresAt) <= Date.now()))
-watch(() => [props.api,props.requestId,props.attachment.id,props.attachment.expiresAt] as const, () => { void preview.load() }, { immediate: true, flush: 'sync' })
-onBeforeUnmount(() => preview.dispose())
-function open(): void { const url = preview.openUrl(); if (url) window.open(url,'_blank','noopener,noreferrer') }
-function imageError(event: Event): void { if (event.target instanceof HTMLImageElement) preview.imageFailed(event.target.src) }
+import { computed, defineAsyncComponent, onBeforeUnmount, shallowRef, watch } from 'vue';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import type { TeacherApi, TeacherExcuseAttachment } from './teacher-client';
+import {
+  TeacherAttachmentPreview,
+  type TeacherAttachmentState,
+} from './teacher-attachment-preview';
+const AttachmentPdfPreview = defineAsyncComponent(
+  () => import('../../shared/components/AttachmentPdfPreview.vue'),
+);
+const props = defineProps<{
+  api: TeacherApi | null;
+  requestId: string;
+  attachment: TeacherExcuseAttachment;
+}>();
+const state = shallowRef<TeacherAttachmentState>({
+  status: 'idle',
+  url: null,
+  mime: null,
+  error: null,
+});
+const preview = new TeacherAttachmentPreview(
+  () => props,
+  (value) => {
+    state.value = value;
+  },
+);
+const image = computed(() => state.value.mime === 'image/png' || state.value.mime === 'image/jpeg');
+const expired = computed(
+  () =>
+    state.value.status !== 'loading' &&
+    props.attachment.expiresAt !== null &&
+    (!Number.isFinite(Date.parse(props.attachment.expiresAt)) ||
+      Date.parse(props.attachment.expiresAt) <= Date.now()),
+);
+watch(
+  () => [props.api, props.requestId, props.attachment.id, props.attachment.expiresAt] as const,
+  () => {
+    void preview.load();
+  },
+  { immediate: true, flush: 'sync' },
+);
+onBeforeUnmount(() => preview.dispose());
+function open(): void {
+  const url = preview.openUrl();
+  if (url) window.open(url, '_blank', 'noopener,noreferrer');
+}
+function imageError(event: Event): void {
+  if (event.target instanceof HTMLImageElement) preview.imageFailed(event.target.src);
+}
 </script>
 <template>
   <section

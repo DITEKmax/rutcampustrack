@@ -1,0 +1,9 @@
+# Export source diagnosis — partial
+Frozen source revision e51b97c5e9d2663aaf336899db3bb4d9463b9d88; baseline 3908fad9624f97aec8891fc79338ceb6b0616bf3. Requested Sol6.1/high; actual model metadata UNKNOWN. Read-only, no runtime or product edits.
+
+1. JS-ADMIN-13 is revised: canonical design job-stories.md:253–259 accepts filtered user/group list exports, five formats, catalogue supplied by server. The old attendance export statement in docs/product/job-stories.md:48 is retained history, explicitly struck through in original. User-export columns/audit are marked unresolved in that source; investigate later R-1 and limited admin decision before claiming a fully specified gap.
+2. R-3 asynchronous readiness is not only an archived backend proposal: copy-canonical TRANSPORT.md:33 expressly says enqueue → generator → ready event → browser file, no synchronous file response. backend-conflicts.md:115–126 supplies five table formats/two chart formats but has copy-archive status. No later override found yet. Async lifecycle transport/retry/authz details need examination; source-only contrast with synchronous controller is not runtime FAIL.
+3. Dated 2026-09-24 accepts VIEW_STATS assistant journal/statistical report downloads in own group with live grants and revocation; explicitly excludes personal roster export. 2026-10-01 accepts current roster columns (alphabetic number, name, login, group role; group/date header) and prohibits password/Telegram ID/recovery link. These are strong runtime oracles.
+4. Source registry explicitly resolves teacher journal/export as full semester, future columns blank, future lessons excluded from metrics (delivery_source_resolution_20260924_teacher_export_period); do not use old AT-20 to-today candidate mapping as acceptance.
+
+Pending: exact source SHA ledger, current endpoints/models/client paths, existing candidate tests and per-hypothesis next work. Root owns shared matrix/questions.

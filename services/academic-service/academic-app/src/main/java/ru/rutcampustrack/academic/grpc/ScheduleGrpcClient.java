@@ -1,58 +1,57 @@
 package ru.rutcampustrack.academic.grpc;
 
+import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import net.devh.boot.grpc.client.inject.GrpcClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import ru.rutcampustrack.academic.exception.ConflictException;
-import ru.rutcampustrack.academic.exception.AccessDeniedException;
-import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
-import ru.rutcampustrack.academic.security.RequestContext;
-import ru.rutcampustrack.schedule.grpc.CountSubjectReferencesRequest;
-import ru.rutcampustrack.schedule.grpc.CountSubjectReferencesResponse;
-import ru.rutcampustrack.schedule.grpc.ConfirmHomeworkBindingRequest;
-import ru.rutcampustrack.schedule.grpc.ArchiveHomeworkBindingRequest;
-import ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse;
-import ru.rutcampustrack.schedule.grpc.HomeworkBindingsRequest;
-import ru.rutcampustrack.schedule.grpc.HomeworkBindingsResponse;
-import ru.rutcampustrack.schedule.grpc.LessonResponse;
-import ru.rutcampustrack.schedule.grpc.ResolveLessonRequest;
-import ru.rutcampustrack.schedule.grpc.ReserveHomeworkBindingRequest;
-import ru.rutcampustrack.schedule.grpc.HomeworkBindingLookupRequest;
-import ru.rutcampustrack.schedule.grpc.HomeworkEditIdentity;
-import ru.rutcampustrack.schedule.grpc.HomeworkEditReceipt;
-import ru.rutcampustrack.schedule.grpc.MoveHomeworkBindingRequest;
-import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
-import ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt;
-import ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest;
-import ru.rutcampustrack.schedule.grpc.CommitAssignmentCloseRequest;
-import ru.rutcampustrack.schedule.grpc.SemesterArchiveBarrierCommand;
-import ru.rutcampustrack.schedule.grpc.SemesterArchiveHomeworkBindingIdentity;
-import ru.rutcampustrack.schedule.grpc.SemesterArchiveHomeworkBindingResolution;
-import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierRequest;
-import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierResponse;
-import ru.rutcampustrack.schedule.grpc.SemesterDeletionParticipantPreview;
-import ru.rutcampustrack.schedule.grpc.SemesterDeletionPreviewRequest;
-import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
-
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import ru.rutcampustrack.academic.exception.AccessDeniedException;
+import ru.rutcampustrack.academic.exception.ConflictException;
+import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
+import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.schedule.grpc.ArchiveHomeworkBindingRequest;
+import ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt;
+import ru.rutcampustrack.schedule.grpc.CommitAssignmentCloseRequest;
+import ru.rutcampustrack.schedule.grpc.ConfirmHomeworkBindingRequest;
+import ru.rutcampustrack.schedule.grpc.CountSubjectReferencesRequest;
+import ru.rutcampustrack.schedule.grpc.CountSubjectReferencesResponse;
+import ru.rutcampustrack.schedule.grpc.HomeworkBindingLookupRequest;
+import ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse;
+import ru.rutcampustrack.schedule.grpc.HomeworkBindingsRequest;
+import ru.rutcampustrack.schedule.grpc.HomeworkBindingsResponse;
+import ru.rutcampustrack.schedule.grpc.HomeworkEditIdentity;
+import ru.rutcampustrack.schedule.grpc.HomeworkEditReceipt;
+import ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.schedule.grpc.MoveHomeworkBindingRequest;
+import ru.rutcampustrack.schedule.grpc.ReserveHomeworkBindingRequest;
+import ru.rutcampustrack.schedule.grpc.ResolveLessonRequest;
+import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
+import ru.rutcampustrack.schedule.grpc.SemesterArchiveBarrierCommand;
+import ru.rutcampustrack.schedule.grpc.SemesterArchiveHomeworkBindingIdentity;
+import ru.rutcampustrack.schedule.grpc.SemesterArchiveHomeworkBindingResolution;
+import ru.rutcampustrack.schedule.grpc.SemesterDeletionParticipantPreview;
+import ru.rutcampustrack.schedule.grpc.SemesterDeletionPreviewRequest;
+import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierRequest;
+import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierResponse;
+import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
 
 /**
- * Phase 61 / D-04: gRPC клиент academic→schedule. Используется в {@code HomeworkService}
- * для валидации: пара {@code (groupId, date, lessonNumber)} существует и её subject
- * совпадает с {@code subjectId} ДЗ.
+ * Phase 61 / D-04: gRPC клиент academic→schedule. Используется в {@code HomeworkService} для
+ * валидации: пара {@code (groupId, date, lessonNumber)} существует и её subject совпадает с {@code
+ * subjectId} ДЗ.
  *
- * <p>3-секундный deadline — mitigation T-61-05 (DoS через hanging gRPC call).
- * NOT_FOUND транслируется в {@link Optional#empty()} — вызывающий сервис сам решает,
- * как его интерпретировать (для D-04 — это 400 «пары нет в расписании»).
- * Любая другая ошибка gRPC → {@link ScheduleServiceUnavailableException} → 503.
+ * <p>3-секундный deadline — mitigation T-61-05 (DoS через hanging gRPC call). NOT_FOUND
+ * транслируется в {@link Optional#empty()} — вызывающий сервис сам решает, как его интерпретировать
+ * (для D-04 — это 400 «пары нет в расписании»). Любая другая ошибка gRPC → {@link
+ * ScheduleServiceUnavailableException} → 503.
  */
 @Component
 public class ScheduleGrpcClient {
@@ -69,12 +68,13 @@ public class ScheduleGrpcClient {
     }
 
     @Autowired
-    public ScheduleGrpcClient(RequestContext requestContext,
-                              @Value("${grpc.service-identity.academic-to-schedule-token:}")
-                              String academicToScheduleToken) {
+    public ScheduleGrpcClient(
+            RequestContext requestContext,
+            @Value("${grpc.service-identity.academic-to-schedule-token:}")
+                    String academicToScheduleToken) {
         this.requestContext = requestContext;
-        this.academicToScheduleToken = academicToScheduleToken == null
-                ? "" : academicToScheduleToken.trim();
+        this.academicToScheduleToken =
+                academicToScheduleToken == null ? "" : academicToScheduleToken.trim();
     }
 
     @GrpcClient("schedule-service")
@@ -82,12 +82,14 @@ public class ScheduleGrpcClient {
 
     public Optional<LessonResponse> resolveLesson(Long groupId, LocalDate date, int lessonNumber) {
         try {
-            LessonResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .resolveLesson(ResolveLessonRequest.newBuilder()
-                            .setGroupId(groupId)
-                            .setDate(date.toString())
-                            .setLessonNumber(lessonNumber)
-                            .build());
+            LessonResponse response =
+                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .resolveLesson(
+                                    ResolveLessonRequest.newBuilder()
+                                            .setGroupId(groupId)
+                                            .setDate(date.toString())
+                                            .setLessonNumber(lessonNumber)
+                                            .build());
             return Optional.of(response);
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
@@ -99,115 +101,164 @@ public class ScheduleGrpcClient {
     }
 
     /**
-     * Pre-check перед удалением Subject: узнаём, сколько объектов расписания
-     * ссылаются на него. Если {@code non_planned_lessons_count > 0} — есть
-     * посещаемость, SubjectService вернёт 409 без force=true.
+     * Pre-check перед удалением Subject: узнаём, сколько объектов расписания ссылаются на него.
+     * Если {@code non_planned_lessons_count > 0} — есть посещаемость, SubjectService вернёт 409 без
+     * force=true.
      *
      * <p>Любая ошибка gRPC → {@link ScheduleServiceUnavailableException} (503).
      */
     public CountSubjectReferencesResponse countSubjectReferences(Long subjectId) {
         try {
             return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .countSubjectReferences(CountSubjectReferencesRequest.newBuilder()
-                            .setSubjectId(subjectId)
-                            .build());
+                    .countSubjectReferences(
+                            CountSubjectReferencesRequest.newBuilder()
+                                    .setSubjectId(subjectId)
+                                    .build());
         } catch (StatusRuntimeException e) {
             throw new ScheduleServiceUnavailableException(
                     "Не удалось связаться с schedule-service: " + e.getStatus(), e);
         }
     }
 
-    public HomeworkBindingResponse reserveHomeworkBinding(long occurrenceId,
-                                                          UUID requestKey,
-                                                          long expectedRevision,
-                                                          byte[] payloadHash) {
+    public HomeworkBindingResponse reserveHomeworkBinding(
+            long occurrenceId, UUID requestKey, long expectedRevision, byte[] payloadHash) {
         try {
-            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .reserveHomeworkBinding(ReserveHomeworkBindingRequest.newBuilder()
-                    .setOccurrenceId(occurrenceId)
-                    .setRequestKey(requestKey.toString())
-                    .setExpectedRevision(expectedRevision)
-                    .setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash))
-                    .build());
+            return bindingStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .reserveHomeworkBinding(
+                            ReserveHomeworkBindingRequest.newBuilder()
+                                    .setOccurrenceId(occurrenceId)
+                                    .setRequestKey(requestKey.toString())
+                                    .setExpectedRevision(expectedRevision)
+                                    .setPayloadHash(
+                                            com.google.protobuf.ByteString.copyFrom(payloadHash))
+                                    .build());
         } catch (StatusRuntimeException e) {
             throw mapBindingError(e, "зарезервировать привязку домашней работы");
         }
     }
 
-    public HomeworkBindingResponse reserveDateHomeworkBinding(long groupId, long subjectId, long semesterId,
-                                                               LocalDate date, UUID requestKey, byte[] payloadHash) {
+    public HomeworkBindingResponse reserveDateHomeworkBinding(
+            long groupId,
+            long subjectId,
+            long semesterId,
+            LocalDate date,
+            UUID requestKey,
+            byte[] payloadHash) {
         try {
-            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS).reserveHomeworkBinding(
-                    ReserveHomeworkBindingRequest.newBuilder().setBindingMode("DATE")
-                    .setGroupId(groupId).setSubjectId(subjectId).setSemesterId(semesterId).setDate(date.toString())
-                    .setRequestKey(requestKey.toString()).setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash)).build());
-        } catch (StatusRuntimeException error) { throw mapBindingError(error, "создать ДЗ на календарный день"); }
+            return bindingStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .reserveHomeworkBinding(
+                            ReserveHomeworkBindingRequest.newBuilder()
+                                    .setBindingMode("DATE")
+                                    .setGroupId(groupId)
+                                    .setSubjectId(subjectId)
+                                    .setSemesterId(semesterId)
+                                    .setDate(date.toString())
+                                    .setRequestKey(requestKey.toString())
+                                    .setPayloadHash(
+                                            com.google.protobuf.ByteString.copyFrom(payloadHash))
+                                    .build());
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "создать ДЗ на календарный день");
+        }
     }
 
     public HomeworkBindingResponse getHomeworkBinding(long bindingId) {
         try {
-            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS).getHomeworkBinding(
-                    HomeworkBindingLookupRequest.newBuilder().setBindingId(bindingId).build());
-        } catch (StatusRuntimeException error) { throw mapBindingError(error, "получить текущую привязку ДЗ"); }
+            return bindingStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getHomeworkBinding(
+                            HomeworkBindingLookupRequest.newBuilder()
+                                    .setBindingId(bindingId)
+                                    .build());
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "получить текущую привязку ДЗ");
+        }
     }
 
     public HomeworkBindingResponse getHomeworkBindingForReconciliation(long bindingId) {
         try {
-            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS).getHomeworkBinding(
-                    HomeworkBindingLookupRequest.newBuilder().setBindingId(bindingId).build());
+            return directedStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getHomeworkBinding(
+                            HomeworkBindingLookupRequest.newBuilder()
+                                    .setBindingId(bindingId)
+                                    .build());
         } catch (StatusRuntimeException error) {
             throw mapBindingError(error, "сверить exact DATE identity");
         }
     }
 
     public HomeworkEditReceipt moveHomeworkBinding(MoveHomeworkBindingRequest request) {
-        try { return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS).moveHomeworkBinding(request); }
-        catch (StatusRuntimeException error) { throw mapBindingError(error, "изменить привязку ДЗ"); }
+        try {
+            return bindingStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .moveHomeworkBinding(request);
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "изменить привязку ДЗ");
+        }
     }
 
     public Optional<HomeworkEditReceipt> continueHomeworkEdit(HomeworkEditIdentity identity) {
-        try { return Optional.of(directedStub().withDeadlineAfter(3, TimeUnit.SECONDS).continueHomeworkEdit(identity)); }
-        catch (StatusRuntimeException error) {
+        try {
+            return Optional.of(
+                    directedStub()
+                            .withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .continueHomeworkEdit(identity));
+        } catch (StatusRuntimeException error) {
             if (error.getStatus().getCode() == Status.Code.NOT_FOUND) return Optional.empty();
             throw mapBindingError(error, "продолжить принятое изменение ДЗ");
         }
     }
 
     public HomeworkEditReceipt abortUnacceptedHomeworkEdit(HomeworkEditIdentity identity) {
-        try { return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS).abortUnacceptedHomeworkEdit(identity); }
-        catch (StatusRuntimeException error) { throw mapBindingError(error, "отменить ещё не принятую привязку ДЗ"); }
+        try {
+            return directedStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .abortUnacceptedHomeworkEdit(identity);
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "отменить ещё не принятую привязку ДЗ");
+        }
     }
 
     public HomeworkEditReceipt acknowledgeHomeworkEdit(HomeworkEditIdentity identity) {
-        try { return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS).acknowledgeHomeworkEdit(identity); }
-        catch (StatusRuntimeException error) { throw mapBindingError(error, "подтвердить принятое изменение ДЗ"); }
+        try {
+            return directedStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .acknowledgeHomeworkEdit(identity);
+        } catch (StatusRuntimeException error) {
+            throw mapBindingError(error, "подтвердить принятое изменение ДЗ");
+        }
     }
 
-    public HomeworkBindingResponse confirmHomeworkBinding(long bindingId,
-                                                           long homeworkId,
-                                                           UUID requestKey) {
+    public HomeworkBindingResponse confirmHomeworkBinding(
+            long bindingId, long homeworkId, UUID requestKey) {
         try {
-            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .confirmHomeworkBinding(ConfirmHomeworkBindingRequest.newBuilder()
-                    .setBindingId(bindingId)
-                    .setHomeworkId(homeworkId)
-                    .setRequestKey(requestKey.toString())
-                    .build());
+            return bindingStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .confirmHomeworkBinding(
+                            ConfirmHomeworkBindingRequest.newBuilder()
+                                    .setBindingId(bindingId)
+                                    .setHomeworkId(homeworkId)
+                                    .setRequestKey(requestKey.toString())
+                                    .build());
         } catch (StatusRuntimeException e) {
             throw mapBindingError(e, "подтвердить привязку домашней работы");
         }
     }
 
-    public HomeworkBindingResponse archiveHomeworkBinding(long bindingId,
-                                                          long homeworkId,
-                                                          UUID requestKey) {
+    public HomeworkBindingResponse archiveHomeworkBinding(
+            long bindingId, long homeworkId, UUID requestKey) {
         try {
-            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .archiveHomeworkBinding(ArchiveHomeworkBindingRequest.newBuilder()
-                    .setBindingId(bindingId)
-                    .setHomeworkId(homeworkId)
-                    .setRequestKey(requestKey.toString())
-                    .build());
+            return bindingStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .archiveHomeworkBinding(
+                            ArchiveHomeworkBindingRequest.newBuilder()
+                                    .setBindingId(bindingId)
+                                    .setHomeworkId(homeworkId)
+                                    .setRequestKey(requestKey.toString())
+                                    .build());
         } catch (StatusRuntimeException e) {
             throw mapBindingError(e, "архивировать привязку домашней работы");
         }
@@ -217,27 +268,32 @@ public class ScheduleGrpcClient {
         try {
             HomeworkBindingsRequest.Builder request = HomeworkBindingsRequest.newBuilder();
             occurrenceIds.forEach(request::addOccurrenceIds);
-            return bindingStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+            return bindingStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
                     .getHomeworkBindings(request.build());
         } catch (StatusRuntimeException e) {
             throw mapBindingError(e, "прочитать привязки домашних работ");
         }
     }
 
-    public AssignmentCloseReceipt installAssignmentCloseCap(UUID operationId,
-                                                             long sourceAssignmentId,
-                                                             long targetAssignmentId,
-                                                             LocalDate effectiveFrom,
-                                                             byte[] payloadHash) {
+    public AssignmentCloseReceipt installAssignmentCloseCap(
+            UUID operationId,
+            long sourceAssignmentId,
+            long targetAssignmentId,
+            LocalDate effectiveFrom,
+            byte[] payloadHash) {
         try {
-            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .installAssignmentCloseCap(InstallAssignmentCloseCapRequest.newBuilder()
-                    .setOperationId(operationId.toString())
-                    .setSourceAssignmentId(sourceAssignmentId)
-                    .setTargetAssignmentId(targetAssignmentId)
-                    .setEffectiveFrom(effectiveFrom.toString())
-                    .setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash))
-                    .build());
+            return directedStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .installAssignmentCloseCap(
+                            InstallAssignmentCloseCapRequest.newBuilder()
+                                    .setOperationId(operationId.toString())
+                                    .setSourceAssignmentId(sourceAssignmentId)
+                                    .setTargetAssignmentId(targetAssignmentId)
+                                    .setEffectiveFrom(effectiveFrom.toString())
+                                    .setPayloadHash(
+                                            com.google.protobuf.ByteString.copyFrom(payloadHash))
+                                    .build());
         } catch (StatusRuntimeException error) {
             throw mapBindingError(error, "применить замену преподавателя");
         }
@@ -245,53 +301,76 @@ public class ScheduleGrpcClient {
 
     public AssignmentCloseReceipt commitAssignmentClose(UUID operationId, byte[] payloadHash) {
         try {
-            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .commitAssignmentClose(CommitAssignmentCloseRequest.newBuilder()
-                    .setOperationId(operationId.toString())
-                    .setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash))
-                    .build());
+            return directedStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .commitAssignmentClose(
+                            CommitAssignmentCloseRequest.newBuilder()
+                                    .setOperationId(operationId.toString())
+                                    .setPayloadHash(
+                                            com.google.protobuf.ByteString.copyFrom(payloadHash))
+                                    .build());
         } catch (StatusRuntimeException error) {
             throw mapBindingError(error, "зафиксировать замену преподавателя");
         }
     }
 
     public AssignmentCloseReceipt installAssignmentLifecycle(
-            UUID operationId, Long sourceId, Long targetId, LocalDate effectiveFrom,
-            byte[] payloadHash, String kind) {
-        InstallAssignmentCloseCapRequest.Builder request = InstallAssignmentCloseCapRequest.newBuilder()
-                .setOperationId(operationId.toString()).setEffectiveFrom(effectiveFrom.toString())
-                .setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash)).setOperationKind(kind);
+            UUID operationId,
+            Long sourceId,
+            Long targetId,
+            LocalDate effectiveFrom,
+            byte[] payloadHash,
+            String kind) {
+        InstallAssignmentCloseCapRequest.Builder request =
+                InstallAssignmentCloseCapRequest.newBuilder()
+                        .setOperationId(operationId.toString())
+                        .setEffectiveFrom(effectiveFrom.toString())
+                        .setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash))
+                        .setOperationKind(kind);
         if (sourceId != null) request.setSourceAssignmentId(sourceId);
         if (targetId != null) request.setTargetAssignmentId(targetId);
         try {
-            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+            return directedStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
                     .installAssignmentCloseCap(request.build());
         } catch (StatusRuntimeException error) {
             throw mapBindingError(error, "применить изменение назначения");
         }
     }
 
-    /** Calls Schedule's exact versioned barrier using only the directed Academic service identity. */
+    /**
+     * Calls Schedule's exact versioned barrier using only the directed Academic service identity.
+     */
     public SetSemesterArchiveBarrierResponse setSemesterArchiveBarrier(
-            UUID operationId, long semesterId, long stateVersion,
+            UUID operationId,
+            long semesterId,
+            long stateVersion,
             ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand command) {
-        SemesterArchiveBarrierCommand wireCommand = switch (command) {
-            case PREPARE_ARCHIVE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE;
-            case PREPARE_RESTORE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_RESTORE;
-            case RELEASE_RESTORE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RELEASE_RESTORE;
-            case SEAL_ARCHIVE -> throw new IllegalArgumentException(
-                    "SEAL_ARCHIVE is a local Academic/Attendance command, not a Schedule RPC");
-            case PREPARE_DELETE, SEAL_DELETE, RELEASE_DELETE, COMMIT_DELETE -> throw new IllegalArgumentException(
-                    "Delete commands require the exact deletion participant digest");
-        };
+        SemesterArchiveBarrierCommand wireCommand =
+                switch (command) {
+                    case PREPARE_ARCHIVE ->
+                            SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_ARCHIVE;
+                    case PREPARE_RESTORE ->
+                            SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_RESTORE;
+                    case RELEASE_RESTORE ->
+                            SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RELEASE_RESTORE;
+                    case SEAL_ARCHIVE ->
+                            throw new IllegalArgumentException(
+                                    "SEAL_ARCHIVE is a local Academic/Attendance command, not a Schedule RPC");
+                    case PREPARE_DELETE, SEAL_DELETE, RELEASE_DELETE, COMMIT_DELETE ->
+                            throw new IllegalArgumentException(
+                                    "Delete commands require the exact deletion participant digest");
+                };
         try {
-            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .setSemesterArchiveBarrier(SetSemesterArchiveBarrierRequest.newBuilder()
-                    .setOperationId(operationId.toString())
-                    .setSemesterId(semesterId)
-                    .setStateVersion(stateVersion)
-                    .setCommand(wireCommand)
-                    .build());
+            return directedStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .setSemesterArchiveBarrier(
+                            SetSemesterArchiveBarrierRequest.newBuilder()
+                                    .setOperationId(operationId.toString())
+                                    .setSemesterId(semesterId)
+                                    .setStateVersion(stateVersion)
+                                    .setCommand(wireCommand)
+                                    .build());
         } catch (StatusRuntimeException error) {
             throw mapBindingError(error, "установить barrier архивации в schedule-service");
         }
@@ -300,68 +379,103 @@ public class ScheduleGrpcClient {
     public SemesterDeletionParticipantPreview previewSemesterDeletion(long semesterId) {
         if (semesterId <= 0) throw new IllegalArgumentException("semesterId must be positive");
         try {
-            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getSemesterDeletionPreview(SemesterDeletionPreviewRequest.newBuilder()
-                    .setSemesterId(semesterId)
-                    .build());
+            return directedStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getSemesterDeletionPreview(
+                            SemesterDeletionPreviewRequest.newBuilder()
+                                    .setSemesterId(semesterId)
+                                    .build());
         } catch (StatusRuntimeException error) {
-            throw mapBindingError(error, "получить предварительный расчёт расписания для удаления семестра");
+            throw mapBindingError(
+                    error, "получить предварительный расчёт расписания для удаления семестра");
         }
     }
 
     public SetSemesterArchiveBarrierResponse setSemesterDeletionBarrier(
-            UUID operationId, long semesterId, long stateVersion,
+            UUID operationId,
+            long semesterId,
+            long stateVersion,
             ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand command,
             String expectedParticipantDigest) {
-        if (command == null || expectedParticipantDigest == null || expectedParticipantDigest.isBlank()) {
-            throw new IllegalArgumentException("semester deletion command requires the exact participant digest");
+        if (command == null
+                || expectedParticipantDigest == null
+                || expectedParticipantDigest.isBlank()) {
+            throw new IllegalArgumentException(
+                    "semester deletion command requires the exact participant digest");
         }
-        SemesterArchiveBarrierCommand wireCommand = switch (command) {
-            case PREPARE_DELETE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE;
-            case SEAL_DELETE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE;
-            case RELEASE_DELETE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RELEASE_DELETE;
-            case COMMIT_DELETE -> SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_COMMIT_DELETE;
-            default -> throw new IllegalArgumentException("command is not part of semester deletion");
-        };
+        SemesterArchiveBarrierCommand wireCommand =
+                switch (command) {
+                    case PREPARE_DELETE ->
+                            SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_PREPARE_DELETE;
+                    case SEAL_DELETE ->
+                            SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_SEAL_DELETE;
+                    case RELEASE_DELETE ->
+                            SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RELEASE_DELETE;
+                    case COMMIT_DELETE ->
+                            SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_COMMIT_DELETE;
+                    default ->
+                            throw new IllegalArgumentException(
+                                    "command is not part of semester deletion");
+                };
         try {
-            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .setSemesterArchiveBarrier(SetSemesterArchiveBarrierRequest.newBuilder()
-                    .setOperationId(operationId.toString())
-                    .setSemesterId(semesterId)
-                    .setStateVersion(stateVersion)
-                    .setCommand(wireCommand)
-                    .setExpectedParticipantDigest(expectedParticipantDigest)
-                    .build());
+            return directedStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .setSemesterArchiveBarrier(
+                            SetSemesterArchiveBarrierRequest.newBuilder()
+                                    .setOperationId(operationId.toString())
+                                    .setSemesterId(semesterId)
+                                    .setStateVersion(stateVersion)
+                                    .setCommand(wireCommand)
+                                    .setExpectedParticipantDigest(expectedParticipantDigest)
+                                    .build());
         } catch (StatusRuntimeException error) {
-            throw mapBindingError(error, "применить participant barrier удаления семестра в Schedule");
+            throw mapBindingError(
+                    error, "применить participant barrier удаления семестра в Schedule");
         }
     }
 
     /** Schedule-only exact admission confirmation or terminal cancellation. */
     public SetSemesterArchiveBarrierResponse reconcileArchiveHomeworkBinding(
-            UUID operationId, long semesterId, long stateVersion,
-            long bindingId, long occurrenceId, long actorId, UUID requestKey,
-            byte[] payloadHash, long revision, Long homeworkId) {
-        SemesterArchiveHomeworkBindingResolution resolution = homeworkId == null
-                ? SemesterArchiveHomeworkBindingResolution.SEMESTER_ARCHIVE_HOMEWORK_BINDING_CANCEL_UNPUBLISHED
-                : SemesterArchiveHomeworkBindingResolution.SEMESTER_ARCHIVE_HOMEWORK_BINDING_CONFIRM_MATERIALIZED;
-        SetSemesterArchiveBarrierRequest.Builder request = SetSemesterArchiveBarrierRequest.newBuilder()
-                .setOperationId(operationId.toString())
-                .setSemesterId(semesterId)
-                .setStateVersion(stateVersion)
-                .setCommand(SemesterArchiveBarrierCommand.SEMESTER_ARCHIVE_BARRIER_RECONCILE_HOMEWORK_BINDING)
-                .setBinding(SemesterArchiveHomeworkBindingIdentity.newBuilder()
-                        .setBindingId(bindingId)
-                        .setOccurrenceId(occurrenceId)
-                        .setActorId(actorId)
-                        .setRequestKey(requestKey.toString())
-                        .setPayloadHash(com.google.protobuf.ByteString.copyFrom(payloadHash))
-                        .setRevision(revision)
-                        .build())
-                .setBindingResolution(resolution);
+            UUID operationId,
+            long semesterId,
+            long stateVersion,
+            long bindingId,
+            long occurrenceId,
+            long actorId,
+            UUID requestKey,
+            byte[] payloadHash,
+            long revision,
+            Long homeworkId) {
+        SemesterArchiveHomeworkBindingResolution resolution =
+                homeworkId == null
+                        ? SemesterArchiveHomeworkBindingResolution
+                                .SEMESTER_ARCHIVE_HOMEWORK_BINDING_CANCEL_UNPUBLISHED
+                        : SemesterArchiveHomeworkBindingResolution
+                                .SEMESTER_ARCHIVE_HOMEWORK_BINDING_CONFIRM_MATERIALIZED;
+        SetSemesterArchiveBarrierRequest.Builder request =
+                SetSemesterArchiveBarrierRequest.newBuilder()
+                        .setOperationId(operationId.toString())
+                        .setSemesterId(semesterId)
+                        .setStateVersion(stateVersion)
+                        .setCommand(
+                                SemesterArchiveBarrierCommand
+                                        .SEMESTER_ARCHIVE_BARRIER_RECONCILE_HOMEWORK_BINDING)
+                        .setBinding(
+                                SemesterArchiveHomeworkBindingIdentity.newBuilder()
+                                        .setBindingId(bindingId)
+                                        .setOccurrenceId(occurrenceId)
+                                        .setActorId(actorId)
+                                        .setRequestKey(requestKey.toString())
+                                        .setPayloadHash(
+                                                com.google.protobuf.ByteString.copyFrom(
+                                                        payloadHash))
+                                        .setRevision(revision)
+                                        .build())
+                        .setBindingResolution(resolution);
         if (homeworkId != null) request.setHomeworkId(homeworkId);
         try {
-            return directedStub().withDeadlineAfter(3, TimeUnit.SECONDS)
+            return directedStub()
+                    .withDeadlineAfter(3, TimeUnit.SECONDS)
                     .setSemesterArchiveBarrier(request.build());
         } catch (StatusRuntimeException error) {
             throw mapBindingError(error, "сверить принятую публикацию домашнего задания с архивом");
@@ -381,8 +495,7 @@ public class ScheduleGrpcClient {
     private ScheduleGrpcServiceGrpc.ScheduleGrpcServiceBlockingStub bindingStub() {
         Long actorId = requestContext.getUserId();
         String internalToken = requestContext.getInternalToken();
-        if (actorId == null || actorId <= 0
-                || internalToken == null || internalToken.isBlank()) {
+        if (actorId == null || actorId <= 0 || internalToken == null || internalToken.isBlank()) {
             throw new ScheduleServiceUnavailableException(
                     "Нельзя вызвать binding API без подписанного аутентифицированного пользователя");
         }
@@ -399,15 +512,18 @@ public class ScheduleGrpcClient {
     private RuntimeException mapBindingError(StatusRuntimeException error, String action) {
         Status.Code code = error.getStatus().getCode();
         if (code == Status.Code.UNAUTHENTICATED || code == Status.Code.PERMISSION_DENIED) {
-            return new AccessDeniedException(error.getStatus().getDescription() == null
-                    ? "Нет права на binding API"
-                    : error.getStatus().getDescription());
+            return new AccessDeniedException(
+                    error.getStatus().getDescription() == null
+                            ? "Нет права на binding API"
+                            : error.getStatus().getDescription());
         }
-        if (code == Status.Code.ABORTED || code == Status.Code.FAILED_PRECONDITION
+        if (code == Status.Code.ABORTED
+                || code == Status.Code.FAILED_PRECONDITION
                 || code == Status.Code.ALREADY_EXISTS) {
-            return new ConflictException(error.getStatus().getDescription() == null
-                    ? "Конфликт: не удалось " + action
-                    : error.getStatus().getDescription());
+            return new ConflictException(
+                    error.getStatus().getDescription() == null
+                            ? "Конфликт: не удалось " + action
+                            : error.getStatus().getDescription());
         }
         return new ScheduleServiceUnavailableException(
                 "Не удалось " + action + " в schedule-service: " + error.getStatus(), error);

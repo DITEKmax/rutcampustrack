@@ -4,12 +4,14 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiohttp import web
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from bot.config import config, validate_startup_config
 from bot.consumers.event_consumer import start_consumer
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
+from bot.grpc_client.bot_credentials_client import BotCredentialsGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
 from bot.handlers import (
     excuse_router,
@@ -23,10 +25,11 @@ from bot.handlers import (
 )
 from bot.handlers.prefs import keyboard_signature, main_keyboard
 from bot.middlewares import ObservabilityMiddleware
-from bot.observability import setup_observability
+from bot.observability import METRICS_REGISTRY, TASK_ALIVE, SendQueueCollector, setup_observability
 from bot.services.academic_http_client import AcademicHttpClient
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
+from bot.services.bot_credential_cards import BotCredentialCards
 from bot.services.event_publisher import EventPublisher
 from bot.services.idempotency_guard import BotIdempotencyGuard
 from bot.services.jwt_redis_client import JwtRedisClient
@@ -61,11 +64,18 @@ async def health_handler(request: web.Request) -> web.Response:
 async def run_health_server() -> None:
     app = web.Application()
     app.router.add_get("/health", health_handler)
+    app.router.add_get("/metrics", metrics_handler)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", config.health_port)
     await site.start()
     logger.info("Health server started on port %d", config.health_port)
+
+
+async def metrics_handler(request: web.Request) -> web.Response:
+    for name, task in (("watchdog", _consumer_task), ("polling", _bot_task), ("keyboard_sync", _keyboard_sync_task)):
+        TASK_ALIVE.labels(name).set(int(task is not None and not task.done()))
+    return web.Response(body=generate_latest(METRICS_REGISTRY), headers={"Content-Type": CONTENT_TYPE_LATEST})
 
 
 async def run_with_watchdog(rabbitmq_url: str, dispatcher=None, idempotency_guard=None) -> None:
@@ -113,7 +123,11 @@ async def create_clients():
     auth_client = AuthHttpClient(base_url=f"http://{config.auth_service_host}:{config.auth_service_port}")
     attendance_client = AttendanceHttpClient(base_url=config.api_gateway_url)
     attendance_request_client = AttendanceRequestGrpcClient(
-        config.attendance_grpc_host, config.attendance_grpc_port, config.grpc_secret
+        config.attendance_grpc_host,
+        config.attendance_grpc_port,
+        config.grpc_secret,
+        tls_enabled=config.attendance_grpc_tls_enabled,
+        tls_ca_path=config.attendance_grpc_tls_ca_path,
     )
     academic_http_client = AcademicHttpClient(base_url=config.api_gateway_url)
 
@@ -156,6 +170,15 @@ async def main() -> None:
 
     # Create Bot and Dispatcher
     bot = Bot(token=config.bot_token)
+    bot_credentials_client = BotCredentialsGrpcClient(
+        config.academic_grpc_host,
+        config.academic_grpc_port,
+        config.grpc_secret,
+        config.academic_grpc_tls_enabled,
+        config.academic_grpc_tls_ca_path,
+        config.bot_to_academic_service_token,
+    )
+    credential_cards = BotCredentialCards(bot=bot, client=bot_credentials_client)
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
 
@@ -204,6 +227,7 @@ async def main() -> None:
     )
 
     dp["academic_client"] = academic_client
+    dp["credential_cards"] = credential_cards
     dp["schedule_client"] = schedule_client
     dp["jwt_redis"] = jwt_redis
     dp["auth_client"] = auth_client
@@ -227,6 +251,7 @@ async def main() -> None:
 
     # Create send queue and reminder redis client
     send_queue = TelegramSendQueue(prefs_client=prefs_client)
+    METRICS_REGISTRY.register(SendQueueCollector(send_queue))
     send_queue.start()
     redis_client = ReminderRedisClient(
         key_template=config.reminder_key_template,
@@ -248,6 +273,7 @@ async def main() -> None:
         otp_tracker=otp_tracker,
         request_tracker=request_tracker,
         attendance_client=attendance_request_client,
+        credential_cards=credential_cards,
     )
 
     # Start watchdog with dispatcher
@@ -307,6 +333,7 @@ async def main() -> None:
         await keyboard_sync.close()
         await schedule_client.close()
         await academic_client.close()
+        await bot_credentials_client.close()
         await event_publisher.close()
 
 

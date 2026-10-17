@@ -3,13 +3,14 @@
 // до первого render'а, чтобы избежать flash wrong theme.
 // M07 G12 security hot-patch: вынесен из inline <script> для CSP
 // script-src 'self' (HIGH-1).
-(function () {
+;(function () {
   try {
-    var stored = localStorage.getItem('ruttrack.theme');
-    if (stored !== 'light' && stored !== 'dark') stored = null; // validate
-    var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-    document.documentElement.setAttribute('data-theme', theme);
+    var stored = localStorage.getItem('ruttrack.theme')
+    if (stored !== 'light' && stored !== 'dark') stored = null // validate
+    var theme =
+      stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+    document.documentElement.setAttribute('data-theme', theme)
   } catch (e) {
-    document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.setAttribute('data-theme', 'dark')
   }
-})();
+})()

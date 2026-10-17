@@ -1,0 +1,15 @@
+{
+  "native_exit": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "supervisor_absent": true,
+  "markers": [
+    "Gitleaks secret detection................................................Passed",
+    "check yaml...........................................(no files to check)Skipped",
+    "check json...............................................................Passed",
+    "check for added large files..............................................Passed",
+    "fix end of files.........................................................Passed",
+    "trim trailing whitespace.................................................Passed"
+  ],
+  "scope": "taskdocs only, staged71, byteexactb2ec with separatepaths; notfinalD009/DONE"
+}

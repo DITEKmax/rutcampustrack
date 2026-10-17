@@ -1,29 +1,29 @@
 package ru.rutcampustrack.schedule.golden;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDate;
+import java.time.temporal.WeekFields;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 
-import java.time.LocalDate;
-import java.time.temporal.WeekFields;
-import java.util.concurrent.ThreadLocalRandom;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * M08 Группа 4 (P2-8/4) — property-based-like tests для week-parity convention.
  *
- * <p>jqwik скейл не добавляется (избегаем новой dep + конфликт с Spring Boot Test).
- * Используются simple random loops + @RepeatedTest для статистического покрытия
- * corner-cases поверх deterministic golden fixtures.
+ * <p>jqwik скейл не добавляется (избегаем новой dep + конфликт с Spring Boot Test). Используются
+ * simple random loops + @RepeatedTest для статистического покрытия corner-cases поверх
+ * deterministic golden fixtures.
  *
  * <p>Two invariants:
+ *
  * <ol>
- *   <li><b>parityFlipsEveryWeek</b> — после +7 дней ISO week меняется на 1, и
- *       соответствующий WeekType flip'ается ODD ↔ EVEN.</li>
- *   <li><b>parityStableWithinWeek</b> — 7 последовательных дней одной ISO-недели
- *       имеют одинаковый WeekType (понедельник..воскресенье).</li>
+ *   <li><b>parityFlipsEveryWeek</b> — после +7 дней ISO week меняется на 1, и соответствующий
+ *       WeekType flip'ается ODD ↔ EVEN.
+ *   <li><b>parityStableWithinWeek</b> — 7 последовательных дней одной ISO-недели имеют одинаковый
+ *       WeekType (понедельник..воскресенье).
  * </ol>
  */
 class WeekParityPropertyTest {
@@ -55,7 +55,8 @@ class WeekParityPropertyTest {
 
         if (normalIncrement) {
             assertThat(parity)
-                    .as("Для %s (W%d) и %s (W%d) parity должны быть разными",
+                    .as(
+                            "Для %s (W%d) и %s (W%d) parity должны быть разными",
                             date, isoWeek1, date.plusDays(7), isoWeek2)
                     .isNotEqualTo(parityNextWeek);
         }
@@ -76,7 +77,8 @@ class WeekParityPropertyTest {
         for (int day = 0; day < 7; day++) {
             LocalDate dayN = monday.plusDays(day);
             assertThat(parityOf(dayN))
-                    .as("%s (ISO week %d) должен иметь ту же parity, что и %s",
+                    .as(
+                            "%s (ISO week %d) должен иметь ту же parity, что и %s",
                             dayN, dayN.get(WeekFields.ISO.weekOfWeekBasedYear()), monday)
                     .isEqualTo(mondayParity);
         }

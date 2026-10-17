@@ -19,13 +19,13 @@ public class GrpcAuthInterceptor implements ServerInterceptor {
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
-            ServerCall<ReqT, RespT> call,
-            Metadata headers,
-            ServerCallHandler<ReqT, RespT> next) {
+            ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
         if (expectedSecret != null && !expectedSecret.isBlank()) {
             String provided = headers.get(SECRET_KEY);
             if (provided == null || !provided.equals(expectedSecret)) {
-                call.close(Status.UNAUTHENTICATED.withDescription("Invalid or missing gRPC secret"), new Metadata());
+                call.close(
+                        Status.UNAUTHENTICATED.withDescription("Invalid or missing gRPC secret"),
+                        new Metadata());
                 return new ServerCall.Listener<>() {};
             }
         }

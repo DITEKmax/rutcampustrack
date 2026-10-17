@@ -1,0 +1,7 @@
+{
+  "event": "reviewer Python import created automatic bytecode cache beside source",
+  "corrected": "removed only matching automatic cache immediately",
+  "cacheMtimeNs": 1791753819245187254,
+  "sourceContentEdited": false,
+  "futurePythonControls": "python -B; execute source compilation in owned scratch"
+}

@@ -1,0 +1,31 @@
+{
+  "utc": "2026-10-12T19:15:45.709775+00:00",
+  "outcome": "APPROVE_SOURCE",
+  "scope": "Provided Node-only r2 delta and readonly actual executable pin",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/webkit_public_node_review/REVIEW.md",
+      "relative_path": "REVIEW.md",
+      "size": 3402,
+      "mode": "0o400",
+      "sha256": "a3d2ae7835e0391de63442c86b146c921855a9cc14c86a75358a15f32f83f012"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/webkit_public_node_review/checks.safe.json",
+      "relative_path": "checks.safe.json",
+      "size": 1420,
+      "mode": "0o400",
+      "sha256": "e4fd74eb33bc9dfa28fea99e94f2919e18ef3dd713b40df7b25e71b5b64ca932"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/webkit_public_node_review/check.py",
+      "relative_path": "check.py",
+      "size": 6794,
+      "mode": "0o400",
+      "sha256": "83b15a00d23a06ba35c73fae73bfa8f514ce0a200b9fdb20b0355e77708bbd49"
+    }
+  ],
+  "Node_browser_native": "NOT_RUN"
+}

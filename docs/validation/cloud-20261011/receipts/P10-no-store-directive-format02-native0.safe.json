@@ -1,0 +1,136 @@
+{
+  "schema": "P10_ORACLE_FORMAT_ACTUAL02_V1",
+  "utc": "2026-10-13T16:59:25.332691+00:00",
+  "tool_session": 86386,
+  "start_chunk": "f5c3bf",
+  "final_chunk": "8512cc",
+  "grant_sha256": "646dff8378299f932010b8e888fa58c6b8b5945dcb5e5697a7a9209b5a1a0cdd",
+  "terminal": {
+    "direct_pid": 532606,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 532606,
+        "start_ticks": 16429719,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 532607,
+        "start_ticks": 16429726,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 532642,
+        "start_ticks": 16429950,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 532752,
+        "start_ticks": 16433079,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 532787,
+        "start_ticks": 16433273,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 532893,
+        "start_ticks": 16434926,
+        "same_birth_absent": true
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "utc": "2026-10-13T16:55:57.652115+00:00",
+    "peaks": {
+      "memory": 5812461568,
+      "min_workspace_free": 7014825984,
+      "owned_rss": 538906624,
+      "log_bytes": 991
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Scoped formatter and source result requires post-run evidence"
+  },
+  "child_exit": {
+    "native_exit": 0
+  },
+  "closed_marker_counts": {
+    "RCT_P06_FORMAT_TARGETS_1": 0,
+    "BUILD SUCCESSFUL": 2,
+    "BUILD FAILED": 0,
+    "spotlessJavaApply": 1,
+    "spotlessJavaCheck": 1
+  },
+  "known_task_statuses": {
+    "apply": "UP-TO-DATE",
+    "check": "UP-TO-DATE"
+  },
+  "initial_postreceipt_assertion": {
+    "result": "FAIL",
+    "cause": "EXPECTED_SCOPE_MARKER_COUNT_2_ACTUAL0",
+    "receipt_created": false,
+    "qualification": "No effect on native0. doFirst markers absent for cached Gradle tasks; no fresh formatter action claim. Authorized ordinary semantic commit occurred after this assert before corrected finite seal."
+  },
+  "births": [
+    {
+      "pid": 532602,
+      "start_ticks": 16429680,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 532606,
+      "start_ticks": 16429719,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 532607,
+      "start_ticks": 16429726,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 532642,
+      "start_ticks": 16429950,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 532752,
+      "start_ticks": 16433079,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 532787,
+      "start_ticks": 16433273,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 532893,
+      "start_ticks": 16434926,
+      "same_birth_absent": true
+    }
+  ],
+  "all_births_fresh_absent": true,
+  "TMP_absent": true,
+  "authority_absent": true,
+  "all_18_source_pins_match": true,
+  "protected17_match": true,
+  "semantic_and_formatted_bytes_identical": true,
+  "tokens_strings_imports_equivalent_by_full_byte_identity": true,
+  "test_sha256": "2129fdbcb971197a886839c100e3cc336b2ee0ed3902a136d705b19c1c7e1efc",
+  "semantic_commit": "0fc84656948ce40e87a71b967d9caa49b391ccf4",
+  "clean_worktree": true,
+  "onefile_commit_only": true,
+  "mechanical_commit": "NOT_NEEDED_NO_BYTE_CHANGE",
+  "before_margin": true,
+  "before_hard_stop": true,
+  "margin_remaining_seconds": 9.96343,
+  "no_log_text_or_private_hash_export": true,
+  "HTTP_status": "NOT_RUN"
+}

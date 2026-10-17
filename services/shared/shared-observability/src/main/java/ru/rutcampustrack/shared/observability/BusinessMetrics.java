@@ -4,12 +4,14 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import java.util.Objects;
 
 /**
- * Fluent helper над {@link MeterRegistry} для бизнес-метрик из
- * {@link MetricNames}. Используется вместо {@code @Counted} там, где
- * нужен control над тегами в момент вызова.
+ * Fluent helper над {@link MeterRegistry} для бизнес-метрик из {@link MetricNames}. Используется
+ * вместо {@code @Counted} там, где нужен control над тегами в момент вызова.
  *
  * <p>Сервис создаёт singleton-bean {@code new BusinessMetrics(meterRegistry)}.
  *
@@ -71,12 +73,29 @@ public class BusinessMetrics {
         return Counter.builder(MetricNames.LATE_CHECKIN_CREATED).register(registry);
     }
 
+    /** Records committed business outcomes; a rolled-back transaction contributes no success. */
+    public void incrementAfterCommit(Counter counter) {
+        Objects.requireNonNull(counter, "counter");
+        if (TransactionSynchronizationManager.isActualTransactionActive()
+                && TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            counter.increment();
+                        }
+                    });
+        } else {
+            counter.increment();
+        }
+    }
+
     /**
-     * KI-2 — счётчик пробивает dual-mode fallback (internal-JWT отсутствует
-     * или невалиден, фильтр падает на legacy headers X-User-Id/X-User-Role).
+     * KI-2 — счётчик пробивает dual-mode fallback (internal-JWT отсутствует или невалиден, фильтр
+     * падает на legacy headers X-User-Id/X-User-Role).
      *
      * @param from источник, на который downgrade (например {@code "internal-jwt"}).
-     * @param to   куда упал (например {@code "legacy-headers"}).
+     * @param to куда упал (например {@code "legacy-headers"}).
      */
     public Counter internalJwtFallbackCounter(String from, String to) {
         return Counter.builder(MetricNames.INTERNAL_JWT_FALLBACK)

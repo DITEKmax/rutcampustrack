@@ -1,5 +1,9 @@
 package ru.rutcampustrack.schedule.lesson;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -8,27 +12,22 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.schedule.contract.api.LessonApi;
-import ru.rutcampustrack.schedule.contract.dto.lesson.NextHomeworkLessonResponse;
-import ru.rutcampustrack.schedule.contract.enums.LessonType;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
+import ru.rutcampustrack.schedule.contract.dto.lesson.NextHomeworkLessonResponse;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
+import ru.rutcampustrack.schedule.contract.dto.lesson.LessonListResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
+import ru.rutcampustrack.schedule.contract.enums.LessonType;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
-import ru.rutcampustrack.schedule.security.RequireRole;
 import ru.rutcampustrack.schedule.oneoff.OneOffLessonCoordinator;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import ru.rutcampustrack.schedule.security.RequireRole;
 
 /**
- * REST controller for lesson operations and schedule view.
- * Implements LessonApi contract interface — HTTP mappings are defined in the interface only.
- * Delegates all business logic to LessonService.
+ * REST controller for lesson operations and schedule view. Implements LessonApi contract interface
+ * — HTTP mappings are defined in the interface only. Delegates all business logic to LessonService.
  */
 @RestController
 public class LessonController implements LessonApi {
@@ -39,11 +38,12 @@ public class LessonController implements LessonApi {
     private final OneOffLessonCoordinator oneOffCoordinator;
     private final LessonRoomService lessonRoomService;
 
-    public LessonController(LessonService lessonService,
-                            LessonTransferService lessonTransferService,
-                            LessonAssembler lessonAssembler,
-                            OneOffLessonCoordinator oneOffCoordinator,
-                            LessonRoomService lessonRoomService) {
+    public LessonController(
+            LessonService lessonService,
+            LessonTransferService lessonTransferService,
+            LessonAssembler lessonAssembler,
+            OneOffLessonCoordinator oneOffCoordinator,
+            LessonRoomService lessonRoomService) {
         this.lessonService = lessonService;
         this.lessonTransferService = lessonTransferService;
         this.lessonAssembler = lessonAssembler;
@@ -53,15 +53,19 @@ public class LessonController implements LessonApi {
 
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
-    public ResponseEntity<ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomResponse> changeLessonRoom(
-            Long id, String requestKey,
-            ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomRequest request) {
+    public ResponseEntity<ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomResponse>
+            changeLessonRoom(
+                    Long id,
+                    String requestKey,
+                    ru.rutcampustrack.schedule.contract.dto.lesson.ChangeLessonRoomRequest
+                            request) {
         UUID key;
         try {
             key = UUID.fromString(requestKey);
             if (!key.toString().equalsIgnoreCase(requestKey)) throw new IllegalArgumentException();
         } catch (IllegalArgumentException malformed) {
-            throw new ru.rutcampustrack.schedule.contract.enums.LessonSlot.ValidationException("Нужен UUID Idempotency-Key");
+            throw new ru.rutcampustrack.schedule.contract.enums.LessonSlot.ValidationException(
+                    "Нужен UUID Idempotency-Key");
         }
         return ResponseEntity.ok(lessonRoomService.change(id, key, request));
     }
@@ -69,24 +73,34 @@ public class LessonController implements LessonApi {
     @Override
     @RequireRole({UserRole.STUDENT})
     public ResponseEntity<NextHomeworkLessonResponse> getNextHomeworkLesson(
-            Long groupId, Long semesterId, Long subjectId, LessonType lessonType, LocalDate fromDate) {
-        return lessonService.getNextHomeworkLesson(groupId, semesterId, subjectId, lessonType, fromDate)
+            Long groupId,
+            Long semesterId,
+            Long subjectId,
+            LessonType lessonType,
+            LocalDate fromDate) {
+        return lessonService
+                .getNextHomeworkLesson(groupId, semesterId, subjectId, lessonType, fromDate)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
-    public ResponseEntity<TransferLessonResponse> transferLesson(Long id, TransferLessonRequest request) {
+    public ResponseEntity<TransferLessonResponse> transferLesson(
+            Long id, TransferLessonRequest request) {
         TransferLessonResponse result = lessonTransferService.transfer(id, request);
         if ("ERROR".equals(result.state())) {
             return ResponseEntity.status(409)
-                    .location(java.net.URI.create("/schedule/lesson-transfers/" + result.operationId()))
+                    .location(
+                            java.net.URI.create(
+                                    "/schedule/lesson-transfers/" + result.operationId()))
                     .body(result);
         }
         if ("COMPLETED".equals(result.state())) {
             return ResponseEntity.ok()
-                    .location(java.net.URI.create("/schedule/lesson-transfers/" + result.operationId()))
+                    .location(
+                            java.net.URI.create(
+                                    "/schedule/lesson-transfers/" + result.operationId()))
                     .body(result);
         }
         return ResponseEntity.accepted()
@@ -102,7 +116,8 @@ public class LessonController implements LessonApi {
 
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
-    public ResponseEntity<EntityModel<LessonResponse>> cancelLesson(Long id, CancelLessonRequest request) {
+    public ResponseEntity<EntityModel<LessonResponse>> cancelLesson(
+            Long id, CancelLessonRequest request) {
         LessonWithItem result = lessonService.cancelLesson(id, request);
         return ResponseEntity.ok(lessonAssembler.toModel(result));
     }
@@ -111,14 +126,17 @@ public class LessonController implements LessonApi {
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
     public ResponseEntity<EntityModel<LessonResponse>> restoreLesson(Long id) {
         Long restoredId = oneOffCoordinator.restoreIfOneOff(id);
-        LessonWithItem result = restoredId == null ? lessonService.restoreLesson(id)
-                : lessonService.getRestoredOneOffLesson(restoredId);
+        LessonWithItem result =
+                restoredId == null
+                        ? lessonService.restoreLesson(id)
+                        : lessonService.getRestoredOneOffLesson(restoredId);
         return ResponseEntity.ok(lessonAssembler.toModel(result));
     }
 
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
-    public ResponseEntity<EntityModel<LessonResponse>> toggleGeoBlock(Long id, GeoBlockRequest request) {
+    public ResponseEntity<EntityModel<LessonResponse>> toggleGeoBlock(
+            Long id, GeoBlockRequest request) {
         LessonWithItem result = lessonService.toggleGeoBlock(id, request);
         return ResponseEntity.ok(lessonAssembler.toModel(result));
     }
@@ -140,23 +158,37 @@ public class LessonController implements LessonApi {
     @Override
     public ResponseEntity<PagedModel<EntityModel<LessonResponse>>> getLessons(
             Long groupId,
+            Long semesterId,
             LocalDate dateFrom,
             LocalDate dateTo,
             List<LessonStatus> status,
             Pageable pageable,
             PagedResourcesAssembler<LessonResponse> assembler) {
-        Page<LessonWithItem> page = lessonService.getLessonsForGroup(groupId, dateFrom, dateTo, status, pageable);
-        Map<Long, LessonTransferWriter.TransferState> transferStates = lessonTransferService.statesForLessons(
-                page.getContent().stream().map(row -> row.lesson().getId()).toList());
-        Map<Long, Long> occurrenceRevisions = lessonTransferService.occurrenceRevisionsForLessons(
-                page.getContent().stream().map(row -> row.lesson().getId()).toList());
-        Page<LessonResponse> responsePage = page.map(row -> {
-            LessonResponse response = lessonAssembler.toResponse(row, transferStates.get(row.lesson().getId()));
-            response.setOccurrenceRevision(occurrenceRevisions.get(row.lesson().getId()));
-            return response;
-        });
-        PagedModel<EntityModel<LessonResponse>> pagedModel = assembler.toModel(
-                responsePage, resp -> EntityModel.of(resp));
-        return ResponseEntity.ok(pagedModel);
+        Page<LessonWithItem> page =
+                lessonService.getLessonsForGroup(
+                        groupId, semesterId, dateFrom, dateTo, status, pageable);
+        Map<Long, LessonTransferWriter.TransferState> transferStates =
+                lessonTransferService.statesForLessons(
+                        page.getContent().stream().map(row -> row.lesson().getId()).toList());
+        Map<Long, Long> occurrenceRevisions =
+                lessonTransferService.occurrenceRevisionsForLessons(
+                        page.getContent().stream().map(row -> row.lesson().getId()).toList());
+        Page<LessonResponse> responsePage =
+                page.map(
+                        row -> {
+                            LessonResponse response =
+                                    lessonAssembler.toResponse(
+                                            row, transferStates.get(row.lesson().getId()));
+                            response.setOccurrenceRevision(
+                                    occurrenceRevisions.get(row.lesson().getId()));
+                            return response;
+                        });
+        PagedModel<EntityModel<LessonResponse>> pagedModel =
+                assembler.toModel(responsePage, resp -> EntityModel.of(resp));
+        return ResponseEntity.ok(
+                semesterId == null
+                        ? pagedModel
+                        : new LessonListResponse(
+                                pagedModel, lessonService.semesterProgress(groupId, semesterId)));
     }
 }

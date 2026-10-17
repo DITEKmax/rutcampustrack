@@ -1,0 +1,15 @@
+{
+  "schema": "RCT_SAFE_RECHECK_MANIFEST_V1",
+  "verdict": "APPROVE_SOURCE_CORRECTION",
+  "old_author_packet_preserved": true,
+  "files": {
+    "REPORT.safe.json": {
+      "sha256": "857c9ab287e213f267b49381c91da25f9cb13f7981fa9f8584269b740d9226dc",
+      "bytes": 7580
+    },
+    "REVIEW.md": {
+      "sha256": "3fa81a403e32721a61b785d5470b8a7f56fd9699f30284b7d300e1c4a0aff60d",
+      "bytes": 1852
+    }
+  }
+}

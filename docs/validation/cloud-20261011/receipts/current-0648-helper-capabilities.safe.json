@@ -1,0 +1,66 @@
+{
+  "artifact": 11881540264,
+  "producer": "06487e0a9dfdecf4c6be35592022f83a6a1f31a9",
+  "run": 38536484758,
+  "digest": "sha256:5e9158b8de7d3a1aff4dd69e414a9194042bdf604d55062833c613d79983ec54",
+  "bytes": 405,
+  "results": {
+    "status": "passed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "cloud-accepted-helper-capabilities.spec.ts",
+        "line": 21,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 2212,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      },
+      {
+        "file": "cloud-accepted-helper-capabilities.spec.ts",
+        "line": 124,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 1877,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      },
+      {
+        "file": "cloud-accepted-helper-capabilities.spec.ts",
+        "line": 179,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 2367,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "HELPER_VIEW_STATS",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HELPER_CANCEL_LESSONS",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HELPER_MANAGE_EXCUSES",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+}

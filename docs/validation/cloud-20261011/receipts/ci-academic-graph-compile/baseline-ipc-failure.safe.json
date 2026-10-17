@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T05:02:01.026672+00:00",
+  "attempt": "baseline-ipc",
+  "native_exit": 1,
+  "phase": "Gradle Java compiler capability before compileJava",
+  "safe_message": "System OpenJDK21 path is JRE and lacks javac; JAVA_COMPILER capability missing",
+  "correction": "Existing verified artifact-build JDK /workspace/rct-cloud-setup/jdk21",
+  "tracked_source_changes": 0,
+  "tests_run": 0,
+  "own_processes_remaining": {}
+}

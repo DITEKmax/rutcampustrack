@@ -1,6 +1,7 @@
 package ru.rutcampustrack.attendance.report.studentprojection;
 
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.academic.grpc.AcademicSubjectInfo;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
@@ -8,30 +9,31 @@ import ru.rutcampustrack.academic.grpc.StudentProjectionMembershipSegment;
 import ru.rutcampustrack.academic.grpc.StudentProjectionRankVisibility;
 import ru.rutcampustrack.academic.grpc.StudentProjectionScopeResponse;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
-import ru.rutcampustrack.attendance.student.StudentCheckinException;
 import ru.rutcampustrack.attendance.student.EffectiveAttendance;
+import ru.rutcampustrack.attendance.student.StudentCheckinException;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -44,10 +46,9 @@ import java.util.stream.Collectors;
 /**
  * Server-side student attendance read model.
  *
- * <p>The Academic resolver is the authorization source.  Schedule supplies
- * lifecycle and membership-segment rows, while Attendance supplies only
- * persisted marks.  The client receives calculated aggregates and opaque
- * lesson ids; it never receives a roster or peer records.</p>
+ * <p>The Academic resolver is the authorization source. Schedule supplies lifecycle and
+ * membership-segment rows, while Attendance supplies only persisted marks. The client receives
+ * calculated aggregates and opaque lesson ids; it never receives a roster or peer records.
  */
 @Service
 public class StudentAttendanceProjectionService {
@@ -79,19 +80,20 @@ public class StudentAttendanceProjectionService {
             List<String> requestedTypes) {
         requireStudent(claims);
         if (semesterId <= 0) {
-            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_REQUEST,
                     "semester_id должен быть положительным");
         }
         String normalizedRange = normalizeRange(range);
         Set<String> normalizedTypes = normalizeTypes(requestedTypes);
 
-        StudentProjectionScopeResponse scope = academicGrpcClient
-                .resolveStudentProjectionScope(semesterId);
+        StudentProjectionScopeResponse scope =
+                academicGrpcClient.resolveStudentProjectionScope(semesterId);
         validateScope(scope, claims, semesterId, subjectId);
         Map<Long, AcademicSubjectInfo> subjects = subjectMap(scope);
         if (subjectId != null && !subjects.containsKey(subjectId)) {
-            throw new StudentCheckinException(StudentCheckinException.Code.OUT_OF_SCOPE,
-                    "Предмет не входит в student scope");
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.OUT_OF_SCOPE, "Предмет не входит в student scope");
         }
 
         LocalDate serverDate = parseRequiredDate(scope.getServerDate(), "server_date");
@@ -99,25 +101,57 @@ public class StudentAttendanceProjectionService {
         // and lesson-type filters affect only the returned slice; they must
         // never change semester totals or the canonical rank denominator.
         List<Lesson> allLessons = loadLessons(scope, semesterId, subjects, null, Set.of());
-        Map<Long, AttendanceRecord> ownMarks = markIndex(
-                attendanceReadPort.findByUserId(claims.userId(), semesterId), allLessons, claims.userId());
-        List<Lesson> materializedAll = allLessons.stream()
-                .map(lesson -> lesson.withMark(ownMarks.get(lesson.lessonId())))
-                .toList();
+        Map<Long, AttendanceRecord> ownMarks =
+                markIndex(
+                        attendanceReadPort.findByUserId(claims.userId(), semesterId),
+                        allLessons,
+                        claims.userId(),
+                        semesterId);
+        List<Lesson> materializedAll =
+                allLessons.stream()
+                        .map(lesson -> lesson.withMark(ownMarks.get(lesson.lessonId())))
+                        .toList();
 
-        List<Lesson> selectedLessons = materializedAll.stream()
-                .filter(lesson -> subjectId == null || lesson.subjectId() == subjectId)
-                .filter(lesson -> normalizedTypes.isEmpty() || normalizedTypes.contains(lesson.lessonType()))
-                .toList();
+        List<Lesson> selectedLessons =
+                materializedAll.stream()
+                        .filter(lesson -> subjectId == null || lesson.subjectId() == subjectId)
+                        .filter(
+                                lesson ->
+                                        normalizedTypes.isEmpty()
+                                                || normalizedTypes.contains(lesson.lessonType()))
+                        .toList();
         MetricsBundle overall = metrics(selectedLessons);
         List<Day> days = days(selectedLessons, serverDate);
-        Graph graph = new Graph(
-                series(selectedLessons, BucketUnit.DAY, serverDate),
-                series(selectedLessons, BucketUnit.WEEK, serverDate));
-        List<Subject> subjectViews = subjectViews(
-                materializedAll, selectedLessons, subjects, subjectId,
-                normalizedTypes, normalizedRange, serverDate);
-        Rank rank = rank(scope, claims.userId(), materializedAll, subjects, semesterId);
+        List<Lesson> groupLessons = currentGroupLessons(scope, claims, semesterId);
+        Graph graph =
+                new Graph(
+                        series(selectedLessons, BucketUnit.DAY, serverDate),
+                        groupSeries(
+                                series(selectedLessons, BucketUnit.WEEK, serverDate),
+                                scope,
+                                groupLessons,
+                                semesterId,
+                                subjectId,
+                                normalizedTypes,
+                                serverDate));
+        List<Subject> subjectViews =
+                subjectViews(
+                        materializedAll,
+                        selectedLessons,
+                        subjects,
+                        subjectId,
+                        normalizedTypes,
+                        normalizedRange,
+                        serverDate);
+        Rank rank =
+                rankedCohort(
+                                scope,
+                                claims.userId(),
+                                materializedAll,
+                                subjects,
+                                semesterId,
+                                groupLessons)
+                        .ownRank();
 
         return new Projection(
                 claims.userId(),
@@ -135,26 +169,25 @@ public class StudentAttendanceProjectionService {
 
     /** Returns the bounded ranking page for the cohort resolved from the signed student scope. */
     public RankingPage ranking(
-            InternalJwtClaims claims,
-            long semesterId,
-            Integer requestedPage,
-            int pageSize) {
+            InternalJwtClaims claims, long semesterId, Integer requestedPage, int pageSize) {
         requireStudent(claims);
         if (semesterId <= 0) {
-            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_REQUEST,
                     "semester_id должен быть положительным");
         }
         if (requestedPage != null && requestedPage < 0) {
-            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_REQUEST,
                     "page должен быть неотрицательным");
         }
         if (pageSize < 1 || pageSize > 100) {
-            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
-                    "size должен быть от 1 до 100");
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_REQUEST, "size должен быть от 1 до 100");
         }
 
-        StudentProjectionScopeResponse scope = academicGrpcClient
-                .resolveStudentProjectionScope(semesterId);
+        StudentProjectionScopeResponse scope =
+                academicGrpcClient.resolveStudentProjectionScope(semesterId);
         validateScope(scope, claims, semesterId, null);
         if (!rankingVisible(scope)) {
             return RankingPage.unavailable(requestedPage == null ? 0 : requestedPage, pageSize);
@@ -162,25 +195,34 @@ public class StudentAttendanceProjectionService {
 
         Map<Long, AcademicSubjectInfo> subjects = subjectMap(scope);
         List<Lesson> ownLessons = loadLessons(scope, semesterId, subjects, null, Set.of());
-        RankedCohort cohort = rankedCohort(
-                scope, claims.userId(), ownLessons, subjects, semesterId);
+        RankedCohort cohort =
+                rankedCohort(scope, claims.userId(), ownLessons, subjects, semesterId);
         if (!cohort.ownRank().available()) {
             return RankingPage.unavailable(requestedPage == null ? 0 : requestedPage, pageSize);
         }
 
         List<Long> roster = scope.getActiveRosterUserIdsList();
         Map<Long, String> names = rosterNames(scope.getRankGroupId(), roster);
-        List<RankingRow> rows = cohort.participants().stream()
-                .map(participant -> {
-                    String name = names.get(participant.participantId());
-                    if (name == null || participant.position() == null || participant.percentage() == null) {
-                        throw StudentProjectionException.invalidRoster(
-                                "available ranking contains an incomplete participant");
-                    }
-                    return new RankingRow(participant.participantId(), name, participant.position(),
-                            participant.percentage(), participant.participantId() == claims.userId());
-                })
-                .toList();
+        List<RankingRow> rows =
+                cohort.participants().stream()
+                        .map(
+                                participant -> {
+                                    String name = names.get(participant.participantId());
+                                    if (name == null
+                                            || participant.position() == null
+                                            || participant.percentage() == null) {
+                                        throw StudentProjectionException.invalidRoster(
+                                                "available ranking contains an incomplete"
+                                                        + " participant");
+                                    }
+                                    return new RankingRow(
+                                            participant.participantId(),
+                                            name,
+                                            participant.position(),
+                                            participant.percentage(),
+                                            participant.participantId() == claims.userId());
+                                })
+                        .toList();
         int ownIndex = -1;
         for (int index = 0; index < rows.size(); index++) {
             if (rows.get(index).studentId() == claims.userId()) {
@@ -189,14 +231,18 @@ public class StudentAttendanceProjectionService {
             }
         }
         if (ownIndex < 0) {
-            throw StudentProjectionException.invalidRoster("the current student is missing from the ranking");
+            throw StudentProjectionException.invalidRoster(
+                    "the current student is missing from the ranking");
         }
         int page = requestedPage == null ? ownIndex / pageSize : requestedPage;
         long offset = (long) page * pageSize;
-        List<RankingRow> pageRows = offset >= rows.size()
-                ? List.of()
-                : rows.subList((int) offset, (int) Math.min(rows.size(), offset + pageSize));
-        return new RankingPage(true, page, pageSize, rows.size(), cohort.ownRank().position(), pageRows);
+        List<RankingRow> pageRows =
+                offset >= rows.size()
+                        ? List.of()
+                        : rows.subList(
+                                (int) offset, (int) Math.min(rows.size(), offset + pageSize));
+        return new RankingPage(
+                true, page, pageSize, rows.size(), cohort.ownRank().position(), pageRows);
     }
 
     private Map<Long, String> rosterNames(long groupId, List<Long> authorizedRoster) {
@@ -211,13 +257,16 @@ public class StudentAttendanceProjectionService {
                 continue;
             }
             String name = student.getDisplayName() == null ? "" : student.getDisplayName().trim();
-            if (student.getUserId() <= 0 || name.isBlank()
+            if (student.getUserId() <= 0
+                    || name.isBlank()
                     || names.putIfAbsent(student.getUserId(), name) != null) {
-                throw StudentProjectionException.invalidRoster("Academic returned an invalid cohort identity");
+                throw StudentProjectionException.invalidRoster(
+                        "Academic returned an invalid cohort identity");
             }
         }
         if (!names.keySet().containsAll(authorizedIds)) {
-            throw StudentProjectionException.invalidRoster("Academic omitted a current cohort identity");
+            throw StudentProjectionException.invalidRoster(
+                    "Academic omitted a current cohort identity");
         }
         return Map.copyOf(names);
     }
@@ -228,8 +277,12 @@ public class StudentAttendanceProjectionService {
             Map<Long, AcademicSubjectInfo> subjects,
             Long requestedSubjectId,
             Set<String> requestedTypes) {
-        return loadLessons(scope.getOwnMembershipSegmentsList(), semesterId, subjects,
-                requestedSubjectId, requestedTypes);
+        return loadLessons(
+                scope.getOwnMembershipSegmentsList(),
+                semesterId,
+                subjects,
+                requestedSubjectId,
+                requestedTypes);
     }
 
     private List<Lesson> loadLessons(
@@ -241,20 +294,32 @@ public class StudentAttendanceProjectionService {
         Map<Long, Lesson> byOccurrence = new LinkedHashMap<>();
         for (StudentProjectionMembershipSegment segment : segments) {
             LocalDate from = parseRequiredDate(segment.getDateFrom(), "membership.date_from");
-            LocalDate untilExclusive = parseRequiredDate(
-                    segment.getDateUntilExclusive(), "membership.date_until_exclusive");
+            LocalDate untilExclusive =
+                    parseRequiredDate(
+                            segment.getDateUntilExclusive(), "membership.date_until_exclusive");
             if (!untilExclusive.isAfter(from) || segment.getGroupId() <= 0) {
                 throw StudentProjectionException.invalidOccurrence("invalid membership segment");
             }
-            LessonsResponse response = scheduleGrpcClient.getLessonsByGroup(
-                    segment.getGroupId(), semesterId, from.toString(), untilExclusive.minusDays(1).toString());
+            LessonsResponse response =
+                    scheduleGrpcClient.getLessonsByGroup(
+                            segment.getGroupId(),
+                            semesterId,
+                            from.toString(),
+                            untilExclusive.minusDays(1).toString());
             if (response == null) {
                 throw StudentProjectionException.invalidOccurrence("Schedule returned no response");
             }
             Set<Long> segmentSubjects = new HashSet<>(segment.getSubjectIdsList());
             for (LessonResponse source : response.getLessonsList()) {
-                Lesson lesson = materialize(source, semesterId, segment, segmentSubjects, subjects,
-                        requestedSubjectId, requestedTypes);
+                Lesson lesson =
+                        materialize(
+                                source,
+                                semesterId,
+                                segment,
+                                segmentSubjects,
+                                subjects,
+                                requestedSubjectId,
+                                requestedTypes);
                 if (lesson == null) {
                     continue;
                 }
@@ -265,9 +330,10 @@ public class StudentAttendanceProjectionService {
             }
         }
         return byOccurrence.values().stream()
-                .sorted(Comparator.comparing(Lesson::date)
-                        .thenComparingInt(Lesson::lessonNumber)
-                        .thenComparingLong(Lesson::lessonId))
+                .sorted(
+                        Comparator.comparing(Lesson::date)
+                                .thenComparingInt(Lesson::lessonNumber)
+                                .thenComparingLong(Lesson::lessonId))
                 .toList();
     }
 
@@ -279,7 +345,9 @@ public class StudentAttendanceProjectionService {
             Map<Long, AcademicSubjectInfo> subjects,
             Long requestedSubjectId,
             Set<String> requestedTypes) {
-        if (source == null || source.getId() <= 0 || source.getOccurrenceId() <= 0
+        if (source == null
+                || source.getId() <= 0
+                || source.getOccurrenceId() <= 0
                 || source.getGroupId() != segment.getGroupId()
                 || source.getSubjectId() <= 0
                 || source.getSemesterId() > 0 && source.getSemesterId() != semesterId
@@ -289,8 +357,9 @@ public class StudentAttendanceProjectionService {
         if ("transferred".equalsIgnoreCase(source.getStatus())) return null;
         LocalDate date = parseRequiredDate(source.getDate(), "lesson.date");
         LocalDate from = parseRequiredDate(segment.getDateFrom(), "membership.date_from");
-        LocalDate untilExclusive = parseRequiredDate(
-                segment.getDateUntilExclusive(), "membership.date_until_exclusive");
+        LocalDate untilExclusive =
+                parseRequiredDate(
+                        segment.getDateUntilExclusive(), "membership.date_until_exclusive");
         if (date.isBefore(from) || !date.isBefore(untilExclusive)) {
             return null;
         }
@@ -299,15 +368,17 @@ public class StudentAttendanceProjectionService {
         }
         AcademicSubjectInfo subject = subjects.get(source.getSubjectId());
         if (subject == null || subject.getSubjectId() != source.getSubjectId()) {
-            throw StudentProjectionException.invalidOccurrence("lesson refers to an unknown subject");
+            throw StudentProjectionException.invalidOccurrence(
+                    "lesson refers to an unknown subject");
         }
         String type = normalizeType(source.getLessonType());
         if (type == null) {
-            List<String> allowed = subject.getLessonTypesList().stream()
-                    .map(StudentAttendanceProjectionService::normalizeType)
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .toList();
+            List<String> allowed =
+                    subject.getLessonTypesList().stream()
+                            .map(StudentAttendanceProjectionService::normalizeType)
+                            .filter(Objects::nonNull)
+                            .distinct()
+                            .toList();
             if (allowed.size() != 1) {
                 throw StudentProjectionException.invalidOccurrence(
                         "lesson type is missing for subject " + source.getSubjectId());
@@ -323,7 +394,8 @@ public class StudentAttendanceProjectionService {
         if (!endsAt.isAfter(startsAt)) {
             throw StudentProjectionException.invalidOccurrence("lesson time range is inverted");
         }
-        String room = source.getRoom() == null || source.getRoom().isBlank() ? null : source.getRoom();
+        String room =
+                source.getRoom() == null || source.getRoom().isBlank() ? null : source.getRoom();
         return new Lesson(
                 source.getId(),
                 source.getOccurrenceId(),
@@ -337,37 +409,49 @@ public class StudentAttendanceProjectionService {
                 endsAt,
                 room,
                 state,
-                null);
+                null,
+                source.hasCancellationReason() ? source.getCancellationReason() : null);
     }
 
     private Map<Long, AttendanceRecord> markIndex(
-            List<AttendanceRecord> records,
-            List<Lesson> lessons,
-            long userId) {
+            List<AttendanceRecord> records, List<Lesson> lessons, long userId, long semesterId) {
         if (records == null) {
-            throw StudentProjectionException.invalidOccurrence("Attendance returned no record list");
+            throw StudentProjectionException.invalidOccurrence(
+                    "Attendance returned no record list");
         }
-        Map<Long, Lesson> lessonsById = lessons.stream()
-                .collect(Collectors.toMap(Lesson::lessonId, value -> value, (left, right) -> left));
+        Map<Long, Lesson> lessonsById =
+                lessons.stream()
+                        .collect(
+                                Collectors.toMap(
+                                        Lesson::lessonId, value -> value, (left, right) -> left));
         Map<Long, AttendanceRecord> result = new HashMap<>();
         for (AttendanceRecord record : records) {
             if (record == null || record.lessonId() == null || record.lessonId() <= 0) {
-                throw StudentProjectionException.invalidOccurrence("attendance record has no lesson id");
+                throw StudentProjectionException.invalidOccurrence(
+                        "attendance record has no lesson id");
             }
-            canonicalStatus(record.status(), record.lessonId());
             Lesson lesson = lessonsById.get(record.lessonId());
+            if (lesson == null
+                    && isRetainedCancelledGeneration(record, lessons, userId, semesterId)) {
+                // The canonical Schedule query omits superseded physical generations.
+                // Keep their proven cancellation history out of both the view and denominator.
+                continue;
+            }
+            canonicalStatus(record.status(), record.lessonId(), lesson);
             if (lesson == null) {
                 continue;
             }
             if (record.userId() == null || record.userId() != userId) {
                 // The query is already actor-scoped; this check still guards
                 // a broken adapter from attaching another user's mark.
-                throw StudentProjectionException.invalidOccurrence("attendance record actor mismatch");
+                throw StudentProjectionException.invalidOccurrence(
+                        "attendance record actor mismatch");
             }
             if (record.groupId() != null && record.groupId() != lesson.groupId()
                     || record.subjectId() != null && record.subjectId() != lesson.subjectId()
                     || record.lessonDate() != null && !record.lessonDate().equals(lesson.date())) {
-                throw StudentProjectionException.invalidOccurrence("attendance record disagrees with schedule");
+                throw StudentProjectionException.invalidOccurrence(
+                        "attendance record disagrees with schedule");
             }
             AttendanceRecord previous = result.putIfAbsent(record.lessonId(), record);
             if (previous != null && !Objects.equals(previous.status(), record.status())) {
@@ -375,6 +459,46 @@ public class StudentAttendanceProjectionService {
             }
         }
         return result;
+    }
+
+    private boolean isRetainedCancelledGeneration(
+            AttendanceRecord record, List<Lesson> lessons, long userId, long semesterId) {
+        if (record.status() != AttendanceStatus.CANCELLED
+                || record.userId() == null
+                || record.userId() != userId
+                || record.groupId() == null
+                || record.subjectId() == null
+                || record.lessonDate() == null) {
+            return false;
+        }
+        List<Lesson> replacements =
+                lessons.stream()
+                        .filter(
+                                lesson ->
+                                        lesson.groupId() == record.groupId()
+                                                && lesson.subjectId() == record.subjectId()
+                                                && lesson.date().equals(record.lessonDate()))
+                        .toList();
+        if (replacements.isEmpty()) return false;
+        LessonResponse retained = scheduleGrpcClient.getLessonById(record.lessonId());
+        if (retained == null
+                || retained.getId() != record.lessonId()
+                || retained.getSemesterId() != semesterId
+                || retained.getGroupId() != record.groupId()
+                || retained.getSubjectId() != record.subjectId()
+                || !retained.getDate().equals(record.lessonDate().toString())
+                || !"cancelled".equalsIgnoreCase(retained.getStatus())
+                || retained.getOccurrenceId() <= 0
+                || retained.getGeneration() <= 0
+                || record.lessonNumber() != null
+                        && retained.getLessonNumber() != record.lessonNumber()) {
+            return false;
+        }
+        return replacements.stream()
+                .anyMatch(
+                        lesson ->
+                                lesson.occurrenceId() == retained.getOccurrenceId()
+                                        && lesson.lessonId() != retained.getId());
     }
 
     private List<Subject> subjectViews(
@@ -395,62 +519,89 @@ public class StudentAttendanceProjectionService {
         for (Long id : ids) {
             AcademicSubjectInfo source = subjectInfo.get(id);
             if (source == null) continue;
-            List<Lesson> subjectLessons = allLessons.stream()
-                    .filter(lesson -> lesson.subjectId() == id)
-                    .toList();
-            List<Lesson> selectedSubjectLessons = selectedLessons.stream()
-                    .filter(lesson -> lesson.subjectId() == id)
-                    .toList();
-            List<String> available = subjectLessons.stream()
-                    .map(Lesson::lessonType)
-                    .distinct()
-                    .sorted()
-                    .toList();
-            List<String> selected = requestedTypes == null || requestedTypes.isEmpty()
-                    ? available : requestedTypes.stream().filter(available::contains).sorted().toList();
-            List<Lesson> selectedTypeLessons = selectedSubjectLessons.stream()
-                    .filter(lesson -> selected.contains(lesson.lessonType()))
-                    .toList();
-            List<TypeCard> cards = selected.stream()
-                    .map(type -> typeCard(subjectLessons.stream()
-                            .filter(lesson -> lesson.lessonType().equals(type)).toList(), type))
-                    .toList();
-            result.add(new Subject(
-                    id,
-                    source.getSubjectName(),
-                    metrics(subjectLessons).metrics(),
-                    available,
-                    selected,
-                    metrics(selectedTypeLessons).metrics(),
-                    cards,
-                    range.equals("days")
-                            ? series(selectedTypeLessons, BucketUnit.DAY, serverDate)
-                            : series(selectedTypeLessons, BucketUnit.WEEK, serverDate)));
+            List<Lesson> subjectLessons =
+                    allLessons.stream().filter(lesson -> lesson.subjectId() == id).toList();
+            List<Lesson> selectedSubjectLessons =
+                    selectedLessons.stream().filter(lesson -> lesson.subjectId() == id).toList();
+            List<String> available =
+                    subjectLessons.stream().map(Lesson::lessonType).distinct().sorted().toList();
+            List<String> selected =
+                    requestedTypes == null || requestedTypes.isEmpty()
+                            ? available
+                            : requestedTypes.stream().filter(available::contains).sorted().toList();
+            List<Lesson> selectedTypeLessons =
+                    selectedSubjectLessons.stream()
+                            .filter(lesson -> selected.contains(lesson.lessonType()))
+                            .toList();
+            List<TypeCard> cards =
+                    selected.stream()
+                            .map(
+                                    type ->
+                                            typeCard(
+                                                    subjectLessons.stream()
+                                                            .filter(
+                                                                    lesson ->
+                                                                            lesson.lessonType()
+                                                                                    .equals(type))
+                                                            .toList(),
+                                                    type))
+                            .toList();
+            result.add(
+                    new Subject(
+                            id,
+                            source.getSubjectName(),
+                            metrics(subjectLessons).metrics(),
+                            available,
+                            selected,
+                            metrics(selectedTypeLessons).metrics(),
+                            cards,
+                            range.equals("days")
+                                    ? series(selectedTypeLessons, BucketUnit.DAY, serverDate)
+                                    : series(selectedTypeLessons, BucketUnit.WEEK, serverDate)));
         }
         return List.copyOf(result);
     }
 
     private TypeCard typeCard(List<Lesson> lessons, String type) {
-        List<HistorySegment> history = lessons.stream()
-                .filter(lesson -> lesson.scheduleState() != ScheduleState.CANCELLED)
-                .sorted(Comparator.comparing(Lesson::date).thenComparingInt(Lesson::lessonNumber))
-                .map(lesson -> new HistorySegment(
-                        Long.toString(lesson.occurrenceId()), lesson.historyStatus()))
-                .toList();
+        List<HistorySegment> history =
+                lessons.stream()
+                        .filter(lesson -> lesson.scheduleState() != ScheduleState.CANCELLED)
+                        .sorted(
+                                Comparator.comparing(Lesson::date)
+                                        .thenComparingInt(Lesson::lessonNumber))
+                        .map(
+                                lesson ->
+                                        new HistorySegment(
+                                                Long.toString(lesson.occurrenceId()),
+                                                lesson.historyStatus(),
+                                                lesson.explanation()))
+                        .toList();
         return new TypeCard(type, metrics(lessons).metrics(), history);
     }
 
     private List<Day> days(List<Lesson> lessons, LocalDate serverDate) {
         Map<LocalDate, List<Lesson>> byDate = new TreeMap<>();
-        lessons.forEach(lesson -> byDate.computeIfAbsent(lesson.date(), ignored -> new ArrayList<>()).add(lesson));
+        lessons.forEach(
+                lesson ->
+                        byDate.computeIfAbsent(lesson.date(), ignored -> new ArrayList<>())
+                                .add(lesson));
         return byDate.entrySet().stream()
-                .map(entry -> new Day(
-                        entry.getKey(),
-                        entry.getKey().getDayOfWeek().getDisplayName(TextStyle.SHORT, RU),
-                        Integer.toString(entry.getKey().getDayOfMonth()),
-                        entry.getKey().isBefore(serverDate) ? "PAST"
-                                : entry.getKey().isAfter(serverDate) ? "FUTURE" : "CURRENT",
-                        entry.getValue().stream().sorted(lessonComparator()).toList()))
+                .map(
+                        entry ->
+                                new Day(
+                                        entry.getKey(),
+                                        entry.getKey()
+                                                .getDayOfWeek()
+                                                .getDisplayName(TextStyle.SHORT, RU),
+                                        Integer.toString(entry.getKey().getDayOfMonth()),
+                                        entry.getKey().isBefore(serverDate)
+                                                ? "PAST"
+                                                : entry.getKey().isAfter(serverDate)
+                                                        ? "FUTURE"
+                                                        : "CURRENT",
+                                        entry.getValue().stream()
+                                                .sorted(lessonComparator())
+                                                .toList()))
                 .toList();
     }
 
@@ -458,23 +609,169 @@ public class StudentAttendanceProjectionService {
         Map<LocalDate, List<Lesson>> buckets = new TreeMap<>();
         for (Lesson lesson : lessons) {
             if (lesson.scheduleState() == ScheduleState.CANCELLED) continue;
-            LocalDate bucket = unit == BucketUnit.DAY
-                    ? lesson.date()
-                    : lesson.date().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            LocalDate bucket =
+                    unit == BucketUnit.DAY
+                            ? lesson.date()
+                            : lesson.date()
+                                    .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
             buckets.computeIfAbsent(bucket, ignored -> new ArrayList<>()).add(lesson);
         }
-        return buckets.entrySet().stream().map(entry -> {
-            LocalDate from = entry.getKey();
-            LocalDate to = unit == BucketUnit.DAY ? from : from.plusDays(6);
-            MetricsBundle metrics = metrics(entry.getValue());
-            boolean onlyFuture = entry.getValue().stream().allMatch(lesson ->
-                    lesson.scheduleState() == ScheduleState.PLANNED
-                            || lesson.scheduleState() == ScheduleState.ACTIVE);
-            String state = from.isAfter(serverDate) || onlyFuture ? "FUTURE" : "DATA";
-            String id = (unit == BucketUnit.DAY ? "day:" : "week:") + from;
-            String label = unit == BucketUnit.DAY ? from.toString() : from + "–" + to;
-            return new SeriesPoint(id, label, from, to, state, metrics.metrics());
-        }).toList();
+        return buckets.entrySet().stream()
+                .map(
+                        entry -> {
+                            LocalDate from = entry.getKey();
+                            LocalDate to = unit == BucketUnit.DAY ? from : from.plusDays(6);
+                            MetricsBundle metrics = metrics(entry.getValue());
+                            boolean onlyFuture =
+                                    entry.getValue().stream()
+                                            .allMatch(
+                                                    lesson ->
+                                                            lesson.scheduleState()
+                                                                            == ScheduleState.PLANNED
+                                                                    || lesson.scheduleState()
+                                                                            == ScheduleState
+                                                                                    .ACTIVE);
+                            String state =
+                                    from.isAfter(serverDate) || onlyFuture ? "FUTURE" : "DATA";
+                            String id = (unit == BucketUnit.DAY ? "day:" : "week:") + from;
+                            String label =
+                                    unit == BucketUnit.DAY ? from.toString() : from + "–" + to;
+                            return new SeriesPoint(id, label, from, to, state, metrics.metrics());
+                        })
+                .toList();
+    }
+
+    private List<Lesson> currentGroupLessons(
+            StudentProjectionScopeResponse scope, InternalJwtClaims claims, long semesterId) {
+        // Historical personal membership is not authority to compare a former group.
+        // A legitimate hidden/terminal scope has no complete current-group catalogue.
+        if (!scope.hasRankGroupId()) {
+            if (scope.getRankEligible() || scope.getRankSubjectsCount() != 0) {
+                throw StudentProjectionException.invalidRoster("incomplete group catalogue");
+            }
+            return null;
+        }
+        long groupId = scope.getRankGroupId();
+        if (claims.groupId() == null
+                || claims.groupId() <= 0
+                || groupId != claims.groupId()
+                || !rankingVisible(scope)) {
+            throw StudentProjectionException.invalidRoster("current group authority mismatch");
+        }
+        Map<Long, AcademicSubjectInfo> catalogue = rankSubjectMap(scope, semesterId, groupId);
+        if (scope.getSubjectsList().stream()
+                .anyMatch(
+                        subject ->
+                                subject.getGroupId() == groupId
+                                        && !catalogue.containsKey(subject.getSubjectId()))) {
+            throw StudentProjectionException.invalidRoster("incomplete current group catalogue");
+        }
+        return canonicalRankLessons(scope, catalogue, semesterId, groupId);
+    }
+
+    /** Adds only aggregate cells from the freshly authorized current group's full catalogue. */
+    private List<SeriesPoint> groupSeries(
+            List<SeriesPoint> points,
+            StudentProjectionScopeResponse scope,
+            List<Lesson> groupLessons,
+            long semesterId,
+            Long subjectId,
+            Set<String> types,
+            LocalDate serverDate) {
+        if (groupLessons == null) return points;
+        long groupId = scope.getRankGroupId();
+        List<Lesson> lessons =
+                groupLessons.stream()
+                        .filter(lesson -> lesson.scheduleState() == ScheduleState.CLOSED)
+                        .filter(lesson -> !lesson.date().isAfter(serverDate))
+                        .filter(lesson -> subjectId == null || lesson.subjectId() == subjectId)
+                        .filter(lesson -> types.isEmpty() || types.contains(lesson.lessonType()))
+                        .toList();
+        Map<Long, Lesson> byId =
+                lessons.stream().collect(Collectors.toMap(Lesson::lessonId, x -> x));
+        Map<Long, Map<Long, AttendanceRecord>> marks = new HashMap<>();
+        List<AttendanceRecord> records =
+                attendanceReadPort.findByLessonIds(lessons.stream().map(Lesson::lessonId).toList());
+        if (records == null)
+            throw StudentProjectionException.invalidOccurrence("missing group marks");
+        for (AttendanceRecord record : records) {
+            Lesson lesson = record == null ? null : byId.get(record.lessonId());
+            if (lesson == null
+                    || record.userId() == null
+                    || record.userId() <= 0
+                    || record.groupId() == null
+                    || record.groupId() != groupId
+                    || record.subjectId() == null
+                    || record.subjectId() != lesson.subjectId()
+                    || !lesson.date().equals(record.lessonDate())) {
+                throw StudentProjectionException.invalidOccurrence("group mark scope mismatch");
+            }
+            AttendanceRecord previous =
+                    marks.computeIfAbsent(lesson.lessonId(), x -> new HashMap<>())
+                            .putIfAbsent(record.userId(), record);
+            if (previous != null && previous.status() != record.status()) {
+                throw StudentProjectionException.duplicateOccurrence(lesson.lessonId());
+            }
+        }
+        Map<LocalDate, Set<Long>> rosterByDate = new HashMap<>();
+        Map<LocalDate, int[]> totals = new HashMap<>();
+        for (Lesson lesson : lessons) {
+            Set<Long> roster =
+                    rosterByDate.computeIfAbsent(
+                            lesson.date(),
+                            date -> {
+                                GroupMembersResponse response =
+                                        academicGrpcClient.getGroupMembers(
+                                                groupId, date, semesterId);
+                                if (response == null
+                                        || !response.hasAsOfDate()
+                                        || !response.hasSemesterId()
+                                        || !date.toString().equals(response.getAsOfDate())
+                                        || response.getSemesterId() != semesterId) {
+                                    throw StudentProjectionException.invalidRoster(
+                                            "historical snapshot mismatch");
+                                }
+                                Set<Long> ids = new HashSet<>();
+                                for (StudentInfo student : response.getStudentsList()) {
+                                    if (student.getUserId() <= 0 || !ids.add(student.getUserId())) {
+                                        throw StudentProjectionException.invalidRoster(
+                                                "invalid historical member");
+                                    }
+                                }
+                                return Set.copyOf(ids);
+                            });
+            LocalDate week = lesson.date().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            int[] total = totals.computeIfAbsent(week, x -> new int[2]);
+            for (long member : roster) {
+                AttendanceRecord record =
+                        marks.getOrDefault(lesson.lessonId(), Map.of()).get(member);
+                AttendanceStatus status =
+                        record == null || record.status() == null
+                                ? AttendanceStatus.ABSENT
+                                : record.status();
+                if (status == AttendanceStatus.CANCELLED) continue;
+                total[1] = Math.addExact(total[1], 1);
+                if (status == AttendanceStatus.PRESENT) total[0] = Math.addExact(total[0], 1);
+            }
+        }
+        return points.stream()
+                .map(
+                        point -> {
+                            int[] total = totals.getOrDefault(point.dateFrom(), new int[2]);
+                            BigDecimal percent =
+                                    AttendanceMetricCalculator.Metrics.forRanking(
+                                                    total[1], total[0])
+                                            .presentPercent();
+                            return new SeriesPoint(
+                                    point.id(),
+                                    point.label(),
+                                    point.dateFrom(),
+                                    point.dateTo(),
+                                    point.state(),
+                                    point.metrics(),
+                                    new GroupPresent(total[0], total[1], percent));
+                        })
+                .toList();
     }
 
     private Rank rank(
@@ -486,50 +783,128 @@ public class StudentAttendanceProjectionService {
         return rankedCohort(scope, ownId, ownLessons, subjects, semesterId).ownRank();
     }
 
+    /** Internal rank calculation for a target already admitted by live own-group authority. */
+    public Rank rankForHeadman(
+            StudentProjectionScopeResponse scope, long studentId, long semesterId, long groupId) {
+        if (scope == null
+                || scope.getStudentId() != studentId
+                || scope.getSemesterId() != semesterId
+                || scope.hasRankGroupId() && scope.getRankGroupId() != groupId
+                || scope.getOwnMembershipSegmentsList().stream()
+                        .anyMatch(segment -> segment.getGroupId() != groupId)
+                || scope.getSubjectsList().stream()
+                        .anyMatch(subject -> subject.getGroupId() != groupId)
+                || scope.getRankSubjectsList().stream()
+                        .anyMatch(subject -> subject.getGroupId() != groupId)) {
+            throw StudentProjectionException.invalidRoster("Headman target rank scope mismatch");
+        }
+        if (scope.getRankVisibility()
+                == StudentProjectionRankVisibility.STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN) {
+            if (scope.getRankEligible()
+                    || scope.hasRankGroupId()
+                    || scope.getActiveRosterUserIdsCount() != 0
+                    || scope.getRankSubjectsCount() != 0) {
+                throw StudentProjectionException.invalidRoster(
+                        "Hidden target rank contains a cohort");
+            }
+            return new Rank(null, 0, false);
+        }
+        if (scope.getRankVisibility()
+                        != StudentProjectionRankVisibility
+                                .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE
+                || scope.getRankEligible() != scope.hasRankGroupId()) {
+            throw StudentProjectionException.invalidRoster("Unknown target rank visibility");
+        }
+        if (!scope.getRankEligible()) {
+            if (scope.getActiveRosterUserIdsCount() != 0 || scope.getRankSubjectsCount() != 0) {
+                throw StudentProjectionException.invalidRoster(
+                        "Unavailable target rank contains a cohort");
+            }
+            return new Rank(null, 0, false);
+        }
+        var subjects = subjectMap(scope);
+        var lessons = loadLessons(scope, semesterId, subjects, null, Set.of());
+        return rankedCohort(scope, studentId, lessons, subjects, semesterId).ownRank();
+    }
+
     private RankedCohort rankedCohort(
             StudentProjectionScopeResponse scope,
             long ownId,
             List<Lesson> ownLessons,
             Map<Long, AcademicSubjectInfo> subjects,
             long semesterId) {
+        return rankedCohort(scope, ownId, ownLessons, subjects, semesterId, null);
+    }
+
+    private RankedCohort rankedCohort(
+            StudentProjectionScopeResponse scope,
+            long ownId,
+            List<Lesson> ownLessons,
+            Map<Long, AcademicSubjectInfo> subjects,
+            long semesterId,
+            List<Lesson> capturedGroupLessons) {
         List<Long> roster = scope.getActiveRosterUserIdsList();
         if (!rankingVisible(scope)) {
             return new RankedCohort(new Rank(null, roster.size(), false), List.of());
         }
         long rankGroup = scope.getRankGroupId();
         Map<Long, AcademicSubjectInfo> rankSubjects = rankSubjectMap(scope, semesterId, rankGroup);
-        List<Lesson> rankLessons = canonicalRankLessons(scope, rankSubjects, semesterId, rankGroup);
-        Set<Long> ownAuthorizedLessonIds = ownLessons.stream()
-                .filter(lesson -> lesson.groupId() == rankGroup)
-                .map(Lesson::lessonId)
-                .collect(Collectors.toUnmodifiableSet());
-        Map<Long, List<AttendanceRecord>> records = attendanceReadPort
-                .findByUserIds(roster, semesterId);
+        List<Lesson> rankLessons =
+                capturedGroupLessons == null
+                        ? canonicalRankLessons(scope, rankSubjects, semesterId, rankGroup)
+                        : capturedGroupLessons;
+        Set<Long> ownAuthorizedLessonIds =
+                ownLessons.stream()
+                        .filter(lesson -> lesson.groupId() == rankGroup)
+                        .map(Lesson::lessonId)
+                        .collect(Collectors.toUnmodifiableSet());
+        Map<Long, List<AttendanceRecord>> records =
+                attendanceReadPort.findByUserIds(roster, semesterId);
         if (records == null) {
             throw StudentProjectionException.invalidRoster("Attendance roster read returned null");
         }
-        List<OwnRankCalculator.Participant> participants = roster.stream()
-                .distinct()
-                .map(userId -> {
-                    List<AttendanceRecord> participantRecords = records.getOrDefault(userId, List.of());
-                    if (userId == ownId) {
-                        // The rank denominator is the canonical semester cohort
-                        // for every roster member.  A late joiner contributes
-                        // marks only from their authorized membership history.
-                        participantRecords = participantRecords.stream()
-                                .filter(record -> ownAuthorizedLessonIds.contains(record.lessonId()))
-                                .toList();
-                    }
-                    Map<Long, AttendanceRecord> marks = markIndex(
-                            participantRecords, rankLessons, userId);
-                    List<Lesson> markedLessons = rankLessons.stream()
-                            .map(lesson -> lesson.withMark(marks.get(lesson.lessonId())))
-                            .toList();
-                    AttendanceMetricCalculator.Metrics metrics = metrics(markedLessons).metrics();
-                    return OwnRankCalculator.Participant.withCounts(
-                            userId, metrics.heldCount(), metrics.presentCount());
-                })
-                .toList();
+        List<OwnRankCalculator.Participant> participants =
+                roster.stream()
+                        .distinct()
+                        .map(
+                                userId -> {
+                                    List<AttendanceRecord> participantRecords =
+                                            records.getOrDefault(userId, List.of());
+                                    if (userId == ownId) {
+                                        // The rank denominator is the canonical semester cohort
+                                        // for every roster member.  A late joiner contributes
+                                        // marks only from their authorized membership history.
+                                        participantRecords =
+                                                participantRecords.stream()
+                                                        .filter(
+                                                                record ->
+                                                                        ownAuthorizedLessonIds
+                                                                                .contains(
+                                                                                        record
+                                                                                                .lessonId()))
+                                                        .toList();
+                                    }
+                                    Map<Long, AttendanceRecord> marks =
+                                            markIndex(
+                                                    participantRecords,
+                                                    rankLessons,
+                                                    userId,
+                                                    semesterId);
+                                    List<Lesson> markedLessons =
+                                            rankLessons.stream()
+                                                    .map(
+                                                            lesson ->
+                                                                    lesson.withMark(
+                                                                            marks.get(
+                                                                                    lesson
+                                                                                            .lessonId())))
+                                                    .toList();
+                                    AttendanceMetricCalculator.Metrics metrics =
+                                            metrics(markedLessons).metrics();
+                                    return OwnRankCalculator.Participant.withCounts(
+                                            userId, metrics.heldCount(), metrics.presentCount());
+                                })
+                        .toList();
         List<OwnRankCalculator.RankedParticipant> ranked = OwnRankCalculator.rankAll(participants);
         OwnRankCalculator.Rank result = OwnRankCalculator.summarize(ownId, ranked);
         return new RankedCohort(
@@ -537,9 +912,11 @@ public class StudentAttendanceProjectionService {
     }
 
     private static boolean rankingVisible(StudentProjectionScopeResponse scope) {
-        return scope.getRankVisibility() == StudentProjectionRankVisibility
-                .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE
-                && scope.getRankEligible() && scope.hasRankGroupId();
+        return scope.getRankVisibility()
+                        == StudentProjectionRankVisibility
+                                .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE
+                && scope.getRankEligible()
+                && scope.hasRankGroupId();
     }
 
     private List<Lesson> canonicalRankLessons(
@@ -551,34 +928,40 @@ public class StudentAttendanceProjectionService {
         if (rankSubjectIds.isEmpty()) return List.of();
         LocalDate from = parseRequiredDate(scope.getDateFrom(), "date_from");
         LocalDate to = parseRequiredDate(scope.getDateTo(), "date_to");
-        StudentProjectionMembershipSegment canonicalSegment = StudentProjectionMembershipSegment.newBuilder()
-                .setGroupId(rankGroup)
-                .setDateFrom(from.toString())
-                .setDateUntilExclusive(to.plusDays(1).toString())
-                .addAllSubjectIds(rankSubjectIds)
-                .build();
-        return loadLessons(List.of(canonicalSegment), semesterId, rankSubjectsById, null, Set.of()).stream()
+        StudentProjectionMembershipSegment canonicalSegment =
+                StudentProjectionMembershipSegment.newBuilder()
+                        .setGroupId(rankGroup)
+                        .setDateFrom(from.toString())
+                        .setDateUntilExclusive(to.plusDays(1).toString())
+                        .addAllSubjectIds(rankSubjectIds)
+                        .build();
+        return loadLessons(List.of(canonicalSegment), semesterId, rankSubjectsById, null, Set.of())
+                .stream()
                 .filter(lesson -> lesson.groupId() == rankGroup)
                 .toList();
     }
 
     private static Map<Long, AcademicSubjectInfo> rankSubjectMap(
-            StudentProjectionScopeResponse scope,
-            long semesterId,
-            long rankGroup) {
+            StudentProjectionScopeResponse scope, long semesterId, long rankGroup) {
         if (scope.getSemesterId() != semesterId
                 || !scope.hasRankGroupId()
                 || scope.getRankGroupId() != rankGroup) {
-            throw StudentProjectionException.invalidOccurrence("Academic rank scope authority is inconsistent");
+            throw StudentProjectionException.invalidOccurrence(
+                    "Academic rank scope authority is inconsistent");
         }
         Map<Long, AcademicSubjectInfo> result = new LinkedHashMap<>();
         for (AcademicSubjectInfo subject : scope.getRankSubjectsList()) {
-            if (subject == null || subject.getSubjectId() <= 0 || subject.getGroupId() != rankGroup
-                    || subject.getSubjectName().isBlank() || subject.getSubjectType().isBlank()) {
-                throw StudentProjectionException.invalidOccurrence("Academic rank subject is invalid");
+            if (subject == null
+                    || subject.getSubjectId() <= 0
+                    || subject.getGroupId() != rankGroup
+                    || subject.getSubjectName().isBlank()
+                    || subject.getSubjectType().isBlank()) {
+                throw StudentProjectionException.invalidOccurrence(
+                        "Academic rank subject is invalid");
             }
             if (result.putIfAbsent(subject.getSubjectId(), subject) != null) {
-                throw StudentProjectionException.invalidOccurrence("Academic rank subjects contain duplicates");
+                throw StudentProjectionException.invalidOccurrence(
+                        "Academic rank subjects contain duplicates");
             }
         }
         return Map.copyOf(result);
@@ -591,34 +974,67 @@ public class StudentAttendanceProjectionService {
     private MetricsBundle metrics(Collection<Lesson> lessons, List<AttendanceRecord> records) {
         Map<Long, AttendanceStatus> statuses = new HashMap<>();
         if (records != null) {
+            Map<Long, Lesson> lessonsById =
+                    lessons.stream()
+                            .collect(
+                                    Collectors.toMap(
+                                            Lesson::lessonId,
+                                            lesson -> lesson,
+                                            (left, right) -> left));
             for (AttendanceRecord record : records) {
                 if (record != null && record.lessonId() != null) {
-                    statuses.put(record.lessonId(), canonicalStatus(record.status(), record.lessonId()));
+                    statuses.put(
+                            record.lessonId(),
+                            canonicalStatus(
+                                    record.status(),
+                                    record.lessonId(),
+                                    lessonsById.get(record.lessonId())));
                 }
             }
         }
-        List<AttendanceMetricCalculator.Occurrence> occurrences = lessons.stream()
-                .map(lesson -> {
-                    AttendanceStatus status = statuses.containsKey(lesson.lessonId())
-                            ? statuses.get(lesson.lessonId())
-                            : lesson.mark() == null
-                            ? null
-                            : canonicalStatus(lesson.mark().status(), lesson.lessonId());
-                    return occurrence(lesson, status);
-                })
-                .toList();
+        List<AttendanceMetricCalculator.Occurrence> occurrences =
+                lessons.stream()
+                        .map(
+                                lesson -> {
+                                    AttendanceStatus status =
+                                            statuses.containsKey(lesson.lessonId())
+                                                    ? statuses.get(lesson.lessonId())
+                                                    : lesson.mark() == null
+                                                            ? null
+                                                            : canonicalStatus(
+                                                                    lesson.mark().status(),
+                                                                    lesson.lessonId(),
+                                                                    lesson);
+                                    return occurrence(lesson, status);
+                                })
+                        .toList();
         return new MetricsBundle(AttendanceMetricCalculator.calculate(occurrences));
     }
 
-    private AttendanceMetricCalculator.Occurrence occurrence(Lesson lesson, AttendanceStatus status) {
+    private AttendanceMetricCalculator.Occurrence occurrence(
+            Lesson lesson, AttendanceStatus status) {
         return switch (lesson.scheduleState()) {
             case PLANNED -> AttendanceMetricCalculator.Occurrence.planned(lesson.occurrenceId());
             case ACTIVE -> AttendanceMetricCalculator.Occurrence.active(lesson.occurrenceId());
-            case CLOSED -> status == null
-                    ? AttendanceMetricCalculator.Occurrence.closedWithoutMark(lesson.occurrenceId())
-                    : AttendanceMetricCalculator.Occurrence.closed(lesson.occurrenceId(), status);
-            case CANCELLED -> AttendanceMetricCalculator.Occurrence.cancelled(lesson.occurrenceId());
+            case CLOSED ->
+                    status == null
+                            ? AttendanceMetricCalculator.Occurrence.closedWithoutMark(
+                                    lesson.occurrenceId())
+                            : AttendanceMetricCalculator.Occurrence.closed(
+                                    lesson.occurrenceId(), status);
+            case CANCELLED ->
+                    AttendanceMetricCalculator.Occurrence.cancelled(lesson.occurrenceId());
         };
+    }
+
+    private static AttendanceStatus canonicalStatus(
+            AttendanceStatus status, long lessonId, Lesson lesson) {
+        if (status == AttendanceStatus.CANCELLED
+                && lesson != null
+                && lesson.scheduleState() == ScheduleState.CANCELLED) {
+            return status;
+        }
+        return canonicalStatus(status, lessonId);
     }
 
     private static AttendanceStatus canonicalStatus(AttendanceStatus status, long lessonId) {
@@ -639,12 +1055,14 @@ public class StudentAttendanceProjectionService {
     private static Map<Long, AcademicSubjectInfo> subjectMap(StudentProjectionScopeResponse scope) {
         Map<Long, AcademicSubjectInfo> result = new LinkedHashMap<>();
         for (AcademicSubjectInfo subject : scope.getSubjectsList()) {
-            if (subject == null || subject.getSubjectId() <= 0
+            if (subject == null
+                    || subject.getSubjectId() <= 0
                     || subject.getSubjectName().isBlank()) {
                 throw StudentProjectionException.invalidOccurrence("Academic subject is invalid");
             }
             if (result.putIfAbsent(subject.getSubjectId(), subject) != null) {
-                throw StudentProjectionException.invalidOccurrence("Academic subjects contain duplicates");
+                throw StudentProjectionException.invalidOccurrence(
+                        "Academic subjects contain duplicates");
             }
         }
         return result;
@@ -655,44 +1073,54 @@ public class StudentAttendanceProjectionService {
             InternalJwtClaims claims,
             long requestedSemesterId,
             Long requestedSubjectId) {
-        if (scope == null || scope.getStudentId() != claims.userId()
+        if (scope == null
+                || scope.getStudentId() != claims.userId()
                 || scope.getSemesterId() != requestedSemesterId
-                || scope.getDateFrom().isBlank() || scope.getDateTo().isBlank()
+                || scope.getDateFrom().isBlank()
+                || scope.getDateTo().isBlank()
                 || scope.getServerDate().isBlank()) {
-            throw StudentProjectionException.invalidOccurrence("Academic scope echo is inconsistent");
+            throw StudentProjectionException.invalidOccurrence(
+                    "Academic scope echo is inconsistent");
         }
         try {
             claims.domainRole();
         } catch (RuntimeException error) {
-            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_SESSION,
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_SESSION,
                     "Подписанная student-сессия недействительна");
         }
         if (requestedSubjectId != null && requestedSubjectId <= 0) {
-            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_REQUEST,
                     "subject_id должен быть положительным");
         }
     }
 
     private static void requireStudent(InternalJwtClaims claims) {
         if (claims == null || claims.userId() <= 0) {
-            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_SESSION,
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_SESSION,
                     "Подписанная student-сессия отсутствует");
         }
         try {
             if (!"STUDENT".equalsIgnoreCase(claims.domainRole())) {
-                throw new StudentCheckinException(StudentCheckinException.Code.WRONG_ROLE,
+                throw new StudentCheckinException(
+                        StudentCheckinException.Code.WRONG_ROLE,
                         "Attendance projection requires a student identity");
             }
         } catch (IllegalStateException error) {
-            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_SESSION,
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_SESSION,
                     "Подписанная student-сессия недействительна");
         }
     }
 
     private static String normalizeRange(String range) {
-        String normalized = range == null || range.isBlank() ? "weeks" : range.trim().toLowerCase(Locale.ROOT);
+        String normalized =
+                range == null || range.isBlank() ? "weeks" : range.trim().toLowerCase(Locale.ROOT);
         if (!normalized.equals("days") && !normalized.equals("weeks")) {
-            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_REQUEST,
                     "range должен быть days или weeks");
         }
         return normalized;
@@ -704,7 +1132,8 @@ public class StudentAttendanceProjectionService {
         for (String type : types) {
             String value = normalizeType(type);
             if (value == null) {
-                throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST,
+                throw new StudentCheckinException(
+                        StudentCheckinException.Code.INVALID_REQUEST,
                         "lesson_types содержит неизвестный тип");
             }
             normalized.add(value);
@@ -740,10 +1169,16 @@ public class StudentAttendanceProjectionService {
                 .thenComparingLong(Lesson::lessonId);
     }
 
-    private enum BucketUnit { DAY, WEEK }
+    private enum BucketUnit {
+        DAY,
+        WEEK
+    }
 
     public enum ScheduleState {
-        PLANNED, ACTIVE, CLOSED, CANCELLED;
+        PLANNED,
+        ACTIVE,
+        CLOSED,
+        CANCELLED;
 
         static ScheduleState from(String value) {
             if (value == null) {
@@ -752,13 +1187,13 @@ public class StudentAttendanceProjectionService {
             try {
                 return valueOf(value.trim().toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException error) {
-                throw StudentProjectionException.invalidOccurrence("unknown lesson status " + value);
+                throw StudentProjectionException.invalidOccurrence(
+                        "unknown lesson status " + value);
             }
         }
     }
 
-    private record MetricsBundle(AttendanceMetricCalculator.Metrics metrics) {
-    }
+    private record MetricsBundle(AttendanceMetricCalculator.Metrics metrics) {}
 
     public record Projection(
             long studentId,
@@ -771,16 +1206,10 @@ public class StudentAttendanceProjectionService {
             List<Day> days,
             List<Subject> subjects,
             Graph graph,
-            Rank ownRank) {
-    }
+            Rank ownRank) {}
 
     public record Day(
-            LocalDate date,
-            String weekday,
-            String dayNumber,
-            String state,
-            List<Lesson> lessons) {
-    }
+            LocalDate date, String weekday, String dayNumber, String state, List<Lesson> lessons) {}
 
     public record Lesson(
             long lessonId,
@@ -795,16 +1224,82 @@ public class StudentAttendanceProjectionService {
             LocalTime endsAt,
             String room,
             ScheduleState scheduleState,
-            AttendanceRecord mark) {
+            AttendanceRecord mark,
+            String cancellationReason) {
+
+        public Lesson(
+                long lessonId,
+                long occurrenceId,
+                long groupId,
+                LocalDate date,
+                int lessonNumber,
+                long subjectId,
+                String subjectName,
+                String lessonType,
+                LocalTime startsAt,
+                LocalTime endsAt,
+                String room,
+                ScheduleState scheduleState,
+                AttendanceRecord mark) {
+            this(
+                    lessonId,
+                    occurrenceId,
+                    groupId,
+                    date,
+                    lessonNumber,
+                    subjectId,
+                    subjectName,
+                    lessonType,
+                    startsAt,
+                    endsAt,
+                    room,
+                    scheduleState,
+                    mark,
+                    null);
+        }
+
+        public Explanation explanation() {
+            if ("CANCELLED".equals(uiStatus())) {
+                return explanationOrNull(null, null, null, cancellationReason);
+            }
+            if (!"EXCUSED".equals(uiStatus()) || mark == null) return null;
+            String code = text(mark.excuseType());
+            String label = null;
+            if (code != null) {
+                try {
+                    label = StudentRequestService.reasonLabel(ExcuseType.valueOf(code));
+                } catch (IllegalArgumentException ignored) {
+                    // Legacy unknown metadata does not introduce a new reason code.
+                    code = null;
+                }
+            }
+            return explanationOrNull(
+                    code, label == null ? mark.excuseReason() : label, mark.excuseComment(), null);
+        }
 
         Lesson withMark(AttendanceRecord value) {
-            return new Lesson(lessonId, occurrenceId, groupId, date, lessonNumber, subjectId,
-                    subjectName, lessonType, startsAt, endsAt, room, scheduleState, value);
+            return new Lesson(
+                    lessonId,
+                    occurrenceId,
+                    groupId,
+                    date,
+                    lessonNumber,
+                    subjectId,
+                    subjectName,
+                    lessonType,
+                    startsAt,
+                    endsAt,
+                    room,
+                    scheduleState,
+                    value,
+                    cancellationReason);
         }
 
         boolean sameSource(Lesson other) {
-            return lessonId == other.lessonId && groupId == other.groupId
-                    && subjectId == other.subjectId && date.equals(other.date)
+            return lessonId == other.lessonId
+                    && groupId == other.groupId
+                    && subjectId == other.subjectId
+                    && date.equals(other.date)
                     && lessonType.equals(other.lessonType);
         }
 
@@ -816,7 +1311,10 @@ public class StudentAttendanceProjectionService {
             return switch (scheduleState) {
                 case ACTIVE -> "ACTIVE";
                 case PLANNED -> "FUTURE";
-                case CLOSED -> EffectiveAttendance.resolve(scheduleState.name(), false, null, null).status().name();
+                case CLOSED ->
+                        EffectiveAttendance.resolve(scheduleState.name(), false, null, null)
+                                .status()
+                                .name();
                 case CANCELLED -> "CANCELLED";
             };
         }
@@ -838,20 +1336,39 @@ public class StudentAttendanceProjectionService {
             List<String> selectedTypes,
             AttendanceMetricCalculator.Metrics selectedAggregate,
             List<TypeCard> typeCards,
-            List<SeriesPoint> series) {
-    }
+            List<SeriesPoint> series) {}
 
     public record TypeCard(
             String lessonType,
             AttendanceMetricCalculator.Metrics metrics,
-            List<HistorySegment> history) {
+            List<HistorySegment> history) {}
+
+    public record HistorySegment(String id, String status, Explanation explanation) {
+        public HistorySegment(String id, String status) {
+            this(id, status, null);
+        }
     }
 
-    public record HistorySegment(String id, String status) {
+    public record Explanation(
+            String reasonCode, String reasonText, String comment, String cancellationReason) {}
+
+    private static String text(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 
-    public record Graph(List<SeriesPoint> days, List<SeriesPoint> weeks) {
+    private static Explanation explanationOrNull(
+            String code, String reason, String comment, String cancellation) {
+        Explanation result =
+                new Explanation(text(code), text(reason), text(comment), text(cancellation));
+        return result.reasonCode() == null
+                        && result.reasonText() == null
+                        && result.comment() == null
+                        && result.cancellationReason() == null
+                ? null
+                : result;
     }
+
+    public record Graph(List<SeriesPoint> days, List<SeriesPoint> weeks) {}
 
     public record SeriesPoint(
             String id,
@@ -859,11 +1376,22 @@ public class StudentAttendanceProjectionService {
             LocalDate dateFrom,
             LocalDate dateTo,
             String state,
-            AttendanceMetricCalculator.Metrics metrics) {
+            AttendanceMetricCalculator.Metrics metrics,
+            GroupPresent groupPresent) {
+        public SeriesPoint(
+                String id,
+                String label,
+                LocalDate dateFrom,
+                LocalDate dateTo,
+                String state,
+                AttendanceMetricCalculator.Metrics metrics) {
+            this(id, label, dateFrom, dateTo, state, metrics, null);
+        }
     }
 
-    public record Rank(Integer position, int participantCount, boolean available) {
-    }
+    public record GroupPresent(int numerator, int denominator, BigDecimal percent) {}
+
+    public record Rank(Integer position, int participantCount, boolean available) {}
 
     public record RankingPage(
             boolean available,
@@ -882,14 +1410,10 @@ public class StudentAttendanceProjectionService {
     }
 
     public record RankingRow(
-            long studentId,
-            String name,
-            Integer position,
-            BigDecimal percentage,
-            boolean isSelf) {
-    }
+            long studentId, String name, Integer position, BigDecimal percentage, boolean isSelf) {}
 
-    private record RankedCohort(Rank ownRank, List<OwnRankCalculator.RankedParticipant> participants) {
+    private record RankedCohort(
+            Rank ownRank, List<OwnRankCalculator.RankedParticipant> participants) {
         private RankedCohort {
             participants = List.copyOf(participants);
         }

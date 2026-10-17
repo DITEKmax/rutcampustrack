@@ -1,0 +1,42 @@
+{
+  "name": "bad-invalidation",
+  "source_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "source_inputs_unchanged": 7032,
+  "native_session_id": 13920,
+  "native_exit_code": 1,
+  "result": "EXPECTED_RED; intended accepted oracle detected knownfault",
+  "counts": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "credentialChangeInvalidatesUnsettledCardsAndPreservesFirstFence()",
+      "status": "FAIL",
+      "seconds": "2.957",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "intended_assertion": true,
+      "safe_expected": "old card cleanup_state=PENDING",
+      "safe_actual": "old card cleanup_state=NOT_REQUIRED"
+    }
+  ],
+  "native_xml": [
+    {
+      "file": "TEST-ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT.xml",
+      "sha256": "857d33ca6078ef66a616ba022aadace1e1c662e2356b0449e53170bbdff97251",
+      "bytes": 13926,
+      "tests": 1
+    }
+  ],
+  "terminal_sha256": "c4f9db1e1c3ceadd09369642ce49e142fc87990f1e16dd489fff2ef59f32bff7",
+  "container_ids": [
+    "3b1b97223d1ef7278a884d515131dd3f29e37e0412998c9135233ea0de87537d"
+  ],
+  "free_bytes": 5882675200,
+  "lease": "NP01_CONTRACT1",
+  "utc": "2026-10-12T02:00:49Z",
+  "limits": "Common migration/PostgreSQL and selected legacy Flyway only; no AcademicTLS/Authproducer/bot/provider full acceptance."
+}

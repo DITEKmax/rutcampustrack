@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { canRequestLesson, requestSelectionEligible } from './state'
-import type { TodayLesson } from '../../api/types'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import RequestLessonSummary from './RequestLessonSummary.vue'
-import AutoGrowTextarea from './AutoGrowTextarea.vue'
-import ReasonSelect from './ReasonSelect.vue'
-import RequestAttachmentField from './RequestAttachmentField.vue'
-import RequestLessonSelector from './RequestLessonSelector.vue'
+import { computed } from 'vue';
+import { canRequestLesson, requestSelectionEligible } from './state';
+import type { TodayLesson } from '../../api/types';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import RequestLessonSummary from './RequestLessonSummary.vue';
+import AutoGrowTextarea from './AutoGrowTextarea.vue';
+import ReasonSelect from './ReasonSelect.vue';
+import RequestAttachmentField from './RequestAttachmentField.vue';
+import RequestLessonSelector from './RequestLessonSelector.vue';
 import type {
   ExcuseRequestPayload,
   RequestAccessState,
@@ -17,116 +17,149 @@ import type {
   RequestLesson,
   RequestLessonOption,
   RequestReasonOption,
-} from './types'
+} from './types';
 
-const props = withDefaults(defineProps<{
-  access: RequestAccessState
-  lessons: readonly RequestLessonOption[]
-  lessonIds: readonly string[]
-  reasons: readonly RequestReasonOption[]
-  reason: string | null
-  comment: string
-  files: readonly RequestFileRef[]
-  fileLimits: RequestFileLimits | null
-  lessonsLoading?: boolean
-  lessonsError?: string | null
-  offline?: boolean
-  readOnly?: boolean
-  submitting?: boolean
-  submitError?: string | null
-  disabled?: boolean
-  ambiguous?: boolean
-  todayLesson?: TodayLesson | null
-  selectedLesson?: RequestLesson | null
-  attendanceStatus?: 'PRESENT' | 'ABSENT' | 'EXCUSED' | null
-  backLabel?: string
-  selectionComplete?: boolean
-}>(), {
-  lessonsLoading: false,
-  lessonsError: null,
-  offline: false,
-  readOnly: false,
-  submitting: false,
-  submitError: null,
-  disabled: false,
-  ambiguous: false,
-  todayLesson: null,
-  selectedLesson: null,
-  attendanceStatus: null,
-  backLabel: 'Вернуться назад',
-  selectionComplete: false,
-})
+const props = withDefaults(
+  defineProps<{
+    access: RequestAccessState;
+    lessons: readonly RequestLessonOption[];
+    lessonIds: readonly string[];
+    reasons: readonly RequestReasonOption[];
+    reason: string | null;
+    comment: string;
+    files: readonly RequestFileRef[];
+    fileLimits: RequestFileLimits | null;
+    lessonsLoading?: boolean;
+    lessonsError?: string | null;
+    offline?: boolean;
+    readOnly?: boolean;
+    submitting?: boolean;
+    submitError?: string | null;
+    disabled?: boolean;
+    ambiguous?: boolean;
+    todayLesson?: TodayLesson | null;
+    selectedLesson?: RequestLesson | null;
+    attendanceStatus?: 'PRESENT' | 'ABSENT' | 'EXCUSED' | null;
+    backLabel?: string;
+    selectionComplete?: boolean;
+  }>(),
+  {
+    lessonsLoading: false,
+    lessonsError: null,
+    offline: false,
+    readOnly: false,
+    submitting: false,
+    submitError: null,
+    disabled: false,
+    ambiguous: false,
+    todayLesson: null,
+    selectedLesson: null,
+    attendanceStatus: null,
+    backLabel: 'Вернуться назад',
+    selectionComplete: false,
+  },
+);
 
 const emit = defineEmits<{
-  back: []
-  editSelection: []
-  retryLessons: []
-  'update:lessonIds': [lessonIds: string[]]
-  'update:reason': [reason: string | null]
-  'update:comment': [comment: string]
-  'update:files': [files: RequestFileRef[]]
-  abandon: []
-  submit: [payload: ExcuseRequestPayload]
-}>()
+  back: [];
+  editSelection: [];
+  retryLessons: [];
+  'update:lessonIds': [lessonIds: string[]];
+  'update:reason': [reason: string | null];
+  'update:comment': [comment: string];
+  'update:files': [files: RequestFileRef[]];
+  abandon: [];
+  submit: [payload: ExcuseRequestPayload];
+}>();
 
-const contextLesson = computed<RequestLesson | null>(() => props.todayLesson ? {
-  id: props.todayLesson.schedule.id,
-  subjectName: props.todayLesson.schedule.subject.name,
-  subjectType: props.todayLesson.schedule.subject.type,
-  date: props.todayLesson.schedule.date,
-  startsAt: props.todayLesson.schedule.startsAt,
-  endsAt: props.todayLesson.schedule.endsAt,
-  status: props.todayLesson.schedule.status,
-} : props.selectedLesson)
-const contextStatus = computed(() => props.todayLesson ? props.todayLesson.attendance?.status ?? null : props.attendanceStatus)
+const contextLesson = computed<RequestLesson | null>(() =>
+  props.todayLesson
+    ? {
+        id: props.todayLesson.schedule.id,
+        subjectName: props.todayLesson.schedule.subject.name,
+        subjectType: props.todayLesson.schedule.subject.type,
+        date: props.todayLesson.schedule.date,
+        startsAt: props.todayLesson.schedule.startsAt,
+        endsAt: props.todayLesson.schedule.endsAt,
+        status: props.todayLesson.schedule.status,
+      }
+    : props.selectedLesson,
+);
+const contextStatus = computed(() =>
+  props.todayLesson ? (props.todayLesson.attendance?.status ?? null) : props.attendanceStatus,
+);
 
-const selectedEligible = computed(() => requestSelectionEligible(props.lessons, props.lessonIds, 'EXCUSE'))
-const selectedReason = computed(() => props.reasons.find((option) => option.code === props.reason))
-const reasonAvailable = computed(() => Boolean(props.reason) && selectedReason.value !== undefined)
-const retainedReasonUnavailable = computed(() => Boolean(props.reason) && props.reasons.length > 0 && !reasonAvailable.value)
-const commentRequired = computed(() => selectedReason.value?.commentRequired === true)
-const commentTooLong = computed(() => props.comment.length > 1000)
-const commentValid = computed(() => !commentTooLong.value && (!commentRequired.value || props.comment.trim().length > 0))
-const todaySelectionMatches = computed(() => !contextLesson.value || (props.lessonIds.length === 1 && props.lessonIds[0] === contextLesson.value.id))
-const todayOption = computed(() => props.lessons.find((option) => option.lesson?.id === contextLesson.value?.id))
-const todayUnavailable = computed(() => contextLesson.value && !props.lessonsLoading && !props.lessonsError && (!todaySelectionMatches.value || !canRequestLesson(todayOption.value, 'EXCUSE')))
-const selectedLessons = computed(() => props.lessons.flatMap((option) => option.lesson && props.lessonIds.includes(option.lesson.id) ? [option.lesson] : []))
-const canSubmit = () => props.access === 'allowed'
-  && !props.offline
-  && !props.disabled
-  && !props.readOnly
-  && !props.submitting
-  && !props.ambiguous
-  && !props.lessonsLoading
-  && !props.lessonsError
-  && selectedEligible.value
-  && todaySelectionMatches.value
-  && reasonAvailable.value
-  && commentValid.value
+const selectedEligible = computed(() =>
+  requestSelectionEligible(props.lessons, props.lessonIds, 'EXCUSE'),
+);
+const selectedReason = computed(() => props.reasons.find((option) => option.code === props.reason));
+const reasonAvailable = computed(() => Boolean(props.reason) && selectedReason.value !== undefined);
+const retainedReasonUnavailable = computed(
+  () => Boolean(props.reason) && props.reasons.length > 0 && !reasonAvailable.value,
+);
+const commentRequired = computed(() => selectedReason.value?.commentRequired === true);
+const commentTooLong = computed(() => props.comment.length > 1000);
+const commentValid = computed(
+  () => !commentTooLong.value && (!commentRequired.value || props.comment.trim().length > 0),
+);
+const todaySelectionMatches = computed(
+  () =>
+    !contextLesson.value ||
+    (props.lessonIds.length === 1 && props.lessonIds[0] === contextLesson.value.id),
+);
+const todayOption = computed(() =>
+  props.lessons.find((option) => option.lesson?.id === contextLesson.value?.id),
+);
+const todayUnavailable = computed(
+  () =>
+    contextLesson.value &&
+    !props.lessonsLoading &&
+    !props.lessonsError &&
+    (!todaySelectionMatches.value || !canRequestLesson(todayOption.value, 'EXCUSE')),
+);
+const selectedLessons = computed(() =>
+  props.lessons.flatMap((option) =>
+    option.lesson && props.lessonIds.includes(option.lesson.id) ? [option.lesson] : [],
+  ),
+);
+const canSubmit = () =>
+  props.access === 'allowed' &&
+  !props.offline &&
+  !props.disabled &&
+  !props.readOnly &&
+  !props.submitting &&
+  !props.ambiguous &&
+  !props.lessonsLoading &&
+  !props.lessonsError &&
+  selectedEligible.value &&
+  todaySelectionMatches.value &&
+  reasonAvailable.value &&
+  commentValid.value;
 
 function selectedCountLabel(count: number): string {
-  if (count % 10 === 1 && count % 100 !== 11) return count + ' пара'
-  if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return count + ' пары'
-  return count + ' пар'
+  if (count % 10 === 1 && count % 100 !== 11) return count + ' пара';
+  if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20))
+    return count + ' пары';
+  return count + ' пар';
 }
 
 function updateLessonIds(value: string[] | string | null): void {
-  const next = Array.isArray(value) ? [...value] : value ? [value] : []
-  emit('update:lessonIds', next)
+  const next = Array.isArray(value) ? [...value] : value ? [value] : [];
+  emit('update:lessonIds', next);
 }
 
 function updateFiles(files: RequestFileRef[] | readonly RequestFileRef[]): void {
-  emit('update:files', [...files])
+  emit('update:files', [...files]);
 }
 
 function onSubmit(): void {
-  if (!canSubmit() || !props.reason) return
+  if (!canSubmit() || !props.reason) return;
   emit('submit', {
     lessonIds: [...props.lessonIds],
     reason: props.reason,
     comment: props.comment,
     files: [...props.files],
-  })
+  });
 }
 </script>
 
@@ -168,7 +201,11 @@ function onSubmit(): void {
       v-if="props.access !== 'allowed'"
       severity="error"
       :title="props.access === 'forbidden' ? 'Раздел недоступен' : 'Нет активного семестра'"
-      :message="props.access === 'forbidden' ? 'У тебя сейчас нет доступа к заявкам.' : 'Подать заявку можно только в активном семестре.'"
+      :message="
+        props.access === 'forbidden'
+          ? 'У тебя сейчас нет доступа к заявкам.'
+          : 'Подать заявку можно только в активном семестре.'
+      "
     />
 
     <form
@@ -193,7 +230,8 @@ function onSubmit(): void {
           role="status"
           aria-live="polite"
         >
-          {{ props.selectionComplete ? 'Выбрано ' : '' }}{{ selectedCountLabel(props.lessonIds.length) }}
+          {{ props.selectionComplete ? 'Выбрано ' : ''
+          }}{{ selectedCountLabel(props.lessonIds.length) }}
         </p>
         <p
           v-if="props.lessonsLoading"
@@ -222,7 +260,10 @@ function onSubmit(): void {
           class="request-validation-hint"
           role="alert"
         >
-          {{ todayOption?.unavailableReason || 'Эта пара больше недоступна для заявки. Вернись назад и выбери доступную пару.' }}
+          {{
+            todayOption?.unavailableReason ||
+              'Эта пара больше недоступна для заявки. Вернись назад и выбери доступную пару.'
+          }}
         </p>
         <RequestLessonSelector
           v-if="!contextLesson && !props.selectionComplete && !props.lessonsLoading"
@@ -275,9 +316,16 @@ function onSubmit(): void {
       <p
         id="request-excuse-reason-help"
         class="request-field__help"
-        :class="{ 'request-field__help--error': props.reasons.length === 0, 'request-visually-hidden': props.reasons.length > 0 }"
+        :class="{
+          'request-field__help--error': props.reasons.length === 0,
+          'request-visually-hidden': props.reasons.length > 0,
+        }"
       >
-        {{ props.reasons.length === 0 ? 'Причины пока недоступны.' : 'Причина нужна для отправки заявки.' }}
+        {{
+          props.reasons.length === 0
+            ? 'Причины пока недоступны.'
+            : 'Причина нужна для отправки заявки.'
+        }}
       </p>
       <p
         v-if="retainedReasonUnavailable"
@@ -309,7 +357,12 @@ function onSubmit(): void {
         class="request-field__help"
         :class="{ 'request-visually-hidden': !commentRequired }"
       >
-        {{ commentRequired ? 'Для этой причины нужен комментарий.' : 'Комментарий можно добавить при необходимости.' }} Не более 1000 символов.
+        {{
+          commentRequired
+            ? 'Для этой причины нужен комментарий.'
+            : 'Комментарий можно добавить при необходимости.'
+        }}
+        Не более 1000 символов.
       </p>
       <p
         v-if="commentTooLong"
@@ -370,4 +423,3 @@ function onSubmit(): void {
 
 <style src="./requests.pcss"></style>
 <style src="./requests-today.pcss"></style>
-

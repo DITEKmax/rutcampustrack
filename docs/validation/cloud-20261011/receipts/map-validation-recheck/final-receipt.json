@@ -1,0 +1,79 @@
+{
+  "at": "2026-10-11T23:16:41.032540+00:00",
+  "verdict": "APPROVE",
+  "verdict_scope": "MVR01-03 source security/resource correction, test quality and recorded bounded runtime evidence",
+  "final_author_commit": "c73ef351d1a1b794e600bcdec2e8f8b282c2e558",
+  "old_author_commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+  "frozen_root": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_metadata": "UNKNOWN",
+  "fallback": "NONE",
+  "blocking_findings": [],
+  "prior_findings_closed": [
+    "MVR01 P2",
+    "MVR02 P2",
+    "MVR03 P2 via D008"
+  ],
+  "inventory": {
+    "correction": "3M",
+    "cumulative": "2A/3M/0D five files"
+  },
+  "source_equivalence": "PASS all5 current=finalGit=inventory; exact3 changed=greenPrelaunch=correctionPrep; old2testpaths unchanged from e689",
+  "prior_immutable_review": "PASS39manifestfiles/rootoriginals/40archiveentries byte-equal",
+  "actual_red": {
+    "session": 73108,
+    "recorded_terminal_exit": 1,
+    "product_tests": 17,
+    "policy_failures": 14,
+    "positive_pass": 3,
+    "errors": 0,
+    "skipped": 0,
+    "unique_exact_bad_artifacts": 14,
+    "oracle": "Each14 uploaded201/PGasset1/GET200/exactbytes then expected400-vs201 AssertionFailedError"
+  },
+  "actual_green": {
+    "session": 38765,
+    "recorded_terminal_exit": 0,
+    "unit_tests": 4,
+    "map_tests": 37,
+    "selected_old_storage_tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "build": "BUILD SUCCESSFUL in 1m39s log87"
+  },
+  "independent_xml_audit": "11 current originalXML testcase counts equal suite declarations; architecture separate",
+  "negative_input_bridge": "All11 final SVG negative input bytes equal old served bytes; PNG3 exactfixture red/green plus independently checked IHDR/CRC/workaccounting",
+  "png_budget": "134217728 bytes/1000000 passrows before inflater; filters and allnonemptyAdam7 counted; divisionbeforemultiplication;8KiBstream/no canvas cap/rasterallocation",
+  "runtime_revision_relationship": "Green executed uncommitted correction WIP on HEAD e689, exact3 hashes bridge to final c73ef; not retroactive finalHEAD execution",
+  "runtime_limits": {
+    "independent_java": "NOT_RUN",
+    "independent_gradle": "NOT_RUN",
+    "independent_docker": "NOT_RUN",
+    "independent_browser": "NOT_RUN",
+    "image_inflation": "NOT_RUN",
+    "independent_mutations": "NOT_RUN",
+    "children": "NONE",
+    "product_writes": "NONE",
+    "root_docs_writes": "NONE"
+  },
+  "limitations": [
+    "Author terminal/cleanup receipts inspected; no independent process/Docker replay",
+    "Browser render/image presentation/clientdownload/network/TCP/signedJWTgateway NOT_RUN",
+    "No wholemap/allfilefamily/fullCSS/fullPNGancillary/APNG/indexedsamples conformance verdict",
+    "Original red test WIP hash retained, not equated to final test blob;11negativeSVGbyte bridge separately verified",
+    "Root integration/hooks/remoteCI/Coverage/Security pending; no globalDONE",
+    "No measured end-to-end CPU SLA; billion-row candidate NOT_RUN"
+  ],
+  "resources": "LIGHT only; no runtime resources created or claimed",
+  "next": "Root can integrate exactly approved cumulative five-file inventory while preserving foreign changes, then apply required final gates and remaining client/browser/network acceptance",
+  "outputs_root": "/workspace/scratch/rct-validation/map_validation_recheck",
+  "transfer_manifest": "transfer-manifest.json",
+  "findings": "findings.md",
+  "skills": [
+    "cloud-environment-runtime"
+  ],
+  "normal_author_hook": "absent per author receipt; root final gates preserved"
+}

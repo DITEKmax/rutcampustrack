@@ -2,7 +2,6 @@ package ru.rutcampustrack.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -10,8 +9,7 @@ import java.util.Objects;
 @Schema(name = "AuthSessionsPage")
 public record AuthSessionsPage(
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<AuthSessionSummary> items,
-        @Schema(nullable = true) String nextCursor
-) {
+        @Schema(nullable = true) String nextCursor) {
     public AuthSessionsPage {
         items = List.copyOf(Objects.requireNonNull(items, "items"));
     }

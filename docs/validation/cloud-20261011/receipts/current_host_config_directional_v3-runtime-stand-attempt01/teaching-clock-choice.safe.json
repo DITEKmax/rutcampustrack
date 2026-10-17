@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T10:35:05.685307+00:00",
+  "prepared_initial_instant": "2026-10-12T08:42:00.216708Z",
+  "source": "/workspace/rutcampustrack/tests/e2e/fixtures/teaching-clock.ts",
+  "source_sha256": "514bf9d9de8135b11f823f11e9ea61af958b080b48408f46f6da04e5bc8ab454",
+  "required_existing_lane": "ordinary weekday09:00 Europe/Moscow; ISO UTC fraction\u22643digits",
+  "proposed_exact_NEW_reviewed_fixture_instant": "2026-10-12T06:00:00.000Z",
+  "initial_sealed_file_changed": false,
+  "security_clocks": "REALTIME_UNCHANGED",
+  "fixture_or_browser_executed": false
+}

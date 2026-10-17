@@ -1,0 +1,52 @@
+{
+  "scope": "NARROW_INDEPENDENT_ACR_STAGE_F01_F02_CORRECTION",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "source_manifest_sha256": "bb2fdd40b594a06c3bca67ce93dd6f5690edc424d5342d58d2510901410356db",
+  "source_ZIP_sha256": "636fe65dfba20f099daffad1e6cbc903f18afeb486f11533502e1b4cbc7140aa",
+  "original_full_review_manifest_sha256": "e287b34485a3c5d4e5aab6ff34f1c14eaf6e0e310e647cf23a62482bfe0868e9",
+  "findings": [
+    {
+      "id": "ACR-RESUME-MANIFEST01",
+      "priority": "P2",
+      "status": "CLOSED_SOURCE"
+    },
+    {
+      "id": "ACR-RESUME-EFFECT01",
+      "priority": "P2",
+      "status": "CLOSED_SOURCE"
+    }
+  ],
+  "native_stage": "NOT_RUN",
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 772,
+      "sha256": "21e9cc0b0edfdff5b50973f9eedd682a996e9e585e92357763b4c216e9fec4a6",
+      "mode": "0o400"
+    },
+    {
+      "path": "RECHECK.md",
+      "bytes": 4438,
+      "sha256": "1b5005ac8adcc3177f9b7b0771969c39180cec4c15d005a4584d1f997e922d41",
+      "mode": "0o400"
+    },
+    {
+      "path": "check.py",
+      "bytes": 11277,
+      "sha256": "62ac61852fae7c95e612af0b37c5457143b6f2fee831097fab49b074107f09a0",
+      "mode": "0o400"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 2904,
+      "sha256": "51ccc45f4abb6ebfeed18bf2dcce347078e7554f6d27ff3368464e3b09767ab7",
+      "mode": "0o400"
+    },
+    {
+      "path": "source-equality.safe.json",
+      "bytes": 6877,
+      "sha256": "8b704001d350f35c89b5b4062d9f110d2f9686bb91b872dc28ecc98670e34282",
+      "mode": "0o400"
+    }
+  ]
+}

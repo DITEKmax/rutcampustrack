@@ -20,7 +20,9 @@ class FakeDocument {
     const event = {
       key,
       shiftKey,
-      preventDefault() { defaultPrevented = true },
+      preventDefault() {
+        defaultPrevented = true
+      },
     } as KeyboardEvent
     this.keydown?.(event)
     if (key === 'Enter' && !defaultPrevented) this.activeElement?.activate()
@@ -60,7 +62,8 @@ class FakeElement {
   closest(selector: string): FakeElement | null {
     if (selector.includes('[inert]') && this.hasAttribute('inert')) return this
     if (selector.includes('[hidden]') && this.hasAttribute('hidden')) return this
-    if (selector.includes('[aria-hidden="true"]') && this.getAttribute('aria-hidden') === 'true') return this
+    if (selector.includes('[aria-hidden="true"]') && this.getAttribute('aria-hidden') === 'true')
+      return this
     if (selector.includes('fieldset[disabled]') && this.hasAttribute('disabled')) return this
     return this.parent?.closest(selector) ?? null
   }

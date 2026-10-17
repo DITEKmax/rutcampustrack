@@ -1,0 +1,30 @@
+{
+  "utc": "2026-10-12T06:56:19.474209+00:00",
+  "source_sha256": "ce100a17a61b34a68d6efa3c2a6d4b3f8c56d296e2d9c80b2b24814ce67eaffb",
+  "parser": "PASS",
+  "actual_source_pure_guards": [
+    "ordinary member admitted",
+    "reject '../escape'",
+    "reject '/absolute'",
+    "reject 'BOOT-INF/../escape'",
+    "reject 'BOOT-INF//x'",
+    "reject 'BOOT-INF/./x'",
+    "reject 'C:/escape'",
+    "reject 'BOOT-INF\\\\..\\\\escape'",
+    "reject ''",
+    "standard ordered layer mapping admitted",
+    "reject unmapped/ambiguous layer",
+    "reject unmapped/ambiguous layer",
+    "reject duplicate layer",
+    "manifest continuation fully unfolded"
+  ],
+  "children": 0,
+  "product_or_oldinputs_mutations": 0,
+  "command": [
+    "python3",
+    "/workspace/scratch/rct-validation/current_host_stage/stage.py"
+  ],
+  "packet": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-current-host-stage.md",
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual": "UNKNOWN"
+}

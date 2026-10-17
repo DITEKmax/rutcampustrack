@@ -1,6 +1,14 @@
 package ru.rutcampustrack.schedule.grpc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import io.grpc.stub.StreamObserver;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,43 +24,30 @@ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 /**
  * Integration tests for ScheduleGrpcServiceImpl covering all 3 gRPC RPCs.
  *
- * Tests verify:
- * - GRPC-01 GetActiveLesson: happy path, not-found, multiple-overlap (D-02)
- * - GRPC-02 GetLessonById: happy path, not-found
- * - GRPC-03 GetLessonsByGroup: happy path, invalid date range (D-04), empty result
+ * <p>Tests verify: - GRPC-01 GetActiveLesson: happy path, not-found, multiple-overlap (D-02) -
+ * GRPC-02 GetLessonById: happy path, not-found - GRPC-03 GetLessonsByGroup: happy path, invalid
+ * date range (D-04), empty result
  *
- * Uses direct method invocation with mock StreamObserver (per D-06 — no in-process gRPC channel).
- * NOT @Transactional — uses @AfterEach cleanup to avoid preventing AFTER_COMMIT event listeners.
+ * <p>Uses direct method invocation with mock StreamObserver (per D-06 — no in-process gRPC
+ * channel). NOT @Transactional — uses @AfterEach cleanup to avoid preventing AFTER_COMMIT event
+ * listeners.
  */
 class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
 
-    @Autowired
-    ScheduleGrpcServiceImpl grpcService;
+    @Autowired ScheduleGrpcServiceImpl grpcService;
 
-    @Autowired
-    LessonRepository lessonRepository;
+    @Autowired LessonRepository lessonRepository;
 
-    @Autowired
-    ScheduleItemRepository scheduleItemRepository;
+    @Autowired ScheduleItemRepository scheduleItemRepository;
 
     /**
      * Prevents outbound gRPC connection to academic-service port 19091 on Spring context startup.
      * Without this, Spring context fails with StatusRuntimeException: UNAVAILABLE.
      */
-    @MockitoBean
-    AcademicGrpcClient academicGrpcClient;
+    @MockitoBean AcademicGrpcClient academicGrpcClient;
 
     @BeforeEach
     void resetFixtures() {
@@ -73,10 +68,11 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem(100L, 1L, (short) 1, "A101");
         Lesson lesson = createLesson(item.getId(), LocalDate.of(2026, 4, 4), LessonStatus.ACTIVE);
 
-        ActiveLessonRequest request = ActiveLessonRequest.newBuilder()
-                .setGroupId(100L)
-                .setTimestamp("2026-04-04T09:00:00")
-                .build();
+        ActiveLessonRequest request =
+                ActiveLessonRequest.newBuilder()
+                        .setGroupId(100L)
+                        .setTimestamp("2026-04-04T09:00:00")
+                        .build();
 
         @SuppressWarnings("unchecked")
         StreamObserver<LessonResponse> observer = mock(StreamObserver.class);
@@ -97,10 +93,11 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
     @Test
     void getActiveLesson_noActiveLessons_throwsResourceNotFoundException() {
         // No lessons in DB — expect not-found exception (D-01)
-        ActiveLessonRequest request = ActiveLessonRequest.newBuilder()
-                .setGroupId(999L)
-                .setTimestamp("2026-04-04T09:00:00")
-                .build();
+        ActiveLessonRequest request =
+                ActiveLessonRequest.newBuilder()
+                        .setGroupId(999L)
+                        .setTimestamp("2026-04-04T09:00:00")
+                        .build();
 
         @SuppressWarnings("unchecked")
         StreamObserver<LessonResponse> observer = mock(StreamObserver.class);
@@ -118,10 +115,11 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
         Lesson lesson1 = createLesson(item1.getId(), LocalDate.of(2026, 4, 4), LessonStatus.ACTIVE);
         createLesson(item2.getId(), LocalDate.of(2026, 4, 4), LessonStatus.ACTIVE);
 
-        ActiveLessonRequest request = ActiveLessonRequest.newBuilder()
-                .setGroupId(100L)
-                .setTimestamp("2026-04-04T09:00:00")
-                .build();
+        ActiveLessonRequest request =
+                ActiveLessonRequest.newBuilder()
+                        .setGroupId(100L)
+                        .setTimestamp("2026-04-04T09:00:00")
+                        .build();
 
         @SuppressWarnings("unchecked")
         StreamObserver<LessonResponse> observer = mock(StreamObserver.class);
@@ -145,9 +143,8 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem(200L, 2L, (short) 3, "C303");
         Lesson lesson = createLesson(item.getId(), LocalDate.of(2026, 4, 5), LessonStatus.PLANNED);
 
-        LessonByIdRequest request = LessonByIdRequest.newBuilder()
-                .setLessonId(lesson.getId())
-                .build();
+        LessonByIdRequest request =
+                LessonByIdRequest.newBuilder().setLessonId(lesson.getId()).build();
 
         @SuppressWarnings("unchecked")
         StreamObserver<LessonResponse> observer = mock(StreamObserver.class);
@@ -171,9 +168,7 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void getLessonById_nonExistentId_throwsResourceNotFoundException() {
-        LessonByIdRequest request = LessonByIdRequest.newBuilder()
-                .setLessonId(999999L)
-                .build();
+        LessonByIdRequest request = LessonByIdRequest.newBuilder().setLessonId(999999L).build();
 
         @SuppressWarnings("unchecked")
         StreamObserver<LessonResponse> observer = mock(StreamObserver.class);
@@ -194,12 +189,13 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
         createLesson(item.getId(), LocalDate.of(2026, 4, 8), LessonStatus.ACTIVE);
         createLesson(item.getId(), LocalDate.of(2026, 4, 15), LessonStatus.PLANNED);
 
-        LessonsByGroupRequest request = LessonsByGroupRequest.newBuilder()
-                .setGroupId(100L)
-                .setSemesterId(1L)
-                .setDateFrom("2026-04-01")
-                .setDateTo("2026-04-30")
-                .build();
+        LessonsByGroupRequest request =
+                LessonsByGroupRequest.newBuilder()
+                        .setGroupId(100L)
+                        .setSemesterId(1L)
+                        .setDateFrom("2026-04-01")
+                        .setDateTo("2026-04-30")
+                        .build();
 
         @SuppressWarnings("unchecked")
         StreamObserver<LessonsResponse> observer = mock(StreamObserver.class);
@@ -216,12 +212,13 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
     @Test
     void getLessonsByGroup_dateFromAfterDateTo_throwsIllegalArgumentException() {
         // D-04: dateFrom > dateTo must throw IllegalArgumentException
-        LessonsByGroupRequest request = LessonsByGroupRequest.newBuilder()
-                .setGroupId(100L)
-                .setSemesterId(1L)
-                .setDateFrom("2026-04-10")
-                .setDateTo("2026-04-01")
-                .build();
+        LessonsByGroupRequest request =
+                LessonsByGroupRequest.newBuilder()
+                        .setGroupId(100L)
+                        .setSemesterId(1L)
+                        .setDateFrom("2026-04-10")
+                        .setDateTo("2026-04-01")
+                        .build();
 
         @SuppressWarnings("unchecked")
         StreamObserver<LessonsResponse> observer = mock(StreamObserver.class);
@@ -234,12 +231,13 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
     @Test
     void getLessonsByGroup_noScheduleItems_returnsEmptyResponse() {
         // Group 999 has no schedule items — must return empty LessonsResponse
-        LessonsByGroupRequest request = LessonsByGroupRequest.newBuilder()
-                .setGroupId(999L)
-                .setSemesterId(1L)
-                .setDateFrom("2026-04-01")
-                .setDateTo("2026-04-30")
-                .build();
+        LessonsByGroupRequest request =
+                LessonsByGroupRequest.newBuilder()
+                        .setGroupId(999L)
+                        .setSemesterId(1L)
+                        .setDateFrom("2026-04-01")
+                        .setDateTo("2026-04-30")
+                        .build();
 
         @SuppressWarnings("unchecked")
         StreamObserver<LessonsResponse> observer = mock(StreamObserver.class);
@@ -256,7 +254,8 @@ class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
     // Helpers
     // =========================================================================
 
-    private ScheduleItem createScheduleItem(Long groupId, Long semesterId, Short lessonNumber, String room) {
+    private ScheduleItem createScheduleItem(
+            Long groupId, Long semesterId, Short lessonNumber, String room) {
         ScheduleItem item = new ScheduleItem();
         item.setGroupId(groupId);
         item.setSubjectId(1L);

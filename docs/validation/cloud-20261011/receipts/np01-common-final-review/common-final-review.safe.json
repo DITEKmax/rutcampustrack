@@ -1,0 +1,81 @@
+{
+  "timestamp": "2026-10-12T02:29:23.973660+00:00",
+  "disposition": "APPROVE",
+  "findings": [],
+  "scope": "Final six common-owned paths at28ed; prior four-path683 source APPROVE preserved, final twoPython outputs and remaining exact native receipts independently rechecked",
+  "final_commit": "28ed54bba56dc3fb2cdacffdcd56b0e102958087",
+  "actual_compile_DB_producer": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "source_identity": [
+    {
+      "path": "event-schemas/password.changed.json",
+      "sha256": "ae71be029ccd73b3016989bc6270c9cfea0c360823c65d7bf4af8ba5d7cae452",
+      "bytes": 2360
+    },
+    {
+      "path": "proto/academic.proto",
+      "sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+      "bytes": 22570
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+      "sha256": "d2ac433dc9a6556a4dc2def928356f98b1040ca75006c13ea41c047358bd5552",
+      "bytes": 9465
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+      "sha256": "9e7ec0425e1be7d86dfcf7b04492488d0dd15c2048f42f70bd53d24df32f13f7",
+      "bytes": 28237
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2.py",
+      "sha256": "9cb2f6a2dd5b2cf8e418de67fea4de2c8dd45856f6b641b814cf9f388e72acde",
+      "bytes": 38737
+    },
+    {
+      "path": "services/notification-bot/bot/grpc_client/academic_pb2_grpc.py",
+      "sha256": "bcc42c6b89e9070b2e63f91fcc08419e7d49d8f5b76ee382a762a79d21519b85",
+      "bytes": 55766
+    }
+  ],
+  "qualified_results": {
+    "compile": "Author native43441exit0;904 normal generatedJava artifact identities independently matched previously",
+    "full_local_DB": "Author native66227exit0;17PASS/0FAIL/0ERROR/0SKIP exactXML independently verified previously",
+    "relevant_fault_sensitivity": "All four accepted-source DBfault probes each1intended assertionFAIL/0ERROR/0SKIP:5231generations,13920invalidation,49432sanitation,76358identity. XML sha/bytes/cases/source frames independently checked across sealed reviews.",
+    "restoration": "Same four normal methods native23469exit0/4PASS/0FAIL/0ERROR/0SKIP; exactXML/case set inspected",
+    "final_source_bridge": "Exactly twoPython outputs change since683; other7030 tracked blobs/modes unchanged; no Java/proto/schema/migration/test/build/config byte change",
+    "generated_python": "Normal reviewed84d generator/currentpins native outputs match exact reproduction and previously reviewed generator prep; actual package import/inertstub/oneof author receipts inspected",
+    "canonical_legacy": "Native canonical2bca descriptor exact after subtracting9messages6enums2RPC; five meaningful bidirectional old/new source-wire cases author receipts/code reviewed",
+    "actual_old_python": "Tracked2bca SubjectInfo lacked already-canonical group_id4/lesson_types5. Regenerated28ed includes these additive fields; actual old fields/numbers/types/other structure preserved. Native descriptor sets explicitly encode defaultjson_name; effective mappings verified via reflection."
+  },
+  "critical_test_quality": "14 real local DB cases have meaningful persisted positive/negative assertions and isolated SQLfault sensitivity; local manualoutbox is qualified as local DBatomicity, not actual Authproducer.",
+  "author_safe_package": {
+    "sha256": "cfe34f4955ca07a13b7f0bd13aec03a0f1f441412cb8b38b1d073a73ee699083",
+    "bytes": 854932,
+    "metadata_members": 27
+  },
+  "resource_receipt": {
+    "lease": "NP01_CONTRACT1",
+    "activeJava": 0,
+    "activeDocker": 0,
+    "historicalJavaZombies": 6,
+    "free_bytes": 5871595520,
+    "floor_bytes": 4294967296,
+    "all_owned_PG_Ryuk_standard_cleanup": "Completed; observedDockerps empty terminalchunk470cb8exit0",
+    "no_active_native_session": true
+  },
+  "limits": [
+    "17DB and4restored tests ran at683, not28ed; final twoPython inputs checked separately.",
+    "No actual TLS/live grants/production Auth/bot/provider or hostedCI acceptance.",
+    "Unknown protobuf enums parse as integers; domain rejection separate.",
+    "Per-file generator replacement only; final committed pair is coherent.",
+    "No completeNP01acceptance, currenthostedCI receipts or productionoperation claim.",
+    "Source/generator/per-fileatomic approvals remain separate immutable receipts; only newfinal artifacts written."
+  ],
+  "input_checks": "common-final-independent-check.safe.json; prior immutable source-review/compile/green17/threefault receipts",
+  "reviewer_probe_corrections": "Read-only descriptor representation comparison initially assumed encoded defaultjson_names equality and complete historicalPython SubjectInfo; inspected exact differences, preserved effective JSONmapping and all oldPython fields, and recorded additive priorcanonical correction. Native test outcomes unchanged.",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_metadata": "UNKNOWN",
+  "reviewer_source_edits": 0,
+  "reviewer_heavy_reruns": 0
+}

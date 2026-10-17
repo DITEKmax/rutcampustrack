@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-12T04:34:24.684715+00:00",
+  "status": "CURRENT_BUILD_ARTIFACTS_READY_NOT_RUNTIME",
+  "source_producer_revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "tracked_inputs": 7350,
+  "all_sha_mode_unchanged": true,
+  "eight_JAR_bytes": 636913341,
+  "eight_JAR_allocated_bytes": 636960768,
+  "own_WT_allocated_bytes": 1239162880,
+  "own_scratch_allocated_bytes": 3944448,
+  "total_own_allocated_bytes": 1243107328,
+  "allocation_limit_bytes": 1610612736,
+  "free_bytes": 7326609408,
+  "floor_bytes": 4294967296,
+  "cgroup_memory_current": 4545540096,
+  "cgroup_memory_max": 17179869184,
+  "current_app_payload_distinct_logical_bytes": 166383274,
+  "current_app_payload_4KiB_rounded_estimate_bytes": 172953600,
+  "staging_allocated_bytes": "NOT_MEASURED_NOT_GRANTED",
+  "runtime_capacity": "NOT_CONFIRMED: free lower than conservative9containers+1GiB growth+4GiBfloor+currentstaging requirement",
+  "frozen_source_duplicate_candidates": 494,
+  "frozen_source_duplicate_allocated_bytes": 303800320,
+  "original35_plus13": [
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/manifest.json",
+      "sha256": "fac7de9671ce6338b0e28ddd8745918bb04cd2816cd708861685e2d4f3f521cf",
+      "files": 29,
+      "all_bytes_unchanged": true
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-manifest.json",
+      "sha256": "8159e470b37267bb2e2142e5e772eb0b925e83b50f82a68cfb0842ba28389287",
+      "files": 6,
+      "all_bytes_unchanged": true
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/manifest.json",
+      "sha256": "04e6355b92c0cd24a6c6b574bde5099de2a26a4b7d87caaf08c9c8c71f4044ba",
+      "files": 13,
+      "all_bytes_unchanged": true
+    }
+  ],
+  "raw_build_logs": "PRIVATE600/hash-only; excluded safe transfer manifest",
+  "app_browser_keys_Docker_extraction_staging": "NOT_RUN"
+}

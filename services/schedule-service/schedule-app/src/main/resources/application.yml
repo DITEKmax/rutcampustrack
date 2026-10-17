@@ -43,6 +43,7 @@ spring:
     locations: classpath:db/migration
 
   rabbitmq:
+    publisher-confirm-type: simple
     host: rabbitmq
     port: 5672
     username: ${RABBITMQ_USER:rct_user}
@@ -107,6 +108,11 @@ management:
       enabled: true
   # M04 QA2 (NEW-58/59) — distributed tracing OTel → Tempo.
   tracing:
+    baggage:
+      remote-fields: requestId
+      tag-fields: requestId
+      correlation:
+        fields: requestId
     sampling:
       probability: 1.0
   otlp:

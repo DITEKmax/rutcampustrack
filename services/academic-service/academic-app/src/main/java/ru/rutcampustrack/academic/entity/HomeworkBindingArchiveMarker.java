@@ -5,11 +5,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /** Durable terminal identity for a Schedule homework binding. */
 @Entity
@@ -40,14 +39,18 @@ public class HomeworkBindingArchiveMarker {
     @Column(name = "archived_at", nullable = false, updatable = false)
     private OffsetDateTime archivedAt;
 
-    public HomeworkBindingArchiveMarker(long bindingId, long actorId,
-                                        UUID requestKey, Long homeworkId) {
+    public HomeworkBindingArchiveMarker(
+            long bindingId, long actorId, UUID requestKey, Long homeworkId) {
         this(bindingId, actorId, requestKey, homeworkId, null, null);
     }
 
-    public HomeworkBindingArchiveMarker(long bindingId, long actorId,
-                                        UUID requestKey, Long homeworkId,
-                                        Long semesterId, UUID sourceEventId) {
+    public HomeworkBindingArchiveMarker(
+            long bindingId,
+            long actorId,
+            UUID requestKey,
+            Long homeworkId,
+            Long semesterId,
+            UUID sourceEventId) {
         this.bindingId = bindingId;
         this.actorId = actorId;
         this.requestKey = requestKey;

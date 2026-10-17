@@ -1,0 +1,42 @@
+{
+  "pass": true,
+  "commentsEqual": true,
+  "rows": [
+    {
+      "source": "TS_OBSERVER",
+      "groupBefore": 0,
+      "groupAfter": 14,
+      "AST": true,
+      "literals": true,
+      "directives": true,
+      "parseBefore": [],
+      "parseAfter": [],
+      "rawBytesEqual": false
+    },
+    {
+      "source": "JS_COMMONJS",
+      "groupBefore": 0,
+      "groupAfter": 12,
+      "AST": true,
+      "literals": true,
+      "directives": true,
+      "parseBefore": [],
+      "parseAfter": [],
+      "rawBytesEqual": false
+    },
+    {
+      "source": "JS_ESNEXT",
+      "groupBefore": 0,
+      "groupAfter": 12,
+      "AST": true,
+      "literals": true,
+      "directives": true,
+      "parseBefore": [],
+      "parseAfter": [],
+      "rawBytesEqual": false
+    }
+  ],
+  "negativeControls": 8,
+  "allRejected": true,
+  "priorStrictFAILRetained": true
+}

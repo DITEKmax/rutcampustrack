@@ -1,22 +1,5 @@
 package ru.rutcampustrack.auth.session.jdbc;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
-import ru.rutcampustrack.auth.event.PasswordChangedOutbox;
-import ru.rutcampustrack.auth.session.model.AuthMethod;
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleGrant;
-import ru.rutcampustrack.auth.session.model.RoleStatus;
-import ru.rutcampustrack.auth.session.model.SecurityEvent;
-import ru.rutcampustrack.auth.session.model.SessionRevokeReason;
-import ru.rutcampustrack.auth.session.model.SessionSnapshot;
-import ru.rutcampustrack.auth.session.model.SessionState;
-import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
-import ru.rutcampustrack.auth.session.port.SessionStatePort;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -28,26 +11,44 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import ru.rutcampustrack.auth.event.PasswordChangedOutbox;
+import ru.rutcampustrack.auth.session.AuthSessionException;
+import ru.rutcampustrack.auth.session.model.AuthMethod;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.RoleGrant;
+import ru.rutcampustrack.auth.session.model.RoleStatus;
+import ru.rutcampustrack.auth.session.model.SecurityEvent;
+import ru.rutcampustrack.auth.session.model.SessionRevokeReason;
+import ru.rutcampustrack.auth.session.model.SessionSnapshot;
+import ru.rutcampustrack.auth.session.model.SessionState;
+import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
+import ru.rutcampustrack.auth.session.port.SessionStatePort;
 
 /**
  * PostgreSQL authority for the session ports.
  *
- * <p>Every public port call is one transaction.  Mutations first lock the
- * authoritative user row and then the own session row(s), which is also the
- * lock order used by role-grant triggers.  No refresh or credential value is
- * included in a returned domain result or an exception message.
+ * <p>Every public port call is one transaction. Mutations first lock the authoritative user row and
+ * then the own session row(s), which is also the lock order used by role-grant triggers. No refresh
+ * or credential value is included in a returned domain result or an exception message.
  */
 @Repository
 public class JdbcSessionAuthority implements SessionStatePort, CredentialSessionTransactionPort {
 
-    private static final String LOCK_USER_SQL = """
+    private static final String LOCK_USER_SQL =
+            """
             SELECT id, password_hash, roles_version
             FROM users
             WHERE id = ?
             FOR UPDATE
             """;
 
-    private static final String SESSION_SQL = """
+    private static final String SESSION_SQL =
+            """
             SELECT sid, user_id, active_role_grant_id, session_version,
                    current_refresh_jti, previous_refresh_jti,
                    refresh_expires_at, created_at, last_seen_at,
@@ -59,7 +60,8 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
 
     private static final String LOCK_SESSION_SQL = SESSION_SQL + " FOR UPDATE";
 
-    private static final String ALL_SESSIONS_FOR_UPDATE_SQL = """
+    private static final String ALL_SESSIONS_FOR_UPDATE_SQL =
+            """
             SELECT sid, user_id, active_role_grant_id, session_version,
                    current_refresh_jti, previous_refresh_jti,
                    refresh_expires_at, created_at, last_seen_at,
@@ -71,14 +73,16 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
             FOR UPDATE
             """;
 
-    private static final String GRANTS_SQL = """
+    private static final String GRANTS_SQL =
+            """
             SELECT id, user_id, role, status, group_id, created_at, updated_at
             FROM user_role_grants
             WHERE user_id = ?
             ORDER BY id
             """;
 
-    private static final String INSERT_SESSION_SQL = """
+    private static final String INSERT_SESSION_SQL =
+            """
             INSERT INTO auth_sessions (
                 sid, user_id, active_role_grant_id, session_version,
                 current_refresh_jti, previous_refresh_jti,
@@ -88,21 +92,24 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
-    private static final String INSERT_EVENT_SQL = """
+    private static final String INSERT_EVENT_SQL =
+            """
             INSERT INTO account_security_events (
                 user_id, sid, event_type, occurred_at, auth_method,
                 client_label, location_label
             ) VALUES (?, ?, ?, ?, ?, ?, ?)
             """;
 
-    private static final String CLEAR_ACTIVE_ROLE_SQL = """
+    private static final String CLEAR_ACTIVE_ROLE_SQL =
+            """
             UPDATE auth_sessions
             SET active_role_grant_id = NULL,
                 session_version = session_version + 1
             WHERE sid = ? AND user_id = ?
             """;
 
-    private static final String SELECT_ROLE_SQL = """
+    private static final String SELECT_ROLE_SQL =
+            """
             UPDATE auth_sessions
             SET active_role_grant_id = ?,
                 session_version = session_version + 1,
@@ -113,7 +120,8 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
               AND refresh_expires_at > ?
             """;
 
-    private static final String REFRESH_SQL = """
+    private static final String REFRESH_SQL =
+            """
             UPDATE auth_sessions
             SET current_refresh_jti = ?,
                 previous_refresh_jti = ?,
@@ -126,55 +134,65 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
               AND refresh_expires_at > ?
             """;
 
-    private static final String REVOKE_CURRENT_SQL = """
+    private static final String REVOKE_CURRENT_SQL =
+            """
             UPDATE auth_sessions
             SET revoked_at = ?, revoke_reason = ?
             WHERE sid = ? AND user_id = ? AND revoked_at IS NULL
             """;
 
-    private static final String REVOKE_ALL_SQL = """
+    private static final String REVOKE_ALL_SQL =
+            """
             UPDATE auth_sessions
             SET revoked_at = ?, revoke_reason = ?
             WHERE user_id = ? AND revoked_at IS NULL
             """;
 
-    private static final String UPDATE_PASSWORD_SQL = """
+    private static final String UPDATE_PASSWORD_SQL =
+            """
             UPDATE users
             SET password_hash = ?, password_changed = TRUE, initial_password = NULL
             WHERE id = ? AND password_hash = ?
             """;
 
-    private static final String REVOKE_PASSWORD_SESSIONS_SQL = """
+    private static final String REVOKE_PASSWORD_SESSIONS_SQL =
+            """
             UPDATE auth_sessions
             SET revoked_at = ?, revoke_reason = ?
             WHERE user_id = ? AND revoked_at IS NULL
             """;
 
-    private static final String SUPERSEDE_PASSWORD_RESET_TICKETS_SQL = """
+    private static final String SUPERSEDE_PASSWORD_RESET_TICKETS_SQL =
+            """
             UPDATE password_reset_tokens SET used_at = CURRENT_TIMESTAMP
             WHERE user_id = ? AND used_at IS NULL
             """;
 
-    private static final String INSERT_PASSWORD_RESET_TICKET_SQL = """
+    private static final String INSERT_PASSWORD_RESET_TICKET_SQL =
+            """
             INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
             VALUES (?, ?, ?)
             """;
 
-    private static final String PASSWORD_RESET_TICKET_USER_SQL = """
+    private static final String PASSWORD_RESET_TICKET_USER_SQL =
+            """
             SELECT user_id
             FROM password_reset_tokens
             WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?
             """;
 
-    private static final String LOCK_PASSWORD_RESET_TICKET_SQL = PASSWORD_RESET_TICKET_USER_SQL + " FOR UPDATE";
+    private static final String LOCK_PASSWORD_RESET_TICKET_SQL =
+            PASSWORD_RESET_TICKET_USER_SQL + " FOR UPDATE";
 
-    private static final String MARK_PASSWORD_RESET_TICKET_USED_SQL = """
+    private static final String MARK_PASSWORD_RESET_TICKET_USED_SQL =
+            """
             UPDATE password_reset_tokens
             SET used_at = ?
             WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?
             """;
 
-    private static final String RESET_PASSWORD_SQL = """
+    private static final String RESET_PASSWORD_SQL =
+            """
             UPDATE users
             SET password_hash = ?, password_changed = TRUE, initial_password = NULL
             WHERE id = ?
@@ -189,29 +207,27 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
     public JdbcSessionAuthority(
             JdbcTemplate jdbcTemplate,
             PlatformTransactionManager transactionManager,
-            PasswordChangedOutbox passwordChangedOutbox
-    ) {
-        this(jdbcTemplate, transactionManager, passwordChangedOutbox, operation -> {
-        });
+            PasswordChangedOutbox passwordChangedOutbox) {
+        this(jdbcTemplate, transactionManager, passwordChangedOutbox, operation -> {});
     }
 
     /**
-     * Package-private test seam.  The integration test injects a failure after
-     * a real PostgreSQL write to verify that the surrounding transaction rolls
-     * back both the state change and its event.
+     * Package-private test seam. The integration test injects a failure after a real PostgreSQL
+     * write to verify that the surrounding transaction rolls back both the state change and its
+     * event.
      */
     JdbcSessionAuthority(
             JdbcTemplate jdbcTemplate,
             PlatformTransactionManager transactionManager,
             PasswordChangedOutbox passwordChangedOutbox,
-            FailureInjector failureInjector
-    ) {
+            FailureInjector failureInjector) {
         this.jdbcTemplate = Objects.requireNonNull(jdbcTemplate, "jdbcTemplate");
-        this.transactionTemplate = new TransactionTemplate(
-                Objects.requireNonNull(transactionManager, "transactionManager")
-        );
+        this.transactionTemplate =
+                new TransactionTemplate(
+                        Objects.requireNonNull(transactionManager, "transactionManager"));
         this.failureInjector = Objects.requireNonNull(failureInjector, "failureInjector");
-        this.passwordChangedOutbox = Objects.requireNonNull(passwordChangedOutbox, "passwordChangedOutbox");
+        this.passwordChangedOutbox =
+                Objects.requireNonNull(passwordChangedOutbox, "passwordChangedOutbox");
     }
 
     @Override
@@ -219,8 +235,9 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         Objects.requireNonNull(command, "command");
         return inTransaction(
                 () -> createSessionInTransaction(command),
-                () -> CreateSessionResult.failure(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE)
-        );
+                () ->
+                        CreateSessionResult.failure(
+                                SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE));
     }
 
     @Override
@@ -228,8 +245,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         Objects.requireNonNull(command, "command");
         return inTransaction(
                 () -> snapshotInTransaction(command),
-                () -> SnapshotResult.failure(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE)
-        );
+                () -> SnapshotResult.failure(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE));
     }
 
     @Override
@@ -237,8 +253,9 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         Objects.requireNonNull(command, "command");
         return inTransaction(
                 () -> selectRoleInTransaction(command),
-                () -> RoleSelectionResult.failure(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE)
-        );
+                () ->
+                        RoleSelectionResult.failure(
+                                SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE));
     }
 
     @Override
@@ -246,8 +263,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         Objects.requireNonNull(command, "command");
         return inTransaction(
                 () -> refreshInTransaction(command),
-                () -> RefreshResult.failure(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE)
-        );
+                () -> RefreshResult.failure(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE));
     }
 
     @Override
@@ -255,8 +271,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         Objects.requireNonNull(command, "command");
         return inTransaction(
                 () -> revokeCurrentInTransaction(command),
-                () -> RevokeResult.failure(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE)
-        );
+                () -> RevokeResult.failure(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE));
     }
 
     @Override
@@ -272,8 +287,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         Objects.requireNonNull(command, "command");
         return inTransaction(
                 () -> revokeAllInTransaction(command),
-                () -> RevokeAllResult.failure(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE)
-        );
+                () -> RevokeAllResult.failure(SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE));
     }
 
     @Override
@@ -281,32 +295,61 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         Objects.requireNonNull(command, "command");
         return inTransaction(
                 () -> changePasswordInTransaction(command),
-                () -> ChangePasswordResult.failure(
-                        CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE
-                )
-        );
+                () ->
+                        ChangePasswordResult.failure(
+                                CredentialSessionTransactionPort.FailureCode
+                                        .AUTHORITY_UNAVAILABLE));
     }
 
     @Override
-    public boolean issuePasswordResetTicket(long userId, CredentialHash ticketHash, Instant expiresAt) {
+    public boolean issuePasswordResetTicket(
+            long userId, CredentialHash ticketHash, Instant expiresAt) {
         Objects.requireNonNull(ticketHash, "ticketHash");
         Objects.requireNonNull(expiresAt, "expiresAt");
         if (userId <= 0) {
             throw new IllegalArgumentException("userId must be positive");
         }
-        return inTransaction(() -> {
-            if (findUser(userId, true) == null) {
-                return false;
-            }
-            // Issue and completion both lock this user before ticket rows. A failed insert
-            // rolls back the supersede; a waiting completion rechecks used_at under its ticket lock.
-            jdbcTemplate.update(SUPERSEDE_PASSWORD_RESET_TICKETS_SQL, userId);
-            return jdbcTemplate.update(
-                    INSERT_PASSWORD_RESET_TICKET_SQL,
-                    userId,
-                    ticketHash.value(),
-                    timestamp(expiresAt)) == 1;
-        }, () -> false);
+        PasswordResetTicketIssue outcome =
+                inTransaction(
+                        () -> {
+                            if (findUser(userId, true) == null) {
+                                return PasswordResetTicketIssue.UNAVAILABLE;
+                            }
+                            if (hasActiveAdminGrant(userId)) return PasswordResetTicketIssue.DENIED;
+                            // Issue and completion both lock this user before ticket rows. A failed
+                            // insert
+                            // rolls back the supersede; a waiting completion rechecks used_at under
+                            // its
+                            // ticket lock.
+                            jdbcTemplate.update(SUPERSEDE_PASSWORD_RESET_TICKETS_SQL, userId);
+                            return jdbcTemplate.update(
+                                                    INSERT_PASSWORD_RESET_TICKET_SQL,
+                                                    userId,
+                                                    ticketHash.value(),
+                                                    timestamp(expiresAt))
+                                            == 1
+                                    ? PasswordResetTicketIssue.ISSUED
+                                    : PasswordResetTicketIssue.UNAVAILABLE;
+                        },
+                        () -> PasswordResetTicketIssue.UNAVAILABLE);
+        if (outcome == PasswordResetTicketIssue.DENIED) {
+            throw new AuthSessionException(AuthSessionException.Code.ROLE_NOT_GRANTED);
+        }
+        return outcome == PasswordResetTicketIssue.ISSUED;
+    }
+
+    private enum PasswordResetTicketIssue {
+        ISSUED,
+        DENIED,
+        UNAVAILABLE
+    }
+
+    private boolean hasActiveAdminGrant(long userId) {
+        return findGrants(userId).stream()
+                .anyMatch(
+                        grant ->
+                                grant.role() == AuthRole.ADMIN
+                                        && grant.status() == RoleStatus.ACTIVE);
     }
 
     @Override
@@ -329,8 +372,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         }
         if (state.authMethod() == AuthMethod.PASSWORD
                 && !Objects.equals(
-                user.passwordHash(), command.credentialProof().expectedCredentialHash()
-        )) {
+                        user.passwordHash(), command.credentialProof().expectedCredentialHash())) {
             return CreateSessionResult.failure(SessionStatePort.FailureCode.SESSION_STATE_STALE);
         }
 
@@ -346,7 +388,8 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
                 return CreateSessionResult.failure(SessionStatePort.FailureCode.INVALID_GRANT);
             }
             if (!active.isSelectable()) {
-                return CreateSessionResult.failure(SessionStatePort.FailureCode.ROLE_NOT_SELECTABLE);
+                return CreateSessionResult.failure(
+                        SessionStatePort.FailureCode.ROLE_NOT_SELECTABLE);
             }
         }
 
@@ -365,15 +408,12 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
                 state.revokeReason() == null ? null : state.revokeReason().name(),
                 state.authMethod().name(),
                 state.clientLabel(),
-                state.locationLabel()
-        );
+                state.locationLabel());
         failureInjector.after("create.session");
         insertEvent(command.loginEvent());
         failureInjector.after("create.event");
 
-        SessionRow inserted = requireSession(
-                findSession(state.userId(), state.sessionId(), true)
-        );
+        SessionRow inserted = requireSession(findSession(state.userId(), state.sessionId(), true));
         return CreateSessionResult.success(toSnapshot(inserted, user.rolesVersion(), grants));
     }
 
@@ -408,14 +448,16 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
             return RoleSelectionResult.failure(SessionStatePort.FailureCode.SESSION_REVOKED);
         }
         if (session.sessionVersion() != command.expectedSessionVersion()) {
-            return RoleSelectionResult.failure(SessionStatePort.FailureCode.SESSION_VERSION_CONFLICT);
+            return RoleSelectionResult.failure(
+                    SessionStatePort.FailureCode.SESSION_VERSION_CONFLICT);
         }
 
         List<RoleGrant> grants = findGrants(command.userId());
-        RoleGrant requested = grants.stream()
-                .filter(grant -> grant.role() == command.role())
-                .findFirst()
-                .orElse(null);
+        RoleGrant requested =
+                grants.stream()
+                        .filter(grant -> grant.role() == command.role())
+                        .findFirst()
+                        .orElse(null);
         if (requested == null) {
             return RoleSelectionResult.failure(SessionStatePort.FailureCode.ROLE_NOT_GRANTED);
         }
@@ -427,25 +469,25 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
             return RoleSelectionResult.success(toSnapshot(session, user.rolesVersion(), grants));
         }
 
-        int updated = jdbcTemplate.update(
-                SELECT_ROLE_SQL,
-                requested.grantId(),
-                timestamp(command.now()),
-                command.sessionId(),
-                command.userId(),
-                command.expectedSessionVersion(),
-                timestamp(command.now())
-        );
+        int updated =
+                jdbcTemplate.update(
+                        SELECT_ROLE_SQL,
+                        requested.grantId(),
+                        timestamp(command.now()),
+                        command.sessionId(),
+                        command.userId(),
+                        command.expectedSessionVersion(),
+                        timestamp(command.now()));
         if (updated != 1) {
-            return RoleSelectionResult.failure(SessionStatePort.FailureCode.SESSION_VERSION_CONFLICT);
+            return RoleSelectionResult.failure(
+                    SessionStatePort.FailureCode.SESSION_VERSION_CONFLICT);
         }
         failureInjector.after("select.role");
         insertEvent(command.roleChangedEvent());
         failureInjector.after("select.event");
 
-        SessionRow selected = requireSession(
-                findSession(command.userId(), command.sessionId(), true)
-        );
+        SessionRow selected =
+                requireSession(findSession(command.userId(), command.sessionId(), true));
         return RoleSelectionResult.success(toSnapshot(selected, user.rolesVersion(), grants));
     }
 
@@ -469,42 +511,39 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         }
 
         List<RoleGrant> grants = findGrants(command.userId());
-        RoleGrant active = session.activeRoleGrantId() == null
-                ? null
-                : findGrant(session.activeRoleGrantId(), grants);
+        RoleGrant active =
+                session.activeRoleGrantId() == null
+                        ? null
+                        : findGrant(session.activeRoleGrantId(), grants);
         if (session.activeRoleGrantId() != null && active == null) {
             throw new IllegalStateException("active grant disappeared");
         }
         boolean clearActive = active != null && !active.isSelectable();
-        long nextVersion = clearActive
-                ? Math.addExact(session.sessionVersion(), 1)
-                : session.sessionVersion();
+        long nextVersion =
+                clearActive ? Math.addExact(session.sessionVersion(), 1) : session.sessionVersion();
         Long nextActiveGrantId = clearActive ? null : session.activeRoleGrantId();
 
-        int updated = jdbcTemplate.update(
-                REFRESH_SQL,
-                command.replacementJti(),
-                session.currentRefreshJti(),
-                timestamp(command.now()),
-                nextActiveGrantId,
-                nextVersion,
-                command.sessionId(),
-                command.userId(),
-                command.presentedJti(),
-                timestamp(command.now())
-        );
+        int updated =
+                jdbcTemplate.update(
+                        REFRESH_SQL,
+                        command.replacementJti(),
+                        session.currentRefreshJti(),
+                        timestamp(command.now()),
+                        nextActiveGrantId,
+                        nextVersion,
+                        command.sessionId(),
+                        command.userId(),
+                        command.presentedJti(),
+                        timestamp(command.now()));
         if (updated != 1) {
             return RefreshResult.failure(SessionStatePort.FailureCode.REFRESH_REJECTED);
         }
         failureInjector.after("refresh.rotate");
 
-        SessionRow refreshed = requireSession(
-                findSession(command.userId(), command.sessionId(), true)
-        );
+        SessionRow refreshed =
+                requireSession(findSession(command.userId(), command.sessionId(), true));
         return RefreshResult.success(
-                toSnapshot(refreshed, user.rolesVersion(), grants),
-                command.replacementJti()
-        );
+                toSnapshot(refreshed, user.rolesVersion(), grants), command.replacementJti());
     }
 
     private RevokeResult revokeCurrentInTransaction(RevokeCurrentCommand command) {
@@ -520,19 +559,16 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         List<RoleGrant> grants = findGrants(command.userId());
         session = clearUnselectableActive(session, grants);
         if (session.revokedAt() != null) {
-            return RevokeResult.success(
-                    toSnapshot(session, user.rolesVersion(), grants),
-                    true
-            );
+            return RevokeResult.success(toSnapshot(session, user.rolesVersion(), grants), true);
         }
 
-        int updated = jdbcTemplate.update(
-                REVOKE_CURRENT_SQL,
-                timestamp(command.now()),
-                SessionRevokeReason.CURRENT_LOGOUT.name(),
-                command.sessionId(),
-                command.userId()
-        );
+        int updated =
+                jdbcTemplate.update(
+                        REVOKE_CURRENT_SQL,
+                        timestamp(command.now()),
+                        SessionRevokeReason.CURRENT_LOGOUT.name(),
+                        command.sessionId(),
+                        command.userId());
         if (updated != 1) {
             throw new IllegalStateException("current session revoke did not update one row");
         }
@@ -540,9 +576,8 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         insertEvent(command.logoutEvent());
         failureInjector.after("revoke.event");
 
-        SessionRow revoked = requireSession(
-                findSession(command.userId(), command.sessionId(), true)
-        );
+        SessionRow revoked =
+                requireSession(findSession(command.userId(), command.sessionId(), true));
         return RevokeResult.success(toSnapshot(revoked, user.rolesVersion(), grants), false);
     }
 
@@ -571,36 +606,67 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
                 return RevokeResult.failure(SessionStatePort.FailureCode.SESSION_STATE_STALE);
             }
         }
-        SessionRow target = command.actorSessionId().equals(command.targetSessionId())
-                ? actor : findSession(command.userId(), command.targetSessionId(), true);
+        SessionRow target =
+                command.actorSessionId().equals(command.targetSessionId())
+                        ? actor
+                        : findSession(command.userId(), command.targetSessionId(), true);
         if (target == null) {
             return RevokeResult.failure(SessionStatePort.FailureCode.SESSION_NOT_FOUND);
         }
         if (target.revokedAt() != null) {
-            return RevokeResult.success(selectedRevokedSnapshot(target, user.rolesVersion(), grants), true);
+            return RevokeResult.success(
+                    selectedRevokedSnapshot(target, user.rolesVersion(), grants), true);
         }
-        int updated = jdbcTemplate.update(REVOKE_CURRENT_SQL,
-                timestamp(command.now()), SessionRevokeReason.CURRENT_LOGOUT.name(),
-                command.targetSessionId(), command.userId());
+        int updated =
+                jdbcTemplate.update(
+                        REVOKE_CURRENT_SQL,
+                        timestamp(command.now()),
+                        SessionRevokeReason.CURRENT_LOGOUT.name(),
+                        command.targetSessionId(),
+                        command.userId());
         if (updated != 1) {
             throw new IllegalStateException("selected session revoke did not update one row");
         }
         failureInjector.after("revoke.selected");
-        insertEvent(new SecurityEvent(command.userId(), target.sessionId(), SecurityEvent.Type.CURRENT_LOGOUT,
-                command.now(), target.authMethod(), target.clientLabel(), target.locationLabel()));
+        insertEvent(
+                new SecurityEvent(
+                        command.userId(),
+                        target.sessionId(),
+                        SecurityEvent.Type.CURRENT_LOGOUT,
+                        command.now(),
+                        target.authMethod(),
+                        target.clientLabel(),
+                        target.locationLabel()));
         failureInjector.after("revoke-selected.event");
-        SessionRow revoked = requireSession(findSession(command.userId(), command.targetSessionId(), true));
-        return RevokeResult.success(selectedRevokedSnapshot(revoked, user.rolesVersion(), grants), false);
+        SessionRow revoked =
+                requireSession(findSession(command.userId(), command.targetSessionId(), true));
+        return RevokeResult.success(
+                selectedRevokedSnapshot(revoked, user.rolesVersion(), grants), false);
     }
 
-    private static SessionSnapshot selectedRevokedSnapshot(SessionRow target, long rolesVersion, List<RoleGrant> grants) {
-        RoleGrant active = target.activeRoleGrantId() == null ? null : findGrant(target.activeRoleGrantId(), grants);
+    private static SessionSnapshot selectedRevokedSnapshot(
+            SessionRow target, long rolesVersion, List<RoleGrant> grants) {
+        RoleGrant active =
+                target.activeRoleGrantId() == null
+                        ? null
+                        : findGrant(target.activeRoleGrantId(), grants);
         // A revoked target may retain an obsolete grant. Project it safely without
         // changing target/actor versions or turning an idempotent retry into a write.
-        return new SessionSnapshot(target.sessionId(), target.userId(), target.sessionVersion(), rolesVersion,
-                active != null && active.isSelectable() ? active : null, grants, target.refreshExpiresAt(),
-                target.createdAt(), target.lastSeenAt(), target.revokedAt(), target.revokeReason(),
-                target.authMethod(), target.clientLabel(), target.locationLabel());
+        return new SessionSnapshot(
+                target.sessionId(),
+                target.userId(),
+                target.sessionVersion(),
+                rolesVersion,
+                active != null && active.isSelectable() ? active : null,
+                grants,
+                target.refreshExpiresAt(),
+                target.createdAt(),
+                target.lastSeenAt(),
+                target.revokedAt(),
+                target.revokeReason(),
+                target.authMethod(),
+                target.clientLabel(),
+                target.locationLabel());
     }
 
     private RevokeAllResult revokeAllInTransaction(RevokeAllCommand command) {
@@ -609,18 +675,17 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
             return RevokeAllResult.failure(SessionStatePort.FailureCode.INVALID_SESSION);
         }
         List<SessionRow> sessions = findAllSessions(command.userId());
-        if (sessions.stream().noneMatch(
-                session -> session.sessionId().equals(command.currentSessionId())
-        )) {
+        if (sessions.stream()
+                .noneMatch(session -> session.sessionId().equals(command.currentSessionId()))) {
             return RevokeAllResult.failure(SessionStatePort.FailureCode.INVALID_SESSION);
         }
 
-        int newlyRevoked = jdbcTemplate.update(
-                REVOKE_ALL_SQL,
-                timestamp(command.now()),
-                SessionRevokeReason.LOGOUT_ALL.name(),
-                command.userId()
-        );
+        int newlyRevoked =
+                jdbcTemplate.update(
+                        REVOKE_ALL_SQL,
+                        timestamp(command.now()),
+                        SessionRevokeReason.LOGOUT_ALL.name(),
+                        command.userId());
         failureInjector.after("revoke.all");
         insertEvent(command.logoutAllEvent());
         failureInjector.after("revoke-all.event");
@@ -633,47 +698,40 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         UserRow user = findUser(command.userId(), true);
         if (user == null) {
             return ChangePasswordResult.failure(
-                    CredentialSessionTransactionPort.FailureCode.INVALID_SESSION
-            );
+                    CredentialSessionTransactionPort.FailureCode.INVALID_SESSION);
         }
         SessionRow current = findSession(command.userId(), command.currentSessionId(), true);
         if (current == null) {
             return ChangePasswordResult.failure(
-                    CredentialSessionTransactionPort.FailureCode.INVALID_SESSION
-            );
+                    CredentialSessionTransactionPort.FailureCode.INVALID_SESSION);
         }
         if (!isLive(current, command.now())) {
             return ChangePasswordResult.failure(
-                    CredentialSessionTransactionPort.FailureCode.SESSION_REVOKED
-            );
+                    CredentialSessionTransactionPort.FailureCode.SESSION_REVOKED);
         }
-        if (!Objects.equals(
-                user.passwordHash(), command.expectedCurrentHash().value()
-        )) {
+        if (!Objects.equals(user.passwordHash(), command.expectedCurrentHash().value())) {
             return ChangePasswordResult.failure(
-                    CredentialSessionTransactionPort.FailureCode.CURRENT_PASSWORD_INVALID
-            );
+                    CredentialSessionTransactionPort.FailureCode.CURRENT_PASSWORD_INVALID);
         }
 
-        int passwordUpdated = jdbcTemplate.update(
-                UPDATE_PASSWORD_SQL,
-                command.replacementHash().value(),
-                command.userId(),
-                command.expectedCurrentHash().value()
-        );
+        int passwordUpdated =
+                jdbcTemplate.update(
+                        UPDATE_PASSWORD_SQL,
+                        command.replacementHash().value(),
+                        command.userId(),
+                        command.expectedCurrentHash().value());
         if (passwordUpdated != 1) {
             return ChangePasswordResult.failure(
-                    CredentialSessionTransactionPort.FailureCode.CURRENT_PASSWORD_INVALID
-            );
+                    CredentialSessionTransactionPort.FailureCode.CURRENT_PASSWORD_INVALID);
         }
         failureInjector.after("password.credential");
 
-        int revoked = jdbcTemplate.update(
-                REVOKE_PASSWORD_SESSIONS_SQL,
-                timestamp(command.now()),
-                SessionRevokeReason.PASSWORD_CHANGED.name(),
-                command.userId()
-        );
+        int revoked =
+                jdbcTemplate.update(
+                        REVOKE_PASSWORD_SESSIONS_SQL,
+                        timestamp(command.now()),
+                        SessionRevokeReason.PASSWORD_CHANGED.name(),
+                        command.userId());
         if (revoked == 0) {
             throw new IllegalStateException("password change revoked no session");
         }
@@ -686,56 +744,66 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
     }
 
     private PasswordResetResult completePasswordResetInTransaction(PasswordResetCommand command) {
-        List<Long> userIds = jdbcTemplate.query(
-                PASSWORD_RESET_TICKET_USER_SQL,
-                (resultSet, rowNum) -> resultSet.getLong(1),
-                command.ticketHash().value(),
-                timestamp(command.now()));
+        List<Long> userIds =
+                jdbcTemplate.query(
+                        PASSWORD_RESET_TICKET_USER_SQL,
+                        (resultSet, rowNum) -> resultSet.getLong(1),
+                        command.ticketHash().value(),
+                        timestamp(command.now()));
         if (userIds.isEmpty()) {
             return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
         }
 
         long userId = userIds.getFirst();
-        if (findUser(userId, true) == null) {
+        if (findUser(userId, true) == null || hasActiveAdminGrant(userId)) {
             return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
         }
-        List<Long> lockedTickets = jdbcTemplate.query(
-                LOCK_PASSWORD_RESET_TICKET_SQL,
-                (resultSet, rowNum) -> resultSet.getLong(1),
-                command.ticketHash().value(),
-                timestamp(command.now()));
+        List<Long> lockedTickets =
+                jdbcTemplate.query(
+                        LOCK_PASSWORD_RESET_TICKET_SQL,
+                        (resultSet, rowNum) -> resultSet.getLong(1),
+                        command.ticketHash().value(),
+                        timestamp(command.now()));
         if (lockedTickets.isEmpty()) {
             return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
         }
 
-        int passwordUpdated = jdbcTemplate.update(
-                RESET_PASSWORD_SQL,
-                command.replacementHash().value(),
-                userId);
+        int passwordUpdated =
+                jdbcTemplate.update(RESET_PASSWORD_SQL, command.replacementHash().value(), userId);
         if (passwordUpdated != 1) {
             throw new IllegalStateException("password reset did not update one user");
         }
         failureInjector.after("password-reset.credential");
 
-        int ticketConsumed = jdbcTemplate.update(
-                MARK_PASSWORD_RESET_TICKET_USED_SQL,
-                timestamp(command.now()),
-                command.ticketHash().value(),
-                timestamp(command.now()));
+        int ticketConsumed =
+                jdbcTemplate.update(
+                        MARK_PASSWORD_RESET_TICKET_USED_SQL,
+                        timestamp(command.now()),
+                        command.ticketHash().value(),
+                        timestamp(command.now()));
         if (ticketConsumed != 1) {
-            throw new IllegalStateException("password reset ticket consumption did not update one row");
+            throw new IllegalStateException(
+                    "password reset ticket consumption did not update one row");
         }
         failureInjector.after("password-reset.ticket");
 
-        int revoked = jdbcTemplate.update(
-                REVOKE_PASSWORD_SESSIONS_SQL,
-                timestamp(command.now()),
-                SessionRevokeReason.PASSWORD_CHANGED.name(),
-                userId);
+        int revoked =
+                jdbcTemplate.update(
+                        REVOKE_PASSWORD_SESSIONS_SQL,
+                        timestamp(command.now()),
+                        SessionRevokeReason.PASSWORD_CHANGED.name(),
+                        userId);
         failureInjector.after("password-reset.sessions");
 
-        insertEvent(new SecurityEvent(
-                userId, null, SecurityEvent.Type.PASSWORD_CHANGED, command.now(), null, null, null));
+        insertEvent(
+                new SecurityEvent(
+                        userId,
+                        null,
+                        SecurityEvent.Type.PASSWORD_CHANGED,
+                        command.now(),
+                        null,
+                        null,
+                        null));
         failureInjector.after("password-reset.event");
         passwordChangedOutbox.append(userId, command.now());
         failureInjector.after("password-reset.outbox");
@@ -754,11 +822,8 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
             return session;
         }
 
-        int updated = jdbcTemplate.update(
-                CLEAR_ACTIVE_ROLE_SQL,
-                session.sessionId(),
-                session.userId()
-        );
+        int updated =
+                jdbcTemplate.update(CLEAR_ACTIVE_ROLE_SQL, session.sessionId(), session.userId());
         if (updated != 1) {
             throw new IllegalStateException("active role clear did not update one row");
         }
@@ -775,35 +840,28 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
                 timestamp(event.occurredAt()),
                 event.authMethod() == null ? null : event.authMethod().name(),
                 event.clientLabel(),
-                event.locationLabel()
-        );
+                event.locationLabel());
     }
 
     private UserRow findUser(long userId, boolean lock) {
-        List<UserRow> rows = jdbcTemplate.query(
-                LOCK_USER_SQL,
-                JdbcSessionAuthority::mapUser,
-                userId
-        );
+        List<UserRow> rows =
+                jdbcTemplate.query(LOCK_USER_SQL, JdbcSessionAuthority::mapUser, userId);
         return rows.isEmpty() ? null : rows.get(0);
     }
 
     private SessionRow findSession(long userId, UUID sessionId, boolean lock) {
-        List<SessionRow> rows = jdbcTemplate.query(
-                lock ? LOCK_SESSION_SQL : SESSION_SQL,
-                JdbcSessionAuthority::mapSession,
-                sessionId,
-                userId
-        );
+        List<SessionRow> rows =
+                jdbcTemplate.query(
+                        lock ? LOCK_SESSION_SQL : SESSION_SQL,
+                        JdbcSessionAuthority::mapSession,
+                        sessionId,
+                        userId);
         return rows.isEmpty() ? null : rows.get(0);
     }
 
     private List<SessionRow> findAllSessions(long userId) {
         return jdbcTemplate.query(
-                ALL_SESSIONS_FOR_UPDATE_SQL,
-                JdbcSessionAuthority::mapSession,
-                userId
-        );
+                ALL_SESSIONS_FOR_UPDATE_SQL, JdbcSessionAuthority::mapSession, userId);
     }
 
     private List<RoleGrant> findGrants(long userId) {
@@ -828,10 +886,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
     }
 
     private static RoleGrant findGrant(long grantId, List<RoleGrant> grants) {
-        return grants.stream()
-                .filter(grant -> grant.grantId() == grantId)
-                .findFirst()
-                .orElse(null);
+        return grants.stream().filter(grant -> grant.grantId() == grantId).findFirst().orElse(null);
     }
 
     private static SessionRow requireSession(SessionRow session) {
@@ -842,13 +897,11 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
     }
 
     private static SessionSnapshot toSnapshot(
-            SessionRow session,
-            long rolesVersion,
-            List<RoleGrant> grants
-    ) {
-        RoleGrant active = session.activeRoleGrantId() == null
-                ? null
-                : findGrant(session.activeRoleGrantId(), grants);
+            SessionRow session, long rolesVersion, List<RoleGrant> grants) {
+        RoleGrant active =
+                session.activeRoleGrantId() == null
+                        ? null
+                        : findGrant(session.activeRoleGrantId(), grants);
         if (session.activeRoleGrantId() != null && active == null) {
             throw new IllegalStateException("active grant missing from snapshot");
         }
@@ -866,8 +919,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
                 session.revokeReason(),
                 session.authMethod(),
                 session.clientLabel(),
-                session.locationLabel()
-        );
+                session.locationLabel());
     }
 
     private static Timestamp timestamp(Instant value) {
@@ -876,10 +928,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
 
     private static UserRow mapUser(ResultSet rs, int rowNum) throws SQLException {
         return new UserRow(
-                rs.getLong("id"),
-                rs.getString("password_hash"),
-                rs.getLong("roles_version")
-        );
+                rs.getLong("id"), rs.getString("password_hash"), rs.getLong("roles_version"));
     }
 
     private static SessionRow mapSession(ResultSet rs, int rowNum) throws SQLException {
@@ -899,8 +948,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
                 enumOrNull(rs.getString("revoke_reason"), SessionRevokeReason.class),
                 AuthMethod.valueOf(rs.getString("auth_method")),
                 rs.getString("client_label"),
-                rs.getString("location_label")
-        );
+                rs.getString("location_label"));
     }
 
     private static RoleGrant mapGrant(ResultSet rs, int rowNum) throws SQLException {
@@ -911,8 +959,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
                 RoleStatus.valueOf(rs.getString("status").toUpperCase(Locale.ROOT)),
                 nullableLong(rs, "group_id"),
                 instant(rs, "created_at"),
-                instant(rs, "updated_at")
-        );
+                instant(rs, "updated_at"));
     }
 
     private static Long nullableLong(ResultSet rs, String column) throws SQLException {
@@ -946,8 +993,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         void after(String operation);
     }
 
-    private record UserRow(long userId, String passwordHash, long rolesVersion) {
-    }
+    private record UserRow(long userId, String passwordHash, long rolesVersion) {}
 
     private record SessionRow(
             UUID sessionId,
@@ -963,7 +1009,5 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
             SessionRevokeReason revokeReason,
             AuthMethod authMethod,
             String clientLabel,
-            String locationLabel
-    ) {
-    }
+            String locationLabel) {}
 }

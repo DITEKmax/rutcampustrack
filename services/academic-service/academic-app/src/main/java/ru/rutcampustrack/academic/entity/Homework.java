@@ -1,21 +1,20 @@
 package ru.rutcampustrack.academic.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
-import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
-import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.contract.dto.homework.HomeworkSnapshot;
+import ru.rutcampustrack.academic.contract.enums.HomeworkBindingMode;
+import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
+import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.homework.HomeworkCreateIntent;
-
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.UUID;
-import java.util.Objects;
 
 @Entity
 @Table(name = "homeworks")
@@ -84,8 +83,10 @@ public class Homework {
     /** Actual accepted Schedule identity; legacy unknowns are never reconstructed by date/name. */
     @Column(name = "placement_occurrence_id")
     private Long placementOccurrenceId;
+
     @Column(name = "placement_lesson_id")
     private Long placementLessonId;
+
     @Column(name = "placement_binding_revision")
     private Long placementBindingRevision;
 
@@ -100,6 +101,7 @@ public class Homework {
     /** First admitted manual archive command; independent of the original publication author. */
     @Column(name = "archive_action_actor_id")
     private Long archiveActionActorId;
+
     @Column(name = "archive_action_actor_role", length = 32)
     private String archiveActionActorRole;
 
@@ -127,9 +129,16 @@ public class Homework {
     @Column(name = "due_reminder_sent_at")
     private OffsetDateTime dueReminderSentAt;
 
-    public Homework(Long groupId, Long subjectId, Long semesterId,
-                    String title, String description, String link, Long publishedBy,
-                    LocalDate lessonDate, Integer lessonNumber) {
+    public Homework(
+            Long groupId,
+            Long subjectId,
+            Long semesterId,
+            String title,
+            String description,
+            String link,
+            Long publishedBy,
+            LocalDate lessonDate,
+            Integer lessonNumber) {
         this.groupId = groupId;
         this.subjectId = subjectId;
         this.semesterId = semesterId;
@@ -142,32 +151,91 @@ public class Homework {
         // Kept for source compatibility with old fixture-only constructors.
         // The live creation path must use the binding-aware constructor below.
         this.actorId = publishedBy;
-        this.createIntent = new HomeworkCreateIntent(groupId, subjectId, semesterId,
-                title, description, link, HomeworkBindingMode.LESSON, lessonDate, lessonNumber);
+        this.createIntent =
+                new HomeworkCreateIntent(
+                        groupId,
+                        subjectId,
+                        semesterId,
+                        title,
+                        description,
+                        link,
+                        HomeworkBindingMode.LESSON,
+                        lessonDate,
+                        lessonNumber);
         this.createIntentKind = "ORIGINAL_CREATE";
     }
 
-    public Homework(Long groupId, Long subjectId, Long semesterId,
-                    String title, String description, String link, Long publishedBy,
-                    LocalDate lessonDate, Integer lessonNumber,
-                    Long bindingId, Long actorId, UUID requestKey, byte[] payloadHash) {
-        this(groupId, subjectId, semesterId, title, description, link, publishedBy,
-                lessonDate, lessonNumber);
+    public Homework(
+            Long groupId,
+            Long subjectId,
+            Long semesterId,
+            String title,
+            String description,
+            String link,
+            Long publishedBy,
+            LocalDate lessonDate,
+            Integer lessonNumber,
+            Long bindingId,
+            Long actorId,
+            UUID requestKey,
+            byte[] payloadHash) {
+        this(
+                groupId,
+                subjectId,
+                semesterId,
+                title,
+                description,
+                link,
+                publishedBy,
+                lessonDate,
+                lessonNumber);
         this.bindingId = bindingId;
         this.actorId = actorId;
         this.requestKey = requestKey;
         this.payloadHash = payloadHash == null ? null : payloadHash.clone();
     }
 
-    public Homework(Long groupId, Long subjectId, Long semesterId,
-                    String title, String description, String link, Long publishedBy,
-                    LocalDate lessonDate, Integer lessonNumber, Long bindingId, Long actorId,
-                    UUID requestKey, byte[] payloadHash, HomeworkBindingMode mode) {
-        this(groupId, subjectId, semesterId, title, description, link, publishedBy,
-                lessonDate, lessonNumber, bindingId, actorId, requestKey, payloadHash);
+    public Homework(
+            Long groupId,
+            Long subjectId,
+            Long semesterId,
+            String title,
+            String description,
+            String link,
+            Long publishedBy,
+            LocalDate lessonDate,
+            Integer lessonNumber,
+            Long bindingId,
+            Long actorId,
+            UUID requestKey,
+            byte[] payloadHash,
+            HomeworkBindingMode mode) {
+        this(
+                groupId,
+                subjectId,
+                semesterId,
+                title,
+                description,
+                link,
+                publishedBy,
+                lessonDate,
+                lessonNumber,
+                bindingId,
+                actorId,
+                requestKey,
+                payloadHash);
         this.bindingMode = mode;
-        this.createIntent = new HomeworkCreateIntent(groupId, subjectId, semesterId,
-                title, description, link, mode, lessonDate, lessonNumber);
+        this.createIntent =
+                new HomeworkCreateIntent(
+                        groupId,
+                        subjectId,
+                        semesterId,
+                        title,
+                        description,
+                        link,
+                        mode,
+                        lessonDate,
+                        lessonNumber);
     }
 
     public void acceptCreateIntent(HomeworkCreateIntent intent, SubjectType acceptedType) {
@@ -176,20 +244,24 @@ public class Homework {
     }
 
     public void acceptCreateActorRole(String role) {
-        if (id != null) throw new IllegalStateException("persisted creation authority is immutable");
+        if (id != null)
+            throw new IllegalStateException("persisted creation authority is immutable");
         createActorRole = role;
     }
 
     public void acceptManualArchiveIntent(long actor, String role) {
-        if (actor <= 0 || role == null) throw new IllegalArgumentException("manual archive requires admitted authority");
+        if (actor <= 0 || role == null)
+            throw new IllegalArgumentException("manual archive requires admitted authority");
         if (archiveActionActorId != null) return;
-        if (publicationState == HomeworkPublicationState.ARCHIVED) throw new IllegalStateException("archive is already terminal");
+        if (publicationState == HomeworkPublicationState.ARCHIVED)
+            throw new IllegalStateException("archive is already terminal");
         archiveActionActorId = actor;
         archiveActionActorRole = role;
     }
 
     public void acceptLessonType(SubjectType acceptedType) {
-        if (bindingMode != HomeworkBindingMode.LESSON) throw new IllegalStateException("Schedule type requires LESSON");
+        if (bindingMode != HomeworkBindingMode.LESSON)
+            throw new IllegalStateException("Schedule type requires LESSON");
         lessonType = acceptedType;
     }
 
@@ -198,35 +270,53 @@ public class Homework {
     }
 
     public HomeworkSnapshot snapshot() {
-        return new HomeworkSnapshot(title, description, link, bindingMode, lessonDate, lessonNumber, lessonType);
+        return new HomeworkSnapshot(
+                title, description, link, bindingMode, lessonDate, lessonNumber, lessonType);
     }
 
     /** Called only under the existing binding lock with a confirmed/accepted authority snapshot. */
     public void acceptPlacementIdentity(Long occurrenceId, Long lessonId, long bindingRevision) {
-        if (bindingRevision <= 0 || (occurrenceId == null) != (lessonId == null)
+        if (bindingRevision <= 0
+                || (occurrenceId == null) != (lessonId == null)
                 || occurrenceId != null && (occurrenceId <= 0 || lessonId <= 0)
                 || bindingMode == HomeworkBindingMode.DATE && occurrenceId != null) {
             throw new IllegalArgumentException("invalid accepted Schedule placement identity");
         }
         if (placementBindingRevision != null && bindingRevision < placementBindingRevision) return;
-        if (placementBindingRevision != null && bindingRevision == placementBindingRevision
-                && (!Objects.equals(placementOccurrenceId, occurrenceId) || !Objects.equals(placementLessonId, lessonId))) {
-            throw new IllegalArgumentException("accepted binding revision has another placement identity");
+        if (placementBindingRevision != null
+                && bindingRevision == placementBindingRevision
+                && (!Objects.equals(placementOccurrenceId, occurrenceId)
+                        || !Objects.equals(placementLessonId, lessonId))) {
+            throw new IllegalArgumentException(
+                    "accepted binding revision has another placement identity");
         }
         placementOccurrenceId = occurrenceId;
         placementLessonId = lessonId;
         placementBindingRevision = bindingRevision;
     }
 
-    /** Captures only the request previously accepted by legacy sameRequest, never guesses original content. */
+    /**
+     * Captures only the request previously accepted by legacy sameRequest, never guesses original
+     * content.
+     */
     public void captureLegacyAcceptedReplay() {
         if (createIntent != null) return;
-        createIntent = new HomeworkCreateIntent(groupId, subjectId, semesterId, title,
-                description, link, bindingMode, lessonDate, lessonNumber);
+        createIntent =
+                new HomeworkCreateIntent(
+                        groupId,
+                        subjectId,
+                        semesterId,
+                        title,
+                        description,
+                        link,
+                        bindingMode,
+                        lessonDate,
+                        lessonNumber);
         createIntentKind = "LEGACY_ACCEPTED_REPLAY";
     }
 
-    public void replaceContent(String title, String description, String link, OffsetDateTime changedAt) {
+    public void replaceContent(
+            String title, String description, String link, OffsetDateTime changedAt) {
         if (publicationState != HomeworkPublicationState.ACTIVE) {
             throw new IllegalStateException("only active homework can be edited");
         }
@@ -239,26 +329,49 @@ public class Homework {
 
     /** The accepted edit changes content/placement once without touching publication identity. */
     public void applyEdit(HomeworkSnapshot accepted, OffsetDateTime changedAt) {
-        if (publicationState != HomeworkPublicationState.ACTIVE) throw new IllegalStateException("archived homework is read-only");
-        if (accepted.bindingMode() == null || accepted.lessonDate() == null
-                || (accepted.bindingMode() == HomeworkBindingMode.DATE && accepted.lessonNumber() != null)
-                || (accepted.bindingMode() == HomeworkBindingMode.LESSON && (accepted.lessonNumber() == null
-                    || accepted.lessonNumber() < 1 || accepted.lessonNumber() > 8))) {
+        if (publicationState != HomeworkPublicationState.ACTIVE)
+            throw new IllegalStateException("archived homework is read-only");
+        if (accepted.bindingMode() == null
+                || accepted.lessonDate() == null
+                || (accepted.bindingMode() == HomeworkBindingMode.DATE
+                        && accepted.lessonNumber() != null)
+                || (accepted.bindingMode() == HomeworkBindingMode.LESSON
+                        && (accepted.lessonNumber() == null
+                                || accepted.lessonNumber() < 1
+                                || accepted.lessonNumber() > 8))) {
             throw new IllegalArgumentException("invalid accepted homework placement");
         }
-        if (!Objects.equals(lessonDate, accepted.lessonDate()) || !Objects.equals(lessonNumber, accepted.lessonNumber())
+        if (!Objects.equals(lessonDate, accepted.lessonDate())
+                || !Objects.equals(lessonNumber, accepted.lessonNumber())
                 || bindingMode != accepted.bindingMode()) dueReminderSentAt = null;
-        title = accepted.title(); description = accepted.description(); link = accepted.link();
+        title = accepted.title();
+        description = accepted.description();
+        link = accepted.link();
         lessonType = accepted.lessonType();
-        bindingMode = accepted.bindingMode(); lessonDate = accepted.lessonDate(); lessonNumber = accepted.lessonNumber();
-        updatedAt = changedAt; revision++;
+        bindingMode = accepted.bindingMode();
+        lessonDate = accepted.lessonDate();
+        lessonNumber = accepted.lessonNumber();
+        updatedAt = changedAt;
+        revision++;
     }
 
     /** Detached response of a previously committed command; never saved or attached. */
     public Homework recordedResult(HomeworkSnapshot result, long acceptedRevision) {
-        Homework copy = new Homework(groupId, subjectId, semesterId, result.title(),
-                result.description(), result.link(), publishedBy, result.lessonDate(),
-                result.lessonNumber(), bindingId, actorId, requestKey, payloadHash);
+        Homework copy =
+                new Homework(
+                        groupId,
+                        subjectId,
+                        semesterId,
+                        result.title(),
+                        result.description(),
+                        result.link(),
+                        publishedBy,
+                        result.lessonDate(),
+                        result.lessonNumber(),
+                        bindingId,
+                        actorId,
+                        requestKey,
+                        payloadHash);
         copy.id = id;
         copy.bindingMode = result.bindingMode();
         copy.lessonType = result.lessonType();
@@ -296,8 +409,10 @@ public class Homework {
         if (publicationState == HomeworkPublicationState.ARCHIVED) {
             throw new IllegalStateException("archived homework cannot follow a lesson transfer");
         }
-        if (targetDate == null || targetLessonNumber == null
-                || targetLessonNumber < 1 || targetLessonNumber > 8) {
+        if (targetDate == null
+                || targetLessonNumber == null
+                || targetLessonNumber < 1
+                || targetLessonNumber > 8) {
             throw new IllegalArgumentException("target lesson slot is invalid");
         }
         if (targetDate.equals(lessonDate) && targetLessonNumber.equals(lessonNumber)) return;

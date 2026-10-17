@@ -8,5 +8,4 @@ public record RecurringCreateResult(
         long assignmentId,
         long generatedCount,
         LocalDate generatedFrom,
-        LocalDate generatedUntil
-) {}
+        LocalDate generatedUntil) {}

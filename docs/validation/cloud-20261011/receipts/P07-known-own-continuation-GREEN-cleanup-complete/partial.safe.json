@@ -1,0 +1,20 @@
+{
+  "state": "GREEN_AND_KNOWN_OWN_CLEANUP_COMPLETED",
+  "original_run": "65486_RESOURCE_FAIL",
+  "green": "PASS_PRIVATE_AND_PUBLIC_FILE_ABSENT",
+  "removed_container_ids": [
+    "8dc5bb9af2eee9e340a4fe3b2b3cb572bb241114c5a789a748aa211fd2ef031b",
+    "8bcec58eef9701cadeeee0de8ae038648eb1d5b4b7b9d919e792babd702df1cc",
+    "a9105357ff47f26281be8e85dbc4061ad8f548dc4518ad4c1fe4f9757dda6b2c"
+  ],
+  "volume_removed": true,
+  "tmp_removed": true,
+  "removed_tmp_leaves": [
+    "private.key",
+    "public.key"
+  ],
+  "qualification": "Original growth cap failure and missing original birth/cleanup ID journals remain; old exit1 and Source-order marker admission only. No real key read or whole-run cap compliance claim.",
+  "workspace_free_before_container_cleanup": 7007129600,
+  "workspace_free_after_container_cleanup": 7053828096,
+  "observed_net_workspace_recovery_bytes": 46698496
+}

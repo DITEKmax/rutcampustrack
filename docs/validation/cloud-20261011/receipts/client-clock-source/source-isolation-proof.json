@@ -1,0 +1,64 @@
+{
+  "status": "PASS_STATIC_BYTES_ONLY",
+  "frozenRoot": "c898889b7932bf8d139a23be15a0b34762f3a387",
+  "files": [
+    {
+      "path": "services/academic-service/academic-app/Dockerfile",
+      "unchangedFromFrozenRoot": true,
+      "sha256": "2ab9bb16bf398869b130a92b497104922e80e6db8b82f212b24880140b3d9582"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/Dockerfile",
+      "unchangedFromFrozenRoot": true,
+      "sha256": "be350274d1eff9a17de9ff8c7f3f8b86217774f7809cbf3d86907d095c16865a"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/Dockerfile",
+      "unchangedFromFrozenRoot": true,
+      "sha256": "3af22c2e46dbaa49c80810b95b0b6bc70076aefd06d891b0d2fd8e85a0ace3c1"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/Dockerfile",
+      "unchangedFromFrozenRoot": true,
+      "sha256": "56d01259f6b978e48bb82c3c9d51e6f07c94fd92b91bea584f627a5ba7ff0167"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/ClockConfig.java",
+      "unchangedFromFrozenRoot": true,
+      "sha256": "558b977afe3174fc3b83f75922a8460a3215e8097ba46990c2145fdd44984d6c"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/ClockConfig.java",
+      "unchangedFromFrozenRoot": true,
+      "sha256": "e042daff1343da7de8d0b4f0d189ead20f2cb0976073a95919cee49f212c146d"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/ClockConfig.java",
+      "unchangedFromFrozenRoot": true,
+      "sha256": "19188d9dc864a964cf554edd69d1af12ea59b45cdb5b5e13e99936225c2ad045"
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/MobileBffRuntimeConfig.java",
+      "unchangedFromFrozenRoot": true,
+      "sha256": "b030e188613a6563440aecd31e41e375e6ae2d777731d0f4646766ff35ca2b11"
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java",
+      "unchangedFromFrozenRoot": true,
+      "sha256": "f77651e3ae4ba71883bdc0fa984ffe03d70c33bf8c5d60f99eb97a84494d9ce3"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+      "unchangedFromFrozenRoot": true,
+      "sha256": "de59ca3e60600f9d8fa9c6d8d34f052386ad0cd32d9204b9a41dbe640d2abfd6"
+    },
+    {
+      "path": "docker-compose.e2e.yml",
+      "unchangedFromFrozenRoot": true,
+      "sha256": "eb861534bd1a1ef7c4e3d1d02f7b1e9bc3027b103181b6eca83921deedc8c383"
+    }
+  ],
+  "actualBootJarInspection": "NOT_RUN",
+  "actualClockInjection": "NOT_RUN",
+  "taskGraph": "NOT_RUN"
+}

@@ -1,0 +1,29 @@
+{
+  "members": [
+    {
+      "path": "REPORT.safe.json",
+      "bytes": 2733,
+      "sha256": "c429329d1d214560d6b0a9a65d6f299a778675e3aa7af6f89b7b1e442901751e"
+    },
+    {
+      "path": "launch.safe.json",
+      "bytes": 540,
+      "sha256": "ff6124c008f8617df43a8e0aca911ee5f2e8f2d9ef8f152eb696c8b978cc1bd8"
+    },
+    {
+      "path": "launcher-session.safe.json",
+      "bytes": 223,
+      "sha256": "32d099269a6a2160e5f348174e9cfe3129d7dd1a723c94523b0e31d134e539c2"
+    },
+    {
+      "path": "process.safe.json",
+      "bytes": 147,
+      "sha256": "621197232adc6d2f341e674bdedf32ff584cde947dc8d253992a3a3744c6ece8"
+    },
+    {
+      "path": "terminal.safe.json",
+      "bytes": 2302,
+      "sha256": "3b9f63308311562068e848a16d18d3cc64db51dd88c544d16f87a5ade7d67b67"
+    }
+  ]
+}

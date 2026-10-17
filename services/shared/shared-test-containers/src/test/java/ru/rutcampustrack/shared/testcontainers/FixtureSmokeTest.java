@@ -1,17 +1,17 @@
 package ru.rutcampustrack.shared.testcontainers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Smoke-тест fixtures без Spring-контекста.
  *
- * <p>Требует запущенный Docker. Проверяет что контейнеры стартуют и основные
- * методы fixture доступны. Полноценный integration-тест со Spring-контекстом
- * делается в сервисах-потребителях (M01 Группа 8: notification-service).
+ * <p>Требует запущенный Docker. Проверяет что контейнеры стартуют и основные методы fixture
+ * доступны. Полноценный integration-тест со Spring-контекстом делается в сервисах-потребителях (M01
+ * Группа 8: notification-service).
  */
 class FixtureSmokeTest {
 
@@ -43,9 +43,9 @@ class FixtureSmokeTest {
     }
 
     /**
-     * Стартует PostgreSQL из {@link ContainerTestBase} — убеждаемся что static
-     * инициализация проходит и container.isRunning() = true.
-     * Требует Docker. В CI без Docker — @Disabled чтобы не блокировать pipeline.
+     * Стартует PostgreSQL из {@link ContainerTestBase} — убеждаемся что static инициализация
+     * проходит и container.isRunning() = true. Требует Docker. В CI без Docker — @Disabled чтобы не
+     * блокировать pipeline.
      */
     @Test
     @Disabled("требует Docker — проверяется integration-тестом notification-service (Группа 8)")

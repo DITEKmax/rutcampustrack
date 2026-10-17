@@ -1,0 +1,65 @@
+{
+  "kind": "INDEPENDENT_NEXT04_PARAMETER_ONLY_RECHECK",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "source_manifest_sha256": "95e43a914cf866e6ccd58b0fcbb305534b9cd7c0580adf2e6e16f2b378266afc",
+  "packet_manifest_sha256": "41a44634b08b8ec82361e015dbeff3b33d6f0c2f5a746184e09c80621339da26",
+  "packet_zip_sha256": "17a7f405847166880981dca4b39853e9f49e962665c03785fc820fb7af7728c7",
+  "fence159_sha256": "3ad319c3f5d9412d48981b5aee0c83b99b7bc3a86b383e93d16b00fa93536756",
+  "checks": {
+    "only_declared_three_source_diffs_full_byte_inverse_to_approved03": true,
+    "Mongo_other6_anchors_byteexact": true,
+    "fixed159_path_SHA_unique_cardinality": true,
+    "seven_selected_actual_function_RAM_cases": [
+      {
+        "case": "actual159_accept",
+        "expected": true,
+        "actual": true,
+        "pass": true
+      },
+      {
+        "case": "old158_path_deny",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "case": "wrongSHA_deny",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "case": "actualSHA_changed_deny",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "case": "missing_node_deny",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "case": "extra_node_deny",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      },
+      {
+        "case": "old158_consumer_denies159",
+        "expected": false,
+        "actual": false,
+        "pass": true
+      }
+    ],
+    "Root481_runtime_product_selected_delta0": true,
+    "Root19_17unchanged2approved_diagnostics_changed": true,
+    "source_and_packet_seals_exact": true
+  },
+  "verification_receipt_qualification": "Source inverse/7 RAM cases/working19/Git selected delta checks completed and asserted in preceding source-only cell; own inverse message-case and packet size-vs-bytes assumptions corrected before final seal. No producer/runtime failure inferred.",
+  "native_operation_data_metadata_scan_private_content_API": "NONE",
+  "qualification": "Selected function RAM actor/prior-source/hash adapters isolate only new fixed input/cardinality; not actual ownership/data/runtime preflight. Fresh18/platform/600grant remains Root prerequisite; unchanged prior204d algorithms reused."
+}

@@ -1,0 +1,61 @@
+{
+  "scope": "ACTUAL_FRESH_RUNTIME_READONLY_READY_AND_DOCKER_APPROVAL_NOT_RUN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight01/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "bytes": 1243,
+      "sha256": "145bab6bd28875782217829c7b8f7d8ffc2acfa457417dae9a61502e3c50134a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight01/check-default-loader.py",
+      "name": "check-default-loader.py",
+      "bytes": 1985,
+      "sha256": "18168477628b6b6de34d07270d74d04fa100359648bf9d3af0594d6518eeb328"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight01/collect-readonly-tail.py",
+      "name": "collect-readonly-tail.py",
+      "bytes": 3436,
+      "sha256": "76e289c301d9d5459c62dcc6bfebf05377659dab2781f7ee68df94b64ca01894"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight01/collect-readonly.attempt01.py",
+      "name": "collect-readonly.attempt01.py",
+      "bytes": 8582,
+      "sha256": "08d56128c64853f0ebc09e225c110f0a9834f177ac9c888db4b83f48899219f1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight01/collect-readonly.py",
+      "name": "collect-readonly.py",
+      "bytes": 8582,
+      "sha256": "08d56128c64853f0ebc09e225c110f0a9834f177ac9c888db4b83f48899219f1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight01/permission-stop.safe.json",
+      "name": "permission-stop.safe.json",
+      "bytes": 836,
+      "sha256": "ca3040bdeb871aa0392c4b39d7b64bfad59d763e6619ed64725122d2cdda4c08"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight01/preflight-classpath-adapter-attempt02.safe.json",
+      "name": "preflight-classpath-adapter-attempt02.safe.json",
+      "bytes": 12921,
+      "sha256": "9e98d2b03d59cc773593308d0d119772c4da223ac534e52a507e07073b5ecf98"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight01/preflight-critical-attempt01.safe.json",
+      "name": "preflight-critical-attempt01.safe.json",
+      "bytes": 9441,
+      "sha256": "107177e3a552c6877cf367f29eb4827a10092fd9fa083115fceb7b72f0e759a1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-preflight01/preflight.safe.json",
+      "name": "preflight.safe.json",
+      "bytes": 13255,
+      "sha256": "0dfa7a503b9941a5234ebab6c294759f263552617886da469d2fad97f8d44f90"
+    }
+  ],
+  "runtime": "NOT_RUN",
+  "private_excluded": true
+}

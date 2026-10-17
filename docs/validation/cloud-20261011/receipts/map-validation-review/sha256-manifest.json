@@ -1,0 +1,202 @@
+{
+  "at": "2026-10-11T22:31:37.791352+00:00",
+  "frozen_author_sha": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+  "verdict": "CHANGES_REQUESTED",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 2384,
+      "sha256": "7a29232cf08626bab98a141b63985ba3dd58707afee15725399de693c0388c04"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 427,
+      "sha256": "f02051cc7cae44b422bc79e5f6cf234944489c8f6b1d55efe8e7d8573f8602a7"
+    },
+    {
+      "path": "audit_evidence.py",
+      "bytes": 7883,
+      "sha256": "c17c9f88f1d67b3cd2c49b0e1f4c5dd3a149e0502fac60ccf0efb2ec684d4bf5"
+    },
+    {
+      "path": "counterexample-image-set.svg",
+      "bytes": 181,
+      "sha256": "ce69a0d79e58c7d5a5b4b869ae5c055fd7489ed49dbd214e3d922adf55ff67db"
+    },
+    {
+      "path": "counterexample-xml-stylesheet.svg",
+      "bytes": 221,
+      "sha256": "8196c3293972f704da343f8261753d3ba34ce2ced7be8fd897cc928bfe8f7595"
+    },
+    {
+      "path": "final-receipt.json",
+      "bytes": 2762,
+      "sha256": "496c40c5b0737bd12cea8585a0cb6e7b469e54c1582ba4af31dd4ea2d9aa4c3e"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 2665,
+      "sha256": "ba4bfe61e98dcc26c7d67d2992dc4c27340f7d8df7e7139cb17249828eca4bb1"
+    },
+    {
+      "path": "findings.md",
+      "bytes": 11264,
+      "sha256": "4a2b5aa7990db10fefb75155ff83c85c490bec7fb687741fce6b28a7eb098df1"
+    },
+    {
+      "path": "input-hash-manifest.json",
+      "bytes": 20268,
+      "sha256": "db7465ce72cd0291cafd2b0925514c082e3efcbd6955637bc477fb19287a6258"
+    },
+    {
+      "path": "original-log-audit.json",
+      "bytes": 8082,
+      "sha256": "9662c311ec7cb2741f34246b2e7b24907582b56061544e51da34ce981c5470b7"
+    },
+    {
+      "path": "original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 571,
+      "sha256": "2933ad93d4e4c3ada818d5f921310e4ac7da3c729e59bf21cfff343d658145df"
+    },
+    {
+      "path": "original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 490,
+      "sha256": "0ad6e8a9f429f19d3c1042f4c3b67b1e6219208647fb4847ad3b82515c5c5e80"
+    },
+    {
+      "path": "original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 635,
+      "sha256": "fc7e7aad56b301b86cb5241bac9b3f975ae42b96e688c60ef0735f99650e62f7"
+    },
+    {
+      "path": "original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 505,
+      "sha256": "0fb6df50c51d95a2cc49ff35031644fab8d58ca0cd7b75c40d6e0645636ccf66"
+    },
+    {
+      "path": "original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "bytes": 231821,
+      "sha256": "a7e929b86e60bc010249aa1430da88615fa07c35d8bbb1790772702eb31fa6b3"
+    },
+    {
+      "path": "original-xml/green-map-04-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT.xml",
+      "bytes": 20906,
+      "sha256": "c0ea4cd0661e9e9fade1d4f2e4bf6d175bfab895f93ae94ddc17e328c6e08cc5"
+    },
+    {
+      "path": "original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 571,
+      "sha256": "dc73096847e8e78460d090c64fa502be299dd5d1216eb30fac99ab7d4af84245"
+    },
+    {
+      "path": "original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 634,
+      "sha256": "c633e723d4b818efcf1e1617455dc9645e643291999d46614b75142c451bccfd"
+    },
+    {
+      "path": "original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 507,
+      "sha256": "b24c3e0cd1ccdb4c2e36b8f28ce2c3ae25309cde95afe3eb02096c20cafb7271"
+    },
+    {
+      "path": "original-xml/green-map-04-test-xml/TEST-ru.rutcampustrack.academic.map.CampusMapAdminServiceTest.xml",
+      "bytes": 1814,
+      "sha256": "640add364b240561a77a020f560df98da234fb447e6ae28abdd2e7accab6c1a0"
+    },
+    {
+      "path": "original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 571,
+      "sha256": "c1bb600979f644e36cd772c0e3c7e332f79a2a6e7d53e791e8efb035b8626a1e"
+    },
+    {
+      "path": "original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 490,
+      "sha256": "08382564bb9dbee3a77a7e9f4253a47967852c0553f3781fee8d22ff764e5263"
+    },
+    {
+      "path": "original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 635,
+      "sha256": "dd51e8c5fd7a257fc61c154e6096027bc608aee7f1ca0aa8cde9477eb8dff07a"
+    },
+    {
+      "path": "original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 507,
+      "sha256": "d33fb795aa1c857fc013361e5c4c08f16d6b6ce3162bfcf589066acc2cdcb8ea"
+    },
+    {
+      "path": "original-xml/red-map-01-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "bytes": 169091,
+      "sha256": "e03c80833e4963f20f921af5cddfdd82632ce836f73b3372d596c28c8b335a3f"
+    },
+    {
+      "path": "original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 571,
+      "sha256": "424bd3b1b03cf2a43bbd5784b80c7d968c605ac46a372707ba6623411650b58d"
+    },
+    {
+      "path": "original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 490,
+      "sha256": "c0192eaa718d0a595603039809e2f657c7352109888b9253f8cba3c8a10f1e86"
+    },
+    {
+      "path": "original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 635,
+      "sha256": "13acd9f088a1ac8d0a2185c4088c44b9d93bb83489d328639c5b27759ed6a061"
+    },
+    {
+      "path": "original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 507,
+      "sha256": "d1c1a6d86e7c65fb16709128511074e2e44660fd7215935bac3f1dcff7b287b6"
+    },
+    {
+      "path": "original-xml/red-map-02-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "bytes": 154678,
+      "sha256": "0e5487fc25b8de4987ef280d0942529de896023eac5b91f5a8951e9bf71f382c"
+    },
+    {
+      "path": "original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml",
+      "bytes": 571,
+      "sha256": "2605e43acd9348335a886e5e51560cf0373297262549b3e638a56606b70bf9ee"
+    },
+    {
+      "path": "original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml",
+      "bytes": 488,
+      "sha256": "d4e869e12ce569a66e564037e99b189c991718242d8daa533ac00a5048962475"
+    },
+    {
+      "path": "original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml",
+      "bytes": 635,
+      "sha256": "a456ee65271f6312357437dab7ad077ac8c601809c0250570064b91e77e80c06"
+    },
+    {
+      "path": "original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml",
+      "bytes": 507,
+      "sha256": "e3cf30a0b7dfd8a17c2e82746373dca6cefff6a1bf4fa7a29f999fb56e1ee7f2"
+    },
+    {
+      "path": "original-xml/red-map-served-03-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml",
+      "bytes": 119765,
+      "sha256": "7d4fb6eacd5d28edabf040f9b1e23ffd61b1a3c46e543ca4524e919c308cb12e"
+    },
+    {
+      "path": "original-xml-audit.json",
+      "bytes": 36611,
+      "sha256": "ce8dbc251fe85e6702c8a3b4b70fbde130a269e5628e98ce7767238cf882c57b"
+    },
+    {
+      "path": "privacy-copy-audit.json",
+      "bytes": 7593,
+      "sha256": "d08c9efb1d2290dc1978a21eb47544f6ef29bdf1eb6e3a1af95c5c30d61ced82"
+    },
+    {
+      "path": "served-artifact-audit.json",
+      "bytes": 1526,
+      "sha256": "26591e259b25c88d4f91d7cce066dae6823bce19d031ac1ab3e33c969928a73a"
+    },
+    {
+      "path": "source-equivalence.json",
+      "bytes": 3708,
+      "sha256": "040ced4ed35bfd0bfa5b426f24817a1ceaccd5673286409e0aa208d56ceab27c"
+    }
+  ]
+}

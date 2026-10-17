@@ -3,9 +3,7 @@ package ru.rutcampustrack.gateway.security;
 import jakarta.annotation.PostConstruct;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * Configuration for the per-request auth admission client.
- */
+/** Configuration for the per-request auth admission client. */
 @ConfigurationProperties(prefix = "rutcampustrack.security.internal-issuer-client")
 public class InternalIssuerClientProperties {
 
@@ -45,7 +43,9 @@ public class InternalIssuerClientProperties {
             throw new IllegalStateException(
                     "rutcampustrack.security.internal-issuer-client.secret is required "
                             + "(INTERNAL_ISSUER_SECRET env var). Must match auth-service secret, "
-                            + "at least " + MIN_SECRET_LENGTH + " bytes.");
+                            + "at least "
+                            + MIN_SECRET_LENGTH
+                            + " bytes.");
         }
         if (secret.getBytes().length < MIN_SECRET_LENGTH) {
             throw new IllegalStateException(

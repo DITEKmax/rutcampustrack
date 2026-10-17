@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-12T00:35:08.138631+00:00",
+  "phase": "ebsr-crosslayer-after-1",
+  "own_active_jvms": [],
+  "observed_java_zombies": [
+    11771,
+    33249,
+    33286,
+    149519,
+    149559
+  ],
+  "testcontainers_remaining": [],
+  "standard_cleanup": "Completed automatically; no explicit resource deletion",
+  "available_bytes": 5093597184,
+  "native_exit": -15,
+  "exec_exit": 241,
+  "source_unchanged": true,
+  "task_execution": "NOT_RUN",
+  "xml": "Copied old XML ignored; no executed suite markers",
+  "runtime": "PAUSED_BY_ROOT_AFTER_FLOOR_STOP"
+}

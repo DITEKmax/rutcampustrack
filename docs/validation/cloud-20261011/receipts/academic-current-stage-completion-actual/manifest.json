@@ -1,0 +1,52 @@
+{
+  "scope": "ACTUAL_CURRENT_ACADEMIC_STAGE_COMPLETION_PASS_NO_RUNTIME",
+  "source_manifest_sha256": "89d65e95b77227fa2e6b0f7c3d177331697c1ff48348d50172c8e72ab62170cf",
+  "review_manifest_sha256": "0c62f39e6a4043b6db866dd148f9920ecf34ed6109c058d451388801e4e74403",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/actual-completion01/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "bytes": 1245,
+      "sha256": "3b0fea460e63365c7a294c2a7932d488afde13bc9cab51236bf2ad0c39b00b10"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/actual-completion01/host-service-specs.safe.json",
+      "name": "host-service-specs.safe.json",
+      "bytes": 91504,
+      "sha256": "6549d980fb816a7ee305da7f83eedd17d63d69c610c6fcac80d641371e42671e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/actual-completion01/launch.safe.json",
+      "name": "launch.safe.json",
+      "bytes": 421,
+      "sha256": "37eaddf875174f04163c5d0589561e40038e0f1723f2a4b687898ecfdb7c2686"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/actual-completion01/native-output.safe.json",
+      "name": "native-output.safe.json",
+      "bytes": 832,
+      "sha256": "6ff3aec022082e04e2cd8084bc097842f27d67cd6183ab4fd7f35a14700962b9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/actual-completion01/stage-committed.safe.json",
+      "name": "stage-committed.safe.json",
+      "bytes": 1042,
+      "sha256": "10589f902536c9861a20a7fde981e9ad6c2b40a28d8147fcb7818fe3107b3449"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/actual-completion01/stage-result.safe.json",
+      "name": "stage-result.safe.json",
+      "bytes": 559282,
+      "sha256": "5db63c65badd68539926defeb146fb5cb6f2fe5e9fb35d689192185250d46643"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/actual-completion01/terminal.safe.json",
+      "name": "terminal.safe.json",
+      "bytes": 3463,
+      "sha256": "86f6a8e34ee4a266ce46786490721a0b4df93d6baca060fb727712582218a08a"
+    }
+  ],
+  "native_lease": "RELEASED",
+  "private_excluded": true,
+  "actual_runtime": "NOT_RUN"
+}

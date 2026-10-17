@@ -1,0 +1,47 @@
+{
+  "artifact_id": 11781479176,
+  "name": "safe-integration-outcomes-academic-service-1",
+  "archive_bytes": 21420,
+  "archive_sha256": "86c3c295adff4f78265bd87784ca3231bf7cb737dd4c23847b6e993d20e2980e",
+  "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 446,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": {
+        "xmlOrdinal": 28,
+        "suiteOrdinal": 1,
+        "ordinal": 12,
+        "classname": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+        "method": "enumDatabaseAndHttpBoundaryRemainCanonicalUnderTurkishLocale",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+        "sourceSha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d"
+      },
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

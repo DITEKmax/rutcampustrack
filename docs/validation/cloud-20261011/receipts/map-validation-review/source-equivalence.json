@@ -1,0 +1,66 @@
+{
+  "frozen_sha": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+  "parent_sha": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "observed_head": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+  "worktree_clean": true,
+  "exact_inventory": true,
+  "source_equality": [
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "hashes": {
+        "inventory": "7bf1a5d6e22584044beedd5982f47430e161327227e110d3c666782bd73fecdd",
+        "correction_prep": "7bf1a5d6e22584044beedd5982f47430e161327227e110d3c666782bd73fecdd",
+        "prelaunch": "7bf1a5d6e22584044beedd5982f47430e161327227e110d3c666782bd73fecdd",
+        "current_worktree": "7bf1a5d6e22584044beedd5982f47430e161327227e110d3c666782bd73fecdd",
+        "final_commit_blob": "7bf1a5d6e22584044beedd5982f47430e161327227e110d3c666782bd73fecdd"
+      },
+      "all_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+      "hashes": {
+        "inventory": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+        "correction_prep": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+        "prelaunch": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+        "current_worktree": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33",
+        "final_commit_blob": "4a3034aff6a8a3bb703f2ca94039ee889482ca39c5fe668032297af935acad33"
+      },
+      "all_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+      "hashes": {
+        "inventory": "f79f75ecb066bf40fd496c8793bdbdbb8f088f712f05895c4a54e97faf9bfcdd",
+        "correction_prep": "f79f75ecb066bf40fd496c8793bdbdbb8f088f712f05895c4a54e97faf9bfcdd",
+        "prelaunch": "f79f75ecb066bf40fd496c8793bdbdbb8f088f712f05895c4a54e97faf9bfcdd",
+        "current_worktree": "f79f75ecb066bf40fd496c8793bdbdbb8f088f712f05895c4a54e97faf9bfcdd",
+        "final_commit_blob": "f79f75ecb066bf40fd496c8793bdbdbb8f088f712f05895c4a54e97faf9bfcdd"
+      },
+      "all_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+      "hashes": {
+        "inventory": "a8063d2c1fa666e5f9a9d0d788f8bb76c94a50b6936d8bf720d343a9dea912d9",
+        "correction_prep": "a8063d2c1fa666e5f9a9d0d788f8bb76c94a50b6936d8bf720d343a9dea912d9",
+        "prelaunch": "a8063d2c1fa666e5f9a9d0d788f8bb76c94a50b6936d8bf720d343a9dea912d9",
+        "current_worktree": "a8063d2c1fa666e5f9a9d0d788f8bb76c94a50b6936d8bf720d343a9dea912d9",
+        "final_commit_blob": "a8063d2c1fa666e5f9a9d0d788f8bb76c94a50b6936d8bf720d343a9dea912d9"
+      },
+      "all_equal": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+      "hashes": {
+        "inventory": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+        "correction_prep": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+        "prelaunch": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+        "current_worktree": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21",
+        "final_commit_blob": "ae168df03cf94872b5ba9b180d1311d554f8c1958369a1a6b6f70a856e17ce21"
+      },
+      "all_equal": true
+    }
+  ],
+  "execution_revision": "bounded uncommitted WIP based on e093; final source blobs equal the prelaunch hashes",
+  "independent_runtime": "NOT_RUN"
+}

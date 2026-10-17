@@ -1,0 +1,10 @@
+{
+  "phase": "cookie-reject",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/cleanup-control.cjs"
+  ],
+  "deadlineSeconds": 60,
+  "expectedNativeExit": 0
+}

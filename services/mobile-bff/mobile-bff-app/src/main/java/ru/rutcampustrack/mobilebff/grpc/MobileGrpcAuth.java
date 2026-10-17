@@ -17,7 +17,8 @@ public class MobileGrpcAuth {
     private final MobileRequestContext context;
     private final String grpcSecret;
 
-    public MobileGrpcAuth(MobileRequestContext context, @Value("${grpc.auth.secret:}") String grpcSecret) {
+    public MobileGrpcAuth(
+            MobileRequestContext context, @Value("${grpc.auth.secret:}") String grpcSecret) {
         this.context = context;
         this.grpcSecret = grpcSecret;
     }

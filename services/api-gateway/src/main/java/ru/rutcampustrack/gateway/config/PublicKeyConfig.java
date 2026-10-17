@@ -1,15 +1,6 @@
 package ru.rutcampustrack.gateway.config;
 
 import jakarta.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
-import reactor.util.retry.Retry;
-
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
@@ -18,6 +9,14 @@ import java.util.Base64;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import reactor.util.retry.Retry;
 
 @Component
 public class PublicKeyConfig {
@@ -72,9 +71,8 @@ public class PublicKeyConfig {
     }
 
     /**
-     * KI-4 (M03b backlog) — non-throwing readiness probe для
-     * {@code PublicKeyHealthIndicator}. Возвращает {@code false} вместо
-     * исключения, чтобы health-endpoint не падал на 500.
+     * KI-4 (M03b backlog) — non-throwing readiness probe для {@code PublicKeyHealthIndicator}.
+     * Возвращает {@code false} вместо исключения, чтобы health-endpoint не падал на 500.
      */
     public boolean isReady() {
         return publicKeyRef.get() != null;
@@ -88,13 +86,16 @@ public class PublicKeyConfig {
             if (fetchScheduled && nanoTime.getAsLong() - nextFetchAtNanos < 0) {
                 return;
             }
-            PublicKeyResponse response = webClient.get()
-                    .uri(authServiceUrl + "/auth/public-key")
-                    .retrieve()
-                    .bodyToMono(PublicKeyResponse.class)
-                    .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5))
-                            .filter(e -> e instanceof WebClientRequestException))
-                    .block(Duration.ofSeconds(30));
+            PublicKeyResponse response =
+                    webClient
+                            .get()
+                            .uri(authServiceUrl + "/auth/public-key")
+                            .retrieve()
+                            .bodyToMono(PublicKeyResponse.class)
+                            .retryWhen(
+                                    Retry.fixedDelay(3, Duration.ofSeconds(5))
+                                            .filter(e -> e instanceof WebClientRequestException))
+                            .block(Duration.ofSeconds(30));
 
             if (response == null || response.publicKey() == null) {
                 throw new IllegalStateException("Auth Service returned empty public key");
@@ -120,10 +121,10 @@ public class PublicKeyConfig {
     }
 
     PublicKey parsePemPublicKey(String pem) throws Exception {
-        String stripped = pem
-                .replaceAll("-----BEGIN PUBLIC KEY-----", "")
-                .replaceAll("-----END PUBLIC KEY-----", "")
-                .replaceAll("\\s", "");
+        String stripped =
+                pem.replaceAll("-----BEGIN PUBLIC KEY-----", "")
+                        .replaceAll("-----END PUBLIC KEY-----", "")
+                        .replaceAll("\\s", "");
         byte[] keyBytes = Base64.getDecoder().decode(stripped);
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         return KeyFactory.getInstance("RSA").generatePublic(spec);

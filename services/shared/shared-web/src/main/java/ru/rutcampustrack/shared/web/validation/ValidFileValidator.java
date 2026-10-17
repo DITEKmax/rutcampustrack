@@ -2,10 +2,9 @@ package ru.rutcampustrack.shared.web.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.Arrays;
 import java.util.Locale;
+import org.springframework.web.multipart.MultipartFile;
 
 public class ValidFileValidator implements ConstraintValidator<ValidFile, MultipartFile> {
 
@@ -39,9 +38,7 @@ public class ValidFileValidator implements ConstraintValidator<ValidFile, Multip
 
     private static boolean matchesAny(String contentType, String[] allowed) {
         String ct = contentType.toLowerCase(Locale.ROOT);
-        return Arrays.stream(allowed)
-                .map(s -> s.toLowerCase(Locale.ROOT))
-                .anyMatch(ct::equals);
+        return Arrays.stream(allowed).map(s -> s.toLowerCase(Locale.ROOT)).anyMatch(ct::equals);
     }
 
     private static void customMessage(ConstraintValidatorContext ctx, String msg) {

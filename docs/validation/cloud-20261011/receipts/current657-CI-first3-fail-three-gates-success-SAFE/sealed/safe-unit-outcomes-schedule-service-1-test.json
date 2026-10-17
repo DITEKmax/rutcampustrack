@@ -1,0 +1,3443 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+    "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+    "service": "schedule-service",
+    "task": "test",
+    "job": "java-unit-test",
+    "runId": "38329143416",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "collection": "RESULTS",
+  "acceptance": "NOT_ASSESSED",
+  "xml": [
+    {
+      "ordinal": 1,
+      "sha256": "9def788be704520dd459e4a80564f1279d93f0944f6341f0fe5ee876a96f6681",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 2,
+      "sha256": "5f5750cbc59ff5592718123b7e7f93d675a0116c252358a6220c2f7fa253d216",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 3,
+      "sha256": "9ba481fe19ae6e0666f3ff905dd3fa817d578bc23d667d051921c0bd5e359601",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 4,
+      "sha256": "d1d56252771225536601b82ed3ca936d886aa94fa480799b2db8c8815f9c35b4",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 5,
+      "sha256": "66938a6e5573f3b966753a872b0059ad0269542de0945803c2771d966fdd534d",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 6,
+      "sha256": "e507826867edf3cd14d8fabf1e9f3f9cff6a4cab90ebf467b4857f0196a9296d",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 22,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 22,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 7,
+      "sha256": "d82f703b8318c20a1c4addd88777f3c1cc83dfd20ff1ddf6422ee5c2ae0025cc",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 201,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 201,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 8,
+      "sha256": "1cc52675ba28a5a2fedecaf6363a21e7b28e8338dba2172ba1b4c7b2c0fcfef1",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 8,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 8,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 9,
+      "sha256": "2a1d22a379aaa58267fabed7b7af36ed1d7dff8c8474ee02b4cdade5d3be74db",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 10,
+      "sha256": "6d2390049ecd4f87d46604e858a42d31e7d71ea7b67036801c9d6a5c32d041cc",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 4,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 11,
+      "sha256": "bafce10ae5a1a2d1924a79bb0e83cff4e3f883e98443e1e2e3d3c009e31408a5",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 12,
+      "sha256": "cb95442baf964c6eaf0cddf92a03893c03dc7b3e74e6a6208ca22a768ec007b3",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 10,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 10,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 13,
+      "sha256": "318269c8a7f5050b56d0e967e5e94d38a4ca1d49e3176775bfa017f8dd406230",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 14,
+      "sha256": "21a5831729bc8d800a678cf7c1d938c5fca01b5129ef2f9ff8665f35c2365e60",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 15,
+      "sha256": "5e874943a321f31b24e83ff17919d76c391c474fe44e944b2c041fb2ed5dd915",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 4,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 16,
+      "sha256": "34798c62ada0c1e158f74a74e0521a97e75ba5dfcec1b6370d44c52d6562b43b",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 4,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 17,
+      "sha256": "3d69206e512d633fdaa57251fc56ae52703238c462df19d47fc5add9b5c24d6a",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 18,
+      "sha256": "21e01d69b2097625f9901c69d331f5fb4647ae3953ee79f107865bd82034241d",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 4,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    }
+  ],
+  "cases": [
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.arch.ScheduledLockRuleNegativeTest",
+      "method": "ruleFailsWhenScheduledMethodHasNoLockOrWaiver",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/arch/ScheduledLockRuleNegativeTest.java",
+      "sourceSha256": "d1f324d5ddf2dd19ff56df25601952c2ef5d453eb7c485082b54aa94dcff45de"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": null,
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.config.SchedulingConfigStructureTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/config/SchedulingConfigStructureTest.java",
+      "sourceSha256": "8a4d58e00aa6773d376050f5dbabec983d0672b7d875679a425bd5e6dd834abd"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.config.SchedulingConfigStructureTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/config/SchedulingConfigStructureTest.java",
+      "sourceSha256": "8a4d58e00aa6773d376050f5dbabec983d0672b7d875679a425bd5e6dd834abd"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 16,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 17,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 18,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 19,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 20,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 21,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 22,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityGoldenTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityGoldenTest.java",
+      "sourceSha256": "bd8e0d75d9e52e831d9c46d538a3d5d9838a36bf5731ff0bbb84e45a19889497"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 16,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 17,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 18,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 19,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 20,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 21,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 22,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 23,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 24,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 25,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 26,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 27,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 28,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 29,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 30,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 31,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 32,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 33,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 34,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 35,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 36,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 37,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 38,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 39,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 40,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 41,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 42,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 43,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 44,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 45,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 46,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 47,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 48,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 49,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 50,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 51,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 52,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 53,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 54,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 55,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 56,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 57,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 58,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 59,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 60,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 61,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 62,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 63,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 64,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 65,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 66,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 67,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 68,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 69,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 70,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 71,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 72,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 73,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 74,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 75,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 76,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 77,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 78,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 79,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 80,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 81,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 82,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 83,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 84,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 85,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 86,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 87,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 88,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 89,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 90,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 91,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 92,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 93,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 94,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 95,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 96,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 97,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 98,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 99,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 100,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 101,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 102,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 103,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 104,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 105,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 106,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 107,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 108,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 109,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 110,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 111,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 112,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 113,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 114,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 115,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 116,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 117,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 118,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 119,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 120,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 121,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 122,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 123,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 124,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 125,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 126,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 127,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 128,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 129,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 130,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 131,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 132,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 133,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 134,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 135,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 136,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 137,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 138,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 139,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 140,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 141,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 142,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 143,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 144,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 145,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 146,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 147,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 148,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 149,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 150,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 151,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 152,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 153,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 154,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 155,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 156,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 157,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 158,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 159,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 160,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 161,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 162,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 163,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 164,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 165,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 166,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 167,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 168,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 169,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 170,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 171,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 172,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 173,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 174,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 175,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 176,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 177,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 178,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 179,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 180,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 181,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 182,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 183,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 184,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 185,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 186,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 187,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 188,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 189,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 190,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 191,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 192,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 193,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 194,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 195,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 196,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 197,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 198,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 199,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 200,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 201,
+      "classname": "ru.rutcampustrack.schedule.golden.WeekParityPropertyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/golden/WeekParityPropertyTest.java",
+      "sourceSha256": "777f1908f981ab8b9a23bf36ad039d4b74899b57dd6627353ea512d3075a0912"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+      "method": "missingConfigurationAlsoDeniesCommitMethod",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+      "sourceSha256": "d44ac9bcdc322d9e3bbdd6c6cb01f8f1850fbb281e2a38069bdb98ba81df8415"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+      "method": "explicitSpringRegistrationWorksWithoutStartingTheApplication",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+      "sourceSha256": "d44ac9bcdc322d9e3bbdd6c6cb01f8f1850fbb281e2a38069bdb98ba81df8415"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+      "method": "missingConfigurationDeniesOnlyReservedMethod",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+      "sourceSha256": "d44ac9bcdc322d9e3bbdd6c6cb01f8f1850fbb281e2a38069bdb98ba81df8415"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+      "method": "validAcademicCredentialAlsoProtectsCommitMethod",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+      "sourceSha256": "d44ac9bcdc322d9e3bbdd6c6cb01f8f1850fbb281e2a38069bdb98ba81df8415"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+      "method": "concurrentCallsKeepVerifiedContextBoundToEachCall",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+      "sourceSha256": "d44ac9bcdc322d9e3bbdd6c6cb01f8f1850fbb281e2a38069bdb98ba81df8415"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+      "method": "unrelatedMethodRetainsExistingAdmission",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+      "sourceSha256": "d44ac9bcdc322d9e3bbdd6c6cb01f8f1850fbb281e2a38069bdb98ba81df8415"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+      "method": "homeworkRecoveryMethodsRequireDirectedAcademicIdentityAndTls",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+      "sourceSha256": "d44ac9bcdc322d9e3bbdd6c6cb01f8f1850fbb281e2a38069bdb98ba81df8415"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.grpc.AssignmentCloseServiceIdentityInterceptorTest",
+      "method": "validAcademicCredentialBindsAcademicPrincipal",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/grpc/AssignmentCloseServiceIdentityInterceptorTest.java",
+      "sourceSha256": "d44ac9bcdc322d9e3bbdd6c6cb01f8f1850fbb281e2a38069bdb98ba81df8415"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.item.ScheduleItemEntityTest",
+      "method": "scheduleItem_stillHasCoreSlotFields",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemEntityTest.java",
+      "sourceSha256": "68a28f7b96972b87424405a8cb0be93bee5d699c618f2ab854e8e71469b7c2b3"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.item.ScheduleItemEntityTest",
+      "method": "scheduleItem_hasNoTeacherIdField",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemEntityTest.java",
+      "sourceSha256": "68a28f7b96972b87424405a8cb0be93bee5d699c618f2ab854e8e71469b7c2b3"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.item.ScheduleItemSecurityTest",
+      "method": "requireHeadmanForGroup_headmanOfCorrectGroup_allowed",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java",
+      "sourceSha256": "e0adce82b77baf57613b92b0c42fce6e5c7ff96898629a07b8426077fff0c3c2"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.item.ScheduleItemSecurityTest",
+      "method": "requireHeadmanForGroup_notHeadman_throws403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java",
+      "sourceSha256": "e0adce82b77baf57613b92b0c42fce6e5c7ff96898629a07b8426077fff0c3c2"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.item.ScheduleItemSecurityTest",
+      "method": "requireHeadmanForGroup_headmanOfWrongGroup_throws403",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java",
+      "sourceSha256": "e0adce82b77baf57613b92b0c42fce6e5c7ff96898629a07b8426077fff0c3c2"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.item.ScheduleItemSecurityTest",
+      "method": "requireHeadmanForGroup_adminBypasses",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/item/ScheduleItemSecurityTest.java",
+      "sourceSha256": "e0adce82b77baf57613b92b0c42fce6e5c7ff96898629a07b8426077fff0c3c2"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonControllerTransferTest",
+      "method": "errorConflictResponseRetainsTransferBody",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonControllerTransferTest.java",
+      "sourceSha256": "4039958a337c230b3bf763b85c728040fb30df22ed05b7a199d3ef3d3d966d38"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+      "method": "regenerateFromDate_cannotDeleteRetainedPhysicalHistory",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+      "sourceSha256": "f76b5949657a79a1ed3812af3226c469a7838a8176f69ae5803677c3c6e5b211"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+      "method": "computeLessonDates_evenTemplate_firstWeekOdd_returnsEvenWeekDates",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+      "sourceSha256": "f76b5949657a79a1ed3812af3226c469a7838a8176f69ae5803677c3c6e5b211"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+      "method": "computeLessonDates_oddTemplate_firstWeekEven_returnsSameIsoOddDates",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+      "sourceSha256": "f76b5949657a79a1ed3812af3226c469a7838a8176f69ae5803677c3c6e5b211"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+      "method": "computeLessonDates_oddTemplate_firstWeekOdd_returnsOddWeekDates",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+      "sourceSha256": "f76b5949657a79a1ed3812af3226c469a7838a8176f69ae5803677c3c6e5b211"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+      "method": "generateLessons_rejectsLegacyAllWeeksTemplateWithoutMutation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+      "sourceSha256": "f76b5949657a79a1ed3812af3226c469a7838a8176f69ae5803677c3c6e5b211"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+      "method": "computeLessonDates_semesterStartsSunday_firstLessonIsNextMonday",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+      "sourceSha256": "f76b5949657a79a1ed3812af3226c469a7838a8176f69ae5803677c3c6e5b211"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+      "method": "computeLessonDates_evenTemplate_firstWeekEven_returnsSameIsoEvenDates",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+      "sourceSha256": "f76b5949657a79a1ed3812af3226c469a7838a8176f69ae5803677c3c6e5b211"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+      "method": "generateLessons_rejectsLegacyOddTemplateWithoutMutation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+      "sourceSha256": "f76b5949657a79a1ed3812af3226c469a7838a8176f69ae5803677c3c6e5b211"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+      "method": "computeLessonDates_noMatchingDayInRange_returnsEmpty",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+      "sourceSha256": "f76b5949657a79a1ed3812af3226c469a7838a8176f69ae5803677c3c6e5b211"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonGenerationServiceTest",
+      "method": "computeLessonDates_allWeekType_returnsEveryMatchingDay",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonGenerationServiceTest.java",
+      "sourceSha256": "f76b5949657a79a1ed3812af3226c469a7838a8176f69ae5803677c3c6e5b211"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonSlotTest",
+      "method": "optionalLegacyTimePairMustMatchTheSelectedSlotExactly",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonSlotTest.java",
+      "sourceSha256": "287497de9f970d68a376f781dce7b07685447cbf1c32d292798f3b9ffdb3b60b"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.lesson.LessonSlotTest",
+      "method": "eightOrderedMoscowSlotsHaveExactTimesAndDoNotOverlap",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/lesson/LessonSlotTest.java",
+      "sourceSha256": "287497de9f970d68a376f781dce7b07685447cbf1c32d292798f3b9ffdb3b60b"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.migration.MigrationConcurrentlyTest",
+      "method": "unsupportedIndexIdentifiersCannotBypassOnlineGuard",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/MigrationConcurrentlyTest.java",
+      "sourceSha256": "795fb2f451e837f784c6856627daf0b891ba5cff1d62380016ec825345cdedbe"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.migration.MigrationConcurrentlyTest",
+      "method": null,
+      "status": "PASSED",
+      "identity": "ORDINAL_ONLY",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/migration/MigrationConcurrentlyTest.java",
+      "sourceSha256": "795fb2f451e837f784c6856627daf0b891ba5cff1d62380016ec825345cdedbe"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.recurring.RecurringDateCalculatorTest",
+      "method": "parityUsesIsoWeekWithoutSemesterRelativeRewrite",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringDateCalculatorTest.java",
+      "sourceSha256": "8702d2bc0b79f59d96baa5886931c7bfa127b3f0c41872e74d3e3e5366fe87eb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.recurring.RecurringDateCalculatorTest",
+      "method": "bothGeneratorsPreserveIsoYearBoundaryIncludingWeek53",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringDateCalculatorTest.java",
+      "sourceSha256": "8702d2bc0b79f59d96baa5886931c7bfa127b3f0c41872e74d3e3e5366fe87eb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.recurring.RecurringDateCalculatorTest",
+      "method": "semesterEndIsInclusiveWhenItFallsOnTheRequestedWeekday",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringDateCalculatorTest.java",
+      "sourceSha256": "8702d2bc0b79f59d96baa5886931c7bfa127b3f0c41872e74d3e3e5366fe87eb"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.recurring.RecurringDateCalculatorTest",
+      "method": "midpointCreationKeepsEarlierSemesterDatesAndStopsAtExclusiveCap",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringDateCalculatorTest.java",
+      "sourceSha256": "8702d2bc0b79f59d96baa5886931c7bfa127b3f0c41872e74d3e3e5366fe87eb"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.recurring.RecurringLifecycleGateTest",
+      "method": "subjectCascadeRefusesRetainedCanonicalHistoryBeforeEventsOrDeletes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringLifecycleGateTest.java",
+      "sourceSha256": "5c8673bb010c42d2e3cfb7e441fe7a5bec8c8d6d1d109205184804db349dec39"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.recurring.RecurringLifecycleGateTest",
+      "method": "canonicalRestoreUsesTransactionalLifecycleWriter",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringLifecycleGateTest.java",
+      "sourceSha256": "5c8673bb010c42d2e3cfb7e441fe7a5bec8c8d6d1d109205184804db349dec39"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.recurring.RecurringLifecycleGateTest",
+      "method": "updateAndDeleteAreGatedAfterAuthorizationWithoutMutation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringLifecycleGateTest.java",
+      "sourceSha256": "5c8673bb010c42d2e3cfb7e441fe7a5bec8c8d6d1d109205184804db349dec39"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.recurring.RecurringLifecycleGateTest",
+      "method": "legacyGenerationMethodsFailClosedBeforeAnyRepositoryMutation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringLifecycleGateTest.java",
+      "sourceSha256": "5c8673bb010c42d2e3cfb7e441fe7a5bec8c8d6d1d109205184804db349dec39"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.recurring.RecurringScheduleItemCoordinatorTest",
+      "method": "activeGroupResponseForAnotherIdIsRejectedBeforeLocalWriter",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/recurring/RecurringScheduleItemCoordinatorTest.java",
+      "sourceSha256": "10502176d9c1e507bf22a23ca0f17ef009ce93c1781b2811c94df865bafb3c6b"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.schedule.week.AcademicWeekPolicyControllerTest",
+      "method": "dateIsRequiredAndInvalidDatesAreBadRequests",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/week/AcademicWeekPolicyControllerTest.java",
+      "sourceSha256": "c08cf62b01dba0cff7ee8eb0b5018205b1171bcd130783a061cf4f0d79f3871f"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.schedule.week.AcademicWeekPolicyControllerTest",
+      "method": "signedAdminTeacherStudentAndHeadmanCanReadMetadataWithoutGroupScope",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/week/AcademicWeekPolicyControllerTest.java",
+      "sourceSha256": "c08cf62b01dba0cff7ee8eb0b5018205b1171bcd130783a061cf4f0d79f3871f"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.schedule.week.AcademicWeekPolicyControllerTest",
+      "method": "isoYearBoundaryAndWeek53ReturnConsistentSelectedWeekAndCatalog",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/week/AcademicWeekPolicyControllerTest.java",
+      "sourceSha256": "c08cf62b01dba0cff7ee8eb0b5018205b1171bcd130783a061cf4f0d79f3871f"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.schedule.week.AcademicWeekPolicyControllerTest",
+      "method": "unsignedLegacyAndWrongSignerCannotReadMetadata",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/week/AcademicWeekPolicyControllerTest.java",
+      "sourceSha256": "c08cf62b01dba0cff7ee8eb0b5018205b1171bcd130783a061cf4f0d79f3871f"
+    }
+  ],
+  "summary": {
+    "PASSED": 272,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  }
+}

@@ -1,0 +1,698 @@
+{
+  "q03_multirole_logoutall": {
+    "goal": "One real Vue multirole transition: selected STUDENT suspended, unaffected TEACHER reads assigned lesson; ready UI logout-all denies both current sessions.",
+    "context": {
+      "base": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "branch": "codex/q03-multirole-logoutall-20261014",
+      "selected_model": "gpt-6.1-sol/high",
+      "actual": "UNKNOWN",
+      "finite_auth_receipt": "docs/validation/cloud-20261011/receipts/Q03-existing-finite-auth-proof-reuse.safe.json"
+    },
+    "scope": {
+      "modified": [
+        "tests/e2e/specs/mobile-real-server.spec.ts",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts"
+      ],
+      "source_before_checks": {
+        "tests/e2e/specs/mobile-real-server.spec.ts": "049d30fff2467ce9c7dca84c6e885449f7bfcb4c53a263b4e219d9ece34502e2",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts": "1667f79863b18ec9991c1896a78b3122d5baf756561e47105390e080f427f8f2"
+      },
+      "old_nine_prefix_preserved": true
+    },
+    "required_behavior": "Live old STUDENT access403 WRONG_ROLE; real refresh clears selection and exposes suspended STUDENT/active TEACHER; UI teacher selection and assigned read200; two isolated current cookie sessions shown; UI logout-all204; both old access and captured old refresh proofs401; fresh teacher read preserves lesson+roster; browser login/no protected navigation.",
+    "constraints": "Append one case only; old nine body/declaration lines unchanged; privacy out-of-range literal only; no product/common fixture/workflow/config writes. Separate cookie context finally disposed; tokens/cookies RAM only, boolean data comparison, no body output.",
+    "existing_patterns": "MobileDataset real roles API, loginPwa/selectPwaRole/admit, ready Profile/SessionsScreen logout-all; unchanged private artifact fixture and safe error sanitizer. Snapshot clears selected unavailable role; admission role guard precedes version guard; Gateway maps ROLE_NOT_SELECTABLE to403 WRONG_ROLE. Data equality excludes current serverNow metadata.",
+    "acceptance": "SOURCE_LOCAL_PASS; formatter exact idempotency/TSC passed, corrected exact-bound privacy controls passed; old9prefix bytes unchanged; real browser/backend journey NOT_RUN; independent whole review pending.",
+    "verification": {
+      "status": "PASS",
+      "prior_attempt": {
+        "updated_utc": "2026-10-14T03:10:49.584910+00:00",
+        "status": "FAIL",
+        "planned": "Existing b78 bounded cached Node Prettier apply/idempotency/check, real-mobile TSC, unchanged browser-free privacy controls; fresh120s actual start and existing resource caps. No browser/server/Docker/network.",
+        "issued_utc": "2026-10-14T03:11:50.060870+00:00",
+        "stop_utc": "2026-10-14T03:13:50.060870+00:00",
+        "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+        "source_before_checks": {
+          "tests/e2e/specs/mobile-real-server.spec.ts": "049d30fff2467ce9c7dca84c6e885449f7bfcb4c53a263b4e219d9ece34502e2",
+          "tests/e2e/artifact-controls/privacy.control.spec.ts": "1667f79863b18ec9991c1896a78b3122d5baf756561e47105390e080f427f8f2"
+        },
+        "checks": [
+          {
+            "phase": "FORMAT_APPLY",
+            "seconds": 1.66,
+            "direct_pid": 624494,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 624494,
+                "start_ticks": 20130302
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "FORMAT_IDEMPOTENCY",
+            "seconds": 1.82,
+            "direct_pid": 624505,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 624505,
+                "start_ticks": 20130466
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "FORMAT_CHECK",
+            "seconds": 1.64,
+            "direct_pid": 624517,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 624517,
+                "start_ticks": 20130653
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "REAL_MOBILE_TSC",
+            "seconds": 5.1,
+            "direct_pid": 624528,
+            "native_exit": 0,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 624528,
+                "start_ticks": 20130813
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": true
+          },
+          {
+            "phase": "EXISTING_PRIVACY_CONTROLS",
+            "seconds": 40.78,
+            "direct_pid": 624535,
+            "native_exit": 1,
+            "terminal_reason": "NATIVE_TERMINAL",
+            "signal_count": 0,
+            "settled": true,
+            "all_owned_processes_reaped": true,
+            "all_members_including_Z_after": [],
+            "known_owned_identities": [
+              {
+                "pid": 624535,
+                "start_ticks": 20131325
+              },
+              {
+                "pid": 624542,
+                "start_ticks": 20131357
+              },
+              {
+                "pid": 624555,
+                "start_ticks": 20131587
+              },
+              {
+                "pid": 624568,
+                "start_ticks": 20131744
+              },
+              {
+                "pid": 624582,
+                "start_ticks": 20131880
+              },
+              {
+                "pid": 624599,
+                "start_ticks": 20131985
+              },
+              {
+                "pid": 624663,
+                "start_ticks": 20135109
+              },
+              {
+                "pid": 624676,
+                "start_ticks": 20135223
+              }
+            ],
+            "adopted_waitpid_receipts": [],
+            "supervision_error_type": null,
+            "phase_success": false
+          }
+        ],
+        "native_runs": 5,
+        "native_seconds": 51.0,
+        "failure_class": "RuntimeError:PHASE_FAILED_EXISTING_PRIVACY_CONTROLS",
+        "peaks": {
+          "rss": 359653376,
+          "shared": 7108333568
+        },
+        "births": [
+          {
+            "pid": 624494,
+            "start_ticks": 20130302
+          },
+          {
+            "pid": 624505,
+            "start_ticks": 20130466
+          },
+          {
+            "pid": 624517,
+            "start_ticks": 20130653
+          },
+          {
+            "pid": 624528,
+            "start_ticks": 20130813
+          },
+          {
+            "pid": 624535,
+            "start_ticks": 20131325
+          },
+          {
+            "pid": 624542,
+            "start_ticks": 20131357
+          },
+          {
+            "pid": 624555,
+            "start_ticks": 20131587
+          },
+          {
+            "pid": 624568,
+            "start_ticks": 20131744
+          },
+          {
+            "pid": 624582,
+            "start_ticks": 20131880
+          },
+          {
+            "pid": 624599,
+            "start_ticks": 20131985
+          },
+          {
+            "pid": 624663,
+            "start_ticks": 20135109
+          },
+          {
+            "pid": 624676,
+            "start_ticks": 20135223
+          }
+        ],
+        "known_births_absent": true,
+        "dependency_link_absent": true,
+        "private_tmp_absent": true,
+        "source_pins_final": {
+          "tests/e2e/specs/mobile-real-server.spec.ts": "bea921872777b4969e2915097c4328b35b5061bc1797a8489ae3a0d9a857c8f2",
+          "tests/e2e/artifact-controls/privacy.control.spec.ts": "873cc8fd3c6f0e380f15f1b2d25a1f341e2a739a73fb5739cca1dce34a76b00b"
+        },
+        "old_nine_case_prefix_byte_equal": true,
+        "effective_linecount": 982,
+        "privacy_bound": 983
+      },
+      "concrete_failure": "Author postformatter overly broad regex changed valid public source frames91/102 and other invalid fixtures to983; source control counterexample confirmed in diff. Not product/privacy implementation failure. Restored exact10ab control and replaced ONLY out-of-range823 with983.",
+      "source_pins_corrected": {
+        "tests/e2e/specs/mobile-real-server.spec.ts": "bea921872777b4969e2915097c4328b35b5061bc1797a8489ae3a0d9a857c8f2",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts": "58e89bb2aebfe75191519e224d9fa275a4affc9833840806ea2ffc9b00b91187"
+      },
+      "unchanged_pass_reused": "Formatter apply/exact idempotency and real-mobile TSC passed; exact spec bytes unchanged. Only corrected control formatter check +existing privacy control needed.",
+      "issued_utc": "2026-10-14T03:13:49.568282+00:00",
+      "stop_utc": "2026-10-14T03:15:49.568282+00:00",
+      "checks": [
+        {
+          "phase": "CORRECTED_FORMAT_CHECK",
+          "seconds": 1.09,
+          "direct_pid": 624867,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 624867,
+              "start_ticks": 20142251
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        {
+          "phase": "CORRECTED_PRIVACY_CONTROLS",
+          "seconds": 36.95,
+          "direct_pid": 624926,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 624926,
+              "start_ticks": 20142360
+            },
+            {
+              "pid": 624933,
+              "start_ticks": 20142365
+            },
+            {
+              "pid": 624949,
+              "start_ticks": 20142567
+            },
+            {
+              "pid": 624969,
+              "start_ticks": 20142727
+            },
+            {
+              "pid": 624982,
+              "start_ticks": 20142806
+            },
+            {
+              "pid": 625035,
+              "start_ticks": 20145879
+            },
+            {
+              "pid": 625048,
+              "start_ticks": 20145958
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      ],
+      "privacy_control_closed": {
+        "state": "PRIVACY_BOUNDARIES_PASSED",
+        "normalChildStatus": 0,
+        "markerAbsent": true,
+        "producerBoundary": {
+          "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+          "markerAbsent": true,
+          "failureRetained": true,
+          "attachmentNotYetCreated": true,
+          "interrupted": false
+        },
+        "originalMetadataLeakReproduced": true,
+        "expectedFailureRetained": true,
+        "successRetained": true,
+        "guardControl": {
+          "canonicalReporterAccepted": true,
+          "sameBasenameAlternateRejected": true,
+          "extraReporterRejected": true,
+          "traceRejected": true,
+          "videoRejected": true,
+          "screenshotRejected": true,
+          "missingSnapshotGuardRejected": true,
+          "wrongSnapshotGuardRejected": true
+        },
+        "interruptedChildStatus": 0,
+        "interruptedChildSignal": null,
+        "interruptionBoundary": {
+          "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+          "markerAbsent": true,
+          "failureRetained": true,
+          "attachmentNotYetCreated": true,
+          "interrupted": true
+        },
+        "interruptionPassed": true,
+        "missingGuardRejectedBeforeOperation": true,
+        "browser": "NOT_STARTED"
+      },
+      "native_runs": 2,
+      "native_seconds": 38.04,
+      "failure_class": null,
+      "peaks": {
+        "rss": 396496896,
+        "shared": 5905313792
+      },
+      "births": [
+        {
+          "pid": 624867,
+          "start_ticks": 20142251
+        },
+        {
+          "pid": 624926,
+          "start_ticks": 20142360
+        },
+        {
+          "pid": 624933,
+          "start_ticks": 20142365
+        },
+        {
+          "pid": 624949,
+          "start_ticks": 20142567
+        },
+        {
+          "pid": 624969,
+          "start_ticks": 20142727
+        },
+        {
+          "pid": 624982,
+          "start_ticks": 20142806
+        },
+        {
+          "pid": 625035,
+          "start_ticks": 20145879
+        },
+        {
+          "pid": 625048,
+          "start_ticks": 20145958
+        }
+      ],
+      "known_births_absent": true,
+      "dependency_link_absent": true,
+      "private_tmp_absent": true,
+      "source_pins_final": {
+        "tests/e2e/specs/mobile-real-server.spec.ts": "bea921872777b4969e2915097c4328b35b5061bc1797a8489ae3a0d9a857c8f2",
+        "tests/e2e/artifact-controls/privacy.control.spec.ts": "58e89bb2aebfe75191519e224d9fa275a4affc9833840806ea2ffc9b00b91187"
+      },
+      "old_nine_case_prefix_byte_equal": true,
+      "effective_linecount": 982,
+      "privacy_bound": 983,
+      "active_hooks": [],
+      "hooks_bypassed": false,
+      "old_nine_case_lines": [
+        14,
+        61,
+        160,
+        230,
+        257,
+        298,
+        316,
+        405,
+        451
+      ],
+      "new_case_line": 824,
+      "runtime": "NOT_RUN",
+      "independent_review": "APPROVE_SOURCE_LOCAL reported by Root; approved3f304 body byteequal in coherent package.",
+      "commit": "3f3047807594c002792b24ce63af490097ef8d5d",
+      "normal_commit_native_exit": 0,
+      "worktree_clean": true,
+      "updated_utc": "2026-10-14T03:15:03.223046+00:00",
+      "total_node_runs": 7,
+      "total_node_seconds": 89.04
+    },
+    "do_not": "No new auth policy/role defaults/rememberMe/TTL; D002 unchanged; B013/B014 frozen, no equivalent; Q012 excluded; no whole-family PASS/redundant Auth replay/new wrappers/review campaigns."
+  },
+  "q04_candidate_response_correction": {
+    "status": "COHERENT_SOURCE_LOCAL_PASS",
+    "updated_utc": "2026-10-14T03:23:18.981548+00:00",
+    "base": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+    "branch": "codex/q03-q04-client-journeys-20261014",
+    "actual_red": {
+      "receipt": "docs/validation/cloud-20261011/receipts/current-10ab-admin-lifecycle.safe.json",
+      "run": 38503763478,
+      "artifact": 11867197219,
+      "case": 451,
+      "reported_frame": 618,
+      "duration_ms": 2731,
+      "error_count": 1,
+      "runtime_body_and_order": "UNKNOWN"
+    },
+    "source_counterexample": "Opening headman editor fetches roster, sets currentHeadmanId as selected and automatically fetches its preview. Subsequent select fetches chosen-candidate preview. Existing path+GET waiter accepts either. DTO candidateId canonical and service maps candidate.id correctly.",
+    "correction": "Existing response waiter now requires exact studentId query for created candidate, retaining status200, currentHeadman/candidate/helper-count assertions and real replacement/revocation/history tail.",
+    "source_pins_before_checks": {
+      "tests/e2e/specs/mobile-real-server.spec.ts": "ad6b41c3ef7616ab66f30d5f66a6e80f7ea1b5afb52035c8e01cffc26c94c6fe",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts": "44b76558668137810331990166f8a76f2ed47e97f87f862b4370f09c13d43bb8"
+    },
+    "planned_checks": "Same b78 fresh120s, cached scoped Prettier apply/exact idempotency/check and real-mobile TSC. Existing privacy PASS reused: only exact out-of-range parameter823→824, guards/reporter unchanged. No browser/backend/network.",
+    "runtime_after": "NOT_RUN",
+    "review": "SAME_Q04_REVIEWER_TARGETED_RECHECK_PENDING",
+    "issued_utc": "2026-10-14T03:20:47.992317+00:00",
+    "stop_utc": "2026-10-14T03:22:47.992317+00:00",
+    "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+    "failure_class": null,
+    "peaks": {
+      "rss": 325087232,
+      "shared": 5858910208
+    },
+    "births": [
+      {
+        "pid": 626862,
+        "start_ticks": 20184093
+      },
+      {
+        "pid": 626874,
+        "start_ticks": 20184205
+      },
+      {
+        "pid": 626885,
+        "start_ticks": 20184288
+      },
+      {
+        "pid": 626896,
+        "start_ticks": 20184366
+      }
+    ],
+    "known_births_absent": true,
+    "dependency_link_absent": true,
+    "private_tmp_absent": true,
+    "source_pins_final": {
+      "tests/e2e/specs/mobile-real-server.spec.ts": "3b320d32e7f65f8532cb5d3d43cd2694fc2d78e2a775813bb984d4c4d6e66ea2",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts": "ee05a0aa84184c9dbf9add676fe19ff2ed5bf19704724a87e6aa90d11a224f4d"
+    },
+    "effective_linecount": 823,
+    "privacy_bound": 824,
+    "existing_privacy_PASS_reused": "Unchanged control semantics/guards/reporters; only pure out-of-range literal effective+1.",
+    "q03_approved_commit": "3f3047807594c002792b24ce63af490097ef8d5d",
+    "q03_body_byte_equal": true,
+    "old_eight_prefix_byte_equal": true,
+    "exact_only_difference_from_q03": "One studentId query predicate in existing Q04 body and single out-of-range983→984 parameter.",
+    "source_pins_coherent_before_final_checks": {
+      "tests/e2e/specs/mobile-real-server.spec.ts": "3b320d32e7f65f8532cb5d3d43cd2694fc2d78e2a775813bb984d4c4d6e66ea2",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts": "ee05a0aa84184c9dbf9add676fe19ff2ed5bf19704724a87e6aa90d11a224f4d"
+    },
+    "effective_linecount_coherent": 983,
+    "privacy_bound_coherent": 984,
+    "q03_case_line": 825,
+    "q04_only_checks": [
+      {
+        "phase": "FORMAT_APPLY",
+        "seconds": 1.09,
+        "direct_pid": 626862,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 626862,
+            "start_ticks": 20184093
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "FORMAT_IDEMPOTENCY",
+        "seconds": 0.82,
+        "direct_pid": 626874,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 626874,
+            "start_ticks": 20184205
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "FORMAT_CHECK",
+        "seconds": 0.78,
+        "direct_pid": 626885,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 626885,
+            "start_ticks": 20184288
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "REAL_MOBILE_TSC",
+        "seconds": 2.9,
+        "direct_pid": 626896,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 626896,
+            "start_ticks": 20184366
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "q04_only_native_runs": 4,
+    "q04_only_native_seconds": 5.59,
+    "issued_utc_final": "2026-10-14T03:22:44.317799+00:00",
+    "stop_utc_final": "2026-10-14T03:24:44.317799+00:00",
+    "final_checks": [
+      {
+        "phase": "COHERENT_FORMAT_CHECK",
+        "seconds": 1.05,
+        "direct_pid": 627413,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 627413,
+            "start_ticks": 20195725
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "COHERENT_REAL_MOBILE_TSC",
+        "seconds": 2.74,
+        "direct_pid": 627424,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 627424,
+            "start_ticks": 20195829
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      {
+        "phase": "EXISTING_BROWSER_FREE_DISCOVERY",
+        "seconds": 2.05,
+        "direct_pid": 627446,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 627446,
+            "start_ticks": 20196104
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    ],
+    "final_discovery": {
+      "case_count": 2,
+      "case_lines": [
+        451,
+        825
+      ],
+      "project": "chromium",
+      "runner_errors": 0,
+      "test_execution": "NOT_RUN",
+      "browser": "NOT_STARTED"
+    },
+    "final_native_runs": 3,
+    "final_native_seconds": 5.84,
+    "final_failure_class": null,
+    "final_peaks": {
+      "rss": 327970816,
+      "shared": 5906771968
+    },
+    "final_births": [
+      {
+        "pid": 627413,
+        "start_ticks": 20195725
+      },
+      {
+        "pid": 627424,
+        "start_ticks": 20195829
+      },
+      {
+        "pid": 627446,
+        "start_ticks": 20196104
+      }
+    ],
+    "final_known_births_absent": true,
+    "final_dependency_link_absent": true,
+    "final_private_tmp_absent": true,
+    "active_hooks": [],
+    "hooks_bypassed": false,
+    "q03_review": "Root reports APPROVE_SOURCE_LOCAL on3f304; exact body preserved; whole review not repeated.",
+    "predicate_counterexample": {
+      "old_accepts_initial": true,
+      "new_rejects_initial": true,
+      "new_accepts_selected": true,
+      "kind": "SOURCE_RAM_URL_COUNTEREXAMPLE_NOT_CURRENT_BODY_OR_PRODUCT_PROOF"
+    },
+    "coherent_commit": "4c4b4f6e92af5f8506bf11472b554542e4133fdf",
+    "commit_chain": [
+      "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+      "3f3047807594c002792b24ce63af490097ef8d5d",
+      "4c4b4f6e92af5f8506bf11472b554542e4133fdf"
+    ],
+    "normal_commit_native_exit": 0,
+    "worktree_clean": true,
+    "total_new_node_runs": 7,
+    "total_new_node_seconds": 11.43
+  }
+}

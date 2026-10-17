@@ -1,0 +1,282 @@
+{
+  "source": "/workspace/scratch/rct-validation/np01_domain_bot/ci731-compatibility",
+  "manifest": "transfer-manifest.safe.json",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "original_sha256": "620db5be40b6bc66de87bb82451280d4f4daccb82ef0e41a1833d2d0f685ff3c",
+      "original_bytes": 2414,
+      "working_sha256": "620db5be40b6bc66de87bb82451280d4f4daccb82ef0e41a1833d2d0f685ff3c",
+      "working_bytes": 2414,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "before-source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "original_sha256": "5944fa5e4b0979d82f957a1e4e7da4e8c01bc48e0b07a2eb3206a30970d2db50",
+      "original_bytes": 8169,
+      "working_sha256": "5944fa5e4b0979d82f957a1e4e7da4e8c01bc48e0b07a2eb3206a30970d2db50",
+      "working_bytes": 8169,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "before-source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java.readable.zip",
+      "working_archive_member": "AcademicFixtureResetListener.java",
+      "working_container_sha256": "b2b3579924a8f5883098a63ad1708dcc6c0859ec8b1f60ecf50193ebc77436b9",
+      "working_container_bytes": 2707
+    },
+    {
+      "path": "before-source/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "original_sha256": "7c98e90a008514ccc9649a6e5db5464f408f1e177a444ebc21284c96bf9d8236",
+      "original_bytes": 43335,
+      "working_sha256": "7c98e90a008514ccc9649a6e5db5464f408f1e177a444ebc21284c96bf9d8236",
+      "working_bytes": 43335,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "before-source/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java.readable.zip",
+      "working_archive_member": "AuthOtpFlowIT.java",
+      "working_container_sha256": "7315af5fc046a39bbbb1b0113efb10bfa87d06d184cbcdf80d6ebb49b4f5a191",
+      "working_container_bytes": 9011
+    },
+    {
+      "path": "before-source/services/notification-bot/bot/__main__.py",
+      "original_sha256": "e1495aa9f21957456529fe5a704f3cc9f8e9e1294fbbe9622e0c0ec84d8f8ce0",
+      "original_bytes": 12351,
+      "working_sha256": "e1495aa9f21957456529fe5a704f3cc9f8e9e1294fbbe9622e0c0ec84d8f8ce0",
+      "working_bytes": 12351,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "before-source/services/notification-bot/bot/__main__.py.readable.zip",
+      "working_archive_member": "__main__.py",
+      "working_container_sha256": "fe04963c8b8390251e98ea99a496fb5cfe00e9ac07af32069107ade13718e690",
+      "working_container_bytes": 3710
+    },
+    {
+      "path": "before-source/services/notification-bot/bot/notifications/password_changed.py",
+      "original_sha256": "e1dd015d606307a153b5ecab315f96266bf40dc6bd75685fdc6dfb90f35f1fb5",
+      "original_bytes": 2345,
+      "working_sha256": "e1dd015d606307a153b5ecab315f96266bf40dc6bd75685fdc6dfb90f35f1fb5",
+      "working_bytes": 2345,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "before-source/services/notification-bot/bot/notifications/password_changed.py.readable.zip",
+      "working_archive_member": "password_changed.py",
+      "working_container_sha256": "7c4601a1a6e52ea0d0bdb8456d81befc36f88f7e466ad10448badb4a937b3b2c",
+      "working_container_bytes": 950
+    },
+    {
+      "path": "before-source/services/notification-bot/tests/np01_bridge_runner.py",
+      "original_sha256": "a7c4f6a8875698785fe9fa8c45e9f6e94830e8c3d96f252f1f640cc11acdbe5f",
+      "original_bytes": 17418,
+      "working_sha256": "a7c4f6a8875698785fe9fa8c45e9f6e94830e8c3d96f252f1f640cc11acdbe5f",
+      "working_bytes": 17418,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "before-source/services/notification-bot/tests/np01_bridge_runner.py.readable.zip",
+      "working_archive_member": "np01_bridge_runner.py",
+      "working_container_sha256": "87adb7c31a880d3eaa3c3f33ffaaca3fea0bb0ec8f3c158fe07874638931d1ba",
+      "working_container_bytes": 4575
+    },
+    {
+      "path": "before-source/services/notification-bot/tests/test_bot_credential_cards.py",
+      "original_sha256": "13e8baaeba999a3be6527b0a4793dc008ae10ebcffb097132c064c9b8e824e99",
+      "original_bytes": 14169,
+      "working_sha256": "13e8baaeba999a3be6527b0a4793dc008ae10ebcffb097132c064c9b8e824e99",
+      "working_bytes": 14169,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "before-source/services/notification-bot/tests/test_bot_credential_cards.py.readable.zip",
+      "working_archive_member": "test_bot_credential_cards.py",
+      "working_container_sha256": "c7bc5b4fae31a4fa8d81c7d4c5e1c1b87126d6b6a1f56307628b56752f66a35e",
+      "working_container_bytes": 3787
+    },
+    {
+      "path": "ci731-before-auth-it-failure-extract.json",
+      "original_sha256": "680128d1657af516a0b632eb1f64ffebee8dfa777b7f0a5bd474b62a6e303942",
+      "original_bytes": 1164,
+      "working_sha256": "680128d1657af516a0b632eb1f64ffebee8dfa777b7f0a5bd474b62a6e303942",
+      "working_bytes": 1164,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "ci731-before-it-academic-xml-diagnostic.json",
+      "original_sha256": "351bf4ace92ef8e4b37f8bc0b3fc252b5e2a761c5180ddefb38d44090e45a4e9",
+      "original_bytes": 5489,
+      "working_sha256": "351bf4ace92ef8e4b37f8bc0b3fc252b5e2a761c5180ddefb38d44090e45a4e9",
+      "working_bytes": 5489,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "ci731-before-safe-it-academic.json",
+      "original_sha256": "1768e8858c10460cd1dca068617982b29e6ca85336f62895ceec5f28704cc591",
+      "original_bytes": 262776,
+      "working_sha256": "1768e8858c10460cd1dca068617982b29e6ca85336f62895ceec5f28704cc591",
+      "working_bytes": 262776,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "ci731-before-safe-it-auth.json",
+      "original_sha256": "a3a3ba500f493f822544a1d97e8e111c2615349c2104b9302fd0d8c4c0c0a27c",
+      "original_bytes": 95902,
+      "working_sha256": "a3a3ba500f493f822544a1d97e8e111c2615349c2104b9302fd0d8c4c0c0a27c",
+      "working_bytes": 95902,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "ci731-original-ruff-diagnostics.safe.json",
+      "original_sha256": "8635e5e767b6d93fae8444208e994fc5ee71d1db319494f3ac060aab0704b300",
+      "original_bytes": 1017,
+      "working_sha256": "8635e5e767b6d93fae8444208e994fc5ee71d1db319494f3ac060aab0704b300",
+      "working_bytes": 1017,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "commit-stat.safe.txt",
+      "original_sha256": "002ed24ad88046635de7910db948244a3c7f6e41811519f6574e2add18dc769b",
+      "original_bytes": 737,
+      "working_sha256": "002ed24ad88046635de7910db948244a3c7f6e41811519f6574e2add18dc769b",
+      "working_bytes": 737,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "corrected-source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "original_sha256": "ba9e35c4105e64a55d71027dc077fa0fee87ca0ffdaa16e1a5de51cfb3183533",
+      "original_bytes": 8208,
+      "working_sha256": "ba9e35c4105e64a55d71027dc077fa0fee87ca0ffdaa16e1a5de51cfb3183533",
+      "working_bytes": 8208,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "corrected-source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java.readable.zip",
+      "working_archive_member": "AcademicFixtureResetListener.java",
+      "working_container_sha256": "fb45289895c0845d4a66d1e417e4e2d630c2696eed2c67f5f23d9636c0238b1d",
+      "working_container_bytes": 2724
+    },
+    {
+      "path": "corrected-source/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "original_sha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb",
+      "original_bytes": 45967,
+      "working_sha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb",
+      "working_bytes": 45967,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "corrected-source/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java.readable.zip",
+      "working_archive_member": "AuthOtpFlowIT.java",
+      "working_container_sha256": "36691819be994a51b1f3e2aeef55aefb0368f7f53581812cad189ed824b59780",
+      "working_container_bytes": 9411
+    },
+    {
+      "path": "corrected-source/services/notification-bot/bot/__main__.py",
+      "original_sha256": "828a2cad57d9124734a429863a7db4513767f0775f3e9e3130d3d39d69f3e7fa",
+      "original_bytes": 12351,
+      "working_sha256": "828a2cad57d9124734a429863a7db4513767f0775f3e9e3130d3d39d69f3e7fa",
+      "working_bytes": 12351,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "corrected-source/services/notification-bot/bot/__main__.py.readable.zip",
+      "working_archive_member": "__main__.py",
+      "working_container_sha256": "31afcb91c7ff47d6b329ce8dd5a7247cb54b29e6ca756a00952293ceb2659012",
+      "working_container_bytes": 3711
+    },
+    {
+      "path": "corrected-source/services/notification-bot/bot/notifications/password_changed.py",
+      "original_sha256": "573b4e1218e27008cdf98b3a9b8d6dae9c354a5783b9fc73899ee6b061eb852a",
+      "original_bytes": 2346,
+      "working_sha256": "573b4e1218e27008cdf98b3a9b8d6dae9c354a5783b9fc73899ee6b061eb852a",
+      "working_bytes": 2346,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "corrected-source/services/notification-bot/bot/notifications/password_changed.py.readable.zip",
+      "working_archive_member": "password_changed.py",
+      "working_container_sha256": "92bd14f8ff4a4913ce96d471b1334481668bd3e96ca4168a68944ad3bbb8ac6f",
+      "working_container_bytes": 950
+    },
+    {
+      "path": "corrected-source/services/notification-bot/tests/np01_bridge_runner.py",
+      "original_sha256": "c91c068b4b157bf267d4791d6920715ef228cf2abec3f950a7367c6794e1e1ca",
+      "original_bytes": 17418,
+      "working_sha256": "c91c068b4b157bf267d4791d6920715ef228cf2abec3f950a7367c6794e1e1ca",
+      "working_bytes": 17418,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "corrected-source/services/notification-bot/tests/np01_bridge_runner.py.readable.zip",
+      "working_archive_member": "np01_bridge_runner.py",
+      "working_container_sha256": "a6b9aeca202d0744fb5335270a0d1a36dce7d8987cd63f58fb7c4d5c93092e26",
+      "working_container_bytes": 4576
+    },
+    {
+      "path": "corrected-source/services/notification-bot/tests/test_bot_credential_cards.py",
+      "original_sha256": "fc6d9f6a8c4bba73b25885758bf55bad0f74abfd42c5b906b3ce2e2b6c128baf",
+      "original_bytes": 14222,
+      "working_sha256": "fc6d9f6a8c4bba73b25885758bf55bad0f74abfd42c5b906b3ce2e2b6c128baf",
+      "working_bytes": 14222,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "corrected-source/services/notification-bot/tests/test_bot_credential_cards.py.readable.zip",
+      "working_archive_member": "test_bot_credential_cards.py",
+      "working_container_sha256": "6fb2c51cb714e7508fd422b7f3da268a3bff2ca292ca452c1d4cd01fea49e8c0",
+      "working_container_bytes": 3802
+    },
+    {
+      "path": "ruff.safe.json",
+      "original_sha256": "e605ff0e77d7d565cb27afb50a6db34f72a74f559e23d4415a184d59377ce82b",
+      "original_bytes": 1353,
+      "working_sha256": "00973f3a3349565438f5ae6c77b4b6330c7a4d4d770fde6b38128518606d3b3b",
+      "working_bytes": 797,
+      "transformation": "lossless exact-original single-member ZIP; original bytes retained, no content editing",
+      "working_path": "ruff.safe.json.readable.zip"
+    },
+    {
+      "path": "scope-before.safe.json",
+      "original_sha256": "004ee74416f74806be47c89dfc62ccb405fcdc0cb1e470e7bf11fc4ba4845b96",
+      "original_bytes": 3129,
+      "working_sha256": "004ee74416f74806be47c89dfc62ccb405fcdc0cb1e470e7bf11fc4ba4845b96",
+      "working_bytes": 3129,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-diff.safe.patch",
+      "original_sha256": "8fbed23009a0cf74c3922c9ff7b58810d9ef3b9343d88a7b65728222b5704ea8",
+      "original_bytes": 10565,
+      "working_sha256": "8fbed23009a0cf74c3922c9ff7b58810d9ef3b9343d88a7b65728222b5704ea8",
+      "working_bytes": 10565,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "source-diff.safe.patch.readable.zip",
+      "working_archive_member": "source-diff.safe.patch",
+      "working_container_sha256": "6d1dd872a1dddf0227ce9dcc9a4a9e2110a94a2c89f79331cedfba5d1d1aba24",
+      "working_container_bytes": 2707
+    },
+    {
+      "path": "source-guards-and-finite-proof-disposition.safe.json",
+      "original_sha256": "340109e1a729125fb6a0f1dd29f3d5582cae77fd852787df7560809bafde904d",
+      "original_bytes": 3683,
+      "working_sha256": "340109e1a729125fb6a0f1dd29f3d5582cae77fd852787df7560809bafde904d",
+      "working_bytes": 3683,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-inventory.safe.json",
+      "original_sha256": "4d934c80913108702ee983151ec8c0b691f2cfe6470caafc6c8e8173fca8b736",
+      "original_bytes": 3582,
+      "working_sha256": "4d934c80913108702ee983151ec8c0b691f2cfe6470caafc6c8e8173fca8b736",
+      "working_bytes": 3582,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "sourcehooks.safe.json",
+      "original_sha256": "2b4d0100dcc58764fe57d09e6d1906ef1b8aeb90479b673ea47ebce48e5abf01",
+      "original_bytes": 2326,
+      "working_sha256": "ad3c03ad197cc2e12c68cc82a3f2cc28271d723ae6285a854991f097c39d63eb",
+      "working_bytes": 1016,
+      "transformation": "lossless exact-original single-member ZIP; original bytes retained, no content editing",
+      "working_path": "sourcehooks.safe.json.readable.zip"
+    },
+    {
+      "path": "verify-source-safe.py",
+      "original_sha256": "e5efe639fd7e82adf5305e7e09d72c7edea1fbd04a209f222ff9d02f84e8b54b",
+      "original_bytes": 6321,
+      "working_sha256": "e5efe639fd7e82adf5305e7e09d72c7edea1fbd04a209f222ff9d02f84e8b54b",
+      "working_bytes": 6321,
+      "transformation": "byte equal; lossless source/machine view",
+      "working_path": "verify-source-safe.py.readable.zip",
+      "working_archive_member": "verify-source-safe.py",
+      "working_container_sha256": "d5bfd88eac05f8c52dd3b1513958295418640b7bd74766a3215a75e60f41c556",
+      "working_container_bytes": 2424
+    },
+    {
+      "path": "transfer-manifest.safe.json",
+      "original_sha256": "5eab90b8cb2965f435141fbe021977eaf30fe090a8493851354f9d3da4c57cf5",
+      "original_bytes": 5386,
+      "working_sha256": "5eab90b8cb2965f435141fbe021977eaf30fe090a8493851354f9d3da4c57cf5",
+      "working_bytes": 5386,
+      "transformation": "external original manifest byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip",
+  "manifest_external": true
+}

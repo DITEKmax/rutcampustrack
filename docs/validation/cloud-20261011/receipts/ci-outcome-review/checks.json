@@ -1,0 +1,52 @@
+{
+  "privacy": {
+    "result": "CHANGES_REQUESTED_CIO01_PATH_BOUNDARY",
+    "lines": [
+      101,
+      112,
+      207,
+      221,
+      23,
+      30,
+      266,
+      273
+    ],
+    "observations": [
+      "Class/method identity derives from tracked Java declarations after strings/comments masking, unknown labels use ordinal-only/null identifiers.",
+      "No raw XML suite/case labels, properties, failure/error messages or stdout/stderr are serialized.",
+      "Only six explicitly selected environment fields; revisions/job/event/outcome/run metadata validated, generic collection error avoids echoing rejected values.",
+      "Only direct file symlinks are rejected. Linked ancestors are not rejected; source path lacks canonical boundary check and XML canonical scope checks whole checkout only. See CIO01."
+    ]
+  },
+  "gates": {
+    "result": "PASS_EXACT_SOURCE_PRESERVATION",
+    "observation": "No test command, trigger, permission, matrix, original step, failure artifact or other workflow change."
+  },
+  "outcomes": {
+    "result": "CHANGES_REQUESTED_CIO01_SOURCE_TASK_SCOPE",
+    "lines": [
+      154,
+      167,
+      177,
+      185,
+      195,
+      255
+    ],
+    "observations": [
+      "Missing/zero cases -> NO_RESULTS; malformed/entity/oversize XML -> UNINSPECTABLE_RESULTS; count inconsistencies/missing nodes -> INCOMPLETE/NOT_EXECUTED.",
+      "Failure/error/skip distinctions preserved; acceptance never changed from NOT_ASSESSED.",
+      "Static source mapping does not itself prove which current method executed; remote fresh XML/readback remains required."
+    ]
+  },
+  "test_quality": {
+    "result": "PASS_BOUNDED_CURRENT_LOGIC_EXCEPT_MISSING_PARENT_LINK_CONTROLS",
+    "control_count": 10,
+    "observations": [
+      "Tests assert meaningful outcome statuses, source identity/hash, exact checkout metadata, unknown/dynamic labels omission and marker absence rather than only function calls.",
+      "Privacy mutation produced actual relevant assertion failures, not syntax/infra; final log10 OK after reported restoration.",
+      "Original raw-control logs intentionally suppress injected marker values; no full credentials required.",
+      "Existing symlink control covers only the final XML file; parent-directory links and source parent links are not tested. Add controls for relevant boundary correction."
+    ]
+  },
+  "unresolved_metadata": "RESOLVED_HONEST_QUALIFICATION: exact argv/terminal provenance retrospectively recovered by author, but all prelaunch source hashes explicitly UNKNOWN. No standalone source-equality acceptance of historical final10; required new fix validation should persist prelaunch source/control hashes and exact terminal results."
+}

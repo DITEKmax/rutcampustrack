@@ -2,26 +2,23 @@ package ru.rutcampustrack.attendance.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 /**
  * Публикует attendance-события в outbox (M02 Группа 5).
  *
- * <p>Раньше шёл прямой {@code rabbitTemplate.convertAndSend(...)}. Теперь
- * envelope сериализуется в JSON и записывается в {@code attendance_outbox}
- * через {@link OutboxStorage}. Публикацию в Rabbit выполняет
- * {@code OutboxPublisherJob} асинхронно (shared-outbox).
+ * <p>Раньше шёл прямой {@code rabbitTemplate.convertAndSend(...)}. Теперь envelope сериализуется в
+ * JSON и записывается в {@code attendance_outbox} через {@link OutboxStorage}. Публикацию в Rabbit
+ * выполняет {@code OutboxPublisherJob} асинхронно (shared-outbox).
  *
- * <p>Caller должен быть {@code @Transactional} (Mongo replica set) — тогда
- * write в outbox атомарен с доменной операцией.
+ * <p>Caller должен быть {@code @Transactional} (Mongo replica set) — тогда write в outbox атомарен
+ * с доменной операцией.
  *
- * <p>Per D-20, D-21, D-22: envelope структура следует
- * {@code event-schemas/attendance.marked.json}.
+ * <p>Per D-20, D-21, D-22: envelope структура следует {@code event-schemas/attendance.marked.json}.
  */
 @Service
 public class AttendanceEventPublisher {
@@ -33,19 +30,45 @@ public class AttendanceEventPublisher {
     private ru.rutcampustrack.attendance.audit.LessonActionService actions;
 
     @org.springframework.beans.factory.annotation.Autowired
-    public void setActions(ru.rutcampustrack.attendance.audit.LessonActionService actions) { this.actions = actions; }
+    public void setActions(ru.rutcampustrack.attendance.audit.LessonActionService actions) {
+        this.actions = actions;
+    }
 
-    public void recordChange(String action, AttendanceDocument before, AttendanceDocument after,
-                             Long actorId, String role, Map<String, Object> ticket) {
+    public void recordChange(
+            String action,
+            AttendanceDocument before,
+            AttendanceDocument after,
+            Long actorId,
+            String role,
+            Map<String, Object> ticket) {
         if (actions != null) actions.mark(action, before, after, actorId, role, ticket);
     }
 
-    public void recordLocal(Long groupId, Long semesterId, Long lessonId, String action,
-                            Map<String, Object> actor, Map<String, Object> student,
-                            Map<String, Object> before, Map<String, Object> after,
-                            Map<String, Object> geo, Map<String, Object> ticket, java.time.Instant at) {
-        if (actions != null) actions.local(groupId, semesterId, lessonId, action, actor, student,
-                before, after, geo, ticket, at);
+    public void recordLocal(
+            Long groupId,
+            Long semesterId,
+            Long lessonId,
+            String action,
+            Map<String, Object> actor,
+            Map<String, Object> student,
+            Map<String, Object> before,
+            Map<String, Object> after,
+            Map<String, Object> geo,
+            Map<String, Object> ticket,
+            java.time.Instant at) {
+        if (actions != null)
+            actions.local(
+                    groupId,
+                    semesterId,
+                    lessonId,
+                    action,
+                    actor,
+                    student,
+                    before,
+                    after,
+                    geo,
+                    ticket,
+                    at);
     }
 
     public AttendanceEventPublisher(OutboxStorage outboxStorage, ObjectMapper objectMapper) {
@@ -56,11 +79,10 @@ public class AttendanceEventPublisher {
     /**
      * Публикует attendance.marked event для документа.
      *
-     * <p>{@code subjectName} — опциональное обогащение для consumer'ов
-     * (NOTIF unification): notification-bot и frontends показывают студенту
-     * "Староста поставил «Х» на паре №N {Предмет}" при manual mark
-     * ({@code marked_by="headman"}). Если null/пусто — поле просто не
-     * появляется в payload, существующие consumer'ы не падают.
+     * <p>{@code subjectName} — опциональное обогащение для consumer'ов (NOTIF unification):
+     * notification-bot и frontends показывают студенту "Староста поставил «Х» на паре №N {Предмет}"
+     * при manual mark ({@code marked_by="headman"}). Если null/пусто — поле просто не появляется в
+     * payload, существующие consumer'ы не падают.
      */
     public void publishMarked(AttendanceDocument doc, String subjectName) {
         Map<String, Object> payload = new LinkedHashMap<>();
@@ -94,8 +116,8 @@ public class AttendanceEventPublisher {
     }
 
     /**
-     * Backward-compat overload — для callers, которые ещё не передают
-     * subjectName (auto-absent через LessonEventService, self check-in).
+     * Backward-compat overload — для callers, которые ещё не передают subjectName (auto-absent
+     * через LessonEventService, self check-in).
      */
     public void publishMarked(AttendanceDocument doc) {
         publishMarked(doc, null);

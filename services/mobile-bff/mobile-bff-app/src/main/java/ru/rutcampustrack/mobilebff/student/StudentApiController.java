@@ -2,6 +2,11 @@ package ru.rutcampustrack.mobilebff.student;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
+import java.util.List;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -18,12 +23,6 @@ import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.LateCh
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Options;
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Page;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
-import java.util.List;
-
 @RestController
 public class StudentApiController implements StudentApi {
     private final StudentQueryService queries;
@@ -31,8 +30,11 @@ public class StudentApiController implements StudentApi {
     private final StudentRequestFacade requests;
     private final ObjectMapper objectMapper;
 
-    public StudentApiController(StudentQueryService queries, StudentCheckinFacade checkins,
-                                StudentRequestFacade requests, ObjectMapper objectMapper) {
+    public StudentApiController(
+            StudentQueryService queries,
+            StudentCheckinFacade checkins,
+            StudentRequestFacade requests,
+            ObjectMapper objectMapper) {
         this.queries = queries;
         this.checkins = checkins;
         this.requests = requests;
@@ -54,59 +56,80 @@ public class StudentApiController implements StudentApi {
         ScheduleResponse result = queries.schedule(Long.parseLong(semesterId));
         String etag = etag(result);
         if (etag.equals(ifNoneMatch)) {
-            return ResponseEntity.status(304).cacheControl(CacheControl.noCache().cachePrivate())
-                    .eTag(etag).build();
+            return ResponseEntity.status(304)
+                    .cacheControl(CacheControl.noCache().cachePrivate())
+                    .eTag(etag)
+                    .build();
         }
-        return ResponseEntity.ok().cacheControl(CacheControl.noCache().cachePrivate()).eTag(etag).body(result);
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noCache().cachePrivate())
+                .eTag(etag)
+                .body(result);
     }
 
     @Override
     public ResponseEntity<StudentAttendanceResponse> getAttendance(String semesterId) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(queries.attendance(Long.parseLong(semesterId)));
     }
 
     @Override
     public ResponseEntity<StudentStatisticsResponse> getStatistics(String semesterId) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(queries.statistics(Long.parseLong(semesterId)));
     }
 
     @Override
     public ResponseEntity<StudentStatisticsRankingResponse> getStatisticsRanking(
             String semesterId, Integer page, Integer size) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(queries.statisticsRanking(Long.parseLong(semesterId), page, size));
     }
 
     @Override
     public ResponseEntity<StudentStatisticsSubjectDetailResponse> getStatisticsSubject(
             String subjectId, String semesterId, String range, List<String> types) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
-                .body(queries.statisticsSubject(Long.parseLong(semesterId), Long.parseLong(subjectId), range, types));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(
+                        queries.statisticsSubject(
+                                Long.parseLong(semesterId),
+                                Long.parseLong(subjectId),
+                                range,
+                                types));
     }
 
     @Override
     public ResponseEntity<HomeworkResponse> getHomework(String from, String to) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(queries.homework(from, to));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(queries.homework(from, to));
     }
 
     @Override
     public ResponseEntity<HomeworkCompletionResponse> setHomeworkCompletion(
             String id, HomeworkCompletionRequest request) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(queries.setHomeworkCompletion(id, request));
     }
 
     @Override
-    public ResponseEntity<CheckinAck> checkin(String lessonId, String idempotencyKey, CheckinRequest request) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+    public ResponseEntity<CheckinAck> checkin(
+            String lessonId, String idempotencyKey, CheckinRequest request) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(checkins.checkin(Long.parseLong(lessonId), idempotencyKey, request));
     }
 
     @Override
     public ResponseEntity<Page> listRequests(Bucket bucket, Integer page, Integer size) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(requests.list(bucket, page, size));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(requests.list(bucket, page, size));
     }
 
     @Override
@@ -120,15 +143,18 @@ public class StudentApiController implements StudentApi {
     }
 
     @Override
-    public ResponseEntity<Detail> submitExcuse(String idempotencyKey, ExcuseRequest request,
-                                               List<MultipartFile> files) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+    public ResponseEntity<Detail> submitExcuse(
+            String idempotencyKey, ExcuseRequest request, List<MultipartFile> files) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(requests.submitExcuse(idempotencyKey, request, files));
     }
 
     @Override
-    public ResponseEntity<Detail> submitLateCheckin(String idempotencyKey, LateCheckinRequest request) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+    public ResponseEntity<Detail> submitLateCheckin(
+            String idempotencyKey, LateCheckinRequest request) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
                 .body(requests.submitLateCheckin(idempotencyKey, request));
     }
 
@@ -149,10 +175,13 @@ public class StudentApiController implements StudentApi {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(contentType);
         headers.setContentLength(download.bytes().length);
-        headers.setContentDisposition(ContentDisposition.attachment()
-                .filename(download.filename(), StandardCharsets.UTF_8).build());
+        headers.setContentDisposition(
+                ContentDisposition.attachment()
+                        .filename(download.filename(), StandardCharsets.UTF_8)
+                        .build());
         headers.setCacheControl(CacheControl.noStore());
-        return new ResponseEntity<>(download.bytes(), headers, org.springframework.http.HttpStatus.OK);
+        return new ResponseEntity<>(
+                download.bytes(), headers, org.springframework.http.HttpStatus.OK);
     }
 
     private String etag(ScheduleResponse response) {

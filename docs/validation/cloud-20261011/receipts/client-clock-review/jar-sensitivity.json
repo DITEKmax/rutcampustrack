@@ -1,0 +1,8 @@
+{
+  "syntheticStructuralZipControlOnly": true,
+  "actualProductionArtifact": false,
+  "nestedInitializerPresent": true,
+  "nestedFilename": "BOOT-INF/lib/educational-support.jar",
+  "currentScannerAcceptedContaminatedArtifact": true,
+  "javaOrGradleStarted": false
+}

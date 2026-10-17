@@ -1,0 +1,14 @@
+{
+  "phase": "SOURCE_DISCOVERY_ONLY",
+  "case_count": 1,
+  "unexpected_case_count": 0,
+  "rows": [
+    {
+      "source": "MOBILE_REAL_SERVER",
+      "line": 367,
+      "project": "chromium"
+    }
+  ],
+  "pass": true,
+  "stepHooksInstalled": true
+}

@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-14T04:45:02.561122+00:00",
+  "base": "fb4a6a0f83bc8f982fa025f22a0625c0059fbfb5",
+  "scope": "Rootsole commonCI selector/wiring + exactauthorfixtures; no product/API/proto/schema/clientUI edits",
+  "source_sha256": {
+    "tests/e2e/playwright.semester-lifecycle.config.ts": "68ab83bb146db745fd39fc0d033a1db9a03b33a4ea5077f4edb6d11560484bce",
+    "tests/e2e/playwright.assignment-lifecycle.config.ts": "cfa219188cde95192b0208aa68094f38f1f2ca537a44f9533803d7c94c941f25",
+    "tests/e2e/fixtures/semester-lifecycle.spec.ts": "b805469c283e71668e5cdc716011cb95d355c31681deacd7e978112552bcec8e",
+    "tests/e2e/fixtures/assignment-lifecycle.spec.ts": "98fe61048de9b24f3dfda1aac0ea981868ab5947ddd4eb9c52fbeeafc29dba18",
+    "tests/e2e/fixtures/mobile-dataset.ts": "f6e20078587394c1a766a837b333f8e1faae8d977e765356f089b71b182d3cc0"
+  },
+  "workflow_sha256": "970fcba46948b771db94408239b5189716aa41ba3b592d47e9ab48ba1fdf78bf",
+  "verification": {
+    "combined_checks": [
+      {
+        "phase": "format-check",
+        "native_pid": 641358,
+        "native_exit": 0,
+        "all_owned_processes_reaped": true
+      },
+      {
+        "phase": "targeted-tsc",
+        "native_pid": 641369,
+        "native_exit": 0,
+        "all_owned_processes_reaped": true
+      }
+    ],
+    "seconds": "NOT_MEASURED",
+    "tmp_removed": true,
+    "inline_Q06_Python_AST": "PASS_NO_EXECUTION",
+    "normal_hooks": "ALL_SIX_PASS",
+    "actual_new_API": "NOT_RUN",
+    "actual_after_Q04browser": "NOT_RUN"
+  },
+  "reviews": [
+    "receipts/Q04-admin-journey-independent-review.safe.md",
+    "receipts/Q05-semester-api-independent-review.safe.md",
+    "receipts/Q06-assignment-api-independent-review.safe.md"
+  ],
+  "runtime_ownership": "Q05 after successfulactualapplicationrecovery/currentsemester privatecheckpoint; Q06 afterQ05success onlytaskownedSchedule stop/restartidentity/health; allfinalcleanup retained",
+  "limits": "No parentfamilypromotion/actualnewAPI claim; samejob30min kept and realelapsedmustbeobserved; Q04 Sourcecause+VMproof but actualoldstalebranchnotcaptured; no hardterminationauthoritycleanupguarantee",
+  "published_commit": "3e89c61b282233f4bda2db693bde939a83968bc2",
+  "commit_paths": 25,
+  "current_remote_readback": "receipts/current-3e89-real-push-readback.safe.json"
+}

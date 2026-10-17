@@ -1,0 +1,100 @@
+{
+  "pass": true,
+  "count": 23,
+  "failed": 0,
+  "controls": [
+    {
+      "code": "OLD_WRONG_STATUS_AND_MALFORMED_CLASSIFIED",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_CANONICAL_PRIVATE_DESCRIPTION",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_MALFORMED_RPC_UNKNOWN",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_WRONG_HTTP_UNKNOWN",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_UNKNOWN_ISSUER_UNKNOWN",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_GATEWAY_WRONG_DETAIL_UNKNOWN",
+      "passed": true
+    },
+    {
+      "code": "OLD_MISSING_USER_METADATA_ACCEPTED",
+      "passed": true
+    },
+    {
+      "code": "OLD_PARTIAL_LESSON_ACCEPTED",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_COMPLETE_USER_PAGE",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_MISSING_METADATA_DENIED",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_MULTIPAGE_USER_DENIED",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_MULTIPAGE_LESSON_DENIED",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_TRUNCATED_PAGE_DENIED",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_DUPLICATE_ID_DENIED",
+      "passed": true
+    },
+    {
+      "code": "OLD_POST_LOGIN_GATE_LOSES_OWNED_TOKEN",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_PROVISIONAL_ADMIN_OWNED",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_PROVISIONAL_HEADMAN_OWNED",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_TWO_CONTEXTS_MATCH_OWN_COOKIE_AND_BEARER",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_TOKENS_CLEARED_AND_DISPOSED",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_LOGOUT_FAILURE_NOT_CLEANUP_PASS",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_DISPOSE_FAILURE_NOT_CLEANUP_PASS",
+      "passed": true
+    },
+    {
+      "code": "CURRENT_UNOWNED_NOOP_204_NOT_CONFIRMED",
+      "passed": true
+    },
+    {
+      "code": "RECEIPT_HAS_NO_PUBLIC_PRIVATE_MARKER",
+      "passed": true
+    }
+  ],
+  "qualification": "Actual corrected source functions and extracted old source seams/public API adapters only; no transport/API/browser/credentials/client acceptance."
+}

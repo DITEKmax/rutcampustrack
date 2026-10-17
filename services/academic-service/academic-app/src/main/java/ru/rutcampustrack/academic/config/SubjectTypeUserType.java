@@ -1,25 +1,23 @@
 package ru.rutcampustrack.academic.config;
 
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.usertype.UserType;
-import org.postgresql.util.PGobject;
-import ru.rutcampustrack.academic.contract.enums.SubjectType;
-
 import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Locale;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.usertype.UserType;
+import org.postgresql.util.PGobject;
+import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
 /**
  * Explicit PostgreSQL enum binding for subject lesson types.
  *
- * <p>The shared auto-apply converter is sufficient for ordinary enum columns,
- * but Hibernate does not consistently carry it into enum query parameters and
- * composite identifiers. This type keeps the public enum while binding a
- * typed PostgreSQL {@code subject_type} value, so composite-id tuple
- * comparisons resolve the enum's native equality operator.</p>
+ * <p>The shared auto-apply converter is sufficient for ordinary enum columns, but Hibernate does
+ * not consistently carry it into enum query parameters and composite identifiers. This type keeps
+ * the public enum while binding a typed PostgreSQL {@code subject_type} value, so composite-id
+ * tuple comparisons resolve the enum's native equality operator.
  */
 public final class SubjectTypeUserType implements UserType<SubjectType> {
 
@@ -44,19 +42,23 @@ public final class SubjectTypeUserType implements UserType<SubjectType> {
     }
 
     @Override
-    public SubjectType nullSafeGet(ResultSet resultSet,
-                                   int position,
-                                   SharedSessionContractImplementor session,
-                                   Object owner) throws SQLException {
+    public SubjectType nullSafeGet(
+            ResultSet resultSet,
+            int position,
+            SharedSessionContractImplementor session,
+            Object owner)
+            throws SQLException {
         String value = resultSet.getString(position);
         return value == null ? null : SubjectType.valueOf(value.toUpperCase(Locale.ROOT));
     }
 
     @Override
-    public void nullSafeSet(PreparedStatement statement,
-                            SubjectType value,
-                            int index,
-                            SharedSessionContractImplementor session) throws SQLException {
+    public void nullSafeSet(
+            PreparedStatement statement,
+            SubjectType value,
+            int index,
+            SharedSessionContractImplementor session)
+            throws SQLException {
         if (value == null) {
             statement.setNull(index, Types.OTHER, "subject_type");
             return;

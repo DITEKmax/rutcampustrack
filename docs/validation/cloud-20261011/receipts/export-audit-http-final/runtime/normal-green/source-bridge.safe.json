@@ -1,0 +1,8 @@
+{
+  "source_commit": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "tracked_count": 6510,
+  "all_bytes_and_modes_unchanged": true,
+  "tracked_diff": "",
+  "untracked_status": "?? frontends/node_modules",
+  "node_modules_symlink_target": "/workspace/rct-worktrees/client-format/frontends/node_modules"
+}

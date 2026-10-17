@@ -1,17 +1,28 @@
 package ru.rutcampustrack.auth.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import java.lang.reflect.Field;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
+import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.MockFilterChain;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,18 +35,6 @@ import ru.rutcampustrack.auth.session.model.RoleGrant;
 import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
-
-import java.lang.reflect.Field;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.util.Date;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class JwtAuthenticationFilterPurposeTest {
 
@@ -62,8 +61,9 @@ class JwtAuthenticationFilterPurposeTest {
         setField(jwtService, "publicKey", keyPair.getPublic());
         setField(jwtService, "keyId", "test-kid");
         objectMapper = new ObjectMapper().findAndRegisterModules();
-        filter = new JwtAuthenticationFilter(
-                jwtService, null, java.time.Clock.systemUTC(), objectMapper);
+        filter =
+                new JwtAuthenticationFilter(
+                        jwtService, null, java.time.Clock.systemUTC(), objectMapper);
 
         user = mock(User.class);
         when(user.getId()).thenReturn(USER_ID);
@@ -80,12 +80,24 @@ class JwtAuthenticationFilterPurposeTest {
     @Test
     void validAccessTokenAuthenticatesWithKnownRole() throws ServletException, java.io.IOException {
         Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
-        RoleGrant grant = new RoleGrant(1L, USER_ID, AuthRole.STUDENT, RoleStatus.ACTIVE,
-                GROUP_ID, now, now);
-        SessionSnapshot snapshot = new SessionSnapshot(
-                UUID.fromString("33333333-3333-4333-8333-333333333333"), USER_ID,
-                1L, 1L, grant, List.of(grant), now.plusSeconds(300), now, now,
-                null, null, AuthMethod.PASSWORD, null, null);
+        RoleGrant grant =
+                new RoleGrant(1L, USER_ID, AuthRole.STUDENT, RoleStatus.ACTIVE, GROUP_ID, now, now);
+        SessionSnapshot snapshot =
+                new SessionSnapshot(
+                        UUID.fromString("33333333-3333-4333-8333-333333333333"),
+                        USER_ID,
+                        1L,
+                        1L,
+                        grant,
+                        List.of(grant),
+                        now.plusSeconds(300),
+                        now,
+                        now,
+                        null,
+                        null,
+                        AuthMethod.PASSWORD,
+                        null,
+                        null);
         runWithBearer(jwtService.generateSessionAccessToken(snapshot, now, now.plusSeconds(60)));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -97,7 +109,8 @@ class JwtAuthenticationFilterPurposeTest {
     }
 
     @Test
-    void refreshTokenIsNotAnAuthenticatedAccessRequest() throws ServletException, java.io.IOException {
+    void refreshTokenIsNotAnAuthenticatedAccessRequest()
+            throws ServletException, java.io.IOException {
         runWithBearer(jwtService.generateRefreshToken(user));
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
@@ -120,9 +133,10 @@ class JwtAuthenticationFilterPurposeTest {
     }
 
     @Test
-    void invalidBearerClearsPreexistingAuthentication() throws ServletException, java.io.IOException {
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken("stale", null));
+    void invalidBearerClearsPreexistingAuthentication()
+            throws ServletException, java.io.IOException {
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken("stale", null));
 
         runWithBearer("malformed");
 
@@ -131,55 +145,64 @@ class JwtAuthenticationFilterPurposeTest {
 
     @Test
     void missingBearerLeavesRequestUnauthenticated() throws ServletException, java.io.IOException {
-        filter.doFilter(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockFilterChain());
+        filter.doFilter(
+                new MockHttpServletRequest(), new MockHttpServletResponse(), new MockFilterChain());
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 
     @Test
     void bootstrapBearerIsAcceptedOnlyOnTheExactSessionOperations() throws Exception {
-        for (RequestSpec request : List.of(
-                new RequestSpec("GET", "/auth/session"),
-                new RequestSpec("PUT", "/auth/session/active-role"),
-                new RequestSpec("GET", "/auth/sessions"),
-                new RequestSpec("POST", "/auth/logout"),
-                new RequestSpec("POST", "/auth/logout-all"),
-                new RequestSpec("DELETE", "/auth/sessions/55555555-5555-4555-8555-555555555555"),
-                new RequestSpec("DELETE", "/auth/sessions/not-a-uuid"))) {
+        for (RequestSpec request :
+                List.of(
+                        new RequestSpec("GET", "/auth/session"),
+                        new RequestSpec("PUT", "/auth/session/active-role"),
+                        new RequestSpec("GET", "/auth/sessions"),
+                        new RequestSpec("POST", "/auth/logout"),
+                        new RequestSpec("POST", "/auth/logout-all"),
+                        new RequestSpec(
+                                "DELETE", "/auth/sessions/55555555-5555-4555-8555-555555555555"),
+                        new RequestSpec("DELETE", "/auth/sessions/not-a-uuid"))) {
             FilterRun result = runBootstrap(request);
 
             assertThat(result.status()).as(request.toString()).isEqualTo(200);
             assertThat(result.chainCalled()).as(request.toString()).isTrue();
             assertThat(result.authentication()).as(request.toString()).isNotNull();
-            assertThat(result.authentication().getPrincipal()).isInstanceOf(
-                    ru.rutcampustrack.auth.security.SessionPrincipal.class);
+            assertThat(result.authentication().getPrincipal())
+                    .isInstanceOf(ru.rutcampustrack.auth.security.SessionPrincipal.class);
         }
     }
 
     @Test
     void bootstrapBearerIsDeniedForHistoryPasswordAndLookalikeRoutes() throws Exception {
-        for (RequestSpec request : List.of(
-                new RequestSpec("GET", "/auth/account-history"),
-                new RequestSpec("POST", "/auth/change-password"),
-                new RequestSpec("GET", "/auth/session/child"),
-                new RequestSpec("GET", "/auth/sessions/other"),
-                new RequestSpec("GET", "/auth/session/"),
-                new RequestSpec("POST", "/auth/session"),
-                new RequestSpec("PUT", "/auth/logout"),
-                new RequestSpec("POST", "/auth/logout-all/"),
-                new RequestSpec("POST", "/auth/sessions/55555555-5555-4555-8555-555555555555"),
-                new RequestSpec("GET", "/auth/sessions/55555555-5555-4555-8555-555555555555"),
-                new RequestSpec("DELETE", "/auth/sessions"),
-                new RequestSpec("DELETE", "/auth/sessions/"),
-                new RequestSpec("DELETE", "/auth/sessions/55555555-5555-4555-8555-555555555555/child"),
-                new RequestSpec("DELETE", "/auth/sessions/55555555-5555-4555-8555-555555555555/"))) {
+        for (RequestSpec request :
+                List.of(
+                        new RequestSpec("GET", "/auth/account-history"),
+                        new RequestSpec("POST", "/auth/change-password"),
+                        new RequestSpec("GET", "/auth/session/child"),
+                        new RequestSpec("GET", "/auth/sessions/other"),
+                        new RequestSpec("GET", "/auth/session/"),
+                        new RequestSpec("POST", "/auth/session"),
+                        new RequestSpec("PUT", "/auth/logout"),
+                        new RequestSpec("POST", "/auth/logout-all/"),
+                        new RequestSpec(
+                                "POST", "/auth/sessions/55555555-5555-4555-8555-555555555555"),
+                        new RequestSpec(
+                                "GET", "/auth/sessions/55555555-5555-4555-8555-555555555555"),
+                        new RequestSpec("DELETE", "/auth/sessions"),
+                        new RequestSpec("DELETE", "/auth/sessions/"),
+                        new RequestSpec(
+                                "DELETE",
+                                "/auth/sessions/55555555-5555-4555-8555-555555555555/child"),
+                        new RequestSpec(
+                                "DELETE",
+                                "/auth/sessions/55555555-5555-4555-8555-555555555555/"))) {
             FilterRun result = runBootstrap(request);
 
             assertThat(result.status()).as(request.toString()).isEqualTo(403);
             assertThat(result.chainCalled()).as(request.toString()).isFalse();
             assertThat(result.authentication()).as(request.toString()).isNull();
-            assertThat(result.body()).as(request.toString())
-                    .contains("BOOTSTRAP_SCOPE_DENIED");
+            assertThat(result.body()).as(request.toString()).contains("BOOTSTRAP_SCOPE_DENIED");
         }
     }
 
@@ -188,23 +211,31 @@ class JwtAuthenticationFilterPurposeTest {
         Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         SessionStatePort authority = mock(SessionStatePort.class);
 
-        FilterRun expired = runToken(
-                new RequestSpec("POST", "/auth/logout"),
-                jwtService.generateSessionAccessToken(
-                        selectedSnapshot(now), now.minusSeconds(120), now.minusSeconds(60)),
-                authority, now, "rct_refresh=valid-refresh-cookie");
+        FilterRun expired =
+                runToken(
+                        new RequestSpec("POST", "/auth/logout"),
+                        jwtService.generateSessionAccessToken(
+                                selectedSnapshot(now), now.minusSeconds(120), now.minusSeconds(60)),
+                        authority,
+                        now,
+                        "rct_refresh=valid-refresh-cookie");
         assertThat(expired.status()).isEqualTo(200);
         assertThat(expired.chainCalled()).isTrue();
         assertThat(expired.authentication()).isNull();
 
-        when(authority.snapshot(org.mockito.ArgumentMatchers.any(SessionStatePort.SnapshotCommand.class)))
-                .thenReturn(SessionStatePort.SnapshotResult.failure(
-                        SessionStatePort.FailureCode.SESSION_STATE_STALE));
-        FilterRun stale = runToken(
-                new RequestSpec("POST", "/auth/logout"),
-                jwtService.generateSessionAccessToken(
-                        selectedSnapshot(now), now, now.plusSeconds(60)),
-                authority, now, "rct_refresh=valid-refresh-cookie");
+        when(authority.snapshot(
+                        org.mockito.ArgumentMatchers.any(SessionStatePort.SnapshotCommand.class)))
+                .thenReturn(
+                        SessionStatePort.SnapshotResult.failure(
+                                SessionStatePort.FailureCode.SESSION_STATE_STALE));
+        FilterRun stale =
+                runToken(
+                        new RequestSpec("POST", "/auth/logout"),
+                        jwtService.generateSessionAccessToken(
+                                selectedSnapshot(now), now, now.plusSeconds(60)),
+                        authority,
+                        now,
+                        "rct_refresh=valid-refresh-cookie");
         assertThat(stale.status()).isEqualTo(200);
         assertThat(stale.chainCalled()).isTrue();
         assertThat(stale.authentication()).isNull();
@@ -214,15 +245,20 @@ class JwtAuthenticationFilterPurposeTest {
     void cookieLogoutDoesNotTurnAuthorityFailureIntoCookieSuccess() throws Exception {
         Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         SessionStatePort authority = mock(SessionStatePort.class);
-        when(authority.snapshot(org.mockito.ArgumentMatchers.any(SessionStatePort.SnapshotCommand.class)))
-                .thenReturn(SessionStatePort.SnapshotResult.failure(
-                        SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE));
+        when(authority.snapshot(
+                        org.mockito.ArgumentMatchers.any(SessionStatePort.SnapshotCommand.class)))
+                .thenReturn(
+                        SessionStatePort.SnapshotResult.failure(
+                                SessionStatePort.FailureCode.AUTHORITY_UNAVAILABLE));
 
-        FilterRun result = runToken(
-                new RequestSpec("POST", "/auth/logout"),
-                jwtService.generateSessionAccessToken(
-                        selectedSnapshot(now), now, now.plusSeconds(60)),
-                authority, now, "rct_refresh=valid-refresh-cookie");
+        FilterRun result =
+                runToken(
+                        new RequestSpec("POST", "/auth/logout"),
+                        jwtService.generateSessionAccessToken(
+                                selectedSnapshot(now), now, now.plusSeconds(60)),
+                        authority,
+                        now,
+                        "rct_refresh=valid-refresh-cookie");
 
         assertThat(result.status()).isEqualTo(503);
         assertThat(result.chainCalled()).isFalse();
@@ -242,7 +278,8 @@ class JwtAuthenticationFilterPurposeTest {
         Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         SessionSnapshot snapshot = bootstrapSnapshot(now);
         SessionStatePort authority = mock(SessionStatePort.class);
-        when(authority.snapshot(org.mockito.ArgumentMatchers.any(SessionStatePort.SnapshotCommand.class)))
+        when(authority.snapshot(
+                        org.mockito.ArgumentMatchers.any(SessionStatePort.SnapshotCommand.class)))
                 .thenReturn(SessionStatePort.SnapshotResult.success(snapshot));
         String token = jwtService.generateBootstrapToken(snapshot, now, now.plusSeconds(60));
         return runToken(requestSpec, token, authority, now, null);
@@ -253,12 +290,15 @@ class JwtAuthenticationFilterPurposeTest {
             String token,
             SessionStatePort authority,
             Instant now,
-            String cookieHeader
-    ) throws Exception {
+            String cookieHeader)
+            throws Exception {
         SecurityContextHolder.clearContext();
-        filter = new JwtAuthenticationFilter(
-                jwtService, authority, java.time.Clock.fixed(now, java.time.ZoneOffset.UTC),
-                objectMapper);
+        filter =
+                new JwtAuthenticationFilter(
+                        jwtService,
+                        authority,
+                        java.time.Clock.fixed(now, java.time.ZoneOffset.UTC),
+                        objectMapper);
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setMethod(requestSpec.method());
@@ -272,48 +312,72 @@ class JwtAuthenticationFilterPurposeTest {
         FilterChain chain = (ignoredRequest, ignoredResponse) -> chainCalled[0] = true;
         filter.doFilter(request, response, chain);
         return new FilterRun(
-                response.getStatus(), response.getContentAsString(), chainCalled[0],
+                response.getStatus(),
+                response.getContentAsString(),
+                chainCalled[0],
                 SecurityContextHolder.getContext().getAuthentication(),
                 response.getHeader(HttpHeaders.SET_COOKIE));
     }
 
     private SessionSnapshot bootstrapSnapshot(Instant now) {
-        RoleGrant grant = new RoleGrant(
-                1L, USER_ID, AuthRole.STUDENT, RoleStatus.ACTIVE, GROUP_ID, now, now);
+        RoleGrant grant =
+                new RoleGrant(1L, USER_ID, AuthRole.STUDENT, RoleStatus.ACTIVE, GROUP_ID, now, now);
         return new SessionSnapshot(
-                UUID.fromString("33333333-3333-4333-8333-333333333333"), USER_ID,
-                1L, 1L, null, List.of(grant), now.plusSeconds(3600), now, now,
-                null, null, AuthMethod.PASSWORD, null, null);
+                UUID.fromString("33333333-3333-4333-8333-333333333333"),
+                USER_ID,
+                1L,
+                1L,
+                null,
+                List.of(grant),
+                now.plusSeconds(3600),
+                now,
+                now,
+                null,
+                null,
+                AuthMethod.PASSWORD,
+                null,
+                null);
     }
 
     private SessionSnapshot selectedSnapshot(Instant now) {
-        RoleGrant grant = new RoleGrant(
-                1L, USER_ID, AuthRole.STUDENT, RoleStatus.ACTIVE, GROUP_ID, now, now);
+        RoleGrant grant =
+                new RoleGrant(1L, USER_ID, AuthRole.STUDENT, RoleStatus.ACTIVE, GROUP_ID, now, now);
         return new SessionSnapshot(
-                UUID.fromString("33333333-3333-4333-8333-333333333333"), USER_ID,
-                1L, 1L, grant, List.of(grant), now.plusSeconds(3600), now, now,
-                null, null, AuthMethod.PASSWORD, null, null);
+                UUID.fromString("33333333-3333-4333-8333-333333333333"),
+                USER_ID,
+                1L,
+                1L,
+                grant,
+                List.of(grant),
+                now.plusSeconds(3600),
+                now,
+                now,
+                null,
+                null,
+                AuthMethod.PASSWORD,
+                null,
+                null);
     }
 
-    private record RequestSpec(String method, String path) {
-    }
+    private record RequestSpec(String method, String path) {}
 
     private record FilterRun(
             int status,
             String body,
             boolean chainCalled,
             Authentication authentication,
-            String setCookie
-    ) {
-    }
+            String setCookie) {}
 
     private String signedAccessToken(String purpose, String subject, String role) {
-        var builder = Jwts.builder()
-                .subject(subject)
-                .issuer(ISSUER)
-                .audience().add(AUDIENCE).and()
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 60_000L));
+        var builder =
+                Jwts.builder()
+                        .subject(subject)
+                        .issuer(ISSUER)
+                        .audience()
+                        .add(AUDIENCE)
+                        .and()
+                        .issuedAt(new Date())
+                        .expiration(new Date(System.currentTimeMillis() + 60_000L));
         if (purpose != null) {
             builder.claim(JwtService.TOKEN_USE_CLAIM, purpose);
         }
@@ -328,7 +392,9 @@ class JwtAuthenticationFilterPurposeTest {
         return Jwts.builder()
                 .subject(String.valueOf(USER_ID))
                 .issuer(ISSUER)
-                .audience().add(JwtService.INTERNAL_JWT_AUDIENCE).and()
+                .audience()
+                .add(JwtService.INTERNAL_JWT_AUDIENCE)
+                .and()
                 .claim(JwtService.TOKEN_USE_CLAIM, JwtService.TOKEN_USE_INTERNAL)
                 .claim("sid", "44444444-4444-4444-8444-444444444444")
                 .claim("sv", "1")

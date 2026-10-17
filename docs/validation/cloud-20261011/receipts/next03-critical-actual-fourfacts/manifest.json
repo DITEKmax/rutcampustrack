@@ -1,0 +1,81 @@
+{
+  "utc": "2026-10-13T01:58:20.606429+00:00",
+  "cohort": "restart-20261013-next03",
+  "entries": [
+    {
+      "path": "artifact-source.safe.json",
+      "bytes": 5290,
+      "sha256": "e820ed2b3faef29b852a7735c15a94ce00bca8007134a6414b5c5b4559cda495",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/artifact-source.safe.json"
+    },
+    {
+      "path": "runtime-mapping.safe.json",
+      "bytes": 8945,
+      "sha256": "f64dcdd1634b44c0888d55a5fbd1e941053f53fe1d3b92d2d3c7c30e45d7e3d4",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/runtime-mapping.safe.json"
+    },
+    {
+      "path": "stand-readiness.safe.json",
+      "bytes": 3261,
+      "sha256": "5f333a39348bed4345cd4e5e57c2d8ede0018f44f5fa5680a14c50a1f7f96053",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/stand-readiness.safe.json"
+    },
+    {
+      "path": "host-live8.safe.json",
+      "bytes": 4613,
+      "sha256": "1d59e8010a998b00915038388da47d79c96e23023907686047c5b2a7323e3e55",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/host-live8.safe.json"
+    },
+    {
+      "path": "critical4-pointers.safe.json",
+      "bytes": 1387,
+      "sha256": "ed7afd2343039e69a58242b27e2bb3c7777124b94443ca4b4e33cef2b0c14329",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/critical4-pointers.safe.json"
+    },
+    {
+      "path": "Academic-migration-prerequisite.safe.json",
+      "bytes": 757,
+      "sha256": "65df90089e4c8a41932c3d7fe98c27eb72c59e909bee7cec60dfd887ce55b81e",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/Academic-migration-prerequisite.safe.json"
+    },
+    {
+      "path": "post-Docker-barrier.safe.json",
+      "bytes": 311,
+      "sha256": "8e2519a3e946a6c08c69589665ab7109c3b30872c4c60536f4832cd5cc6271bf",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/post-Docker-barrier.safe.json"
+    },
+    {
+      "path": "docker-tool.safe.json",
+      "bytes": 829,
+      "sha256": "a8a56242a4cdfe9a1a41a02a15acb44c550dfc6ad0fb1206c5cdcfd30c29745a",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/docker-tool.safe.json"
+    },
+    {
+      "path": "mongo-tool.safe.json",
+      "bytes": 500,
+      "sha256": "c553446c374c21c892b5b7f23341c4f54a62499100dd312a2105d56021cf6b73",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/mongo-tool.safe.json"
+    },
+    {
+      "path": "academic-tool.safe.json",
+      "bytes": 449,
+      "sha256": "c8152c9b06d20ed14db95e48551f4c8d9c9809d45c1bb8773ce4f32cb2aa3a54",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/academic-tool.safe.json"
+    },
+    {
+      "path": "critical-bind-attempt01-erratum.safe.json",
+      "bytes": 251,
+      "sha256": "72a54416d7d2805efe67ea635cd64aac0db9909a8444d6ba80fca18aeaa0dfca",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_next03_actual/critical-bind-attempt01-erratum.safe.json"
+    },
+    {
+      "path": "mongo-protocol.safe.json",
+      "bytes": 313,
+      "sha256": "da534856fd23648f7365758865964bab0edffdae6e921875fed3f3e47047df82",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_plan/runtime/restart-20261013-next03/mongo-protocol.safe.json"
+    }
+  ],
+  "scope": "Actual readiness/provenance/live16 only; NOTclientmatrixPASS",
+  "private_files_excluded": true,
+  "bound_four_originals_unchanged": true
+}

@@ -10,8 +10,11 @@ import ru.rutcampustrack.gateway.security.ReportDownloadBackendProperties;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableConfigurationProperties({InternalIssuerClientProperties.class, PwaVersionPolicyProperties.class,
-        ReportDownloadBackendProperties.class})
+@EnableConfigurationProperties({
+    InternalIssuerClientProperties.class,
+    PwaVersionPolicyProperties.class,
+    ReportDownloadBackendProperties.class
+})
 public class GatewayApplication {
     public static void main(String[] args) {
         SpringApplication.run(GatewayApplication.class, args);

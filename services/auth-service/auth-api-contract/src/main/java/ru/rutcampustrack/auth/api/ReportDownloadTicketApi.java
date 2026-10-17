@@ -25,6 +25,5 @@ public interface ReportDownloadTicketApi {
     @PostMapping("/report-download-tickets")
     ResponseEntity<ReportDownloadTicketResponse> issue(
             Authentication authentication,
-            @Valid @RequestBody IssueReportDownloadTicketRequest request
-    );
+            @Valid @RequestBody IssueReportDownloadTicketRequest request);
 }

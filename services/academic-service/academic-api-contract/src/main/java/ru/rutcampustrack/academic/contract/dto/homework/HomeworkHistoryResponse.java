@@ -2,7 +2,12 @@ package ru.rutcampustrack.academic.contract.dto.homework;
 
 import java.time.OffsetDateTime;
 
-public record HomeworkHistoryResponse(Long id, long revision, Long actorId,
-                                      String actorDisplayName,
-                                      OffsetDateTime occurredAt, String action,
-                                      HomeworkSnapshot before, HomeworkSnapshot after) {}
+public record HomeworkHistoryResponse(
+        Long id,
+        long revision,
+        Long actorId,
+        String actorDisplayName,
+        OffsetDateTime occurredAt,
+        String action,
+        HomeworkSnapshot before,
+        HomeworkSnapshot after) {}

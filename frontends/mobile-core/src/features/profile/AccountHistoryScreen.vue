@@ -1,42 +1,53 @@
 <script setup lang="ts">
-import type { ProfileHistoryEvent, ProfileRequestError, ProfileResolvedTheme } from './profile-types'
-import { formatProfileInstant, historyLabel, truthfulMetadata } from './profile-types'
-import historyPrevious from './assets/history-previous.svg'
-import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue'
-import './profile-screen.pcss'
+import type {
+  ProfileHistoryEvent,
+  ProfileRequestError,
+  ProfileResolvedTheme,
+} from './profile-types';
+import { formatProfileInstant, historyLabel, truthfulMetadata } from './profile-types';
+import historyPrevious from './assets/history-previous.svg';
+import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import './profile-screen.pcss';
 
-const props = withDefaults(defineProps<{
-  events: readonly ProfileHistoryEvent[]
-  loading?: boolean
-  error?: ProfileRequestError | null
-  nextCursor?: string | null
-  onBack?: (() => void | Promise<void>) | undefined
-  onRetry?: (() => void | Promise<void>) | undefined
-  onLoadMore?: ((cursor: string) => void | Promise<void>) | undefined
-  theme?: ProfileResolvedTheme
-}>(), {
-  loading: false,
-  error: null,
-  nextCursor: null,
-  onBack: undefined,
-  onRetry: undefined,
-  onLoadMore: undefined,
-  theme: 'dark',
-})
+const props = withDefaults(
+  defineProps<{
+    events: readonly ProfileHistoryEvent[];
+    loading?: boolean;
+    error?: ProfileRequestError | null;
+    nextCursor?: string | null;
+    onBack?: (() => void | Promise<void>) | undefined;
+    onRetry?: (() => void | Promise<void>) | undefined;
+    onLoadMore?: ((cursor: string) => void | Promise<void>) | undefined;
+    theme?: ProfileResolvedTheme;
+  }>(),
+  {
+    loading: false,
+    error: null,
+    nextCursor: null,
+    onBack: undefined,
+    onRetry: undefined,
+    onLoadMore: undefined,
+    theme: 'dark',
+  },
+);
 
 function authMethodLabel(method: ProfileHistoryEvent['authMethod']): string | null {
-  if (method === 'PASSWORD') return 'вход по паролю'
-  if (method === 'OTP') return 'вход по одноразовому коду'
-  if (method === 'TMA') return 'вход через Telegram'
-  return null
+  if (method === 'PASSWORD') return 'вход по паролю';
+  if (method === 'OTP') return 'вход по одноразовому коду';
+  if (method === 'TMA') return 'вход через Telegram';
+  return null;
 }
 
 function metadata(event: ProfileHistoryEvent): string | null {
-  return truthfulMetadata(event.clientLabel, event.locationLabel, authMethodLabel(event.authMethod))
+  return truthfulMetadata(
+    event.clientLabel,
+    event.locationLabel,
+    authMethodLabel(event.authMethod),
+  );
 }
 
 function loadMore(): void {
-  if (props.nextCursor && !props.loading) void props.onLoadMore?.(props.nextCursor)
+  if (props.nextCursor && !props.loading) void props.onLoadMore?.(props.nextCursor);
 }
 </script>
 

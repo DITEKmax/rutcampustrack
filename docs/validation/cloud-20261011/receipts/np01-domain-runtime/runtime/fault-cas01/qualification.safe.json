@@ -1,0 +1,16 @@
+{
+  "qualified": true,
+  "failure_type": "java.lang.AssertionError",
+  "expected_violation": "Missing FAILED_PRECONDITION on stale cleanup recordrevision after renderreceipt settles",
+  "frames": [
+    [
+      "denied",
+      "329"
+    ],
+    [
+      "invalidationCannotLoseStableRenderReceiptAndStaleCleanupCasCannotSettle",
+      "171"
+    ]
+  ],
+  "compile_infra_failure": false
+}

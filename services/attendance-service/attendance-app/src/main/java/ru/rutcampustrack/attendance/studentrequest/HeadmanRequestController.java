@@ -1,40 +1,77 @@
 package ru.rutcampustrack.attendance.studentrequest;
 
+import java.nio.charset.StandardCharsets;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.attendance.contract.api.HeadmanRequestApi;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanLateCheckinBudgetIncreaseRequest;
+import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanLateCheckinBudgetResponse;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDecisionRequest;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestDetailResponse;
 import ru.rutcampustrack.attendance.contract.dto.headman.HeadmanRequestPageResponse;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
-import ru.rutcampustrack.attendance.security.RequireRole;
 import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.security.RequireRole;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentDownload;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.Identity;
-
-import java.nio.charset.StandardCharsets;
 
 @RestController
 public class HeadmanRequestController implements HeadmanRequestApi {
 
     private final HeadmanRequestService service;
     private final RequestContext requestContext;
+    private final StudentRequestService studentRequests;
 
-    public HeadmanRequestController(HeadmanRequestService service, RequestContext requestContext) {
+    public HeadmanRequestController(
+            HeadmanRequestService service,
+            RequestContext requestContext,
+            StudentRequestService studentRequests) {
         this.service = service;
         this.requestContext = requestContext;
+        this.studentRequests = studentRequests;
     }
 
     @Override
     @RequireRole(UserRole.STUDENT)
-    public ResponseEntity<HeadmanRequestPageResponse> list(String bucket, int page, int size, String type,
-                                                            String studentName, String coverageDateFrom,
-                                                            String coverageDateTo) {
-        return ResponseEntity.ok(service.list(identity(), bucket, page, size, type, studentName,
-                coverageDateFrom, coverageDateTo));
+    public ResponseEntity<HeadmanLateCheckinBudgetResponse> budget(long studentId) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(studentRequests.headmanBudget(identity(), studentId));
+    }
+
+    @Override
+    @RequireRole(UserRole.STUDENT)
+    public ResponseEntity<HeadmanLateCheckinBudgetResponse> increaseBudget(
+            long studentId, HeadmanLateCheckinBudgetIncreaseRequest body) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(studentRequests.increaseHeadmanBudget(identity(), studentId, body));
+    }
+
+    @Override
+    @RequireRole(UserRole.STUDENT)
+    public ResponseEntity<HeadmanRequestPageResponse> list(
+            String bucket,
+            int page,
+            int size,
+            String type,
+            String studentName,
+            String coverageDateFrom,
+            String coverageDateTo) {
+        return ResponseEntity.ok(
+                service.list(
+                        identity(),
+                        bucket,
+                        page,
+                        size,
+                        type,
+                        studentName,
+                        coverageDateFrom,
+                        coverageDateTo));
     }
 
     @Override
@@ -45,7 +82,8 @@ public class HeadmanRequestController implements HeadmanRequestApi {
 
     @Override
     @RequireRole(UserRole.STUDENT)
-    public ResponseEntity<HeadmanRequestDetailResponse> decide(String id, HeadmanRequestDecisionRequest body) {
+    public ResponseEntity<HeadmanRequestDetailResponse> decide(
+            String id, HeadmanRequestDecisionRequest body) {
         return ResponseEntity.ok(service.decide(identity(), id, body));
     }
 
@@ -61,19 +99,24 @@ public class HeadmanRequestController implements HeadmanRequestApi {
                 // Keep the safe binary fallback for a historical/invalid MIME value.
             }
         }
-        String filename = download.filename() == null || download.filename().isBlank()
-                ? "attachment" : download.filename().replaceAll("[\\r\\n\\\"]", "_");
+        String filename =
+                download.filename() == null || download.filename().isBlank()
+                        ? "attachment"
+                        : download.filename().replaceAll("[\\r\\n\\\"]", "_");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(mediaType);
         headers.setContentLength(download.bytes() == null ? 0 : download.bytes().length);
-        headers.setContentDisposition(ContentDisposition.attachment()
-                .filename(filename, StandardCharsets.UTF_8).build());
+        headers.setContentDisposition(
+                ContentDisposition.attachment().filename(filename, StandardCharsets.UTF_8).build());
         return ResponseEntity.ok().headers(headers).body(download.bytes());
     }
 
     private Identity identity() {
         Long userId = requestContext.getUserId();
-        return new Identity(userId == null ? 0L : userId, requestContext.getRole(),
-                requestContext.getGroupId(), requestContext.isHeadman());
+        return new Identity(
+                userId == null ? 0L : userId,
+                requestContext.getRole(),
+                requestContext.getGroupId(),
+                requestContext.isHeadman());
     }
 }

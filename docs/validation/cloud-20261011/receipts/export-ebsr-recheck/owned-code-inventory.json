@@ -1,0 +1,70 @@
+{
+  "b45": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+  "final": "e258af8f7b836814ad47aed3ded46060594f8567",
+  "files": [
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+      "status": "M",
+      "b45_sha256": "a7060d0ec98d5b0be0702a073ba1363f5c17de5bab0d8369f7aa6629da668790",
+      "final_sha256": "a7060d0ec98d5b0be0702a073ba1363f5c17de5bab0d8369f7aa6629da668790",
+      "current_matches_final": true,
+      "changed_after_b45": false
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+      "status": "M",
+      "b45_sha256": "ff8601e626feab612313f7187a3b013ca9650cbeb4ca68b77343c0ebe23e1db9",
+      "final_sha256": "ff8601e626feab612313f7187a3b013ca9650cbeb4ca68b77343c0ebe23e1db9",
+      "current_matches_final": true,
+      "changed_after_b45": false
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+      "status": "M",
+      "b45_sha256": "7dc450b6adc59921b370e5088dd5f1df5b7e8c5d82873be0de03d2e63974728b",
+      "final_sha256": "7dc450b6adc59921b370e5088dd5f1df5b7e8c5d82873be0de03d2e63974728b",
+      "current_matches_final": true,
+      "changed_after_b45": false
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportReportAuthority.java",
+      "status": "M",
+      "b45_sha256": "2d2a5f40311f003a7db0367ca9363bf84ec18fa23c4328be4e7d69656240da42",
+      "final_sha256": "2d2a5f40311f003a7db0367ca9363bf84ec18fa23c4328be4e7d69656240da42",
+      "current_matches_final": true,
+      "changed_after_b45": false
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+      "status": "M",
+      "b45_sha256": "e9176827943824ab5482d164246f5b0a09c5936eaf831f8f680330ba89d0670d",
+      "final_sha256": "e9176827943824ab5482d164246f5b0a09c5936eaf831f8f680330ba89d0670d",
+      "current_matches_final": true,
+      "changed_after_b45": false
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "status": "M",
+      "b45_sha256": "4502feff97d96b53e951dd3059d86bc3d2d06c38711d24c92a36fe21a8678824",
+      "final_sha256": "4502feff97d96b53e951dd3059d86bc3d2d06c38711d24c92a36fe21a8678824",
+      "current_matches_final": true,
+      "changed_after_b45": false
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/RegistryExportAdmission.java",
+      "status": "A",
+      "b45_sha256": "d519948b0fdef72d0f245d8deebdcfc5f7fa93c52dd597960c1f131b9e63039f",
+      "final_sha256": "d519948b0fdef72d0f245d8deebdcfc5f7fa93c52dd597960c1f131b9e63039f",
+      "current_matches_final": true,
+      "changed_after_b45": false
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+      "status": "A",
+      "b45_sha256": "4024f716efa5f248a5ff5d0e8c07172606370c2f97b9006d5195037ebbe53169",
+      "final_sha256": "158a482951a0bc934509c4bc821b7544ffb425deeeeeb9f9711aedc4c209d5bb",
+      "current_matches_final": true,
+      "changed_after_b45": true
+    }
+  ]
+}

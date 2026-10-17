@@ -1,0 +1,18 @@
+{
+  "utc": "2026-10-12T07:54:01.209898+00:00",
+  "lease": "NP01_BROKER1_ATTEMPT03",
+  "source_author": "b89874ccb92a444c945e020cf1d7ffe20ede997a",
+  "root_source": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+  "preconditions": "attempt02actualpartial/native/source/ownPID+containercleanup receipt preserved; fresh cleanHEAD/floor/shared/Dockerempty thensingleinstance",
+  "shared_growth_cap": 6442450944,
+  "shared_memory_stop": 16106127360,
+  "shared_memory_floor": 1073741824,
+  "justification": "observed aggregate shared8.65G at4.42Gbaseline4Ggrowth whileoneNPheavy+boundedNode/lightpubliccopy, absolute17.18G host17max and16Gstop retain >1Greserve; this adjusts measured verificationresource budget only, no auth/TLS/tests/oracles weakening",
+  "disk_growth_cap": 2147483648,
+  "disk_floor": 4294967296,
+  "timeout": 900,
+  "supervisor_timeout": 600,
+  "cases": "sameactual7/default300s naturalexpiry; no shortenTTL/fakecompleted/case skips",
+  "source_correction": "NONE required; onlyOWN newperattemptresourcegrantdata/caps beforelaunch, no livehacks/debugger/controlplane",
+  "parallel": "no newheavy/extraNode whileheldexpirywindow; independentREADONLYreviews/Rootdocupdates only. Existingformatterlightmaycomplete alreadyassigned checks but no additionalparallelbuild/deps"
+}

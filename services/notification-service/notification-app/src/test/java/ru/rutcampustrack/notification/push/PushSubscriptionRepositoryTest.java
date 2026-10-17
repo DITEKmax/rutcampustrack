@@ -1,17 +1,17 @@
 package ru.rutcampustrack.notification.push;
 
-import org.junit.jupiter.api.Test;
-import ru.rutcampustrack.notification.config.PushMongoConfig;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
-
-import static org.assertj.core.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import ru.rutcampustrack.notification.config.PushMongoConfig;
 
 /**
  * Structural tests for PushSubscriptionRepository and PushMongoConfig.
  *
- * Note: Index creation (Tests 9-10) are verified structurally via PushMongoConfig source code
- * since we use unit tests (no embedded MongoDB). Integration tests would cover live index verification.
+ * <p>Note: Index creation (Tests 9-10) are verified structurally via PushMongoConfig source code
+ * since we use unit tests (no embedded MongoDB). Integration tests would cover live index
+ * verification.
  */
 class PushSubscriptionRepositoryTest {
 
@@ -37,7 +37,8 @@ class PushSubscriptionRepositoryTest {
 
         // Check the annotation @PostConstruct is present
         Method initIndexes = configClass.getDeclaredMethod("initIndexes");
-        jakarta.annotation.PostConstruct postConstruct = initIndexes.getAnnotation(jakarta.annotation.PostConstruct.class);
+        jakarta.annotation.PostConstruct postConstruct =
+                initIndexes.getAnnotation(jakarta.annotation.PostConstruct.class);
         assertThat(postConstruct).isNotNull();
     }
 }

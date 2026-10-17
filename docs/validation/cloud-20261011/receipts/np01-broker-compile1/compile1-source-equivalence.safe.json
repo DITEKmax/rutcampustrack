@@ -1,0 +1,7 @@
+{
+  "author_head": "b4a0f1067c8275696404f8d369ff4247bcec766c",
+  "root_at_check": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "files": 3852,
+  "definition": "tracked except docs/ and .agent/",
+  "byte_mismatch": []
+}

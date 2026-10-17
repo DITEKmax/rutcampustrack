@@ -24,6 +24,7 @@ spring:
       port: 6379
       password: ${REDIS_PASSWORD:rct_dev_pass}
   rabbitmq:
+    publisher-confirm-type: simple
     host: rabbitmq
     port: 5672
     username: ${RABBITMQ_USER:rct_user}
@@ -35,6 +36,9 @@ grpc:
     max-inbound-message-size: 25165824
   auth:
     secret: ${GRPC_SECRET:}
+  service-identity:
+    attendance-to-academic-token: ${ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN:}
+    academic-to-attendance-token: ${ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN:}
   client:
     schedule-service:
       address: dns:///schedule-service:19092
@@ -56,7 +60,7 @@ rutcampustrack:
   security:
     # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
     # SPRING_DATA_MONGODB_URI содержит password в URI (mongodb://user:pass@host).
-    required-env-vars: SPRING_DATA_MONGODB_URI,REDIS_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET
+    required-env-vars: ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN,SPRING_DATA_MONGODB_URI,REDIS_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET
     internal-jwt:
       # M03a: pull RSA public key from auth-service /auth/public-key.
       auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
@@ -93,6 +97,11 @@ management:
       enabled: true
   # M04 QA2 (NEW-58/59) — distributed tracing OTel → Tempo.
   tracing:
+    baggage:
+      remote-fields: requestId
+      tag-fields: requestId
+      correlation:
+        fields: requestId
     sampling:
       probability: 1.0
   otlp:

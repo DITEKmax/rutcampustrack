@@ -1,18 +1,17 @@
 package ru.rutcampustrack.notification.reminder;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.stereotype.Service;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -34,27 +33,38 @@ public class ReminderAttendanceStateService {
         }
 
         Query query = byLessonAndUser(lessonId, userId);
-        Update update = new Update()
-                .set("lesson_id", lessonId)
-                .set("user_id", userId)
-                .set("status", stringValue(payload.get("status")))
-                .set("marked_at", Instant.now(clock));
+        Update update =
+                new Update()
+                        .set("lesson_id", lessonId)
+                        .set("user_id", userId)
+                        .set("status", stringValue(payload.get("status")))
+                        .set("marked_at", Instant.now(clock));
         mongoTemplate.upsert(query, update, ReminderAttendanceStateDocument.class);
     }
 
-    /** One strict read owns the reminder eligibility snapshot; failures must reach listener retry. */
+    /**
+     * One strict read owns the reminder eligibility snapshot; failures must reach listener retry.
+     */
     public Set<Long> getUnmarkedUserIds(long lessonId, Set<Long> currentUserIds) {
-        if (lessonId <= 0 || currentUserIds == null
+        if (lessonId <= 0
+                || currentUserIds == null
                 || currentUserIds.stream().anyMatch(userId -> userId == null || userId <= 0)) {
-            throw new IllegalArgumentException("Reminder lesson and recipient IDs must be positive integers");
+            throw new IllegalArgumentException(
+                    "Reminder lesson and recipient IDs must be positive integers");
         }
         if (currentUserIds.isEmpty()) {
             return Set.of();
         }
-        Query query = new Query(Criteria.where("lesson_id").is(lessonId)
-                .and("user_id").in(currentUserIds)).maxTime(Duration.ofSeconds(3));
+        Query query =
+                new Query(
+                                Criteria.where("lesson_id")
+                                        .is(lessonId)
+                                        .and("user_id")
+                                        .in(currentUserIds))
+                        .maxTime(Duration.ofSeconds(3));
         Set<Long> unmarkedUserIds = new HashSet<>(currentUserIds);
-        mongoTemplate.find(query, ReminderAttendanceStateDocument.class)
+        mongoTemplate
+                .find(query, ReminderAttendanceStateDocument.class)
                 .forEach(document -> unmarkedUserIds.remove(document.getUserId()));
         return Set.copyOf(unmarkedUserIds);
     }
@@ -64,7 +74,8 @@ public class ReminderAttendanceStateService {
         if (lessonId == null) {
             return;
         }
-        mongoTemplate.remove(new Query(Criteria.where("lesson_id").is(lessonId)),
+        mongoTemplate.remove(
+                new Query(Criteria.where("lesson_id").is(lessonId)),
                 ReminderAttendanceStateDocument.class);
     }
 

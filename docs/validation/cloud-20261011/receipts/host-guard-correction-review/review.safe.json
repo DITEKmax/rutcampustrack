@@ -1,0 +1,150 @@
+{
+  "at": "2026-10-12T03:42:55.328540+00:00",
+  "scope": "Independent READ_ONLY HOST-G01/G02/G03 guard correction source and safe-control receipt review",
+  "disposition": "APPROVE",
+  "blocking_findings": [],
+  "reviewer": {
+    "task": "/root/np01_common_review",
+    "independent_of_source_author": true,
+    "requested_model": "gpt-6.1-sol",
+    "requested_effort": "xhigh",
+    "actual_model_effort": "UNKNOWN; explicit owner exception",
+    "source_patches": 0,
+    "new_child_execution": false
+  },
+  "contract": {
+    "TASK_CONTRACT_SHA256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+    "full_restore": "TASK-CONTRACT/CURRENT/decisions/questions/resources, AGENTS/RULES/workflow and applicable source-resolution/verification instructions",
+    "packet": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-host-runtime-corrections.md",
+    "author_preparation_source_context": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+    "guard_correction_context": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+    "root_CURRENT_latest_at_restore": "d2e3c1cdb20ecf4eb322d18cfbc002c4c79980f2; neither context is a runtime authorization"
+  },
+  "input_manifests": [
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/manifest.json",
+      "sha256": "fac7de9671ce6338b0e28ddd8745918bb04cd2816cd708861685e2d4f3f521cf",
+      "bytes": 6446,
+      "file_count": 29,
+      "all_contents_byte_exact": true,
+      "symlink_fixtures": []
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-manifest.json",
+      "sha256": "8159e470b37267bb2e2142e5e772eb0b925e83b50f82a68cfb0842ba28389287",
+      "bytes": 1508,
+      "file_count": 6,
+      "all_contents_byte_exact": true,
+      "symlink_fixtures": []
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/manifest.json",
+      "sha256": "04e6355b92c0cd24a6c6b574bde5099de2a26a4b7d87caaf08c9c8c71f4044ba",
+      "bytes": 3222,
+      "file_count": 13,
+      "all_contents_byte_exact": true,
+      "symlink_fixtures": [
+        {
+          "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/synthetic-cases/symlink-public",
+          "target": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/synthetic-cases/public.json",
+          "type": "synthetic control fixture; content hash follows link"
+        }
+      ]
+    }
+  ],
+  "exact_original_report": {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/host-runtime-review-original/REPORT.md",
+    "sha256": "36e0a5839357918944da559728b5aae851898de7270ce3b872f499e5ac5927a1",
+    "bytes": 15819
+  },
+  "runner_before": {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/safe-child-status.py",
+    "sha256": "178b194097865cd682ed60fed0ab7ee1e1720da7552c4f22e58eaa56cd8f5b09",
+    "bytes": 7162
+  },
+  "runner_after": {
+    "path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/safe-child-status.py",
+    "sha256": "8d39ad71b7d508b59f688d4ca1aa7e77b08ef002d3330cd48b4ea076c6d9d98a",
+    "bytes": 13256
+  },
+  "resolutions": [
+    {
+      "id": "HOST-G01",
+      "previous_severity": "P2",
+      "status": "RESOLVED_SOURCE_ONLY",
+      "corrected_path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/safe-child-status.py",
+      "line": 104,
+      "result": "Traversal rejected before owned reads; every-component symlink rejection, resolved containment and positive own paths verified",
+      "meaningful_before": "Exact old lexical helper accepts OWN/../foreign while corrected source rejects"
+    },
+    {
+      "id": "HOST-G02",
+      "previous_severity": "P2",
+      "status": "RESOLVED_SOURCE_ONLY",
+      "corrected_path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/safe-child-status.py",
+      "line": 35,
+      "result": "Repeated signals request stop without unwinding; bounded idempotent settlement requires terminal poll; unsettled and pending-interrupt statuses do not claim settled",
+      "author_actual_controls": {
+        "source_exact_AST_counterexample": true,
+        "before_and_after_PID_marker_metadata_matches": true,
+        "author_native_controller_exit": 0,
+        "old_exact_cleanup_AST_SystemExit": 130,
+        "old_full_runner_CLI_executed": false,
+        "old_child_live_at_false_claim_then_owned_cleanup_confirmed": true,
+        "corrected_real_harmless_child_two_signals_exit": -9,
+        "corrected_idempotence_and_author_PID_readbacks_confirmed": true,
+        "synthetic_never_terminal_unsettled": true,
+        "reviewer_new_child_or_signal_execution": false
+      },
+      "qualification": "Exact original finally/except AST stand-in reproduced false claim, not a full old JVM/CLI run; reviewer reviewed saved receipts and source without rerunning children"
+    },
+    {
+      "id": "HOST-G03",
+      "previous_severity": "P2",
+      "status": "RESOLVED_SOURCE_ONLY",
+      "corrected_path": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/safe-child-status.py",
+      "line": 130,
+      "result": "Bounded sealed explicit environment; no parent copy/iteration; exact selected proxy/CA names only, private-file SHA and names, strict prod and Java option restrictions",
+      "independent_negative_controls": 37,
+      "independent_current_public_template_positive_controls": 7,
+      "real_env_or_keys_read": false
+    }
+  ],
+  "preserved_controls": {
+    "pre_environment_old_guard_16_statements_exact": true,
+    "readiness_resource_old_11_statements_exact": true,
+    "digest_free_emit_NoRedirect_exact": true,
+    "Popen_and_STARTED_exact": true,
+    "whole_active_loop_exact_after_only_new_stop_check_and_reason_rename": true
+  },
+  "false_grant": {
+    "old_template_native_exit": 2,
+    "new_template_native_exit": 2,
+    "child_started": false,
+    "safe_status_only": true,
+    "new_template_false_four_grants_and_runner_SHA_verified": true
+  },
+  "reviewer_actual_native": {
+    "command": [
+      "python3",
+      "-I",
+      "-S",
+      "-B",
+      "/workspace/scratch/rct-validation/host_guard_correction_review/verify-readonly.py"
+    ],
+    "exit_code": 0,
+    "status": "PASS_READ_ONLY_SOURCE_AND_RECEIPT_CHECKS",
+    "evidence": "/workspace/scratch/rct-validation/host_guard_correction_review/verification.safe.json"
+  },
+  "safe_source_and_receipt_limits": [
+    "No new runner, signal or harmless-child execution by reviewer",
+    "No JVM/apps/network/containers/browser/Gradle/keys/source/root-doc writes or children",
+    "Approved source corrections do not grant runtime startup",
+    "Future explicit true root grant must seal exact current artifact/source/JDK/full Renderer manifests, environment names and private-file SHA, TLS/key permissions, routes/readiness and measured resource floor",
+    "Host shared UID, direct-child-only/SIGKILL, Debian versus Temurin, soft RSS/no per-process hard cgroups and Auth loopback trust remain qualified",
+    "Map bounds count Python characters; actual template values are small ASCII, not a hostile OS environment-size sandbox",
+    "Author manifest includes one intentional symlink control fixture by target-content hash; own verification records symlink metadata separately"
+  ],
+  "runtime": "NOT_RUN; no whole host/client/TLS/native Renderer/production acceptance claim",
+  "report": "/workspace/scratch/rct-validation/host_guard_correction_review/REPORT.md"
+}

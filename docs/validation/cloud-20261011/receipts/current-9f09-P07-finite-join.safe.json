@@ -1,0 +1,44 @@
+{
+  "producer": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+  "status": "PASS_NARROW_RESEARCH_P07",
+  "independent_review": "q06_targeted_recheck/review.safe.md#RESEARCH-P07 existing-evidence join \u2014 narrow PASS, current9f09",
+  "proofs": [
+    {
+      "receipt": "P07-actual15-shared-validator-PASS/REPORT.safe.json",
+      "cases": 15,
+      "producer": "48124f57",
+      "result": "allnamedPASS0FES; shared main/test byteidenticaltocurrent",
+      "scope": "actualRSA validpositive/wrongsignature/algorithm/issuer/audience/purpose/requiredclaims/identitytypeddenials"
+    },
+    {
+      "receipt": "P07-public-key-two-real-HTTP-tests-native-PASS/ACTUAL.safe.json",
+      "cases": 2,
+      "producer": "a3a5b3c2",
+      "result": "namedPASS0FES/currentprovidermainandtestidentical",
+      "scope": "actualpublicHTTPoriginalsigner/foreignsigner/coldoutage/recovery/retainedfetchedkey"
+    },
+    {
+      "receipt": "P07-key-isolation-semantic-Source-ready/Auth-public-producer-existing.safe.json",
+      "producer": "1742d1e8",
+      "case": "AuthIT.publicKey_returnsRsaPem",
+      "result": "actualSOURCE_METHODPASSCI+Coverage/currentproducer/testidentical"
+    },
+    {
+      "receipt": "current-9f09-gates.safe.json",
+      "job": 115777784325,
+      "step": 11,
+      "result": "SUCCESS",
+      "scope": "exactpublishedBootconfig/upwait/execNotification test no private path or symlink, no keyread"
+    },
+    {
+      "receipt": "current-9f09-checkout.safe.json",
+      "result": "actualcheckout558049c/treee6a46fe/parents3908+9f09/localtreeMATCH"
+    }
+  ],
+  "current_source_sha256": {
+    "InternalJwtValidator": "b434c44608541df89189c55516bc66e68f7438ab756f9e5888deeb6d6eed5e28",
+    "PublicKeyProvider": "6201b183dd264954054c2710a5fb18924ea56d6af839383e5e20b5698352be1a",
+    "InternalJwtValidatorTest": "699c90b2021b02e27052bee919888bc770aa61c9e06a500c99786402409171b6"
+  },
+  "limits": "Finitecrypto+HTTP+ownedNotificationpathabsence plusSourceotherdeclaredlayouts. No simultaneouseveryconsumerfilesysteminventory/productionUID/readability/exploitation/fullAuthNotificationstack/P21/livegrant/globalQ13PASS. B013/B014FROZEN."
+}

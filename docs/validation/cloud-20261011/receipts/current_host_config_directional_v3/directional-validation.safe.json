@@ -1,0 +1,268 @@
+{
+  "utc": "2026-10-12T09:36:54.424103+00:00",
+  "status": "PASS_SOURCE_AND_SYNTHETIC_INPUT_CORRECTION_ONLY",
+  "finding": "HOSTCFG-G01",
+  "source_functions": [
+    {
+      "path": "/workspace/rutcampustrack/services/notification-bot/bot/grpc_client/bot_service_credentials.py",
+      "source_sha256": "16fe232cd7c544ba2e179685b9c35fef88fe4926547eb34dcb887274be621e14",
+      "selected_function_source_sha256": "577fad774e987a39f040b5b453fbc0720af9b05fcc99d96d51499a762e12c750"
+    },
+    {
+      "path": "/workspace/rutcampustrack/services/notification-bot/bot/services/notification_prefs.py",
+      "source_sha256": "637609781e51ac208a7d7394e50b6396015ef1af65dfdf513c951c1305813796",
+      "selected_function_source_sha256": "390409c069dd181e512fad43939142e61445a52897f52bd0ba7b1f0b3fa893d9"
+    }
+  ],
+  "Java_source": {
+    "path": "/workspace/rutcampustrack/services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/DirectedServiceCredential.java",
+    "sha256": "645713827dfac15d58871e8c0256abf8e76ceb166a152673128f299738e8346d",
+    "execution": "SOURCE_COUNTERPART_ONLY_NO_JVM"
+  },
+  "old_actual_red_new_actual_green": [
+    {
+      "name": "ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN",
+      "old_actual_all_three_rejected": true,
+      "new_actual_all_three_accepted": true,
+      "encoded_chars": 43,
+      "decoded_bytes": 32,
+      "sender_receiver_and_reserved_bot_equal": true
+    },
+    {
+      "name": "SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN",
+      "old_actual_all_three_rejected": true,
+      "new_actual_all_three_accepted": true,
+      "encoded_chars": 43,
+      "decoded_bytes": 32,
+      "sender_receiver_and_reserved_bot_equal": true
+    },
+    {
+      "name": "BOT_TO_ACADEMIC_SERVICE_TOKEN",
+      "old_actual_all_three_rejected": true,
+      "new_actual_all_three_accepted": true,
+      "encoded_chars": 43,
+      "decoded_bytes": 32,
+      "sender_receiver_and_reserved_bot_equal": true
+    },
+    {
+      "name": "BOT_TO_NOTIFICATION_SERVICE_TOKEN",
+      "old_actual_all_three_rejected": true,
+      "new_actual_all_three_accepted": true,
+      "encoded_chars": 43,
+      "decoded_bytes": 32,
+      "sender_receiver_and_reserved_bot_equal": true
+    }
+  ],
+  "four_values_distinct": true,
+  "controls": [
+    {
+      "case": "valid32",
+      "expected": true,
+      "actual_selected_grpc": true,
+      "actual_selected_prefs": true,
+      "Java_source_counterpart": true
+    },
+    {
+      "case": "valid32allzero",
+      "expected": true,
+      "actual_selected_grpc": true,
+      "actual_selected_prefs": true,
+      "Java_source_counterpart": true
+    },
+    {
+      "case": "empty",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    },
+    {
+      "case": "hex64",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    },
+    {
+      "case": "padding",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    },
+    {
+      "case": "short42",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    },
+    {
+      "case": "long44",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    },
+    {
+      "case": "decoded31",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    },
+    {
+      "case": "decoded33",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    },
+    {
+      "case": "wrongAlphabet",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    },
+    {
+      "case": "slashAlphabet",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    },
+    {
+      "case": "space",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    },
+    {
+      "case": "nonASCII",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    },
+    {
+      "case": "noncanonicalAliasSameDecoded32",
+      "expected": false,
+      "actual_selected_grpc": false,
+      "actual_selected_prefs": false,
+      "Java_source_counterpart": false
+    }
+  ],
+  "canonical_generator": "urlsafe_b64encode(secrets.token_bytes(32)).decode(ascii).rstrip(=)",
+  "private_changes": [
+    {
+      "original_path": "/workspace/scratch/rct-validation/current_host_config/private/docker.env",
+      "new_path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/docker.env",
+      "changed_value_names_only": [],
+      "other_values_and_names_equal": true,
+      "unchanged_file_byte_equal": true,
+      "new_mode": "600",
+      "uid": 1000
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/current_host_config/private/inactive-bot-pair.json",
+      "new_path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/inactive-bot-pair.json",
+      "changed_value_names_only": [
+        "BOT_TO_ACADEMIC_SERVICE_TOKEN",
+        "BOT_TO_NOTIFICATION_SERVICE_TOKEN"
+      ],
+      "other_values_and_names_equal": true,
+      "unchanged_file_byte_equal": false,
+      "new_mode": "600",
+      "uid": 1000
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/current_host_config/private/auth.json",
+      "new_path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/auth.json",
+      "changed_value_names_only": [],
+      "other_values_and_names_equal": true,
+      "unchanged_file_byte_equal": true,
+      "new_mode": "600",
+      "uid": 1000
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/current_host_config/private/gateway.json",
+      "new_path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/gateway.json",
+      "changed_value_names_only": [],
+      "other_values_and_names_equal": true,
+      "unchanged_file_byte_equal": true,
+      "new_mode": "600",
+      "uid": 1000
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/current_host_config/private/attendance.json",
+      "new_path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/attendance.json",
+      "changed_value_names_only": [],
+      "other_values_and_names_equal": true,
+      "unchanged_file_byte_equal": true,
+      "new_mode": "600",
+      "uid": 1000
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/current_host_config/private/vapid-p256.key",
+      "new_path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/vapid-p256.key",
+      "changed_value_names_only": [],
+      "other_values_and_names_equal": true,
+      "unchanged_file_byte_equal": true,
+      "new_mode": "600",
+      "uid": 1000
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/current_host_config/private/schedule.json",
+      "new_path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/schedule.json",
+      "changed_value_names_only": [
+        "ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN",
+        "SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN"
+      ],
+      "other_values_and_names_equal": true,
+      "unchanged_file_byte_equal": false,
+      "new_mode": "600",
+      "uid": 1000
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/current_host_config/private/academic.json",
+      "new_path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/academic.json",
+      "changed_value_names_only": [
+        "ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN",
+        "SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN",
+        "BOT_TO_ACADEMIC_SERVICE_TOKEN"
+      ],
+      "other_values_and_names_equal": true,
+      "unchanged_file_byte_equal": false,
+      "new_mode": "600",
+      "uid": 1000
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/current_host_config/private/notification.json",
+      "new_path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/notification.json",
+      "changed_value_names_only": [
+        "BOT_TO_NOTIFICATION_SERVICE_TOKEN"
+      ],
+      "other_values_and_names_equal": true,
+      "unchanged_file_byte_equal": false,
+      "new_mode": "600",
+      "uid": 1000
+    },
+    {
+      "original_path": "/workspace/scratch/rct-validation/current_host_config/private/bff.json",
+      "new_path": "/workspace/scratch/rct-validation/current_host_config_directional_v3/private/bff.json",
+      "changed_value_names_only": [],
+      "other_values_and_names_equal": true,
+      "unchanged_file_byte_equal": true,
+      "new_mode": "600",
+      "uid": 1000
+    }
+  ],
+  "original39_safe_and_private_inputs_unchanged": true,
+  "original_RSA_TLS_VAPID_keys_reused_metadata_unchanged_no_reads_regeneration": true,
+  "seven_specs_only_private_path_changed": true,
+  "runner_v2_byte_roundtrip_only_self_filename": true,
+  "private_values_or_hashes_disclosed": false,
+  "apps_JVM_Docker_network": "NOT_RUN"
+}

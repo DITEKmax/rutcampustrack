@@ -1,0 +1,177 @@
+{
+  "created_utc": "2026-10-12T00:44:08.188775+00:00",
+  "reviewer": "fingerprint_review",
+  "verdict": "APPROVE",
+  "reviewed_commit": "2a1c1f82b3b2a06daf1f666478d796e0a55e3775",
+  "hash": "SHA256",
+  "payload_entries": [
+    {
+      "path": "audit.py",
+      "bytes": 19087,
+      "sha256": "c112b05db7d99c5bba66252707d4ad2cb91d746a32922674e0e69be494431a2f"
+    },
+    {
+      "path": "author-originals/baseline-historical.safe.json",
+      "bytes": 1131,
+      "sha256": "943f16a134375956358729f5ae1eff128809cc1e4edf7cda63afb8df9333b6e3"
+    },
+    {
+      "path": "author-originals/commit-checks.safe.json",
+      "bytes": 820,
+      "sha256": "6d68bf7bd1c22a9ed93862a230c20bd457020126d30e7f174b627e51cd587680"
+    },
+    {
+      "path": "author-originals/corrected-historical.safe.json",
+      "bytes": 712,
+      "sha256": "02fc0761d1e5f74b899ef7eb12775ab23638cd4cd04c7bf0591665502b538864"
+    },
+    {
+      "path": "author-originals/gitleaks_8.24.3_checksums.txt",
+      "bytes": 1099,
+      "sha256": "eefa9ab1ee69571248a6fa070a2a7de0837dd9eb72745d131f8766206aac8ac2"
+    },
+    {
+      "path": "author-originals/historical-proof.safe.json",
+      "bytes": 428,
+      "sha256": "a3010c07154cdd5faa4132d2a0a28583b752316fcff28766315d076a4e0de71e"
+    },
+    {
+      "path": "author-originals/historical-source.safe.json",
+      "bytes": 444,
+      "sha256": "481e30e1f40a6eac7a17e1260ffb33ed2c62d46dd725ca3ad442d0db71fa7697"
+    },
+    {
+      "path": "author-originals/original-manifest.json",
+      "bytes": 1373535,
+      "sha256": "b654f0428d5a189c6886896f7d8529552aa4af1326ba72f13dcec07e552d3e5b"
+    },
+    {
+      "path": "author-originals/provenance.json",
+      "bytes": 471,
+      "sha256": "1c5c854bbae1425b2d3c5d888985253b0d9d8ebfad8b55d2bffb2c00818a5367"
+    },
+    {
+      "path": "author-originals/sealed-safe-manifest.json",
+      "bytes": 1619,
+      "sha256": "b52ecde3bf819ecbf1743854f4f1e2e24d7b692d63a907b11f8678dc7226851f"
+    },
+    {
+      "path": "author-originals/sensitivity.py",
+      "bytes": 3703,
+      "sha256": "81e209736dc4f8deeb4e70d9ee9576067e66d6d9e3429072b3e88026bc707b1a"
+    },
+    {
+      "path": "author-originals/sensitivity.safe.json",
+      "bytes": 1599,
+      "sha256": "2ccd0377e14cfa73557949d94a44be4837aa295b2e1eb6b8144cf713899b5c38"
+    },
+    {
+      "path": "author-originals/summary.safe.json",
+      "bytes": 1944,
+      "sha256": "92cf2020ba8ce1d06b97bba82734ddbed7589ab188ca9f165b0f7e564d2bc277"
+    },
+    {
+      "path": "author-originals/verify.py",
+      "bytes": 3903,
+      "sha256": "2376ffd7f209861a6094484468933df0cfcb34f527da0b42127baddd3075462e"
+    },
+    {
+      "path": "completion.json",
+      "bytes": 1504,
+      "sha256": "777d830f74979eb532bc4148d482de929a6b9971748b91de407256339604f7c1"
+    },
+    {
+      "path": "findings.md",
+      "bytes": 8971,
+      "sha256": "65878ee56ad605f036b5c802a7862ed170fd6ddab071279dc2c926834e3b9cd7"
+    },
+    {
+      "path": "governing/CURRENT.md",
+      "bytes": 5338,
+      "sha256": "2d94df5f37f4617d34fb8813c3dedb4ed041a20eec830ccae6d4b08c097c3bb5"
+    },
+    {
+      "path": "governing/TASK-CONTRACT.md",
+      "bytes": 86218,
+      "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5"
+    },
+    {
+      "path": "governing/decisions.md",
+      "bytes": 11724,
+      "sha256": "d22223fb721663b89628b50b9522e90838530c5569b0a3bf9aef1dd42baa26cd"
+    },
+    {
+      "path": "governing/packet-fingerprint-review.md",
+      "bytes": 3135,
+      "sha256": "ae5aa6a0bfa55af53779ff24ef223f59bf5a95a1302700c6a45431137b675c74"
+    },
+    {
+      "path": "governing/questions.md",
+      "bytes": 9948,
+      "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65"
+    },
+    {
+      "path": "governing/resources.md",
+      "bytes": 2806,
+      "sha256": "ae63028aca376f221f01563ea09d90d199ea2d1602fe03bee2afb22b3fb132d4"
+    },
+    {
+      "path": "hook-and-gate-qualification.json",
+      "bytes": 1488,
+      "sha256": "b5503f8bd678f76de06b681ce7164b1db05670ace391a33e47f9fe4b8c2374a3"
+    },
+    {
+      "path": "input-integrity.json",
+      "bytes": 12559,
+      "sha256": "cd836b84c4f3aaa1192aa01df2c274726e5b223a3ad34274bbfdec3e3a700dd0"
+    },
+    {
+      "path": "native-job-metadata.original.json",
+      "bytes": 1319,
+      "sha256": "e184519d05eaed6d15486b9510f22ba376505d34a0c6200175a4fed180501a84"
+    },
+    {
+      "path": "publication-scanner.safe.json",
+      "bytes": 909,
+      "sha256": "083909eda5fbaf97645ce62aca3c72c2c3d33031fd53ba54474bd6019d9d565b"
+    },
+    {
+      "path": "review.json",
+      "bytes": 2267,
+      "sha256": "f52f370bb5b6c48c1450152934860237eac00d88cdbbb45ca772b1935033e640"
+    },
+    {
+      "path": "reviewed-change.patch",
+      "bytes": 357,
+      "sha256": "b262d203db501f4b5e2e40f691af042e4a656a0f0405dece56ae8aaa24fd37d7"
+    },
+    {
+      "path": "reviewed.gitleaksignore",
+      "bytes": 210,
+      "sha256": "b151fa8f6efc1340a37d1dc616aae0c803e5d2404ed063381f7128a5e03a1ba8"
+    },
+    {
+      "path": "scanner-and-false-positive-audit.json",
+      "bytes": 5228,
+      "sha256": "da66fd58244b7ea707de190e9e1b4fb95bcef5786926339a7ddce688efd226b4"
+    },
+    {
+      "path": "sensitivity-audit.json",
+      "bytes": 2572,
+      "sha256": "e2350cd92f54ff5f2efa8de40824890de30033fd09ddb47d93daf0ba8f648fa1"
+    },
+    {
+      "path": "source-equivalence.json",
+      "bytes": 2709797,
+      "sha256": "7d138271a048bdb26277baadcb10da2d96b5f9ca91be451aba94879611eb54ef"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 525,
+      "sha256": "212ea0dc2ae08e769793ed47730ae5b76d7f318f66b629d1e9de786c8e76cba6"
+    }
+  ],
+  "private_reports_logs_finding_secret_fields": "EXCLUDED",
+  "immutability": "Original safe author and own review receipts preserved as exact bytes; future normalization requires a distinct readable copy",
+  "no_recursive_self_hash": "Transfer manifest hashes this manifest; sealed ZIP contains this exact manifest."
+}

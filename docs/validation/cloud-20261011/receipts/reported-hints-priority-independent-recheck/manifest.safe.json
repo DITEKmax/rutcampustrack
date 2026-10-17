@@ -1,0 +1,20 @@
+{
+  "verdict": "APPROVE_SOURCE",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 606,
+      "sha256": "b75003274e9679b6aa361b9d172a706ba4789f9b0cf33385dc483e5e282ccea8"
+    },
+    {
+      "path": "recheck.safe.json",
+      "bytes": 2276,
+      "sha256": "b74160f07892e4ce682ee3d22785611caf3629c4747e9760d555a0b9e67e9f4b"
+    },
+    {
+      "path": "selected-source-controls.safe.json",
+      "bytes": 2084,
+      "sha256": "402059a70e3ac1d8ca3308d0ae5bbfa753e70c21fb31fccb7688844d901de5cd"
+    }
+  ]
+}

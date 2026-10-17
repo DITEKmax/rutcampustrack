@@ -1,0 +1,39 @@
+{
+  "schema": "RCT_PRECREDENTIAL_READY_V1",
+  "state": "SOURCE_READY_RUNTIME_NOT_RUN",
+  "owner": "client_real_acceptance",
+  "requested_model_effort": "gpt-6.1-sol/xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "prepared_source_sha": "5ced48c466b02097876f4f8aeee6e5c8da92ce1b",
+  "read_checkout_sha": "4c3745f2febdd4b9bcdd39a4e5f1fc9b3199fab1",
+  "r1_ready_sha256": "78178f656c9a8ce6e02dedc72210dff4526b2acdf62d77849e64d5c90c90dc43",
+  "old_failure_archive_sha256": "75e056d60ccf4dcf5dd815ce374397a18b15d063a47db681e497cf5337f4d367",
+  "own_source_hashes": {
+    "probe.cjs": "5a99ac70d692eeebc7ab973a8c792c87d4b824365d84904bbfff71aa298f13ed",
+    "run-probe.py": "7413c81c3c498acaf4a339506ec7624ed76b0259376f5960ad8efa90bf1c5002",
+    "PLAN.md": "5306e7452a8586a7efdfe98a65762eff4d2b804694519ad44980e419864cd302"
+  },
+  "pinned_source_hashes": {
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/common/configLoader.js": "5008b4596bbaf0d18cee9ca546690ee8b062999024c643b1241634de0e6dcdac",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/common/config.js": "b59eeab7d4f4238df737205cf9ad1329736a47f53eefa21d3bf447a7117fccd9",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/transform/transform.js": "e94cdf9be3388e691252a2b4160f9f0cb2a9519bb3ddd8c459e630a1b5f00be4",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/lib/util.js": "deaaf8e3101448ef847e2d619402f1f1587231a12d3bdfcf316436e54b5978f1"
+  },
+  "phases": [
+    "CONFIG_ONLY",
+    "PUBLIC_BROWSER_ONLY"
+  ],
+  "resource_limits": {
+    "node_heap_mib": 512,
+    "owned_total_rss_stop_bytes": 1610612736,
+    "cache_stop_bytes": 33554432,
+    "deadline_seconds": 60,
+    "disk_floor_bytes": 4294967296,
+    "shared_stop_bytes": 16106127360,
+    "shared_memory_reserve_bytes": 1073741824
+  },
+  "no_API_login_dataset_seed": true,
+  "worker_effective_teachingInstant_type": "NOT_MEASURED_CONFIG_ONLY",
+  "python_ast": "PASS_SOURCE_ONLY",
+  "Node_browser_API": "NOT_RUN"
+}

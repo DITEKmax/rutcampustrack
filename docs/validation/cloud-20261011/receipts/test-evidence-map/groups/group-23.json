@@ -1,0 +1,99 @@
+{
+  "group_id": "RENDERER",
+  "criterion": "subprocess tempHOME/XDG writable isolation",
+  "related_source_story_ids": [
+    "JS-HEADMAN-19",
+    "JS-TEACHER-07",
+    "JS-ADMIN-13"
+  ],
+  "research_ids": [
+    "P16",
+    "P19"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/ProcessRunnerTest.java",
+      "class": "ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest",
+      "methods": [
+        {
+          "method": "runProvidesWritableHomeAndXdgDirs",
+          "line": 15,
+          "assertion_evidence": [
+            {
+              "line": 21,
+              "expression": "assertThat(result.exitCode()).isZero();"
+            },
+            {
+              "line": 22,
+              "expression": "assertThat(result.output())"
+            },
+            {
+              "line": 26,
+              "expression": "assertThat(tempDir.resolve(\"<literal-redacted>\").resolve(\"<literal-redacted>\")).isDirectory();"
+            },
+            {
+              "line": 27,
+              "expression": "assertThat(tempDir.resolve(\"<literal-redacted>\").resolve(\"<literal-redacted>\")).isDirectory();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:document-renderer-service:document-renderer-app:test --tests ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/document-renderer-service/document-renderer-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:document-renderer-service:document-renderer-app:test"
+    ],
+    "command_if_java": "./gradlew :services:document-renderer-service:document-renderer-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "Only shell env directory test exists in renderer module. No LibreOffice/PDF/PNG/HTML/XLSX actual conversion assertion; explicit synthetic RPC+format/content/concurrent temp isolation runtime needed. CI matrix also omits renderer.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

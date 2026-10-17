@@ -1,0 +1,45 @@
+{
+  "actual_native_xml": [
+    {
+      "attempt": "initial-1",
+      "sha256": "124679373a01a80a4cdc834c55b1b969efce5fa19fddf580f5f712c9ad6176a6",
+      "counts": {
+        "tests": 2,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "name": "legalPageSizesPreserveExactOwnRowsTypesAssignmentsAndTotals()",
+          "outcome": "PASS",
+          "failure_type": null
+        },
+        {
+          "name": "teacherListDoesNotPublishPendingAdoptionBeforeExactResume()",
+          "outcome": "FAIL",
+          "failure_type": "java.lang.AssertionError"
+        }
+      ]
+    },
+    {
+      "attempt": "green-1",
+      "sha256": "fa3dae6b36cb5d1914090c1a31ad0a029a84c79dd6e553e20b22ef26f9bff103",
+      "counts": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "name": "teacherListDoesNotPublishPendingAdoptionBeforeExactResume()",
+          "outcome": "PASS",
+          "failure_type": null
+        }
+      ]
+    }
+  ],
+  "scope": "Original red/green publication rule only; not execution of combined current repository",
+  "current_teacher_query_same_as_green_source": true
+}

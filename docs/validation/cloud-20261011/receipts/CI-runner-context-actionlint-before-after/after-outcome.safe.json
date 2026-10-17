@@ -1,0 +1,14 @@
+{
+  "phase": "after",
+  "nativeExit": 0,
+  "errors": [],
+  "diagnosticBytes": 0,
+  "allOwnedReaped": true,
+  "settled": true,
+  "peaks": {
+    "owned_rss_bytes": 13221888,
+    "run_allocated_bytes": 7270400,
+    "shared_memory_bytes": 4969287680
+  },
+  "noProductRuntime": true
+}

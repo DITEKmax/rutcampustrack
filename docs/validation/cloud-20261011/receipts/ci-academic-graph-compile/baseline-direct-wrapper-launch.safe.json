@@ -1,0 +1,8 @@
+{
+  "utc": "2026-10-12T04:57:55.035434+00:00",
+  "status": "WRAPPER_NOT_EXECUTABLE_NATIVE_GRADLE_NOT_RUN",
+  "exception": "PermissionError",
+  "errno": 13,
+  "owned_processes_spawned": 0,
+  "correction": "Invoke bash ./gradlew; keep tracked mode unchanged; use distinct baseline-bash log"
+}

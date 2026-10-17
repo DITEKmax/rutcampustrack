@@ -1,7 +1,9 @@
 """Tests for otp.requested handler (M09 G2, 08 P0-2)."""
 
 import asyncio
+import traceback
 from unittest.mock import AsyncMock, MagicMock
+from uuid import uuid4
 
 import pytest
 
@@ -129,15 +131,71 @@ async def test_handle_otp_requested_custom_ttl_rounds_to_minutes():
 
 
 @pytest.mark.asyncio
-async def test_handle_otp_requested_send_failure_does_not_finalize_tracker():
+async def test_handle_otp_requested_send_failure_is_safe_and_does_not_finalize_tracker(caplog):
     bot = MagicMock()
-    bot.send_message = AsyncMock(side_effect=RuntimeError("telegram down"))
+    marker = uuid4().hex
+    bot.send_message = AsyncMock(side_effect=RuntimeError(marker))
     tracker = _tracker()
     event = {
         "event_type": "otp.requested",
         "payload": {"telegram_id": 42, "code": "123456", "ttl_seconds": 300},
     }
 
-    await handle_otp_requested(event, bot=bot, tracker=tracker)
+    with pytest.raises(RuntimeError) as failure:
+        await handle_otp_requested(event, bot=bot, tracker=tracker)
 
+    assert str(failure.value) == "OTP Telegram delivery failed"
+    assert failure.value.__cause__ is None
+    rendered = "".join(traceback.format_exception(failure.value))
+    safe_trace = marker not in rendered
+    safe_log = marker not in caplog.text
+    assert safe_trace
+    assert safe_log
+    tracker.finalize_with_bot_msg.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_subject_delete_is_challenge_scoped_without_login_or_reset_link():
+    bot = _bot(sent_message_id=1003)
+    tracker = _tracker()
+    challenge = "S" * 32
+    await handle_otp_requested(
+        {
+            "payload": {
+                "telegram_id": 42,
+                "code": "123456",
+                "ttl_seconds": 120,
+                "purpose": "subject_delete",
+                "challenge_id": challenge,
+                "attempts_remaining": 3,
+            }
+        },
+        bot=bot,
+        tracker=tracker,
+    )
+    text = bot.send_message.await_args.kwargs["text"]
+    assert "Подтверждение удаления предмета" in text
+    assert "необратимо" in text
+    assert "123456" in text
+    assert WEB_LOGIN_URL not in text and WEB_PASSWORD_RESET_URL not in text
+    tracker.finalize_with_bot_msg.assert_awaited_once_with(42, 1003, purpose=f"subject_delete:{challenge}")
+    await _drain_tasks()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("invalid", [{"challenge_id": "wrong"}, {"telegram_id": "42"}, {"attempts_remaining": 4}])
+async def test_subject_delete_refuses_unbound_challenge_before_any_delivery(invalid):
+    bot = _bot()
+    tracker = _tracker()
+    payload = {
+        "telegram_id": 42,
+        "code": "123456",
+        "ttl_seconds": 120,
+        "purpose": "subject_delete",
+        "challenge_id": "S" * 32,
+        "attempts_remaining": 3,
+    }
+    payload.update(invalid)
+    await handle_otp_requested({"payload": payload}, bot=bot, tracker=tracker)
+    bot.send_message.assert_not_called()
     tracker.finalize_with_bot_msg.assert_not_called()

@@ -1,0 +1,41 @@
+{
+  "schema": "RCT_BOOT_OUTER_INDEPENDENT_SOURCE_REVIEW_MANIFEST_V1",
+  "utc": "2026-10-13T12:21:02.292363+00:00",
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": "BOOT-OUTER-CLEANUP-IGNORES-FRESH-BIRTH-PRESENCE",
+      "priority": 2,
+      "source": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source/read-existing-boot.py",
+      "locus": "CAPTURE stage error cleanup"
+    }
+  ],
+  "native_API_log_private_read": false,
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 4621,
+      "sha256": "f56635e3b32c6032bd61ba889405efa7555eb469b483efa82ee4a265c4324798"
+    },
+    {
+      "path": "check-fresh-live-birth-ast.py",
+      "bytes": 3310,
+      "sha256": "bb01749fdcf38dac9b67f9fad2962c0046679dea44cba1ab6ab755304b17cc5f"
+    },
+    {
+      "path": "fresh-live-birth-counterexample.safe.json",
+      "bytes": 574,
+      "sha256": "11c961b65b08dfd9d0fa7f4995fb6a99e80889661fdf75fdcb49f36e484e0e66"
+    },
+    {
+      "path": "selected-flow-positives.safe.json",
+      "bytes": 1120,
+      "sha256": "0f5e629d61d1a7fb4b305638c73bf09a67697e97df32d450b83b7a15426c1a22"
+    },
+    {
+      "path": "source-bindings.safe.json",
+      "bytes": 1041,
+      "sha256": "2ca84b8a91eb1c88a74a2a50235298ed37c63f561db668a88d49d19de2662c97"
+    }
+  ]
+}

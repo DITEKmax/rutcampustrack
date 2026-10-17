@@ -1,0 +1,114 @@
+{
+  "source": "/workspace/scratch/rct-validation/hostcfg_g01_v3_recheck",
+  "manifest": "immutable-review-manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "9ed626516aa73fa54aaee645a3217451191f6bf0bcd5587bce6865ac774446f8",
+      "original_bytes": 3042,
+      "working_sha256": "9ed626516aa73fa54aaee645a3217451191f6bf0bcd5587bce6865ac774446f8",
+      "working_bytes": 3042,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "HANDOFF.md",
+      "original_sha256": "2db060e960f3dd3b224bee97f28a8881f637ae90b6d78f5f9aa4727c85500391",
+      "original_bytes": 2540,
+      "working_sha256": "2db060e960f3dd3b224bee97f28a8881f637ae90b6d78f5f9aa4727c85500391",
+      "working_bytes": 2540,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "REPORT.md",
+      "original_sha256": "e7fb3069d136fd23f6b57bd044ee7b4064a0e38f833e5f2e3ad4d4fe79964fea",
+      "original_bytes": 9381,
+      "working_sha256": "e7fb3069d136fd23f6b57bd044ee7b4064a0e38f833e5f2e3ad4d4fe79964fea",
+      "working_bytes": 9381,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "attempts.ndjson",
+      "original_sha256": "9ca008b5ff89b361035f88a50d6ad211ecf9c932b981606446c60e7a58b21d9e",
+      "original_bytes": 1051,
+      "working_sha256": "9ca008b5ff89b361035f88a50d6ad211ecf9c932b981606446c60e7a58b21d9e",
+      "working_bytes": 1051,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "canonical-controls-and-actual-env.safe.json",
+      "original_sha256": "b71dde57714b4eeaf24f4902e44a4908da29eea089a37265dad3adfbe95ae2c2",
+      "original_bytes": 7472,
+      "working_sha256": "b71dde57714b4eeaf24f4902e44a4908da29eea089a37265dad3adfbe95ae2c2",
+      "working_bytes": 7472,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "check.py",
+      "original_sha256": "b8447bcd5ef71571b1248b2c4dce8a936d3b96b7f645568d74019c99b414f8be",
+      "original_bytes": 17372,
+      "working_sha256": "1ba97de90b396e8ab87fd8401bd2e3a818ac01f96d9fb8911caeb748f7081a0b",
+      "working_bytes": 6159,
+      "transformation": "byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "check.py.readable.zip"
+    },
+    {
+      "path": "effective-pointer-and-v3-source.safe.json",
+      "original_sha256": "245ca6e78312506bd16a7de67213ac3f102f7c08f2433bc80c75de77ac01b1c9",
+      "original_bytes": 1031,
+      "working_sha256": "245ca6e78312506bd16a7de67213ac3f102f7c08f2433bc80c75de77ac01b1c9",
+      "working_bytes": 1031,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "findings.safe.json",
+      "original_sha256": "ea6565f6b50181115828a510d4d895f7d092072eb2e3eb3729b3be271e866b4c",
+      "original_bytes": 673,
+      "working_sha256": "ea6565f6b50181115828a510d4d895f7d092072eb2e3eb3729b3be271e866b4c",
+      "working_bytes": 673,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "input-and-original-preservation.safe.json",
+      "original_sha256": "0b7922c2d7d04515ac9a8b1c8f207fa9efd578d6efb3677c4e6c7d8a2b5fa44f",
+      "original_bytes": 490,
+      "working_sha256": "0b7922c2d7d04515ac9a8b1c8f207fa9efd578d6efb3677c4e6c7d8a2b5fa44f",
+      "working_bytes": 490,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "resource-and-qualification.safe.json",
+      "original_sha256": "745e113e750599844d3a596898ae3dd43d16d1c00e1017e0b401abbe70171235",
+      "original_bytes": 801,
+      "working_sha256": "745e113e750599844d3a596898ae3dd43d16d1c00e1017e0b401abbe70171235",
+      "working_bytes": 801,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "scope-erratum-and-preservation.safe.json",
+      "original_sha256": "95a2508efce49ef1b7afb7c011f2f510d61c79de337bb6d7262b138137757011",
+      "original_bytes": 1322,
+      "working_sha256": "95a2508efce49ef1b7afb7c011f2f510d61c79de337bb6d7262b138137757011",
+      "working_bytes": 1322,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verification-native.safe.json",
+      "original_sha256": "61a93f0ef597d9f69c2788345113e38a0d970ef8e897ed4f4e848b5df397c341",
+      "original_bytes": 1070,
+      "working_sha256": "61a93f0ef597d9f69c2788345113e38a0d970ef8e897ed4f4e848b5df397c341",
+      "working_bytes": 1070,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-review-manifest.json",
+      "original_sha256": "3fe438a022ac8f207d930e61b1acd29fd3ec28eda5ed8aea297dbcaa7d54c823",
+      "original_bytes": 2626,
+      "working_sha256": "dfd58b4bd122fffd1cf8c44d9b3978ad4d6b4e35321f4f81b13503bdb43f6610",
+      "working_bytes": 1393,
+      "transformation": "external original manifest byte equal; exact working view losslessly zipped to avoid formatting historical evidence",
+      "working_path": "immutable-review-manifest.json.readable.zip"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip",
+  "manifest_external": true
+}

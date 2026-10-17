@@ -1,0 +1,11 @@
+{
+  "time": "2026-10-12T02:56:46.901484+00:00",
+  "own_session": "54c18760-c871-4656-ac42-ef24175072e6",
+  "own3_ids_absent": [
+    "ef45de797eb4e73273784181f6ac2b51bf890f2e496d4fe6842ecf77db370a83",
+    "1c79fa1e9b30baafc7b5784b5296e61a355fc678920457eec8f1821111e68689",
+    "a28ca79d81f0e9a64cd1ee7fc9707598c8a080f3627282340cfef7b64fc473c8"
+  ],
+  "method": "standard Testcontainers/Ryuk; no manual resource deletion",
+  "other_container_ids_preserved": []
+}

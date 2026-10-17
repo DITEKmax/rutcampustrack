@@ -1,0 +1,19 @@
+{
+  "utc": "2026-10-12T08:14:06.153187+00:00",
+  "attempt03_start_derived_from_terminal_elapsed": "2026-10-12T07:56:41.576807+00:00",
+  "xml_present_at_shared_build_path": true,
+  "xml_mtime_utc": "2026-10-12T07:19:52.334293+00:00",
+  "xml_older_than_attempt03": true,
+  "attempt03_native_XML_counts": null,
+  "native_XML_limitation": "Interrupted attempts02/03 produced no retained current completed XML; the shared path holds old attempt01 XML and must not be credited to them.",
+  "attempt03_safe_selected_native_task_lines": [
+    "> Task :services:academic-service:academic-app:compileJava UP-TO-DATE",
+    "> Task :services:academic-service:academic-app:compileTestJava UP-TO-DATE",
+    "> Task :services:academic-service:academic-app:integrationTest"
+  ],
+  "private_log_bytes": 5045,
+  "private_log_mode": "0o600",
+  "private_log_sha256": "4bc336dd511e5f913e84afb918e0a559f1e8b5546272f24223378abde5621f9e",
+  "seven_scenarios_PASS": false,
+  "mutation_granted": false
+}

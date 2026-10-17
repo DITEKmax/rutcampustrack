@@ -1,0 +1,25 @@
+{
+  "utc": "2026-10-12T06:38:55.924288+00:00",
+  "attempt3_native_exit": 0,
+  "exec_session": 34373,
+  "actual_replacements_total": 10831,
+  "actual_replacements_by_attempt": {
+    "2": 250,
+    "3": 10581
+  },
+  "old_helper_pid216393_absent": true,
+  "new_helper_pid216989_absent": true,
+  "pending_temp": null,
+  "exact_all_alias_and_SHA_final_verification": "PASS",
+  "protected_old_receipts_JAR16_Vue22": "PASS",
+  "observed_before_first_mutation_free": 7101943808,
+  "attempt2_immediate_net_free_gain": 28913664,
+  "attempt3_immediate_net_free_gain": 1476419584,
+  "free_now": 8604520448,
+  "net_before_first_mutation_to_now": 1502576640,
+  "runtime_phase_peak_budget": 8277277457,
+  "runtime_phase_remaining_headroom": 327242991,
+  "floor4294967296_preserved": true,
+  "no_apps_keys_staging_or_containers": true,
+  "qualification": "Net VFS includes own receipt allocation and unrelated Root document allocation between/within attempts; 1519378432 is old inode block potential, not net recovered attribution."
+}

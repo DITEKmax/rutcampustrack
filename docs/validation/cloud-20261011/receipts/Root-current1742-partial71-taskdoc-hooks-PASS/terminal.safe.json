@@ -1,0 +1,38 @@
+{
+  "direct_pid": 517032,
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 517032,
+      "start_ticks": 14672219
+    },
+    {
+      "pid": 517044,
+      "start_ticks": 14672222
+    },
+    {
+      "pid": 517049,
+      "start_ticks": 14672247
+    },
+    {
+      "pid": 517072,
+      "start_ticks": 14672255
+    },
+    {
+      "pid": 517078,
+      "start_ticks": 14672322
+    },
+    {
+      "pid": 517140,
+      "start_ticks": 14672355
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": true
+}

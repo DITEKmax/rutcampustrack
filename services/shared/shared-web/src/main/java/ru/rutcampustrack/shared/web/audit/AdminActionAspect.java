@@ -9,26 +9,22 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
 /**
- * Aspect для {@link AdminAction} — записывает audit entry на каждый
- * проксируемый метод.
+ * Aspect для {@link AdminAction} — записывает audit entry на каждый проксируемый метод.
  *
- * <p>До M16 G6 был заглушкой (log.debug). Теперь делегирует в
- * {@link AuditLogStorage} (если bean есть) и обогащает через
- * {@link AuditLogContextProvider} (current user + correlation).
+ * <p>До M16 G6 был заглушкой (log.debug). Теперь делегирует в {@link AuditLogStorage} (если bean
+ * есть) и обогащает через {@link AuditLogContextProvider} (current user + correlation).
  *
  * <h3>Контракты</h3>
+ *
  * <ul>
- *   <li><b>Best-effort:</b> exceptions от storage НЕ пробрасываются —
- *       проблемы аудита не должны ломать ADMIN endpoint. Логируем
- *       warn'ом и продолжаем.</li>
- *   <li><b>After-method:</b> entry создаётся ПОСЛЕ проксируемого метода
- *       — мы знаем succeeded/error состояние. На exception
- *       проксируемого метода exception всё равно пробрасывается caller'у
- *       (audit просто записывает factually что произошло).</li>
- *   <li><b>Optional dependencies:</b> {@code AuditLogStorage} и
- *       {@code AuditLogContextProvider} оба optional через
- *       {@code ObjectProvider} — shared-web grateful'но deg'ит до log-only
- *       если сервис их не предоставил.</li>
+ *   <li><b>Best-effort:</b> exceptions от storage НЕ пробрасываются — проблемы аудита не должны
+ *       ломать ADMIN endpoint. Логируем warn'ом и продолжаем.
+ *   <li><b>After-method:</b> entry создаётся ПОСЛЕ проксируемого метода — мы знаем succeeded/error
+ *       состояние. На exception проксируемого метода exception всё равно пробрасывается caller'у
+ *       (audit просто записывает factually что произошло).
+ *   <li><b>Optional dependencies:</b> {@code AuditLogStorage} и {@code AuditLogContextProvider} оба
+ *       optional через {@code ObjectProvider} — shared-web grateful'но deg'ит до log-only если
+ *       сервис их не предоставил.
  * </ul>
  */
 @Aspect
@@ -40,8 +36,9 @@ public class AdminActionAspect {
     private final ObjectProvider<AuditLogStorage> storageProvider;
     private final ObjectProvider<AuditLogContextProvider> contextProvider;
 
-    public AdminActionAspect(ObjectProvider<AuditLogStorage> storageProvider,
-                             ObjectProvider<AuditLogContextProvider> contextProvider) {
+    public AdminActionAspect(
+            ObjectProvider<AuditLogStorage> storageProvider,
+            ObjectProvider<AuditLogContextProvider> contextProvider) {
         this.storageProvider = storageProvider;
         this.contextProvider = contextProvider;
     }
@@ -64,8 +61,8 @@ public class AdminActionAspect {
 
     private void recordAudit(String action, ProceedingJoinPoint pjp, Throwable thrown) {
         AuditLogStorage storage = storageProvider.getIfAvailable();
-        AuditLogContextProvider context = contextProvider.getIfAvailable(
-                () -> AuditLogContextProvider.ANONYMOUS);
+        AuditLogContextProvider context =
+                contextProvider.getIfAvailable(() -> AuditLogContextProvider.ANONYMOUS);
 
         Long userId;
         String correlationId;
@@ -79,25 +76,33 @@ public class AdminActionAspect {
             correlationId = null;
         }
 
-        AuditLogEntry entry = AuditLogEntry.builder(action)
-                .userId(userId)
-                .correlationId(correlationId)
-                .succeeded(thrown == null)
-                .errorMessage(thrown == null ? null : truncate(thrown.toString(), 500))
-                .build();
+        AuditLogEntry entry =
+                AuditLogEntry.builder(action)
+                        .userId(userId)
+                        .correlationId(correlationId)
+                        .succeeded(thrown == null)
+                        .errorMessage(thrown == null ? null : truncate(thrown.toString(), 500))
+                        .build();
 
         if (storage == null) {
             // M16 G6 — graceful degradation если сервис не предоставил storage.
-            log.warn("[audit-storage missing] action={} user={} succeeded={} method={}",
-                    action, userId, thrown == null, pjp.getSignature().toShortString());
+            log.warn(
+                    "[audit-storage missing] action={} user={} succeeded={} method={}",
+                    action,
+                    userId,
+                    thrown == null,
+                    pjp.getSignature().toShortString());
             return;
         }
 
         try {
             storage.store(entry);
         } catch (Exception e) {
-            log.warn("audit storage failed (entry dropped): action={} user={} err={}",
-                    action, userId, e.toString());
+            log.warn(
+                    "audit storage failed (entry dropped): action={} user={} err={}",
+                    action,
+                    userId,
+                    e.toString());
         }
     }
 

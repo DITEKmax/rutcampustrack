@@ -1,0 +1,31 @@
+{
+  "schema": "RCT_NARROW_INDEPENDENT_RECHECK_MANIFEST_V1",
+  "utc": "2026-10-13T10:08:37.526448+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "closed_finding": "FIRST3-OWN-LINK-CLEANUP-ON-EXCEPTION",
+  "findings": [],
+  "independent_actual_AST_RAM_controls": 8,
+  "native": "NOT_RUN",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 4087,
+      "sha256": "9795dac0e9f0ec1c182fc20547d662ccfa5be1d01989ef2cec7a8d84ed0a2759"
+    },
+    {
+      "path": "bindings.safe.json",
+      "bytes": 6085,
+      "sha256": "c414d96a5d498d79a35ddc4cc78fff03b01b07910584aa6f18a174b4ce1c6079"
+    },
+    {
+      "path": "check-r1-selected-ast.py",
+      "bytes": 5006,
+      "sha256": "d60dad720f64d743d6e9b26d7d4a9d9259b7c68e1db5be59eeaf55bade059e77"
+    },
+    {
+      "path": "counterexamples-r1.safe.json",
+      "bytes": 3150,
+      "sha256": "26dddf3c201eb711140cced3f119dfa6b2d838465c6bbb1db5dc44d178b9b4fd"
+    }
+  ]
+}

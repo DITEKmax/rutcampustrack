@@ -1,0 +1,164 @@
+{
+  "sealed_at": "2026-10-12T05:44:51.180186+00:00",
+  "scope": "READ_ONLY strict source/owncapacity/phasebudget correction; safe NEW receipts only",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/CURRENT.json",
+      "sha256": "2cdbafc675df7efb5ba16efebea0c4bcef64fc3a23105f70376470b141ea8277",
+      "bytes": 258
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/HANDOFF.md",
+      "sha256": "8897f28ed7da8660569fca61ec1ffd4456624c9722a25d629b6e6832e7a91067",
+      "bytes": 9422
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/RESULT.json",
+      "sha256": "0ffeadd4a4f705d3c2454306c1e14113adbd0c9765715e02f029445cffe6c6e1",
+      "bytes": 1580
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/attempts.ndjson",
+      "sha256": "b9c972fe8da4b67730f622ccb867ab4e691c800f37ad0fd4a2362919f704a9b9",
+      "bytes": 3663
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/auth-gateway-test-deps-strict-candidates.json",
+      "sha256": "cffee96228851dd7c759d8d0b396303a039e4c7e648d0e82aab98190588972e2",
+      "bytes": 982457
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/auth-generator-strict-candidates.json",
+      "sha256": "3120691fb562ae575073a5cb2d6c2c49c6513ce42b3f4b602363b0a4389452e0",
+      "bytes": 970988
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/ci-evidence-strict-candidates.json",
+      "sha256": "f1152fc400c3ead189682a3f5acfcb3b99204538cb7774bad86e6b00fe837a86",
+      "bytes": 967178
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/client-current-artifacts-strict-candidates.json",
+      "sha256": "6b6e352d388a4683cd152a97fd4abfa5594a32995320da666645ca065cc62ae2",
+      "bytes": 1020340
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/data-lecture-strict-candidates.json",
+      "sha256": "2562479ead08b066d1a8c7c248a6a99ba282e85b436a22392fcbf18f3c0c8452",
+      "bytes": 966755
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/delivery-strict-candidates.json",
+      "sha256": "b03e2f678e0c16696941392d72d767b6a29bcf93e05b4da844e03f518172d796",
+      "bytes": 960744
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/exports-strict-candidates.json",
+      "sha256": "865738cd393b09945fdf7049865accb644f1f6a46877ecf4219593fa3bc69c7f",
+      "bytes": 943161
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/file-boundaries-strict-candidates.json",
+      "sha256": "b4b2bd015c9acb270e2ce1cbada41951427f309679931f01ce67bc2d102cad50",
+      "bytes": 973897
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/filter-proof.json",
+      "sha256": "9b1e70f0b1dfb41f805f1aaece6f35a3624fe3413e9fe9e697bf0e110b5e9dca",
+      "bytes": 1492
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/filter-proof.py",
+      "sha256": "23432f3e7bc2528adfbc9c45bdd867ec60971325bee9b6eea942290478270908",
+      "bytes": 3019
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/final-identity-and-overlap.json",
+      "sha256": "a4afa0f2211e0f1555b557be09316ae4080804e5495f208d81b5d6536ad718a1",
+      "bytes": 563
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/final-verify.py",
+      "sha256": "60b6c41db9fc9e3ccd88e6c5dc38163b4355afb12ae45a479677f8d243891cd5",
+      "bytes": 6545
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/gateway-claims-strict-candidates.json",
+      "sha256": "454d6593f7275448713d6ff46dcd2714aff832ab75f883e20ac841b0d2d81f03",
+      "bytes": 970988
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/notification-provider-strict-candidates.json",
+      "sha256": "296cb38b1c0e6eb0e2f3b8216b45e29d13aa5c61bf18d4a7b52494cd97dffd14",
+      "bytes": 978923
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/np01-config-strict-candidates.json",
+      "sha256": "78db3b71921788172db5d7e36a17b619da5c27d170d9d37d1ca18afea78723c4",
+      "bytes": 960972
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/np01-contract-strict-candidates.json",
+      "sha256": "4e45f64a820f8fae14d612e034f64e72f8983f54ca265f8cf2d49b34daa8bac6",
+      "bytes": 963660
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/original-seals-preserved.json",
+      "sha256": "e4ff3802ee2f3234675bc020306b3b2e6d755b464b291bb25054a8e0d4a2abc5",
+      "bytes": 1386
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/ownership-evidence.json",
+      "sha256": "d29a8b447b4e759b6e77ed48e9d95b801a2490fac6b27b255d256379c40e1ac3",
+      "bytes": 11691
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/phase-budget.json",
+      "sha256": "7252c2bb0e4f3c4a294a120766b7eacee6c6dd610468abd34253c996afd08fde",
+      "bytes": 1090
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/preflight.json",
+      "sha256": "0359c08af9e8bc9197d07f859994998377da39137e18f76914421af01eb14bc6",
+      "bytes": 196
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/recovery-strict-candidates.json",
+      "sha256": "78517b15486a7655b756e27dffd02cd72094a260582389a4cb1562a5e11ee87c",
+      "bytes": 962864
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/reference-link-ledger-template.json",
+      "sha256": "4b1e00ffad816b050263bd19a768c1e05493f5bef2a01efdce6ea256aca37206",
+      "bytes": 477743
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/renderer-files-strict-candidates.json",
+      "sha256": "23453e0b24c9deafc643c69e0e119292406f0bc63caf3895ad883d3da0db0952",
+      "bytes": 967228
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/security-fingerprint-strict-candidates.json",
+      "sha256": "5d061c3d410ef6927a3fa987ee66673d73010debaa9ef7b24f096df1cdde37cf",
+      "bytes": 987361
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/security-strict-candidates.json",
+      "sha256": "532863bc767d25ba84b314e659e9c6bb4ff833872c583eed6715764dd6cc6246",
+      "bytes": 960684
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/strict-source-diagnosis.json",
+      "sha256": "af7354121625469d1e3ad4252bd12821dedb65644660018e84e5bce27715b677",
+      "bytes": 9872
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/host_capacity_correction/strict-source-plan.py",
+      "sha256": "51ea5ef03c68b81286001a17a21f8dd708d8e127f48c0dae4487c268da4593f7",
+      "bytes": 7334
+    }
+  ],
+  "file_count": 31,
+  "bytes": 16074054,
+  "resource_mutation": false
+}

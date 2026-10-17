@@ -1,5 +1,9 @@
 package ru.rutcampustrack.academic.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -13,26 +17,19 @@ import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * Verifies findByGroupId / findByRole return users in Cyrillic-alphabetical
- * order via the ru_icu collation (V21 + V22). Without ICU, default C-locale
- * sort puts «Ё» after «Я»; with ICU it lands between «Е» and «Ж».
+ * Verifies findByGroupId / findByRole return users in Cyrillic-alphabetical order via the ru_icu
+ * collation (V21 + V22). Without ICU, default C-locale sort puts «Ё» after «Я»; with ICU it lands
+ * between «Е» and «Ж».
  *
- * <p>Insertion order in this test is intentionally NOT alphabetical, so a
- * regression to heap-scan ordering would put «Янов» first.
+ * <p>Insertion order in this test is intentionally NOT alphabetical, so a regression to heap-scan
+ * ordering would put «Янов» first.
  */
 @Transactional
 class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private GroupRepository groupRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private GroupRepository groupRepository;
 
     @Test
     void findByGroupId_returnsCyrillicSortedOrder() {
@@ -40,10 +37,10 @@ class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
 
         // Insert deliberately out of order: Я → А → Ё → И. Heap scan would
         // preserve this; ICU ORDER BY must yield А, Ё, И, Я.
-        insertStudent(groupId, "sort_yanov",   "Янов",    "Ян",    "Янович",   1001L);
+        insertStudent(groupId, "sort_yanov", "Янов", "Ян", "Янович", 1001L);
         insertStudent(groupId, "sort_abramov", "Абрамов", "Антон", "Андреевич", 1002L);
-        insertStudent(groupId, "sort_yozhik",  "Ёжиков",  "Ефим",  "Егорович",  1003L);
-        insertStudent(groupId, "sort_ivanov",  "Иванов",  "Иван",  "Иванович",  1004L);
+        insertStudent(groupId, "sort_yozhik", "Ёжиков", "Ефим", "Егорович", 1003L);
+        insertStudent(groupId, "sort_ivanov", "Иванов", "Иван", "Иванович", 1004L);
 
         List<User> students = userRepository.findByGroupId(groupId);
 
@@ -56,10 +53,10 @@ class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
     void findByGroupIdPageable_returnsCyrillicSortedOrder() {
         Long groupId = createGroup("СОРТ-022");
 
-        insertStudent(groupId, "p_yanov",   "Янов",    "Ян",    "Янович",   2001L);
+        insertStudent(groupId, "p_yanov", "Янов", "Ян", "Янович", 2001L);
         insertStudent(groupId, "p_abramov", "Абрамов", "Антон", "Андреевич", 2002L);
-        insertStudent(groupId, "p_yozhik",  "Ёжиков",  "Ефим",  "Егорович",  2003L);
-        insertStudent(groupId, "p_ivanov",  "Иванов",  "Иван",  "Иванович",  2004L);
+        insertStudent(groupId, "p_yozhik", "Ёжиков", "Ефим", "Егорович", 2003L);
+        insertStudent(groupId, "p_ivanov", "Иванов", "Иван", "Иванович", 2004L);
 
         Pageable pageable = PageRequest.of(0, 50);
         List<User> students = userRepository.findByGroupId(groupId, pageable).getContent();
@@ -74,20 +71,22 @@ class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
         Long groupId = createGroup("СОРТ-023");
 
         insertStudent(groupId, "arch_active1", "Богданов", "Борис", "Борисович", 3001L);
-        Long archivedId = insertStudent(groupId, "arch_archived", "Абрамов", "Антон", "Андреевич", 3002L);
+        Long archivedId =
+                insertStudent(groupId, "arch_archived", "Абрамов", "Антон", "Андреевич", 3002L);
         insertStudent(groupId, "arch_active2", "Васильев", "Виктор", "Витальевич", 3003L);
 
         // Archive Абрамов — он не должен попасть в выдачу.
-        userRepository.findById(archivedId).ifPresent(u -> {
-            u.setStatus(AccountStatus.ARCHIVED);
-            userRepository.save(u);
-        });
+        userRepository
+                .findById(archivedId)
+                .ifPresent(
+                        u -> {
+                            u.setStatus(AccountStatus.ARCHIVED);
+                            userRepository.save(u);
+                        });
 
         List<User> students = userRepository.findByGroupId(groupId);
 
-        assertThat(students)
-                .extracting(User::getLastName)
-                .containsExactly("Богданов", "Васильев");
+        assertThat(students).extracting(User::getLastName).containsExactly("Богданов", "Васильев");
     }
 
     private Long createGroup(String name) {
@@ -98,8 +97,13 @@ class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
         return groupRepository.save(g).getId();
     }
 
-    private Long insertStudent(Long groupId, String login, String lastName, String firstName,
-                               String middleName, Long telegramId) {
+    private Long insertStudent(
+            Long groupId,
+            String login,
+            String lastName,
+            String firstName,
+            String middleName,
+            Long telegramId) {
         User u = new User();
         u.setLogin(login);
         u.setPasswordHash("x");

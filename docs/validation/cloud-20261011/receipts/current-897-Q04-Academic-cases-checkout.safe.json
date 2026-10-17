@@ -1,0 +1,460 @@
+{
+  "producer": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+  "artifact": 11864247987,
+  "digest": "sha256:f0b3d4774f23936877b8a06ca80cc2e18d2b95895fe12d8cc0b3eb866aa7daa3",
+  "metadata": {
+    "checkoutSha": "10b1546c19d789be9da58461fef3794ba8620220",
+    "prHeadSha": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+    "service": "academic-service",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38495986019",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "suite_counts": {
+    "PASSED": 447,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  },
+  "selected_Q04_current_cases": [
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+      "method": "actorDowngradeWhileWaitingForGlobalLockCannotUseOldFullAdmission",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+      "sourceSha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+      "method": "archiveTombstoneVersionAndLastFullGuardCoverLegacyGrantLifecycle",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+      "sourceSha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+      "method": "concurrentFullRevocationsSerializeAndCannotRemoveLastFull",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+      "sourceSha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+      "method": "credentialsAndActiveAdminTargetProtectionApplyToMixedRoleAccountsAndSelf",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+      "sourceSha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+      "method": "genericSemesterStatusAndOperationCannotContinueDeleteWithoutDataDelete",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+      "sourceSha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+      "method": "limitedAssignmentRoundTripsValidatesDependenciesAndNeverDelegatesFull",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+      "sourceSha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+      "method": "ownTeacherRoleChangeCommitsAndProjectsSuccessWithoutCredentialsFromStaleClaims",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+      "sourceSha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+      "method": "plainJsonApiRoundTripsAndRejectsDirectLimitedMutationAndStaleCas",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+      "sourceSha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+      "method": "staleCasAndRevokeRegrantDoNotResurrectSelectionOrOtherRoleLogin",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+      "sourceSha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+      "method": "userHeadmanPatchRequiresGroupsManageBeforeAnyMutation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java",
+      "sourceSha256": "ac51b6d19c9f7eb09255d2a3a487653609f0e429aad025c6a1a7f7dcbf6513d9"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.academic.group.GroupHeadmanAssignmentIT",
+      "method": "activeStudentGrantKeepsMultiRoleHeadmanEligibleDuringProfileSync",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+      "sourceSha256": "ebfcadd193ad9ca82d5d54cf5175c83386bc611736546f0f821131feabbd3ada"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.academic.group.GroupHeadmanAssignmentIT",
+      "method": "archivedGroupAndNonMemberAreRejected",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+      "sourceSha256": "ebfcadd193ad9ca82d5d54cf5175c83386bc611736546f0f821131feabbd3ada"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.academic.group.GroupHeadmanAssignmentIT",
+      "method": "assignmentChangesDurableHeadmanRevokesAssistantsAndReloadsRegistry",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+      "sourceSha256": "ebfcadd193ad9ca82d5d54cf5175c83386bc611736546f0f821131feabbd3ada"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.academic.group.GroupHeadmanAssignmentIT",
+      "method": "concurrentCandidatesHaveOneWinnerAndOneCasConflict",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+      "sourceSha256": "ebfcadd193ad9ca82d5d54cf5175c83386bc611736546f0f821131feabbd3ada"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.academic.group.GroupHeadmanAssignmentIT",
+      "method": "currentHeadmanCompositionUsesFreshGrantRosterAndGroupRoles",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+      "sourceSha256": "ebfcadd193ad9ca82d5d54cf5175c83386bc611736546f0f821131feabbd3ada"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.academic.group.GroupPromotionCycleIT",
+      "method": "archivedExtensionPreservesOriginalCutoffRosterAssignmentsAndOnceOnlyPromotion",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java",
+      "sourceSha256": "5419c3e67888de5f56082423b9735dee4e9fc26df02bf6dbe752e72ed72eeadc"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.academic.group.GroupPromotionCycleIT",
+      "method": "automaticCatchUpReusesManualLedgerAndReplayDoesNotPromoteTwice",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java",
+      "sourceSha256": "5419c3e67888de5f56082423b9735dee4e9fc26df02bf6dbe752e72ed72eeadc"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.academic.group.GroupPromotionCycleIT",
+      "method": "durationOnlyCorrectionInvalidatesPreviewWithoutResettingCycleLedger",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java",
+      "sourceSha256": "5419c3e67888de5f56082423b9735dee4e9fc26df02bf6dbe752e72ed72eeadc"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.academic.group.GroupPromotionCycleIT",
+      "method": "massPromotionAdjacentCoursesFlushesInVacatedNameOrderAndRetainsHistory",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java",
+      "sourceSha256": "5419c3e67888de5f56082423b9735dee4e9fc26df02bf6dbe752e72ed72eeadc"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.academic.group.GroupPromotionCycleIT",
+      "method": "singleThenMassPromotionRejectsStaleAndRetriedPlansWithoutChangingIdentityOrHistory",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java",
+      "sourceSha256": "5419c3e67888de5f56082423b9735dee4e9fc26df02bf6dbe752e72ed72eeadc"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.academic.group.GroupRegistryIT",
+      "method": "registryCreateCoverageStatusCountsAndLegacyDurationAreServerDerived",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+      "sourceSha256": "2db8ae5e5bb67bfb62477dee374b89a7da94786f750864fea6afd80505db034b"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.academic.group.GroupRegistryIT",
+      "method": "registryCreatesAllNineProgramTypesWithExplicitDurationAndRejectsInvalidQueryValues",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+      "sourceSha256": "2db8ae5e5bb67bfb62477dee374b89a7da94786f750864fea6afd80505db034b"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.academic.group.GroupRegistryIT",
+      "method": "registryFiltersBeforePaginationAndUsesIdenticalFiltersForEveryTabCount",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+      "sourceSha256": "2db8ae5e5bb67bfb62477dee374b89a7da94786f750864fea6afd80505db034b"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.academic.group.GroupRegistryIT",
+      "method": "registrySortsWholeResultWithStableTiesAndUnknownMetadataLastInBothDirections",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+      "sourceSha256": "2db8ae5e5bb67bfb62477dee374b89a7da94786f750864fea6afd80505db034b"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.academic.group.GroupRegistryIT",
+      "method": "restoreArchivedGroupsIsAdminOnlyIdempotentAndKeepsLegacyNamesAndRegistryCounts",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+      "sourceSha256": "2db8ae5e5bb67bfb62477dee374b89a7da94786f750864fea6afd80505db034b"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+      "method": "currentAssignmentWithClosedOnlyHistoryFailsClosed",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+      "sourceSha256": "1cfdb58a2d25b8bdc246bb1855c5f8857af1cf3090ff86efbe187e246bc59fac"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+      "method": "currentAssignmentWithoutTargetHistoryFailsClosed",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+      "sourceSha256": "1cfdb58a2d25b8bdc246bb1855c5f8857af1cf3090ff86efbe187e246bc59fac"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+      "method": "datedReadUsesOneRepeatableReadSnapshotWhileTransferCommits",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+      "sourceSha256": "1cfdb58a2d25b8bdc246bb1855c5f8857af1cf3090ff86efbe187e246bc59fac"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+      "method": "managedEnrollmentRollsBackUserWhenHistoryInsertFails",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+      "sourceSha256": "1cfdb58a2d25b8bdc246bb1855c5f8857af1cf3090ff86efbe187e246bc59fac"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+      "method": "selectionClearRollsBackWithGrantAndLegacySuspensionAlsoClearsSelection",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+      "sourceSha256": "1cfdb58a2d25b8bdc246bb1855c5f8857af1cf3090ff86efbe187e246bc59fac"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+      "method": "serviceCreatedEnrollmentAndTransferAreDatedAndComplete",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+      "sourceSha256": "1cfdb58a2d25b8bdc246bb1855c5f8857af1cf3090ff86efbe187e246bc59fac"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+      "method": "terminalRoleGrantClosesHistoryAndReactivationStartsCanonicalInterval",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+      "sourceSha256": "1cfdb58a2d25b8bdc246bb1855c5f8857af1cf3090ff86efbe187e246bc59fac"
+    },
+    {
+      "xmlOrdinal": 38,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+      "method": "unsupportedDirectMembershipMutationLeavesUserUnchanged",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+      "sourceSha256": "1cfdb58a2d25b8bdc246bb1855c5f8857af1cf3090ff86efbe187e246bc59fac"
+    },
+    {
+      "xmlOrdinal": 48,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT",
+      "method": "archiveWaitsForHelperWriterThenRevokesItsCommittedAuthorityWithoutFkDeadlock",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+      "sourceSha256": "922cdcb41bbac46ccc6807f791a68b536f78bc276f0fc6543eba3bc755043f86"
+    },
+    {
+      "xmlOrdinal": 48,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT",
+      "method": "previewBecomesStaleWhenAnotherTeacherLosesAuthorityAndLocalWarningChanges",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+      "sourceSha256": "922cdcb41bbac46ccc6807f791a68b536f78bc276f0fc6543eba3bc755043f86"
+    },
+    {
+      "xmlOrdinal": 48,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT",
+      "method": "protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+      "sourceSha256": "922cdcb41bbac46ccc6807f791a68b536f78bc276f0fc6543eba3bc755043f86"
+    },
+    {
+      "xmlOrdinal": 48,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT",
+      "method": "stalePreviewAndLegacyArchiveSeamsCannotChangeAuthority",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+      "sourceSha256": "922cdcb41bbac46ccc6807f791a68b536f78bc276f0fc6543eba3bc755043f86"
+    }
+  ],
+  "git_checkout_join": {
+    "parents": [
+      "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "89746d1dc3d3ac7c23470c3998f9d85ed268859f"
+    ],
+    "merge_tree": "ee0c26b25f191867f8550ac0e87fefd5082bac85",
+    "head_tree": "ee0c26b25f191867f8550ac0e87fefd5082bac85",
+    "equal": true
+  },
+  "reader": {
+    "direct_pid": 615750,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 615750,
+        "start_ticks": 19697881
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "qualification": "finite namedservercase proofs currentproducer; per-case mock/PG/clientlimits fromexistingQ04map remain; no wholefamily or nativeVue claim"
+}

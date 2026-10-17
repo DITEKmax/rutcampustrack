@@ -1,0 +1,47 @@
+{
+  "source": "/workspace/scratch/rct-validation/host_runtime_prepare",
+  "manifest": "CACHE2-manifest.json",
+  "files": [
+    {
+      "path": "CACHE2-after.json",
+      "original_sha256": "e7d25c0b9257e335c737583f85065ee3e998edf97c5d69834332887d132e8298",
+      "original_bytes": 13689,
+      "working_sha256": "e7d25c0b9257e335c737583f85065ee3e998edf97c5d69834332887d132e8298",
+      "working_bytes": 13689,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "CACHE2-attempts.ndjson",
+      "original_sha256": "bc9919bb94e0a9c014a84a1b0ec5952a3dc7d15abb5348321438960d71bb057e",
+      "original_bytes": 7490,
+      "working_sha256": "bc9919bb94e0a9c014a84a1b0ec5952a3dc7d15abb5348321438960d71bb057e",
+      "working_bytes": 7490,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "CACHE2-before.json",
+      "original_sha256": "62fed072dd144cf6cd982e8a73cace29377197f264f9a4971891108bb6f7de94",
+      "original_bytes": 20237,
+      "working_sha256": "62fed072dd144cf6cd982e8a73cace29377197f264f9a4971891108bb6f7de94",
+      "working_bytes": 20237,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "CACHE2-result.json",
+      "original_sha256": "caeb35857da7ab7ca734c064cb23a46355b4d361cb8cde8fb0897fbeb137e70e",
+      "original_bytes": 12476,
+      "working_sha256": "caeb35857da7ab7ca734c064cb23a46355b4d361cb8cde8fb0897fbeb137e70e",
+      "working_bytes": 12476,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "CACHE2-manifest.json",
+      "original_sha256": "6dbc6114d07d7eb6df5baae76f2830b3fb0b5c826a056714b771c8b5a2d55115",
+      "original_bytes": 801,
+      "working_sha256": "6dbc6114d07d7eb6df5baae76f2830b3fb0b5c826a056714b771c8b5a2d55115",
+      "working_bytes": 801,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

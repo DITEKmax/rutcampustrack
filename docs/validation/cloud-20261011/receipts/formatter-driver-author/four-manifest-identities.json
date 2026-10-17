@@ -1,0 +1,30 @@
+[
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-client-artifacts/manifest.json",
+    "original": "/workspace/scratch/rct-validation/current_client_artifacts/manifest.json",
+    "bytes": 5578,
+    "sha256": "840492d38bfd204fe37c9bb46e89d3a3fdbc7957ad31ad1e9ca6ca058523ea7f",
+    "original_byte_exact": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-audit-http-author/manifest.safe.json",
+    "original": "/workspace/scratch/rct-validation/export_audit_http_followon/manifest.safe.json",
+    "bytes": 1182,
+    "sha256": "fd97401656755802bc126e67209909fc1d30fe22925a1ad897f2ee2338204a62",
+    "original_byte_exact": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/host-guard-correction-author/manifest.json",
+    "original": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/manifest.json",
+    "bytes": 3222,
+    "sha256": "04e6355b92c0cd24a6c6b574bde5099de2a26a4b7d87caaf08c9c8c71f4044ba",
+    "original_byte_exact": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/host-runtime-prepare/manifest.json",
+    "original": "/workspace/scratch/rct-validation/host_runtime_prepare/manifest.json",
+    "bytes": 6446,
+    "sha256": "fac7de9671ce6338b0e28ddd8745918bb04cd2816cd708861685e2d4f3f521cf",
+    "original_byte_exact": true
+  }
+]

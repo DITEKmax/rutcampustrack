@@ -1,0 +1,154 @@
+{
+  "source": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections",
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "original_sha256": "3690c52401d669dd84b4b678d0e92525de6e31ce854470cb35f31b3c917e893f",
+      "original_bytes": 6480,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_sha256": "3690c52401d669dd84b4b678d0e92525de6e31ce854470cb35f31b3c917e893f",
+      "working_bytes": 6480,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "controls-result.json",
+      "original_sha256": "89d8e6b28e9c4569f9c0690219f926b378aaa155016b4f8b67cac7339dd58f49",
+      "original_bytes": 1320,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_sha256": "89d8e6b28e9c4569f9c0690219f926b378aaa155016b4f8b67cac7339dd58f49",
+      "working_bytes": 1320,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "guard-controls.py",
+      "original_sha256": "2e2911bc98e339aebfd4153bfd898d9737db362c80b6bb6cefd50b8aaa5ba77f",
+      "original_bytes": 10978,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_path": "guard-controls.py.readable.zip",
+      "archive_member": "guard-controls.py",
+      "working_sha256": "2e2911bc98e339aebfd4153bfd898d9737db362c80b6bb6cefd50b8aaa5ba77f",
+      "working_bytes": 10978,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "harmless-child.py",
+      "original_sha256": "1f4700d17ced2f2a181866ff5c3d2ec928eac062d9f9c1a50144bfa718f2b4be",
+      "original_bytes": 287,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_path": "harmless-child.py.readable.zip",
+      "archive_member": "harmless-child.py",
+      "working_sha256": "1f4700d17ced2f2a181866ff5c3d2ec928eac062d9f9c1a50144bfa718f2b4be",
+      "working_bytes": 287,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "new-false-grant-result.json",
+      "original_sha256": "0f00e83fe35458e63ac7dc51e630861d38df25d92c10a8bbd1e0dbd16231ed27",
+      "original_bytes": 262,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_sha256": "0f00e83fe35458e63ac7dc51e630861d38df25d92c10a8bbd1e0dbd16231ed27",
+      "working_bytes": 262,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "root-grant.template.json",
+      "original_sha256": "ac050a585236719d8874dadc5f767f7f6f9c1e0931b2a7b3dde49d41691bc855",
+      "original_bytes": 890,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_sha256": "ac050a585236719d8874dadc5f767f7f6f9c1e0931b2a7b3dde49d41691bc855",
+      "working_bytes": 890,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "safe-child-status.py",
+      "original_sha256": "8d39ad71b7d508b59f688d4ca1aa7e77b08ef002d3330cd48b4ea076c6d9d98a",
+      "original_bytes": 13256,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_path": "safe-child-status.py.readable.zip",
+      "archive_member": "safe-child-status.py",
+      "working_sha256": "8d39ad71b7d508b59f688d4ca1aa7e77b08ef002d3330cd48b4ea076c6d9d98a",
+      "working_bytes": 13256,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "synthetic-cases/after-ready.json",
+      "original_sha256": "ad82bbc4d9d9d9ce402b01d321fdbc279cdddc0b844a150162f31e40005ad468",
+      "original_bytes": 15,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_path": "synthetic-cases/after-ready.json.readable.zip",
+      "archive_member": "after-ready.json",
+      "working_sha256": "e6430cb8b4d3e2a055136221cbc4807d77df898aff25be1e2057d234c4543688",
+      "working_bytes": 16,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "synthetic-cases/before-ready.json",
+      "original_sha256": "29503fc8fdecdb2af0049cddf2bf5343618307d373e2ad31652121bdb3f45e25",
+      "original_bytes": 15,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_path": "synthetic-cases/before-ready.json.readable.zip",
+      "archive_member": "before-ready.json",
+      "working_sha256": "c825f3f69789990be790f5a42357aab01c9413df327d054cc56f03882080374c",
+      "working_bytes": 16,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "synthetic-cases/public.json",
+      "original_sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "original_bytes": 3,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_path": "synthetic-cases/public.json.readable.zip",
+      "archive_member": "public.json",
+      "working_sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "working_bytes": 3,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "synthetic-cases/symlink-public",
+      "original_sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "original_bytes": 3,
+      "original_kind": "intentional synthetic symlink fixture (manifest hashes dereferenced content)",
+      "symlink_target": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/synthetic-cases/public.json",
+      "working_path": "synthetic-cases/symlink-public.readable.zip",
+      "archive_member": "symlink-public",
+      "working_sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "working_bytes": 3,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "synthetic-cases/synthetic-private.json",
+      "original_sha256": "930d3756b6ec673aee31d03915a02e910b078ed127362d578d92448248f6e986",
+      "original_bytes": 37,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_path": "synthetic-cases/synthetic-private.json.readable.zip",
+      "archive_member": "synthetic-private.json",
+      "working_sha256": "c31d4abddefe7aec8ca9e99a020d9a8b6203a685d6127834dcf947fb91e3ae33",
+      "working_bytes": 38,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    },
+    {
+      "path": "verification.json",
+      "original_sha256": "6198a1854b04c69661a77fbad7d8336f6ee7577a5ccbff24c8fd1ed921b4177d",
+      "original_bytes": 2273,
+      "original_kind": "regular",
+      "symlink_target": null,
+      "working_sha256": "6198a1854b04c69661a77fbad7d8336f6ee7577a5ccbff24c8fd1ed921b4177d",
+      "working_bytes": 2273,
+      "transformation": "finalnewline view, copied source/syntheticfixtures losslessZIP; exact declared content bytes in immutable archive; symbolic fixture target separately preserved asmetadata"
+    }
+  ],
+  "original_manifest_sha256": "04e6355b92c0cd24a6c6b574bde5099de2a26a4b7d87caaf08c9c8c71f4044ba",
+  "immutable_originals": "immutable-original-receipts.zip",
+  "qualification": "13 distinct declared lexical paths verified; one deliberate symlink fixture points to public.json within ownscope. Generic transfer first strict resolvedpath uniqueness correctly rejected alias; this importer preserves declared pathname/dereferenced bytes and explicit symbolic target metadata, doesnot recreate executionfixtures or alterauthor originals."
+}

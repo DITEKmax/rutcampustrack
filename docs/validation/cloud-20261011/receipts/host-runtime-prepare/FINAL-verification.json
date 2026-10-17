@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-12T02:24:26.413519+00:00",
+  "runner_ast": "PASS",
+  "JSON_YAML_parse": "PASS",
+  "exact9Docker7Host": "PASS",
+  "actual_false_grant_native": 2,
+  "child_started": false,
+  "response_body_read": false,
+  "raw_output_preserved": false,
+  "keys_generated": false,
+  "current_JAR_execution": false,
+  "app_browser": "NOT_RUN",
+  "free_bytes": 9588113408,
+  "floor_bytes": 4294967296,
+  "new_source_runtime_result": "SOURCE_PREP_ONLY",
+  "cleanup_result": "ROOT_GRANTED_CACHE2_COMPLETE",
+  "checks_repeat_reason": "Runner source corrected to reject redirects and settle direct child on SIGTERM; rechecked syntax/false-grant boundary only"
+}

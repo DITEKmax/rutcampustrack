@@ -1,5 +1,16 @@
 package ru.rutcampustrack.schedule.recurring;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
@@ -8,18 +19,6 @@ import ru.rutcampustrack.schedule.exception.RecurringProtocolConflictException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
-
-import java.time.LocalTime;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class RecurringScheduleItemCoordinatorTest {
 
@@ -40,18 +39,25 @@ class RecurringScheduleItemCoordinatorTest {
         when(context.isHeadman()).thenReturn(true);
         when(context.getUserId()).thenReturn(ACTOR_ID);
         when(academic.isHeadman(ACTOR_ID, GROUP_ID)).thenReturn(true);
-        when(academic.validateGroup(GROUP_ID)).thenReturn(GroupResponse.newBuilder()
-                .setId(GROUP_ID + 1)
-                .setIsActive(true)
-                .build());
+        when(academic.validateGroup(GROUP_ID))
+                .thenReturn(
+                        GroupResponse.newBuilder().setId(GROUP_ID + 1).setIsActive(true).build());
 
-        RecurringScheduleItemCoordinator coordinator = new RecurringScheduleItemCoordinator(
-                academic, context, writer, items);
+        RecurringScheduleItemCoordinator coordinator =
+                new RecurringScheduleItemCoordinator(academic, context, writer, items);
 
-        CreateScheduleItemRequest request = new CreateScheduleItemRequest(
-                ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
-                (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(10, 0),
-                ru.rutcampustrack.schedule.contract.enums.WeekType.ALL, "A-101");
+        CreateScheduleItemRequest request =
+                new CreateScheduleItemRequest(
+                        ASSIGNMENT_ID,
+                        GROUP_ID,
+                        SUBJECT_ID,
+                        SEMESTER_ID,
+                        (short) 1,
+                        (short) 1,
+                        LocalTime.of(8, 30),
+                        LocalTime.of(10, 0),
+                        ru.rutcampustrack.schedule.contract.enums.WeekType.ALL,
+                        "A-101");
 
         assertThatThrownBy(() -> coordinator.create(request, UUID.randomUUID()))
                 .isInstanceOf(RecurringProtocolConflictException.class)

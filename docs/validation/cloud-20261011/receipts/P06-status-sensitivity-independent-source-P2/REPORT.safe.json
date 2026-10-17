@@ -1,0 +1,140 @@
+{
+  "schema": "RCT_P06_STATUS_SENSITIVITY_INDEPENDENT_WHOLE_SOURCE_REVIEW_V1",
+  "verdict": "CHANGES_REQUESTED",
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "scope": "Whole bounded new Auth HTTP outage-classification sensitivity delta; inherited accepted test/observer/b78 controls reused.",
+  "findings": [
+    {
+      "id": "P06-STATUS-XML-ENCODING-001",
+      "severity": "P2",
+      "path": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p06-outage-status-sensitivity-source/logged-it-child.py",
+      "start": 118,
+      "end": 121,
+      "title": "Reject DTD across supported XML encodings before parsing",
+      "counterexample": "A bounded synthetic UTF-16 document with declaration encoding=UTF-16, DOCTYPE testsuite and otherwise exact selected causal suite bypasses b'<!DOCTYPE'/b'<!ENTITY' substring checks. ET.fromstring accepts it and the actual selected parsing AST sets causal=True. Native-exit/class/source conditions can be otherwise valid, so forbidden DTD input can be accepted.",
+      "evidence": "Independent current guard+parsing AST in RAM: UTF8 ordinary causal=True; UTF8 DOCTYPE rejected; UTF16 DOCTYPE accepted with causal=True and ASCII DTD scan false. No actual XML/native/callback execution.",
+      "required_correction": "Use a minimal fail-closed encoding/declaration and DTD/entity check before ET parsing; preserve current valid JUnit UTF8 and reject alternative encoding DTD safely. Add focused same selected-AST UTF8-positive/UTF16-DTD-negative controls; no framework or expectation relaxation. Reviewer has not fixed source."
+    }
+  ],
+  "checks": {
+    "ready_sha256": "eab07c3ca5bf3da7708fe32e0b8b45e7bcca343459e96d228c5afb0221345248",
+    "manifest_sha256": "818c962222c1373f11cbaade7e098153fe1016c9dee5a6b7ce736e6d70e502c3",
+    "archive_sha256": "57c9065be01a7726d79425fa5b04c1cdaccb57dfd9ea4e7489d2d65ea786ee85",
+    "all_ready20_and_manifest_pins_match": true,
+    "source16_supplement60_match": true,
+    "only_one_exact_http_constant_changed": true,
+    "scratch_before_equals_live_original": true,
+    "original_compiled_class_pin_matches": true,
+    "test0669_unchanged": true,
+    "head4db89_clean": true,
+    "new_parent_child_observer_ast_valid": true,
+    "observer_byte_identical": true,
+    "green_three_callbacks_byte_identical": true,
+    "green_plan_only_lease_run_join_qualification_changed": true,
+    "green_source_manifest_supplement_identical": true,
+    "first_restore_no_second_pg_tasks": true,
+    "parent_selected_finally_restores_source_mode_on_handled_interrupt": true,
+    "native_executed": false,
+    "green_changed_plan_keys": [
+      "lease",
+      "run",
+      "required_prior_red_join"
+    ]
+  },
+  "xml_ram_controls": [
+    {
+      "control": "UTF8_NO_DTD",
+      "rejected": false,
+      "causal_gate": true
+    },
+    {
+      "control": "UTF8_WITH_DTD",
+      "rejected": true,
+      "causal_gate": false
+    },
+    {
+      "control": "UTF16_WITH_DTD",
+      "rejected": false,
+      "causal_gate": true
+    }
+  ],
+  "restore_ram_controls": {
+    "qualification": "Selected actual child try/finally AST with pure RAM source/artifact/admission/subprocess stubs. No actual callbacks/native/XML/Source writes.",
+    "controls": [
+      {
+        "control": "RED_RESTORE",
+        "pass": true,
+        "exact_source_mode_restored": true,
+        "phases": [
+          "RED",
+          "COMPILE"
+        ],
+        "restore_pass": true,
+        "primary_preserved": null,
+        "both_failure_cause_preserved": null,
+        "unknown_class_blocks_success": null
+      },
+      {
+        "control": "ORACLE_FAILURE_STILL_RESTORE",
+        "pass": true,
+        "exact_source_mode_restored": true,
+        "phases": [
+          "RED",
+          "COMPILE"
+        ],
+        "restore_pass": true,
+        "primary_preserved": true,
+        "both_failure_cause_preserved": null,
+        "unknown_class_blocks_success": null
+      },
+      {
+        "control": "COMPILE_RESTORE_FAILURE",
+        "pass": true,
+        "exact_source_mode_restored": true,
+        "phases": [
+          "RED",
+          "COMPILE"
+        ],
+        "restore_pass": false,
+        "primary_preserved": null,
+        "both_failure_cause_preserved": null,
+        "unknown_class_blocks_success": true
+      },
+      {
+        "control": "BOTH_FAILURES",
+        "pass": true,
+        "exact_source_mode_restored": true,
+        "phases": [
+          "RED",
+          "COMPILE"
+        ],
+        "restore_pass": false,
+        "primary_preserved": true,
+        "both_failure_cause_preserved": true,
+        "unknown_class_blocks_success": true
+      },
+      {
+        "control": "EXPIRED_COMPILE_ADMISSION",
+        "pass": true,
+        "exact_source_mode_restored": true,
+        "phases": [
+          "RED"
+        ],
+        "restore_pass": false,
+        "primary_preserved": null,
+        "both_failure_cause_preserved": null,
+        "unknown_class_blocks_success": true
+      }
+    ]
+  },
+  "assessment": {
+    "fault": "Exactly one scratch GlobalExceptionHandler#handleSessionAdmission status constant AUTHORITY_UNAVAILABLE SERVICE_UNAVAILABLE->UNAUTHORIZED; original c6e5/live exact, mutant12bd, original classa2cd and test0669 pins match. No grants/auth/signature/JWT/authority/data/code/body/no-store/test/clock change; no WT mutation applied by reviewer or packet preparation.",
+    "causality": "Existing actual one-PG GREEN is retained. New RED requires fresh selected suite one failure/zero errors-skips, native1, exact java.lang.AssertionError Status expected503 but actual401, own testcase/helper frames, changed compiled class plus exact fault source. Initial positive/reconstruction/revoked controls precede pause status assertion. RED stops before noJWT/body/outage-refresh/state assertions: these RED effects remain Source-qualified. Separate unchanged GREEN executes all effect oracles.",
+    "restoration": "Independent actual child try/finally AST RAM covers causal RED, oracle failure with compile restore, compile restore failure, both failures preserving primary/cause, expired fresh restore admission blocking compiler and leaving UNKNOWN class. Source/mode restored in all selected controls. Actual parent finally AST restores exact Source/mode on handled guard interruption. Original compiled SHA is required by child and independent parent success gate; compiler is compileJava+compileTestJava/rerun only, no second PG. SIGKILL/host loss or failed compilation cannot guarantee restore; UNKNOWN blocks integration pending controlled fresh recovery.",
+    "privacy": "New parser reads only future owned no-follow fresh bounded XML and keeps raw copy/private source XML mode600/unhashed; safe records emit fixed counts/status/flags/known class-method only. Exact failure type/message/frames are compared in RAM; b78 keeps callback stdout/stderr private. No actual private XML/log/body/credentials read or hashed in review. XML input rejection gap is the sole concrete blocker.",
+    "grants_resources": "Exact Root mutation authorization/before-after pins and source/class baseline required. Parent/child existing current grant/direct-parent/birth/observer/supplement/deadline guards retained; unchanged0dec observer, existing caps/image map/foreign admission/owned cleanup and onePG cap. Separate GREEN callbacks byte-identical5b27/130e/0dec; only lease/run/prior-RED-join qualification changes. Root must adopt actual RED+Source/class+resource restoration and compare original foreign baseline before a new separate GREEN grant; qualification is not automatic callback gate.",
+    "bounds": "No native/mutation execution or runtime approval. B013 journal rights action untouched; this fault only changes Auth outage HTTP classification. No parentP06 closure, OS Auth restart, Gateway/PWA/TMA/all-role claim."
+  },
+  "effects": "Created own safe report/manifest/archive only; selected Source AST/data controls with synthetic RAM paths/subprocess/admission stubs, no module/callback import/invocation/Java/Gradle/Docker/PG/API/product/shared writes/children."
+}

@@ -20,11 +20,12 @@ public class GrpcExceptionAdvice {
 
     @GrpcExceptionHandler(HistoricalMembershipException.class)
     public Status handleHistoricalMembership(HistoricalMembershipException e) {
-        Status status = switch (e.code()) {
-            case INVALID_ARGUMENT -> Status.INVALID_ARGUMENT;
-            case NOT_FOUND -> Status.NOT_FOUND;
-            case FAILED_PRECONDITION, UNSUPPORTED_MUTATION -> Status.FAILED_PRECONDITION;
-        };
+        Status status =
+                switch (e.code()) {
+                    case INVALID_ARGUMENT -> Status.INVALID_ARGUMENT;
+                    case NOT_FOUND -> Status.NOT_FOUND;
+                    case FAILED_PRECONDITION, UNSUPPORTED_MUTATION -> Status.FAILED_PRECONDITION;
+                };
         return status.withDescription(e.getMessage()).withCause(e);
     }
 
@@ -35,6 +36,14 @@ public class GrpcExceptionAdvice {
 
     @GrpcExceptionHandler(Exception.class)
     public Status handleInternal(Exception e) {
+        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+            if (cause
+                    instanceof
+                    ru.rutcampustrack.academic.exception.UnknownAssignmentCodeException) {
+                return Status.FAILED_PRECONDITION.withDescription(
+                        "Assignment state is incompatible with this operation");
+            }
+        }
         log.error("gRPC internal error", e);
         return Status.INTERNAL.withDescription("Internal server error").withCause(e);
     }

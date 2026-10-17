@@ -1,0 +1,58 @@
+{
+  "scope": "MINIMAL_COHERENT8_ACTUAL_SAFE_BIND_PARAMETERS_SOURCE_ONLY",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "bytes": 2973,
+      "sha256": "b59499f6030571217103841dddb857a79d2d6731c831061afe805db6ed98d792",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/binding-controls.py",
+      "name": "binding-controls.py",
+      "bytes": 8524,
+      "sha256": "6fd14f2a8043a9c1e92fadb1f05123ac122ae95be51d730c226bf5718d819ee7",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/binding-controls.safe.json",
+      "name": "binding-controls.safe.json",
+      "bytes": 1894,
+      "sha256": "6c7b10fc7af870c4a9e7231cb56d6f73204060f04bc2d5e0f620b70105e8b50b",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/bound-authorities.safe.json",
+      "name": "bound-authorities.safe.json",
+      "bytes": 7269,
+      "sha256": "6ceb68f16b90190ae5a40209a3f89377c1668df1720e358e181ef154e22aef56",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/effective-commands.safe.json",
+      "name": "effective-commands.safe.json",
+      "bytes": 4495,
+      "sha256": "7c3a01ff54344cd71c57c05b1bf74a30226ba7b295dd95ee119555824d5c624a",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/resources.safe.json",
+      "name": "resources.safe.json",
+      "bytes": 383,
+      "sha256": "d94b08541c855e941627927fae71d6c76cb18e7a08a0b5ca402d1f93c173cede",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/restart-grant.template.safe.json",
+      "name": "restart-grant.template.safe.json",
+      "bytes": 3997,
+      "sha256": "99c86520d7a3ce5a7af527b4ccbb9814512392a3c803adc6562b756f440d74a8",
+      "mode": 384
+    }
+  ],
+  "targeted_RAM_controls": 24,
+  "original_executor_changes": false,
+  "actual_runtime": "NOT_RUN",
+  "CURRENT_excluded": true
+}

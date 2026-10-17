@@ -1,0 +1,20 @@
+{
+  "utc": "2026-10-13T03:41:10.665149+00:00",
+  "checks": [
+    {
+      "service": "schedule",
+      "HTTP": 200,
+      "UP": true
+    },
+    {
+      "service": "attendance",
+      "HTTP": 200,
+      "UP": true
+    },
+    {
+      "service": "notification",
+      "HTTP": 200,
+      "UP": true
+    }
+  ]
+}

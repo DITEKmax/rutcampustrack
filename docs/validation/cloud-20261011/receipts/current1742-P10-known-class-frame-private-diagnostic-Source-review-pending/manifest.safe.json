@@ -1,0 +1,50 @@
+{
+  "schema": "P10_DIAGNOSTIC_CHECKING_SOURCE_SEAL_V1",
+  "files": {
+    "PLAN.md": {
+      "sha256": "7622b8fc0708881139f391ed6483014c4f10b0d184728a8bbd80c5019a1b009b",
+      "bytes": 1181
+    },
+    "READY.safe.json": {
+      "sha256": "93b399431fc7b2aaf227e0e686072a016769c060f7953891593d39ca7a6f7539",
+      "bytes": 9837
+    },
+    "admission-reused.py.source": {
+      "sha256": "e7e8014637e55dc3d9a1269c3a14beb983c5eb60de134cce94557cb13ed706d4",
+      "bytes": 4358
+    },
+    "controls-attempt01.safe.json": {
+      "sha256": "83238e7a6153c17fa14ad8098e38bbcc5332683157dc4774cf2ccdfb61f9b2af",
+      "bytes": 214
+    },
+    "controls.safe.json": {
+      "sha256": "0f3c882415239b765a54e73e78d4ac8f02e68a79a9f4374e04b6ef3805d9bf17",
+      "bytes": 1031
+    },
+    "grant-template.private.json": {
+      "sha256": "35093e61fcf120305c49da877182916b1a3faddbb620b804bd30eb4df6ad16fe",
+      "bytes": 1342
+    },
+    "green-plan.safe.json": {
+      "sha256": "ee3ff02b4ea2d054dca16e43bb7c1acdceb80cba46b5d3fb55b0e8b872bf448c",
+      "bytes": 1939
+    },
+    "logged-green-child.py": {
+      "sha256": "968ee798682f195e9dfbbdfd52817dc5bd6a10930cf318466277f1639d85023f",
+      "bytes": 17454
+    },
+    "metadata.safe.json": {
+      "sha256": "8223cdb62e70a1e12683a1fff383241c90dfbc417d07fa08aaa1ff80ef0513d5",
+      "bytes": 284
+    },
+    "run-green-owned.py": {
+      "sha256": "c5afaa7d6fd4bb6fe98a609d19694e66f9819a560df5beb9afdbf8d51e7d563a",
+      "bytes": 7635
+    },
+    "source-manifest.safe.json": {
+      "sha256": "aba8c4f557e04c4425e5bd83c6858d6533c1b7e99cbc7af8f3236facd6ab9780",
+      "bytes": 2853
+    }
+  },
+  "private_runtime_data": "NONE; no originalartifact/log/XML/URL/casevalue hashes included."
+}

@@ -1,7 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.group;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.time.OffsetDateTime;
 
 /** Server-owned row used by the ADMIN group registry. */
@@ -21,5 +20,4 @@ public record AdminGroupResponse(
         String draftReason,
         long studentCount,
         String headmanFio,
-        OffsetDateTime createdAt
-) {}
+        OffsetDateTime createdAt) {}

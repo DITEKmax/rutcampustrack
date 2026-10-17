@@ -1,7 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.assignment;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -22,5 +21,4 @@ public record AssignmentReplacementResponse(
         String state,
         String scheduleReceiptState,
         long movedCount,
-        long skippedCount
-) { }
+        long skippedCount) {}

@@ -1,12 +1,34 @@
-import { academicDate, normalizeAcademicWeekPolicy, type AcademicWeekPolicy } from '../../domain/academic-week'
+import {
+  HeadmanJournalApi,
+  type HeadmanWeeklyWeekOption,
+} from '../headman-journal/headman-journal-client'
+import { parseReportFormats, type ReportFormatOption } from '../../shared/report-download-client'
+import {
+  academicDate,
+  normalizeAcademicWeekPolicy,
+  type AcademicWeekPolicy,
+} from '../../domain/academic-week'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
-import { normalizeHeadmanStatsSemesterCatalog, normalizeHeadmanStatsOverview, normalizeHeadmanStatsLessons, type HeadmanStatsSemesterCatalog, type HeadmanStatsOverview, type HeadmanStatsLessonPage, type HeadmanStatsLessonQuery } from './headman-stats-history-client'
+import {
+  normalizeHeadmanStatsSemesterCatalog,
+  normalizeHeadmanStatsOverview,
+  normalizeHeadmanStatsLessons,
+  type HeadmanStatsSemesterCatalog,
+  type HeadmanStatsOverview,
+  type HeadmanStatsLessonPage,
+  type HeadmanStatsLessonQuery,
+} from './headman-stats-history-client'
 import type {
   ReportDownloadFormat,
   ReportDownloadTicketRequest,
 } from '../../shared/report-download-client'
 
-export type HeadmanStatsEmptyState = 'NONE' | 'NO_ACTIVE_SEMESTER' | 'NO_COMPLETED_LESSONS' | 'NO_MEMBERS' | 'FILTERED_EMPTY'
+export type HeadmanStatsEmptyState =
+  | 'NONE'
+  | 'NO_ACTIVE_SEMESTER'
+  | 'NO_COMPLETED_LESSONS'
+  | 'NO_MEMBERS'
+  | 'FILTERED_EMPTY'
 export type HeadmanStatsFilterKind = 'TEXT' | 'RANGE'
 
 export interface HeadmanStatsSort {
@@ -70,8 +92,16 @@ export interface HeadmanStatsStudentRow {
   readonly studentId: number
   readonly displayName: string
   readonly metrics: HeadmanStatsMetrics
-  readonly lateCheckin: { readonly submitted: number; readonly approved: number; readonly rejected: number }
-  readonly excuse: { readonly submitted: number; readonly approved: number; readonly rejected: number }
+  readonly lateCheckin: {
+    readonly submitted: number
+    readonly approved: number
+    readonly rejected: number
+  }
+  readonly excuse: {
+    readonly submitted: number
+    readonly approved: number
+    readonly rejected: number
+  }
   readonly sources: {
     readonly studentGeo: number
     readonly manualRequest: number
@@ -107,10 +137,20 @@ const STATS_EXPORT_CONTENT_TYPES: Readonly<Record<ReportDownloadFormat, string>>
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 }
 
+export interface HeadmanStatsReasonCount {
+  readonly code: string
+  readonly label: string
+  readonly count: number
+}
+
 export interface HeadmanStatsResponse {
+  readonly reasonCounts?: readonly HeadmanStatsReasonCount[] | null
   readonly context: HeadmanStatsContext
   readonly summary: HeadmanStatsMetrics
-  readonly summaryTickets?: { readonly lateCheckin: HeadmanStatsStudentRow['lateCheckin']; readonly excuse: HeadmanStatsStudentRow['excuse'] } | null
+  readonly summaryTickets?: {
+    readonly lateCheckin: HeadmanStatsStudentRow['lateCheckin']
+    readonly excuse: HeadmanStatsStudentRow['excuse']
+  } | null
   readonly filteredStudents: number
   readonly rows: readonly HeadmanStatsStudentRow[]
   readonly subjects: readonly HeadmanStatsSubjectOption[]
@@ -126,12 +166,23 @@ export interface HeadmanStatsResponse {
 }
 
 export type HeadmanStatsTrendMode = 'SEMESTER' | 'WEEK' | 'SUBJECT'
-export type HeadmanStatsTrendEmptyState = 'NONE' | 'NO_ACTIVE_SEMESTER' | 'NO_COMPLETED_LESSONS' | 'NO_MATCHING_LESSONS'
+export type HeadmanStatsTrendEmptyState =
+  | 'NONE'
+  | 'NO_ACTIVE_SEMESTER'
+  | 'NO_COMPLETED_LESSONS'
+  | 'NO_MATCHING_LESSONS'
 
-export type HeadmanStatsTrendQuery = { readonly semesterId?: number; readonly bucketUnit?: 'DAY' | 'WEEK' } & (
+export type HeadmanStatsTrendQuery = {
+  readonly semesterId?: number
+  readonly bucketUnit?: 'DAY' | 'WEEK'
+} & (
   | { readonly mode: 'SEMESTER' }
   | { readonly mode: 'WEEK'; readonly weekStart: string }
-  | { readonly mode: 'SUBJECT'; readonly subjectId: number; readonly lessonTypes?: readonly string[] }
+  | {
+      readonly mode: 'SUBJECT'
+      readonly subjectId: number
+      readonly lessonTypes?: readonly string[]
+    }
 )
 
 export interface HeadmanStatsTrendMetric {
@@ -171,7 +222,10 @@ export interface HeadmanStatsStudentDetailQuery {
   readonly size: number
 }
 
-export type HeadmanStatsStudentDetailEmptyState = 'NONE' | 'NO_ACTIVE_SEMESTER' | 'NO_COMPLETED_LESSONS'
+export type HeadmanStatsStudentDetailEmptyState =
+  | 'NONE'
+  | 'NO_ACTIVE_SEMESTER'
+  | 'NO_COMPLETED_LESSONS'
 
 export interface HeadmanStatsPersonalMetric {
   readonly numerator: number
@@ -240,7 +294,15 @@ export interface HeadmanStatsExcuseEntry {
   readonly lessons: readonly HeadmanStatsExcuseLesson[]
 }
 
+export interface HeadmanStatsTargetRank {
+  readonly position: number | null
+  readonly participantCount: number
+  readonly available: boolean
+  readonly visibility: 'VISIBLE' | 'HIDDEN'
+}
+
 export interface HeadmanStatsStudentDetailResponse {
+  readonly rank?: HeadmanStatsTargetRank | null
   readonly context: HeadmanStatsContext
   readonly student: { readonly id: number; readonly displayName: string }
   readonly metrics: HeadmanStatsPersonalMetrics
@@ -274,7 +336,10 @@ export interface HeadmanStatsApiOptions {
 }
 
 export class HeadmanStatsApiError extends Error {
-  constructor(readonly response: Response, readonly problem: unknown) {
+  constructor(
+    readonly response: Response,
+    readonly problem: unknown,
+  ) {
     super(problemDetail(problem) ?? `HTTP ${response.status}`)
     this.name = 'HeadmanStatsApiError'
   }
@@ -289,34 +354,83 @@ export class HeadmanStatsApi {
 
   async academicWeekPolicy(date: string, signal?: AbortSignal): Promise<AcademicWeekPolicy> {
     if (academicDate(date) === null) throw new RangeError('Некорректная дата недели.')
-    return normalizeAcademicWeekPolicy(await this.request<unknown>('/api/schedule/academic-week-policy?' + new URLSearchParams({date}), {...(signal ? {signal} : {})}), date)
+    return normalizeAcademicWeekPolicy(
+      await this.request<unknown>(
+        '/api/schedule/academic-week-policy?' + new URLSearchParams({ date }),
+        { ...(signal ? { signal } : {}) },
+      ),
+      date,
+    )
   }
 
   async semesters(signal?: AbortSignal): Promise<HeadmanStatsSemesterCatalog> {
-    return normalizeHeadmanStatsSemesterCatalog(await this.request<unknown>('/api/attendance/reports/headman/stats/semesters', { ...(signal ? { signal } : {}) }))
+    return normalizeHeadmanStatsSemesterCatalog(
+      await this.request<unknown>('/api/attendance/reports/headman/stats/semesters', {
+        ...(signal ? { signal } : {}),
+      }),
+    )
   }
 
   async overview(signal?: AbortSignal): Promise<HeadmanStatsOverview> {
-    return normalizeHeadmanStatsOverview(await this.request<unknown>('/api/attendance/reports/headman/stats/overview', { ...(signal ? { signal } : {}) }))
+    return normalizeHeadmanStatsOverview(
+      await this.request<unknown>('/api/attendance/reports/headman/stats/overview', {
+        ...(signal ? { signal } : {}),
+      }),
+    )
   }
 
-  async studentTrend(studentId: number, query: HeadmanStatsTrendQuery, signal?: AbortSignal): Promise<HeadmanStatsTrendResponse> {
+  async studentTrend(
+    studentId: number,
+    query: HeadmanStatsTrendQuery,
+    signal?: AbortSignal,
+  ): Promise<HeadmanStatsTrendResponse> {
     validateStudentId(studentId)
     validateTrendQuery(query)
-    const result = normalizeTrendResponse(await this.request<unknown>(`/api/attendance/reports/headman/stats/students/${studentId}/trend`, { method: 'POST', body: JSON.stringify(trendRequestBody(query)), ...(signal ? { signal } : {}) }))
+    const result = normalizeTrendResponse(
+      await this.request<unknown>(
+        `/api/attendance/reports/headman/stats/students/${studentId}/trend`,
+        {
+          method: 'POST',
+          body: JSON.stringify(trendRequestBody(query)),
+          ...(signal ? { signal } : {}),
+        },
+      ),
+    )
     if (result.mode !== query.mode) throw new Error('Сервер вернул динамику для другого периода.')
     return result
   }
 
-  async studentLessons(studentId: number, query: HeadmanStatsLessonQuery, signal?: AbortSignal): Promise<HeadmanStatsLessonPage> {
+  async studentLessons(
+    studentId: number,
+    query: HeadmanStatsLessonQuery,
+    signal?: AbortSignal,
+  ): Promise<HeadmanStatsLessonPage> {
     validateStudentId(studentId)
     validateSemesterId(query.semesterId)
-    if (!Number.isSafeInteger(query.page) || query.page < 0 || !Number.isSafeInteger(query.size) || query.size < 1 || query.size > 100) throw new RangeError('Некорректная страница истории.')
+    if (
+      !Number.isSafeInteger(query.page) ||
+      query.page < 0 ||
+      !Number.isSafeInteger(query.size) ||
+      query.size < 1 ||
+      query.size > 100
+    )
+      throw new RangeError('Некорректная страница истории.')
     const params = new URLSearchParams({ page: String(query.page), size: String(query.size) })
     if (query.semesterId !== undefined) params.set('semesterId', String(query.semesterId))
-    if (query.subjectId !== undefined) { validateStudentId(query.subjectId); params.set('subjectId', String(query.subjectId)) }
-    for (const type of query.lessonTypes ?? []) { if (!type.trim()) throw new RangeError('Некорректный тип занятия.'); params.append('lessonTypes', type) }
-    return normalizeHeadmanStatsLessons(await this.request<unknown>(`/api/attendance/reports/headman/stats/students/${studentId}/lessons?${params}`, { ...(signal ? { signal } : {}) }))
+    if (query.subjectId !== undefined) {
+      validateStudentId(query.subjectId)
+      params.set('subjectId', String(query.subjectId))
+    }
+    for (const type of query.lessonTypes ?? []) {
+      if (!type.trim()) throw new RangeError('Некорректный тип занятия.')
+      params.append('lessonTypes', type)
+    }
+    return normalizeHeadmanStatsLessons(
+      await this.request<unknown>(
+        `/api/attendance/reports/headman/stats/students/${studentId}/lessons?${params}`,
+        { ...(signal ? { signal } : {}) },
+      ),
+    )
   }
 
   async query(query: HeadmanStatsQuery, signal?: AbortSignal): Promise<HeadmanStatsResponse> {
@@ -329,7 +443,10 @@ export class HeadmanStatsApi {
     return normalizeResponse(value)
   }
 
-  async trend(query: HeadmanStatsTrendQuery, signal?: AbortSignal): Promise<HeadmanStatsTrendResponse> {
+  async trend(
+    query: HeadmanStatsTrendQuery,
+    signal?: AbortSignal,
+  ): Promise<HeadmanStatsTrendResponse> {
     validateTrendQuery(query)
     const value = await this.request<unknown>('/api/attendance/reports/headman/stats/trend', {
       method: 'POST',
@@ -347,9 +464,12 @@ export class HeadmanStatsApi {
     signal?: AbortSignal,
   ): Promise<HeadmanStatsDownload> {
     validateTrendQuery(query)
-    if ((format.code !== 'png' && format.code !== 'html')
-      || format.extension !== format.code
-      || format.contentType.split(';', 1)[0]?.trim().toLowerCase() !== (format.code === 'png' ? 'image/png' : 'text/html')) {
+    if (
+      (format.code !== 'png' && format.code !== 'html') ||
+      format.extension !== format.code ||
+      format.contentType.split(';', 1)[0]?.trim().toLowerCase() !==
+        (format.code === 'png' ? 'image/png' : 'text/html')
+    ) {
       throw new RangeError('Выбран неподдерживаемый формат графика.')
     }
     const response = await this.response('/api/attendance/reports/headman/stats/trend/export', {
@@ -370,7 +490,10 @@ export class HeadmanStatsApi {
     const fallbackName = `headman-stats-trend.${format.extension}`
     return {
       blob,
-      filename: filenameFromContentDisposition(response.headers.get('Content-Disposition'), fallbackName),
+      filename: filenameFromContentDisposition(
+        response.headers.get('Content-Disposition'),
+        fallbackName,
+      ),
       contentType,
     }
   }
@@ -402,8 +525,11 @@ export class HeadmanStatsApi {
     validateExportQuery(query)
     const expectedType = STATS_EXPORT_CONTENT_TYPES[format.code]
     const expectedExtension = format.code === 'png' ? 'zip' : format.code
-    if (!expectedType || format.extension !== expectedExtension
-      || format.contentType.split(';', 1)[0]?.trim().toLowerCase() !== expectedType) {
+    if (
+      !expectedType ||
+      format.extension !== expectedExtension ||
+      format.contentType.split(';', 1)[0]?.trim().toLowerCase() !== expectedType
+    ) {
       throw new RangeError('Выбран неподдерживаемый формат статистики.')
     }
     const response = await this.response('/api/attendance/reports/headman/stats/export', {
@@ -423,8 +549,10 @@ export class HeadmanStatsApi {
     } catch {
       throw new Error('Сервер вернул некорректное имя файла статистики.')
     }
-    if (!filename.toLowerCase().endsWith(`.${expectedExtension}`)
-      || contentType.split(';', 1)[0]?.trim().toLowerCase() !== expectedType) {
+    if (
+      !filename.toLowerCase().endsWith(`.${expectedExtension}`) ||
+      contentType.split(';', 1)[0]?.trim().toLowerCase() !== expectedType
+    ) {
       throw new Error('Сервер вернул некорректные метаданные файла статистики.')
     }
     return {
@@ -434,10 +562,19 @@ export class HeadmanStatsApi {
     }
   }
 
+  async subjectJournalFormats(): Promise<readonly ReportFormatOption[]> {
+    return parseReportFormats(
+      await this.request<unknown>('/api/attendance/reports/headman/subject-journal/formats'),
+    )
+  }
+  async subjectJournalWeeks(): Promise<readonly HeadmanWeeklyWeekOption[]> {
+    return (await new HeadmanJournalApi(this.options).getWeeklyExportOptions()).weeks
+  }
+
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
     const response = await this.response(path, init, retried)
     if (!response.ok) throw await this.apiError(response)
-    const value = await response.json() as T
+    const value = (await response.json()) as T
     this.options.assertCurrent?.()
     return value
   }
@@ -446,7 +583,8 @@ export class HeadmanStatsApi {
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-    if (typeof init?.body === 'string' && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+    if (typeof init?.body === 'string' && !headers.has('Content-Type'))
+      headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
     if (response.status === 401 && !retried && this.options.onUnauthorized) {
@@ -487,17 +625,21 @@ export function toHeadmanStatsReportRequest(
       ...(query.semesterId === undefined ? {} : { semesterId: query.semesterId }),
       ...(query.subjectId === null ? {} : { subjectId: query.subjectId }),
       ...(query.lessonTypes.length === 0 ? {} : { lessonTypes: [...query.lessonTypes] }),
-      ...(query.sorts.length === 0 ? {} : {
-        sorts: query.sorts.map((sort) => ({ field: sort.field, descending: sort.descending })),
-      }),
-      ...(query.filters.length === 0 ? {} : {
-        filters: query.filters.map((filter) => ({
-          field: filter.field,
-          ...(filter.contains == null ? {} : { contains: filter.contains }),
-          ...(filter.minimum == null ? {} : { minimum: filter.minimum }),
-          ...(filter.maximum == null ? {} : { maximum: filter.maximum }),
-        })),
-      }),
+      ...(query.sorts.length === 0
+        ? {}
+        : {
+            sorts: query.sorts.map((sort) => ({ field: sort.field, descending: sort.descending })),
+          }),
+      ...(query.filters.length === 0
+        ? {}
+        : {
+            filters: query.filters.map((filter) => ({
+              field: filter.field,
+              ...(filter.contains == null ? {} : { contains: filter.contains }),
+              ...(filter.minimum == null ? {} : { minimum: filter.minimum }),
+              ...(filter.maximum == null ? {} : { maximum: filter.maximum }),
+            })),
+          }),
       format,
     },
   }
@@ -541,7 +683,11 @@ export function headmanStatsQueryScopeKey(
   block: HeadmanStatsBlock,
   query: Pick<HeadmanStatsQuery, 'subjectId' | 'semesterId'>,
 ): string {
-  return JSON.stringify({ block, subjectId: query.subjectId, ...(query.semesterId === undefined ? {} : { semesterId: query.semesterId }) })
+  return JSON.stringify({
+    block,
+    subjectId: query.subjectId,
+    ...(query.semesterId === undefined ? {} : { semesterId: query.semesterId }),
+  })
 }
 
 export function isHeadmanStatsResponseCurrent(
@@ -578,7 +724,8 @@ export function createGenerationBoundHeadmanStatsApi(
   const assertCurrent = (): void => {
     if (generation !== owner.currentGeneration()) throw new StaleSessionGenerationError()
   }
-  const transport = fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
+  const transport =
+    fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
   return new HeadmanStatsApi({
     assertCurrent,
     accessToken: () => {
@@ -601,13 +748,16 @@ export function createGenerationBoundHeadmanStatsApi(
 
 function validateQuery(query: HeadmanStatsQuery): void {
   validateExportQuery(query)
-  if (!Number.isInteger(query.page) || query.page < 0) throw new RangeError('page должен быть неотрицательным')
-  if (!Number.isInteger(query.size) || query.size < 1 || query.size > 100) throw new RangeError('size должен быть от 1 до 100')
+  if (!Number.isInteger(query.page) || query.page < 0)
+    throw new RangeError('page должен быть неотрицательным')
+  if (!Number.isInteger(query.size) || query.size < 1 || query.size > 100)
+    throw new RangeError('size должен быть от 1 до 100')
 }
 
 function validateTrendQuery(query: HeadmanStatsTrendQuery): void {
   validateSemesterId(query.semesterId)
-  if (query.bucketUnit !== undefined && query.bucketUnit !== 'DAY' && query.bucketUnit !== 'WEEK') throw new RangeError('Неизвестный период графика.')
+  if (query.bucketUnit !== undefined && query.bucketUnit !== 'DAY' && query.bucketUnit !== 'WEEK')
+    throw new RangeError('Неизвестный период графика.')
   if (query.mode === 'SEMESTER') return
   if (query.mode === 'WEEK') {
     if (!isIsoDate(query.weekStart) || new Date(`${query.weekStart}T00:00:00Z`).getUTCDay() !== 1) {
@@ -619,31 +769,48 @@ function validateTrendQuery(query: HeadmanStatsTrendQuery): void {
     throw new RangeError('Для динамики по предмету выбери корректный предмет')
   }
   const lessonTypes = query.lessonTypes ?? []
-  if (!Array.isArray(lessonTypes) || lessonTypes.some((type) => typeof type !== 'string' || !type.trim())
-    || new Set(lessonTypes).size !== lessonTypes.length) {
+  if (
+    !Array.isArray(lessonTypes) ||
+    lessonTypes.some((type) => typeof type !== 'string' || !type.trim()) ||
+    new Set(lessonTypes).size !== lessonTypes.length
+  ) {
     throw new RangeError('Типы занятий содержат пустое или повторное значение')
   }
 }
 
 function trendRequestBody(query: HeadmanStatsTrendQuery): Record<string, unknown> {
-  const period = { ...(query.semesterId !== undefined ? { semesterId: query.semesterId } : {}), ...(query.bucketUnit !== undefined ? { bucketUnit: query.bucketUnit } : {}) }
+  const period = {
+    ...(query.semesterId !== undefined ? { semesterId: query.semesterId } : {}),
+    ...(query.bucketUnit !== undefined ? { bucketUnit: query.bucketUnit } : {}),
+  }
   switch (query.mode) {
-    case 'SEMESTER': return { mode: 'SEMESTER', ...period }
-    case 'WEEK': return { mode: 'WEEK', weekStart: query.weekStart, ...period }
-    case 'SUBJECT': return {
-      mode: 'SUBJECT',
-      ...period,
-      subjectId: query.subjectId,
-      ...(query.lessonTypes?.length ? { lessonTypes: [...query.lessonTypes] } : {}),
-    }
+    case 'SEMESTER':
+      return { mode: 'SEMESTER', ...period }
+    case 'WEEK':
+      return { mode: 'WEEK', weekStart: query.weekStart, ...period }
+    case 'SUBJECT':
+      return {
+        mode: 'SUBJECT',
+        ...period,
+        subjectId: query.subjectId,
+        ...(query.lessonTypes?.length ? { lessonTypes: [...query.lessonTypes] } : {}),
+      }
   }
 }
 
-function validateStudentDetailQuery(studentId: number, query: HeadmanStatsStudentDetailQuery): void {
+function validateStudentDetailQuery(
+  studentId: number,
+  query: HeadmanStatsStudentDetailQuery,
+): void {
   validateSemesterId(query.semesterId)
-  if (!Number.isSafeInteger(studentId) || studentId <= 0) throw new RangeError('ID студента должен быть положительным целым числом')
-  if (!Number.isSafeInteger(query.latePage) || query.latePage < 0
-    || !Number.isSafeInteger(query.excusePage) || query.excusePage < 0) {
+  if (!Number.isSafeInteger(studentId) || studentId <= 0)
+    throw new RangeError('ID студента должен быть положительным целым числом')
+  if (
+    !Number.isSafeInteger(query.latePage) ||
+    query.latePage < 0 ||
+    !Number.isSafeInteger(query.excusePage) ||
+    query.excusePage < 0
+  ) {
     throw new RangeError('Номер страницы истории должен быть неотрицательным')
   }
   if (!Number.isSafeInteger(query.size) || query.size < 1 || query.size > 100) {
@@ -653,23 +820,36 @@ function validateStudentDetailQuery(studentId: number, query: HeadmanStatsStuden
 
 function validateExportQuery(query: HeadmanStatsExportQuery): void {
   validateSemesterId(query.semesterId)
-  if (query.subjectId !== null && (!Number.isSafeInteger(query.subjectId) || query.subjectId <= 0)) {
+  if (
+    query.subjectId !== null &&
+    (!Number.isSafeInteger(query.subjectId) || query.subjectId <= 0)
+  ) {
     throw new RangeError('subjectId должен быть положительным целым числом или null')
   }
-  if (!Array.isArray(query.lessonTypes) || query.lessonTypes.some((type) => !type.trim())
-    || new Set(query.lessonTypes).size !== query.lessonTypes.length) {
+  if (
+    !Array.isArray(query.lessonTypes) ||
+    query.lessonTypes.some((type) => !type.trim()) ||
+    new Set(query.lessonTypes).size !== query.lessonTypes.length
+  ) {
     throw new RangeError('lessonTypes содержит пустое или повторное значение')
   }
-  if (!Array.isArray(query.sorts) || !Array.isArray(query.filters)) throw new RangeError('Сортировки и фильтры должны быть списками')
-  if (query.lessonTypes.length > 0 && query.subjectId === null) throw new RangeError('Типы занятий можно выбрать только для предмета')
+  if (!Array.isArray(query.sorts) || !Array.isArray(query.filters))
+    throw new RangeError('Сортировки и фильтры должны быть списками')
+  if (query.lessonTypes.length > 0 && query.subjectId === null)
+    throw new RangeError('Типы занятий можно выбрать только для предмета')
 }
 
-function validateStudentId(value: number): void { if (!Number.isSafeInteger(value) || value < 1) throw new RangeError('Некорректный ID.') }
-function validateSemesterId(value: number | undefined): void { if (value !== undefined) validateStudentId(value) }
+function validateStudentId(value: number): void {
+  if (!Number.isSafeInteger(value) || value < 1) throw new RangeError('Некорректный ID.')
+}
+function validateSemesterId(value: number | undefined): void {
+  if (value !== undefined) validateStudentId(value)
+}
 
 function normalizeResponse(value: unknown): HeadmanStatsResponse {
   const record = unwrapContent(value)
   if (!record) throw new Error('Сервер вернул неполную статистику группы.')
+  const reasonCounts = normalizeReasonCounts(record.reasonCounts)
   const context = normalizeContext(record.context)
   const summary = normalizeMetrics(record.summary)
   const rows = array(record.rows).map(normalizeRow)
@@ -684,20 +864,41 @@ function normalizeResponse(value: unknown): HeadmanStatsResponse {
   const ticketSummary = asRecord(record.summaryTickets)
   const lateCheckin = ticketSummary ? normalizeTicketCounts(ticketSummary.lateCheckin) : null
   const excuse = ticketSummary ? normalizeTicketCounts(ticketSummary.excuse) : null
-  if (record.summaryTickets != null && (!ticketSummary || !lateCheckin || !excuse || lateCheckin.approved + lateCheckin.rejected > lateCheckin.submitted || excuse.approved + excuse.rejected > excuse.submitted)) throw new Error('Сервер вернул некорректную сводку тикетов.')
+  if (
+    record.summaryTickets != null &&
+    (!ticketSummary ||
+      !lateCheckin ||
+      !excuse ||
+      lateCheckin.approved + lateCheckin.rejected > lateCheckin.submitted ||
+      excuse.approved + excuse.rejected > excuse.submitted)
+  )
+    throw new Error('Сервер вернул некорректную сводку тикетов.')
   const filteredStudents = nonnegativeInteger(record.filteredStudents)
   const hasPrevious = booleanValue(record.hasPrevious)
   const hasNext = booleanValue(record.hasNext)
-  if (!context || !summary || rows.some((row) => !row) || subjects.some((subject) => !subject)
-    || columns.some((column) => !column) || formats.some((format) => !format)
-    || !isEmptyState(emptyState) || page === null || size === null || totalPages === null
-    || totalElements === null || filteredStudents === null || hasPrevious === null || hasNext === null) {
+  if (
+    !context ||
+    !summary ||
+    rows.some((row) => !row) ||
+    subjects.some((subject) => !subject) ||
+    columns.some((column) => !column) ||
+    formats.some((format) => !format) ||
+    !isEmptyState(emptyState) ||
+    page === null ||
+    size === null ||
+    totalPages === null ||
+    totalElements === null ||
+    filteredStudents === null ||
+    hasPrevious === null ||
+    hasNext === null
+  ) {
     throw new Error('Сервер вернул некорректную статистику группы.')
   }
   return {
     context,
     summary,
     summaryTickets: lateCheckin && excuse ? { lateCheckin, excuse } : null,
+    reasonCounts,
     filteredStudents,
     rows: rows as HeadmanStatsStudentRow[],
     subjects: subjects as HeadmanStatsSubjectOption[],
@@ -713,6 +914,47 @@ function normalizeResponse(value: unknown): HeadmanStatsResponse {
   }
 }
 
+function normalizeReasonCounts(value: unknown): readonly HeadmanStatsReasonCount[] | null {
+  if (value == null) return null
+  if (!Array.isArray(value) || value.length > 7)
+    throw new Error('Сервер вернул некорректную разбивку причин.')
+  const codes = new Set<string>()
+  const result = value.map((entry) => {
+    const record = asRecord(entry)
+    const code = record && stringValue(record.code)
+    const label = record && stringValue(record.label)
+    const count = record && positiveInteger(record.count)
+    if (
+      !code ||
+      !label ||
+      count === null ||
+      ![
+        'ILLNESS',
+        'UNIVERSITY_ORDER',
+        'SUMMONS',
+        'OTHER',
+        'MEDICAL_EXAMINATION',
+        'COMPETITION_PARTICIPATION',
+        'FAMILY_CIRCUMSTANCES',
+      ].includes(code) ||
+      codes.has(code)
+    )
+      throw new Error('Сервер вернул некорректную разбивку причин.')
+    codes.add(code)
+    return { code, label, count }
+  })
+  if (
+    result.some(
+      (entry, index) =>
+        index > 0 &&
+        (result[index - 1]!.count < entry.count ||
+          (result[index - 1]!.count === entry.count && result[index - 1]!.code > entry.code)),
+    )
+  )
+    throw new Error('Сервер вернул некорректный порядок причин.')
+  return result
+}
+
 function normalizeTrendResponse(value: unknown): HeadmanStatsTrendResponse {
   const record = unwrapContent(value)
   if (!record) throw new Error('Сервер вернул неполную динамику посещаемости.')
@@ -721,11 +963,16 @@ function normalizeTrendResponse(value: unknown): HeadmanStatsTrendResponse {
   const points = array(record.points).map(normalizeTrendPoint)
   const formats = array(record.formats).map(normalizeTrendFormat)
   const emptyStateValue = stringValue(record.emptyState)
-  const keys = points.flatMap((point) => point ? [point.key] : [])
-  if (!context || !isTrendMode(modeValue) || points.some((point) => point === null)
-    || formats.some((format) => format === null)
-    || !['png', 'html'].every((code) => formats.some((format) => format?.code === code))
-    || new Set(keys).size !== keys.length || !isTrendEmptyState(emptyStateValue)) {
+  const keys = points.flatMap((point) => (point ? [point.key] : []))
+  if (
+    !context ||
+    !isTrendMode(modeValue) ||
+    points.some((point) => point === null) ||
+    formats.some((format) => format === null) ||
+    !['png', 'html'].every((code) => formats.some((format) => format?.code === code)) ||
+    new Set(keys).size !== keys.length ||
+    !isTrendEmptyState(emptyStateValue)
+  ) {
     throw new Error('Сервер вернул некорректную динамику посещаемости.')
   }
   return {
@@ -743,12 +990,18 @@ function normalizeTrendFormat(value: unknown): HeadmanStatsTrendFormat | null {
   const code = stringValue(record.code)
   const contentType = stringValue(record.contentType)
   const extension = stringValue(record.extension)
-  if (code === 'png' && contentType?.split(';', 1)[0]?.trim().toLowerCase() === 'image/png'
-    && extension === 'png') {
+  if (
+    code === 'png' &&
+    contentType?.split(';', 1)[0]?.trim().toLowerCase() === 'image/png' &&
+    extension === 'png'
+  ) {
     return { code, label: stringValue(record.label) ?? 'PNG', contentType, extension }
   }
-  if (code === 'html' && contentType?.split(';', 1)[0]?.trim().toLowerCase() === 'text/html'
-    && extension === 'html') {
+  if (
+    code === 'html' &&
+    contentType?.split(';', 1)[0]?.trim().toLowerCase() === 'text/html' &&
+    extension === 'html'
+  ) {
     return { code, label: stringValue(record.label) ?? 'HTML', contentType, extension }
   }
   return null
@@ -763,8 +1016,18 @@ function normalizeTrendPoint(value: unknown): HeadmanStatsTrendPoint | null {
   const to = stringValue(record.to)
   const present = normalizeTrendMetric(record.present)
   const presentOrExcused = normalizeTrendMetric(record.presentOrExcused)
-  if (!key || label === null || !from || !to || !isIsoDate(from) || !isIsoDate(to) || to < from
-    || !present || !presentOrExcused) return null
+  if (
+    !key ||
+    label === null ||
+    !from ||
+    !to ||
+    !isIsoDate(from) ||
+    !isIsoDate(to) ||
+    to < from ||
+    !present ||
+    !presentOrExcused
+  )
+    return null
   return { key, label, from, to, present, presentOrExcused }
 }
 
@@ -774,9 +1037,14 @@ function normalizeTrendMetric(value: unknown): HeadmanStatsTrendMetric | null {
   const numerator = nonnegativeInteger(record.numerator)
   const denominator = nonnegativeInteger(record.denominator)
   const percent = record.percent === null ? null : numberValue(record.percent)
-  if (numerator === null || denominator === null || numerator > denominator
-    || denominator === 0 && (numerator !== 0 || percent !== null)
-    || denominator > 0 && (percent === null || percent < 0 || percent > 100)) return null
+  if (
+    numerator === null ||
+    denominator === null ||
+    numerator > denominator ||
+    (denominator === 0 && (numerator !== 0 || percent !== null)) ||
+    (denominator > 0 && (percent === null || percent < 0 || percent > 100))
+  )
+    return null
   return { numerator, denominator, percent }
 }
 
@@ -792,18 +1060,31 @@ function normalizeStudentDetailResponse(value: unknown): HeadmanStatsStudentDeta
   const lateCheckins = normalizeTicketPage(record.lateCheckins, normalizeLateCheckinEntry)
   const excuses = normalizeTicketPage(record.excuses, normalizeExcuseEntry)
   const emptyState = stringValue(record.emptyState)
+  const rank = record.rank == null ? null : normalizeTargetRank(record.rank)
   const sources = record.sources == null ? null : normalizePersonalSources(record.sources)
   const lateCheckin = record.lateCheckin == null ? null : normalizeTicketCounts(record.lateCheckin)
   const excuse = record.excuse == null ? null : normalizeTicketCounts(record.excuse)
-  if (!context || !studentRecord || studentId === null || metrics === null
-    || subjects.some((subject) => subject === null) || weeks.some((week) => week === null)
-    || lateCheckins === null || excuses === null || !isStudentDetailEmptyState(emptyState)
-    || record.sources != null && sources === null || record.lateCheckin != null && lateCheckin === null || record.excuse != null && excuse === null) {
+  if (
+    !context ||
+    !studentRecord ||
+    studentId === null ||
+    metrics === null ||
+    subjects.some((subject) => subject === null) ||
+    weeks.some((week) => week === null) ||
+    lateCheckins === null ||
+    excuses === null ||
+    !isStudentDetailEmptyState(emptyState) ||
+    (record.rank != null && rank === null) ||
+    (record.sources != null && sources === null) ||
+    (record.lateCheckin != null && lateCheckin === null) ||
+    (record.excuse != null && excuse === null)
+  ) {
     throw new Error('Сервер вернул некорректные подробности студента.')
   }
   return {
     context,
     student: { id: studentId, displayName: stringValue(studentRecord.displayName) ?? '' },
+    rank,
     metrics,
     sources,
     lateCheckin,
@@ -816,6 +1097,30 @@ function normalizeStudentDetailResponse(value: unknown): HeadmanStatsStudentDeta
   }
 }
 
+function normalizeTargetRank(value: unknown): HeadmanStatsTargetRank | null {
+  const rank = asRecord(value)
+  if (
+    !rank ||
+    typeof rank.available !== 'boolean' ||
+    !['VISIBLE', 'HIDDEN'].includes(String(rank.visibility))
+  )
+    return null
+  const participantCount = nonnegativeInteger(rank.participantCount)
+  const position = rank.position === null ? null : positiveInteger(rank.position)
+  if (
+    participantCount === null ||
+    (rank.available ? position === null || position > participantCount : rank.position !== null) ||
+    (rank.visibility === 'HIDDEN' && (rank.available || participantCount !== 0))
+  )
+    return null
+  return {
+    position,
+    participantCount,
+    available: rank.available,
+    visibility: rank.visibility as 'VISIBLE' | 'HIDDEN',
+  }
+}
+
 function normalizePersonalSources(value: unknown): HeadmanStatsStudentRow['sources'] | null {
   const record = asRecord(value)
   if (!record) return null
@@ -823,7 +1128,12 @@ function normalizePersonalSources(value: unknown): HeadmanStatsStudentRow['sourc
   const manualRequest = nonnegativeInteger(record.manualRequest)
   const autoAfterGeoFailure = nonnegativeInteger(record.autoAfterGeoFailure)
   const headmanManual = nonnegativeInteger(record.headmanManual)
-  return studentGeo === null || manualRequest === null || autoAfterGeoFailure === null || headmanManual === null ? null : { studentGeo, manualRequest, autoAfterGeoFailure, headmanManual }
+  return studentGeo === null ||
+    manualRequest === null ||
+    autoAfterGeoFailure === null ||
+    headmanManual === null
+    ? null
+    : { studentGeo, manualRequest, autoAfterGeoFailure, headmanManual }
 }
 
 function normalizePersonalMetrics(value: unknown): HeadmanStatsPersonalMetrics | null {
@@ -846,7 +1156,7 @@ function normalizePersonalMetric(value: unknown): HeadmanStatsPersonalMetric | n
   const sourcePercent = record.percent === null ? null : numberValue(record.percent)
   if (numerator === null || denominator === null || numerator > denominator) return null
   if (denominator === 0) {
-    if (numerator !== 0 || sourcePercent !== null && sourcePercent !== 0) return null
+    if (numerator !== 0 || (sourcePercent !== null && sourcePercent !== 0)) return null
     return { numerator, denominator, percent: null }
   }
   if (sourcePercent === null || sourcePercent < 0 || sourcePercent > 100) return null
@@ -875,7 +1185,9 @@ function normalizeStudentDetailSubject(value: unknown): HeadmanStatsStudentDetai
   }
 }
 
-function normalizeStudentWeek(value: unknown): HeadmanStatsStudentDetailResponse['weeks'][number] | null {
+function normalizeStudentWeek(
+  value: unknown,
+): HeadmanStatsStudentDetailResponse['weeks'][number] | null {
   const record = asRecord(value)
   if (!record) return null
   const weekStart = stringValue(record.weekStart)
@@ -883,9 +1195,19 @@ function normalizeStudentWeek(value: unknown): HeadmanStatsStudentDetailResponse
   const to = stringValue(record.to)
   const present = normalizeTrendMetric(record.present)
   const presentOrExcused = normalizeTrendMetric(record.presentOrExcused)
-  if (!weekStart || !from || !to || !isIsoDate(weekStart) || new Date(`${weekStart}T00:00:00Z`).getUTCDay() !== 1
-    || !isIsoDate(from) || !isIsoDate(to)
-    || to < from || !present || !presentOrExcused) return null
+  if (
+    !weekStart ||
+    !from ||
+    !to ||
+    !isIsoDate(weekStart) ||
+    new Date(`${weekStart}T00:00:00Z`).getUTCDay() !== 1 ||
+    !isIsoDate(from) ||
+    !isIsoDate(to) ||
+    to < from ||
+    !present ||
+    !presentOrExcused
+  )
+    return null
   return { weekStart, from, to, present, presentOrExcused }
 }
 
@@ -902,8 +1224,18 @@ function normalizeTicketPage<T>(
   const hasPrevious = booleanValue(record.hasPrevious)
   const hasNext = booleanValue(record.hasNext)
   const items = array(record.items).map(normalizeItem)
-  if (page === null || size === null || size > 100 || totalElements === null || totalPages === null
-    || hasPrevious === null || hasNext === null || items.length > size || items.some((item) => item === null)) return null
+  if (
+    page === null ||
+    size === null ||
+    size > 100 ||
+    totalElements === null ||
+    totalPages === null ||
+    hasPrevious === null ||
+    hasNext === null ||
+    items.length > size ||
+    items.some((item) => item === null)
+  )
+    return null
   return { page, size, totalElements, totalPages, hasPrevious, hasNext, items: items as T[] }
 }
 
@@ -912,15 +1244,27 @@ function normalizeLateCheckinEntry(value: unknown): HeadmanStatsLateCheckinEntry
   if (!record) return null
   const id = stringValue(record.id)
   const lessonDate = stringValue(record.lessonDate)
-  const subjectId = record.subjectId === null ? null : positiveInteger(record.subjectId) ?? undefined
-  const lessonNumber = record.lessonNumber === null ? null : positiveInteger(record.lessonNumber) ?? undefined
+  const subjectId =
+    record.subjectId === null ? null : (positiveInteger(record.subjectId) ?? undefined)
+  const lessonNumber =
+    record.lessonNumber === null ? null : (positiveInteger(record.lessonNumber) ?? undefined)
   const submittedAt = stringValue(record.submittedAt)
   const decidedAt = nullableInstant(record.decidedAt)
   const status = stringValue(record.status)
   const origin = stringValue(record.origin)
-  if (!id?.trim() || !lessonDate || !isIsoDate(lessonDate) || subjectId === undefined || lessonNumber === undefined
-    || submittedAt === null || !isInstant(submittedAt) || decidedAt === undefined
-    || !isLateCheckinStatus(status) || !isLateCheckinOrigin(origin)) return null
+  if (
+    !id?.trim() ||
+    !lessonDate ||
+    !isIsoDate(lessonDate) ||
+    subjectId === undefined ||
+    lessonNumber === undefined ||
+    submittedAt === null ||
+    !isInstant(submittedAt) ||
+    decidedAt === undefined ||
+    !isLateCheckinStatus(status) ||
+    !isLateCheckinOrigin(origin)
+  )
+    return null
   return {
     id,
     lessonDate,
@@ -943,8 +1287,15 @@ function normalizeExcuseEntry(value: unknown): HeadmanStatsExcuseEntry | null {
   const decidedAt = nullableInstant(record.decidedAt)
   const status = stringValue(record.status)
   const lessons = array(record.lessons).map(normalizeExcuseLesson)
-  if (!id?.trim() || submittedAt === null || !isInstant(submittedAt) || decidedAt === undefined
-    || !isExcuseStatus(status) || lessons.some((lesson) => lesson === null)) return null
+  if (
+    !id?.trim() ||
+    submittedAt === null ||
+    !isInstant(submittedAt) ||
+    decidedAt === undefined ||
+    !isExcuseStatus(status) ||
+    lessons.some((lesson) => lesson === null)
+  )
+    return null
   return {
     id,
     submittedAt,
@@ -959,8 +1310,10 @@ function normalizeExcuseLesson(value: unknown): HeadmanStatsExcuseLesson | null 
   if (!record) return null
   const lessonId = positiveInteger(record.lessonId)
   const lessonDate = stringValue(record.lessonDate)
-  const lessonNumber = record.lessonNumber === null ? null : positiveInteger(record.lessonNumber) ?? undefined
-  if (lessonId === null || !lessonDate || !isIsoDate(lessonDate) || lessonNumber === undefined) return null
+  const lessonNumber =
+    record.lessonNumber === null ? null : (positiveInteger(record.lessonNumber) ?? undefined)
+  if (lessonId === null || !lessonDate || !isIsoDate(lessonDate) || lessonNumber === undefined)
+    return null
   return {
     lessonId,
     lessonDate,
@@ -981,9 +1334,18 @@ function normalizeContext(value: unknown): HeadmanStatsContext | null {
   const lessonTypes = array(record.lessonTypes).map(stringValue)
   const semesterFrom = nullableString(record.semesterFrom)
   const semesterTo = nullableString(record.semesterTo)
-  if (groupId === null || semesterId === undefined || subjectId === undefined || lessonsCount === null
-    || generatedAt === null || !Number.isFinite(Date.parse(generatedAt)) || lessonTypes.some((type) => type === null)
-    || semesterFrom === undefined || semesterTo === undefined) return null
+  if (
+    groupId === null ||
+    semesterId === undefined ||
+    subjectId === undefined ||
+    lessonsCount === null ||
+    generatedAt === null ||
+    !Number.isFinite(Date.parse(generatedAt)) ||
+    lessonTypes.some((type) => type === null) ||
+    semesterFrom === undefined ||
+    semesterTo === undefined
+  )
+    return null
   return {
     groupId,
     groupName: stringValue(record.groupName) ?? '',
@@ -1006,7 +1368,9 @@ function normalizeMetrics(value: unknown): HeadmanStatsMetrics | null {
   const presentOrExcused = normalizeMetric(record.presentOrExcused)
   const excused = normalizeMetric(record.excused)
   const absent = normalizeMetric(record.absent)
-  return present && presentOrExcused && excused && absent ? { present, presentOrExcused, excused, absent } : null
+  return present && presentOrExcused && excused && absent
+    ? { present, presentOrExcused, excused, absent }
+    : null
 }
 
 function normalizeMetric(value: unknown): HeadmanStatsMetric | null {
@@ -1015,8 +1379,16 @@ function normalizeMetric(value: unknown): HeadmanStatsMetric | null {
   const numerator = nonnegativeInteger(record.numerator)
   const denominator = nonnegativeInteger(record.denominator)
   const percent = numberValue(record.percent)
-  if (numerator === null || denominator === null || numerator > denominator || percent === null
-    || percent < 0 || percent > 100 || denominator === 0 && percent !== 0) return null
+  if (
+    numerator === null ||
+    denominator === null ||
+    numerator > denominator ||
+    percent === null ||
+    percent < 0 ||
+    percent > 100 ||
+    (denominator === 0 && percent !== 0)
+  )
+    return null
   return { numerator, denominator, percent }
 }
 
@@ -1028,12 +1400,25 @@ function normalizeRow(value: unknown): HeadmanStatsStudentRow | null {
   const lateCheckin = normalizeTicketCounts(record.lateCheckin)
   const excuse = normalizeTicketCounts(record.excuse)
   const sourcesRecord = asRecord(record.sources)
-  if (studentId === null || metrics === null || lateCheckin === null || excuse === null || !sourcesRecord) return null
+  if (
+    studentId === null ||
+    metrics === null ||
+    lateCheckin === null ||
+    excuse === null ||
+    !sourcesRecord
+  )
+    return null
   const studentGeo = nonnegativeInteger(sourcesRecord.studentGeo)
   const manualRequest = nonnegativeInteger(sourcesRecord.manualRequest)
   const autoAfterGeoFailure = nonnegativeInteger(sourcesRecord.autoAfterGeoFailure)
   const headmanManual = nonnegativeInteger(sourcesRecord.headmanManual)
-  if (studentGeo === null || manualRequest === null || autoAfterGeoFailure === null || headmanManual === null) return null
+  if (
+    studentGeo === null ||
+    manualRequest === null ||
+    autoAfterGeoFailure === null ||
+    headmanManual === null
+  )
+    return null
   return {
     studentId,
     displayName: stringValue(record.displayName) ?? '',
@@ -1050,7 +1435,12 @@ function normalizeTicketCounts(value: unknown): HeadmanStatsStudentRow['lateChec
   const submitted = nonnegativeInteger(record.submitted)
   const approved = nonnegativeInteger(record.approved)
   const rejected = nonnegativeInteger(record.rejected)
-  return submitted === null || approved === null || rejected === null || approved + rejected > submitted ? null : { submitted, approved, rejected }
+  return submitted === null ||
+    approved === null ||
+    rejected === null ||
+    approved + rejected > submitted
+    ? null
+    : { submitted, approved, rejected }
 }
 
 function normalizeSubject(value: unknown): HeadmanStatsSubjectOption | null {
@@ -1063,7 +1453,11 @@ function normalizeSubject(value: unknown): HeadmanStatsSubjectOption | null {
     return type && code ? { code, label: stringValue(type.label) ?? code } : null
   })
   if (id === null || lessonTypes.some((item) => !item)) return null
-  return { id, label: stringValue(record.label) ?? '', lessonTypes: lessonTypes as { code: string; label: string }[] }
+  return {
+    id,
+    label: stringValue(record.label) ?? '',
+    lessonTypes: lessonTypes as { code: string; label: string }[],
+  }
 }
 
 function normalizeColumn(value: unknown): HeadmanStatsColumn | null {
@@ -1081,8 +1475,14 @@ function normalizeFormat(value: unknown): HeadmanStatsFormat | null {
   const code = stringValue(record.code)
   const contentType = stringValue(record.contentType)
   const extension = stringValue(record.extension)
-  if (!code || !contentType || !extension || !['docx', 'pdf', 'png', 'html', 'xlsx'].includes(code)) return null
-  return { code: code as HeadmanStatsFormat['code'], label: stringValue(record.label) ?? code, contentType, extension }
+  if (!code || !contentType || !extension || !['docx', 'pdf', 'png', 'html', 'xlsx'].includes(code))
+    return null
+  return {
+    code: code as HeadmanStatsFormat['code'],
+    label: stringValue(record.label) ?? code,
+    contentType,
+    extension,
+  }
 }
 
 function unwrapContent(value: unknown): Record<string, unknown> | null {
@@ -1097,7 +1497,9 @@ function array(value: unknown): unknown[] {
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : null
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null
 }
 
 function positiveInteger(value: unknown): number | null {
@@ -1105,7 +1507,7 @@ function positiveInteger(value: unknown): number | null {
 }
 
 function nullablePositiveInteger(value: unknown): number | null | undefined {
-  return value === null ? null : positiveInteger(value) ?? undefined
+  return value === null ? null : (positiveInteger(value) ?? undefined)
 }
 
 function nonnegativeInteger(value: unknown): number | null {
@@ -1121,7 +1523,7 @@ function stringValue(value: unknown): string | null {
 }
 
 function nullableString(value: unknown): string | null | undefined {
-  return value === null ? null : stringValue(value) ?? undefined
+  return value === null ? null : (stringValue(value) ?? undefined)
 }
 
 function booleanValue(value: unknown): boolean | null {
@@ -1149,10 +1551,15 @@ function isTrendMode(value: string | null): value is HeadmanStatsTrendMode {
 }
 
 function isTrendEmptyState(value: string | null): value is HeadmanStatsTrendEmptyState {
-  return value !== null && ['NONE', 'NO_ACTIVE_SEMESTER', 'NO_COMPLETED_LESSONS', 'NO_MATCHING_LESSONS'].includes(value)
+  return (
+    value !== null &&
+    ['NONE', 'NO_ACTIVE_SEMESTER', 'NO_COMPLETED_LESSONS', 'NO_MATCHING_LESSONS'].includes(value)
+  )
 }
 
-function isStudentDetailEmptyState(value: string | null): value is HeadmanStatsStudentDetailEmptyState {
+function isStudentDetailEmptyState(
+  value: string | null,
+): value is HeadmanStatsStudentDetailEmptyState {
   return value !== null && ['NONE', 'NO_ACTIVE_SEMESTER', 'NO_COMPLETED_LESSONS'].includes(value)
 }
 
@@ -1165,16 +1572,23 @@ function isLateCheckinOrigin(value: string | null): value is HeadmanStatsLateChe
 }
 
 function isExcuseStatus(value: string | null): value is HeadmanStatsExcuseStatus {
-  return value !== null && ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'CANCELLED'].includes(value)
+  return (
+    value !== null && ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'CANCELLED'].includes(value)
+  )
 }
 
 function isEmptyState(value: string | null): value is HeadmanStatsEmptyState {
-  return value !== null && ['NONE', 'NO_ACTIVE_SEMESTER', 'NO_COMPLETED_LESSONS', 'NO_MEMBERS', 'FILTERED_EMPTY'].includes(value)
+  return (
+    value !== null &&
+    ['NONE', 'NO_ACTIVE_SEMESTER', 'NO_COMPLETED_LESSONS', 'NO_MEMBERS', 'FILTERED_EMPTY'].includes(
+      value,
+    )
+  )
 }
 
 function problemDetail(value: unknown): string | null {
   const record = asRecord(value)
-  return record ? stringValue(record.detail) ?? stringValue(record.title) : null
+  return record ? (stringValue(record.detail) ?? stringValue(record.title)) : null
 }
 
 function filenameFromContentDisposition(value: string | null, fallback: string): string {
@@ -1182,13 +1596,16 @@ function filenameFromContentDisposition(value: string | null, fallback: string):
   const extended = /filename\*=UTF-8''([^;]+)/i.exec(value)?.[1]
   const quoted = /filename="([^"]+)"/i.exec(value)?.[1]
   const plain = /filename=([^;]+)/i.exec(value)?.[1]?.trim()
-  const raw = extended ? decodeURIComponent(extended) : quoted ?? plain
+  const raw = extended ? decodeURIComponent(extended) : (quoted ?? plain)
   if (!raw) return fallback
-  const cleaned = [...raw].map((character) => {
-    const codePoint = character.codePointAt(0) ?? 0
-    return character === '/' || character === '\\' || codePoint <= 0x1f || codePoint === 0x7f
-      ? '_'
-      : character
-  }).join('').trim()
+  const cleaned = [...raw]
+    .map((character) => {
+      const codePoint = character.codePointAt(0) ?? 0
+      return character === '/' || character === '\\' || codePoint <= 0x1f || codePoint === 0x7f
+        ? '_'
+        : character
+    })
+    .join('')
+    .trim()
   return cleaned && cleaned !== '.' && cleaned !== '..' ? cleaned : fallback
 }

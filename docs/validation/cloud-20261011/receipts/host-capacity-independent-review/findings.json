@@ -1,0 +1,50 @@
+{
+  "verdict": "CHANGES_REQUESTED_EXACT_SELECTION_BOUNDARY",
+  "time": "2026-10-12T05:29:27.290048+00:00",
+  "scope": "READ_ONLY original36 plan/source staging review; no mutation",
+  "findings": [
+    {
+      "id": "CAP-B01",
+      "priority": 2,
+      "source": "/workspace/scratch/rct-validation/host_capacity_plan/diagnose.py:42",
+      "title": "Exclude protected .agent and explicit evidence paths from exact recovery inventory",
+      "observed": "539 all.agent rows149360640B and77 docs/design/evidence rows11444224B selected despite protected evidence boundary; tracked status does not authorize rewriting their representation",
+      "impact": "Wrongly includes protected historical raw XML, stand reports, generated documents and screenshots in 1172307968B potential",
+      "required": "Root new corrected source-only exact list must remove all.agent and all evidence/receipts/validation/test-results directory components; retain original36sealed diagnostics and all protected bytes/path/modes; fresh rehash/stat owned nonexcluded pairs only"
+    },
+    {
+      "id": "CAP-B02",
+      "priority": 2,
+      "source": "/workspace/scratch/rct-validation/host_capacity_plan/diagnose.py:42",
+      "title": "Remove unreviewed derived dist payloads from recovery estimate",
+      "observed": "231 rows67268608B in tracked frontends/web-panel/dist and frontends/landing/dist enter frozen tracked source selection; no build/dist exclusion exists",
+      "impact": "Author falsely states all derived outputs excluded, and original capacity headroom includes unapproved derived assets",
+      "required": "Exclude generatedweb-panel/dist and allbuild/dependencyoutputs; landingdist canonicalauthor exception requires specificacceptedsource/builderprovenance beforecounting; safest corrected lowerbound removesall231"
+    },
+    {
+      "id": "CAP-M01",
+      "priority": 3,
+      "source": "/workspace/scratch/rct-validation/host_capacity_plan/HANDOFF.md:21",
+      "title": "Record intentional metadata changes and repeated reference link counts",
+      "observed": "All4422 candidate mtime differ from reference; hardlink replacement necessarily changes candidate inode/mtime/nlink, while futurepairs reuse referenceinodes",
+      "required": "Future Root exactmutationledger distinguishes byte/path/mode/UID/GID preservation from intentionalinode/mtime/nlink changes, computes expectedreference nlink increments from successfulownlinks, permits only recorded owned temporary settlement after interruption, and requires COW for eitherlinked path before edits/chmod"
+    },
+    {
+      "id": "CAP-P01",
+      "priority": 3,
+      "source": "/workspace/scratch/rct-validation/host_capacity_plan/STAGING.md:18",
+      "title": "Carry already-known host JDK correction into future sealed staging spec",
+      "observed": "STAGING repeats DebianOpenJDKhost provenance; sealed artifact-inspection records Temurin21.0.12.1+1 at /workspace/rct-cloud-setup/jdk21/bin/java hash2a207f5e7d075afa01d97f8048389a64432a44c4a5af0f5e77d6e286ec5f401d",
+      "required": "Root future staging/runner grant seals actual executableSHA/version/vendor plus DebianOS separately; existingartifactprovenancecorrection is alreadyactive; no newJVM launched"
+    }
+  ],
+  "strict_lower_bound": {
+    "rows": 3575,
+    "unique_allocated_bytes": 944234496,
+    "source_heads_metadata_modes_UID_GID_hashes_verified": true,
+    "authorization": "PROPOSAL_ONLY"
+  },
+  "actual_recovery": 0,
+  "runtime": "NOT_RUN",
+  "stage": "NOT_RUN"
+}

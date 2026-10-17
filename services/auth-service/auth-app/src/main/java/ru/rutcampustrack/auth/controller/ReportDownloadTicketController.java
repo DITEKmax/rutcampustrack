@@ -22,10 +22,9 @@ public final class ReportDownloadTicketController implements ReportDownloadTicke
 
     @Override
     public ResponseEntity<ReportDownloadTicketResponse> issue(
-            Authentication authentication,
-            IssueReportDownloadTicketRequest request
-    ) {
-        if (authentication == null || !(authentication.getPrincipal() instanceof SessionPrincipal principal)) {
+            Authentication authentication, IssueReportDownloadTicketRequest request) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof SessionPrincipal principal)) {
             throw new SessionAdmissionException(SessionAdmissionException.Code.INVALID_SESSION);
         }
         ReportDownloadTicketResponse response = ticketService.issue(principal, request);

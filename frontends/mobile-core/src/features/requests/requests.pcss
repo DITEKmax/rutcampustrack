@@ -22,7 +22,9 @@
   color: var(--requests-text);
   background: var(--requests-base);
   font-family: var(--rct-font-family-sans);
-  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-feature-settings:
+    'tnum' 1,
+    'lnum' 1;
   font-variant-numeric: tabular-nums;
 }
 
@@ -73,7 +75,11 @@
 .request-attachment-preview__open {
   font: inherit;
   cursor: pointer;
-  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease,
+    opacity 120ms ease;
   @mixin rct-focus-ring;
 }
 
@@ -432,7 +438,12 @@
   inline-size: 100%;
   min-block-size: 4.5rem;
   border-radius: 1rem;
-  background: linear-gradient(100deg, var(--requests-float), var(--requests-raised), var(--requests-float));
+  background: linear-gradient(
+    100deg,
+    var(--requests-float),
+    var(--requests-raised),
+    var(--requests-float)
+  );
   background-size: 200% 100%;
   animation: requests-shimmer 1.4s ease-in-out infinite;
 }
@@ -699,6 +710,24 @@
   gap: 0.5rem;
 }
 
+.request-date-range {
+  display: grid;
+  gap: var(--rct-space-3);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.request-date-range legend {
+  margin-block-end: var(--rct-space-3);
+}
+
+.request-field input[type='date'] {
+  min-inline-size: 0;
+}
+
+.request-field input[type='date'],
 .request-field select,
 .request-field textarea,
 .request-late-screen select {
@@ -746,6 +775,7 @@
   resize: vertical;
 }
 
+.request-field input[type='date']:disabled,
 .request-field select:disabled,
 .request-field textarea:disabled,
 .request-late-screen select:disabled {
@@ -1118,8 +1148,12 @@
 }
 
 @keyframes requests-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1152,23 +1186,48 @@
   }
 }
 
-.requests-screen, .requests-type-screen {
+.requests-screen,
+.requests-type-screen {
   min-inline-size: 0;
   overflow-wrap: anywhere;
   padding-block: var(--rct-space-5) var(--rct-today-bottom-space);
 }
-.requests-screen__header h1 { @mixin rct-type-screen-title; }
-.requests-type-screen .requests-form-header h1 { @mixin rct-type-task-title; }
-.requests-type-choice, .requests-type-choice--unavailable { border: 0; }
-.requests-type-choice__symbol-pair { inline-size: auto; }
-.request-card__head h2 { min-inline-size: 0; font-size: var(--rct-font-size-body); }
-.request-status { flex: 0 0 auto; }
-.request-lesson-card { inline-size: 100%; min-inline-size: 0; }
-.requests-state { border: 0; }
-.requests-state--error { background: var(--rct-error-surface); }
-.requests-state--error h2 { color: var(--rct-color-danger-text); }
-.requests-screen > .student-warning { margin-block-start: var(--rct-space-3); }
-
+.requests-screen__header h1 {
+  @mixin rct-type-screen-title;
+}
+.requests-type-screen .requests-form-header h1 {
+  @mixin rct-type-task-title;
+}
+.requests-type-choice,
+.requests-type-choice--unavailable {
+  border: 0;
+}
+.requests-type-choice__symbol-pair {
+  inline-size: auto;
+}
+.request-card__head h2 {
+  min-inline-size: 0;
+  font-size: var(--rct-font-size-body);
+}
+.request-status {
+  flex: 0 0 auto;
+}
+.request-lesson-card {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+.requests-state {
+  border: 0;
+}
+.requests-state--error {
+  background: var(--rct-error-surface);
+}
+.requests-state--error h2 {
+  color: var(--rct-color-danger-text);
+}
+.requests-screen > .student-warning {
+  margin-block-start: var(--rct-space-3);
+}
 
 /* Request metadata uses the same semantic icons at the caption text size. */
 .request-card__details-head {
@@ -1207,8 +1266,12 @@
   inline-size: var(--rct-icon-size);
   block-size: var(--rct-icon-size);
 }
-.request-card__toggle-icon--expanded { transform: rotate(180deg); }
-.request-lesson-card { border-radius: var(--rct-radius-2xl); }
+.request-card__toggle-icon--expanded {
+  transform: rotate(180deg);
+}
+.request-lesson-card {
+  border-radius: var(--rct-radius-2xl);
+}
 .request-lesson-retained {
   display: grid;
   gap: var(--rct-space-2);

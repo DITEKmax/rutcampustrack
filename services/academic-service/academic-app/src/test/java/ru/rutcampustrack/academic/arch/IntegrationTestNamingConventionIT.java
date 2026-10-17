@@ -7,11 +7,10 @@ import com.tngtech.archunit.lang.ArchRule;
 import ru.rutcampustrack.shared.testcontainers.IntegrationTestNamingRule;
 
 /**
- * M08 Группа 1 (P2-8/1) — wrapper над shared
- * {@link IntegrationTestNamingRule#integrationTestsMustEndWithIT()}.
+ * M08 Группа 1 (P2-8/1) — wrapper над shared {@link
+ * IntegrationTestNamingRule#integrationTestsMustEndWithIT()}.
  *
- * <p>Scan только test-классов academic-service
- * ({@code OnlyIncludeTests.class}).
+ * <p>Scan только test-классов academic-service ({@code OnlyIncludeTests.class}).
  */
 @AnalyzeClasses(
         packages = "ru.rutcampustrack.academic",

@@ -1,0 +1,59 @@
+{
+  "artifact": 11883920091,
+  "producer": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+  "run": 38541704229,
+  "digest": "sha256:a8c7374307020a8291e5fac65b2d770fe34c51ac4ca65510a54857878d4daa1d",
+  "bytes": 454,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 452,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 12546,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          },
+          {
+            "stage": "UNKNOWN",
+            "cause": "REPORTED_CLASS_TIMEOUT_ERROR",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 542
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "ADMIN_ACCOUNT_LIFECYCLE",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+  "native_reader": {
+    "exit": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "private_reference_removed": true
+  },
+  "cause": "UNKNOWN; reported TimeoutError/frame542 is an unauthenticated diagnostic hint, not a product verdict"
+}

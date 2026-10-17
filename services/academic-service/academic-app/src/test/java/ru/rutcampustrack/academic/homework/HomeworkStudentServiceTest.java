@@ -1,5 +1,12 @@
 package ru.rutcampustrack.academic.homework;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
+
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,14 +23,6 @@ import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
-
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class HomeworkStudentServiceTest {
@@ -49,12 +48,28 @@ class HomeworkStudentServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new HomeworkStudentService(
-                homeworkRepository, completionRepository, semesterRepository, userRepository, archiveCoordinator);
-        claims = new InternalJwtClaims(
-                STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", GROUP_ID, false, false);
+        service =
+                new HomeworkStudentService(
+                        homeworkRepository,
+                        completionRepository,
+                        semesterRepository,
+                        userRepository,
+                        archiveCoordinator);
+        claims =
+                new InternalJwtClaims(
+                        STUDENT_ID,
+                        SESSION_ID,
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        GROUP_ID,
+                        false,
+                        false);
         lenient().when(userRepository.findById(STUDENT_ID)).thenReturn(Optional.of(user));
-        lenient().when(userRepository.findActiveStudentGrantGroupId(STUDENT_ID)).thenReturn(Optional.of(GROUP_ID));
+        lenient()
+                .when(userRepository.findActiveStudentGrantGroupId(STUDENT_ID))
+                .thenReturn(Optional.of(GROUP_ID));
         lenient().when(semesterRepository.findByIsActiveTrue()).thenReturn(Optional.of(semester));
         lenient().when(semester.getId()).thenReturn(SEMESTER_ID);
         lenient().when(homeworkRepository.findById(HOMEWORK_ID)).thenReturn(Optional.of(homework));
@@ -77,7 +92,8 @@ class HomeworkStudentServiceTest {
                 .isEqualTo(new HomeworkStudentService.CompletionState(true, completedAt));
 
         verify(completionRepository, times(2)).insertIfAbsent(HOMEWORK_ID, STUDENT_ID);
-        verify(completionRepository, times(2)).findByHomeworkIdAndStudentId(HOMEWORK_ID, STUDENT_ID);
+        verify(completionRepository, times(2))
+                .findByHomeworkIdAndStudentId(HOMEWORK_ID, STUDENT_ID);
         verify(completionRepository, never()).deleteByHomeworkIdAndStudentId(anyLong(), anyLong());
     }
 
@@ -102,8 +118,9 @@ class HomeworkStudentServiceTest {
 
     @Test
     void wrongRoleIsRejectedBeforeReadingHomework() {
-        claims = new InternalJwtClaims(
-                STUDENT_ID, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", GROUP_ID, false, false);
+        claims =
+                new InternalJwtClaims(
+                        STUDENT_ID, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", GROUP_ID, false, false);
 
         assertThatThrownBy(() -> service.setCompletion(HOMEWORK_ID, SEMESTER_ID, claims, true))
                 .isInstanceOf(AccessDeniedException.class);
@@ -133,12 +150,22 @@ class HomeworkStudentServiceTest {
 
     @Test
     void readOnlyClaimsAreRejectedBeforeAnyRepositoryAccess() {
-        InternalJwtClaims readOnly = new InternalJwtClaims(
-                STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "EXPELLED", GROUP_ID, false, true);
+        InternalJwtClaims readOnly =
+                new InternalJwtClaims(
+                        STUDENT_ID,
+                        SESSION_ID,
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "EXPELLED",
+                        GROUP_ID,
+                        false,
+                        true);
 
         assertThatThrownBy(() -> service.setCompletion(HOMEWORK_ID, SEMESTER_ID, readOnly, true))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verifyNoInteractions(userRepository, semesterRepository, homeworkRepository, completionRepository);
+        verifyNoInteractions(
+                userRepository, semesterRepository, homeworkRepository, completionRepository);
     }
 }

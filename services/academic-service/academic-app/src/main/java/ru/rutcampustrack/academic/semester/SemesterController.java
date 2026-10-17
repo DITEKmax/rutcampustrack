@@ -1,5 +1,9 @@
 package ru.rutcampustrack.academic.semester;
 
+import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
+
+import java.time.LocalDate;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -11,24 +15,19 @@ import ru.rutcampustrack.academic.contract.api.SemesterApi;
 import ru.rutcampustrack.academic.contract.api.SemesterArchiveCommandApi;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
-import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionOperationResponse;
-import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionPreviewResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
-import ru.rutcampustrack.academic.contract.dto.semester.SemesterResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterArchiveOperationResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterArchiveStatusResponse;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionOperationResponse;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionPreviewResponse;
+import ru.rutcampustrack.academic.contract.dto.semester.SemesterResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.security.RequireRole;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
-import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
-
 /**
- * REST controller implementing SemesterApi contract.
- * Delegates all business logic to SemesterService.
+ * REST controller implementing SemesterApi contract. Delegates all business logic to
+ * SemesterService.
  */
 @RestController
 public class SemesterController implements SemesterApi, SemesterArchiveCommandApi {
@@ -38,17 +37,19 @@ public class SemesterController implements SemesterApi, SemesterArchiveCommandAp
     private final SemesterArchiveService semesterArchiveService;
     private final SemesterDeletionService semesterDeletionService;
 
-    public SemesterController(SemesterService semesterService,
-                              SemesterAssembler semesterAssembler,
-                              SemesterArchiveService semesterArchiveService) {
+    public SemesterController(
+            SemesterService semesterService,
+            SemesterAssembler semesterAssembler,
+            SemesterArchiveService semesterArchiveService) {
         this(semesterService, semesterAssembler, semesterArchiveService, null);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
-    public SemesterController(SemesterService semesterService,
-                              SemesterAssembler semesterAssembler,
-                              SemesterArchiveService semesterArchiveService,
-                              SemesterDeletionService semesterDeletionService) {
+    public SemesterController(
+            SemesterService semesterService,
+            SemesterAssembler semesterAssembler,
+            SemesterArchiveService semesterArchiveService,
+            SemesterDeletionService semesterDeletionService) {
         this.semesterService = semesterService;
         this.semesterAssembler = semesterAssembler;
         this.semesterArchiveService = semesterArchiveService;
@@ -56,39 +57,58 @@ public class SemesterController implements SemesterApi, SemesterArchiveCommandAp
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"SEMESTERS_MANAGE"})
-    public ResponseEntity<EntityModel<SemesterResponse>> createSemester(CreateSemesterRequest request) {
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"SEMESTERS_MANAGE"})
+    public ResponseEntity<EntityModel<SemesterResponse>> createSemester(
+            CreateSemesterRequest request) {
         Semester semester = semesterService.createSemester(request);
         return ResponseEntity.status(201).body(semesterAssembler.toModel(semester));
     }
 
     @Override
-    @RequireRole(value={ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN, ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT, ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER}, admin={"SEMESTERS_VIEW"})
+    @RequireRole(
+            value = {
+                ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN,
+                ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT,
+                ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER
+            },
+            admin = {"SEMESTERS_VIEW"})
     public ResponseEntity<EntityModel<SemesterResponse>> getSemester(Long id) {
         Semester semester = semesterService.findSemesterById(id);
         return ResponseEntity.ok(semesterAssembler.toModel(semester));
     }
 
     @Override
-    @RequireRole(value={ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN, ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT, ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER}, admin={"SEMESTERS_VIEW"})
+    @RequireRole(
+            value = {
+                ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN,
+                ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT,
+                ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER
+            },
+            admin = {"SEMESTERS_VIEW"})
     public ResponseEntity<PagedModel<EntityModel<SemesterResponse>>> listSemesters(
-            Pageable pageable,
-            PagedResourcesAssembler<SemesterResponse> assembler) {
+            Pageable pageable, PagedResourcesAssembler<SemesterResponse> assembler) {
         Page<Semester> page = semesterService.listSemesters(pageable);
         Page<SemesterResponse> responsePage = page.map(semesterAssembler::toResponse);
-        return ResponseEntity.ok(assembler.toModel(responsePage,
-                response -> EntityModel.of(response)));
+        return ResponseEntity.ok(
+                assembler.toModel(responsePage, response -> EntityModel.of(response)));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"SEMESTERS_MANAGE"})
-    public ResponseEntity<EntityModel<SemesterResponse>> updateSemester(Long id, UpdateSemesterRequest request) {
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"SEMESTERS_MANAGE"})
+    public ResponseEntity<EntityModel<SemesterResponse>> updateSemester(
+            Long id, UpdateSemesterRequest request) {
         Semester semester = semesterService.updateSemester(id, request);
         return ResponseEntity.ok(semesterAssembler.toModel(semester));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"SEMESTERS_MANAGE","DATA_DELETE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"SEMESTERS_MANAGE", "DATA_DELETE"})
     public ResponseEntity<SemesterDeletionOperationResponse> deleteSemester(
             Long id, DeleteSemesterRequest request, UUID idempotencyKey) {
         final SemesterDeletionOperationResponse response;
@@ -96,50 +116,76 @@ public class SemesterController implements SemesterApi, SemesterArchiveCommandAp
             response = semesterDeletionService.confirm(id, request, idempotencyKey);
         } catch (StaleSemesterDeletionPreviewException stale) {
             SemesterDeletionPreviewResponse preview = stale.refreshedPreview();
-            return ResponseEntity.status(409).body(new SemesterDeletionOperationResponse(
-                    null, id, ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase.CANCELLED,
-                    false, preview.stateVersion(), preview.counts(), "STALE_PREVIEW", null, preview));
+            return ResponseEntity.status(409)
+                    .body(
+                            new SemesterDeletionOperationResponse(
+                                    null,
+                                    id,
+                                    ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase
+                                            .CANCELLED,
+                                    false,
+                                    preview.stateVersion(),
+                                    preview.counts(),
+                                    "STALE_PREVIEW",
+                                    null,
+                                    preview));
         }
-        if (response.phase() == ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase.CANCELLED
+        if (response.phase()
+                        == ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase.CANCELLED
                 && response.refreshedPreview() != null) {
             return ResponseEntity.status(409).body(response);
         }
-        if (response.phase() == ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase.COMPLETED) {
+        if (response.phase()
+                == ru.rutcampustrack.academic.contract.enums.SemesterDeletionPhase.COMPLETED) {
             return ResponseEntity.ok(response);
         }
         return ResponseEntity.accepted().body(response);
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"SEMESTERS_MANAGE","DATA_DELETE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"SEMESTERS_MANAGE", "DATA_DELETE"})
     public ResponseEntity<SemesterDeletionPreviewResponse> previewSemesterDeletion(Long id) {
         return ResponseEntity.ok(semesterDeletionService.preview(id));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"SEMESTERS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"SEMESTERS_MANAGE"})
     public ResponseEntity<EntityModel<SemesterResponse>> activateSemester(Long id) {
         Semester semester = semesterService.activateSemester(id);
         return ResponseEntity.ok(semesterAssembler.toModel(semester));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"SEMESTERS_MANAGE"})
-    public ResponseEntity<SemesterArchiveOperationResponse> archiveSemester(Long id, UUID idempotencyKey) {
-        SemesterArchiveOperationResponse response = semesterArchiveService.archive(id, idempotencyKey);
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"SEMESTERS_MANAGE"})
+    public ResponseEntity<SemesterArchiveOperationResponse> archiveSemester(
+            Long id, UUID idempotencyKey) {
+        SemesterArchiveOperationResponse response =
+                semesterArchiveService.archive(id, idempotencyKey);
         return operationResponse(response);
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"SEMESTERS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"SEMESTERS_MANAGE"})
     public ResponseEntity<SemesterArchiveStatusResponse> getSemesterArchiveStatus(Long id) {
         return ResponseEntity.ok(semesterArchiveService.status(id));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"SEMESTERS_MANAGE"})
-    public ResponseEntity<SemesterArchiveOperationResponse> restoreSemester(Long id, UUID idempotencyKey) {
-        SemesterArchiveOperationResponse response = semesterArchiveService.restore(id, idempotencyKey);
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"SEMESTERS_MANAGE"})
+    public ResponseEntity<SemesterArchiveOperationResponse> restoreSemester(
+            Long id, UUID idempotencyKey) {
+        SemesterArchiveOperationResponse response =
+                semesterArchiveService.restore(id, idempotencyKey);
         return operationResponse(response);
     }
 
@@ -153,8 +199,11 @@ public class SemesterController implements SemesterApi, SemesterArchiveCommandAp
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"SEMESTERS_MANAGE"})
-    public ResponseEntity<OverlapCheckResponse> checkOverlap(LocalDate from, LocalDate to, Long excludeId) {
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"SEMESTERS_MANAGE"})
+    public ResponseEntity<OverlapCheckResponse> checkOverlap(
+            LocalDate from, LocalDate to, Long excludeId) {
         return ResponseEntity.ok(semesterService.checkOverlap(from, to, excludeId));
     }
 }

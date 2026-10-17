@@ -7,7 +7,11 @@ import ru.rutcampustrack.attendance.contract.dto.report.LessonActionsResponse;
 @RestController
 public class LessonActionController implements LessonActionsApi {
     private final LessonActionReadService service;
-    public LessonActionController(LessonActionReadService service) { this.service = service; }
+
+    public LessonActionController(LessonActionReadService service) {
+        this.service = service;
+    }
+
     public LessonActionsResponse actions(Long lessonId, String cursor, int limit) {
         return service.read(lessonId, cursor, limit);
     }

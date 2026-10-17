@@ -1,0 +1,38 @@
+{
+  "schema": "RCT_NARROW_INDEPENDENT_SOURCE_REVIEW_MANIFEST_V1",
+  "utc": "2026-10-13T09:46:33.156450+00:00",
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": "FIRST3-OWN-LINK-CLEANUP-ON-EXCEPTION",
+      "priority": 2,
+      "source": "/workspace/scratch/rct-validation/first3_dataset_call_source/checking-plan/native-plan/run-approved-node.py",
+      "create_line": 84,
+      "blocking_assertion_line": 91,
+      "cleanup_line": 123
+    }
+  ],
+  "native": "NOT_RUN",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 5391,
+      "sha256": "a9575b85628f5e596f041826475543ce93b6c5475bc7381a4ed3b382a01f83c2"
+    },
+    {
+      "path": "check-selected-ast.py",
+      "bytes": 4302,
+      "sha256": "e4281124cc54890151798074f78f9f0e1cb9a891639aa7e780508fb354543132"
+    },
+    {
+      "path": "counterexample.safe.json",
+      "bytes": 993,
+      "sha256": "58662534fb32b76549da996b473cd005a20f720f527d2565652f58a44b4b3431"
+    },
+    {
+      "path": "static-bindings.safe.json",
+      "bytes": 10765,
+      "sha256": "e8a99d0db2cf88230c00cad87c4bd42cc9c5b6e390bdf38dee2c351d847e8c38"
+    }
+  ]
+}

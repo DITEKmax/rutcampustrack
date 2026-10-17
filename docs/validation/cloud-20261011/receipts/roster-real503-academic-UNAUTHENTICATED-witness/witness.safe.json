@@ -1,0 +1,28 @@
+{
+  "stage": "CLASSIFIED",
+  "status": "503",
+  "boundary": "ATTENDANCE_DEPENDENCY",
+  "dependency": "ACADEMIC",
+  "rpc": "UNAUTHENTICATED",
+  "operationHint": "UNKNOWN",
+  "problemBodyState": "CLASSIFIED",
+  "actorRecovery": "SOURCE_QUALIFIED_FIRST_WORKER_CHRONOLOGY",
+  "singleRosterGet": true,
+  "noReseedOrDomainWrites": true,
+  "clientAcceptance": false,
+  "cleanup": [
+    {
+      "owner": "HEADMAN",
+      "logoutStatus": "204",
+      "logoutConfirmed": true,
+      "contextDisposed": true
+    },
+    {
+      "owner": "ADMIN",
+      "logoutStatus": "204",
+      "logoutConfirmed": true,
+      "contextDisposed": true
+    }
+  ],
+  "cleanupConfirmed": true
+}

@@ -1,0 +1,41 @@
+{
+  "time": "2026-10-11T21:19:20.289942+00:00",
+  "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "remote_branch_sha": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "pr_head_sha": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "pr_number": 2,
+  "draft": true,
+  "base": "main",
+  "mergeCommit": null,
+  "actual_push": "38876 exit0",
+  "ls_remote": "exact branch readback exit0",
+  "pr_readback": "exact head/draft/base readback exit0",
+  "checks": [
+    {
+      "id": 38175673119,
+      "name": "CI",
+      "event": "pull_request",
+      "status": "queued"
+    },
+    {
+      "id": 38175673117,
+      "name": "Coverage",
+      "event": "pull_request",
+      "status": "queued"
+    },
+    {
+      "id": 38175673070,
+      "name": "Security",
+      "event": "pull_request",
+      "status": "queued"
+    },
+    {
+      "id": 38175670255,
+      "name": "CI",
+      "event": "push",
+      "status": "in_progress"
+    }
+  ],
+  "final": false,
+  "chat_artifact_attachment": "UNKNOWN native connection failure/timed-out retry"
+}

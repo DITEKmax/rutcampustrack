@@ -1,0 +1,36 @@
+{
+  "status": "SAFE_PARTIAL_BLOCKER_AND_MINIMAL_PROPOSAL",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_deps/CURRENT.json",
+      "name": "CURRENT.json",
+      "sha256": "2847c5c0ffb3305a1fc359aaa89db0c15b7f6f452dc844569c5dc58e60a9ef8b",
+      "bytes": 510
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_deps/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "sha256": "18dee95f63fc25fb93e80bd89e2be16599603e5628a2153f97eb886c91e0beac",
+      "bytes": 1275
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_deps/minimal-remediation-proposal.safe.json",
+      "name": "minimal-remediation-proposal.safe.json",
+      "sha256": "6e7bbe5f94490329f7db6aa725d66b3e7e7a051eeea3b83b41c893edc8eca0da",
+      "bytes": 2685
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_deps/package-policy.safe.json",
+      "name": "package-policy.safe.json",
+      "sha256": "8444e669094ba39497a0b57409fce0071ca1b30c92f24abdda4b4ca045a4c47e",
+      "bytes": 1201
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_deps/standard-privilege-simulation.safe.json",
+      "name": "standard-privilege-simulation.safe.json",
+      "sha256": "b2f45e95d937eb9a6db0a59ac8f66a2400a298650c889aab212ad73a407544f2",
+      "bytes": 488
+    }
+  ],
+  "no_private_or_apt_config_dump": true
+}

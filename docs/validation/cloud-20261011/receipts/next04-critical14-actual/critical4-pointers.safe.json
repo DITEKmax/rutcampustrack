@@ -1,0 +1,28 @@
+{
+  "utc": "2026-10-13T03:41:22.328506+00:00",
+  "cohort": "restart-20261013-next04",
+  "facts": [
+    {
+      "role": "artifact_source",
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/artifact-source.safe.json",
+      "sha256": "1f9b083e9984a05fa638a16e7f55d08f3cd3542093d5863a4702d6b72ccd890f"
+    },
+    {
+      "role": "runtime_mapping",
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/runtime-mapping.safe.json",
+      "sha256": "8959984326b2c2b2c6e6aa770998303b81e63c4bbac86eb29a5bf6dc83623438"
+    },
+    {
+      "role": "critical_readiness",
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/stand-readiness.safe.json",
+      "sha256": "75d261b458495c97f84980cd43c449e83b479cb50822286f2cd7f0ad66ab9f7d"
+    },
+    {
+      "role": "host_live8",
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/host-live8.safe.json",
+      "sha256": "a66f9543ebcc2d4213b41bbe8ad9465c54bbdee7f934e730a1bc4dc26a088151"
+    }
+  ],
+  "runtime_review_sha256": "dbcdaacfa5a19c91d1143468217ad419592ed5a22a39ebfdb6bd2dbd7145c3af",
+  "resources_pointer": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/resources-ready.safe.json"
+}

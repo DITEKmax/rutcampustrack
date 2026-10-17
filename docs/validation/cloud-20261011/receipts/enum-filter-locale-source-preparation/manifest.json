@@ -1,0 +1,90 @@
+{
+  "schema": "RCT_DEVELOPER_SOURCE_PREPARATION_SAFE_V1",
+  "state": "SOURCE_PREPARED_HYPOTHESIS_NATIVE_NOT_RUN",
+  "source_root": "4c3745f2febdd4b9bcdd39a4e5f1fc9b3199fab1",
+  "selected": "gpt-6.1-sol/xhigh",
+  "actual": "UNKNOWN",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 393,
+      "sha256": "95113c4eef5ab577f35fa97ae3b58e013506ee9d2b9810463d5af3631c714a5f"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 943,
+      "sha256": "0af5287aaa0ac818293ee96dc1afb13a596415cd13a0b7b226c33034bdf74207"
+    },
+    {
+      "path": "PLAN.safe.json",
+      "bytes": 7573,
+      "sha256": "a0f6291295bd23382f406134b41fd905ec52ea524deb87bf8edf27fbd072f4fd"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 7716,
+      "sha256": "099ddc1bfb1a76212770b729013fc1abba57340fafac49c64fec40debcdcb00a"
+    },
+    {
+      "path": "attempts.safe.ndjson",
+      "bytes": 419,
+      "sha256": "ae8ea8ab17029913a6e0f0602e1fe3964d84c102fadfc3fe92fca83316c3f489"
+    },
+    {
+      "path": "candidate/AcademicGrpcIT.java",
+      "bytes": 40113,
+      "sha256": "5a4a7ad3daceb99d16005bc555bbb460bb6088fbd92cb19e9f49e08970d56e0a"
+    },
+    {
+      "path": "candidate/UserSpecifications.java",
+      "bytes": 7042,
+      "sha256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b"
+    },
+    {
+      "path": "candidate-inventory.safe.json",
+      "bytes": 1534,
+      "sha256": "fbbf1db5604bd5afab56ea6c330e6ce2901335a34de27719921ee4b4e745d4cf"
+    },
+    {
+      "path": "candidate.public.diff",
+      "bytes": 8520,
+      "sha256": "b110aa78f66e1022a4bb0456ba90018af2603ad8938cbdb0bac5eaebfe220f97"
+    },
+    {
+      "path": "fix.public.diff",
+      "bytes": 1503,
+      "sha256": "2088dced5ccee94884f1817ae6df4623308a8c33ba52cc6f0aba6da8a89f5de3"
+    },
+    {
+      "path": "partial-source-facts.safe.json",
+      "bytes": 1171,
+      "sha256": "bbed9963864758c001896c6f77200896b10afc881f2fd807e40cedf3fff88bdd"
+    },
+    {
+      "path": "restoration.safe.json",
+      "bytes": 1314,
+      "sha256": "c12d5197814eafddd7c6b843b054719abf3fcd8c205dc1355108449e33f1ea79"
+    },
+    {
+      "path": "source-baseline.safe.json",
+      "bytes": 831,
+      "sha256": "16ea893ede184619da28fbbdbb8f17f3bce3549eae3b03c529a1195878c53cd1"
+    },
+    {
+      "path": "source-ledger.safe.json",
+      "bytes": 9044,
+      "sha256": "913b286b24d8a624329487cc72d4b2b901ece4f4dc7090bcb3fe00e4a3d1c414"
+    },
+    {
+      "path": "static-scope-checks.safe.json",
+      "bytes": 1620,
+      "sha256": "3403d41a100069078b4d9743a9a2d5ea6ac7e6eb1d59a0335fa3c84146fa9c50"
+    },
+    {
+      "path": "test.public.diff",
+      "bytes": 7017,
+      "sha256": "a291282077058907cd2d8e82cc242d5fa375ae398798ad7a8e322d19f5608936"
+    }
+  ],
+  "self_manifest": "Inner ZIP manifest; outer seal binds its exact bytes."
+}

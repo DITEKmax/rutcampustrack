@@ -1,0 +1,40 @@
+{
+  "sourceCommit": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "files": [
+    {
+      "path": "OUTCOME.safe.json",
+      "sha256": "ccbed2fb8c61ca24e2fcc22fe7e0a499727b646d85d39b276a028b60cbcbe8cf",
+      "bytes": 345
+    },
+    {
+      "path": "REPORT.safe.json",
+      "sha256": "0ace5718411f19f96a46fda1c283a2c010e804c0b372429b03799d98e883f30f",
+      "bytes": 1243
+    },
+    {
+      "path": "format-launch.safe.json",
+      "sha256": "347d3bc3f9f1b3d85c9740a7ee4200cfc95139e874a3a827f8ca04ca157cb7d2",
+      "bytes": 939
+    },
+    {
+      "path": "format-outcome.safe.json",
+      "sha256": "12740e293db542a36e9dec54912b8a8014257406bc53f8263bc8c15a23a5bc5c",
+      "bytes": 202
+    },
+    {
+      "path": "format-process.safe.json",
+      "sha256": "9da56cdd6f573ca37735159386909a7b102e9649a1701931811d06e995915d80",
+      "bytes": 147
+    },
+    {
+      "path": "format-terminal.safe.json",
+      "sha256": "e92553867f95f9059faf3275f6ddd1c347ea43e5efb1b6067ae985f307648c1a",
+      "bytes": 563
+    },
+    {
+      "path": "supervisor.safe.json",
+      "sha256": "d82992335f12368e18fe352a4968b906d4b8ca9aa4aedf857e761940ff3fb6db",
+      "bytes": 119
+    }
+  ]
+}

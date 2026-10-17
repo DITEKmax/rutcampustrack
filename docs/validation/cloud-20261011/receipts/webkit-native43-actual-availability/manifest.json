@@ -1,0 +1,960 @@
+{
+  "utc": "2026-10-12T18:30:35.701808+00:00",
+  "count": 136,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "size": 1476,
+      "mode": "0o600",
+      "sha256": "a49723e1d6b09a62b95c494b6ef541fde5e43d21dccaec478b842e17dc148e7a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/future-browser-ready.safe.json",
+      "relative_path": "future-browser-ready.safe.json",
+      "size": 1011,
+      "mode": "0o600",
+      "sha256": "23e925af2d3b54c800dfc228cdfba0936bb7f1977659be533dccf893ad9fef9a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/launch.safe.json",
+      "relative_path": "launch.safe.json",
+      "size": 534,
+      "mode": "0o600",
+      "sha256": "a142612addfa878c22b87fa31102a32ebd43643961cee796f2dfc969540eabac"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/native-validation.safe.json",
+      "relative_path": "native-validation.safe.json",
+      "size": 33592,
+      "mode": "0o600",
+      "sha256": "5c16718574eac396903beff33d0f30ac036f67c7a89e58b0885b93c6fd95b7e8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/own-CURRENT.json",
+      "relative_path": "own-CURRENT.json",
+      "size": 1449,
+      "mode": "0o600",
+      "sha256": "1e811eb98fe66adcffd1384b9f5e1f181ed2410fccf378d3c6e4e368eb28413a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/own-terminal-verification.safe.json",
+      "relative_path": "own-terminal-verification.safe.json",
+      "size": 10454,
+      "mode": "0o600",
+      "sha256": "76a3229c3e0c764ade9df91d8b26205fb0c7145f59cfb2f0f12be6f48f8be44a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/partial.safe.json",
+      "relative_path": "partial.safe.json",
+      "size": 18512,
+      "mode": "0o600",
+      "sha256": "14e954e6c6afd39a8be336c1c87a395abc9e8ad3ddc7e0e3258eddf47cfc8506"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-00.safe.json",
+      "relative_path": "probe-00.safe.json",
+      "size": 28835,
+      "mode": "0o600",
+      "sha256": "b1db89925e170442acb409aecbc262bc893f6d757ee82c6867dce73b549f7f3b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-01.safe.json",
+      "relative_path": "probe-01.safe.json",
+      "size": 28012,
+      "mode": "0o600",
+      "sha256": "c8ab3d142ac772227f10695f6151ed5e68fd6adcea1c409f5a1d69dc233f75b6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-02.safe.json",
+      "relative_path": "probe-02.safe.json",
+      "size": 28012,
+      "mode": "0o600",
+      "sha256": "c8ab3d142ac772227f10695f6151ed5e68fd6adcea1c409f5a1d69dc233f75b6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-03.safe.json",
+      "relative_path": "probe-03.safe.json",
+      "size": 28012,
+      "mode": "0o600",
+      "sha256": "c8ab3d142ac772227f10695f6151ed5e68fd6adcea1c409f5a1d69dc233f75b6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-04.safe.json",
+      "relative_path": "probe-04.safe.json",
+      "size": 4508,
+      "mode": "0o600",
+      "sha256": "849d8cb6b4a0d4d54954897f0dc9050c555c6e8a4edd43f26c34ef886909907d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-05.safe.json",
+      "relative_path": "probe-05.safe.json",
+      "size": 4508,
+      "mode": "0o600",
+      "sha256": "849d8cb6b4a0d4d54954897f0dc9050c555c6e8a4edd43f26c34ef886909907d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-06.safe.json",
+      "relative_path": "probe-06.safe.json",
+      "size": 4508,
+      "mode": "0o600",
+      "sha256": "849d8cb6b4a0d4d54954897f0dc9050c555c6e8a4edd43f26c34ef886909907d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-07.safe.json",
+      "relative_path": "probe-07.safe.json",
+      "size": 27994,
+      "mode": "0o600",
+      "sha256": "905b258de5c0288c245e02bec17b358b7b1f175c1f6b441a5f7b8ce87c62f956"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-08.safe.json",
+      "relative_path": "probe-08.safe.json",
+      "size": 28823,
+      "mode": "0o600",
+      "sha256": "23dbb844d9b7018708cbd0dc531d8ad720de0a13abff77f6ea150f57d707c0d2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-09.safe.json",
+      "relative_path": "probe-09.safe.json",
+      "size": 28823,
+      "mode": "0o600",
+      "sha256": "23dbb844d9b7018708cbd0dc531d8ad720de0a13abff77f6ea150f57d707c0d2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-10.safe.json",
+      "relative_path": "probe-10.safe.json",
+      "size": 1317,
+      "mode": "0o600",
+      "sha256": "843f8f31b72c9f32a980adb541728bf380618bfcaa36a2be11325aa9405693d1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-11.safe.json",
+      "relative_path": "probe-11.safe.json",
+      "size": 1317,
+      "mode": "0o600",
+      "sha256": "843f8f31b72c9f32a980adb541728bf380618bfcaa36a2be11325aa9405693d1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-12.safe.json",
+      "relative_path": "probe-12.safe.json",
+      "size": 4175,
+      "mode": "0o600",
+      "sha256": "c6d2c8e12b014a5e6edc5a7d6a9eb26bcfe1ddd73a1d2d7d3c9b488a70d25cec"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-13.safe.json",
+      "relative_path": "probe-13.safe.json",
+      "size": 4175,
+      "mode": "0o600",
+      "sha256": "c6d2c8e12b014a5e6edc5a7d6a9eb26bcfe1ddd73a1d2d7d3c9b488a70d25cec"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-14.safe.json",
+      "relative_path": "probe-14.safe.json",
+      "size": 34136,
+      "mode": "0o600",
+      "sha256": "e7a00f17efde09b4c4df0aa80d7bde62baf6693642a769f95c005dcb65ae18a4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-15.safe.json",
+      "relative_path": "probe-15.safe.json",
+      "size": 34118,
+      "mode": "0o600",
+      "sha256": "a0bbb9b713e0c44bc8b7dcae7add4ff11dc08d9779adfd852017070bcadbd8f9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-16.safe.json",
+      "relative_path": "probe-16.safe.json",
+      "size": 34118,
+      "mode": "0o600",
+      "sha256": "a0bbb9b713e0c44bc8b7dcae7add4ff11dc08d9779adfd852017070bcadbd8f9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-17.safe.json",
+      "relative_path": "probe-17.safe.json",
+      "size": 34118,
+      "mode": "0o600",
+      "sha256": "a0bbb9b713e0c44bc8b7dcae7add4ff11dc08d9779adfd852017070bcadbd8f9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-18.safe.json",
+      "relative_path": "probe-18.safe.json",
+      "size": 4714,
+      "mode": "0o600",
+      "sha256": "ec4433b28e7145b3d9a6a89dad0569a70f3ad28c87619aaa182cd3957f60a676"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-19.safe.json",
+      "relative_path": "probe-19.safe.json",
+      "size": 4714,
+      "mode": "0o600",
+      "sha256": "ec4433b28e7145b3d9a6a89dad0569a70f3ad28c87619aaa182cd3957f60a676"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-20.safe.json",
+      "relative_path": "probe-20.safe.json",
+      "size": 34879,
+      "mode": "0o600",
+      "sha256": "c07d8beb65b514e4967e7e19f3bca1ba7b69fb6a8eec2812980aebb995b45530"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-21.safe.json",
+      "relative_path": "probe-21.safe.json",
+      "size": 34879,
+      "mode": "0o600",
+      "sha256": "c07d8beb65b514e4967e7e19f3bca1ba7b69fb6a8eec2812980aebb995b45530"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-22.safe.json",
+      "relative_path": "probe-22.safe.json",
+      "size": 34100,
+      "mode": "0o600",
+      "sha256": "5e46ac53b41a2a0bce799ac9bac9f725938944436db6dd9bd4e210c6bfba154e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-23.safe.json",
+      "relative_path": "probe-23.safe.json",
+      "size": 4175,
+      "mode": "0o600",
+      "sha256": "c6d2c8e12b014a5e6edc5a7d6a9eb26bcfe1ddd73a1d2d7d3c9b488a70d25cec"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-24.safe.json",
+      "relative_path": "probe-24.safe.json",
+      "size": 4175,
+      "mode": "0o600",
+      "sha256": "c6d2c8e12b014a5e6edc5a7d6a9eb26bcfe1ddd73a1d2d7d3c9b488a70d25cec"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-25.safe.json",
+      "relative_path": "probe-25.safe.json",
+      "size": 4409,
+      "mode": "0o600",
+      "sha256": "460d186bf4991082f9ba6b998b2c8b669936107879ca9c740d828599e7b6af98"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-26.safe.json",
+      "relative_path": "probe-26.safe.json",
+      "size": 666,
+      "mode": "0o600",
+      "sha256": "5c6cc94a0d90d185a5e4f0e2edebd52892883dd79c7f23f2df01b27f47222fa4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-27.safe.json",
+      "relative_path": "probe-27.safe.json",
+      "size": 1639,
+      "mode": "0o600",
+      "sha256": "d2693e9a32dd8700913167d8f27b4db7f55128ab2e7d722357baf5155d292545"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-28.safe.json",
+      "relative_path": "probe-28.safe.json",
+      "size": 18401,
+      "mode": "0o600",
+      "sha256": "826b7dbecfbda160e20b7613f3ef19f35663f9dbdf339270325016fa580ba412"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-29.safe.json",
+      "relative_path": "probe-29.safe.json",
+      "size": 13701,
+      "mode": "0o600",
+      "sha256": "e6b4594b2427d2a2656e5f4197439dfc0106b62b14ef65e3961a1146503408dd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-30.safe.json",
+      "relative_path": "probe-30.safe.json",
+      "size": 13795,
+      "mode": "0o600",
+      "sha256": "6806c9d6fe1714fcce471c07af9a2368e078077bd1449271bf3285f8aa52776b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-31.safe.json",
+      "relative_path": "probe-31.safe.json",
+      "size": 3552,
+      "mode": "0o600",
+      "sha256": "8982bbab561a78c06c4324f06787838412003dfe0b07622c9e8b8b90bdd34b2a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-32.safe.json",
+      "relative_path": "probe-32.safe.json",
+      "size": 930,
+      "mode": "0o600",
+      "sha256": "64f5323996ff04b9412c17ff983349b20f10d847e2da529f4aa53d5acd699de4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-33.safe.json",
+      "relative_path": "probe-33.safe.json",
+      "size": 502,
+      "mode": "0o600",
+      "sha256": "a5efdbd1e8d17ef30b0ecd6b1bd8841c88e7561fc35b798ed524a3eb24627348"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-34.safe.json",
+      "relative_path": "probe-34.safe.json",
+      "size": 483,
+      "mode": "0o600",
+      "sha256": "2d6315a7bf8bbb7c6a9333e9f2f32e70520e42709ea4f2ba61f6853f42ca0b20"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-35.safe.json",
+      "relative_path": "probe-35.safe.json",
+      "size": 3796,
+      "mode": "0o600",
+      "sha256": "f0cfdeee4b51db1b25dad21b13184c4f9d788c3590b791ed9e80387480903031"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-36.safe.json",
+      "relative_path": "probe-36.safe.json",
+      "size": 1092,
+      "mode": "0o600",
+      "sha256": "0a0f0ea00f97bf2107531ff4bac5b3171c7e190b5ff6a666889f8b2e2440fc40"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-37.safe.json",
+      "relative_path": "probe-37.safe.json",
+      "size": 1821,
+      "mode": "0o600",
+      "sha256": "f56b370eb854e1c6ddd94098fa47ac0cd49dc76ebf29f820dbf84fccb9ae9d1a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-38.safe.json",
+      "relative_path": "probe-38.safe.json",
+      "size": 1777,
+      "mode": "0o600",
+      "sha256": "76c882b3d03edc24b8c538816ffa85f1a0cfc29810996ed0c54d85b43fb23a1b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-39.safe.json",
+      "relative_path": "probe-39.safe.json",
+      "size": 133,
+      "mode": "0o600",
+      "sha256": "b2471a6fd8c2ed6e49fbd180b6a0e227cfc021185bed4519397178d1e66a167d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-40.safe.json",
+      "relative_path": "probe-40.safe.json",
+      "size": 143,
+      "mode": "0o600",
+      "sha256": "83731f8efad91f4955bd11eff49f4ecce48a5d4290245837238b670405172cae"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-41.safe.json",
+      "relative_path": "probe-41.safe.json",
+      "size": 133,
+      "mode": "0o600",
+      "sha256": "b2471a6fd8c2ed6e49fbd180b6a0e227cfc021185bed4519397178d1e66a167d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/probe-42.safe.json",
+      "relative_path": "probe-42.safe.json",
+      "size": 143,
+      "mode": "0o600",
+      "sha256": "83731f8efad91f4955bd11eff49f4ecce48a5d4290245837238b670405172cae"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-0.safe.json",
+      "relative_path": "process-0.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "d236b78fe0095a8b8c0ab349e63e5c4df1cdd247c9f9723ffee64beafef5003b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-1.safe.json",
+      "relative_path": "process-1.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "f58ff0616633954d264e387b792638308f04f2bcad5b4dacdf67e53d1dd3edda"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-10.safe.json",
+      "relative_path": "process-10.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "f6edbb25ab51bdf754c75447a597b5f81a539c98b128a01e6faf60f63879fa99"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-11.safe.json",
+      "relative_path": "process-11.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "b80f390d0f339a26c170ce318fce0fc6675efdc3e5712aceff00a6be7a679c5f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-12.safe.json",
+      "relative_path": "process-12.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "2ce414188c632bb9cc07cad396d85421c478448dbb31a6f589fcf2463f8445ed"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-13.safe.json",
+      "relative_path": "process-13.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "03be4fea6966872eaacdda7ce20e9fff02bdf9b0f3f7f2f34405c5231d27b2e4"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-14.safe.json",
+      "relative_path": "process-14.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "505adb7502d593cfd82167a8dbee036075dffddbb131e06ae8ca6e0292b799a2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-15.safe.json",
+      "relative_path": "process-15.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "be68618e735498cc16f78138b8c5543aa8d8af9a7f26b8b9ddf12f900daf9c2a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-16.safe.json",
+      "relative_path": "process-16.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "8a62a62ffcb6a5e454d4970e282f263b5fa7dd37edcbc8a9978d3e274a9891ca"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-17.safe.json",
+      "relative_path": "process-17.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "a597afc02a68accaa12a1c44ec1924456e5789063bb793243aa44070a175b5c5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-18.safe.json",
+      "relative_path": "process-18.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "e1f8423be2afe64e1ea3d4486026a2da2fe045d21295f372f712d9af550b6c41"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-19.safe.json",
+      "relative_path": "process-19.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "3031857069c66555aa889898dc0bad4afffbd463aa21cae475e4711438225942"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-2.safe.json",
+      "relative_path": "process-2.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "0ab241af9a1fb2343c7d6c9069219295ad5f29631b93929379dddf38508d8be2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-20.safe.json",
+      "relative_path": "process-20.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "14053cee292b6cc2b4f9170ebd25cbc59c85a49808c062d82b3535ade0dd4c44"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-21.safe.json",
+      "relative_path": "process-21.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "ea299d14a0bd8c85f9b0ac6ead1d3d3f3cb3dece54e8efd4cc67c91e1d940f8a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-22.safe.json",
+      "relative_path": "process-22.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "75b3e5bf4d6aec583432918ba1e53f32fa9375614031d5e6ff48d2f5b8423eb3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-23.safe.json",
+      "relative_path": "process-23.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "d04fe091d66a4adc7fb5305ac4782bb775725f2d8a24c375b542f7ef905aac91"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-24.safe.json",
+      "relative_path": "process-24.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "7207b410f418ad0fc86dadf55edc1e0dccc0d981ec302e909e19e3f90433e16d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-25.safe.json",
+      "relative_path": "process-25.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "d9aca27f7d8d1a4dc7f7d7a972a791947198364a632cc31a1300feee18a1be4b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-26.safe.json",
+      "relative_path": "process-26.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "f9265a6f2cb767c308aa4896306cc0db41f9756bc799b982b8c1a6ddb7485245"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-27.safe.json",
+      "relative_path": "process-27.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "fad554c94e3c6b160e1f75c19d3c42dda8103d8309ab9b48c00c0fe98ab3f22b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-28.safe.json",
+      "relative_path": "process-28.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "b80e02c57a5e7a1587a35abfae205bd30a9f6c1ad10945be901d67cda0d24fcf"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-29.safe.json",
+      "relative_path": "process-29.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "32622f6d24ee87093b8b2a30b4d6daab328a8b6c1b59ed47b418ed2b566d6991"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-3.safe.json",
+      "relative_path": "process-3.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "3b7aa3744e92430bf8063b827730e90e3534f02c971f3195010cbc89ad14d888"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-30.safe.json",
+      "relative_path": "process-30.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "a252a4d9b9a7be8ec96c531bc55aa849d28547119681aa2a94344bc3fee5ab2a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-31.safe.json",
+      "relative_path": "process-31.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "870074b7970a6c07955d9cf8e8214586f78f10504b3484faaeacf8439f8c1eee"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-32.safe.json",
+      "relative_path": "process-32.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "aff153b838d110ada9e1d125d57605aadd865193f8bc591e3d0460293067dece"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-33.safe.json",
+      "relative_path": "process-33.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "647435f1054bc49ce4d3e1ef02d85b58fc9bdd8eca53797e9ca254a7c022687c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-34.safe.json",
+      "relative_path": "process-34.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "30c6ed6cde9ee6642108d231a83dbd2af5ecce67c2aba4661113f15941b7d633"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-35.safe.json",
+      "relative_path": "process-35.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "22539cb2132d9bc3a7373e54aea9c5db1942ea953cbc6c4fa672c00b1617b210"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-36.safe.json",
+      "relative_path": "process-36.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "e10ec202ff8970e7f7e1a68e67e8988633e738c45fadeda8111a256a402ded22"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-37.safe.json",
+      "relative_path": "process-37.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "14fba76d705b6b4f714c14baa865f1ef9b6743f4802d770ce1552ee4dfa7d9e5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-38.safe.json",
+      "relative_path": "process-38.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "b3960c7cdc1a5dfe5aa455a4f0e6da6684db86586202aff463221e95b27ad1b6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-39.safe.json",
+      "relative_path": "process-39.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "76a049dd24f0bb983e83d1fbc5c76b992b81dff74a3c15c1ed0485a7d08b095f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-4.safe.json",
+      "relative_path": "process-4.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "e3fd0a5a6d01054bd43e7ae33d0a79cd23512d4461c2324191fbe92fdbb761af"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-40.safe.json",
+      "relative_path": "process-40.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "3978d1148334df9007fcc52b69b46d9944de1f256e0ce96fa1d7415f597ffc85"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-41.safe.json",
+      "relative_path": "process-41.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "9fcf9d5def05fca1ee8ac6cf90bc35f291581df023850ae826396d57543ec554"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-42.safe.json",
+      "relative_path": "process-42.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "6dc2492c970df2a08b6297bebc609705c0c95f27a330a3474002c86bb2ae63cc"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-5.safe.json",
+      "relative_path": "process-5.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "3f8b4d164bb30e29034fe863d4667720229fb4c6e02e6bcaa982b180c40cb02d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-6.safe.json",
+      "relative_path": "process-6.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "f0a93083a9816e60b766d149f2a6ee2097cbff68f14e8bd97b373559bacda011"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-7.safe.json",
+      "relative_path": "process-7.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "8d40110644d99f6c8c58274670ef66e6293ce82f07f4c356478613a7d510c496"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-8.safe.json",
+      "relative_path": "process-8.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "eca629a21949445014afbd646d2332b98d815c2695f0c8b8c8b3f409d1e67933"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/process-9.safe.json",
+      "relative_path": "process-9.safe.json",
+      "size": 147,
+      "mode": "0o600",
+      "sha256": "6a1a05fc5025799534995f12768dd139d29db7cdeae263b310bff03e76bfddb5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-0.safe.json",
+      "relative_path": "terminal-0.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "4cb60289b73e1231d5174ec363d4345dd67d2f3118bea6ec7cc62906efe4c923"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-1.safe.json",
+      "relative_path": "terminal-1.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "0bcae0e1f749a8ddd922db1e540dd389d1319cb2a45f88c410fdbd2c5585827f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-10.safe.json",
+      "relative_path": "terminal-10.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "7fb065a4bb9a4e1b039293f4a0206e3ecc762798827bd483ddf391bd331495f8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-11.safe.json",
+      "relative_path": "terminal-11.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "35da90c19bdc8edfc3e56fe034bab8e967ba34c2db28cea9d8efd11b533ce216"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-12.safe.json",
+      "relative_path": "terminal-12.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "ad75cd591c3996b1126d609a755f6d0a642e8462f7539d7ff69acde4853dd1be"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-13.safe.json",
+      "relative_path": "terminal-13.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "047902f1461336569dec9e48149cf11015a8c50297c5b0485e20f98a8d241a53"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-14.safe.json",
+      "relative_path": "terminal-14.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "96954326dc115bcfc6ec53eb50dbe8ff9d4b009b2d3f4505d711585a46209931"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-15.safe.json",
+      "relative_path": "terminal-15.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "a6c4e32bd32a83ea9937e0b261a8e9d707b4902cf0d4d334c7fbc7321eb3b0d3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-16.safe.json",
+      "relative_path": "terminal-16.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "be1add86b583cf40ed978dd3da42803cbbfe19cd4c5f45618d99fe937c1c7308"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-17.safe.json",
+      "relative_path": "terminal-17.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "72fe8b22164ab8403c8ad690c4f9a88c30aeda709d0a1abffb5f17f96e05c2a1"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-18.safe.json",
+      "relative_path": "terminal-18.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "dd6bf6cf3a6930412882c99a4798adb1d3715b87bddf8631ff89c508707965aa"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-19.safe.json",
+      "relative_path": "terminal-19.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "7737a373af4d7669e83bfc2a3bac3b04d0da3b93645993f94ccfad0802690436"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-2.safe.json",
+      "relative_path": "terminal-2.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "742ddbb52cb6abb955f845f2674115a3c51071e5c9c41283e3622c9b5f3d1d78"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-20.safe.json",
+      "relative_path": "terminal-20.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "1abe5a311b920abfd5c26ca636f8586e6033f285e7477e6f5a2e00b9a97bb695"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-21.safe.json",
+      "relative_path": "terminal-21.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "e4e7226d4678c15a0d645b4b4076ee4d04e0f48238cb8403e359a24d54574134"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-22.safe.json",
+      "relative_path": "terminal-22.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "5b1412057f1ad3e50b3e2a6225ae66f32cd9c6c3e03adaff0bd166dc9cdc7836"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-23.safe.json",
+      "relative_path": "terminal-23.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "39665bcfee2141cc1396ebaa64b124fee04bf40f329eb3f307cb8fde58ba0d85"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-24.safe.json",
+      "relative_path": "terminal-24.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "d07c449a0c9ec25ae401c598f8bf1fa89763eb6d5f0304812b26daf1775e77df"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-25.safe.json",
+      "relative_path": "terminal-25.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "0314642ec5ad27eb26a718ed78c55424db1e618d62575ab85c5fc90bd3a8f7f3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-26.safe.json",
+      "relative_path": "terminal-26.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "026917ea0abcf1f8024a653ed6dc70952be0988b4eaae1448deb2b280c2e21d3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-27.safe.json",
+      "relative_path": "terminal-27.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "574f751dcc5ed1b519440fbc6e33e3c5219c94eb958e43f60cfe8b43a0dc0504"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-28.safe.json",
+      "relative_path": "terminal-28.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "05ed905d2f31023898031c04835d46003ce1d741b809348394a436f0fcde7271"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-29.safe.json",
+      "relative_path": "terminal-29.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "dcdeeed712752d8836cbdfa0b98b188908363a98a7db14852d84cc96df37f421"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-3.safe.json",
+      "relative_path": "terminal-3.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "ba3c73136b67894cb507a0a92d52dd7046bf8342c34ffcda010073d18286c878"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-30.safe.json",
+      "relative_path": "terminal-30.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "551e1e13213f044b31428c4d075dd88953791a4c22e747e771f0e095137e3232"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-31.safe.json",
+      "relative_path": "terminal-31.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "6b8e8164623600183d8db4b2536633161f61374fec65df1d0cef5aabaa05ef9f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-32.safe.json",
+      "relative_path": "terminal-32.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "d553ebb463a45bccc0e4d5a504432c54a04b37d39be43aaa7cd1e309181e050c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-33.safe.json",
+      "relative_path": "terminal-33.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "234f57e992a09fc0a4ddbc7253da1df0338879d477fa4b86d2ab88d657ccc9b5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-34.safe.json",
+      "relative_path": "terminal-34.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "a39ee6962d85f8e0d1b4124be925459f5ed57cc269b5225f09cd6111bd637898"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-35.safe.json",
+      "relative_path": "terminal-35.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "aa14854df0af1d9d5c737458019a7d8c47dad3f23243988c7cd50193cd20cd7d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-36.safe.json",
+      "relative_path": "terminal-36.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "fb468613106e938b8499d4d62d30914d968c5beeeacd740e0645dbef236afc8d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-37.safe.json",
+      "relative_path": "terminal-37.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "7d6a3d93395438985051ddb809ac6898714860835356e2587f76b11b5d1d6cc6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-38.safe.json",
+      "relative_path": "terminal-38.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "20bba5d367b751acf3861fae1efdfaf45037258581e37296ef2a2fbc7e323c77"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-39.safe.json",
+      "relative_path": "terminal-39.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "d5d4ee33699515fb73f10ff4548ba7eff2575ad7c298d2c40febce01f4a4c449"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-4.safe.json",
+      "relative_path": "terminal-4.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "366080c0a93d704f0dd0910dd1375f69a3e45ac57856a0e6c0d89ed1522956a8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-40.safe.json",
+      "relative_path": "terminal-40.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "63f0b8263d7c868a3f39d37da7d837b2bb0f6caa16a5c35706a166955e841ff3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-41.safe.json",
+      "relative_path": "terminal-41.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "568d2e0d3357627e58ad18a974d3dc56def48492ce2054bc0428cc5267dc820d"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-42.safe.json",
+      "relative_path": "terminal-42.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "2d6790f9ee61bc10867e17ecc581196eaf877ab3bc96c3e9c0f64fe9fa03ca9b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-5.safe.json",
+      "relative_path": "terminal-5.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "5bbe3338b989ff873721b1265d64b0c6901b20d8a6aeeb303ddc60c098661be5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-6.safe.json",
+      "relative_path": "terminal-6.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "772aa0e750a4f4fc695fba5641cd8be7fb2aa34991cee958ae36bae3ddef1009"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-7.safe.json",
+      "relative_path": "terminal-7.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "f8d64d69ee6b0ac28ac20664ce103d57e4e001ee4eef94cd80e477bb13495a29"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-8.safe.json",
+      "relative_path": "terminal-8.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "dada4d361e6ecec74c0a34eb7389832cdde7a88b03e11f48b67443e25389ee3a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_native_anchor_correction/actual-native02/terminal-seal/terminal-9.safe.json",
+      "relative_path": "terminal-9.safe.json",
+      "size": 394,
+      "mode": "0o600",
+      "sha256": "21cfd6758b820dafe728866af4cb423ce1cc8a9b85e2408a7d92f5fd2876cf4d"
+    }
+  ],
+  "private_inputs_and_binary_payload_excluded": true,
+  "lease": "RELEASED"
+}

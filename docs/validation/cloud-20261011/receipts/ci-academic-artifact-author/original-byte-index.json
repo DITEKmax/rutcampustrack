@@ -1,0 +1,77 @@
+{
+  "source": "/workspace/scratch/rct-validation/ci_academic_heap/artifact-only-final",
+  "manifest": "transfer-manifest.json",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "original_sha256": "631d46e3c27dff7841665f3e0b988cfabec32bc59349e3f74a184f4d8e10a54d",
+      "original_bytes": 3557,
+      "working_sha256": "631d46e3c27dff7841665f3e0b988cfabec32bc59349e3f74a184f4d8e10a54d",
+      "working_bytes": 3557,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-proof.json",
+      "original_sha256": "72ad6bf8a7361fd8dd3f0cc3ec29cb87910b2941c4ca407213de5103664ecc93",
+      "original_bytes": 1873,
+      "working_sha256": "72ad6bf8a7361fd8dd3f0cc3ec29cb87910b2941c4ca407213de5103664ecc93",
+      "working_bytes": 1873,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verification-plan.json",
+      "original_sha256": "5b965fb8d0e57ab6b2bc46dce971d4a192600d95cb97fc3fa7f43f4724f51171",
+      "original_bytes": 6850,
+      "working_sha256": "5b965fb8d0e57ab6b2bc46dce971d4a192600d95cb97fc3fa7f43f4724f51171",
+      "working_bytes": 6850,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "baseline-to-final.patch",
+      "original_sha256": "6d453af5621551e6ef14496e8b129479b4086f4ca0d9d964cb1bcceb344342bb",
+      "original_bytes": 1144,
+      "working_sha256": "6d453af5621551e6ef14496e8b129479b4086f4ca0d9d964cb1bcceb344342bb",
+      "working_bytes": 1144,
+      "transformation": "byte equal; losslesssinglememberZIP for copiedevidence source, exactoriginal archive unchanged",
+      "working_path": "baseline-to-final.patch.readable.zip",
+      "archive_member": "baseline-to-final.patch"
+    },
+    {
+      "path": "heap-to-final-dependency-only.patch",
+      "original_sha256": "30eff23086cfc3f4c1fc66cf72b3fcd9817ccad83c653ecbb392a9d499e05fee",
+      "original_bytes": 800,
+      "working_sha256": "30eff23086cfc3f4c1fc66cf72b3fcd9817ccad83c653ecbb392a9d499e05fee",
+      "working_bytes": 800,
+      "transformation": "byte equal; losslesssinglememberZIP for copiedevidence source, exactoriginal archive unchanged",
+      "working_path": "heap-to-final-dependency-only.patch.readable.zip",
+      "archive_member": "heap-to-final-dependency-only.patch"
+    },
+    {
+      "path": "corrective-commit.patch",
+      "original_sha256": "99aa4e44fe01cfb03a9712bd96459562920d20ce1747993e9c70cccdce1ec7b0",
+      "original_bytes": 1104,
+      "working_sha256": "99aa4e44fe01cfb03a9712bd96459562920d20ce1747993e9c70cccdce1ec7b0",
+      "working_bytes": 1104,
+      "transformation": "byte equal; losslesssinglememberZIP for copiedevidence source, exactoriginal archive unchanged",
+      "working_path": "corrective-commit.patch.readable.zip",
+      "archive_member": "corrective-commit.patch"
+    },
+    {
+      "path": "build.gradle.kts.final.txt",
+      "original_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+      "original_bytes": 6129,
+      "working_sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+      "working_bytes": 6129,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "transfer-manifest.json",
+      "original_sha256": "d435100e9e8298f5e36707b6e941b5bb2d6de20654130ca6a61a4eefbdb06ef5",
+      "original_bytes": 1664,
+      "working_sha256": "d435100e9e8298f5e36707b6e941b5bb2d6de20654130ca6a61a4eefbdb06ef5",
+      "working_bytes": 1664,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

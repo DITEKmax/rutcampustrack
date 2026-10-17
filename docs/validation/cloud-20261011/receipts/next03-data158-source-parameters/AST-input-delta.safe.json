@@ -1,0 +1,17 @@
+{
+  "checks": [
+    {
+      "file": "restart-boundary.py",
+      "whole_AST_equal_after_only_declared_fixed_input_inverse": true
+    },
+    {
+      "file": "docker-up-restart.py",
+      "whole_AST_equal_after_only_declared_fixed_input_inverse": true
+    },
+    {
+      "file": "run-academic-restart.py",
+      "whole_AST_equal_after_only_declared_fixed_input_inverse": true
+    }
+  ],
+  "control_flow_caps_grants_process_security_unchanged_except_new_exact_Academic_self_gate": true
+}

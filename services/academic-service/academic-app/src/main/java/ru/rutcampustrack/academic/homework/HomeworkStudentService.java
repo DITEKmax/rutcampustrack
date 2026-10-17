@@ -1,9 +1,11 @@
 package ru.rutcampustrack.academic.homework;
 
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.contract.enums.UserRole;
-import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Homework;
@@ -17,22 +19,20 @@ import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
-import java.time.OffsetDateTime;
-import java.time.Clock;
-import java.time.ZoneId;
-import org.springframework.beans.factory.annotation.Autowired;
-
 /**
  * Student-only homework commands used by the trusted mobile BFF.
  *
- * <p>The request carries no actor or group identifier.  Both are resolved from
- * the validated internal JWT and checked against the current database user and
- * the homework row before the transaction changes completion state.</p>
+ * <p>The request carries no actor or group identifier. Both are resolved from the validated
+ * internal JWT and checked against the current database user and the homework row before the
+ * transaction changes completion state.
  */
 @Service
 public class HomeworkStudentService {
-    // The live bean uses the existing injected Clock; focused legacy constructor fixtures use system time.
-    @Autowired private HomeworkLifecycle lifecycle = new HomeworkLifecycle(Clock.system(ZoneId.of("Europe/Moscow")));
+    // The live bean uses the existing injected Clock; focused legacy constructor fixtures use
+    // system time.
+    @Autowired
+    private HomeworkLifecycle lifecycle =
+            new HomeworkLifecycle(Clock.system(ZoneId.of("Europe/Moscow")));
 
     private final HomeworkRepository homeworkRepository;
     private final HomeworkCompletionRepository completionRepository;
@@ -40,11 +40,12 @@ public class HomeworkStudentService {
     private final UserRepository userRepository;
     private final HomeworkBindingArchiveCoordinator archiveCoordinator;
 
-    public HomeworkStudentService(HomeworkRepository homeworkRepository,
-                                  HomeworkCompletionRepository completionRepository,
-                                  SemesterRepository semesterRepository,
-                                  UserRepository userRepository,
-                                  HomeworkBindingArchiveCoordinator archiveCoordinator) {
+    public HomeworkStudentService(
+            HomeworkRepository homeworkRepository,
+            HomeworkCompletionRepository completionRepository,
+            SemesterRepository semesterRepository,
+            UserRepository userRepository,
+            HomeworkBindingArchiveCoordinator archiveCoordinator) {
         this.homeworkRepository = homeworkRepository;
         this.completionRepository = completionRepository;
         this.semesterRepository = semesterRepository;
@@ -53,34 +54,44 @@ public class HomeworkStudentService {
     }
 
     /**
-     * Applies the desired state atomically and returns the state observed in
-     * this transaction.  The unique database constraint plus INSERT ... ON
-     * CONFLICT makes repeated/concurrent complete commands safe.
+     * Applies the desired state atomically and returns the state observed in this transaction. The
+     * unique database constraint plus INSERT ... ON CONFLICT makes repeated/concurrent complete
+     * commands safe.
      */
     @Transactional
-    public CompletionState setCompletion(long homeworkId,
-                                         long requestedSemesterId,
-                                         InternalJwtClaims claims,
-                                         boolean completed) {
+    public CompletionState setCompletion(
+            long homeworkId,
+            long requestedSemesterId,
+            InternalJwtClaims claims,
+            boolean completed) {
         if (claims != null && claims.readOnly()) {
-            throw new AccessDeniedException("Терминальная student-сессия доступна только для чтения");
+            throw new AccessDeniedException(
+                    "Терминальная student-сессия доступна только для чтения");
         }
         Long studentId = requireStudent(claims);
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new AccessDeniedException("Студент недоступен"));
+        User student =
+                userRepository
+                        .findById(studentId)
+                        .orElseThrow(() -> new AccessDeniedException("Студент недоступен"));
         Long studentGroupId = userRepository.findActiveStudentGrantGroupId(studentId).orElse(null);
         if (studentGroupId == null || !studentGroupId.equals(claims.groupId())) {
             throw new AccessDeniedException("JWT scope не совпадает с текущим студентом");
         }
 
-        Semester active = semesterRepository.findByIsActiveTrue()
-                .orElseThrow(() -> new ResourceNotFoundException("Semester", "isActive", true));
+        Semester active =
+                semesterRepository
+                        .findByIsActiveTrue()
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Semester", "isActive", true));
         if (requestedSemesterId != active.getId()) {
             throw new AccessDeniedException("Семестр не входит в текущий student scope");
         }
 
-        Homework homework = homeworkRepository.findById(homeworkId)
-                .orElseThrow(() -> new ResourceNotFoundException("Homework", "id", homeworkId));
+        Homework homework =
+                homeworkRepository
+                        .findById(homeworkId)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Homework", "id", homeworkId));
         // Cancellation and transfer share semester -> binding lock order.
         // Refresh the selected entity before using its mutable publication state.
         archiveCoordinator.lockAndRefresh(homework);
@@ -90,15 +101,20 @@ public class HomeworkStudentService {
         if (!active.getId().equals(homework.getSemesterId())) {
             throw new AccessDeniedException("ДЗ принадлежит неактивному семестру");
         }
-        if (homework.getPublicationState() != HomeworkPublicationState.ACTIVE || lifecycle.archived(homework)) {
+        if (homework.getPublicationState() != HomeworkPublicationState.ACTIVE
+                || lifecycle.archived(homework)) {
             throw new ResourceNotFoundException("Homework", "id", homeworkId);
         }
 
         if (completed) {
             completionRepository.insertIfAbsent(homework.getId(), studentId);
-            HomeworkCompletion completion = completionRepository
-                    .findByHomeworkIdAndStudentId(homework.getId(), studentId)
-                    .orElseThrow(() -> new IllegalStateException("Completion row was not persisted"));
+            HomeworkCompletion completion =
+                    completionRepository
+                            .findByHomeworkIdAndStudentId(homework.getId(), studentId)
+                            .orElseThrow(
+                                    () ->
+                                            new IllegalStateException(
+                                                    "Completion row was not persisted"));
             return new CompletionState(true, completion.getCompletedAt());
         } else {
             completionRepository.deleteByHomeworkIdAndStudentId(homework.getId(), studentId);
@@ -115,9 +131,11 @@ public class HomeworkStudentService {
     }
 
     private static Long requireStudent(InternalJwtClaims claims) {
-        if (claims == null || !"STUDENT".equalsIgnoreCase(claims.role())
+        if (claims == null
+                || !"STUDENT".equalsIgnoreCase(claims.role())
                 || claims.userId() <= 0
-                || claims.groupId() == null || claims.groupId() <= 0) {
+                || claims.groupId() == null
+                || claims.groupId() <= 0) {
             throw new AccessDeniedException("Нужен scope активного STUDENT");
         }
         return claims.userId();

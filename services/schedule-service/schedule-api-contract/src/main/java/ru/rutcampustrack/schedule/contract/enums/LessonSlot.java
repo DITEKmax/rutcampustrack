@@ -26,13 +26,26 @@ public enum LessonSlot {
         this.endTime = LocalTime.parse(endTime);
     }
 
-    public int lessonNumber() { return lessonNumber; }
-    public LocalTime startTime() { return startTime; }
-    public LocalTime endTime() { return endTime; }
-    public static List<LessonSlot> ordered() { return ORDERED; }
+    public int lessonNumber() {
+        return lessonNumber;
+    }
+
+    public LocalTime startTime() {
+        return startTime;
+    }
+
+    public LocalTime endTime() {
+        return endTime;
+    }
+
+    public static List<LessonSlot> ordered() {
+        return ORDERED;
+    }
 
     public static LessonSlot forNumber(Number number) {
-        if (number == null || number.intValue() < 1 || number.intValue() > ORDERED.size()
+        if (number == null
+                || number.intValue() < 1
+                || number.intValue() > ORDERED.size()
                 || number.doubleValue() != number.intValue()) {
             throw new ValidationException("Выбери номер пары от 1 до 8");
         }
@@ -46,12 +59,20 @@ public enum LessonSlot {
             throw new ValidationException("Время начала и окончания пары нужно передать вместе");
         }
         if (!startTime.equals(start) || !endTime.equals(end)) {
-            throw new ValidationException("Время пары №" + lessonNumber + " должно быть "
-                    + startTime + "–" + endTime + " (Москва)");
+            throw new ValidationException(
+                    "Время пары №"
+                            + lessonNumber
+                            + " должно быть "
+                            + startTime
+                            + "–"
+                            + endTime
+                            + " (Москва)");
         }
     }
 
     public static final class ValidationException extends IllegalArgumentException {
-        public ValidationException(String message) { super(message); }
+        public ValidationException(String message) {
+            super(message);
+        }
     }
 }

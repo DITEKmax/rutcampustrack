@@ -1,0 +1,61 @@
+{
+  "at": "2026-10-12T00:40:51.982035+00:00",
+  "commit": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+  "parent": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+  "status": "SOURCE_READY_COMPILE_PASS_RUNTIME_NOT_VERIFIED",
+  "files": [
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+      "bytes": 23792,
+      "sha256": "a7060d0ec98d5b0be0702a073ba1363f5c17de5bab0d8369f7aa6629da668790",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+      "bytes": 1373,
+      "sha256": "ff8601e626feab612313f7187a3b013ca9650cbeb4ca68b77343c0ebe23e1db9",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+      "bytes": 13822,
+      "sha256": "7dc450b6adc59921b370e5088dd5f1df5b7e8c5d82873be0de03d2e63974728b",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportReportAuthority.java",
+      "bytes": 1646,
+      "sha256": "2d2a5f40311f003a7db0367ca9363bf84ec18fa23c4328be4e7d69656240da42",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+      "bytes": 18064,
+      "sha256": "e9176827943824ab5482d164246f5b0a09c5936eaf831f8f680330ba89d0670d",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "bytes": 19432,
+      "sha256": "4502feff97d96b53e951dd3059d86bc3d2d06c38711d24c92a36fe21a8678824",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/RegistryExportAdmission.java",
+      "bytes": 1657,
+      "sha256": "d519948b0fdef72d0f245d8deebdcfc5f7fa93c52dd597960c1f131b9e63039f",
+      "status": "A"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+      "bytes": 23152,
+      "sha256": "4024f716efa5f248a5ff5d0e8c07172606370c2f97b9006d5195037ebbe53169",
+      "status": "A"
+    }
+  ],
+  "compile_bridge": "source-ready-commit-bridge.json",
+  "matching_compile_inputs": 1853,
+  "tracked_tree": "clean",
+  "untracked_preserved": "?? frontends/node_modules",
+  "resource": "runtime paused by root; new18-case lease awaits free>=6GiB"
+}

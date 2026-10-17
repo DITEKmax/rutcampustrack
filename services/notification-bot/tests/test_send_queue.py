@@ -6,6 +6,9 @@ import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
+from prometheus_client import CollectorRegistry, generate_latest
+
+from bot.observability import SendQueueCollector
 from bot.services.send_queue import SendTask, TelegramSendQueue
 
 
@@ -41,6 +44,14 @@ async def test_single_message_sent():
     factory.assert_called_once()
     assert queue._total_sent == 1
     assert queue._total_failed == 0
+    registry = CollectorRegistry()
+    registry.register(SendQueueCollector(queue))
+    samples = generate_latest(registry).decode()
+    assert "notification_bot_send_tasks_completed_total 1.0" in samples
+    assert "notification_bot_send_tasks_exhausted_total 0.0" in samples
+    assert "notification_bot_send_queue_depth 0.0" in samples
+    assert "notification_bot_send_workers_alive 2.0" in samples
+    assert "user_id=" not in samples and "chat_id=" not in samples
 
     await queue.shutdown()
 
@@ -180,6 +191,11 @@ async def test_max_retries_skip():
     assert call_count == 4
     assert queue._total_failed == 1
     assert queue._total_sent == 0
+    registry = CollectorRegistry()
+    registry.register(SendQueueCollector(queue))
+    samples = generate_latest(registry).decode()
+    assert "notification_bot_send_tasks_completed_total 0.0" in samples
+    assert "notification_bot_send_tasks_exhausted_total 1.0" in samples
 
     await queue.shutdown()
 

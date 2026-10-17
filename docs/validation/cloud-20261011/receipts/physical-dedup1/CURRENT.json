@@ -1,0 +1,7 @@
+{
+  "utc": "2026-10-12T06:42:50.597570+00:00",
+  "status": "COMPLETE_ACTUAL_DEDUP1_NATIVE0_AND_READONLY_PRESERVATION_PASS",
+  "all_native_sessions_terminal": true,
+  "active_mutator": null,
+  "next": "Root receipt transfer; remeasure before separate new allocation/runtime grant"
+}

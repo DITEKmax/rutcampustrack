@@ -1,0 +1,63 @@
+{
+  "revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "verdict": "APPROVE_SCOPED_RUNTIME",
+  "producer_archive": "b4cdbe44a7f21d6608c2657e28e856ec8689f7883973874457f6b5887703b4e6",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 782,
+      "sha256": "3aee01034a7bfebf55a58ed8da2f5109ec7cc8dd747a4aa228375fd0f3eda876"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 14889,
+      "sha256": "1a937d7a63c0486315206a41968ce372f74eaa66d3ccb9c10d8723d5758ecd2c"
+    },
+    {
+      "path": "compat-meaningful-before-after-proof.json",
+      "bytes": 1224,
+      "sha256": "3edf599d60950b37d07aaf4472fa15b99317224d791bf6fd07172226f8a81ba8"
+    },
+    {
+      "path": "critical-sensitivity-independent-proof.json",
+      "bytes": 1868,
+      "sha256": "86b3f1bd751c5061a8bc07bed13815e6e5b2ada2245e51b0faa19895ae0df96f"
+    },
+    {
+      "path": "finding-resolution.json",
+      "bytes": 473,
+      "sha256": "c81315fc73a9c068c264b999d752d1214cb962eedb25d62982617f404846b5e4"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "immutable-input-and-native-xml-proof.json",
+      "bytes": 4944,
+      "sha256": "0508d21a86b19ff9dd20be81c94225900240f4c8ea830a057599d0aa6d0bfea3"
+    },
+    {
+      "path": "independent-phase-outcomes.json",
+      "bytes": 4327,
+      "sha256": "a8a2280b82d37f2eab9e0d5a1610732f233329f0e7186429892a54d97cafd4a6"
+    },
+    {
+      "path": "previous-review-seals-unchanged.json",
+      "bytes": 844,
+      "sha256": "73076e0c8c668170be5d6dac590fcc997ac03a29e258d485ceded7a000a472e2"
+    },
+    {
+      "path": "source-and-phase-bridge.json",
+      "bytes": 23623,
+      "sha256": "0f3331fa364e5405101fb76cb92bebb7be7304cdf5c70503870a7fd898be2c03"
+    },
+    {
+      "path": "verification-dependencies.json",
+      "bytes": 952,
+      "sha256": "8debdf7f2c001f246170860663e189bacb5e979e482afd29fbb5ab5dedf20e1f"
+    }
+  ],
+  "excluded": "private-original-outcomes/private-frozen-source; no raw XML/properties/stdout/secret/provider bodies"
+}

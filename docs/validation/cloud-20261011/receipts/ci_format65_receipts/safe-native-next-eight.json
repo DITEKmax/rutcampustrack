@@ -1,0 +1,210 @@
+[
+  {
+    "artifact_id": 11741795882,
+    "name": "safe-integration-outcomes-api-gateway-1",
+    "bytes": 1342,
+    "digest": "8d8476dbaea70cea444ea99e03a0fffcce8c3a3feeb896f515db755302d79390",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "api-gateway",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "xml_count": 4,
+    "summary": {
+      "PASSED": 9,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 3,
+      "NOT_EXECUTED": 0
+    }
+  },
+  {
+    "artifact_id": 11741751714,
+    "name": "safe-integration-outcomes-attendance-service-1",
+    "bytes": 12443,
+    "digest": "cddb414981c2f94f6f7f246a4404c924c0ac8c4ed699202bd3cd8cc6aca71dfd",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "attendance-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "xml_count": 41,
+    "summary": {
+      "PASSED": 220,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    }
+  },
+  {
+    "artifact_id": 11741751333,
+    "name": "safe-unit-outcomes-attendance-service-1",
+    "bytes": 15223,
+    "digest": "29e220f3acff2c311661b99a199fa84638046e672822d95906ba09bb7e280216",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "attendance-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "xml_count": 47,
+    "summary": {
+      "PASSED": 315,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    }
+  },
+  {
+    "artifact_id": 11741263073,
+    "name": "safe-integration-outcomes-auth-service-1",
+    "bytes": 8311,
+    "digest": "b129f197df67211f45276ef55626e4eed2db9f46d72836c74e9b5e0099b5ea19",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "auth-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "xml_count": 24,
+    "summary": {
+      "PASSED": 169,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    }
+  },
+  {
+    "artifact_id": 11741103114,
+    "name": "safe-integration-outcomes-notification-service-1",
+    "bytes": 4165,
+    "digest": "5371848b74a4c9c250b9b91d9ad59926ef3e6369f39f474c44cb11d69728c87d",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "notification-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "xml_count": 13,
+    "summary": {
+      "PASSED": 62,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    }
+  },
+  {
+    "artifact_id": 11741067783,
+    "name": "safe-unit-outcomes-academic-service-1",
+    "bytes": 15176,
+    "digest": "855fc9ebadce492d203955993bec430402d0d5420b48728422a15dd6bd8f5c60",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "academic-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "xml_count": 46,
+    "summary": {
+      "PASSED": 465,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    }
+  },
+  {
+    "artifact_id": 11740643502,
+    "name": "safe-integration-outcomes-schedule-service-1",
+    "bytes": 10776,
+    "digest": "2824534c9056e763e49ac53ddfc12cbf0d439c2393e64fa5f766ef74ef207a3b",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "schedule-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "xml_count": 38,
+    "summary": {
+      "PASSED": 205,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    }
+  },
+  {
+    "artifact_id": 11740523484,
+    "name": "safe-unit-outcomes-auth-service-1",
+    "bytes": 7797,
+    "digest": "a0443440a7d256ac5006bdcdc0beed1dcaca62cb03c3af6f45e6632e6ba61243",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "auth-service",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "collection": "RESULTS",
+    "xml_count": 25,
+    "summary": {
+      "PASSED": 140,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    }
+  }
+]

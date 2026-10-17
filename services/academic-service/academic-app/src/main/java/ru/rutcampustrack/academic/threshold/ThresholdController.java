@@ -21,37 +21,40 @@ public class ThresholdController implements ThresholdApi {
     private final ThresholdService thresholdService;
     private final ThresholdAssembler thresholdAssembler;
 
-    public ThresholdController(ThresholdService thresholdService,
-                                ThresholdAssembler thresholdAssembler) {
+    public ThresholdController(
+            ThresholdService thresholdService, ThresholdAssembler thresholdAssembler) {
         this.thresholdService = thresholdService;
         this.thresholdAssembler = thresholdAssembler;
     }
 
     @Override
     @RequireRole({UserRole.ADMIN})
-    public ResponseEntity<EntityModel<ThresholdResponse>> setGlobalThreshold(SetThresholdRequest request) {
+    public ResponseEntity<EntityModel<ThresholdResponse>> setGlobalThreshold(
+            SetThresholdRequest request) {
         AttendanceThreshold threshold = thresholdService.setGlobalThreshold(request);
         return ResponseEntity.ok(thresholdAssembler.toModel(threshold));
     }
 
     @Override
     @RequireRole({UserRole.STUDENT})
-    public ResponseEntity<EntityModel<ThresholdResponse>> setGroupThreshold(SetThresholdRequest request) {
+    public ResponseEntity<EntityModel<ThresholdResponse>> setGroupThreshold(
+            SetThresholdRequest request) {
         AttendanceThreshold threshold = thresholdService.setGroupThreshold(request);
         return ResponseEntity.ok(thresholdAssembler.toModel(threshold));
     }
 
     @Override
     @RequireRole({UserRole.STUDENT})
-    public ResponseEntity<EntityModel<ThresholdResponse>> setSubjectThreshold(SetThresholdRequest request,
-                                                                                Long subjectId) {
+    public ResponseEntity<EntityModel<ThresholdResponse>> setSubjectThreshold(
+            SetThresholdRequest request, Long subjectId) {
         AttendanceThreshold threshold = thresholdService.setSubjectThreshold(request, subjectId);
         return ResponseEntity.ok(thresholdAssembler.toModel(threshold));
     }
 
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT, UserRole.TEACHER})
-    public ResponseEntity<EntityModel<ResolvedThresholdResponse>> resolveThreshold(Long groupId, Long subjectId) {
+    public ResponseEntity<EntityModel<ResolvedThresholdResponse>> resolveThreshold(
+            Long groupId, Long subjectId) {
         ResolvedThresholdResponse response = thresholdService.resolveThreshold(groupId, subjectId);
         return ResponseEntity.ok(EntityModel.of(response));
     }
@@ -59,11 +62,10 @@ public class ThresholdController implements ThresholdApi {
     @Override
     @RequireRole({UserRole.ADMIN})
     public ResponseEntity<PagedModel<EntityModel<ThresholdResponse>>> listThresholds(
-            Pageable pageable,
-            PagedResourcesAssembler<ThresholdResponse> assembler) {
+            Pageable pageable, PagedResourcesAssembler<ThresholdResponse> assembler) {
         Page<AttendanceThreshold> page = thresholdService.listThresholds(pageable);
         Page<ThresholdResponse> responsePage = page.map(thresholdAssembler::toResponse);
-        return ResponseEntity.ok(assembler.toModel(responsePage,
-                response -> EntityModel.of(response)));
+        return ResponseEntity.ok(
+                assembler.toModel(responsePage, response -> EntityModel.of(response)));
     }
 }

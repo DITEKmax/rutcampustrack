@@ -1,0 +1,60 @@
+{
+  "direct_pid": 221817,
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 221817,
+      "start_ticks": 4412417
+    },
+    {
+      "pid": 221827,
+      "start_ticks": 4412434
+    },
+    {
+      "pid": 222023,
+      "start_ticks": 4413800
+    },
+    {
+      "pid": 222053,
+      "start_ticks": 4413948
+    },
+    {
+      "pid": 222110,
+      "start_ticks": 4414074
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": true,
+  "utc": "2026-10-12T07:32:28.227676+00:00",
+  "lease": "RABBIT_DIAG1",
+  "elapsed_seconds": 16.978,
+  "initial_disk_free": 8368386048,
+  "initial_memory_current": 4759494656,
+  "peaks": {
+    "maximum_memory_current": 5282160640,
+    "minimum_disk_free": 7990550528
+  },
+  "environment_keys": [
+    "GRADLE_USER_HOME",
+    "HTTPS_PROXY",
+    "HTTP_PROXY",
+    "JAVA_HOME",
+    "LANG",
+    "LC_ALL",
+    "NO_PROXY",
+    "PATH",
+    "PYTHONDONTWRITEBYTECODE",
+    "PYTHONNOUSERSITE",
+    "PYTHONSAFEPATH",
+    "SSL_CERT_FILE",
+    "TMPDIR",
+    "TZ"
+  ],
+  "environment_values_dumped": false
+}

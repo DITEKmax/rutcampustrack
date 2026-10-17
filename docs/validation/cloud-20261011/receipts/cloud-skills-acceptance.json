@@ -1,0 +1,17 @@
+{
+  "time": "2026-10-11T20:14:42.027961+00:00",
+  "archive": "docs/validation/cloud-20261011/skills/rutcampustrack-cloud-skills-20261011.zip",
+  "archive_sha256": "2f02c15cb15fb5bb3d97bf9503629946993cd21a22f57d12932a6bba9aa609c3",
+  "CRC": "PASS",
+  "safe_relative_paths": "PASS",
+  "manifest_files_verified": 116,
+  "all_archive_entries": 117,
+  "unlisted_control_files": [
+    "manifest.json"
+  ],
+  "size_sha256": "PASS for every manifest entry",
+  "skills": 8,
+  "extracted_supporting_root": "/workspace/rct-cloud-skills-20261011",
+  "branch_recovery": "complete originalZIP+manifest+README+projectSKILLbytes retained; extractZIP to recover all supportingfiles; no scripts automatically executed",
+  "scope": "currentTASK-CONTRACT only; not plugin install/permissions expansion"
+}

@@ -1,13 +1,46 @@
 <script setup lang="ts">
-import { teacherLessonTypeLabel } from './teacher-ui-format'
-import MobileIcon from '../../shared/components/MobileIcon.vue'
-import type { TeacherDayLesson } from './teacher-client'
-import './teacher-lesson-r3.pcss'
-withDefaults(defineProps<{ lesson: TeacherDayLesson; current?: boolean; showDate?: boolean; interactive?: boolean; compact?: boolean; showStatus?: boolean; attendance?: boolean }>(), { current: false, showDate: false, interactive: true, compact: false, showStatus: false, attendance: false })
-const emit = defineEmits<{ open: [lessonId: number] }>()
-function dateLabel(date: string): string { const parsed = new Date(`${date}T12:00:00`); return Number.isNaN(parsed.getTime()) ? date : new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(parsed) }
-function time(value: string | null): string { return value?.slice(0,5) ?? '—' }
-function status(lesson: TeacherDayLesson): string { return lesson.status === 'ACTIVE' ? 'Сейчас идёт' : lesson.status === 'CLOSED' ? 'Закончилась' : lesson.status === 'PLANNED' ? 'Запланирована' : 'Время уточняется' }
+import { teacherLessonTypeLabel } from './teacher-ui-format';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import type { TeacherDayLesson } from './teacher-client';
+import './teacher-lesson-r3.pcss';
+withDefaults(
+  defineProps<{
+    lesson: TeacherDayLesson;
+    current?: boolean;
+    showDate?: boolean;
+    interactive?: boolean;
+    compact?: boolean;
+    showStatus?: boolean;
+    attendance?: boolean;
+  }>(),
+  {
+    current: false,
+    showDate: false,
+    interactive: true,
+    compact: false,
+    showStatus: false,
+    attendance: false,
+  },
+);
+const emit = defineEmits<{ open: [lessonId: number] }>();
+function dateLabel(date: string): string {
+  const parsed = new Date(`${date}T12:00:00`);
+  return Number.isNaN(parsed.getTime())
+    ? date
+    : new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' }).format(parsed);
+}
+function time(value: string | null): string {
+  return value?.slice(0, 5) ?? '—';
+}
+function status(lesson: TeacherDayLesson): string {
+  return lesson.status === 'ACTIVE'
+    ? 'Сейчас идёт'
+    : lesson.status === 'CLOSED'
+      ? 'Закончилась'
+      : lesson.status === 'PLANNED'
+        ? 'Запланирована'
+        : 'Время уточняется';
+}
 </script>
 <template>
   <component
@@ -27,7 +60,9 @@ function status(lesson: TeacherDayLesson): string { return lesson.status === 'AC
       class="teacher-screen__sr"
     >{{ status(lesson) }}</span>
     <span class="teacher-lesson-card__topline">
-      <span class="teacher-lesson-card__time">{{ showDate ? dateLabel(lesson.date) + ' · ' : '' }}{{ time(lesson.startsAt) }}–{{ time(lesson.endsAt) }}</span>
+      <span class="teacher-lesson-card__time">{{ showDate ? dateLabel(lesson.date) + ' · ' : '' }}{{ time(lesson.startsAt) }}–{{
+        time(lesson.endsAt)
+      }}</span>
       <span
         v-if="lesson.oneOff"
         class="teacher-lesson-card__tag"

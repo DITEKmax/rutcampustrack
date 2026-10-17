@@ -1,0 +1,56 @@
+{
+  "name": "restored-green4",
+  "source_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "source_inputs_unchanged": 7032,
+  "native_session_id": 23469,
+  "native_exit_code": 0,
+  "result": "PASS",
+  "counts": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "credentialChangeInvalidatesUnsettledCardsAndPreservesFirstFence()",
+      "status": "PASS",
+      "seconds": "2.594"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "identityAttemptCasAndTerminalReceiptsCannotBeRewritten()",
+      "status": "PASS",
+      "seconds": "1.231"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "sanitationIsRejectedWhileRenderIsInFlightOrUncertain()",
+      "status": "PASS",
+      "seconds": "1.323"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "actualTupleChangesAdvanceOnlyTheirOwnGeneration()",
+      "status": "PASS",
+      "seconds": "1.172"
+    }
+  ],
+  "native_xml": [
+    {
+      "file": "TEST-ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT.xml",
+      "sha256": "1d33869ed1d3aabe27d058b1c5a4bfbfc25b29c69fb624e552d9e758ace8fbaf",
+      "bytes": 45518,
+      "tests": 4
+    }
+  ],
+  "terminal_sha256": "770b06c4092095440d83a7bd28e6bac814093cdbb88282475164456d92a21e95",
+  "container_ids": [
+    "c7a9825aaf5bd522ac95660bdbcf54ff316bef7fefa93e49391216e69df41492"
+  ],
+  "free_bytes": 5877477376,
+  "lease": "NP01_CONTRACT1",
+  "utc": "2026-10-12T02:07:04Z",
+  "limits": "Common migration/PostgreSQL and selected legacy Flyway only; no AcademicTLS/Authproducer/bot/provider full acceptance."
+}

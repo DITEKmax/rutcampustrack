@@ -1,0 +1,6 @@
+{
+  "files": {
+    "REPORT.safe.json": "66f22a9b55befe66cb557190a0bb945b43957fbcd32aa92b013b48d9cced3878"
+  },
+  "excluded": "Raw private compiler log/TMP runtime; no sensitive body hashes"
+}

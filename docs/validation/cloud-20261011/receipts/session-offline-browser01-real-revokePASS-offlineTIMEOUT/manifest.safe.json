@@ -1,0 +1,32 @@
+{
+  "schema": "RCT_SESSION_OFFLINE_BROWSER01_SEAL",
+  "files": [
+    {
+      "path": "REPORT.safe.json",
+      "sha256": "e2c2f5e32a1dc43c381740a737af09477e7e484315a919b72726d39ec5c59954",
+      "bytes": 4138
+    },
+    {
+      "path": "launch.safe.json",
+      "sha256": "fb2cd0c1b43112a1c4f5b50b79dcae5e2b7dc1b2bb6e2b4e9f44cb0e93acf930",
+      "bytes": 1080
+    },
+    {
+      "path": "process.safe.json",
+      "sha256": "d51834abdd88e9ad33b18f535eefea7e388ce04bc2214f671fe572c2bec4bd08",
+      "bytes": 147
+    },
+    {
+      "path": "safe-results.json",
+      "sha256": "627faeac515aab2c0dfc6c4f11938f9fb6974e61beecb64c639da70d1ccd8319",
+      "bytes": 824
+    },
+    {
+      "path": "terminal.safe.json",
+      "sha256": "d017112257f7c3ceaa58f607e94d02730cbd337e869dd622670e00c31e5f5330",
+      "bytes": 1428
+    }
+  ],
+  "report_sha256": "e2c2f5e32a1dc43c381740a737af09477e7e484315a919b72726d39ec5c59954",
+  "state": "ONE_REVOKE_PASS_ONE_D002_TIMEOUT_CAUSE_UNKNOWN"
+}

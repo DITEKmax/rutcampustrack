@@ -1,0 +1,25 @@
+{
+  "before": {
+    "native_exit": 0,
+    "outcome": {
+      "ordinary_profile_visible": false,
+      "safe_unavailable_visible": true,
+      "protected_read_attempts": 1,
+      "credential_provider_edits": 0,
+      "generic_profile_reads": 1
+    }
+  },
+  "after": {
+    "native_exit": 0,
+    "outcome": {
+      "ordinary_profile_visible": true,
+      "safe_unavailable_visible": false,
+      "protected_read_attempts": 0,
+      "credential_provider_edits": 0,
+      "generic_profile_reads": 1
+    }
+  },
+  "observer_sha256": "428c235e3f27e69d089400e5a7d7187e76eda883fa1b330ac0f182ae13efccf4",
+  "bad_revision": "2f4d3d412753bedb1b084442efef63713a4e4348",
+  "canonical_deps": "7521982ef69e2fc29ea01c4100d28840d34079fd"
+}

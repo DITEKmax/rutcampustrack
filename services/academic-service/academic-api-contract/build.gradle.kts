@@ -26,4 +26,6 @@ dependencies {
 
     // Jackson annotations (для @JsonInclude и т.д.)
     api("com.fasterxml.jackson.core:jackson-annotations:2.21")
+    implementation(platform("org.springframework.boot:spring-boot-dependencies:3.5.16"))
+    implementation("com.fasterxml.jackson.core:jackson-databind")
 }

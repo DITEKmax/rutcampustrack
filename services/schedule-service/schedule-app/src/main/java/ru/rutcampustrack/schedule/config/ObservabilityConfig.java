@@ -6,9 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 /**
- * M04 Группа 8 — регистрация {@link BusinessMetrics} для schedule-service.
- * Используется {@code ScheduleUserContextFilter} (KI-2 internal_jwt_fallback
- * counter).
+ * M04 Группа 8 — регистрация {@link BusinessMetrics} для schedule-service. Используется {@code
+ * ScheduleUserContextFilter} (KI-2 internal_jwt_fallback counter).
  */
 @Configuration
 public class ObservabilityConfig {

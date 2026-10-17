@@ -1,0 +1,108 @@
+[
+  {
+    "id": "EV-01",
+    "severity": "acceptance blocker if no current receipt",
+    "criterion": "real renderer format/content path",
+    "groups": [
+      "RENDERER",
+      "ATTENDANCE-READ-REPORT"
+    ],
+    "observation": "Weekly PDF/PNG tests mock renderer; sole renderer test checks process environment",
+    "needed": "actual synthetic converter RPC/format/content/headman/teacher/registry output on final integrated artifacts",
+    "status": "UNKNOWN"
+  },
+  {
+    "id": "EV-02",
+    "severity": "source expectation conflict",
+    "criterion": "successful geo overriding manual absence",
+    "groups": [
+      "ATTENDANCE-CHECKIN"
+    ],
+    "source": "Q005 PENDING: backend-conflicts§3 archived source vs current service/snapshot/test denial; no later unequivocal accepted override",
+    "needed": "Keep only this dependent geo/manual-absence branch UNKNOWN pending owner Q005; preserve independent clocks/quotas/guards checks. Do not infer owner choice from test expectation.",
+    "status": "UNKNOWN"
+  },
+  {
+    "id": "EV-03",
+    "severity": "mandatory boundary verification",
+    "criterion": "retired FREE_ATTENDANCE public negative",
+    "groups": [
+      "ATTENDANCE-REQUESTS",
+      "ATTENDANCE-READ-REPORT"
+    ],
+    "observation": "legacy approval/migration fixtures exist; no selected public-invalid-enum negative established",
+    "needed": "current public API/BFF submit rejected retired value with typed4xx and zero writes; preserve historical legacy roundtrip where accepted",
+    "status": "UNKNOWN"
+  },
+  {
+    "id": "EV-04",
+    "severity": "runtime gap",
+    "criterion": "new active semester after missed cache event",
+    "groups": [
+      "ATTENDANCE-CACHE"
+    ],
+    "observation": "unit mock/manual refresh does not reproduce loss event + actual options read",
+    "needed": "real current bean/active authority/consumer fault/recovery; guard correctness before declaring defect",
+    "status": "UNKNOWN"
+  },
+  {
+    "id": "EV-05",
+    "severity": "runtime gap",
+    "criterion": "publisher status equals broker-confirmed routing",
+    "groups": [
+      "SHARED-OUTBOX",
+      "BOT-DELIVERY"
+    ],
+    "observation": "shared sender mock does not prove SENT after broker confirm/unroutable behavior",
+    "needed": "current delivery author real Rabbit fault receipt; do not duplicate assigned DELIVERY1",
+    "status": "UNKNOWN"
+  },
+  {
+    "id": "EV-06",
+    "severity": "acceptance gap",
+    "criterion": "actual Telegram/WebPush device delivery",
+    "groups": [
+      "BOT-DELIVERY",
+      "NOTIFICATION-WS-PUSH"
+    ],
+    "observation": "Python/provider mocks and queue/history are narrower than external delivery",
+    "needed": "explicit synthetic provider capability or preserve BLOCKED runtime if absent; no private real bot/secret source access",
+    "status": "UNKNOWN"
+  },
+  {
+    "id": "EV-07",
+    "severity": "gate interpretation",
+    "criterion": "nonempty test run and modules omitted CI",
+    "groups": [
+      "RENDERER",
+      "BFF-CONTRACT-HTTP",
+      "SHARED-SECURITY-ERRORS"
+    ],
+    "observation": "CI/Coverage six Java modules omit BFF/renderer/shared; fail-on-no-matching=false",
+    "needed": "schedule current relevant omitted-module tasks and inspect final XML/no skips; green six-module CI alone cannot establish these rows",
+    "status": "UNKNOWN"
+  },
+  {
+    "id": "EV-08",
+    "severity": "application acceptance gap",
+    "criterion": "real restored pending operation and history",
+    "groups": [
+      "RECOVERY"
+    ],
+    "observation": "evidence validator unit/loopback checks explicitly never application evidence",
+    "needed": "quiesced synthetic capture; fresh restore; real app verify including canonical schedule/history/readback/exact retry",
+    "status": "UNKNOWN"
+  },
+  {
+    "id": "EV-09",
+    "severity": "client acceptance gap",
+    "criterion": "D002 offline/isolation/reconnect and D003 TMA fresh live authority",
+    "groups": [
+      "AUTH-QR-TMA",
+      "BFF-CONTRACT-HTTP"
+    ],
+    "observation": "server tests/mock proof issuance do not prove actual current PWA/TMA user path",
+    "needed": "client author actual browser real-stack path; baseline TMA replay positive and current8a9d111d new focused security checks must be integrated before final map refresh",
+    "status": "UNKNOWN"
+  }
+]

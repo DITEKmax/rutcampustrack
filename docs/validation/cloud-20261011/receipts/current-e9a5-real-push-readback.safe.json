@@ -1,0 +1,70 @@
+{
+  "head": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+  "branch": "codex/server-validation-20261011",
+  "transport_readback": {
+    "branch": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+    "main": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+  },
+  "authenticated_pr": {
+    "url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+    "head_sha": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+    "base": "main",
+    "base_sha": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "draft": true,
+    "state": "open",
+    "merged": false,
+    "merge_commit_sha": "02b940b1c9b5c9e552ca1a99b1f9438fa4035973"
+  },
+  "native_push": "592942/exit0/settled/reaped",
+  "runs": [
+    {
+      "id": 38484927542,
+      "name": "Coverage",
+      "event": "pull_request",
+      "head_sha": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+      "run_attempt": 1,
+      "status": "queued",
+      "conclusion": null,
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38484927542",
+      "created_at": "2026-10-13T23:33:02Z",
+      "run_started_at": "2026-10-13T23:33:02Z"
+    },
+    {
+      "id": 38484927575,
+      "name": "CI",
+      "event": "pull_request",
+      "head_sha": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+      "run_attempt": 1,
+      "status": "queued",
+      "conclusion": null,
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38484927575",
+      "created_at": "2026-10-13T23:33:02Z",
+      "run_started_at": "2026-10-13T23:33:02Z"
+    },
+    {
+      "id": 38484927543,
+      "name": "OpenAPI Drift Guard",
+      "event": "pull_request",
+      "head_sha": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38484927543",
+      "created_at": "2026-10-13T23:33:02Z",
+      "run_started_at": "2026-10-13T23:33:02Z"
+    },
+    {
+      "id": 38484927572,
+      "name": "Security",
+      "event": "pull_request",
+      "head_sha": "e9a5f99b4f36518549b0c677ccc618339e5494c0",
+      "run_attempt": 1,
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38484927572",
+      "created_at": "2026-10-13T23:33:02Z",
+      "run_started_at": "2026-10-13T23:33:02Z"
+    }
+  ],
+  "partial_not_DONE": true
+}

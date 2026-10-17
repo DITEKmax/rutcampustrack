@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-12T04:27:25.225876+00:00",
+  "native_exit": 1,
+  "status": "INSPECTOR_ASSUMPTION_FAILURE_NOT_PRODUCT_RUNTIME",
+  "cause": "Inspector required embedded git.properties for all8; canonical springBootApps lists7 and excludes Renderer. Other7 embed exact current908 producer; Renderer provenance is fresh boot8/source manifest, not nonexistent git.properties.",
+  "correction": "Own inspection only: mark Renderer embedded git metadata N/A per current build source; retain exact current build/source/ZIP/manifest/recursivefixture proof. No product source or build repeated.",
+  "JAR_app_browser": "NOT_RUN"
+}

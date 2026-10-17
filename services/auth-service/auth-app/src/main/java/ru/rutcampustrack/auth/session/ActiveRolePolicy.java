@@ -1,14 +1,13 @@
 package ru.rutcampustrack.auth.session;
 
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleGrant;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.RoleGrant;
 
 /** Pure role-grant validation and selection rules. */
 public final class ActiveRolePolicy {
@@ -31,15 +30,18 @@ public final class ActiveRolePolicy {
             copy.add(grant);
         }
 
-        RoleGrant defaultGrant = copy.stream()
-                .filter(RoleGrant::isSelectable)
-                .filter(grant -> grant.role() == AuthRole.STUDENT)
-                .findFirst()
-                .orElseGet(() -> copy.stream()
+        RoleGrant defaultGrant =
+                copy.stream()
                         .filter(RoleGrant::isSelectable)
-                        .filter(grant -> grant.role() == AuthRole.TEACHER)
+                        .filter(grant -> grant.role() == AuthRole.STUDENT)
                         .findFirst()
-                        .orElse(null));
+                        .orElseGet(
+                                () ->
+                                        copy.stream()
+                                                .filter(RoleGrant::isSelectable)
+                                                .filter(grant -> grant.role() == AuthRole.TEACHER)
+                                                .findFirst()
+                                                .orElse(null));
         return Evaluation.success(copy, defaultGrant);
     }
 
@@ -56,10 +58,11 @@ public final class ActiveRolePolicy {
         if (role == null) {
             return Selection.failure(Code.ROLE_NOT_GRANTED);
         }
-        RoleGrant grant = evaluation.grants().stream()
-                .filter(candidate -> candidate.role() == role)
-                .findFirst()
-                .orElse(null);
+        RoleGrant grant =
+                evaluation.grants().stream()
+                        .filter(candidate -> candidate.role() == role)
+                        .findFirst()
+                        .orElse(null);
         if (grant == null) {
             return Selection.failure(Code.ROLE_NOT_GRANTED);
         }
@@ -85,7 +88,8 @@ public final class ActiveRolePolicy {
             if (code != Code.OK && (!grants.isEmpty() || defaultGrant != null)) {
                 throw new IllegalArgumentException("failed evaluation cannot expose grants");
             }
-            if (defaultGrant != null && grants.stream().noneMatch(grant -> grant.equals(defaultGrant))) {
+            if (defaultGrant != null
+                    && grants.stream().noneMatch(grant -> grant.equals(defaultGrant))) {
                 throw new IllegalArgumentException("default grant must be in grants");
             }
         }

@@ -1,0 +1,17 @@
+{
+  "command": [
+    "python3",
+    "-B",
+    "/workspace/scratch/rct-validation/guard_vue_current_review/verify.py"
+  ],
+  "driver_sha256": "afafbcdaf648ef6dc6d2b8a1ce4b2f2bd89dfb288a283144c510859c4f67c5cf",
+  "native_exit": 0,
+  "wall_seconds": 0.205561808,
+  "proc_selectedAST_cases": 13,
+  "ownership_counterexamples": "PASS",
+  "input_seals_and_actualVue22_preservation": "PASS",
+  "guard_actual_stat_content_reads_child_launches_signals": 0,
+  "Vue_copy_PID_membership_metadata_checks": 1,
+  "actual_guard_runtime_native_children_signals": "NOT_RUN",
+  "actual_UID_HTTP_apps_TLS_browser": "NOT_RUN"
+}

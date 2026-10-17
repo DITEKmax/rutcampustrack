@@ -1,29 +1,27 @@
 package ru.rutcampustrack.shared.outbox;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-
 /**
  * Удаляет SENT outbox-записи старше N дней (retention policy, NEW-7).
  *
- * <p>Запускается раз в сутки в 03:00 ({@code cron = "0 0 3 * * *"}) —
- * низкая нагрузка, off-peak. Конкурентность между инстансами блокируется
- * {@link SchedulerLock} с именем {@code outbox-cleanup}.
+ * <p>Запускается раз в сутки в 03:00 ({@code cron = "0 0 3 * * *"}) — низкая нагрузка, off-peak.
+ * Конкурентность между инстансами блокируется {@link SchedulerLock} с именем {@code
+ * outbox-cleanup}.
  *
- * <p>Retention — 7 дней по умолчанию. Конфигурируется через свойство
- * {@code rutcampustrack.outbox.retention-days} (см. {@code @Scheduled} для
- * конфига cron через application.yml не используем — выполняется раз в
- * сутки, точного времени не требуется).
+ * <p>Retention — 7 дней по умолчанию. Конфигурируется через свойство {@code
+ * rutcampustrack.outbox.retention-days} (см. {@code @Scheduled} для конфига cron через
+ * application.yml не используем — выполняется раз в сутки, точного времени не требуется).
  *
- * <p>{@link Clock} параметр позволяет тестам подменять «сейчас» — integration
- * тест cleanup'а (Группа 6 acceptance) перематывает часы через @MockBean.
+ * <p>{@link Clock} параметр позволяет тестам подменять «сейчас» — integration тест cleanup'а
+ * (Группа 6 acceptance) перематывает часы через @MockBean.
  */
 public class OutboxCleanupJob {
 
@@ -37,8 +35,8 @@ public class OutboxCleanupJob {
     private final Duration retention;
 
     /**
-     * @param storage       storage-реализация
-     * @param clock         часы — для тестируемости
+     * @param storage storage-реализация
+     * @param clock часы — для тестируемости
      * @param retentionDays retention в днях (NEW-7: 7 дней по умолчанию)
      */
     public OutboxCleanupJob(OutboxStorage storage, Clock clock, int retentionDays) {
@@ -57,9 +55,7 @@ public class OutboxCleanupJob {
         runCleanup();
     }
 
-    /**
-     * Internal method — extracted для юнит-тестов без Spring proxy.
-     */
+    /** Internal method — extracted для юнит-тестов без Spring proxy. */
     public long runCleanup() {
         Instant cutoff = Instant.now(clock).minus(retention);
         long deleted = storage.deleteSentBefore(cutoff);

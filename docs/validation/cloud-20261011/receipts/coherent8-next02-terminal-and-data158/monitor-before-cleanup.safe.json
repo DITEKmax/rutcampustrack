@@ -1,0 +1,157 @@
+{
+  "utc": "2026-10-12T23:42:53.428611+00:00",
+  "all8_live": true,
+  "identities": [
+    {
+      "service": "mongo",
+      "live": true,
+      "identities": [
+        {
+          "pid": 402553,
+          "birth": 10101460,
+          "state": "S",
+          "birth_match": true
+        },
+        {
+          "pid": 402626,
+          "birth": 10101657,
+          "state": "S",
+          "birth_match": true
+        }
+      ]
+    },
+    {
+      "service": "academic",
+      "live": true,
+      "identities": [
+        {
+          "pid": 404360,
+          "birth": 10112750,
+          "state": "R",
+          "birth_match": true
+        },
+        {
+          "pid": 404364,
+          "birth": 10112830,
+          "state": "S",
+          "birth_match": true
+        }
+      ]
+    },
+    {
+      "service": "auth",
+      "live": true,
+      "identities": [
+        {
+          "pid": 406637,
+          "birth": 10127866,
+          "state": "R",
+          "birth_match": true
+        },
+        {
+          "pid": 406640,
+          "birth": 10127882,
+          "state": "S",
+          "birth_match": true
+        }
+      ]
+    },
+    {
+      "service": "schedule",
+      "live": true,
+      "identities": [
+        {
+          "pid": 407322,
+          "birth": 10133219,
+          "state": "R",
+          "birth_match": true
+        },
+        {
+          "pid": 407325,
+          "birth": 10133232,
+          "state": "S",
+          "birth_match": true
+        }
+      ]
+    },
+    {
+      "service": "attendance",
+      "live": true,
+      "identities": [
+        {
+          "pid": 407351,
+          "birth": 10133761,
+          "state": "S",
+          "birth_match": true
+        },
+        {
+          "pid": 407372,
+          "birth": 10133800,
+          "state": "S",
+          "birth_match": true
+        }
+      ]
+    },
+    {
+      "service": "bff",
+      "live": true,
+      "identities": [
+        {
+          "pid": 407496,
+          "birth": 10134366,
+          "state": "S",
+          "birth_match": true
+        },
+        {
+          "pid": 407499,
+          "birth": 10134410,
+          "state": "S",
+          "birth_match": true
+        }
+      ]
+    },
+    {
+      "service": "gateway",
+      "live": true,
+      "identities": [
+        {
+          "pid": 407598,
+          "birth": 10134963,
+          "state": "S",
+          "birth_match": true
+        },
+        {
+          "pid": 407604,
+          "birth": 10135041,
+          "state": "S",
+          "birth_match": true
+        }
+      ]
+    },
+    {
+      "service": "notification",
+      "live": true,
+      "identities": [
+        {
+          "pid": 407714,
+          "birth": 10135639,
+          "state": "S",
+          "birth_match": true
+        },
+        {
+          "pid": 407718,
+          "birth": 10135725,
+          "state": "S",
+          "birth_match": true
+        }
+      ]
+    }
+  ],
+  "four_bound_SHA_equal": true,
+  "resources": {
+    "/workspace": 5517107200,
+    "/tmp": 7508844544
+  },
+  "shared": 11479601152,
+  "cleanup_planned_dispatch": "2026-10-12T23:45:45+00:00"
+}

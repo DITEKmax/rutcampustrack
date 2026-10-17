@@ -1,0 +1,10 @@
+{
+  "time": "2026-10-12T06:14:53.523929+00:00",
+  "state": "COMPLETE_READ_ONLY_ALIAS_INVENTORY",
+  "result": "RESULT.json/REPORT.md",
+  "actual_freeze": "NOT_SET",
+  "sessions": [],
+  "processes": [],
+  "actual_recovery_bytes": 0,
+  "next": "Rootactualpathfreeze thenfreshpreflight andseparateexactbatchgrant"
+}

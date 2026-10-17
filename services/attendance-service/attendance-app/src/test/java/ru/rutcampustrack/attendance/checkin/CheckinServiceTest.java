@@ -1,10 +1,10 @@
 package ru.rutcampustrack.attendance.checkin;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.attendance.contract.dto.checkin.CheckinRequest;
 import ru.rutcampustrack.attendance.exception.LegacyCheckinRetiredException;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CheckinServiceTest {
 

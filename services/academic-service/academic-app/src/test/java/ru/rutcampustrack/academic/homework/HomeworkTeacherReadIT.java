@@ -1,5 +1,14 @@
 package ru.rutcampustrack.academic.homework;
 
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalDate;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -7,21 +16,11 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
-
-import java.time.LocalDate;
-import java.util.UUID;
-
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** Signed HTTP reads against real grants, assignments, lifecycle operations and date bounds. */
 @AutoConfigureMockMvc
@@ -40,14 +39,20 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         student = jdbc.queryForObject("SELECT id FROM users WHERE login='student'", Long.class);
         admin = jdbc.queryForObject("SELECT id FROM users WHERE login='admin'", Long.class);
         group = jdbc.queryForObject("SELECT id FROM groups WHERE name='ИВТ-211'", Long.class);
-        teacher = jdbc.queryForObject("""
+        teacher =
+                jdbc.queryForObject(
+                        """
                 INSERT INTO users(login,password_hash,last_name,first_name,role,status,created_at,updated_at)
                 VALUES(?, '$2a$10$dummy', 'ДЗ', 'Преподаватель', 'teacher', 'active', NOW(), NOW()) RETURNING id
-                """, Long.class, "hw_teacher_" + UUID.randomUUID().toString().substring(0, 16));
-        jdbc.update("""
+                """,
+                        Long.class,
+                        "hw_teacher_" + UUID.randomUUID().toString().substring(0, 16));
+        jdbc.update(
+                """
                 INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
                 VALUES(?,'teacher','active',NOW(),NOW())
-                """, teacher);
+                """,
+                teacher);
         subject = subject(group);
         semester = semester();
     }
@@ -58,7 +63,8 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         assignment(teacher, group, subject, semester, type.toLowerCase(), day, null, "ACTIVE");
         long id = homework(group, subject, semester, mode, type, day, "ACTIVE");
         mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", teacherToken()))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.title", is("Protected homework")));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title", is("Protected homework")));
     }
 
     @Test
@@ -71,7 +77,18 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"teacher", "subject", "semester", "type", "before", "until", "afterSemester", "PREPARED", "CLOSED", "unknownType"})
+    @CsvSource({
+        "teacher",
+        "subject",
+        "semester",
+        "type",
+        "before",
+        "until",
+        "afterSemester",
+        "PREPARED",
+        "CLOSED",
+        "unknownType"
+    })
     void foreignOrInactiveScopeIsDenied(String mismatch) throws Exception {
         long assignmentTeacher = mismatch.equals("teacher") ? admin : teacher;
         long assignmentGroup = group;
@@ -81,10 +98,26 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         LocalDate start = mismatch.equals("before") ? day.plusDays(1) : day.minusDays(1);
         if (mismatch.equals("semester")) start = day.plusYears(1);
         LocalDate end = mismatch.equals("until") ? day : null;
-        String lifecycle = mismatch.equals("PREPARED") || mismatch.equals("CLOSED") ? mismatch : "ACTIVE";
-        assignment(assignmentTeacher, assignmentGroup, assignmentSubject, assignmentSemester, type, start, end, lifecycle);
-        long id = homework(group, subject, semester, "LESSON", mismatch.equals("unknownType") ? null : "LECTURE",
-                mismatch.equals("afterSemester") ? LocalDate.of(2041, 7, 1) : day, "ACTIVE");
+        String lifecycle =
+                mismatch.equals("PREPARED") || mismatch.equals("CLOSED") ? mismatch : "ACTIVE";
+        assignment(
+                assignmentTeacher,
+                assignmentGroup,
+                assignmentSubject,
+                assignmentSemester,
+                type,
+                start,
+                end,
+                lifecycle);
+        long id =
+                homework(
+                        group,
+                        subject,
+                        semester,
+                        "LESSON",
+                        mismatch.equals("unknownType") ? null : "LECTURE",
+                        mismatch.equals("afterSemester") ? LocalDate.of(2041, 7, 1) : day,
+                        "ACTIVE");
         mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", teacherToken()))
                 .andExpect(status().isForbidden());
     }
@@ -92,7 +125,15 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     @Test
     void foreignGroupCannotRead() throws Exception {
         long foreignGroup = foreignGroup();
-        assignment(teacher, foreignGroup, subject(foreignGroup), semester, "lecture", day, null, "ACTIVE");
+        assignment(
+                teacher,
+                foreignGroup,
+                subject(foreignGroup),
+                semester,
+                "lecture",
+                day,
+                null,
+                "ACTIVE");
         long id = homework(group, subject, semester, "LESSON", "LECTURE", day, "ACTIVE");
         mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", teacherToken()))
                 .andExpect(status().isForbidden());
@@ -103,18 +144,32 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     void adoptionGrantsReadOnlyAfterCommit(String state, int expected) throws Exception {
         long target = assignment(teacher, group, subject, semester, "lecture", day, null, "ACTIVE");
         UUID operation = UUID.randomUUID();
-        jdbc.update("""
+        jdbc.update(
+                """
                 INSERT INTO assignment_replacement_operations(operation_id,actor_id,request_key,payload_hash,
                     target_assignment_id,effective_from,source_valid_until,target_valid_until,state,operation_kind,requested_cutoff)
                 VALUES(?,?,?,decode(repeat('11',32),'hex'),?,?,?,?,'PREPARED','ADOPT_UNASSIGNED',?)
-                """, operation, admin, UUID.randomUUID(), target, day, LocalDate.of(2041, 7, 1),
-                LocalDate.of(2041, 7, 1), day);
-        if (!state.equals("PREPARED")) jdbc.update("""
+                """,
+                operation,
+                admin,
+                UUID.randomUUID(),
+                target,
+                day,
+                LocalDate.of(2041, 7, 1),
+                LocalDate.of(2041, 7, 1),
+                day);
+        if (!state.equals("PREPARED"))
+            jdbc.update(
+                    """
                 UPDATE assignment_replacement_operations SET state='APPLIED',schedule_receipt_state='APPLIED' WHERE operation_id=?
-                """, operation);
-        if (state.equals("COMMITTED")) jdbc.update("""
+                """,
+                    operation);
+        if (state.equals("COMMITTED"))
+            jdbc.update(
+                    """
                 UPDATE assignment_replacement_operations SET state='COMMITTED',schedule_receipt_state='COMMITTED' WHERE operation_id=?
-                """, operation);
+                """,
+                    operation);
         long id = homework(group, subject, semester, "LESSON", "LECTURE", day, "ACTIVE");
         mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", teacherToken()))
                 .andExpect(status().is(expected));
@@ -125,17 +180,33 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         assignment(teacher, group, subject, semester, "lecture", day, null, "ACTIVE");
         long id = homework(group, subject, semester, "DATE", "LECTURE", day, "ACTIVE");
         String token = teacherToken();
-        mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", token)).andExpect(status().isOk());
-        jdbc.update("UPDATE user_role_grants SET status='dismissed' WHERE user_id=? AND role='teacher'", teacher);
-        mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", token)).andExpect(status().isForbidden());
+        mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", token))
+                .andExpect(status().isOk());
+        jdbc.update(
+                "UPDATE user_role_grants SET status='dismissed' WHERE user_id=? AND role='teacher'",
+                teacher);
+        mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", token))
+                .andExpect(status().isForbidden());
     }
 
     @Test
     void inactiveSignedTeacherCannotReadWithActiveDatabaseGrant() throws Exception {
         assignment(teacher, group, subject, semester, "lecture", day, null, "ACTIVE");
         long id = homework(group, subject, semester, "LESSON", "LECTURE", day, "ACTIVE");
-        mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token",
-                        tokens.validToken(teacher, UUID.randomUUID(), 1, 1, "TEACHER", "ARCHIVED", null, false, true)))
+        mvc.perform(
+                        get("/academic/homeworks/{id}", id)
+                                .header(
+                                        "X-Internal-Token",
+                                        tokens.validToken(
+                                                teacher,
+                                                UUID.randomUUID(),
+                                                1,
+                                                1,
+                                                "TEACHER",
+                                                "ARCHIVED",
+                                                null,
+                                                false,
+                                                true)))
                 .andExpect(status().isForbidden());
     }
 
@@ -143,8 +214,10 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     void legacyTeacherWithoutSignedMetadataCannotRead() throws Exception {
         assignment(teacher, group, subject, semester, "lecture", day, null, "ACTIVE");
         long id = homework(group, subject, semester, "LESSON", "LECTURE", day, "ACTIVE");
-        mvc.perform(get("/academic/homeworks/{id}", id)
-                        .header("X-User-Id", teacher).header("X-User-Role", "TEACHER"))
+        mvc.perform(
+                        get("/academic/homeworks/{id}", id)
+                                .header("X-User-Id", teacher)
+                                .header("X-User-Role", "TEACHER"))
                 .andExpect(status().isForbidden());
     }
 
@@ -155,8 +228,11 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         long id = homework(group, subject, semester, "LESSON", "LECTURE", day, publication);
         mvc.perform(get("/academic/homeworks/{id}", id).header("X-Internal-Token", teacherToken()))
                 .andExpect(status().isNotFound());
-        mvc.perform(get("/academic/homeworks/{id}", id).param("archived", "true")
-                .header("X-Internal-Token", teacherToken())).andExpect(status().isForbidden());
+        mvc.perform(
+                        get("/academic/homeworks/{id}", id)
+                                .param("archived", "true")
+                                .header("X-Internal-Token", teacherToken()))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -164,53 +240,108 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
         assignment(teacher, group, subject, semester, "lecture", day, null, "ACTIVE");
         long id = homework(group, subject, semester, "LESSON", "LECTURE", day, "ACTIVE");
         String token = teacherToken();
-        mvc.perform(post("/academic/homeworks/{id}/complete", id).header("X-Internal-Token", token)).andExpect(status().isForbidden());
-        mvc.perform(delete("/academic/homeworks/{id}", id).header("X-Internal-Token", token)).andExpect(status().isForbidden());
-        mvc.perform(get("/academic/homeworks/{id}/history", id).header("X-Internal-Token", token)).andExpect(status().isForbidden());
-        mvc.perform(get("/academic/homeworks").param("groupId", Long.toString(group)).param("semesterId", Long.toString(semester))
-                .header("X-Internal-Token", token)).andExpect(status().isForbidden());
+        mvc.perform(post("/academic/homeworks/{id}/complete", id).header("X-Internal-Token", token))
+                .andExpect(status().isForbidden());
+        mvc.perform(delete("/academic/homeworks/{id}", id).header("X-Internal-Token", token))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/academic/homeworks/{id}/history", id).header("X-Internal-Token", token))
+                .andExpect(status().isForbidden());
+        mvc.perform(
+                        get("/academic/homeworks")
+                                .param("groupId", Long.toString(group))
+                                .param("semesterId", Long.toString(semester))
+                                .header("X-Internal-Token", token))
+                .andExpect(status().isForbidden());
     }
 
     @Test
     void existingStudentHeadmanAndAdminReadBoundsRemain() throws Exception {
         long own = homework(group, subject, semester, "LESSON", null, day, "ACTIVE");
         long otherGroup = foreignGroup();
-        long foreign = homework(otherGroup, subject(otherGroup), semester, "LESSON", null, day, "ACTIVE");
-        for (boolean headman : new boolean[]{false, true}) {
-            String token = tokens.validToken(student, UUID.randomUUID(), 1, 1, headman ? "HEADMAN" : "STUDENT", "ACTIVE", group, headman, false);
-            mvc.perform(get("/academic/homeworks/{id}", own).header("X-Internal-Token", token)).andExpect(status().isOk());
-            mvc.perform(get("/academic/homeworks/{id}", foreign).header("X-Internal-Token", token)).andExpect(status().isForbidden());
+        long foreign =
+                homework(otherGroup, subject(otherGroup), semester, "LESSON", null, day, "ACTIVE");
+        for (boolean headman : new boolean[] {false, true}) {
+            String token =
+                    tokens.validToken(
+                            student,
+                            UUID.randomUUID(),
+                            1,
+                            1,
+                            headman ? "HEADMAN" : "STUDENT",
+                            "ACTIVE",
+                            group,
+                            headman,
+                            false);
+            mvc.perform(get("/academic/homeworks/{id}", own).header("X-Internal-Token", token))
+                    .andExpect(status().isOk());
+            mvc.perform(get("/academic/homeworks/{id}", foreign).header("X-Internal-Token", token))
+                    .andExpect(status().isForbidden());
         }
-        // Same durable FULL profile/session pattern as GroupRegistryIT; a signed role alone is insufficient.
-        jdbc.update("INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) "
+        // Same durable FULL profile/session pattern as GroupRegistryIT; a signed role alone is
+        // insufficient.
+        jdbc.update(
+                "INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) "
                         + "VALUES(?,true,'FULL','{}',1) ON CONFLICT(user_id) DO UPDATE "
-                        + "SET assigned=true,mode='FULL',permissions='{}',version=admin_access_profiles.version+1,updated_at=NOW()", admin);
-        long grantId = jdbc.queryForObject("SELECT id FROM user_role_grants WHERE user_id=? AND role='admin' AND status='active'", Long.class, admin);
+                        + "SET assigned=true,mode='FULL',permissions='{}',version=admin_access_profiles.version+1,updated_at=NOW()",
+                admin);
+        long grantId =
+                jdbc.queryForObject(
+                        "SELECT id FROM user_role_grants WHERE user_id=? AND role='admin' AND status='active'",
+                        Long.class,
+                        admin);
         UUID sid = UUID.randomUUID();
-        jdbc.update("INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,"
+        jdbc.update(
+                "INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,"
                         + "refresh_expires_at,created_at,last_seen_at,auth_method) "
                         + "VALUES(?,?,?,1,?,NOW()+interval '1 day',NOW(),NOW(),'PASSWORD')",
-                sid, admin, grantId, UUID.randomUUID());
-        long rolesVersion = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, admin);
-        mvc.perform(get("/academic/homeworks/{id}", foreign).header("X-Internal-Token",
-                        tokens.validToken(admin, sid, 1, rolesVersion, "ADMIN", "ACTIVE", null, false, false)))
+                sid,
+                admin,
+                grantId,
+                UUID.randomUUID());
+        long rolesVersion =
+                jdbc.queryForObject(
+                        "SELECT roles_version FROM users WHERE id=?", Long.class, admin);
+        mvc.perform(
+                        get("/academic/homeworks/{id}", foreign)
+                                .header(
+                                        "X-Internal-Token",
+                                        tokens.validToken(
+                                                admin,
+                                                sid,
+                                                1,
+                                                rolesVersion,
+                                                "ADMIN",
+                                                "ACTIVE",
+                                                null,
+                                                false,
+                                                false)))
                 .andExpect(status().isOk());
     }
 
     private String teacherToken() {
-        return tokens.validToken(teacher, UUID.randomUUID(), 1, 1, "TEACHER", "ACTIVE", null, false, false);
+        return tokens.validToken(
+                teacher, UUID.randomUUID(), 1, 1, "TEACHER", "ACTIVE", null, false, false);
     }
 
     private long foreignGroup() {
-        return jdbc.queryForObject("INSERT INTO groups(name,is_active,created_at) VALUES(?,true,NOW()) RETURNING id",
-                Long.class, "Чужое ДЗ " + UUID.randomUUID().toString().substring(0, 12));
+        return jdbc.queryForObject(
+                "INSERT INTO groups(name,is_active,created_at) VALUES(?,true,NOW()) RETURNING id",
+                Long.class,
+                "Чужое ДЗ " + UUID.randomUUID().toString().substring(0, 12));
     }
 
     private long subject(long groupId) {
-        long id = jdbc.queryForObject("INSERT INTO subjects(name,type,group_id) VALUES(?,'lecture',?) RETURNING id",
-                Long.class, "HW protected " + UUID.randomUUID(), groupId);
-        for (String type : new String[]{"lecture", "practice", "lab"}) jdbc.update(
-                "INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,CAST(? AS subject_type))", id, type);
+        long id =
+                jdbc.queryForObject(
+                        "INSERT INTO subjects(name,type,group_id) VALUES(?,'lecture',?) RETURNING id",
+                        Long.class,
+                        "HW protected " + UUID.randomUUID(),
+                        groupId);
+        for (String type : new String[] {"lecture", "practice", "lab"})
+            jdbc.update(
+                    "INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,CAST(? AS subject_type))",
+                    id,
+                    type);
         return id;
     }
 
@@ -219,26 +350,68 @@ class HomeworkTeacherReadIT extends AbstractAcademicIntegrationTest {
     }
 
     private long semester(int year) {
-        return jdbc.queryForObject("""
+        return jdbc.queryForObject(
+                """
                 INSERT INTO semesters(name,date_from,date_to,is_active,created_at)
                 VALUES(?,?,?,false,NOW()) RETURNING id
-                """, Long.class, "HW protected " + UUID.randomUUID(), LocalDate.of(year, 2, 1), LocalDate.of(year, 6, 30));
+                """,
+                Long.class,
+                "HW protected " + UUID.randomUUID(),
+                LocalDate.of(year, 2, 1),
+                LocalDate.of(year, 6, 30));
     }
 
-    private long assignment(long actor, long groupId, long subjectId, long semesterId, String type,
-                            LocalDate from, LocalDate until, String lifecycle) {
-        return jdbc.queryForObject("""
+    private long assignment(
+            long actor,
+            long groupId,
+            long subjectId,
+            long semesterId,
+            String type,
+            LocalDate from,
+            LocalDate until,
+            String lifecycle) {
+        return jdbc.queryForObject(
+                """
                 INSERT INTO assignments(teacher_id,group_id,subject_id,semester_id,lesson_type,valid_from,valid_until_exclusive,lifecycle_state)
                 VALUES(?,?,?,?,CAST(? AS subject_type),?,?,?) RETURNING id
-                """, Long.class, actor, groupId, subjectId, semesterId, type, from, until, lifecycle);
+                """,
+                Long.class,
+                actor,
+                groupId,
+                subjectId,
+                semesterId,
+                type,
+                from,
+                until,
+                lifecycle);
     }
 
-    private long homework(long groupId, long subjectId, long semesterId, String mode, String type, LocalDate date, String publication) {
-        return jdbc.queryForObject("""
+    private long homework(
+            long groupId,
+            long subjectId,
+            long semesterId,
+            String mode,
+            String type,
+            LocalDate date,
+            String publication) {
+        return jdbc.queryForObject(
+                """
                 INSERT INTO homeworks(group_id,subject_id,semester_id,title,published_by,lesson_date,lesson_number,
                     binding_mode,lesson_type,binding_id,actor_id,request_key,payload_hash,publication_state)
                 VALUES(?,?,?,'Protected homework',?,?,?,?,?,?,?, ?,decode(repeat('11',32),'hex'),?) RETURNING id
-                """, Long.class, groupId, subjectId, semesterId, student, date, mode.equals("DATE") ? null : 1,
-                mode, type, subjectId, student, UUID.randomUUID(), publication);
+                """,
+                Long.class,
+                groupId,
+                subjectId,
+                semesterId,
+                student,
+                date,
+                mode.equals("DATE") ? null : 1,
+                mode,
+                type,
+                subjectId,
+                student,
+                UUID.randomUUID(),
+                publication);
     }
 }

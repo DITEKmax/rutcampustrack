@@ -1,0 +1,16 @@
+{
+  "utc": "2026-10-13T07:55:58.748604+00:00",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/t008_twojar_refresh_capacity_readonly/CAPACITY.safe.json",
+      "sha256": "442e5eb01001c0465371b77afa64baff90189c6841cb5fd94f0894a86c5249b8",
+      "size": 171732
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/t008_twojar_refresh_capacity_readonly/HANDOFF.md",
+      "sha256": "b00246d79252d0e214911a8c97fa032e8617e12d87f71ccc49ef469571d719c7",
+      "size": 829
+    }
+  ],
+  "public_metadata_and_archive_hash_only": true
+}

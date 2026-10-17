@@ -1,0 +1,42 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "at": "2026-10-11T22:36:10.213711+00:00",
+  "reviewed_commit": "b6114f4084f757d04d166ab995b57b4f4697042f",
+  "frozen_parent": "2f5f6e327f346c0656eb8ce63901c55bb65cce1f",
+  "blocking_findings": [
+    {
+      "id": "CIO01",
+      "priority": 2,
+      "severity": "P2",
+      "title": "Reject symlinked ancestor directories before reading source/XML",
+      "locations": [
+        {
+          "file": "/workspace/rct-worktrees/ci-evidence/scripts/collect-ci-test-outcomes.py",
+          "line": 108,
+          "end": 110,
+          "role": "tracked Java source reader"
+        },
+        {
+          "file": "/workspace/rct-worktrees/ci-evidence/scripts/collect-ci-test-outcomes.py",
+          "line": 169,
+          "end": 174,
+          "role": "scoped XML reader"
+        }
+      ],
+      "contract": "packet Required behavior: current tracked validated Java identity; Directory scope stale cross-task artifact/race prevention; author states no source symlink or linked report content read.",
+      "observation": "Path.is_symlink() tests the final component only. For a regular file behind a symlinked parent, it is false. source_registry reads it without checking canonical source scope. XML reader accepts a canonical path anywhere beneath checkout root, including another task/module reached through a linked selected result directory.",
+      "impact": "Collector can read outside-checkout source bytes and can attach the current selected task/service metadata and source identities to XML from a different task. Such outcomes cannot establish the required current-case execution. No actual production leak/remote mislabelling was executed or claimed.",
+      "required_correction": "Reject symlinked ancestor source/report directories and ensure reads remain beneath the canonical selected source/result scope before reading/hashing. Add targeted controls for source parent links and report directory links within/outside the checkout, including cross-task task metadata. Preserve raw-value privacy and workflow gates. Record source/control hashes before the newly justified correction validation."
+    }
+  ],
+  "other_blocking_findings": [],
+  "gate_preservation": "PASS exact original text and YAML after removing only four always steps/two IDs; other workflows including Deploy unchanged",
+  "privacy_general_policy": "PASS source allowlisting/ordinal fallback/metadata allowlist/raw-text omission; CIO01 path boundary remains blocking",
+  "test_quality": "Relevant historical mutation and ten restored observed controls, parent-link controls missing; historical tested-source binding UNKNOWN",
+  "source_identity": "Current three source files byte-equal committed b611; current DLRV_DEP_01 method/source hash verified, current execution PASS not inferred",
+  "provenance": "Author clarified historical exact argv/tool result chunks; no original tool JSON persisted. Prelaunch hashes UNKNOWN, POST_HOC hashes explicitly classified, no rerun.",
+  "actual_remote_CI_upload_native_artifact_readback": "NOT_RUN",
+  "reviewer_runtime": "NOT_RUN; read/parser/hash only, no source fixes, fixture mutations, Java/Gradle/Docker/browser/children",
+  "prior_GW_review": "UNCHANGED_IMMUTABLE",
+  "next": "Sole config author corrects CIO01 and validates the newly changed boundary with meaningful parent-link controls and exact prelaunch/terminal evidence; independent targeted recheck, then root integration and actual CI/native artifact readback."
+}

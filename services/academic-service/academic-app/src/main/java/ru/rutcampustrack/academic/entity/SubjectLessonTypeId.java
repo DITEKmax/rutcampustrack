@@ -14,11 +14,9 @@ public class SubjectLessonTypeId implements Serializable {
     @Type(SubjectTypeUserType.class)
     private SubjectType lessonType;
 
-    public SubjectLessonTypeId() {
-    }
+    public SubjectLessonTypeId() {}
 
-    public SubjectLessonTypeId(Long subjectId,
-                               SubjectType lessonType) {
+    public SubjectLessonTypeId(Long subjectId, SubjectType lessonType) {
         this.subjectId = subjectId;
         this.lessonType = lessonType;
     }
@@ -31,8 +29,7 @@ public class SubjectLessonTypeId implements Serializable {
         if (!(other instanceof SubjectLessonTypeId that)) {
             return false;
         }
-        return Objects.equals(subjectId, that.subjectId)
-                && lessonType == that.lessonType;
+        return Objects.equals(subjectId, that.subjectId) && lessonType == that.lessonType;
     }
 
     @Override

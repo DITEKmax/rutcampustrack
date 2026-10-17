@@ -1,36 +1,37 @@
 package ru.rutcampustrack.academic.repository;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.context.ApplicationEventPublisher;
-import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.contract.enums.AccountStatus;
-import ru.rutcampustrack.academic.entity.User;
-
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
 
 /**
- * Transactional writer for the V24 authority rows owned by the Academic user
- * mutation flow. The Auth service remains the reader; this writer preserves
- * the grant row identity and revokes authority through status changes.
+ * Transactional writer for the V24 authority rows owned by the Academic user mutation flow. The
+ * Auth service remains the reader; this writer preserves the grant row identity and revokes
+ * authority through status changes.
  */
 @Repository
 public class UserRoleGrantWriter {
 
-    private static final String LOCK_USER_SQL = """
+    private static final String LOCK_USER_SQL =
+            """
             SELECT id
             FROM users
             WHERE id = ?
             FOR UPDATE
             """;
 
-    private static final String UPSERT_GRANT_SQL = """
+    private static final String UPSERT_GRANT_SQL =
+            """
             INSERT INTO user_role_grants (
                 user_id, role, status, group_id, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?)
@@ -40,19 +41,22 @@ public class UserRoleGrantWriter {
                 updated_at = EXCLUDED.updated_at
             """;
 
-    private static final String SUSPEND_HEADMAN_SQL = """
+    private static final String SUSPEND_HEADMAN_SQL =
+            """
             UPDATE user_role_grants
             SET status = 'suspended', updated_at = ?
             WHERE user_id = ? AND role = 'headman'
             """;
 
-    private static final String SELECT_GRANT_STATUS_SQL = """
+    private static final String SELECT_GRANT_STATUS_SQL =
+            """
             SELECT status
             FROM user_role_grants
             WHERE user_id = ? AND role = ?
             """;
 
-    private static final String SELECT_ACTIVE_STUDENT_GROUP_SQL = """
+    private static final String SELECT_ACTIVE_STUDENT_GROUP_SQL =
+            """
             SELECT g.group_id
             FROM user_role_grants g
             JOIN users u ON u.id = g.user_id
@@ -62,13 +66,15 @@ public class UserRoleGrantWriter {
             LIMIT 1
             """;
 
-    private static final String ARCHIVE_GRANTS_SQL = """
+    private static final String ARCHIVE_GRANTS_SQL =
+            """
             UPDATE user_role_grants
             SET status = 'archived', updated_at = ?
             WHERE user_id = ?
             """;
 
-    private static final String CLEAR_UNSELECTABLE_SESSIONS_SQL = """
+    private static final String CLEAR_UNSELECTABLE_SESSIONS_SQL =
+            """
             UPDATE auth_sessions session
             SET active_role_grant_id = NULL,
                 session_version = session.session_version + 1
@@ -89,10 +95,9 @@ public class UserRoleGrantWriter {
     }
 
     /**
-     * Synchronizes only the user's base role and optional headman role.
-     * Existing grants for other roles remain untouched. The mandatory
-     * transaction and explicit user lock keep the write in the same lock order
-     * as the Auth session authority.
+     * Synchronizes only the user's base role and optional headman role. Existing grants for other
+     * roles remain untouched. The mandatory transaction and explicit user lock keep the write in
+     * the same lock order as the Auth session authority.
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public void synchronize(User user) {
@@ -121,9 +126,9 @@ public class UserRoleGrantWriter {
     }
 
     /**
-     * Atomically writes one managed base-role grant while leaving every other
-     * grant row untouched. The caller owns the surrounding user transaction;
-     * this method takes the same user lock as Auth's session authority.
+     * Atomically writes one managed base-role grant while leaving every other grant row untouched.
+     * The caller owns the surrounding user transaction; this method takes the same user lock as
+     * Auth's session authority.
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public void upsertRole(Long userId, String role, String status, Long groupId) {
@@ -131,23 +136,29 @@ public class UserRoleGrantWriter {
         Objects.requireNonNull(role, "role");
         Objects.requireNonNull(status, "status");
         jdbcTemplate.queryForObject(LOCK_USER_SQL, Long.class, userId);
-        upsertGrant(userId, role.toLowerCase(Locale.ROOT), status.toLowerCase(Locale.ROOT),
-                groupId, OffsetDateTime.now());
+        upsertGrant(
+                userId,
+                role.toLowerCase(Locale.ROOT),
+                status.toLowerCase(Locale.ROOT),
+                groupId,
+                OffsetDateTime.now());
         clearUnselectableSelections(userId);
     }
 
     /**
-     * Keeps derived HEADMAN authority aligned when the STUDENT grant changes.
-     * The requested group argument is retained for existing callers, but the
-     * durable active STUDENT grant is the only source for the derived scope.
+     * Keeps derived HEADMAN authority aligned when the STUDENT grant changes. The requested group
+     * argument is retained for existing callers, but the durable active STUDENT grant is the only
+     * source for the derived scope.
      */
     @Transactional(propagation = Propagation.MANDATORY)
-    public void synchronizeDerivedHeadman(Long userId, boolean shouldBeActive, Long requestedGroupId) {
+    public void synchronizeDerivedHeadman(
+            Long userId, boolean shouldBeActive, Long requestedGroupId) {
         Objects.requireNonNull(userId, "userId");
         jdbcTemplate.queryForObject(LOCK_USER_SQL, Long.class, userId);
         Optional<Long> activeStudentGroup = activeStudentGrantGroup(userId);
         if (shouldBeActive && activeStudentGroup.isPresent()) {
-            upsertGrant(userId, "headman", "active", activeStudentGroup.get(), OffsetDateTime.now());
+            upsertGrant(
+                    userId, "headman", "active", activeStudentGroup.get(), OffsetDateTime.now());
         } else {
             jdbcTemplate.update(SUSPEND_HEADMAN_SQL, OffsetDateTime.now(), userId);
         }
@@ -155,9 +166,9 @@ public class UserRoleGrantWriter {
     }
 
     /**
-     * Archives every retained grant for an account. Archived grants remain
-     * durable for session foreign keys and audit/history, but none remains
-     * ACTIVE because Auth has no separate global account-status gate.
+     * Archives every retained grant for an account. Archived grants remain durable for session
+     * foreign keys and audit/history, but none remains ACTIVE because Auth has no separate global
+     * account-status gate.
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public void archive(User user) {
@@ -165,7 +176,8 @@ public class UserRoleGrantWriter {
         Long userId = Objects.requireNonNull(user.getId(), "user.id");
         jdbcTemplate.queryForObject(LOCK_USER_SQL, Long.class, userId);
         OffsetDateTime now = OffsetDateTime.now();
-        upsertGrant(userId,
+        upsertGrant(
+                userId,
                 user.getRole().name().toLowerCase(Locale.ROOT),
                 "archived",
                 user.getGroupId(),
@@ -182,11 +194,8 @@ public class UserRoleGrantWriter {
         jdbcTemplate.update(CLEAR_UNSELECTABLE_SESSIONS_SQL, userId);
     }
 
-    private void upsertGrant(Long userId,
-                             String role,
-                             String status,
-                             Long groupId,
-                             OffsetDateTime now) {
+    private void upsertGrant(
+            Long userId, String role, String status, Long groupId, OffsetDateTime now) {
         jdbcTemplate.update(UPSERT_GRANT_SQL, userId, role, status, groupId, now, now);
         if ("student".equals(role) || "teacher".equals(role)) {
             events.publishEvent(new DashboardInvalidatedEvent(this));
@@ -195,21 +204,23 @@ public class UserRoleGrantWriter {
 
     private String synchronizedBaseStatus(Long userId, String role, String desiredStatus) {
         if (!"active".equals(desiredStatus)) return desiredStatus;
-        List<String> existing = jdbcTemplate.query(
-                SELECT_GRANT_STATUS_SQL,
-                ps -> {
-                    ps.setLong(1, userId);
-                    ps.setString(2, role);
-                },
-                (rs, rowNum) -> rs.getString(1));
+        List<String> existing =
+                jdbcTemplate.query(
+                        SELECT_GRANT_STATUS_SQL,
+                        ps -> {
+                            ps.setLong(1, userId);
+                            ps.setString(2, role);
+                        },
+                        (rs, rowNum) -> rs.getString(1));
         return existing == null || existing.isEmpty() ? desiredStatus : existing.get(0);
     }
 
     private Optional<Long> activeStudentGrantGroup(Long userId) {
-        List<Long> groups = jdbcTemplate.query(
-                SELECT_ACTIVE_STUDENT_GROUP_SQL,
-                ps -> ps.setLong(1, userId),
-                (rs, rowNum) -> rs.getLong(1));
+        List<Long> groups =
+                jdbcTemplate.query(
+                        SELECT_ACTIVE_STUDENT_GROUP_SQL,
+                        ps -> ps.setLong(1, userId),
+                        (rs, rowNum) -> rs.getLong(1));
         return groups.stream().findFirst();
     }
 

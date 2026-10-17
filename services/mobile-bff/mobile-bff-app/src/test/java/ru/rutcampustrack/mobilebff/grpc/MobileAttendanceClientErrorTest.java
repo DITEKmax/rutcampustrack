@@ -1,44 +1,43 @@
 package ru.rutcampustrack.mobilebff.grpc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.rpc.Status;
 import io.grpc.Metadata;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
-import org.mockito.ArgumentCaptor;
 import io.grpc.protobuf.StatusProto;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.test.util.ReflectionTestUtils;
-import ru.rutcampustrack.attendance.grpc.StudentCheckinErrorCode;
-import ru.rutcampustrack.attendance.grpc.StudentCheckinErrorDetail;
-import ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceGrpc;
-import ru.rutcampustrack.attendance.grpc.StudentRequestErrorCode;
-import ru.rutcampustrack.attendance.grpc.StudentRequestErrorDetail;
-import ru.rutcampustrack.attendance.grpc.StudentAttendanceRankingRequest;
-import ru.rutcampustrack.attendance.grpc.StudentAttendanceRankingResponse;
-import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
-import ru.rutcampustrack.mobilebff.error.MobileBffException;
-import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportRequest;
-import ru.rutcampustrack.teacher.grpc.TeacherAttendanceReadServiceGrpc;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.nullable;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.springframework.test.util.ReflectionTestUtils;
+import ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceGrpc;
+import ru.rutcampustrack.attendance.grpc.StudentAttendanceRankingRequest;
+import ru.rutcampustrack.attendance.grpc.StudentAttendanceRankingResponse;
+import ru.rutcampustrack.attendance.grpc.StudentCheckinErrorCode;
+import ru.rutcampustrack.attendance.grpc.StudentCheckinErrorDetail;
+import ru.rutcampustrack.attendance.grpc.StudentRequestErrorCode;
+import ru.rutcampustrack.attendance.grpc.StudentRequestErrorDetail;
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
+import ru.rutcampustrack.mobilebff.error.MobileBffException;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceReadServiceGrpc;
 
 class MobileAttendanceClientErrorTest {
 
@@ -46,25 +45,33 @@ class MobileAttendanceClientErrorTest {
     private static final String DEPENDENCY_MESSAGE = "Attendance Service временно недоступен";
 
     @ParameterizedTest
-    @EnumSource(value = Code.class, names = {"INTERNAL", "UNKNOWN", "DATA_LOSS"})
+    @EnumSource(
+            value = Code.class,
+            names = {"INTERNAL", "UNKNOWN", "DATA_LOSS"})
     void rawServerFailuresBecomeGenericInternalProblems(Code statusCode) {
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(statusCode, "database details must stay private"));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(statusCode, "database details must stay private"));
 
-        assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(problem.status())
+                .isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(problem.code()).isEqualTo(ProblemCode.INTERNAL_ERROR);
-        assertThat(problem.getMessage()).isEqualTo(INTERNAL_MESSAGE)
+        assertThat(problem.getMessage())
+                .isEqualTo(INTERNAL_MESSAGE)
                 .doesNotContain("database details");
         assertThat(problem.retryAt()).isNull();
     }
 
     @ParameterizedTest
-    @EnumSource(value = Code.class, names = {"UNAVAILABLE", "DEADLINE_EXCEEDED"})
+    @EnumSource(
+            value = Code.class,
+            names = {"UNAVAILABLE", "DEADLINE_EXCEEDED"})
     void dependencyFailuresRemainServiceUnavailable(Code statusCode) {
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(statusCode, "transport diagnostic"));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(grpcError(statusCode, "transport diagnostic"));
 
-        assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(problem.status())
+                .isEqualTo(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE);
         assertThat(problem.code()).isEqualTo(ProblemCode.DEPENDENCY_UNAVAILABLE);
         assertThat(problem.getMessage()).isEqualTo(DEPENDENCY_MESSAGE);
     }
@@ -73,29 +80,48 @@ class MobileAttendanceClientErrorTest {
     void teacherExportSizeLimitBecomesAnActionable413() {
         MobileGrpcAuth auth = mock(MobileGrpcAuth.class);
         TeacherAttendanceReadServiceGrpc.TeacherAttendanceReadServiceBlockingStub teacherStub =
-                mock(TeacherAttendanceReadServiceGrpc.TeacherAttendanceReadServiceBlockingStub.class);
+                mock(
+                        TeacherAttendanceReadServiceGrpc.TeacherAttendanceReadServiceBlockingStub
+                                .class);
         when(auth.attach(teacherStub)).thenReturn(teacherStub);
         when(teacherStub.withDeadlineAfter(60, TimeUnit.SECONDS)).thenReturn(teacherStub);
         when(teacherStub.exportTeacherAttendance(any(TeacherAttendanceExportRequest.class)))
-                .thenThrow(io.grpc.Status.RESOURCE_EXHAUSTED
-                        .withDescription("response exceeds current gRPC limit").asRuntimeException());
+                .thenThrow(
+                        io.grpc.Status.RESOURCE_EXHAUSTED
+                                .withDescription("response exceeds current gRPC limit")
+                                .asRuntimeException());
         MobileAttendanceClient client = new MobileAttendanceClient(auth);
         ReflectionTestUtils.setField(client, "teacherStub", teacherStub);
 
-        assertThatThrownBy(() -> client.exportTeacherAttendance(9L, 33L, 22L,
-                List.of("lecture"), LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30), "png"))
-                .isInstanceOfSatisfying(MobileBffException.class, problem -> {
-                    assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.PAYLOAD_TOO_LARGE);
-                    assertThat(problem.code()).isEqualTo(ProblemCode.PAYLOAD_TOO_LARGE);
-                    assertThat(problem.getMessage()).contains("20 МиБ", "4 МиБ", "DOCX", "XLSX");
-                });
+        assertThatThrownBy(
+                        () ->
+                                client.exportTeacherAttendance(
+                                        9L,
+                                        33L,
+                                        22L,
+                                        List.of("lecture"),
+                                        LocalDate.of(2026, 9, 1),
+                                        LocalDate.of(2026, 9, 30),
+                                        "png"))
+                .isInstanceOfSatisfying(
+                        MobileBffException.class,
+                        problem -> {
+                            assertThat(problem.status())
+                                    .isEqualTo(
+                                            org.springframework.http.HttpStatus.PAYLOAD_TOO_LARGE);
+                            assertThat(problem.code()).isEqualTo(ProblemCode.PAYLOAD_TOO_LARGE);
+                            assertThat(problem.getMessage())
+                                    .contains("20 МиБ", "4 МиБ", "DOCX", "XLSX");
+                        });
     }
 
     @Test
     void rankingCallForwardsSignedContextAndLeavesOmittedPageForServerAnchoring() {
         MobileGrpcAuth auth = mock(MobileGrpcAuth.class);
         AttendanceStudentGrpcServiceGrpc.AttendanceStudentGrpcServiceBlockingStub studentStub =
-                mock(AttendanceStudentGrpcServiceGrpc.AttendanceStudentGrpcServiceBlockingStub.class);
+                mock(
+                        AttendanceStudentGrpcServiceGrpc.AttendanceStudentGrpcServiceBlockingStub
+                                .class);
         when(auth.attach(studentStub)).thenReturn(studentStub);
         when(studentStub.withDeadlineAfter(10, TimeUnit.SECONDS)).thenReturn(studentStub);
         when(studentStub.getStudentAttendanceRanking(any(StudentAttendanceRankingRequest.class)))
@@ -117,35 +143,44 @@ class MobileAttendanceClientErrorTest {
     @ParameterizedTest
     @MethodSource("authAndScopeFailures")
     void authenticationAndScopeTransportFailuresKeepTheirPublic4xxMapping(
-            Code statusCode, org.springframework.http.HttpStatus expectedStatus,
+            Code statusCode,
+            org.springframework.http.HttpStatus expectedStatus,
             ProblemCode expectedCode) {
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(statusCode, "auth diagnostic"));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(grpcError(statusCode, "auth diagnostic"));
 
         assertThat(problem.status()).isEqualTo(expectedStatus);
         assertThat(problem.code()).isEqualTo(expectedCode);
         if (expectedCode == ProblemCode.OUT_OF_SCOPE) {
-            assertThat(problem.getMessage()).isEqualTo("Запрошенные данные недоступны в текущем scope")
+            assertThat(problem.getMessage())
+                    .isEqualTo("Запрошенные данные недоступны в текущем scope")
                     .doesNotContain(DEPENDENCY_MESSAGE, "auth diagnostic");
         }
     }
 
     private static Stream<Arguments> authAndScopeFailures() {
         return Stream.of(
-                arguments(Code.UNAUTHENTICATED,
-                        org.springframework.http.HttpStatus.UNAUTHORIZED, ProblemCode.INVALID_SESSION),
-                arguments(Code.PERMISSION_DENIED,
-                        org.springframework.http.HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE));
+                arguments(
+                        Code.UNAUTHENTICATED,
+                        org.springframework.http.HttpStatus.UNAUTHORIZED,
+                        ProblemCode.INVALID_SESSION),
+                arguments(
+                        Code.PERMISSION_DENIED,
+                        org.springframework.http.HttpStatus.FORBIDDEN,
+                        ProblemCode.OUT_OF_SCOPE));
     }
 
     @Test
     void rawUnauthenticatedWinsOverContradictoryTypedConflict() {
-        StudentRequestErrorDetail detail = StudentRequestErrorDetail.newBuilder()
-                .setCode(StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_REQUEST_CONFLICT)
-                .build();
+        StudentRequestErrorDetail detail =
+                StudentRequestErrorDetail.newBuilder()
+                        .setCode(
+                                StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_REQUEST_CONFLICT)
+                        .build();
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(Code.UNAUTHENTICATED, "auth diagnostic", Any.pack(detail)));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(Code.UNAUTHENTICATED, "auth diagnostic", Any.pack(detail)));
 
         assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.UNAUTHORIZED);
         assertThat(problem.code()).isEqualTo(ProblemCode.INVALID_SESSION);
@@ -153,61 +188,73 @@ class MobileAttendanceClientErrorTest {
 
     @Test
     void rawUnavailableWinsOverContradictoryTypedNotFound() {
-        StudentRequestErrorDetail detail = StudentRequestErrorDetail.newBuilder()
-                .setCode(StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_REQUEST_NOT_FOUND)
-                .build();
+        StudentRequestErrorDetail detail =
+                StudentRequestErrorDetail.newBuilder()
+                        .setCode(
+                                StudentRequestErrorCode
+                                        .STUDENT_REQUEST_ERROR_CODE_REQUEST_NOT_FOUND)
+                        .build();
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(Code.UNAVAILABLE, "dependency diagnostic", Any.pack(detail)));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(Code.UNAVAILABLE, "dependency diagnostic", Any.pack(detail)));
 
-        assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(problem.status())
+                .isEqualTo(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE);
         assertThat(problem.code()).isEqualTo(ProblemCode.DEPENDENCY_UNAVAILABLE);
     }
 
     @Test
     void rawDataLossWinsOverTypedClientCode() {
-        StudentRequestErrorDetail detail = StudentRequestErrorDetail.newBuilder()
-                .setCode(StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_REQUEST_CONFLICT)
-                .build();
+        StudentRequestErrorDetail detail =
+                StudentRequestErrorDetail.newBuilder()
+                        .setCode(
+                                StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_REQUEST_CONFLICT)
+                        .build();
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(Code.DATA_LOSS, "storage diagnostic", Any.pack(detail)));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(Code.DATA_LOSS, "storage diagnostic", Any.pack(detail)));
 
         assertGenericInternalProblem(problem);
     }
 
     @Test
     void unspecifiedTypedCheckinCodeIsGenericInternalProblem() {
-        StudentCheckinErrorDetail detail = StudentCheckinErrorDetail.newBuilder()
-                .setCode(StudentCheckinErrorCode.STUDENT_CHECKIN_ERROR_CODE_UNSPECIFIED)
-                .build();
+        StudentCheckinErrorDetail detail =
+                StudentCheckinErrorDetail.newBuilder()
+                        .setCode(StudentCheckinErrorCode.STUDENT_CHECKIN_ERROR_CODE_UNSPECIFIED)
+                        .build();
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(Code.INVALID_ARGUMENT, "server detail", Any.pack(detail)));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(Code.INVALID_ARGUMENT, "server detail", Any.pack(detail)));
 
         assertGenericInternalProblem(problem);
     }
 
     @Test
     void unrecognizedTypedCheckinCodeIsGenericInternalProblem() {
-        StudentCheckinErrorDetail detail = StudentCheckinErrorDetail.newBuilder()
-                .setCodeValue(999)
-                .build();
+        StudentCheckinErrorDetail detail =
+                StudentCheckinErrorDetail.newBuilder().setCodeValue(999).build();
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(Code.INVALID_ARGUMENT, "unknown server detail", Any.pack(detail)));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(
+                                Code.INVALID_ARGUMENT, "unknown server detail", Any.pack(detail)));
 
         assertGenericInternalProblem(problem);
     }
 
     @Test
     void unrecognizedTypedRequestCodeIsGenericInternalProblem() {
-        StudentRequestErrorDetail detail = StudentRequestErrorDetail.newBuilder()
-                .setCodeValue(999)
-                .build();
+        StudentRequestErrorDetail detail =
+                StudentRequestErrorDetail.newBuilder().setCodeValue(999).build();
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(Code.INVALID_ARGUMENT, "unknown request detail", Any.pack(detail)));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(
+                                Code.INVALID_ARGUMENT, "unknown request detail", Any.pack(detail)));
 
         assertGenericInternalProblem(problem);
     }
@@ -215,51 +262,58 @@ class MobileAttendanceClientErrorTest {
     @Test
     void malformedTypedDetailIsGenericInternalProblem() {
         Any validType = Any.pack(StudentCheckinErrorDetail.getDefaultInstance());
-        Any malformed = validType.toBuilder()
-                .setValue(ByteString.copyFrom(new byte[]{0x7f}))
-                .build();
+        Any malformed =
+                validType.toBuilder().setValue(ByteString.copyFrom(new byte[] {0x7f})).build();
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(Code.INVALID_ARGUMENT, "malformed server detail", malformed));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(Code.INVALID_ARGUMENT, "malformed server detail", malformed));
 
         assertGenericInternalProblem(problem);
     }
 
     @ParameterizedTest
-    @EnumSource(value = Code.class, names = {
-            "UNAUTHENTICATED", "PERMISSION_DENIED", "UNAVAILABLE", "DEADLINE_EXCEEDED"
-    })
+    @EnumSource(
+            value = Code.class,
+            names = {"UNAUTHENTICATED", "PERMISSION_DENIED", "UNAVAILABLE", "DEADLINE_EXCEEDED"})
     void malformedStatusMetadataCannotOverrideRawAuthOrTransportStatus(Code statusCode) {
         Metadata trailers = new Metadata();
-        Metadata.Key<byte[]> rawStatus = Metadata.Key.of(
-                "grpc-status-details-bin", Metadata.BINARY_BYTE_MARSHALLER);
-        trailers.put(rawStatus, new byte[]{0x7f});
+        Metadata.Key<byte[]> rawStatus =
+                Metadata.Key.of("grpc-status-details-bin", Metadata.BINARY_BYTE_MARSHALLER);
+        trailers.put(rawStatus, new byte[] {0x7f});
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                io.grpc.Status.fromCodeValue(statusCode.value()).withDescription("malformed status details")
-                        .asRuntimeException(trailers));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        io.grpc.Status.fromCodeValue(statusCode.value())
+                                .withDescription("malformed status details")
+                                .asRuntimeException(trailers));
 
         if (statusCode == Code.UNAUTHENTICATED) {
-            assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.UNAUTHORIZED);
+            assertThat(problem.status())
+                    .isEqualTo(org.springframework.http.HttpStatus.UNAUTHORIZED);
             assertThat(problem.code()).isEqualTo(ProblemCode.INVALID_SESSION);
         } else if (statusCode == Code.PERMISSION_DENIED) {
             assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.FORBIDDEN);
             assertThat(problem.code()).isEqualTo(ProblemCode.OUT_OF_SCOPE);
         } else {
-            assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE);
+            assertThat(problem.status())
+                    .isEqualTo(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE);
             assertThat(problem.code()).isEqualTo(ProblemCode.DEPENDENCY_UNAVAILABLE);
         }
     }
 
     @Test
     void invalidTypedRetryTimestampIsGenericInternalProblem() {
-        StudentCheckinErrorDetail detail = StudentCheckinErrorDetail.newBuilder()
-                .setCode(StudentCheckinErrorCode.STUDENT_CHECKIN_ERROR_CODE_CHECKIN_COOLDOWN)
-                .setRetryAt("not-an-instant")
-                .build();
+        StudentCheckinErrorDetail detail =
+                StudentCheckinErrorDetail.newBuilder()
+                        .setCode(
+                                StudentCheckinErrorCode.STUDENT_CHECKIN_ERROR_CODE_CHECKIN_COOLDOWN)
+                        .setRetryAt("not-an-instant")
+                        .build();
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(Code.RESOURCE_EXHAUSTED, "retryAt diagnostic", Any.pack(detail)));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(Code.RESOURCE_EXHAUSTED, "retryAt diagnostic", Any.pack(detail)));
 
         assertGenericInternalProblem(problem);
     }
@@ -267,15 +321,19 @@ class MobileAttendanceClientErrorTest {
     @Test
     void validCheckinCooldownKeepsTypedCodeAndRetryAt() {
         Instant retryAt = Instant.parse("2026-09-08T12:34:56Z");
-        StudentCheckinErrorDetail detail = StudentCheckinErrorDetail.newBuilder()
-                .setCode(StudentCheckinErrorCode.STUDENT_CHECKIN_ERROR_CODE_CHECKIN_COOLDOWN)
-                .setRetryAt(retryAt.toString())
-                .build();
+        StudentCheckinErrorDetail detail =
+                StudentCheckinErrorDetail.newBuilder()
+                        .setCode(
+                                StudentCheckinErrorCode.STUDENT_CHECKIN_ERROR_CODE_CHECKIN_COOLDOWN)
+                        .setRetryAt(retryAt.toString())
+                        .build();
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(Code.RESOURCE_EXHAUSTED, "Повторите позже", Any.pack(detail)));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(Code.RESOURCE_EXHAUSTED, "Повторите позже", Any.pack(detail)));
 
-        assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.TOO_MANY_REQUESTS);
+        assertThat(problem.status())
+                .isEqualTo(org.springframework.http.HttpStatus.TOO_MANY_REQUESTS);
         assertThat(problem.code()).isEqualTo(ProblemCode.CHECKIN_COOLDOWN);
         assertThat(problem.getMessage()).isEqualTo("Повторите позже");
         assertThat(problem.retryAt()).isEqualTo(retryAt);
@@ -283,12 +341,16 @@ class MobileAttendanceClientErrorTest {
 
     @Test
     void validRequestErrorKeepsPublicRequestCode() {
-        StudentRequestErrorDetail detail = StudentRequestErrorDetail.newBuilder()
-                .setCode(StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_REQUEST_NOT_FOUND)
-                .build();
+        StudentRequestErrorDetail detail =
+                StudentRequestErrorDetail.newBuilder()
+                        .setCode(
+                                StudentRequestErrorCode
+                                        .STUDENT_REQUEST_ERROR_CODE_REQUEST_NOT_FOUND)
+                        .build();
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(Code.NOT_FOUND, "internal request identifier", Any.pack(detail)));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(Code.NOT_FOUND, "internal request identifier", Any.pack(detail)));
 
         assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.NOT_FOUND);
         assertThat(problem.code()).isEqualTo(ProblemCode.REQUEST_NOT_FOUND);
@@ -298,36 +360,46 @@ class MobileAttendanceClientErrorTest {
 
     @Test
     void validTypedRequestConflictKeepsConflictMapping() {
-        StudentRequestErrorDetail detail = StudentRequestErrorDetail.newBuilder()
-                .setCode(StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_REQUEST_CONFLICT)
-                .build();
+        StudentRequestErrorDetail detail =
+                StudentRequestErrorDetail.newBuilder()
+                        .setCode(
+                                StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_REQUEST_CONFLICT)
+                        .build();
 
-        MobileBffException problem = MobileAttendanceClient.translate(
-                grpcError(Code.ABORTED, "internal conflict detail", Any.pack(detail)));
+        MobileBffException problem =
+                MobileAttendanceClient.translate(
+                        grpcError(Code.ABORTED, "internal conflict detail", Any.pack(detail)));
 
         assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.CONFLICT);
         assertThat(problem.code()).isEqualTo(ProblemCode.REQUEST_CONFLICT);
-        assertThat(problem.getMessage()).isEqualTo("Операция конфликтует с текущим состоянием заявки");
+        assertThat(problem.getMessage())
+                .isEqualTo("Операция конфликтует с текущим состоянием заявки");
         assertThat(problem.getMessage()).doesNotContain("internal conflict detail");
     }
 
     @Test
     void localClientFailureBecomesGenericInternalProblem() {
         MobileGrpcAuth auth = mock(MobileGrpcAuth.class);
-        when(auth.attach(nullable(AttendanceStudentGrpcServiceGrpc.AttendanceStudentGrpcServiceBlockingStub.class)))
+        when(auth.attach(
+                        nullable(
+                                AttendanceStudentGrpcServiceGrpc
+                                        .AttendanceStudentGrpcServiceBlockingStub.class)))
                 .thenThrow(new IllegalStateException("local diagnostic must stay private"));
 
         MobileAttendanceClient client = new MobileAttendanceClient(auth);
 
         assertThatThrownBy(() -> client.snapshot(List.of(1L)))
-                .isInstanceOfSatisfying(MobileBffException.class, problem -> {
-                    assertGenericInternalProblem(problem);
-                    assertThat(problem.getMessage()).doesNotContain("local diagnostic");
-                });
+                .isInstanceOfSatisfying(
+                        MobileBffException.class,
+                        problem -> {
+                            assertGenericInternalProblem(problem);
+                            assertThat(problem.getMessage()).doesNotContain("local diagnostic");
+                        });
     }
 
     private static void assertGenericInternalProblem(MobileBffException problem) {
-        assertThat(problem.status()).isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(problem.status())
+                .isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(problem.code()).isEqualTo(ProblemCode.INTERNAL_ERROR);
         assertThat(problem.getMessage()).isEqualTo(INTERNAL_MESSAGE);
         assertThat(problem.retryAt()).isNull();

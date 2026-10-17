@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.time.Duration;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -19,8 +20,6 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
-
-import java.time.Duration;
 
 @Configuration
 @EnableCaching
@@ -48,17 +47,20 @@ public class CacheConfig {
     private Duration subjectTtl;
 
     /**
-     * Redis-backed CacheManager when RedisConnectionFactory is available, NoOpCacheManager otherwise.
-     * Using ObjectProvider avoids @ConditionalOnBean timing issues in user @Configuration classes:
-     * Spring evaluates @ConditionalOnBean before autoconfiguration registers RedisConnectionFactory,
-     * causing the condition to fail even when Redis IS configured. ObjectProvider resolves lazily
-     * at bean-creation time, after all beans are registered.
+     * Redis-backed CacheManager when RedisConnectionFactory is available, NoOpCacheManager
+     * otherwise. Using ObjectProvider avoids @ConditionalOnBean timing issues in
+     * user @Configuration classes: Spring evaluates @ConditionalOnBean before autoconfiguration
+     * registers RedisConnectionFactory, causing the condition to fail even when Redis IS
+     * configured. ObjectProvider resolves lazily at bean-creation time, after all beans are
+     * registered.
      *
-     * Non-cache integration tests exclude RedisAutoConfiguration → no factory → NoOpCacheManager.
-     * Cache integration tests keep Redis → factory is present → RedisCacheManager.
+     * <p>Non-cache integration tests exclude RedisAutoConfiguration → no factory →
+     * NoOpCacheManager. Cache integration tests keep Redis → factory is present →
+     * RedisCacheManager.
      */
     @Bean
-    public CacheManager cacheManager(ObjectProvider<RedisConnectionFactory> connectionFactoryProvider) {
+    public CacheManager cacheManager(
+            ObjectProvider<RedisConnectionFactory> connectionFactoryProvider) {
         RedisConnectionFactory connectionFactory = connectionFactoryProvider.getIfAvailable();
         if (connectionFactory == null) {
             return new NoOpCacheManager();
@@ -81,42 +83,45 @@ public class CacheConfig {
         // Block'ирует gadget-chains через произвольные ClassPath-классы в
         // @class поле Redis-payload'а (защита от attacker с RW access к Redis).
         // String/Integer/Long/Boolean — final, не требуют @class; не в списке.
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-                .allowIfSubType("ru.rutcampustrack.")
-                // Collection types — нужны для List/Set/Map поля в DTO.
-                .allowIfSubType("java.util.ArrayList")
-                .allowIfSubType("java.util.LinkedList")
-                .allowIfSubType("java.util.HashMap")
-                .allowIfSubType("java.util.LinkedHashMap")
-                .allowIfSubType("java.util.TreeMap")
-                .allowIfSubType("java.util.HashSet")
-                .allowIfSubType("java.util.LinkedHashSet")
-                .allowIfSubType("java.util.TreeSet")
-                .allowIfSubType("java.util.Collections$")
-                .allowIfSubType("java.util.Optional")
-                // java.time types для OffsetDateTime/Instant/LocalDate.
-                .allowIfSubType("java.time.")
-                // BigDecimal/BigInteger для numeric-полей.
-                .allowIfSubType("java.math.BigDecimal")
-                .allowIfSubType("java.math.BigInteger")
-                .build();
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder()
+                        .allowIfSubType("ru.rutcampustrack.")
+                        // Collection types — нужны для List/Set/Map поля в DTO.
+                        .allowIfSubType("java.util.ArrayList")
+                        .allowIfSubType("java.util.LinkedList")
+                        .allowIfSubType("java.util.HashMap")
+                        .allowIfSubType("java.util.LinkedHashMap")
+                        .allowIfSubType("java.util.TreeMap")
+                        .allowIfSubType("java.util.HashSet")
+                        .allowIfSubType("java.util.LinkedHashSet")
+                        .allowIfSubType("java.util.TreeSet")
+                        .allowIfSubType("java.util.Collections$")
+                        .allowIfSubType("java.util.Optional")
+                        // java.time types для OffsetDateTime/Instant/LocalDate.
+                        .allowIfSubType("java.time.")
+                        // BigDecimal/BigInteger для numeric-полей.
+                        .allowIfSubType("java.math.BigDecimal")
+                        .allowIfSubType("java.math.BigInteger")
+                        .build();
 
-        ObjectMapper om = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .registerModule(hibernate6Module)
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .activateDefaultTyping(
-                        ptv,
-                        ObjectMapper.DefaultTyping.NON_FINAL,
-                        JsonTypeInfo.As.PROPERTY);
+        ObjectMapper om =
+                new ObjectMapper()
+                        .registerModule(new JavaTimeModule())
+                        .registerModule(hibernate6Module)
+                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                        .activateDefaultTyping(
+                                ptv,
+                                ObjectMapper.DefaultTyping.NON_FINAL,
+                                JsonTypeInfo.As.PROPERTY);
 
-        GenericJackson2JsonRedisSerializer serializer =
-                new GenericJackson2JsonRedisSerializer(om);
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(om);
 
-        RedisCacheConfiguration base = RedisCacheConfiguration.defaultCacheConfig()
-                .disableCachingNullValues()
-                .serializeValuesWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(serializer));
+        RedisCacheConfiguration base =
+                RedisCacheConfiguration.defaultCacheConfig()
+                        .disableCachingNullValues()
+                        .serializeValuesWith(
+                                RedisSerializationContext.SerializationPair.fromSerializer(
+                                        serializer));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(base.entryTtl(Duration.ofMinutes(5)))

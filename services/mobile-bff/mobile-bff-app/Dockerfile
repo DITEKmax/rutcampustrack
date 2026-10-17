@@ -21,7 +21,8 @@ COPY services/mobile-bff/mobile-bff-app/build.gradle.kts \
 COPY services/mobile-bff/mobile-bff-app/src \
      services/mobile-bff/mobile-bff-app/src
 
-RUN --mount=type=cache,target=/root/.gradle \
+# Keep wrapper/dependencies warm per service; serialize writers to that cache.
+RUN --mount=type=cache,id=rct-gradle-mobile-bff,target=/root/.gradle,sharing=locked \
     sed -i 's/\r$//' gradlew && chmod +x gradlew && ./gradlew :services:mobile-bff:mobile-bff-app:bootJar --no-daemon -x test
 
 # Stage 2: Extract Spring Boot layers

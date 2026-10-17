@@ -10,11 +10,17 @@ export function createMobileThemePreference(storage: () => ThemeStorage | null) 
       try {
         const value = storage()?.getItem(MOBILE_THEME_PREFERENCE_KEY)
         return MOBILE_THEME_MODES.find((mode) => mode === value) ?? null
-      } catch { return null }
+      } catch {
+        return null
+      }
     },
     write(mode: MobileThemeMode): void {
       if (!MOBILE_THEME_MODES.includes(mode)) return
-      try { storage()?.setItem(MOBILE_THEME_PREFERENCE_KEY, mode) } catch { /* Preference storage may be unavailable. */ }
+      try {
+        storage()?.setItem(MOBILE_THEME_PREFERENCE_KEY, mode)
+      } catch {
+        /* Preference storage may be unavailable. */
+      }
     },
   }
 }

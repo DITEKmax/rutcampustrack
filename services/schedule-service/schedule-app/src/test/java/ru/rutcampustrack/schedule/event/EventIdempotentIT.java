@@ -1,58 +1,55 @@
 package ru.rutcampustrack.schedule.event;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
-import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
-import ru.rutcampustrack.schedule.subject.SubjectDeletedCascadeService;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
+import ru.rutcampustrack.schedule.subject.SubjectDeletedCascadeService;
+
 /**
  * M13 G8 — IT для consumer-side dedup в schedule-app.
  *
- * <p>Вызывает {@link EventConsumer#onEvent} дважды с одинаковым
- * {@code event_id} и проверяет: (а) handler-эффект (cascade) выполняется
- * один раз, (б) запись в {@code event_consumer_processed} тоже одна.
+ * <p>Вызывает {@link EventConsumer#onEvent} дважды с одинаковым {@code event_id} и проверяет: (а)
+ * handler-эффект (cascade) выполняется один раз, (б) запись в {@code event_consumer_processed} тоже
+ * одна.
  *
- * <p>RabbitTemplate в schedule IT — {@code @MockitoBean}, поэтому
- * вызываем consumer напрямую (как Spring AMQP сделал бы после deserialize).
+ * <p>RabbitTemplate в schedule IT — {@code @MockitoBean}, поэтому вызываем consumer напрямую (как
+ * Spring AMQP сделал бы после deserialize).
  */
 class EventIdempotentIT extends AbstractScheduleIntegrationTest {
 
-    @Autowired
-    private EventConsumer consumer;
+    @Autowired private EventConsumer consumer;
 
-    @MockitoBean
-    private SubjectDeletedCascadeService cascadeService;
+    @MockitoBean private SubjectDeletedCascadeService cascadeService;
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    @PersistenceContext private EntityManager entityManager;
 
-    @Autowired
-    private PlatformTransactionManager transactionManager;
+    @Autowired private PlatformTransactionManager transactionManager;
 
     @BeforeEach
     void cleanProcessed() {
-        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
-                entityManager.createQuery(
-                        "DELETE FROM ScheduleEventConsumerProcessedEntity e "
-                                + "WHERE e.consumerId = :c")
-                        .setParameter("c", EventConsumer.CONSUMER_ID)
-                        .executeUpdate()
-        );
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status ->
+                                entityManager
+                                        .createQuery(
+                                                "DELETE FROM ScheduleEventConsumerProcessedEntity e "
+                                                        + "WHERE e.consumerId = :c")
+                                        .setParameter("c", EventConsumer.CONSUMER_ID)
+                                        .executeUpdate());
     }
 
     private Map<String, Object> envelope(UUID eventId, long subjectId) {
@@ -65,12 +62,15 @@ class EventIdempotentIT extends AbstractScheduleIntegrationTest {
     }
 
     private long claimsForEvent(UUID eventId) {
-        return ((Number) entityManager.createQuery(
-                "SELECT COUNT(e) FROM ScheduleEventConsumerProcessedEntity e "
-                        + "WHERE e.consumerId = :c AND e.eventId = :id")
-                .setParameter("c", EventConsumer.CONSUMER_ID)
-                .setParameter("id", eventId)
-                .getSingleResult()).longValue();
+        return ((Number)
+                        entityManager
+                                .createQuery(
+                                        "SELECT COUNT(e) FROM ScheduleEventConsumerProcessedEntity e "
+                                                + "WHERE e.consumerId = :c AND e.eventId = :id")
+                                .setParameter("c", EventConsumer.CONSUMER_ID)
+                                .setParameter("id", eventId)
+                                .getSingleResult())
+                .longValue();
     }
 
     @Test

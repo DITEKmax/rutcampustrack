@@ -1,6 +1,14 @@
 package ru.rutcampustrack.attendance.security;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,20 +20,10 @@ import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 
-import java.time.Instant;
-import java.util.List;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
  * M13 G9 (NEW-31) — IDOR-проверки attendance-service.
  *
- * <p>Каждый сценарий: студент/headman A → endpoint, оперирующий ресурсом
- * группы/студента B → 403.
+ * <p>Каждый сценарий: студент/headman A → endpoint, оперирующий ресурсом группы/студента B → 403.
  */
 class SecurityIdorIT extends AbstractAttendanceIntegrationTest {
 
@@ -47,27 +45,31 @@ class SecurityIdorIT extends AbstractAttendanceIntegrationTest {
         mongoTemplate.remove(new Query(), LateCheckinRequest.class);
 
         // Excuse-тикет группы B (автор — studentB, SUBMITTED)
-        ExcuseTicket ticket = ExcuseTicket.builder()
-                .studentId(studentBId)
-                .groupId(groupBId)
-                .lessonIds(List.of(8001L))
-                .excuseType(ru.rutcampustrack.attendance.contract.enums.ExcuseType.ILLNESS)
-                .status(ExcuseTicketStatus.SUBMITTED)
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
+        ExcuseTicket ticket =
+                ExcuseTicket.builder()
+                        .studentId(studentBId)
+                        .groupId(groupBId)
+                        .lessonIds(List.of(8001L))
+                        .excuseType(ru.rutcampustrack.attendance.contract.enums.ExcuseType.ILLNESS)
+                        .status(ExcuseTicketStatus.SUBMITTED)
+                        .createdAt(Instant.now())
+                        .updatedAt(Instant.now())
+                        .build();
         excuseTicketBId = mongoTemplate.save(ticket).getId();
 
         // Late-checkin запрос группы B (автор — studentB, PENDING)
-        LateCheckinRequest req = LateCheckinRequest.builder()
-                .studentId(studentBId)
-                .groupId(groupBId)
-                .lessonId(8001L)
-                .studentName("Студ Б.")
-                .status(ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus.PENDING)
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
+        LateCheckinRequest req =
+                LateCheckinRequest.builder()
+                        .studentId(studentBId)
+                        .groupId(groupBId)
+                        .lessonId(8001L)
+                        .studentName("Студ Б.")
+                        .status(
+                                ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus
+                                        .PENDING)
+                        .createdAt(Instant.now())
+                        .updatedAt(Instant.now())
+                        .build();
         lateCheckinRequestBId = mongoTemplate.save(req).getId();
     }
 
@@ -106,19 +108,19 @@ class SecurityIdorIT extends AbstractAttendanceIntegrationTest {
     @Test
     void getGroupTickets_foreignGroupId_returns403() throws Exception {
         // path-param: /excuses/group/{groupId}
-        mockMvc.perform(asHeadmanA(
-                        get("/attendance/excuses/group/{gid}", groupBId)))
+        mockMvc.perform(asHeadmanA(get("/attendance/excuses/group/{gid}", groupBId)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void updateExcuseStatus_foreignGroup_returns403() throws Exception {
-        UpdateExcuseStatusRequest body = new UpdateExcuseStatusRequest(
-                ExcuseTicketStatus.APPROVED, null);
-        mockMvc.perform(asHeadmanA(
-                        patch("/attendance/excuses/{id}/status", excuseTicketBId)
-                                .contentType("application/json")
-                                .content(objectMapper.writeValueAsString(body))))
+        UpdateExcuseStatusRequest body =
+                new UpdateExcuseStatusRequest(ExcuseTicketStatus.APPROVED, null);
+        mockMvc.perform(
+                        asHeadmanA(
+                                patch("/attendance/excuses/{id}/status", excuseTicketBId)
+                                        .contentType("application/json")
+                                        .content(objectMapper.writeValueAsString(body))))
                 .andExpect(status().isForbidden());
     }
 
@@ -128,10 +130,13 @@ class SecurityIdorIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void decideLateCheckin_foreignGroup_returns403() throws Exception {
-        mockMvc.perform(asHeadmanA(
-                        post("/attendance/late-checkin/{id}/decision", lateCheckinRequestBId)
-                                .contentType("application/json")
-                                .content("{\"approved\":true}")))
+        mockMvc.perform(
+                        asHeadmanA(
+                                post(
+                                                "/attendance/late-checkin/{id}/decision",
+                                                lateCheckinRequestBId)
+                                        .contentType("application/json")
+                                        .content("{\"approved\":true}")))
                 .andExpect(status().isForbidden());
     }
 
@@ -149,10 +154,11 @@ class SecurityIdorIT extends AbstractAttendanceIntegrationTest {
     @Test
     void markAttendance_plainStudentNotHeadman_returns403() throws Exception {
         // Plain student (не headman) → AccessDenied (только headman может ставить mark)
-        mockMvc.perform(asStudentA(
-                        put("/attendance/lessons/{lid}/students/{uid}", 8001L, studentBId)
-                                .contentType("application/json")
-                                .content("{\"status\":\"PRESENT\"}")))
+        mockMvc.perform(
+                        asStudentA(
+                                put("/attendance/lessons/{lid}/students/{uid}", 8001L, studentBId)
+                                        .contentType("application/json")
+                                        .content("{\"status\":\"PRESENT\"}")))
                 .andExpect(status().isForbidden());
     }
 
@@ -162,23 +168,25 @@ class SecurityIdorIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void getJournal_foreignGroupId_returns403() throws Exception {
-        mockMvc.perform(asHeadmanA(
-                        get("/attendance/reports/journal")
-                                .param("groupId", groupBId.toString())
-                                .param("subjectId", "100")
-                                .param("dateFrom", "2041-09-01")
-                                .param("dateTo", "2041-12-31")))
+        mockMvc.perform(
+                        asHeadmanA(
+                                get("/attendance/reports/journal")
+                                        .param("groupId", groupBId.toString())
+                                        .param("subjectId", "100")
+                                        .param("dateFrom", "2041-09-01")
+                                        .param("dateTo", "2041-12-31")))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void plainStudent_cannotViewJournal() throws Exception {
-        mockMvc.perform(asStudentA(
-                        get("/attendance/reports/journal")
-                                .param("groupId", groupAId.toString())
-                                .param("subjectId", "100")
-                                .param("dateFrom", "2041-09-01")
-                                .param("dateTo", "2041-12-31")))
+        mockMvc.perform(
+                        asStudentA(
+                                get("/attendance/reports/journal")
+                                        .param("groupId", groupAId.toString())
+                                        .param("subjectId", "100")
+                                        .param("dateFrom", "2041-09-01")
+                                        .param("dateTo", "2041-12-31")))
                 .andExpect(status().isForbidden());
     }
 }

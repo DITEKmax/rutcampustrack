@@ -1,5 +1,7 @@
 package ru.rutcampustrack.academic.assignment;
 
+import java.time.LocalDate;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -10,15 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.academic.contract.api.AssignmentApi;
 import ru.rutcampustrack.academic.contract.dto.assignment.AssignTeacherRequest;
-import ru.rutcampustrack.academic.contract.dto.assignment.AssignmentResponse;
 import ru.rutcampustrack.academic.contract.dto.assignment.AssignmentReplacementResponse;
-import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.contract.dto.assignment.AssignmentResponse;
 import ru.rutcampustrack.academic.contract.dto.assignment.ReplaceAssignmentRequest;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Assignment;
 import ru.rutcampustrack.academic.security.RequireRole;
-
-import java.time.LocalDate;
-import java.util.UUID;
 
 @RestController
 public class AssignmentController implements AssignmentApi {
@@ -29,9 +28,10 @@ public class AssignmentController implements AssignmentApi {
     private final AssignmentAssembler assignmentAssembler;
     private final AssignmentReplacementService replacementService;
 
-    public AssignmentController(AssignmentService assignmentService,
-                                 AssignmentAssembler assignmentAssembler,
-                                 AssignmentReplacementService replacementService) {
+    public AssignmentController(
+            AssignmentService assignmentService,
+            AssignmentAssembler assignmentAssembler,
+            AssignmentReplacementService replacementService) {
         this.assignmentService = assignmentService;
         this.assignmentAssembler = assignmentAssembler;
         this.replacementService = replacementService;
@@ -39,32 +39,41 @@ public class AssignmentController implements AssignmentApi {
 
     @Override
     @RequireRole({UserRole.STUDENT})
-    public ResponseEntity<EntityModel<AssignmentResponse>> assignTeacher(AssignTeacherRequest request) {
+    public ResponseEntity<EntityModel<AssignmentResponse>> assignTeacher(
+            AssignTeacherRequest request) {
         Assignment assignment = assignmentService.assignTeacher(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(assignmentAssembler.toModel(assignment));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(assignmentAssembler.toModel(assignment));
     }
 
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
     public ResponseEntity<PagedModel<EntityModel<AssignmentResponse>>> listAssignments(
-            Long groupId, Long semesterId, Pageable pageable,
+            Long groupId,
+            Long semesterId,
+            Pageable pageable,
             PagedResourcesAssembler<AssignmentResponse> assembler) {
-        Page<AssignmentResponse> responsePage = assignmentService.listAssignments(groupId, semesterId, pageable)
-                .map(assignmentAssembler::toResponse);
+        Page<AssignmentResponse> responsePage =
+                assignmentService
+                        .listAssignments(groupId, semesterId, pageable)
+                        .map(assignmentAssembler::toResponse);
         return ResponseEntity.ok(assembler.toModel(responsePage, EntityModel::of));
     }
 
     @Override
     @RequireRole({UserRole.STUDENT})
-    public ResponseEntity<Void> removeAssignment(Long id, LocalDate validUntilExclusive, UUID requestKey) {
+    public ResponseEntity<Void> removeAssignment(
+            Long id, LocalDate validUntilExclusive, UUID requestKey) {
         assignmentService.removeAssignment(id, validUntilExclusive, requestKey);
         return ResponseEntity.noContent().build();
     }
 
     @Override
     @RequireRole({UserRole.STUDENT})
-    public ResponseEntity<EntityModel<AssignmentResponse>> resumeAdoption(Long id, UUID operationId) {
-        return ResponseEntity.ok(assignmentAssembler.toModel(closureService.resumeAdoption(id, operationId)));
+    public ResponseEntity<EntityModel<AssignmentResponse>> resumeAdoption(
+            Long id, UUID operationId) {
+        return ResponseEntity.ok(
+                assignmentAssembler.toModel(closureService.resumeAdoption(id, operationId)));
     }
 
     @Override
@@ -84,10 +93,9 @@ public class AssignmentController implements AssignmentApi {
     @Override
     @RequireRole({UserRole.TEACHER})
     public ResponseEntity<PagedModel<EntityModel<AssignmentResponse>>> getMyAssignments(
-            Pageable pageable,
-            PagedResourcesAssembler<AssignmentResponse> assembler) {
-        Page<AssignmentResponse> responsePage = assignmentService.getMyAssignments(pageable)
-                .map(assignmentAssembler::toResponse);
+            Pageable pageable, PagedResourcesAssembler<AssignmentResponse> assembler) {
+        Page<AssignmentResponse> responsePage =
+                assignmentService.getMyAssignments(pageable).map(assignmentAssembler::toResponse);
         return ResponseEntity.ok(assembler.toModel(responsePage, EntityModel::of));
     }
 }

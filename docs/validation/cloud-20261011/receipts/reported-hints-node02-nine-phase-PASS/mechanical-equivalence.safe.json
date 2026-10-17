@@ -1,0 +1,30 @@
+{
+  "status": "EXACT_NARROW_SOURCE_DIFF_LANGUAGE_SEMANTICS_BRIDGE",
+  "files": {
+    "artifact-privacy.ts": {
+      "beforeSHA256": "570d66e3a82543fa98960cb9d6a622597857066952d631e6cf9058a90b8e0232",
+      "afterSHA256": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82",
+      "bytes": 3822,
+      "physicalMode": "0o600",
+      "nlink": 1,
+      "inverseExactByteEqual": true,
+      "equivalenceQualification": "one newline between if condition and continue; same conditional loop body, no ASI ambiguity",
+      "notClaimingRawASTOrEmitByteEquality": true
+    },
+    "safe-reporter.ts": {
+      "beforeSHA256": "40f8881ecaa963135edf3b7c4b6eec860a903d7861a1c9fdf372aff0b82ad686",
+      "afterSHA256": "c69e4c46c2a03a285b11af11c03337bd2fd6472707148dd43bd4b928a757491c",
+      "bytes": 13224,
+      "physicalMode": "0o600",
+      "nlink": 1,
+      "inverseExactByteEqual": true,
+      "equivalenceQualification": "two linewrap changes plus removal of exactlyone trailing comma in RegExp.exec(message,) call; no extra argument/elision, same soleargument/operator/literal/directive/comment",
+      "notClaimingRawASTOrEmitByteEquality": true
+    }
+  },
+  "literalOperatorNameDirectiveCommentsUnchanged": true,
+  "onlyNonWhitespaceTokenChange": "one trailing call-argument comma removed; supported JS trailing-comma semantics",
+  "beforeParserDiagnostics": "actualhelpers0",
+  "afterParserTypeDiagnostics": "actualTS5.9.3errors0",
+  "noGeneralNormalizerOrSemanticReplay": true
+}

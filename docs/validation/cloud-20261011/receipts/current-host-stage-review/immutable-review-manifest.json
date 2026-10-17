@@ -1,0 +1,63 @@
+{
+  "source_stage_manifest": "6fa4a78f3a3b3a5593456487306da86964a1f8ec078f75ef37ab6e68b80b7cd2",
+  "artifact_producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "verdict": "APPROVE_CURRENT8_STAGE_AND_SOURCE",
+  "required_next_phase_prerequisite": "STAGE-PRE01 publicVue22copies PENDING",
+  "runtime": "apps/JVM/Docker/UID/TLS/browser NOT_RUN",
+  "safe_publishable_receipts": [
+    {
+      "path": "CURRENT.json",
+      "bytes": 722,
+      "sha256": "5295bda64fea2932baf7443531e04addf4a235461eac39c0c33f28861d4ad61f"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 9942,
+      "sha256": "8305aaf64923d036b2790d821327fe236bc3dabef7af7e6851273c9bbc7882d6"
+    },
+    {
+      "path": "actual-payload-verification.json",
+      "bytes": 7922,
+      "sha256": "fc8888fe76a01337147b252f75735733bb6f34779dd099b816177e7160520d73"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 895,
+      "sha256": "556c47b631350a9ebb103a649245dccf91c673b4e4bbe31d7847ff7d7d05619a"
+    },
+    {
+      "path": "findings-and-prerequisites.json",
+      "bytes": 973,
+      "sha256": "7f3a35ef1155f5d78bc1733bc7d744c6f802daf096d82b4b117050675251a9df"
+    },
+    {
+      "path": "preservation.safe.json",
+      "bytes": 366,
+      "sha256": "c73fd3fc2facf81de170910f2014c8dea2880451b393678ef85cbf8002505b4f"
+    },
+    {
+      "path": "receipt-identity.json",
+      "bytes": 681,
+      "sha256": "e70486c0ecfd195e3d9c89299db551bd837ba81dc7cafe7b4772b31315b1bccf"
+    },
+    {
+      "path": "renderer-and-vue-prerequisites.json",
+      "bytes": 2298,
+      "sha256": "11889c3d8d290b7c3ac9d3a992efb79c5a24d73e9ed55fdb24c1402573f38b7d"
+    },
+    {
+      "path": "source-control-and-resource-qualification.json",
+      "bytes": 949,
+      "sha256": "fd995564bfed635aa2e802cf08418eb9ef6dd6518e14bcebb879b957a6651530"
+    }
+  ],
+  "excluded": [
+    "staged binaries/source JARs/original Vue artifacts",
+    "raw private logs/ENV/keys/bodies",
+    "author26 receipt files copied directly"
+  ],
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN"
+}

@@ -1,0 +1,26 @@
+{
+  "scope": "Consumer semantics/generation/invalidation consultation only; separate common reviewer owns full wire/DDL review",
+  "files": [
+    {
+      "path": "proto/academic.proto",
+      "sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+      "bytes": 22570,
+      "revision": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+      "product_bytes_same_as_initial_contract": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+      "sha256": "d2ac433dc9a6556a4dc2def928356f98b1040ca75006c13ea41c047358bd5552",
+      "bytes": 9465,
+      "revision": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+      "product_bytes_same_as_initial_contract": true
+    },
+    {
+      "path": "event-schemas/password.changed.json",
+      "sha256": "ae71be029ccd73b3016989bc6270c9cfea0c360823c65d7bf4af8ba5d7cae452",
+      "bytes": 2360,
+      "revision": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+      "product_bytes_same_as_initial_contract": true
+    }
+  ]
+}

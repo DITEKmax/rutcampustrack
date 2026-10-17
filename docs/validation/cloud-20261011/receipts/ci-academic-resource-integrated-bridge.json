@@ -1,0 +1,10 @@
+{
+  "utc": "2026-10-12T03:48:59.355350+00:00",
+  "root_sha": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "author_final": "74bca165963b5fd719ad1d817b326105c408e4eb",
+  "path": "services/academic-service/academic-app/build.gradle.kts",
+  "source_byte_equal": true,
+  "sha256": "ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454",
+  "held34c0_root_ancestor": false,
+  "qualified": "SOURCEAPPROVE only; actualclasspaths/compile/currentfullAcademicIT/runtimegatesNOT_RUN"
+}

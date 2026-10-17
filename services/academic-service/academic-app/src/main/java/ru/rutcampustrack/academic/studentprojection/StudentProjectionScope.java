@@ -21,11 +21,11 @@ public record StudentProjectionScope(
         LocalDate serverDate) {
 
     public StudentProjectionScope {
-        activeRosterUserIds = List.copyOf(Objects.requireNonNull(activeRosterUserIds,
-                "activeRosterUserIds"));
+        activeRosterUserIds =
+                List.copyOf(Objects.requireNonNull(activeRosterUserIds, "activeRosterUserIds"));
         subjects = List.copyOf(Objects.requireNonNull(subjects, "subjects"));
-        ownMembershipSegments = List.copyOf(Objects.requireNonNull(ownMembershipSegments,
-                "ownMembershipSegments"));
+        ownMembershipSegments =
+                List.copyOf(Objects.requireNonNull(ownMembershipSegments, "ownMembershipSegments"));
         rankSubjects = List.copyOf(Objects.requireNonNull(rankSubjects, "rankSubjects"));
         rankVisibility = Objects.requireNonNull(rankVisibility, "rankVisibility");
         Objects.requireNonNull(dateFrom, "dateFrom");
@@ -37,26 +37,20 @@ public record StudentProjectionScope(
     }
 
     public record MembershipSegment(
-            long groupId,
-            LocalDate dateFrom,
-            LocalDate dateUntilExclusive,
-            List<Long> subjectIds) {
+            long groupId, LocalDate dateFrom, LocalDate dateUntilExclusive, List<Long> subjectIds) {
         public MembershipSegment {
             subjectIds = List.copyOf(Objects.requireNonNull(subjectIds, "subjectIds"));
             Objects.requireNonNull(dateFrom, "dateFrom");
             Objects.requireNonNull(dateUntilExclusive, "dateUntilExclusive");
             if (groupId <= 0 || !dateUntilExclusive.isAfter(dateFrom)) {
-                throw new IllegalArgumentException("membership segment must be positive and non-empty");
+                throw new IllegalArgumentException(
+                        "membership segment must be positive and non-empty");
             }
         }
     }
 
     public record Subject(
-            long subjectId,
-            String name,
-            String type,
-            long groupId,
-            List<String> lessonTypes) {
+            long subjectId, String name, String type, long groupId, List<String> lessonTypes) {
         public Subject {
             lessonTypes = List.copyOf(Objects.requireNonNull(lessonTypes, "lessonTypes"));
             if (subjectId <= 0 || groupId <= 0) {

@@ -1,0 +1,13 @@
+[
+  {
+    "id": "NP01-COMPAT01",
+    "severity": "P2",
+    "original_revision": "2f4d3d412753bedb1b084442efef63713a4e4348",
+    "correction_revision": "0b9c4aa7a9ed3cbe4b10ffa97580609898973b42",
+    "status": "CORRECTION_SOURCE_RECHECKED_RUNTIME_PENDING",
+    "source_verdict": "APPROVE_SOURCE_ONLY",
+    "runtime": "NOT_RUN",
+    "original_report_unchanged": true,
+    "new_blocking_source_findings": []
+  }
+]

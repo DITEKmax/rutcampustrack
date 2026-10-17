@@ -1,0 +1,18 @@
+{
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "original_sha256": "7e4232fadec1c563c283373b96b2718a3dc1892e3d3db97663642723a206eb91",
+  "restored_proposal_sha256": "8ca2d21468f2adbf8470e13fbb909b61b773a48a46367851c8fbeda4e944b094",
+  "current_manifest_sha256": "2a4077924fc822146c1a272f3e4e85189eeb0da7410d505b5471977f7570eb30",
+  "restoration": "nine damaged blocks only;2021intact unchanged;219identities restored",
+  "new_owner_entries": [
+    "owner_cloud_validation_20261011",
+    "delivery_pwa_offline_readonly_20261011",
+    "delivery_tma_initdata_reuse_20261011",
+    "delivery_map_legend_deferred_20261011"
+  ],
+  "strict_json_duplicate_keys": "PASS",
+  "yaml": "PASS",
+  "unchanged_prior_top_level_values": "PASS",
+  "historical_missing_hashes": "207 explicitly null; no invented hashes",
+  "runtime": "N/A docs-only"
+}

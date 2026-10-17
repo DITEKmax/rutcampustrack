@@ -9,9 +9,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 /**
  * Async configuration for Web Push delivery thread pool.
  *
- * Per T-27-08: ThreadPoolTaskExecutor with bounded pool and queue size prevents
- * RabbitMQ consumer thread starvation if push service is slow.
- * Per D-07: Push delivery is async and must not block the RabbitMQ listener thread.
+ * <p>Per T-27-08: ThreadPoolTaskExecutor with bounded pool and queue size prevents RabbitMQ
+ * consumer thread starvation if push service is slow. Per D-07: Push delivery is async and must not
+ * block the RabbitMQ listener thread.
  */
 @Configuration
 @EnableAsync

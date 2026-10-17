@@ -1,0 +1,112 @@
+{
+  "utc": "2026-10-12T05:02:09.894067+00:00",
+  "source_sha": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "archive": "/workspace/scratch/rct-validation/np01_domain_bot/sealed/broker-corrections-source-safe.zip",
+  "sha256": "70cf8eca30b4ff5ff6f1018af3db64a6056bb7cf78d01091270d39efcb6d08c5",
+  "bytes": 62179,
+  "members": 20,
+  "raw_logs_excluded": true,
+  "compile_broker_runtime": "NOT_RUN",
+  "files": [
+    {
+      "path": "CORRECTION-REPORT.md",
+      "sha256": "ab44945ee89a6d377d85e14aa68db99acd0c1060e4d46aefc3d002428bac4af1",
+      "bytes": 2760
+    },
+    {
+      "path": "broker-harness-plan.safe.json",
+      "sha256": "f4c2055ce7f530407452a70dcc7b99c872326b8be759cb3c6a085cf69f76f1ca",
+      "bytes": 11046
+    },
+    {
+      "path": "corrected-source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "sha256": "d586e179eaaef8565940b7812fda77f472e25d32e0bd154756e329867eabd966",
+      "bytes": 35762
+    },
+    {
+      "path": "corrected-source/services/notification-bot/tests/np01_broker_bridge_runner.py",
+      "sha256": "53e5908543256940ca473e2421aa3d247c54d9976aa1b7a17f05d07463746050",
+      "bytes": 30752
+    },
+    {
+      "path": "correction-source-inventory.safe.json",
+      "sha256": "3923d9e5aecd0141f25c5b1303eec65e4fae5a107a0329612094ee3195c6a435",
+      "bytes": 1569
+    },
+    {
+      "path": "domain1-original24-source-inventory.safe.json",
+      "sha256": "4291e02dc36746e8a16af7577b277c20f18f2aa939e36c54e350db4db288cb19",
+      "bytes": 6021
+    },
+    {
+      "path": "original-findings.safe.json",
+      "sha256": "0e713ab6f698e5b4585b6cb36bd9058536af7ea01a633b14b848da8f16eecbd2",
+      "bytes": 3348
+    },
+    {
+      "path": "original-review-REPORT.md",
+      "sha256": "d3ae9085ef45d222377a2f281712fb944966199b4394cb2ab7544af9feea4bbf",
+      "bytes": 17163
+    },
+    {
+      "path": "original-review-findings.json",
+      "sha256": "0e713ab6f698e5b4585b6cb36bd9058536af7ea01a633b14b848da8f16eecbd2",
+      "bytes": 3348
+    },
+    {
+      "path": "original-review-held-lease-crash-boundary.json",
+      "sha256": "46ce89e5aee2c1266ff04fcfc61c5d361f1a0b92478c24b4949cde83869b7bb5",
+      "bytes": 2499
+    },
+    {
+      "path": "original-review-verification.safe.json",
+      "sha256": "9ee314850e806b88165c5cb63b55a3f66bab0205da0d544506e97a77723b345f",
+      "bytes": 729
+    },
+    {
+      "path": "original9f-BotCredentialBrokerBridgeIT.java",
+      "sha256": "a4ce2ecfdb5a4e2f1142b85e25fbca69b98e086d8bff7d2fefa7840e06964e2d",
+      "bytes": 28395
+    },
+    {
+      "path": "original9f-broker-harness-plan.safe.json",
+      "sha256": "ccfc0388dc08a505e5f8c0e276d766f5ef7aa94aa172f6a44cf99066951cf4dd",
+      "bytes": 5911
+    },
+    {
+      "path": "original9f-broker-source-inventory.safe.json",
+      "sha256": "4e19a45672338d1aa0f84f6deb468a35e91f77168b92ca3f5d52bbf22a9b2edd",
+      "bytes": 1049
+    },
+    {
+      "path": "original9f-np01_broker_bridge_runner.py",
+      "sha256": "52836c5ac0cb35dcc732a9b9980d962066f45c6eeb32f203f49f08deb9236b4a",
+      "bytes": 20699
+    },
+    {
+      "path": "preservation.safe.json",
+      "sha256": "3d2922a8c6f5492a5ce5c5db279cb8e5c7bb63de952303531c6be97b920029d7",
+      "bytes": 564
+    },
+    {
+      "path": "source-guards.safe.json",
+      "sha256": "799371914ab8439ef7daf24deff74c03f235b2a58cb9f7f6cac9ca113833fa1c",
+      "bytes": 1096
+    },
+    {
+      "path": "source-safe-counterexamples.safe.json",
+      "sha256": "9f47e3af34103411b480c4c9b0f77383897cd280a67e7035c15642f7f824fae7",
+      "bytes": 1062
+    },
+    {
+      "path": "sourcehooks.safe.json",
+      "sha256": "38d706dbdff0446986311d4faf2ad4ff7d9daee19c5a82abfb633a927c055ee6",
+      "bytes": 1094
+    },
+    {
+      "path": "verify-source-safe.py",
+      "sha256": "e8cfa8cd0604fb01863032082a999089b9ef9f9066f05b320fb87b9f2589158e",
+      "bytes": 6750
+    }
+  ]
+}

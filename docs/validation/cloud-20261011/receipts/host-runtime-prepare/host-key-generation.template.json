@@ -1,0 +1,122 @@
+{
+  "status": "COMMAND_TEMPLATES_ONLY_KEYS_NOT_GENERATED",
+  "requires": "Separate root staging/host synthetic TLS+JWT grant; create NEW own directory only, refuse symlinks/existing files; never copy/read/chmod old Docker keys",
+  "canonical_source": "/workspace/rutcampustrack/tests/e2e/infra/scripts/generate-test-certs.sh",
+  "canonical_source_sha256": "02bfcc8dabadd714a9c04cd7b486bc1557de992d979eea7451f9a2cbded18d1c",
+  "tls": [
+    {
+      "argv": [
+        "openssl",
+        "req",
+        "-x509",
+        "-nodes",
+        "-days",
+        "365",
+        "-newkey",
+        "rsa:2048",
+        "-keyout",
+        "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/tls/edge/server.key",
+        "-out",
+        "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/tls/edge/server.crt",
+        "-subj",
+        "/CN=localhost",
+        "-addext",
+        "subjectAltName=DNS:localhost,IP:127.0.0.1"
+      ],
+      "uid": "executor own UID only, no Docker CHOWN helper",
+      "key_mode": "600",
+      "public_mode": "644",
+      "directory_mode": "755",
+      "output": "DEVNULL; public-certificate SHA/metadata only, never private-key bytes"
+    },
+    {
+      "argv": [
+        "openssl",
+        "req",
+        "-x509",
+        "-nodes",
+        "-days",
+        "365",
+        "-newkey",
+        "rsa:2048",
+        "-keyout",
+        "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/tls/host/schedule-server.key",
+        "-out",
+        "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/tls/host/schedule-server.crt",
+        "-subj",
+        "/CN=schedule-service",
+        "-addext",
+        "subjectAltName=DNS:schedule-service,DNS:localhost,IP:127.0.0.1"
+      ],
+      "uid": "executor own UID only, no Docker CHOWN helper",
+      "key_mode": "600",
+      "public_mode": "644",
+      "directory_mode": "755",
+      "output": "DEVNULL; public-certificate SHA/metadata only, never private-key bytes"
+    },
+    {
+      "argv": [
+        "openssl",
+        "req",
+        "-x509",
+        "-nodes",
+        "-days",
+        "365",
+        "-newkey",
+        "rsa:2048",
+        "-keyout",
+        "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/tls/host/academic-server.key",
+        "-out",
+        "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/tls/host/academic-server.crt",
+        "-subj",
+        "/CN=academic-service",
+        "-addext",
+        "subjectAltName=DNS:academic-service"
+      ],
+      "uid": "executor own UID only, no Docker CHOWN helper",
+      "key_mode": "600",
+      "public_mode": "644",
+      "directory_mode": "755",
+      "output": "DEVNULL; public-certificate SHA/metadata only, never private-key bytes"
+    }
+  ],
+  "jwt": {
+    "directory": "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/jwt-auth",
+    "generation": [
+      [
+        "openssl",
+        "genrsa",
+        "-out",
+        "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/jwt-auth/private.key.pkcs1.tmp",
+        "3072"
+      ],
+      [
+        "openssl",
+        "pkcs8",
+        "-topk8",
+        "-nocrypt",
+        "-in",
+        "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/jwt-auth/private.key.pkcs1.tmp",
+        "-out",
+        "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/jwt-auth/private.key"
+      ],
+      [
+        "openssl",
+        "rsa",
+        "-in",
+        "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/jwt-auth/private.key",
+        "-pubout",
+        "-out",
+        "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/jwt-auth/public.key"
+      ]
+    ],
+    "kid": "NEW os.urandom(4).hex(), canonical kid.txt filename; no stdout;600",
+    "temporary_cleanup": "Only new owned private.key.pkcs1.tmp after successful PKCS8/public generation; no old resources",
+    "modes": {
+      "private.key": "600",
+      "kid.txt": "600",
+      "public.key": "644"
+    },
+    "public_consumers": "Notification public-key path only; actual JWT public verification retains issuer/audience/purpose"
+  }
+}

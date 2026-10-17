@@ -1,0 +1,74 @@
+{
+  "legacy_proto_bytes_preserved": true,
+  "legacy_v1_schema_constraints_preserved": true,
+  "old_migrations_bytes_preserved": 56,
+  "unknown_enums_zero_explicit": true,
+  "runtime": "NOT_RUN",
+  "descriptor_parser": "NOT_RUN pending lease",
+  "jsonschema_available": true,
+  "schema_cases": [
+    {
+      "case": "v1",
+      "accepted": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "case": "v2bound",
+      "accepted": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "case": "v2unlinked",
+      "accepted": true,
+      "expected": true,
+      "pass": true
+    },
+    {
+      "case": "v2missingUID",
+      "accepted": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "case": "v2zeroGeneration",
+      "accepted": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "case": "v2overflow",
+      "accepted": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "case": "v2secretExtra",
+      "accepted": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "case": "unknownVersion",
+      "accepted": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "case": "v1extraUID",
+      "accepted": false,
+      "expected": false,
+      "pass": true
+    },
+    {
+      "case": "v2nullTelegram",
+      "accepted": false,
+      "expected": false,
+      "pass": true
+    }
+  ],
+  "new_migration_test_methods": 14,
+  "test_compile": "NOT_RUN",
+  "diff_check": "PASS"
+}

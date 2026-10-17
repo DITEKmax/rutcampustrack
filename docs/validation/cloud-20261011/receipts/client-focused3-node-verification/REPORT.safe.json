@@ -1,0 +1,58 @@
+{
+  "state": "PASS_FINITE_NODE_SOURCE_CHECKS_BROWSER_NOT_RUN",
+  "utc": "2026-10-12T16:38:02.704120+00:00",
+  "tool_session": 78393,
+  "launcher_native_exit": 0,
+  "ready_sha256": "167b8b1b3bd15dc41c4adebb93d73d514c553c8f6bfd59a6bd03c8294323f49e",
+  "source_archive_sha256": "5fe484b3e8f294d18de7adb72a5c7c0da5d85d67c8ef30ff3ed5c8880d504886",
+  "root19_bytes_unchanged": true,
+  "own11_bytes_unchanged": true,
+  "own11_modes600_nlink1": true,
+  "types_error_count": 0,
+  "types_version": "5.9.3",
+  "field_positive_count": 2,
+  "field_rejected_count": 7,
+  "native_list_cases": 3,
+  "native_list_source_lines": [
+    14,
+    61,
+    142
+  ],
+  "native_list_project": "chromium",
+  "native_list_unexpected_cases": 0,
+  "owned_children": [
+    {
+      "pid": 330850,
+      "start_ticks": 7674104,
+      "same_birth_alive_after": false,
+      "phase": "types"
+    },
+    {
+      "pid": 330857,
+      "start_ticks": 7674517,
+      "same_birth_alive_after": false,
+      "phase": "fields"
+    },
+    {
+      "pid": 330872,
+      "start_ticks": 7674603,
+      "same_birth_alive_after": false,
+      "phase": "list"
+    }
+  ],
+  "supervisor_pid_birth": "NOT_SEPARATELY_CAPTURED; tool session78393 exited0; exact3 child birth receipts recorded and reaped",
+  "sampled_peaks": {
+    "owned_rss_bytes": 349900800,
+    "run_allocated_bytes": 577536,
+    "shared_memory_bytes": 5195759616
+  },
+  "retained_transform_cache_allocated_bytes": 532480,
+  "run_allocated_bytes_after": 585728,
+  "own_private_tmp_removed": true,
+  "lease": "RELEASED_ALL_OWNED_REAPED",
+  "browser_API_login_network_webServer": "NOT_RUN",
+  "observer_live_behavior": "NOT_RUN",
+  "original_three_failure_causes": "UNKNOWN",
+  "raw_bodies_context_errors_credentials_archived": false,
+  "scope": "Fresh Node-only grant01; source unchanged; no old/current source mutation or acceptance parent promotion"
+}

@@ -1,0 +1,111 @@
+{
+  "direct_pid": 223430,
+  "native_exit": -15,
+  "terminal_reason": "SHARED_MEMORY_GROWTH_CAP",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 223430,
+      "start_ticks": 4475473
+    },
+    {
+      "pid": 223432,
+      "start_ticks": 4475479
+    },
+    {
+      "pid": 223431,
+      "start_ticks": 4475476
+    },
+    {
+      "pid": 223481,
+      "start_ticks": 4475582
+    },
+    {
+      "pid": 223865,
+      "start_ticks": 4478678
+    },
+    {
+      "pid": 225155,
+      "start_ticks": 4482246
+    },
+    {
+      "pid": 225195,
+      "start_ticks": 4482344
+    },
+    {
+      "pid": 225240,
+      "start_ticks": 4482449
+    },
+    {
+      "pid": 225364,
+      "start_ticks": 4483123
+    },
+    {
+      "pid": 226701,
+      "start_ticks": 4486725
+    },
+    {
+      "pid": 227432,
+      "start_ticks": 4490219
+    }
+  ],
+  "adopted_waitpid_receipts": [
+    {
+      "pid": 223431,
+      "start_ticks": 4475476,
+      "native_exit": -15
+    },
+    {
+      "pid": 223432,
+      "start_ticks": 4475479,
+      "native_exit": 143
+    },
+    {
+      "pid": 223481,
+      "start_ticks": 4475582,
+      "native_exit": 143
+    }
+  ],
+  "supervision_error_type": null,
+  "phase_success": false,
+  "utc": "2026-10-12T07:49:41.212006+00:00",
+  "lease": "NP01_BROKER1",
+  "elapsed_seconds": 419.424,
+  "initial_disk_free": 8363700224,
+  "initial_memory_current": 4390445056,
+  "peaks": {
+    "maximum_memory_current": 8686579712,
+    "minimum_disk_free": 7220469760
+  },
+  "environment_keys": [
+    "DOCKER_HOST",
+    "GRADLE_USER_HOME",
+    "HTTPS_PROXY",
+    "HTTP_PROXY",
+    "JAVA_HOME",
+    "LANG",
+    "LC_ALL",
+    "NO_PROXY",
+    "NP01_PYTHON_EXECUTABLE",
+    "PATH",
+    "PYTHONDONTWRITEBYTECODE",
+    "PYTHONNOUSERSITE",
+    "PYTHONSAFEPATH",
+    "SSL_CERT_FILE",
+    "TESTCONTAINERS_HOST_OVERRIDE",
+    "TESTCONTAINERS_RYUK_DISABLED",
+    "TMPDIR",
+    "TZ"
+  ],
+  "environment_values_dumped": false,
+  "container_observer_failure": null,
+  "observed_owned_container_ids": [
+    "122854a4244b75bb9c3cf2e4b5723e3a54061c3366ebc9584fe2feab125afe5a",
+    "a2bfa3bbb138f91b3d8f2e99558feba9f760770f13080bf43389a45939d6b312",
+    "c0512e0d1ef9aba049da09e06c006c42555c001f44819fdeacc3fdb64038e564"
+  ],
+  "container_namespace": "np01_1eab12ab06114beebcd1e9067de15515"
+}

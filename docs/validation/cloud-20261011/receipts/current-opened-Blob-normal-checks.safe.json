@@ -1,0 +1,92 @@
+{
+  "at": "2026-10-14T01:03:53.021504+00:00",
+  "revision": "fb5880dcb3d33f18856a1e3f082d74ab0046224a",
+  "existing_caller_sha256": "b2ec7f903fafcb6f40f2de9f02c692d3d64213c137301a658052461aa09f41b8",
+  "checked_paths": [
+    "tests/e2e/specs/mobile-real-server.spec.ts",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts",
+    "docs/validation/cloud-20261011/CURRENT.md",
+    "docs/validation/cloud-20261011/attempts.ndjson",
+    "docs/validation/cloud-20261011/defects.md",
+    "docs/validation/cloud-20261011/questions.md",
+    "docs/validation/cloud-20261011/resources.md",
+    "docs/validation/cloud-20261011/source-ledger.json",
+    "docs/validation/cloud-20261011/verified-cases.csv",
+    "docs/validation/cloud-20261011/receipts/current-cf60-real-push-readback.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-cf60-P11-case.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-cf60-AuthIT.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-cf60-FIRST3.safe.json",
+    "docs/validation/cloud-20261011/receipts/current-cf60-terminal-gates-checkout.safe.json",
+    "docs/validation/cloud-20261011/receipts/FIRST3-opened-Blob-oracle-localchecks.safe.json",
+    "docs/validation/cloud-20261011/receipts/FIRST3-opened-Blob-oracle-independent-review.safe.md"
+  ],
+  "normal_precommit": {
+    "PASS": 5,
+    "FAIL": 0,
+    "SKIP_NOT_APPLICABLE_YAML": 1
+  },
+  "safe_parsers": "PASS",
+  "terminal": {
+    "direct_pid": 608632,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 608632,
+        "start_ticks": 19347593
+      },
+      {
+        "pid": 608644,
+        "start_ticks": 19347596
+      },
+      {
+        "pid": 608651,
+        "start_ticks": 19347622
+      },
+      {
+        "pid": 608672,
+        "start_ticks": 19347629
+      },
+      {
+        "pid": 608679,
+        "start_ticks": 19347692
+      },
+      {
+        "pid": 608704,
+        "start_ticks": 19347702
+      },
+      {
+        "pid": 608769,
+        "start_ticks": 19347721
+      },
+      {
+        "pid": 608767,
+        "start_ticks": 19347721
+      },
+      {
+        "pid": 608795,
+        "start_ticks": 19347732
+      },
+      {
+        "pid": 608796,
+        "start_ticks": 19347732
+      },
+      {
+        "pid": 608797,
+        "start_ticks": 19347732
+      },
+      {
+        "pid": 608798,
+        "start_ticks": 19347732
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "genuine_acceptance": "PENDING"
+}

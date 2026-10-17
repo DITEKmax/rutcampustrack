@@ -6,7 +6,13 @@ import {
   homeworkRangeKey,
   normalizeHomeworkRange,
   previousHomeworkRange,
+  moscowDate,
+  clampHomeworkDate,
+  homeworkPeriodRange,
+  shiftHomeworkPeriod,
+  isHomeworkDate,
   type HomeworkDateRange,
+  type HomeworkPeriodMode,
 } from '../../domain/homework'
 
 export interface StudentHomeworkQueryScope {
@@ -22,7 +28,9 @@ export interface StudentHomeworkQueryScope {
   resetGeneration: number
 }
 
-export type StudentHomeworkScopeInput = MaybeRefOrGetter<StudentHomeworkQueryScope | null | undefined>
+export type StudentHomeworkScopeInput = MaybeRefOrGetter<
+  StudentHomeworkQueryScope | null | undefined
+>
 
 export interface HomeworkUseOptions {
   offline?: MaybeRefOrGetter<boolean>
@@ -89,7 +97,9 @@ export type HomeworkQueryKey = readonly [
   string,
 ]
 
-export function normalizeHomeworkScope(scope: StudentHomeworkQueryScope | null | undefined): StudentHomeworkQueryScope {
+export function normalizeHomeworkScope(
+  scope: StudentHomeworkQueryScope | null | undefined,
+): StudentHomeworkQueryScope {
   return {
     userId: scope?.userId ?? null,
     activeRole: scope?.activeRole ?? null,
@@ -99,9 +109,10 @@ export function normalizeHomeworkScope(scope: StudentHomeworkQueryScope | null |
     sessionVersion: scope?.sessionVersion ?? null,
     rolesVersion: scope?.rolesVersion ?? null,
     readOnly: scope?.readOnly ?? false,
-    resetGeneration: Number.isInteger(scope?.resetGeneration) && (scope?.resetGeneration ?? 0) >= 0
-      ? scope?.resetGeneration ?? 0
-      : 0,
+    resetGeneration:
+      Number.isInteger(scope?.resetGeneration) && (scope?.resetGeneration ?? 0) >= 0
+        ? (scope?.resetGeneration ?? 0)
+        : 0,
   }
 }
 
@@ -120,13 +131,21 @@ export function homeworkScopeIdentity(scope: StudentHomeworkQueryScope | null | 
   ])
 }
 
-export function isHomeworkScopeReady(scope: StudentHomeworkQueryScope | null | undefined): scope is StudentHomeworkQueryScope {
+export function isHomeworkScopeReady(
+  scope: StudentHomeworkQueryScope | null | undefined,
+): scope is StudentHomeworkQueryScope {
   if (!scope) return false
-  return scope.activeRole === 'STUDENT'
-    && typeof scope.userId === 'string' && scope.userId.length > 0
-    && typeof scope.groupId === 'string' && scope.groupId.length > 0
-    && typeof scope.semesterId === 'string' && scope.semesterId.length > 0
-    && Number.isInteger(scope.resetGeneration) && scope.resetGeneration >= 0
+  return (
+    scope.activeRole === 'STUDENT' &&
+    typeof scope.userId === 'string' &&
+    scope.userId.length > 0 &&
+    typeof scope.groupId === 'string' &&
+    scope.groupId.length > 0 &&
+    typeof scope.semesterId === 'string' &&
+    scope.semesterId.length > 0 &&
+    Number.isInteger(scope.resetGeneration) &&
+    scope.resetGeneration >= 0
+  )
 }
 
 export function homeworkQueryKey(
@@ -150,7 +169,9 @@ export function homeworkQueryKey(
   ]
 }
 
-export function homeworkScopeQueryPrefix(scope: StudentHomeworkQueryScope | null | undefined): readonly unknown[] {
+export function homeworkScopeQueryPrefix(
+  scope: StudentHomeworkQueryScope | null | undefined,
+): readonly unknown[] {
   const value = normalizeHomeworkScope(scope)
   return [
     'student',
@@ -177,16 +198,23 @@ export function validateHomeworkCompletionAck(
   expectedId: string,
   expectedCompleted: boolean,
 ): StudentHomeworkCompletion {
-  if (!isRecord(value)
-    || typeof value.id !== 'string'
-    || typeof value.completed !== 'boolean'
-    || (typeof value.completedAt !== 'string' && value.completedAt !== null)) {
+  if (
+    !isRecord(value) ||
+    typeof value.id !== 'string' ||
+    typeof value.completed !== 'boolean' ||
+    (typeof value.completedAt !== 'string' && value.completedAt !== null)
+  ) {
     throw new HomeworkCompletionAckError('Сервер вернул неполный ответ о задании')
   }
   if (value.id !== expectedId || value.completed !== expectedCompleted) {
-    throw new HomeworkCompletionAckError('Сервер вернул состояние задания, отличное от запрошенного')
+    throw new HomeworkCompletionAckError(
+      'Сервер вернул состояние задания, отличное от запрошенного',
+    )
   }
-  if (expectedCompleted && (value.completedAt === null || !Number.isFinite(Date.parse(value.completedAt)))) {
+  if (
+    expectedCompleted &&
+    (value.completedAt === null || !Number.isFinite(Date.parse(value.completedAt)))
+  ) {
     throw new HomeworkCompletionAckError('Сервер не вернул дату выполнения задания')
   }
   if (!expectedCompleted && value.completedAt !== null) {
@@ -234,7 +262,9 @@ export function useHomework(
   const offline = computed(() => Boolean(toValue(optionsValue.offline)))
   const readOnly = computed(() => Boolean(toValue(optionsValue.readOnly)))
   const fallback = computed(() => toValue(optionsValue.fallback))
-  const selectedRange = ref<HomeworkDateRange | null>(normalizeHomeworkRange(optionsValue.initialRange))
+  const selectedRange = ref<HomeworkDateRange | null>(
+    normalizeHomeworkRange(optionsValue.initialRange),
+  )
   let rangeRequestRevision = 0
   const range = computed(() => selectedRange.value)
   const scopeIdentity = computed(() => homeworkScopeIdentity(scope.value))
@@ -259,10 +289,86 @@ export function useHomework(
     retry: optionsValue.retry ?? 1,
   })
 
+  const periodMode = ref<HomeworkPeriodMode>('day')
+  const periodDates = reactive<Record<HomeworkPeriodMode, string | null>>({
+    day: selectedRange.value?.from ?? null,
+    week: null,
+    month: null,
+  })
+  const periodContext = ref<{
+    identity: string
+    today: string
+    semester: HomeworkDateRange
+  } | null>(null)
+  watch(
+    () =>
+      offline.value ? (fallback.value ?? query.data.value) : (query.data.value ?? fallback.value),
+    (feed) => {
+      const today = feed && moscowDate(feed.serverNow)
+      if (!feed || !today) return
+      const semester = normalizeHomeworkRange({
+        from: feed.semester.dateFrom,
+        to: feed.semester.dateTo,
+      })
+      if (semester) periodContext.value = { identity: scopeIdentity.value, today, semester }
+    },
+    { immediate: true },
+  )
+  const currentPeriodContext = computed(() =>
+    periodContext.value?.identity === scopeIdentity.value ? periodContext.value : null,
+  )
+  const todayDate = computed(() => currentPeriodContext.value?.today ?? null)
+  const selectedDate = computed(() => {
+    const context = currentPeriodContext.value
+    return context
+      ? clampHomeworkDate(periodDates[periodMode.value] ?? context.today, context.semester)
+      : null
+  })
+  const periodRange = computed(() => {
+    const context = currentPeriodContext.value
+    return context && selectedDate.value
+      ? homeworkPeriodRange(periodMode.value, selectedDate.value, context.semester)
+      : null
+  })
+
+  function selectPeriod(mode: HomeworkPeriodMode, date?: string): void {
+    const context = currentPeriodContext.value
+    if (!context || offline.value || !scopeReady.value) return
+    const chosen = date ?? periodDates[mode] ?? context.today
+    const target = homeworkPeriodRange(mode, chosen, context.semester)
+    if (!target) return
+    periodDates[mode] = clampHomeworkDate(chosen, context.semester)
+    periodMode.value = mode
+    rangeRequestRevision += 1
+    selectedRange.value = target
+  }
+
+  function selectDate(date: string): void {
+    if (!isHomeworkDate(date) || offline.value || !scopeReady.value) return
+    // Changing a day inside the loaded month needs no additional request.
+    const target = periodRange.value
+    if (periodMode.value === 'month' && target && date >= target.from && date <= target.to) {
+      periodDates.month = date
+      return
+    }
+    selectPeriod(periodMode.value, date)
+  }
+
+  function stepPeriod(step: number): void {
+    if (selectedDate.value)
+      selectPeriod(
+        periodMode.value,
+        shiftHomeworkPeriod(periodMode.value, selectedDate.value, step),
+      )
+  }
+
   const mutation = useMutation<StudentHomeworkCompletion, unknown, HomeworkCompletionInput>({
     mutationFn: async (input) => {
       if (readOnly.value || isArchived(input.id)) throw new HomeworkReadOnlyError()
-      if (!isHomeworkScopeReady(input.scope) || homeworkScopeIdentity(scope.value) !== homeworkScopeIdentity(input.scope)) {
+      if (
+        !isHomeworkScopeReady(input.scope) ||
+        homeworkScopeIdentity(scope.value) !== homeworkScopeIdentity(input.scope)
+      ) {
         throw new HomeworkStaleResponseError()
       }
       const response = await api.setHomeworkCompletion(input.id, { completed: input.completed })
@@ -290,8 +396,33 @@ export function useHomework(
     return ensureItemState(id).error?.message ?? null
   }
 
+  /** Pending intent is presentation only; receipts and persisted query data stay authoritative. */
+  function presentHomework(feed: StudentHomework | null): StudentHomework | null {
+    if (!feed || !scopeReady.value || offline.value || readOnly.value || scope.value.readOnly)
+      return feed
+    let changed = false
+    const items = feed.items.map((item) => {
+      const state = itemStates[item.id]
+      const command = retryCommands.get(item.id)
+      if (
+        item.archived ||
+        !state?.pending ||
+        state.desired === null ||
+        !command ||
+        homeworkScopeIdentity(command.scope) !== scopeIdentity.value
+      )
+        return item
+      changed = true
+      return { ...item, completed: state.desired }
+    })
+    return changed ? { ...feed, items } : feed
+  }
+
   function isArchived(id: string): boolean {
-    return (query.data.value ?? fallback.value)?.items.some((item) => item.id === id && item.archived) ?? false
+    return (
+      (query.data.value ?? fallback.value)?.items.some((item) => item.id === id && item.archived) ??
+      false
+    )
   }
 
   function submitCompletion(id: string, completed: boolean): Promise<StudentHomeworkCompletion> {
@@ -314,11 +445,12 @@ export function useHomework(
     state.error = null
     retryCommands.set(id, input)
 
-    const request = mutation.mutateAsync(input)
+    const request = mutation
+      .mutateAsync(input)
       .then((ack) => {
-      if (homeworkScopeIdentity(scope.value) === homeworkScopeIdentity(input.scope)) {
-        retryCommands.delete(id)
-        const targetKey = homeworkQueryKey(input.scope, input.range)
+        if (homeworkScopeIdentity(scope.value) === homeworkScopeIdentity(input.scope)) {
+          retryCommands.delete(id)
+          const targetKey = homeworkQueryKey(input.scope, input.range)
           queryClient.setQueryData<StudentHomework>(targetKey, (current) => {
             // Snapshot fallback is only the current feed. Never seed a
             // historical range from it, and never publish after the scope
@@ -377,14 +509,17 @@ export function useHomework(
     const targetRange = normalizeHomeworkRange({ from: date, to: date })
     if (!targetRange) throw new HomeworkScopeError()
     if (!scopeReady.value || offline.value) throw new HomeworkScopeError()
+    periodMode.value = 'day'
+    periodDates.day = date
     const requestIdentity = scopeIdentity.value
     const requestRevision = ++rangeRequestRevision
     selectedRange.value = targetRange
     await nextTick()
-    const isCurrentRequest = (): boolean => rangeRequestRevision === requestRevision
-      && scopeIdentity.value === requestIdentity
-      && selectedRange.value?.from === date
-      && selectedRange.value.to === date
+    const isCurrentRequest = (): boolean =>
+      rangeRequestRevision === requestRevision &&
+      scopeIdentity.value === requestIdentity &&
+      selectedRange.value?.from === date &&
+      selectedRange.value.to === date
     if (!isCurrentRequest()) {
       throw new HomeworkStaleResponseError()
     }
@@ -408,14 +543,29 @@ export function useHomework(
 
   function returnToToday(): void {
     rangeRequestRevision += 1
+    periodMode.value = 'day'
+    periodDates.day = null
     selectedRange.value = null
   }
+
+  watch(
+    offline,
+    (value) => {
+      if (value) returnToToday()
+    },
+    { flush: 'sync' },
+  )
 
   watch(scopeIdentity, () => {
     // A retry command is an intent for the identity that failed. Retaining it
     // across logout/group/semester replacement could replay that intent for a
     // different student when the same homework id is reused.
     retryCommands.clear()
+    periodMode.value = 'day'
+    periodDates.day = null
+    periodDates.week = null
+    periodDates.month = null
+    if (periodContext.value?.identity !== scopeIdentity.value) periodContext.value = null
     rangeRequestRevision += 1
     selectedRange.value = null
     for (const state of Object.values(itemStates)) {
@@ -433,6 +583,14 @@ export function useHomework(
     mutation,
     scope,
     range,
+    periodMode,
+    selectedDate,
+    periodRange,
+    todayDate,
+    periodSemester: computed(() => currentPeriodContext.value?.semester ?? null),
+    selectPeriod,
+    selectDate,
+    stepPeriod,
     queryKey,
     scopeReady,
     offline,
@@ -446,6 +604,7 @@ export function useHomework(
     retryCompletion,
     isPending,
     itemError,
+    presentHomework,
     itemStates,
   }
 }
@@ -453,9 +612,11 @@ export function useHomework(
 function applyHomeworkAck(feed: StudentHomework, ack: StudentHomeworkCompletion): StudentHomework {
   return {
     ...feed,
-    items: feed.items.map((item) => item.id === ack.id
-      ? { ...item, completed: ack.completed, completedAt: ack.completedAt }
-      : item),
+    items: feed.items.map((item) =>
+      item.id === ack.id
+        ? { ...item, completed: ack.completed, completedAt: ack.completedAt }
+        : item,
+    ),
   }
 }
 

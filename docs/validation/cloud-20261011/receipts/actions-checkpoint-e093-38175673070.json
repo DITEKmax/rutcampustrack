@@ -1,0 +1,179 @@
+{
+  "conclusion": "success",
+  "event": "pull_request",
+  "headSha": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "jobs": [
+    {
+      "completedAt": "2026-10-11T21:16:44Z",
+      "conclusion": "success",
+      "databaseId": 114577426668,
+      "name": "Trivy (config \u2014 Dockerfile + compose)",
+      "startedAt": "2026-10-11T21:16:23Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Checkout",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Trivy config scan",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Trivy config scan",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Checkout",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 7,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38175673070/job/114577426668"
+    },
+    {
+      "completedAt": "2026-10-11T21:18:58Z",
+      "conclusion": "success",
+      "databaseId": 114577426932,
+      "name": "Trivy (filesystem)",
+      "startedAt": "2026-10-11T21:18:22Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Checkout",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Trivy fs scan (HIGH, CRITICAL)",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Trivy fs scan (SARIF for GitHub Security)",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Upload SARIF",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Upload SARIF",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Trivy fs scan (SARIF for GitHub Security)",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Trivy fs scan (HIGH, CRITICAL)",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Checkout",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38175673070/job/114577426932"
+    },
+    {
+      "completedAt": "2026-10-11T21:17:30Z",
+      "conclusion": "success",
+      "databaseId": 114577426948,
+      "name": "Gitleaks (secrets)",
+      "startedAt": "2026-10-11T21:17:12Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Checkout",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run Gitleaks",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Checkout",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 7,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38175673070/job/114577426948"
+    },
+    {
+      "completedAt": "2026-10-11T21:16:21Z",
+      "conclusion": "skipped",
+      "databaseId": 114577428064,
+      "name": "Trivy (built images)",
+      "startedAt": "2026-10-11T21:16:22Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38175673070/job/114577428064"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38175673070",
+  "observed_utc": "2026-10-11T21:53:49.219220+00:00"
+}

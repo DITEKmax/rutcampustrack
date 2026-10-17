@@ -1,0 +1,140 @@
+[
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+    "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+    "bytes": 86218,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+    "sha256": "d111be5fe871d2b04814d675b6115b00e2ce50bcb7126e245dc2201b62f32ec1",
+    "bytes": 6191,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+    "sha256": "9badd7b0438f7476850f597ac21b869f6cccdd3645b481841853d9d2706e8465",
+    "bytes": 16719,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+    "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65",
+    "bytes": 9948,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+    "sha256": "72c3f38eaf784ea2f3980c57d691ee5da330e5e58e0e41736556e55870d050f4",
+    "bytes": 5568,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-matrix-runtime-plan.md",
+    "sha256": "33639c76042d94192f85019ce2e6761bc76736b07524be775e5a1a94b1c5464a",
+    "bytes": 3012,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/scenarios.csv",
+    "sha256": "fe87496497ca5374394a4d6ca4287b91b943cf89b203402d15d919697995f951",
+    "bytes": 347101,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/boundary-scenarios.csv",
+    "sha256": "8881a05d932011ebf2858df611ca13ac0a1b6ac38f8c1df4ff5e770c697b90b3",
+    "bytes": 64037,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/verified-cases.csv",
+    "sha256": "b9a80b3bc13850c40732679f5b2552aa2ddcb69fdc4aab800d40ab2d6dcfafd0",
+    "bytes": 97487,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/source-ledger.json",
+    "sha256": "79cb56683a06ae0e09e012aa2747cc9e5b9db564cc39704a9df4d9bba3ac79b4",
+    "bytes": 76389,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/AGENTS.md",
+    "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe",
+    "bytes": 4327,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md",
+    "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+    "bytes": 24809,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/product/READINESS.md",
+    "sha256": "2ceb491f46df6d830be9c70d01df92756c1547db3eb631652da50a7700cfb836",
+    "bytes": 11120,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/agent-workflow.md",
+    "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937",
+    "bytes": 7916,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/product/job-stories.yaml",
+    "sha256": "c4f05ec37bada25a3c8b9f8cc4f680a9efda08680893f638d851e813b0a4c243",
+    "bytes": 2351328,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/implementation/backend-delta.yaml",
+    "sha256": "b32d0cbf83da5ec8b478b132e08302e7f88379905052d7290ff38d95237b4e6a",
+    "bytes": 726798,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/implementation/story-backend-map.yaml",
+    "sha256": "5008dbaae1ca78d8570698d6ec0a64ae78cb9cbfc17cb2483097b80dde29da05",
+    "bytes": 75628,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/tests/e2e/REAL-MOBILE.md",
+    "sha256": "b7e7dd288a15ba47ac354351f02a6da491ff56d520d796d446054f0331d0b8a1",
+    "bytes": 5028,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/tests/e2e/playwright.real-mobile.config.ts",
+    "sha256": "e431ace543fc230015262f0a35064fe41cb90067250e5495e9ed8ed6fd5a7007",
+    "bytes": 677,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/tests/e2e/specs/mobile-real-server.spec.ts",
+    "sha256": "886477c35ae40a0bc33b314ec6daabdea4582dafefa2fac3797a18e18016fd82",
+    "bytes": 18728,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/product/decisions/2026-10-08-limited-administrators.md",
+    "sha256": "ad891e1eb3d16a29268658a2b8452654fa562e5e2e2103363a79501d8c30c2a3",
+    "bytes": 4490,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+    "sha256": "5b039af3995298b8f81fcaa5eaaeaf372347f7fc5bf999814a1259b7fce4bb86",
+    "bytes": 53919,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  },
+  {
+    "path": "/workspace/rutcampustrack/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+    "sha256": "2378d5d86d4ffd8a0417b11a996ec1ef5c28e7bec7573024c20bf73caa6eab60",
+    "bytes": 26168,
+    "read_kind": "structured full parse or critical fragments; hash proves byte identity only"
+  }
+]

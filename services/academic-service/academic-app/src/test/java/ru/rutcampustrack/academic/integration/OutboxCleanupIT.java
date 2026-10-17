@@ -1,5 +1,12 @@
 package ru.rutcampustrack.academic.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -13,27 +20,17 @@ import ru.rutcampustrack.shared.outbox.OutboxCleanupJob;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * M02 Группа 6 acceptance — integration-тест retention (7 дней, NEW-7).
  *
- * <p>Пишем 3 записи в academic_outbox через реальный OutboxStorage.
- * Чтобы «перемотать время» — подменяем {@link Clock} через test-config
- * на fixed-часы в «недавнем прошлом». После markSent() cleanup удаляет
- * только SENT rows старше retention; PENDING — не трогает.
+ * <p>Пишем 3 записи в academic_outbox через реальный OutboxStorage. Чтобы «перемотать время» —
+ * подменяем {@link Clock} через test-config на fixed-часы в «недавнем прошлом». После markSent()
+ * cleanup удаляет только SENT rows старше retention; PENDING — не трогает.
  *
- * <p>Spring-специфично: перезаписываем {@code @Bean OutboxCleanupJob} через
- * {@code @Import CleanupTestConfig} с {@code @Primary} — наш
- * {@code OutboxConfig.Publisher} guarded {@code @Profile("!test")}, но сам
- * {@code OutboxCleanupJob} в нём же → в тестах его вообще нет. Поэтому
- * создаём тестовый bean с подменённым Clock'ом.
+ * <p>Spring-специфично: перезаписываем {@code @Bean OutboxCleanupJob} через {@code @Import
+ * CleanupTestConfig} с {@code @Primary} — наш {@code OutboxConfig.Publisher} guarded
+ * {@code @Profile("!test")}, но сам {@code OutboxCleanupJob} в нём же → в тестах его вообще нет.
+ * Поэтому создаём тестовый bean с подменённым Clock'ом.
  */
 @Import(OutboxCleanupIT.CleanupTestConfig.class)
 class OutboxCleanupIT extends AbstractAcademicIntegrationTest {
@@ -44,14 +41,11 @@ class OutboxCleanupIT extends AbstractAcademicIntegrationTest {
     /** "Сейчас" в тестовом Clock'е. */
     static final Instant TEST_NOW = Instant.parse("2026-04-19T12:00:00Z");
 
-    @Autowired
-    private OutboxStorage outboxStorage;
+    @Autowired private OutboxStorage outboxStorage;
 
-    @Autowired
-    private OutboxCleanupJob cleanupJob;
+    @Autowired private OutboxCleanupJob cleanupJob;
 
-    @Autowired
-    private PlatformTransactionManager txManager;
+    @Autowired private PlatformTransactionManager txManager;
 
     @Test
     void cleanup_deletesSentOlderThanRetention_keepsRecent() {
@@ -60,11 +54,12 @@ class OutboxCleanupIT extends AbstractAcademicIntegrationTest {
         // Record A: SENT 10 дней назад → должна удалиться
         // Record B: SENT 3 дня назад → остаётся
         // Record C: PENDING → остаётся (cleanup трогает только SENT)
-        tt.executeWithoutResult(s -> {
-            outboxStorage.save("test.old", "{\"age\":10}");
-            outboxStorage.save("test.recent", "{\"age\":3}");
-            outboxStorage.save("test.pending", "{\"age\":0}");
-        });
+        tt.executeWithoutResult(
+                s -> {
+                    outboxStorage.save("test.old", "{\"age\":10}");
+                    outboxStorage.save("test.recent", "{\"age\":3}");
+                    outboxStorage.save("test.pending", "{\"age\":0}");
+                });
 
         List<OutboxRecord> beforeCleanup = outboxStorage.findPending(100);
         assertThat(beforeCleanup).hasSize(3);
@@ -77,10 +72,11 @@ class OutboxCleanupIT extends AbstractAcademicIntegrationTest {
         OutboxRecord oldRec = beforeCleanup.get(0);
         OutboxRecord recentRec = beforeCleanup.get(1);
 
-        tt.executeWithoutResult(s -> {
-            outboxStorage.markSent(oldRec.id());
-            outboxStorage.markSent(recentRec.id());
-        });
+        tt.executeWithoutResult(
+                s -> {
+                    outboxStorage.markSent(oldRec.id());
+                    outboxStorage.markSent(recentRec.id());
+                });
 
         // Подмешиваем sent_at через JPA native query. В production sent_at
         // устанавливается в markSent = now(); для теста нам нужны явные
@@ -106,22 +102,22 @@ class OutboxCleanupIT extends AbstractAcademicIntegrationTest {
     }
 
     private void updateSentAt(TransactionTemplate tt, Object id, Instant sentAt) {
-        tt.executeWithoutResult(s ->
-                entityManager.createNativeQuery(
-                                "UPDATE academic_outbox SET sent_at = :ts WHERE id = :id")
-                        .setParameter("ts", sentAt)
-                        .setParameter("id", id)
-                        .executeUpdate());
+        tt.executeWithoutResult(
+                s ->
+                        entityManager
+                                .createNativeQuery(
+                                        "UPDATE academic_outbox SET sent_at = :ts WHERE id = :id")
+                                .setParameter("ts", sentAt)
+                                .setParameter("id", id)
+                                .executeUpdate());
     }
 
-    @Autowired
-    private jakarta.persistence.EntityManager entityManager;
+    @Autowired private jakarta.persistence.EntityManager entityManager;
 
     /**
-     * Test-config: инжектит {@link OutboxCleanupJob} с {@link #TEST_NOW} Clock'ом.
-     * В prod-профиле job создаётся в {@code OutboxConfig.Publisher @Profile("!test")} —
-     * значит в test его нет, мы создаём сами. Primary — на случай если что-то
-     * другое попробует создать.
+     * Test-config: инжектит {@link OutboxCleanupJob} с {@link #TEST_NOW} Clock'ом. В prod-профиле
+     * job создаётся в {@code OutboxConfig.Publisher @Profile("!test")} — значит в test его нет, мы
+     * создаём сами. Primary — на случай если что-то другое попробует создать.
      */
     @TestConfiguration
     @Profile("test")

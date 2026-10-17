@@ -1,0 +1,112 @@
+{
+  "scope": "SOURCE_READY_PARAMETERS_ONLY_NO_NEW_EXECUTOR",
+  "grant_path": "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next02.json",
+  "cohort": "restart-20261012-next02",
+  "docker6": [
+    "python3",
+    "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/docker-up-restart.py"
+  ],
+  "mongo_server": [
+    "python3",
+    "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-mongo-restart.py",
+    "--phase",
+    "server",
+    "--grant",
+    "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next02.json"
+  ],
+  "mongo_readiness": [
+    "python3",
+    "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-mongo-restart.py",
+    "--phase",
+    "readiness",
+    "--grant",
+    "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next02.json"
+  ],
+  "academic": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/run-academic-restart.py",
+    "--service",
+    "academic",
+    "--grant",
+    "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next02.json"
+  ],
+  "other6_hosts": {
+    "auth": [
+      "/usr/bin/python3",
+      "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-service-restart.py",
+      "--service",
+      "auth",
+      "--grant",
+      "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next02.json"
+    ],
+    "schedule": [
+      "/usr/bin/python3",
+      "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-service-restart.py",
+      "--service",
+      "schedule",
+      "--grant",
+      "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next02.json"
+    ],
+    "attendance": [
+      "/usr/bin/python3",
+      "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-service-restart.py",
+      "--service",
+      "attendance",
+      "--grant",
+      "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next02.json"
+    ],
+    "bff": [
+      "/usr/bin/python3",
+      "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-service-restart.py",
+      "--service",
+      "bff",
+      "--grant",
+      "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next02.json"
+    ],
+    "gateway": [
+      "/usr/bin/python3",
+      "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-service-restart.py",
+      "--service",
+      "gateway",
+      "--grant",
+      "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next02.json"
+    ],
+    "notification": [
+      "/usr/bin/python3",
+      "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-service-restart.py",
+      "--service",
+      "notification",
+      "--grant",
+      "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next02.json"
+    ]
+  },
+  "docker_exact_compose_argv": [
+    "docker",
+    "compose",
+    "--project-name",
+    "rct-client-host-config-20261012",
+    "--env-file",
+    "/workspace/scratch/rct-validation/current_host_config_v5/private/docker.env",
+    "-f",
+    "/workspace/scratch/rct-validation/current_host_config_v5/data-renderer-edge.compose.yml",
+    "-f",
+    "/workspace/scratch/rct-validation/current_host_config_v5_redirect_query_correction/edge-overlay.compose.yml",
+    "up",
+    "-d",
+    "--no-build",
+    "--pull",
+    "never"
+  ],
+  "phase_order": [
+    "Root clientNode release +freshactualownership/resources/emptyproject/ports/IPAM/images/mounts/old5volume/fence157/8artifacts preflight",
+    "Root NEW600 grant only at fixedpath",
+    "Docker6; measuredworkspace>=5368709120 before Mongo+hosts",
+    "existingMongo server/readiness no bootstrap/reset/keygen",
+    "Academic current96 migration/checksum validation thenAuth+other5 foreground sessions",
+    "criticalTLS/AdminFULL/API/edge/directspoof readiness plusall8guardbirths bind",
+    "separate browsergrant FIRST3 then sequentialmatrix on samecoherentstand",
+    "dispatch exact8guardcleanup60s early andDocker6 down no-v/all5vols/MongoDB/key retained"
+  ],
+  "source_caller_mutation": false,
+  "runtime": "NOT_RUN"
+}

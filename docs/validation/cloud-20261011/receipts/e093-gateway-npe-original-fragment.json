@@ -1,0 +1,12 @@
+{
+  "source": "GitHub Actions native decoded job logs; captured original safe line",
+  "repo": "DITEKmax/rutcampustrack",
+  "job_id": 114577427225,
+  "run_id": 38175673119,
+  "head_sha": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "checkout_merge_sha": "93ca323572a05b713aa30cdf395edf3feb24278b",
+  "safe_original_lines": [
+    "2026-10-11T21:21:29.3991760Z     java.lang.NullPointerException at JwtAuthenticationFilterTest.java:526"
+  ],
+  "scope": "Only original exception type/testfile/line/timestamp. Raw logs/requests/credentials excluded."
+}

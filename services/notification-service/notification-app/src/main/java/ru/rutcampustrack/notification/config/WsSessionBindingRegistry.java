@@ -1,5 +1,11 @@
 package ru.rutcampustrack.notification.config;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Semaphore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,22 +16,19 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Semaphore;
-
-/** Binds trusted handshake identity to each live STOMP session and removes it with the transport. */
+/**
+ * Binds trusted handshake identity to each live STOMP session and removes it with the transport.
+ */
 @Component
 public final class WsSessionBindingRegistry {
 
     private static final Logger log = LoggerFactory.getLogger(WsSessionBindingRegistry.class);
     private static final int MAX_SESSION_BINDINGS = 8192;
     private static final int MAX_LIVE_TRANSPORTS = 8192;
-    private static final CloseStatus ADMISSION_DENIED = new CloseStatus(1008, "Session admission denied");
-    private static final CloseStatus REGISTRY_FULL = new CloseStatus(1013, "Session capacity reached");
+    private static final CloseStatus ADMISSION_DENIED =
+            new CloseStatus(1008, "Session admission denied");
+    private static final CloseStatus REGISTRY_FULL =
+            new CloseStatus(1013, "Session capacity reached");
 
     private final WsTicketClient ticketClient;
     private final ConcurrentMap<String, Binding> bindings = new ConcurrentHashMap<>();
@@ -52,9 +55,9 @@ public final class WsSessionBindingRegistry {
         Map<String, Object> attributes = session.getAttributes();
         if (attributes == null
                 || !(attributes.get(TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE)
-                instanceof WsSessionAdmissionRequest)
+                        instanceof WsSessionAdmissionRequest)
                 || !(attributes.get(TicketHandshakeInterceptor.TRANSPORT_BINDING_ID_ATTRIBUTE)
-                instanceof String bindingId)) {
+                        instanceof String bindingId)) {
             close(session, ADMISSION_DENIED);
             return;
         }
@@ -82,7 +85,10 @@ public final class WsSessionBindingRegistry {
     public boolean bindStompSession(String sessionId, Map<String, Object> attributes) {
         String transportBindingId = bindingId(attributes);
         WsSessionAdmissionRequest identity = identity(attributes);
-        if (sessionId == null || sessionId.isBlank() || transportBindingId == null || identity == null) {
+        if (sessionId == null
+                || sessionId.isBlank()
+                || transportBindingId == null
+                || identity == null) {
             closeTransport(transportBindingId, ADMISSION_DENIED);
             return false;
         }
@@ -112,8 +118,7 @@ public final class WsSessionBindingRegistry {
             }
             return matches;
         }
-        if (!transports.containsKey(transportBindingId)
-                && bindings.remove(sessionId, candidate)) {
+        if (!transports.containsKey(transportBindingId) && bindings.remove(sessionId, candidate)) {
             bindingCapacity.release();
             closeTransport(transportBindingId, ADMISSION_DENIED);
             return false;
@@ -140,8 +145,10 @@ public final class WsSessionBindingRegistry {
         if (binding == null) {
             return Optional.empty();
         }
-        boolean allowed = dashboard
-                ? ticketClient.admitDashboard(binding.identity()) : ticketClient.admit(binding.identity());
+        boolean allowed =
+                dashboard
+                        ? ticketClient.admitDashboard(binding.identity())
+                        : ticketClient.admit(binding.identity());
         if (!allowed) {
             revoke(sessionId, binding, ADMISSION_DENIED);
             return Optional.empty();
@@ -174,12 +181,13 @@ public final class WsSessionBindingRegistry {
         if (transports.remove(transportBindingId, session)) {
             transportCapacity.release();
         }
-        bindings.forEach((sessionId, binding) -> {
-            if (binding.transportBindingId().equals(transportBindingId)
-                    && bindings.remove(sessionId, binding)) {
-                bindingCapacity.release();
-            }
-        });
+        bindings.forEach(
+                (sessionId, binding) -> {
+                    if (binding.transportBindingId().equals(transportBindingId)
+                            && bindings.remove(sessionId, binding)) {
+                        bindingCapacity.release();
+                    }
+                });
     }
 
     private void revoke(String sessionId, Binding binding, CloseStatus closeStatus) {
@@ -212,14 +220,18 @@ public final class WsSessionBindingRegistry {
     }
 
     private static WsSessionAdmissionRequest identity(Map<String, Object> attributes) {
-        Object value = attributes == null
-                ? null : attributes.get(TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE);
+        Object value =
+                attributes == null
+                        ? null
+                        : attributes.get(TicketHandshakeInterceptor.SESSION_IDENTITY_ATTRIBUTE);
         return value instanceof WsSessionAdmissionRequest request ? request : null;
     }
 
     private static String bindingId(Map<String, Object> attributes) {
-        Object value = attributes == null
-                ? null : attributes.get(TicketHandshakeInterceptor.TRANSPORT_BINDING_ID_ATTRIBUTE);
+        Object value =
+                attributes == null
+                        ? null
+                        : attributes.get(TicketHandshakeInterceptor.TRANSPORT_BINDING_ID_ATTRIBUTE);
         return value instanceof String id && !id.isBlank() ? id : null;
     }
 

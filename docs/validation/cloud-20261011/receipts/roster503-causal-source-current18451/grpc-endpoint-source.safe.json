@@ -1,0 +1,33 @@
+{
+  "utc": "2026-10-12T23:41:53.063186+00:00",
+  "source_spec": "6549d980fb816a7ee305da7f83eedd17d63d69c610c6fcac80d641371e42671e",
+  "selected_public_endpoint_flags": [
+    {
+      "service": "academic",
+      "public_grpc_endpoint_flags": [
+        "-Dgrpc.client.schedule-service.address=static://127.0.0.1:19092",
+        "-Dgrpc.client.attendance-service.address=static://127.0.0.1:19093",
+        "-Dgrpc.client.document-renderer-service.address=static://127.0.0.1:19095"
+      ]
+    },
+    {
+      "service": "schedule",
+      "public_grpc_endpoint_flags": [
+        "-Dgrpc.client.academic-service.address=static://127.0.0.1:19091"
+      ]
+    },
+    {
+      "service": "attendance",
+      "public_grpc_endpoint_flags": [
+        "-Dgrpc.client.schedule-service.address=static://127.0.0.1:19092",
+        "-Dgrpc.client.academic-service.address=static://127.0.0.1:19091",
+        "-Dgrpc.client.document-renderer-service.address=static://127.0.0.1:19095"
+      ]
+    },
+    {
+      "service": "gateway",
+      "public_grpc_endpoint_flags": []
+    }
+  ],
+  "live_protocol_success_not_inferred_from_spec": true
+}

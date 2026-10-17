@@ -1,0 +1,11 @@
+{
+  "app_launch_authorized": false,
+  "source_frozen": false,
+  "tls_and_routes_reviewed": false,
+  "floor_reviewed": false,
+  "product_revision": "REQUIRES_CURRENT_40_CHAR_SHA",
+  "runner_sha256": "REQUIRES_REVIEWED_RUNNER_SHA",
+  "spec_sha256": "REQUIRES_ONE_SEALED_SERVICE_SPEC_SHA",
+  "java_sha256": "REQUIRES_CURRENT_JAVA_EXECUTABLE_SHA",
+  "artifacts": []
+}

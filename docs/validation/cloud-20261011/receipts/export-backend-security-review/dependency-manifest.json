@@ -1,0 +1,72 @@
+[
+  {
+    "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java",
+    "sha256": "1a172acc80525c442117485465a1b39f62854e7d5d70d1466ae13ef7b2a77f22",
+    "bytes": 25605,
+    "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+    "mutable_read_equivalent": true
+  },
+  {
+    "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/config/JacksonConfig.java",
+    "sha256": "f99a19ff11ad4e5237c8eec28b59a23ecbe1a045cd8bd1d4a3549f5a56f48d1e",
+    "bytes": 2210,
+    "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+    "mutable_read_equivalent": true
+  },
+  {
+    "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandler.java",
+    "sha256": "e2ee6eff43ca09772be21db7fc2e65d314b58f822275ad578905500c1c20d8de",
+    "bytes": 13872,
+    "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+    "mutable_read_equivalent": true
+  },
+  {
+    "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminAccessJdbcAuthority.java",
+    "sha256": "ddcb5a9cc39b469b25aa1d83732bbb9c3567738b2598b24d7c8d9d0a2bb68ab7",
+    "bytes": 5855,
+    "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+    "mutable_read_equivalent": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/security/InternalIssuerSecretFilter.java",
+    "sha256": "64c3e91e99366bde711a8eb9f68be1ab69341041481e33c8fb85f27bfce9f47b",
+    "bytes": 4050,
+    "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+    "mutable_read_equivalent": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java",
+    "sha256": "61b1b4d397bcd761b5c72ee07c4e6c70c06d28ead0cafe34dbb62461ece1a266",
+    "bytes": 3711,
+    "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+    "mutable_read_equivalent": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java",
+    "sha256": "de59ca3e60600f9d8fa9c6d8d34f052386ad0cd32d9204b9a41dbe640d2abfd6",
+    "bytes": 44724,
+    "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+    "mutable_read_equivalent": true
+  },
+  {
+    "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/ReportDownloadTicketController.java",
+    "sha256": "948b008b8c53ac8ccc61fcec4e62e3349a1751d902fd93acdd2d18cf65357473",
+    "bytes": 1620,
+    "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+    "mutable_read_equivalent": true
+  },
+  {
+    "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/api/ReportDownloadTicketApi.java",
+    "sha256": "900cdcc49b42968e03430981b2d226128bdf5949a2913a2e067b4f96d0757b33",
+    "bytes": 1546,
+    "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+    "mutable_read_equivalent": true
+  },
+  {
+    "path": "services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistry.java",
+    "sha256": "64d3eb8371a34762df8dd25bdc9e09c52b8e3a04ad6f204c5100390fcb64d0a4",
+    "bytes": 9240,
+    "commit": "cf6d1a238441cc1b122e205e160aa23a741a3942",
+    "mutable_read_equivalent": true
+  }
+]

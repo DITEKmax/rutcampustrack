@@ -1,10 +1,21 @@
 package ru.rutcampustrack.attendance.report.studentprojection;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import ru.rutcampustrack.academic.grpc.AcademicSubjectInfo;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
@@ -23,16 +34,11 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class StudentAttendanceProjectionServiceTest {
@@ -42,174 +48,413 @@ class StudentAttendanceProjectionServiceTest {
     private static final long RANK_GROUP_ID = 10L;
     private static final long SUBJECT_ID = 501L;
 
-    @Mock
-    private AttendanceReadPort attendanceReadPort;
+    @Mock private AttendanceReadPort attendanceReadPort;
 
-    @Mock
-    private AcademicGrpcClient academicGrpcClient;
+    @Mock private AcademicGrpcClient academicGrpcClient;
 
-    @Mock
-    private ScheduleGrpcClient scheduleGrpcClient;
+    @Mock private ScheduleGrpcClient scheduleGrpcClient;
 
     private StudentAttendanceProjectionService service;
 
     @BeforeEach
     void setUp() {
-        service = new StudentAttendanceProjectionService(
-                attendanceReadPort,
-                academicGrpcClient,
-                scheduleGrpcClient,
-                Clock.fixed(Instant.parse("2026-09-20T10:00:00Z"), ZoneOffset.UTC));
+        service =
+                new StudentAttendanceProjectionService(
+                        attendanceReadPort,
+                        academicGrpcClient,
+                        scheduleGrpcClient,
+                        Clock.fixed(Instant.parse("2026-09-20T10:00:00Z"), ZoneOffset.UTC));
+        lenient()
+                .when(academicGrpcClient.getGroupMembers(any(), any(), any()))
+                .thenAnswer(invocation -> roster(invocation.getArgument(1), OWN_ID, 200L, 300L));
+    }
+
+    @Test
+    void projectsOwnReasonAndFullCommentAndCancellationWithoutStaleExcuseMetadata() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(
+                        scope().toBuilder()
+                                .clearRankGroupId()
+                                .clearRankSubjects()
+                                .clearActiveRosterUserIds()
+                                .setRankEligible(false)
+                                .setRankVisibility(
+                                        StudentProjectionRankVisibility
+                                                .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
+                                .build());
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(11, 101, "2026-09-15", "closed"))
+                                .addLessons(
+                                        lesson(12, 102, "2026-09-16", "cancelled").toBuilder()
+                                                .setCancellationReason(
+                                                        "Занятие отменено преподавателем"))
+                                .addLessons(lesson(13, 103, "2026-09-17", "closed"))
+                                .build());
+        String comment = "Полное пояснение ".repeat(15);
+        when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID))
+                .thenReturn(
+                        List.of(
+                                explanationMark(
+                                        11, AttendanceStatus.EXCUSED, "2026-09-15", comment),
+                                explanationMark(
+                                        12,
+                                        AttendanceStatus.CANCELLED,
+                                        "2026-09-16",
+                                        "Устаревшее пояснение"),
+                                explanationMark(
+                                        13,
+                                        AttendanceStatus.PRESENT,
+                                        "2026-09-17",
+                                        "Устаревшее пояснение")));
+        var result = service.project(claims(), SEMESTER_ID, null, "weeks", List.of());
+        var lessons = result.days().stream().flatMap(day -> day.lessons().stream()).toList();
+        assertThat(lessons.get(0).explanation())
+                .isEqualTo(
+                        new StudentAttendanceProjectionService.Explanation(
+                                "OTHER", "Другое", comment, null));
+        assertThat(lessons.get(1).explanation())
+                .isEqualTo(
+                        new StudentAttendanceProjectionService.Explanation(
+                                null, null, null, "Занятие отменено преподавателем"));
+        assertThat(lessons.get(2).explanation()).isNull();
+        assertThat(lessons.get(1).uiStatus()).isEqualTo("CANCELLED");
+        assertThat(result.metrics().heldCount()).isEqualTo(2);
+        assertThat(result.metrics().presentCount()).isEqualTo(1);
+        assertThat(result.metrics().excusedCount()).isEqualTo(1);
+        var history = result.subjects().getFirst().typeCards().getFirst().history();
+        assertThat(history)
+                .extracting(StudentAttendanceProjectionService.HistorySegment::id)
+                .containsExactly("101", "103");
+        assertThat(history.getFirst().explanation()).isEqualTo(lessons.getFirst().explanation());
+        assertThat(history.getLast().explanation()).isNull();
+    }
+
+    @Test
+    void retainedCancelledGenerationDoesNotReviveOrCountBesideCurrentReplacement() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(
+                        scope().toBuilder()
+                                .clearRankGroupId()
+                                .clearRankSubjects()
+                                .clearActiveRosterUserIds()
+                                .setRankEligible(false)
+                                .setRankVisibility(
+                                        StudentProjectionRankVisibility
+                                                .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
+                                .build());
+        var replacement =
+                lesson(21, 101, "2026-09-15", "closed").toBuilder()
+                        .setLessonNumber(2)
+                        .setGeneration(2)
+                        .build();
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(LessonsResponse.newBuilder().addLessons(replacement).build());
+        var retained =
+                lesson(11, 101, "2026-09-15", "cancelled").toBuilder().setGeneration(1).build();
+        when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID))
+                .thenReturn(
+                        List.of(
+                                mark(11, OWN_ID, AttendanceStatus.CANCELLED, "2026-09-15"),
+                                mark(21, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15")));
+        for (LessonResponse unproven :
+                List.of(
+                        retained.toBuilder().setId(12).build(),
+                        retained.toBuilder().setSemesterId(SEMESTER_ID + 1).build(),
+                        retained.toBuilder().setGroupId(RANK_GROUP_ID + 1).build(),
+                        retained.toBuilder().setSubjectId(SUBJECT_ID + 1).build(),
+                        retained.toBuilder().setDate("2026-09-16").build(),
+                        retained.toBuilder().setStatus("closed").build(),
+                        retained.toBuilder().setOccurrenceId(102).build(),
+                        retained.toBuilder().setGeneration(0).build())) {
+            when(scheduleGrpcClient.getLessonById(11L)).thenReturn(unproven);
+            assertThatThrownBy(
+                            () -> service.project(claims(), SEMESTER_ID, null, "weeks", List.of()))
+                    .isInstanceOf(StudentProjectionException.class)
+                    .hasMessageContaining("has CANCELLED status");
+        }
+        when(scheduleGrpcClient.getLessonById(11L)).thenReturn(retained);
+        var result = service.project(claims(), SEMESTER_ID, null, "weeks", List.of());
+        assertThat(result.days())
+                .singleElement()
+                .satisfies(
+                        day ->
+                                assertThat(day.lessons())
+                                        .singleElement()
+                                        .satisfies(
+                                                lesson -> {
+                                                    assertThat(lesson.lessonId()).isEqualTo(21L);
+                                                    assertThat(lesson.uiStatus())
+                                                            .isEqualTo("PRESENT");
+                                                }));
+        assertThat(result.metrics().heldCount()).isEqualTo(1);
+        assertThat(result.metrics().presentCount()).isEqualTo(1);
+        assertThat(result.metrics().absentCount()).isZero();
+        assertThat(result.subjects().getFirst().typeCards().getFirst().history())
+                .extracting(StudentAttendanceProjectionService.HistorySegment::id)
+                .containsExactly("101");
+        assertThat(result.graph().days())
+                .singleElement()
+                .satisfies(point -> assertThat(point.metrics().heldCount()).isEqualTo(1));
+    }
+
+    @Test
+    void cancellationStillRejectsUnmatchedScheduleCorruptStatusAndForeignOwner() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope());
+        for (String state : List.of("planned", "active", "closed")) {
+            when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                    .thenReturn(
+                            LessonsResponse.newBuilder()
+                                    .addLessons(lesson(11, 101, "2026-09-15", state))
+                                    .build());
+            when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID))
+                    .thenReturn(
+                            List.of(mark(11, OWN_ID, AttendanceStatus.CANCELLED, "2026-09-15")));
+            assertThatThrownBy(
+                            () -> service.project(claims(), SEMESTER_ID, null, "weeks", List.of()))
+                    .isInstanceOf(StudentProjectionException.class)
+                    .hasMessageContaining("has CANCELLED status")
+                    .satisfies(
+                            error ->
+                                    assertThat(((StudentProjectionException) error).kind())
+                                            .isEqualTo(
+                                                    StudentProjectionException.Kind
+                                                            .INVALID_OCCURRENCE));
+        }
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(11, 101, "2026-09-15", "cancelled"))
+                                .build());
+        for (AttendanceRecord invalid :
+                List.of(
+                        mark(12, OWN_ID, AttendanceStatus.CANCELLED, "2026-09-15"),
+                        mark(11, OWN_ID + 1, AttendanceStatus.CANCELLED, "2026-09-15"),
+                        mark(11, OWN_ID, AttendanceStatus.CANCELLED, "2026-09-16"),
+                        mark(11, OWN_ID, AttendanceStatus.FREE_ATTENDANCE, "2026-09-15"),
+                        mark(11, OWN_ID, null, "2026-09-15"))) {
+            when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID)).thenReturn(List.of(invalid));
+            assertThatThrownBy(
+                            () -> service.project(claims(), SEMESTER_ID, null, "weeks", List.of()))
+                    .isInstanceOf(StudentProjectionException.class);
+        }
+    }
+
+    @Test
+    void missingLegacyExplanationRemainsMissingWithoutInventingReasonOrComment() {
+        var lesson =
+                new StudentAttendanceProjectionService.Lesson(
+                        11,
+                        101,
+                        RANK_GROUP_ID,
+                        LocalDate.parse("2026-09-15"),
+                        2,
+                        SUBJECT_ID,
+                        "Математика",
+                        "LECTURE",
+                        java.time.LocalTime.of(10, 0),
+                        java.time.LocalTime.of(11, 30),
+                        null,
+                        StudentAttendanceProjectionService.ScheduleState.CLOSED,
+                        mark(11, OWN_ID, AttendanceStatus.EXCUSED, "2026-09-15"));
+        assertThat(lesson.explanation()).isNull();
+        assertThat(
+                        new StudentAttendanceProjectionService.HistorySegment("101", "EXCUSED")
+                                .explanation())
+                .isNull();
+    }
+
+    private static AttendanceRecord explanationMark(
+            long id, AttendanceStatus status, String date, String comment) {
+        return new AttendanceRecord(
+                id,
+                OWN_ID,
+                RANK_GROUP_ID,
+                SUBJECT_ID,
+                LocalDate.parse(date),
+                null,
+                status,
+                null,
+                "Краткое пояснение…",
+                "OTHER",
+                comment,
+                null,
+                null,
+                null,
+                null);
     }
 
     @Test
     void joinsOwnMembershipAndUsesFullSemesterCohortForRank() {
-        InternalJwtClaims claims = new InternalJwtClaims(
-                OWN_ID,
-                UUID.fromString("66666666-6666-4666-8666-666666666666"),
-                1L,
-                1L,
-                "STUDENT",
-                "ACTIVE",
-                RANK_GROUP_ID,
-                false,
-                false);
-        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
-                .thenReturn(scope());
+        InternalJwtClaims claims =
+                new InternalJwtClaims(
+                        OWN_ID,
+                        UUID.fromString("66666666-6666-4666-8666-666666666666"),
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        RANK_GROUP_ID,
+                        false,
+                        false);
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope());
         when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
-                .thenAnswer(invocation -> {
-                    LessonsByGroupRequest request = LessonsByGroupRequest.newBuilder()
-                            .setGroupId(invocation.getArgument(0, Long.class))
-                            .setSemesterId(invocation.getArgument(1, Long.class))
-                            .setDateFrom(invocation.getArgument(2, String.class))
-                            .setDateTo(invocation.getArgument(3, String.class))
-                            .build();
-                    if ("2026-09-10".equals(request.getDateFrom())) {
-                        return LessonsResponse.newBuilder()
-                                .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
-                                .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
-                                .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
-                            .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
-                                .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
-                                .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
-                                .build();
-                    }
-                    return LessonsResponse.newBuilder()
-                            .addLessons(lesson(10L, 100L, "2026-09-05", "closed"))
-                            .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
-                            .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
-                            .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
-                            .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
-                            .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
-                            .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
-                            .build();
-                });
-        when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID)).thenReturn(List.of(
-                mark(11L, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15"),
-                mark(12L, OWN_ID, AttendanceStatus.ABSENT, "2026-09-16")));
-        when(attendanceReadPort.findByUserIds(List.of(OWN_ID, 200L, 300L), SEMESTER_ID))
-                .thenReturn(Map.of(
-                        OWN_ID, List.of(
+                .thenAnswer(
+                        invocation -> {
+                            LessonsByGroupRequest request =
+                                    LessonsByGroupRequest.newBuilder()
+                                            .setGroupId(invocation.getArgument(0, Long.class))
+                                            .setSemesterId(invocation.getArgument(1, Long.class))
+                                            .setDateFrom(invocation.getArgument(2, String.class))
+                                            .setDateTo(invocation.getArgument(3, String.class))
+                                            .build();
+                            if ("2026-09-10".equals(request.getDateFrom())) {
+                                return LessonsResponse.newBuilder()
+                                        .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
+                                        .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
+                                        .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
+                                        .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
+                                        .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
+                                        .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
+                                        .build();
+                            }
+                            return LessonsResponse.newBuilder()
+                                    .addLessons(lesson(10L, 100L, "2026-09-05", "closed"))
+                                    .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
+                                    .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
+                                    .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
+                                    .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
+                                    .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
+                                    .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
+                                    .build();
+                        });
+        when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID))
+                .thenReturn(
+                        List.of(
                                 mark(11L, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15"),
-                                mark(12L, OWN_ID, AttendanceStatus.ABSENT, "2026-09-16")),
-                        200L, List.of(
-                                mark(10L, 200L, AttendanceStatus.PRESENT, "2026-09-05"),
-                                mark(11L, 200L, AttendanceStatus.PRESENT, "2026-09-15"),
-                                mark(12L, 200L, AttendanceStatus.ABSENT, "2026-09-16"),
-                                mark(15L, 200L, AttendanceStatus.ABSENT, "2026-09-18")),
-                        300L, List.of(
-                                mark(10L, 300L, AttendanceStatus.ABSENT, "2026-09-05"),
-                                mark(11L, 300L, AttendanceStatus.ABSENT, "2026-09-15"),
-                                mark(12L, 300L, AttendanceStatus.ABSENT, "2026-09-16"),
-                                mark(15L, 300L, AttendanceStatus.ABSENT, "2026-09-18"))));
+                                mark(12L, OWN_ID, AttendanceStatus.ABSENT, "2026-09-16")));
+        when(attendanceReadPort.findByUserIds(List.of(OWN_ID, 200L, 300L), SEMESTER_ID))
+                .thenReturn(
+                        Map.of(
+                                OWN_ID,
+                                List.of(
+                                        mark(11L, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15"),
+                                        mark(12L, OWN_ID, AttendanceStatus.ABSENT, "2026-09-16")),
+                                200L,
+                                List.of(
+                                        mark(10L, 200L, AttendanceStatus.PRESENT, "2026-09-05"),
+                                        mark(11L, 200L, AttendanceStatus.PRESENT, "2026-09-15"),
+                                        mark(12L, 200L, AttendanceStatus.ABSENT, "2026-09-16"),
+                                        mark(15L, 200L, AttendanceStatus.ABSENT, "2026-09-18")),
+                                300L,
+                                List.of(
+                                        mark(10L, 300L, AttendanceStatus.ABSENT, "2026-09-05"),
+                                        mark(11L, 300L, AttendanceStatus.ABSENT, "2026-09-15"),
+                                        mark(12L, 300L, AttendanceStatus.ABSENT, "2026-09-16"),
+                                        mark(15L, 300L, AttendanceStatus.ABSENT, "2026-09-18"))));
 
-        StudentAttendanceProjectionService.Projection projection = service.project(
-                claims,
-                SEMESTER_ID,
-                null,
-                "days",
-                List.of());
+        StudentAttendanceProjectionService.Projection projection =
+                service.project(claims, SEMESTER_ID, null, "days", List.of());
 
         assertThat(projection.metrics().plannedCount()).isEqualTo(4);
         assertThat(projection.metrics().heldCount()).isEqualTo(3);
         assertThat(projection.metrics().presentCount()).isEqualTo(1);
         assertThat(projection.metrics().absentCount()).isEqualTo(2);
         assertThat(projection.metrics().missingClosedCount()).isEqualTo(1);
-        var missing = projection.days().stream().flatMap(day -> day.lessons().stream())
-                .filter(lesson -> lesson.lessonId() == 15L).findFirst().orElseThrow();
+        var missing =
+                projection.days().stream()
+                        .flatMap(day -> day.lessons().stream())
+                        .filter(lesson -> lesson.lessonId() == 15L)
+                        .findFirst()
+                        .orElseThrow();
         assertThat(missing.mark()).isNull();
         assertThat(missing.uiStatus()).isEqualTo("ABSENT");
         assertThat(missing.historyStatus()).isEqualTo("ABSENT");
-        assertThat(projection.graph().days().stream()
-                .filter(point -> point.dateFrom().toString().equals("2026-09-18")))
-                .singleElement().satisfies(point -> {
-                    assertThat(point.state()).isEqualTo("DATA");
-                    assertThat(point.metrics().absentCount()).isEqualTo(1);
-                    assertThat(point.metrics().missingClosedCount()).isEqualTo(1);
-                });
+        assertThat(
+                        projection.graph().days().stream()
+                                .filter(point -> point.dateFrom().toString().equals("2026-09-18")))
+                .singleElement()
+                .satisfies(
+                        point -> {
+                            assertThat(point.state()).isEqualTo("DATA");
+                            assertThat(point.metrics().absentCount()).isEqualTo(1);
+                            assertThat(point.metrics().missingClosedCount()).isEqualTo(1);
+                        });
         assertThat(projection.subjects().getFirst().typeCards().getFirst().history())
                 .extracting(StudentAttendanceProjectionService.HistorySegment::status)
                 .containsExactly("PRESENT", "ABSENT", "ABSENT", "FUTURE");
 
         assertThat(projection.ownRank().position()).isEqualTo(2);
         assertThat(projection.ownRank().participantCount()).isEqualTo(3);
-        assertThat(projection.days()).flatExtracting(StudentAttendanceProjectionService.Day::lessons)
+        assertThat(projection.days())
+                .flatExtracting(StudentAttendanceProjectionService.Day::lessons)
                 .extracting(StudentAttendanceProjectionService.Lesson::lessonId)
                 .containsExactly(11L, 12L, 13L, 15L, 14L);
 
-        verify(scheduleGrpcClient).getLessonsByGroup(
-                RANK_GROUP_ID, SEMESTER_ID, "2026-09-01", "2026-09-30");
+        verify(scheduleGrpcClient)
+                .getLessonsByGroup(RANK_GROUP_ID, SEMESTER_ID, "2026-09-01", "2026-09-30");
+        // The additional admitted target read reuses the same canonical cohort after original
+        // assertions.
+        assertThat(service.rankForHeadman(scope(), OWN_ID, SEMESTER_ID, RANK_GROUP_ID))
+                .isEqualTo(projection.ownRank());
     }
 
     @Test
     void lateJoinerRankUsesCanonicalSemesterDenominator() {
-        InternalJwtClaims claims = new InternalJwtClaims(
-                OWN_ID,
-                UUID.fromString("66666666-6666-4666-8666-666666666666"),
-                1L,
-                1L,
-                "STUDENT",
-                "ACTIVE",
-                RANK_GROUP_ID,
-                false,
-                false);
-        StudentProjectionScopeResponse rankScope = scope().toBuilder()
-                .clearActiveRosterUserIds()
-                .addActiveRosterUserIds(OWN_ID)
-                .addActiveRosterUserIds(200L)
-                .build();
-        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
-                .thenReturn(rankScope);
+        InternalJwtClaims claims =
+                new InternalJwtClaims(
+                        OWN_ID,
+                        UUID.fromString("66666666-6666-4666-8666-666666666666"),
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        RANK_GROUP_ID,
+                        false,
+                        false);
+        StudentProjectionScopeResponse rankScope =
+                scope().toBuilder()
+                        .clearActiveRosterUserIds()
+                        .addActiveRosterUserIds(OWN_ID)
+                        .addActiveRosterUserIds(200L)
+                        .build();
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(rankScope);
         when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
-                .thenAnswer(invocation -> {
-                    String from = invocation.getArgument(2, String.class);
-                    if ("2026-09-10".equals(from)) {
-                        return LessonsResponse.newBuilder()
-                                .addLessons(lesson(11L, 111L, "2026-09-15", "closed"))
-                                .addLessons(lesson(12L, 112L, "2026-09-16", "planned"))
-                                .build();
-                    }
-                    return LessonsResponse.newBuilder()
-                            .addLessons(lesson(10L, 110L, "2026-09-05", "closed", 502L))
-                            .addLessons(lesson(11L, 111L, "2026-09-15", "closed"))
-                            .addLessons(lesson(12L, 112L, "2026-09-16", "planned"))
-                            .build();
-                });
-        when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID)).thenReturn(List.of(
-                mark(11L, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15")));
+                .thenAnswer(
+                        invocation -> {
+                            String from = invocation.getArgument(2, String.class);
+                            if ("2026-09-10".equals(from)) {
+                                return LessonsResponse.newBuilder()
+                                        .addLessons(lesson(11L, 111L, "2026-09-15", "closed"))
+                                        .addLessons(lesson(12L, 112L, "2026-09-16", "planned"))
+                                        .build();
+                            }
+                            return LessonsResponse.newBuilder()
+                                    .addLessons(lesson(10L, 110L, "2026-09-05", "closed", 502L))
+                                    .addLessons(lesson(11L, 111L, "2026-09-15", "closed"))
+                                    .addLessons(lesson(12L, 112L, "2026-09-16", "planned"))
+                                    .build();
+                        });
+        when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID))
+                .thenReturn(List.of(mark(11L, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15")));
         when(attendanceReadPort.findByUserIds(List.of(OWN_ID, 200L), SEMESTER_ID))
-                .thenReturn(Map.of(
-                        OWN_ID, List.of(mark(11L, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15")),
-                        200L, List.of(
-                                mark(10L, 200L, AttendanceStatus.PRESENT, "2026-09-05", 502L),
-                                mark(11L, 200L, AttendanceStatus.PRESENT, "2026-09-15"))));
+                .thenReturn(
+                        Map.of(
+                                OWN_ID,
+                                List.of(mark(11L, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15")),
+                                200L,
+                                List.of(
+                                        mark(
+                                                10L,
+                                                200L,
+                                                AttendanceStatus.PRESENT,
+                                                "2026-09-05",
+                                                502L),
+                                        mark(11L, 200L, AttendanceStatus.PRESENT, "2026-09-15"))));
 
-        StudentAttendanceProjectionService.Projection projection = service.project(
-                claims,
-                SEMESTER_ID,
-                null,
-                "weeks",
-                List.of());
+        StudentAttendanceProjectionService.Projection projection =
+                service.project(claims, SEMESTER_ID, null, "weeks", List.of());
 
         assertThat(projection.metrics().heldCount()).isEqualTo(1);
         assertThat(projection.metrics().presentCount()).isEqualTo(1);
@@ -217,79 +462,88 @@ class StudentAttendanceProjectionServiceTest {
         // owns both (2/2). The public response exposes only the viewer rank.
         assertThat(projection.ownRank().position()).isEqualTo(2);
         assertThat(projection.ownRank().participantCount()).isEqualTo(2);
-        verify(scheduleGrpcClient).getLessonsByGroup(
-                RANK_GROUP_ID, SEMESTER_ID, "2026-09-01", "2026-09-30");
+        verify(scheduleGrpcClient)
+                .getLessonsByGroup(RANK_GROUP_ID, SEMESTER_ID, "2026-09-01", "2026-09-30");
     }
 
     @Test
     void rankingDefaultsToPageContainingOwnRowAndOnlyReturnsAuthorizedCohortNames() {
-        InternalJwtClaims claims = new InternalJwtClaims(
-                OWN_ID,
-                UUID.fromString("66666666-6666-4666-8666-666666666666"),
-                1L,
-                1L,
-                "STUDENT",
-                "ACTIVE",
-                RANK_GROUP_ID,
-                false,
-                false);
-        StudentProjectionScopeResponse rankingScope = scope().toBuilder()
-                .addActiveRosterUserIds(400L)
-                .build();
-        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(rankingScope);
-        when(academicGrpcClient.getGroupMembers(RANK_GROUP_ID)).thenReturn(GroupMembersResponse.newBuilder()
-                .addStudents(student(OWN_ID, "Текущий студент"))
-                .addStudents(student(200L, "Студент группы"))
-                .addStudents(student(300L, "Ещё один студент"))
-                .addStudents(student(400L, "Первый студент"))
-                .addStudents(student(999L, "Вне roster scope"))
-                .build());
+        InternalJwtClaims claims =
+                new InternalJwtClaims(
+                        OWN_ID,
+                        UUID.fromString("66666666-6666-4666-8666-666666666666"),
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        RANK_GROUP_ID,
+                        false,
+                        false);
+        StudentProjectionScopeResponse rankingScope =
+                scope().toBuilder().addActiveRosterUserIds(400L).build();
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(rankingScope);
+        when(academicGrpcClient.getGroupMembers(RANK_GROUP_ID))
+                .thenReturn(
+                        GroupMembersResponse.newBuilder()
+                                .addStudents(student(OWN_ID, "Текущий студент"))
+                                .addStudents(student(200L, "Студент группы"))
+                                .addStudents(student(300L, "Ещё один студент"))
+                                .addStudents(student(400L, "Первый студент"))
+                                .addStudents(student(999L, "Вне roster scope"))
+                                .build());
         when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
-                .thenAnswer(invocation -> {
-                    String from = invocation.getArgument(2, String.class);
-                    if ("2026-09-10".equals(from)) {
-                        return LessonsResponse.newBuilder()
-                                .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
-                                .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
-                                .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
-                            .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
-                                .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
-                                .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
-                                .build();
-                    }
-                    return LessonsResponse.newBuilder()
-                            .addLessons(lesson(10L, 100L, "2026-09-05", "closed"))
-                            .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
-                            .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
-                            .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
-                            .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
-                            .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
-                            .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
-                            .build();
-                });
+                .thenAnswer(
+                        invocation -> {
+                            String from = invocation.getArgument(2, String.class);
+                            if ("2026-09-10".equals(from)) {
+                                return LessonsResponse.newBuilder()
+                                        .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
+                                        .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
+                                        .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
+                                        .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
+                                        .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
+                                        .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
+                                        .build();
+                            }
+                            return LessonsResponse.newBuilder()
+                                    .addLessons(lesson(10L, 100L, "2026-09-05", "closed"))
+                                    .addLessons(lesson(11L, 101L, "2026-09-15", "closed"))
+                                    .addLessons(lesson(12L, 102L, "2026-09-16", "closed"))
+                                    .addLessons(lesson(13L, 103L, "2026-09-17", "cancelled"))
+                                    .addLessons(lesson(16L, 106L, "2026-09-19", "transferred"))
+                                    .addLessons(lesson(15L, 105L, "2026-09-18", "closed"))
+                                    .addLessons(lesson(14L, 104L, "2026-09-21", "planned"))
+                                    .build();
+                        });
         when(attendanceReadPort.findByUserIds(List.of(OWN_ID, 200L, 300L, 400L), SEMESTER_ID))
-                .thenReturn(Map.of(
-                        OWN_ID, List.of(
-                                mark(11L, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15"),
-                                mark(12L, OWN_ID, AttendanceStatus.ABSENT, "2026-09-16")),
-                        200L, List.of(
-                                mark(10L, 200L, AttendanceStatus.PRESENT, "2026-09-05"),
-                                mark(11L, 200L, AttendanceStatus.PRESENT, "2026-09-15"),
-                                mark(12L, 200L, AttendanceStatus.ABSENT, "2026-09-16"),
-                                mark(15L, 200L, AttendanceStatus.ABSENT, "2026-09-18")),
-                        300L, List.of(
-                                mark(10L, 300L, AttendanceStatus.ABSENT, "2026-09-05"),
-                                mark(11L, 300L, AttendanceStatus.ABSENT, "2026-09-15"),
-                                mark(12L, 300L, AttendanceStatus.ABSENT, "2026-09-16"),
-                                mark(15L, 300L, AttendanceStatus.ABSENT, "2026-09-18")),
-                        400L, List.of(
-                                mark(10L, 400L, AttendanceStatus.PRESENT, "2026-09-05"),
-                                mark(11L, 400L, AttendanceStatus.PRESENT, "2026-09-15"),
-                                mark(12L, 400L, AttendanceStatus.ABSENT, "2026-09-16"),
-                                mark(15L, 400L, AttendanceStatus.PRESENT, "2026-09-18"))));
+                .thenReturn(
+                        Map.of(
+                                OWN_ID,
+                                List.of(
+                                        mark(11L, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15"),
+                                        mark(12L, OWN_ID, AttendanceStatus.ABSENT, "2026-09-16")),
+                                200L,
+                                List.of(
+                                        mark(10L, 200L, AttendanceStatus.PRESENT, "2026-09-05"),
+                                        mark(11L, 200L, AttendanceStatus.PRESENT, "2026-09-15"),
+                                        mark(12L, 200L, AttendanceStatus.ABSENT, "2026-09-16"),
+                                        mark(15L, 200L, AttendanceStatus.ABSENT, "2026-09-18")),
+                                300L,
+                                List.of(
+                                        mark(10L, 300L, AttendanceStatus.ABSENT, "2026-09-05"),
+                                        mark(11L, 300L, AttendanceStatus.ABSENT, "2026-09-15"),
+                                        mark(12L, 300L, AttendanceStatus.ABSENT, "2026-09-16"),
+                                        mark(15L, 300L, AttendanceStatus.ABSENT, "2026-09-18")),
+                                400L,
+                                List.of(
+                                        mark(10L, 400L, AttendanceStatus.PRESENT, "2026-09-05"),
+                                        mark(11L, 400L, AttendanceStatus.PRESENT, "2026-09-15"),
+                                        mark(12L, 400L, AttendanceStatus.ABSENT, "2026-09-16"),
+                                        mark(15L, 400L, AttendanceStatus.PRESENT, "2026-09-18"))));
 
-        StudentAttendanceProjectionService.RankingPage page = service.ranking(
-                claims, SEMESTER_ID, null, 2);
+        StudentAttendanceProjectionService.RankingPage page =
+                service.ranking(claims, SEMESTER_ID, null, 2);
 
         assertThat(page.available()).isTrue();
         assertThat(page.page()).isEqualTo(1);
@@ -297,22 +551,187 @@ class StudentAttendanceProjectionServiceTest {
         assertThat(page.total()).isEqualTo(4);
         assertThat(page.ownPosition()).isEqualTo(3);
         assertThat(page.rows())
-                .extracting(StudentAttendanceProjectionService.RankingRow::studentId,
+                .extracting(
+                        StudentAttendanceProjectionService.RankingRow::studentId,
                         StudentAttendanceProjectionService.RankingRow::name,
                         StudentAttendanceProjectionService.RankingRow::position,
                         StudentAttendanceProjectionService.RankingRow::percentage,
                         StudentAttendanceProjectionService.RankingRow::isSelf)
                 .containsExactly(
-                        org.assertj.core.groups.Tuple.tuple(OWN_ID, "Текущий студент", 3,
-                                new java.math.BigDecimal("25.00"), true),
-                        org.assertj.core.groups.Tuple.tuple(300L, "Ещё один студент", 4,
-                                new java.math.BigDecimal("0.00"), false));
+                        org.assertj.core.groups.Tuple.tuple(
+                                OWN_ID,
+                                "Текущий студент",
+                                3,
+                                new java.math.BigDecimal("25.00"),
+                                true),
+                        org.assertj.core.groups.Tuple.tuple(
+                                300L,
+                                "Ещё один студент",
+                                4,
+                                new java.math.BigDecimal("0.00"),
+                                false));
         verify(academicGrpcClient).getGroupMembers(RANK_GROUP_ID);
     }
 
     @Test
     void hiddenRankingReturnsEmptyUnavailablePageWithoutReadingPeers() {
-        InternalJwtClaims claims = new InternalJwtClaims(
+        InternalJwtClaims claims =
+                new InternalJwtClaims(
+                        OWN_ID,
+                        UUID.fromString("66666666-6666-4666-8666-666666666666"),
+                        1L,
+                        1L,
+                        "STUDENT",
+                        "ACTIVE",
+                        RANK_GROUP_ID,
+                        false,
+                        false);
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(
+                        scope().toBuilder()
+                                .setRankVisibility(
+                                        StudentProjectionRankVisibility
+                                                .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
+                                .build());
+
+        StudentAttendanceProjectionService.RankingPage page =
+                service.ranking(claims, SEMESTER_ID, null, 20);
+
+        assertThat(page)
+                .isEqualTo(
+                        new StudentAttendanceProjectionService.RankingPage(
+                                false, 0, 20, 0, null, List.of()));
+        verifyNoInteractions(attendanceReadPort, scheduleGrpcClient);
+    }
+
+    @Test
+    void weeklyComparisonPoolsHistoricalCellsIncludingLessonsBeforeLateJoinAndNoData() {
+        var scope =
+                scope().toBuilder()
+                        .clearActiveRosterUserIds()
+                        .addActiveRosterUserIds(OWN_ID)
+                        .setOwnMembershipSegments(
+                                0,
+                                scope().getOwnMembershipSegments(0).toBuilder()
+                                        .setDateFrom("2026-09-15"))
+                        .build();
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope);
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(20, 120, "2026-09-14", "closed"))
+                                .addLessons(lesson(21, 121, "2026-09-15", "closed"))
+                                .addLessons(lesson(22, 122, "2026-09-16", "closed"))
+                                .addLessons(lesson(23, 123, "2026-09-17", "cancelled"))
+                                .addLessons(lesson(24, 124, "2026-09-18", "transferred"))
+                                .addLessons(lesson(25, 125, "2026-09-21", "planned"))
+                                .addLessons(lesson(26, 126, "2026-09-22", "closed"))
+                                .build());
+        when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID))
+                .thenReturn(
+                        List.of(
+                                mark(21, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15"),
+                                mark(22, OWN_ID, AttendanceStatus.EXCUSED, "2026-09-16")));
+        when(academicGrpcClient.getGroupMembers(
+                        RANK_GROUP_ID, LocalDate.parse("2026-09-14"), SEMESTER_ID))
+                .thenReturn(roster(LocalDate.parse("2026-09-14"), 200L));
+        when(academicGrpcClient.getGroupMembers(
+                        RANK_GROUP_ID, LocalDate.parse("2026-09-16"), SEMESTER_ID))
+                .thenReturn(roster(LocalDate.parse("2026-09-16"), OWN_ID, 400L));
+        when(attendanceReadPort.findByLessonIds(List.of(20L, 21L, 22L)))
+                .thenReturn(
+                        List.of(
+                                mark(20, 200, AttendanceStatus.PRESENT, "2026-09-14"),
+                                mark(21, OWN_ID, AttendanceStatus.PRESENT, "2026-09-15"),
+                                mark(21, 200, AttendanceStatus.PRESENT, "2026-09-15"),
+                                mark(21, 999, AttendanceStatus.PRESENT, "2026-09-15"),
+                                mark(22, OWN_ID, AttendanceStatus.EXCUSED, "2026-09-16"),
+                                mark(22, 400, AttendanceStatus.PRESENT, "2026-09-16"),
+                                mark(22, 300, AttendanceStatus.PRESENT, "2026-09-16")));
+        var result = service.project(claims(), SEMESTER_ID, null, "weeks", List.of());
+        var points = result.graph().weeks();
+        assertThat(points)
+                .extracting(StudentAttendanceProjectionService.SeriesPoint::id)
+                .containsExactly("week:2026-09-14", "week:2026-09-21");
+        var group = points.getFirst().groupPresent();
+        assertThat(group.numerator()).isEqualTo(4);
+        assertThat(group.denominator()).isEqualTo(6);
+        assertThat(group.percent()).isEqualByComparingTo("66.67");
+        assertThat(points.getFirst().metrics().presentPercent()).isEqualByComparingTo("50.00");
+        assertThat(points.getLast().groupPresent().numerator()).isZero();
+        assertThat(points.getLast().groupPresent().denominator()).isZero();
+        assertThat(points.getLast().groupPresent().percent()).isNull();
+        assertThat(result.graph().days())
+                .allSatisfy(point -> assertThat(point.groupPresent()).isNull());
+        verify(academicGrpcClient, never())
+                .getGroupMembers(RANK_GROUP_ID, LocalDate.parse("2026-09-22"), SEMESTER_ID);
+    }
+
+    @Test
+    void knownEmptyHistoricalRosterHasNullRatherThanZeroPercent() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope());
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(11, 111, "2026-09-15", "closed"))
+                                .build());
+        doReturn(roster(LocalDate.parse("2026-09-15")))
+                .when(academicGrpcClient)
+                .getGroupMembers(any(), any(), any());
+        var result = service.project(claims(), SEMESTER_ID, null, "weeks", List.of());
+        var comparison = result.graph().weeks().getFirst().groupPresent();
+        assertThat(comparison.numerator()).isZero();
+        assertThat(comparison.denominator()).isZero();
+        assertThat(comparison.percent()).isNull();
+    }
+
+    @Test
+    void legitimateHiddenCatalogueStaysUnknownWithoutReadingOtherStudents() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(
+                        scope().toBuilder()
+                                .clearRankGroupId()
+                                .clearRankSubjects()
+                                .setRankEligible(false)
+                                .setRankVisibility(
+                                        StudentProjectionRankVisibility
+                                                .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
+                                .build());
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(11, 111, "2026-09-15", "closed"))
+                                .build());
+        var result = service.project(claims(), SEMESTER_ID, null, "weeks", List.of());
+        assertThat(result.graph().weeks())
+                .singleElement()
+                .satisfies(point -> assertThat(point.groupPresent()).isNull());
+        verify(attendanceReadPort, never()).findByLessonIds(any());
+        verify(academicGrpcClient, never()).getGroupMembers(any(), any(), any());
+    }
+
+    @Test
+    void foreignCurrentGroupAndInvalidHistoricalSnapshotFailClosed() {
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(scope().toBuilder().setRankGroupId(RANK_GROUP_ID + 1).build());
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(11, 111, "2026-09-15", "closed"))
+                                .build());
+        assertThatThrownBy(() -> service.project(claims(), SEMESTER_ID, null, "weeks", List.of()))
+                .isInstanceOf(StudentProjectionException.class);
+        verify(attendanceReadPort, never()).findByLessonIds(any());
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope());
+        doReturn(roster(LocalDate.parse("2026-09-14"), OWN_ID))
+                .when(academicGrpcClient)
+                .getGroupMembers(any(), any(), any());
+        assertThatThrownBy(() -> service.project(claims(), SEMESTER_ID, null, "weeks", List.of()))
+                .isInstanceOf(StudentProjectionException.class);
+    }
+
+    private static InternalJwtClaims claims() {
+        return new InternalJwtClaims(
                 OWN_ID,
                 UUID.fromString("66666666-6666-4666-8666-666666666666"),
                 1L,
@@ -322,18 +741,59 @@ class StudentAttendanceProjectionServiceTest {
                 RANK_GROUP_ID,
                 false,
                 false);
-        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
-                .thenReturn(scope().toBuilder()
-                        .setRankVisibility(StudentProjectionRankVisibility
-                                .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
-                        .build());
+    }
 
-        StudentAttendanceProjectionService.RankingPage page = service.ranking(
-                claims, SEMESTER_ID, null, 20);
+    private static GroupMembersResponse roster(LocalDate date, long... ids) {
+        var result =
+                GroupMembersResponse.newBuilder()
+                        .setAsOfDate(date.toString())
+                        .setSemesterId(SEMESTER_ID);
+        for (long id : ids) result.addStudents(StudentInfo.newBuilder().setUserId(id));
+        return result.build();
+    }
 
-        assertThat(page).isEqualTo(new StudentAttendanceProjectionService.RankingPage(
-                false, 0, 20, 0, null, List.of()));
-        verifyNoInteractions(attendanceReadPort, scheduleGrpcClient);
+    @Test
+    void headmanRankRejectsForeignScopeAndKeepsHiddenOrEmptyUnavailable() {
+        assertThatThrownBy(
+                        () ->
+                                service.rankForHeadman(
+                                        scope(), OWN_ID, SEMESTER_ID, RANK_GROUP_ID + 1))
+                .isInstanceOf(StudentProjectionException.class);
+        assertThatThrownBy(
+                        () ->
+                                service.rankForHeadman(
+                                        scope(), OWN_ID + 1, SEMESTER_ID, RANK_GROUP_ID))
+                .isInstanceOf(StudentProjectionException.class);
+        var hidden =
+                scope().toBuilder()
+                        .clearRankGroupId()
+                        .clearRankSubjects()
+                        .clearActiveRosterUserIds()
+                        .setRankEligible(false)
+                        .setRankVisibility(
+                                StudentProjectionRankVisibility
+                                        .STUDENT_PROJECTION_RANK_VISIBILITY_HIDDEN)
+                        .build();
+        var unavailable = service.rankForHeadman(hidden, OWN_ID, SEMESTER_ID, RANK_GROUP_ID);
+        assertThat(unavailable.available()).isFalse();
+        assertThat(unavailable.position()).isNull();
+        assertThat(unavailable.participantCount()).isZero();
+        var empty =
+                hidden.toBuilder()
+                        .setRankVisibility(
+                                StudentProjectionRankVisibility
+                                        .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE)
+                        .build();
+        assertThat(service.rankForHeadman(empty, OWN_ID, SEMESTER_ID, RANK_GROUP_ID))
+                .isEqualTo(unavailable);
+        assertThatThrownBy(
+                        () ->
+                                service.rankForHeadman(
+                                        hidden.toBuilder().addActiveRosterUserIds(200L).build(),
+                                        OWN_ID,
+                                        SEMESTER_ID,
+                                        RANK_GROUP_ID))
+                .isInstanceOf(StudentProjectionException.class);
     }
 
     private static StudentProjectionScopeResponse scope() {
@@ -346,54 +806,51 @@ class StudentAttendanceProjectionServiceTest {
                 .addActiveRosterUserIds(OWN_ID)
                 .addActiveRosterUserIds(200L)
                 .addActiveRosterUserIds(300L)
-                .addOwnMembershipSegments(StudentProjectionMembershipSegment.newBuilder()
-                        .setGroupId(RANK_GROUP_ID)
-                        .setDateFrom("2026-09-10")
-                        .setDateUntilExclusive("2026-10-01")
-                        .addSubjectIds(SUBJECT_ID)
-                        .build())
-                .addSubjects(AcademicSubjectInfo.newBuilder()
-                        .setSubjectId(SUBJECT_ID)
-                        .setSubjectName("Математика")
-                        .setSubjectType("discipline")
-                        .setGroupId(RANK_GROUP_ID)
-                        .addLessonTypes("LECTURE")
-                        .build())
-                .addRankSubjects(AcademicSubjectInfo.newBuilder()
-                        .setSubjectId(SUBJECT_ID)
-                        .setSubjectName("Математика")
-                        .setSubjectType("discipline")
-                        .setGroupId(RANK_GROUP_ID)
-                        .addLessonTypes("LECTURE")
-                        .build())
-                .addRankSubjects(AcademicSubjectInfo.newBuilder()
-                        .setSubjectId(502L)
-                        .setSubjectName("Физика")
-                        .setSubjectType("discipline")
-                        .setGroupId(RANK_GROUP_ID)
-                        .addLessonTypes("LECTURE")
-                        .build())
-                .setRankVisibility(StudentProjectionRankVisibility
-                        .STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE)
+                .addOwnMembershipSegments(
+                        StudentProjectionMembershipSegment.newBuilder()
+                                .setGroupId(RANK_GROUP_ID)
+                                .setDateFrom("2026-09-10")
+                                .setDateUntilExclusive("2026-10-01")
+                                .addSubjectIds(SUBJECT_ID)
+                                .build())
+                .addSubjects(
+                        AcademicSubjectInfo.newBuilder()
+                                .setSubjectId(SUBJECT_ID)
+                                .setSubjectName("Математика")
+                                .setSubjectType("discipline")
+                                .setGroupId(RANK_GROUP_ID)
+                                .addLessonTypes("LECTURE")
+                                .build())
+                .addRankSubjects(
+                        AcademicSubjectInfo.newBuilder()
+                                .setSubjectId(SUBJECT_ID)
+                                .setSubjectName("Математика")
+                                .setSubjectType("discipline")
+                                .setGroupId(RANK_GROUP_ID)
+                                .addLessonTypes("LECTURE")
+                                .build())
+                .addRankSubjects(
+                        AcademicSubjectInfo.newBuilder()
+                                .setSubjectId(502L)
+                                .setSubjectName("Физика")
+                                .setSubjectType("discipline")
+                                .setGroupId(RANK_GROUP_ID)
+                                .addLessonTypes("LECTURE")
+                                .build())
+                .setRankVisibility(
+                        StudentProjectionRankVisibility.STUDENT_PROJECTION_RANK_VISIBILITY_VISIBLE)
                 .setRankGroupId(RANK_GROUP_ID)
                 .setRankEligible(true)
                 .build();
     }
 
     private static LessonResponse lesson(
-            long lessonId,
-            long occurrenceId,
-            String date,
-            String status) {
+            long lessonId, long occurrenceId, String date, String status) {
         return lesson(lessonId, occurrenceId, date, status, SUBJECT_ID);
     }
 
     private static LessonResponse lesson(
-            long lessonId,
-            long occurrenceId,
-            String date,
-            String status,
-            long subjectId) {
+            long lessonId, long occurrenceId, String date, String status, long subjectId) {
         return LessonResponse.newBuilder()
                 .setId(lessonId)
                 .setOccurrenceId(occurrenceId)
@@ -414,19 +871,12 @@ class StudentAttendanceProjectionServiceTest {
     }
 
     private static AttendanceRecord mark(
-            long lessonId,
-            long userId,
-            AttendanceStatus status,
-            String date) {
+            long lessonId, long userId, AttendanceStatus status, String date) {
         return mark(lessonId, userId, status, date, SUBJECT_ID);
     }
 
     private static AttendanceRecord mark(
-            long lessonId,
-            long userId,
-            AttendanceStatus status,
-            String date,
-            long subjectId) {
+            long lessonId, long userId, AttendanceStatus status, String date, long subjectId) {
         return new AttendanceRecord(
                 lessonId,
                 userId,

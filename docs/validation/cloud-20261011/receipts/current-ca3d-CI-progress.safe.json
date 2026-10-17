@@ -1,0 +1,1144 @@
+{
+  "utc": "2026-10-13 18:08:42 UTC",
+  "head": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+  "runs": [
+    {
+      "id": 38443009381,
+      "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+      "event": "pull_request",
+      "attempt": 1,
+      "status": "in_progress",
+      "conclusion": null,
+      "path": ".github/workflows/ci.yml",
+      "updated_at": "2026-10-13T18:02:30Z"
+    },
+    {
+      "id": 38443009579,
+      "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+      "event": "pull_request",
+      "attempt": 1,
+      "status": "in_progress",
+      "conclusion": null,
+      "path": ".github/workflows/coverage.yml",
+      "updated_at": "2026-10-13T18:02:48Z"
+    },
+    {
+      "id": 38443009379,
+      "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+      "event": "pull_request",
+      "attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "path": ".github/workflows/security.yml",
+      "updated_at": "2026-10-13T17:59:52Z"
+    },
+    {
+      "id": 38443009549,
+      "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+      "event": "pull_request",
+      "attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "path": ".github/workflows/openapi-drift.yml",
+      "updated_at": "2026-10-13T18:00:36Z"
+    }
+  ],
+  "jobs": [
+    {
+      "run_id": 38443009381,
+      "total_count": 18,
+      "returned": 18,
+      "jobs": [
+        {
+          "id": 115454138923,
+          "name": "Java unit — academic-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T17:59:11Z",
+          "completed_at": "2026-10-13T18:01:30Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 8,
+              "name": "Upload unit test reports"
+            }
+          ]
+        },
+        {
+          "id": 115454138931,
+          "name": "Java unit — auth-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T17:59:54Z",
+          "completed_at": "2026-10-13T18:01:49Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 8,
+              "name": "Upload unit test reports"
+            }
+          ]
+        },
+        {
+          "id": 115454138946,
+          "name": "Java unit — schedule-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:01:34Z",
+          "completed_at": "2026-10-13T18:03:17Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 8,
+              "name": "Upload unit test reports"
+            }
+          ]
+        },
+        {
+          "id": 115454138977,
+          "name": "Java unit — attendance-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T17:59:13Z",
+          "completed_at": "2026-10-13T18:01:32Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 8,
+              "name": "Upload unit test reports"
+            }
+          ]
+        },
+        {
+          "id": 115454138983,
+          "name": "Java unit — notification-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:00:22Z",
+          "completed_at": "2026-10-13T18:02:50Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 8,
+              "name": "Upload unit test reports"
+            }
+          ]
+        },
+        {
+          "id": 115454139001,
+          "name": "Java IT — attendance-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:00:47Z",
+          "completed_at": "2026-10-13T18:03:45Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 7,
+              "name": "Setup Python for Academic credential bridge"
+            },
+            {
+              "number": 8,
+              "name": "Install isolated Academic credential bridge dependencies"
+            },
+            {
+              "number": 10,
+              "name": "Upload integration test reports"
+            }
+          ]
+        },
+        {
+          "id": 115454139005,
+          "name": "Java unit — api-gateway",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:01:31Z",
+          "completed_at": "2026-10-13T18:02:28Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 8,
+              "name": "Upload unit test reports"
+            }
+          ]
+        },
+        {
+          "id": 115454139039,
+          "name": "ShellCheck scripts",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:02:30Z",
+          "completed_at": "2026-10-13T18:02:55Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": []
+        },
+        {
+          "id": 115454139041,
+          "name": "Java IT — auth-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T17:59:30Z",
+          "completed_at": "2026-10-13T18:05:21Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 7,
+              "name": "Setup Python for Academic credential bridge"
+            },
+            {
+              "number": 8,
+              "name": "Install isolated Academic credential bridge dependencies"
+            },
+            {
+              "number": 10,
+              "name": "Upload integration test reports"
+            }
+          ]
+        },
+        {
+          "id": 115454139044,
+          "name": "Java IT — api-gateway",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:00:29Z",
+          "completed_at": "2026-10-13T18:02:00Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 7,
+              "name": "Setup Python for Academic credential bridge"
+            },
+            {
+              "number": 8,
+              "name": "Install isolated Academic credential bridge dependencies"
+            },
+            {
+              "number": 10,
+              "name": "Upload integration test reports"
+            }
+          ]
+        },
+        {
+          "id": 115454139062,
+          "name": "Java IT — schedule-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:00:58Z",
+          "completed_at": "2026-10-13T18:04:06Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 7,
+              "name": "Setup Python for Academic credential bridge"
+            },
+            {
+              "number": 8,
+              "name": "Install isolated Academic credential bridge dependencies"
+            },
+            {
+              "number": 10,
+              "name": "Upload integration test reports"
+            }
+          ]
+        },
+        {
+          "id": 115454139097,
+          "name": "Python Lint & Test",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:02:03Z",
+          "completed_at": "2026-10-13T18:03:04Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": []
+        },
+        {
+          "id": 115454139110,
+          "name": "Mobile Vue workspace",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:01:59Z",
+          "completed_at": "2026-10-13T18:03:45Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": []
+        },
+        {
+          "id": 115454139113,
+          "name": "Playwright E2E auth flow",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-13T18:02:02Z",
+          "completed_at": null,
+          "active_step": {
+            "number": 9,
+            "name": "Boot isolated Vue auth stack",
+            "status": "in_progress",
+            "conclusion": null
+          },
+          "failed_steps": [],
+          "skipped_steps": []
+        },
+        {
+          "id": 115454139125,
+          "name": "Java IT — academic-service",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-13T18:01:20Z",
+          "completed_at": null,
+          "active_step": {
+            "number": 9,
+            "name": "Integration tests academic-service",
+            "status": "in_progress",
+            "conclusion": null
+          },
+          "failed_steps": [],
+          "skipped_steps": []
+        },
+        {
+          "id": 115454139152,
+          "name": "Grafana dashboards structure",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:01:45Z",
+          "completed_at": "2026-10-13T18:01:57Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": []
+        },
+        {
+          "id": 115454139196,
+          "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:02:03Z",
+          "completed_at": "2026-10-13T18:02:46Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": []
+        },
+        {
+          "id": 115454139318,
+          "name": "Java IT — notification-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:01:52Z",
+          "completed_at": "2026-10-13T18:04:59Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 7,
+              "name": "Setup Python for Academic credential bridge"
+            },
+            {
+              "number": 8,
+              "name": "Install isolated Academic credential bridge dependencies"
+            },
+            {
+              "number": 10,
+              "name": "Upload integration test reports"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": 38443009579,
+      "total_count": 8,
+      "returned": 8,
+      "jobs": [
+        {
+          "id": 115454140047,
+          "name": "Mobile Vue coverage — PWA, TMA, mobile-core",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:02:48Z",
+          "completed_at": "2026-10-13T18:03:38Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": []
+        },
+        {
+          "id": 115454140060,
+          "name": "Python coverage — notification-bot",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:00:37Z",
+          "completed_at": "2026-10-13T18:01:43Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": []
+        },
+        {
+          "id": 115454140091,
+          "name": "Java coverage — schedule-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:00:35Z",
+          "completed_at": "2026-10-13T18:03:02Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 6,
+              "name": "Setup Python for Academic credential bridge"
+            },
+            {
+              "number": 7,
+              "name": "Install isolated Academic credential bridge dependencies"
+            }
+          ]
+        },
+        {
+          "id": 115454140115,
+          "name": "Java coverage — api-gateway",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T17:59:15Z",
+          "completed_at": "2026-10-13T18:00:56Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 6,
+              "name": "Setup Python for Academic credential bridge"
+            },
+            {
+              "number": 7,
+              "name": "Install isolated Academic credential bridge dependencies"
+            }
+          ]
+        },
+        {
+          "id": 115454140161,
+          "name": "Java coverage — attendance-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:00:47Z",
+          "completed_at": "2026-10-13T18:05:19Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 6,
+              "name": "Setup Python for Academic credential bridge"
+            },
+            {
+              "number": 7,
+              "name": "Install isolated Academic credential bridge dependencies"
+            }
+          ]
+        },
+        {
+          "id": 115454140242,
+          "name": "Java coverage — auth-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:00:50Z",
+          "completed_at": "2026-10-13T18:06:53Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 6,
+              "name": "Setup Python for Academic credential bridge"
+            },
+            {
+              "number": 7,
+              "name": "Install isolated Academic credential bridge dependencies"
+            }
+          ]
+        },
+        {
+          "id": 115454140343,
+          "name": "Java coverage — notification-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-13T18:00:58Z",
+          "completed_at": "2026-10-13T18:03:44Z",
+          "active_step": null,
+          "failed_steps": [],
+          "skipped_steps": [
+            {
+              "number": 6,
+              "name": "Setup Python for Academic credential bridge"
+            },
+            {
+              "number": 7,
+              "name": "Install isolated Academic credential bridge dependencies"
+            }
+          ]
+        },
+        {
+          "id": 115454140574,
+          "name": "Java coverage — academic-service",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-10-13T18:01:50Z",
+          "completed_at": null,
+          "active_step": {
+            "number": 8,
+            "name": "Run tests with coverage",
+            "status": "in_progress",
+            "conclusion": null
+          },
+          "failed_steps": [],
+          "skipped_steps": []
+        }
+      ]
+    }
+  ],
+  "meaningful_update": {
+    "utc": "2026-10-13 18:15:16 UTC",
+    "jobs": [
+      {
+        "run_id": 38443009381,
+        "total_count": 18,
+        "jobs": [
+          {
+            "id": 115454138923,
+            "name": "Java unit — academic-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454138931,
+            "name": "Java unit — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454138946,
+            "name": "Java unit — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454138977,
+            "name": "Java unit — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454138983,
+            "name": "Java unit — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139001,
+            "name": "Java IT — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139005,
+            "name": "Java unit — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139039,
+            "name": "ShellCheck scripts",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139041,
+            "name": "Java IT — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139044,
+            "name": "Java IT — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139062,
+            "name": "Java IT — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139097,
+            "name": "Python Lint & Test",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139110,
+            "name": "Mobile Vue workspace",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139113,
+            "name": "Playwright E2E auth flow",
+            "status": "completed",
+            "conclusion": "failure",
+            "current_step": null,
+            "failed_steps": [
+              {
+                "number": 13,
+                "name": "Run accepted FIRST3 with closed diagnostics (chromium only)"
+              }
+            ],
+            "key_steps": [
+              {
+                "number": 9,
+                "name": "Boot isolated Vue auth stack",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 10,
+                "name": "Link synthetic Telegram teacher in the ephemeral database",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 11,
+                "name": "Install Playwright + browsers",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 12,
+                "name": "Run auth-flow @smoke specs (chromium only)",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 13,
+                "name": "Run accepted FIRST3 with closed diagnostics (chromium only)",
+                "status": "completed",
+                "conclusion": "failure"
+              },
+              {
+                "number": 14,
+                "name": "Upload safe FIRST3 outcomes and observations",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 15,
+                "name": "Stop isolated e2e containers",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 115454139125,
+            "name": "Java IT — academic-service",
+            "status": "in_progress",
+            "conclusion": null,
+            "current_step": {
+              "number": 9,
+              "name": "Integration tests academic-service",
+              "status": "in_progress",
+              "conclusion": null
+            },
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139152,
+            "name": "Grafana dashboards structure",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139196,
+            "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454139318,
+            "name": "Java IT — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          }
+        ]
+      },
+      {
+        "run_id": 38443009579,
+        "total_count": 8,
+        "jobs": [
+          {
+            "id": 115454140047,
+            "name": "Mobile Vue coverage — PWA, TMA, mobile-core",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454140060,
+            "name": "Python coverage — notification-bot",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454140091,
+            "name": "Java coverage — schedule-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454140115,
+            "name": "Java coverage — api-gateway",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454140161,
+            "name": "Java coverage — attendance-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454140242,
+            "name": "Java coverage — auth-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454140343,
+            "name": "Java coverage — notification-service",
+            "status": "completed",
+            "conclusion": "success",
+            "current_step": null,
+            "failed_steps": [],
+            "key_steps": []
+          },
+          {
+            "id": 115454140574,
+            "name": "Java coverage — academic-service",
+            "status": "in_progress",
+            "conclusion": null,
+            "current_step": {
+              "number": 8,
+              "name": "Run tests with coverage",
+              "status": "in_progress",
+              "conclusion": null
+            },
+            "failed_steps": [],
+            "key_steps": []
+          }
+        ]
+      }
+    ],
+    "artifacts": [
+      {
+        "run_id": 38443009381,
+        "total_count": 12,
+        "safe": [
+          {
+            "id": 11837791226,
+            "name": "safe-unit-outcomes-auth-service-1",
+            "bytes": 7787,
+            "digest": "sha256:bf1fb55fc16562f67a584688af7b579cde1e3a51d349dd71a30a0911a0d2a753",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009381
+          },
+          {
+            "id": 11837741782,
+            "name": "safe-integration-outcomes-auth-service-1",
+            "bytes": 8397,
+            "digest": "sha256:e747ce04485e8f0f10d4cee68db43209405dd27096cdd52d2c9e5b72075f2470",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009381
+          },
+          {
+            "id": 11837706543,
+            "name": "safe-integration-outcomes-schedule-service-1",
+            "bytes": 10777,
+            "digest": "sha256:b3c8f65feaa43ea0c0644adc1c01e6c6554b209f25db0b67f5eac16298772310",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009381
+          },
+          {
+            "id": 11837521351,
+            "name": "safe-integration-outcomes-api-gateway-1",
+            "bytes": 1341,
+            "digest": "sha256:0d22b02cb9e34136786b210eee4aec958a864f571b4986a35d4e932f266cfd86",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009381
+          },
+          {
+            "id": 11837521289,
+            "name": "safe-unit-outcomes-attendance-service-1",
+            "bytes": 15357,
+            "digest": "sha256:7c25da1d4456fb4f57d216942d8faa429f1da6526b7d62dd6677a87f5d844a18",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009381
+          },
+          {
+            "id": 11837401520,
+            "name": "safe-unit-outcomes-notification-service-1",
+            "bytes": 7836,
+            "digest": "sha256:92f6661fa75f9c9aded7784fb5930323237ac4661cfaf3f44dd726c7ecb7ac9f",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009381
+          },
+          {
+            "id": 11837346454,
+            "name": "safe-unit-outcomes-academic-service-1",
+            "bytes": 15355,
+            "digest": "sha256:6661bd142fff43b409453f3c6def55b2873427416e016d7c9c13427211cea8ab",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009381
+          },
+          {
+            "id": 11836901882,
+            "name": "safe-integration-outcomes-attendance-service-1",
+            "bytes": 12439,
+            "digest": "sha256:43e3c4606243a72b9fc4f4508b2bdb279bd14f361c22113a07a3fb54016d3048",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009381
+          },
+          {
+            "id": 11836408470,
+            "name": "safe-unit-outcomes-api-gateway-1",
+            "bytes": 6223,
+            "digest": "sha256:adac90c5fffb3050e5132af7f031290ec8ecf4ec4c621f9044d7e43af4ecb514",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009381
+          },
+          {
+            "id": 11836398567,
+            "name": "safe-unit-outcomes-schedule-service-1",
+            "bytes": 5411,
+            "digest": "sha256:e09e6d740f96d5b8a443edf6ba53d861f9a4e375b458960dc53dd9fb2fb951da",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009381
+          },
+          {
+            "id": 11836314035,
+            "name": "safe-integration-outcomes-notification-service-1",
+            "bytes": 4165,
+            "digest": "sha256:48bd1e9cc9ba6b341229dc0f7a5b8c1b9c80163d11a3a30a70b04205fb02a1d7",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009381
+          }
+        ]
+      },
+      {
+        "run_id": 38443009579,
+        "total_count": 12,
+        "safe": [
+          {
+            "id": 11837811068,
+            "name": "safe-coverage-outcomes-api-gateway-1",
+            "bytes": 7635,
+            "digest": "sha256:ce733abad0a3a08534659059d2f05bfbb9e558f1e92a5cdee53b134390fc4eff",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009579
+          },
+          {
+            "id": 11837601859,
+            "name": "safe-coverage-outcomes-attendance-service-1",
+            "bytes": 27861,
+            "digest": "sha256:588aa6e15c0bb93a1d5fff6778b48523e0053fd20ec1e616711dc842278c4172",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009579
+          },
+          {
+            "id": 11836897297,
+            "name": "safe-coverage-outcomes-auth-service-1",
+            "bytes": 16268,
+            "digest": "sha256:1a3efda9dafb03bcb68b80c7724e739a2222f74b5fb59ab7d05724bd419a8d6a",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009579
+          },
+          {
+            "id": 11836453554,
+            "name": "safe-coverage-outcomes-notification-service-1",
+            "bytes": 12075,
+            "digest": "sha256:220fc65fe55ac723c415af841d4881ca4abb47dc8ac4d33078bd5cd9cee03caf",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009579
+          },
+          {
+            "id": 11836228699,
+            "name": "safe-coverage-outcomes-schedule-service-1",
+            "bytes": 16254,
+            "digest": "sha256:75edc240e2e44efe69c298756b2e510cb1d019c574da5f68dde8133c966072da",
+            "expired": false,
+            "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+            "workflow_run_id": 38443009579
+          }
+        ]
+      }
+    ]
+  },
+  "checkout": {
+    "auth_IT_log": {
+      "job_id": 115454139041,
+      "run_id": 38443009381,
+      "head_sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+      "carrier_utf16_units": 52014,
+      "checkout_command_shas": [
+        "e3488c02a73d57b14cd22566c984e6a02fff2f2c"
+      ],
+      "exact_checkout": "e3488c02a73d57b14cd22566c984e6a02fff2f2c",
+      "build_successful": true,
+      "p10_method_name_present": false,
+      "p10_failure_line_present": false,
+      "native_tests_execution_reported": true,
+      "raw_output": false,
+      "qualification": "Private RAM log projection only; method-name absence is not a PASS/skip oracle."
+    },
+    "git": [
+      {
+        "index": 0,
+        "sha": "e3488c02a73d57b14cd22566c984e6a02fff2f2c",
+        "tree_sha": "8b16980f82b5c753445b8b9183451a243f20a937",
+        "parents": [
+          "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+          "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821"
+        ]
+      },
+      {
+        "index": 1,
+        "sha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+        "tree_sha": "8b16980f82b5c753445b8b9183451a243f20a937",
+        "parents": [
+          "52a95a8f38753f17277de616ebf608cf34937cb9"
+        ]
+      }
+    ]
+  },
+  "final_current_gates": {
+    "head": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+    "event": "pull_request",
+    "attempt": 1,
+    "CI": {
+      "run": 38443009381,
+      "conclusion": "failure",
+      "jobs": 18,
+      "success": 17,
+      "failure": 1,
+      "failed_job": 115454139113,
+      "failed_step": 13
+    },
+    "Coverage": {
+      "run": 38443009579,
+      "conclusion": "success",
+      "jobs": 9,
+      "success": 9
+    },
+    "Security": {
+      "run": 38443009379,
+      "conclusion": "success"
+    },
+    "OpenAPI": {
+      "run": 38443009549,
+      "conclusion": "success"
+    }
+  },
+  "first3_verified_root_handoff": {
+    "artifact_id": 11838022990,
+    "size": 551,
+    "digest": "8a6ef721cafaea6364d732c687f9f51706dc2fa8f301007ac46a3d4e05bbe091",
+    "receipt": "docs/validation/cloud-20261011/receipts/current-ca3d-FIRST3-safe",
+    "cases": [
+      {
+        "line": 14,
+        "status": "failed",
+        "ms": 48
+      },
+      {
+        "line": 61,
+        "status": "failed",
+        "ms": 59
+      },
+      {
+        "line": 142,
+        "status": "failed",
+        "ms": 55
+      }
+    ],
+    "closed_reported_diagnostic": "DATASET_SUBJECT_CREATE_HTTP503",
+    "errors_per_case": 1,
+    "runner_errors": 0,
+    "unsafe_artifact": false,
+    "observations": 0,
+    "journal": "NOT_REACHED",
+    "qualification": "Root validated canonical SAFE archive; serialized diagnostic is reported HTTP context, not independent underlying server cause."
+  },
+  "source_initial_assignment_diagnosis": {
+    "source_rows": [
+      {
+        "path": "tests/e2e/fixtures/mobile-dataset.ts",
+        "sha256": "726335954deae1f4ee1add1b0a9dfa3d9af7b849344b532ec4a6a536516a9642",
+        "working_bytes_equal_published": true
+      },
+      {
+        "path": "tests/e2e/.env.ci",
+        "sha256": "6354114771d2081a1cd219d36e57ed731572c12bef9a03212e6e6d3efd6afd4c",
+        "working_bytes_equal_published": true
+      },
+      {
+        "path": "docker-compose.e2e.yml",
+        "sha256": "3de84c8cf87fa1e31ba8d92e3a59d150ce74bb6dddcc4a01211dd780b3b2f42c",
+        "working_bytes_equal_published": true
+      },
+      {
+        "path": "tests/e2e/infra/docker-compose.clock-fixture.yml",
+        "sha256": "2dccd3a20bba8938b4dacbaa97d02128a579780f9634e68668b6a2505c46e9a7",
+        "working_bytes_equal_published": true
+      },
+      {
+        "path": "tests/e2e/infra/scripts/generate-test-certs.sh",
+        "sha256": "02bfcc8dabadd714a9c04cd7b486bc1557de992d979eea7451f9a2cbded18d1c",
+        "working_bytes_equal_published": true
+      },
+      {
+        "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/DirectedServiceCredential.java",
+        "sha256": "86e9a2d42eaf2cbfed3bddcbe6ab0f61089cd0144e2435989545e65c8caead13",
+        "working_bytes_equal_published": true
+      },
+      {
+        "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/AcademicGrpcClient.java",
+        "sha256": "380e03d271a45cfe9f866f4e24d648c97178771b8bc4b24fb7e5c9df9111b49b",
+        "working_bytes_equal_published": true
+      },
+      {
+        "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/replacement/AssignmentUnassignmentWriter.java",
+        "sha256": "df3b9e839b319488056501ad821c3dc2b0c628e35aa372d654e778ec9228a801",
+        "working_bytes_equal_published": true
+      },
+      {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentClosureService.java",
+        "sha256": "b18bbc5513f4ce24d1e978298ca3688d493cf82aeef0614987d498e9032b7198",
+        "working_bytes_equal_published": true
+      },
+      {
+        "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/ScheduleGrpcClient.java",
+        "sha256": "995939bda2d55fbb8478dda3e2147fadb73557a636cb7372b7091cc7773554ff",
+        "working_bytes_equal_published": true
+      }
+    ],
+    "status": "CONFIRMED_PUBLIC_CONFIGURATION_DEFECT; HISTORICAL_RUNTIME_CAUSAL_STAGE_NOT_OBSERVED",
+    "public_fixture_key": "SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN",
+    "key_line": 43,
+    "canonical_check": "NON_CANONICAL_BASE64_TRAILING_BITS",
+    "shape_43_and_decoded_32": true,
+    "forward_credential_canonical": true,
+    "dotenv_quotes": false,
+    "path": [
+      "MobileDataset.initialize subject POST with initialAssignments",
+      "SubjectService.createSubject",
+      "AssignmentAuthority.createInitialAssignmentsForNewSubject",
+      "AssignmentClosureService.prepareAdoption afterCommit",
+      "ScheduleGrpcClient.installAssignmentLifecycle directed Academic->Schedule TLS",
+      "AssignmentUnassignmentWriter.install ADOPT_UNASSIGNED",
+      "AcademicGrpcClient.getPreparedAssignmentLifecycle canonical check line221, throw222 BEFORE reverse RPC",
+      "Schedule GrpcExceptionAdvice Exception->INTERNAL",
+      "Academic ScheduleGrpcClient mapBindingError -> dependency unavailable",
+      "AssignmentClosureService afterCommit wraps pending adoption -> HTTP503"
+    ],
+    "tls": "prod TLS directions/trust mounts/generated SAN authorities match; clock override changes teaching Clock only, not credentials or TLS",
+    "minimum_correction": "Canonical unpadded URLsafe Base64 re-encoding of the same32 public fixture bytes, only CI fixture; preserve strict product predicate and directed receiver identity. No source mutation performed.",
+    "next_validation": "Independent one-fixture-byte correction review then existing normal CI FIRST3 lane, exact current SAFE statuses/observations. No unchanged test replay.",
+    "missing_runtime_witness": "No service Docker logs uploaded by CI policy; current SAFE503 does not uniquely identify nested failure. No current rawbody/log read or new parser campaign required to establish Source blocker."
+  },
+  "auth_selected_method_witness": "PENDING_ROOT_FRESH_VALID_REFERENCE; current Auth jobSUCCESS is not per-method proof; previous reader native1 is checking failure, not productFAIL",
+  "updated_at": "2026-10-13T18:28:41.781494+00:00"
+}

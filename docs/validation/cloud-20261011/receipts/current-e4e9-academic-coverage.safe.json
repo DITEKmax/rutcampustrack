@@ -1,0 +1,88 @@
+{
+  "artifact_id": 11876860331,
+  "name": "safe-coverage-outcomes-academic-service-1",
+  "archive_bytes": 37063,
+  "archive_sha256": "aae9e4fc852f538c478f1697e34ef91ab897489a9a0292448899f0d80ac76489",
+  "producer": "e4e922add972586a342d49aeaafa93ff84715cac",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "6caa6a15fb6226e0342233665a8b324edcf98f2c",
+        "prHeadSha": "e4e922add972586a342d49aeaafa93ff84715cac",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38525988835",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "failure"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 447,
+        "FAILED": 1,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": {
+        "xmlOrdinal": 67,
+        "suiteOrdinal": 1,
+        "ordinal": 3,
+        "classname": "ru.rutcampustrack.academic.user.UserSearchIT",
+        "method": "archivedRegistryFilterIncludesArchivedAccountsAndRestoredRoleHistory",
+        "status": "FAILED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java",
+        "sourceSha256": "2efdde78e2786428cfcf5276bde6a816a661b513ed8447319076c5f293860e70"
+      },
+      "failed_or_error_cases": [
+        {
+          "xmlOrdinal": 67,
+          "suiteOrdinal": 1,
+          "ordinal": 3,
+          "classname": "ru.rutcampustrack.academic.user.UserSearchIT",
+          "method": "archivedRegistryFilterIncludesArchivedAccountsAndRestoredRoleHistory",
+          "status": "FAILED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java",
+          "sourceSha256": "2efdde78e2786428cfcf5276bde6a816a661b513ed8447319076c5f293860e70"
+        }
+      ],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    },
+    {
+      "metadata": {
+        "checkoutSha": "6caa6a15fb6226e0342233665a8b324edcf98f2c",
+        "prHeadSha": "e4e922add972586a342d49aeaafa93ff84715cac",
+        "service": "academic-service",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38525988835",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "failure"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 467,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

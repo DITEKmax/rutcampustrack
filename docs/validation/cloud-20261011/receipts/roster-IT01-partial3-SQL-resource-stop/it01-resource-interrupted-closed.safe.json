@@ -1,0 +1,101 @@
+{
+  "utc": "2026-10-13T06:41:29.601656+00:00",
+  "normal_it_tool_session": 3835,
+  "it_exit": 1,
+  "native_exit": -15,
+  "terminal_reason": "WORKSPACE_LIMIT",
+  "phase_success": false,
+  "overall_IT01": "RESOURCE_INTERRUPTED_NOT_PASS",
+  "cleanup_tool_session": 33642,
+  "cleanup_tool_exit": 0,
+  "exact_owned_process_births": [
+    {
+      "pid": 488215,
+      "start_ticks": 12702222,
+      "birth_absent": true
+    },
+    {
+      "pid": 488336,
+      "start_ticks": 12702274,
+      "birth_absent": true
+    },
+    {
+      "pid": 488337,
+      "start_ticks": 12702279,
+      "birth_absent": true
+    },
+    {
+      "pid": 488372,
+      "start_ticks": 12702371,
+      "birth_absent": true
+    },
+    {
+      "pid": 488518,
+      "start_ticks": 12704268,
+      "birth_absent": true
+    },
+    {
+      "pid": 488925,
+      "start_ticks": 12706040,
+      "birth_absent": true
+    },
+    {
+      "pid": 489330,
+      "start_ticks": 12708515,
+      "birth_absent": true
+    }
+  ],
+  "owned_containers_settled": true,
+  "foreign_baseline_preserved": true,
+  "private_tmp_removed": true,
+  "parent_envelope_removed": true,
+  "all4_compile_tasks": [
+    {
+      "task": ":services:academic-service:academic-app:compileJava",
+      "observed_task_lines": 1,
+      "last_state": "UP-TO-DATE"
+    },
+    {
+      "task": ":services:academic-service:academic-app:compileTestJava",
+      "observed_task_lines": 1,
+      "last_state": "UP-TO-DATE"
+    },
+    {
+      "task": ":services:attendance-service:attendance-app:compileJava",
+      "observed_task_lines": 1,
+      "last_state": "UP-TO-DATE"
+    },
+    {
+      "task": ":services:attendance-service:attendance-app:compileTestJava",
+      "observed_task_lines": 1,
+      "last_state": "UP-TO-DATE"
+    }
+  ],
+  "observed_testcontainers_label_versions": [
+    "1.20.4"
+  ],
+  "observed_owned_role_counts": {
+    "postgres": 1,
+    "mongo": 1,
+    "rabbitmq": 0,
+    "redis": 0,
+    "ryuk": 2,
+    "probe": 0
+  },
+  "peaks": {
+    "memory": 9670238208,
+    "min_workspace_free": 6056497152,
+    "owned_rss": 1357185024,
+    "log_bytes": 9477
+  },
+  "source13_and_protected2_exact": true,
+  "partial_fresh_xml_receipt_sha256": "330ddd071ca41c7c63bdea1fbef29616d079b4c6aa1c551936e7052c272841d6",
+  "cleanup_receipt_sha256": "46c11d099cf8954a4bc440ab086d7cdddc2f96f1d6d2b6dae6401e08114356f5",
+  "disk_qualification": "Minimum free6.056GB remains above4GiB floor; WORKSPACE_LIMIT therefore disk-growth>2GiB branch. Initial caller free snapshot not persisted, exact delta UNKNOWN. New MongoVFS launch coincided with stop; allowned container cleanup recovered workspace8.206GB. Driver/exact image sizes will qualify attribution; no product failure inferred.",
+  "stand_data160_and_old5vols_qualification": "Existingforeign5namedvolumes exactly restored; only own anonymous appcontainer volumes eligible forrm-v. No source/base/config/main or standdata/key paths addressed. Root retainedNEW160 fence unmodified byauthorizedcommands.",
+  "foreign_baseline_volume_count": 11,
+  "foreign_baseline_named_volume_count": 5,
+  "cleanup_direct_supervisor_birth": "NOT_CAPTURED",
+  "cleanup_direct_process_settlement": "Tool33642 finalexit0/communicate-wait; exact birth not captured, no invented birthproof",
+  "metadata_client_process_waits": "Existing reviewed observer.call communicate/wait collected every CLI PID; their births not persisted"
+}

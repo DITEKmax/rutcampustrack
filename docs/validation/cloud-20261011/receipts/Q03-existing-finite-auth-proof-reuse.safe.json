@@ -1,0 +1,452 @@
+{
+  "scope": "Q03 bounded existing finite auth proof join; read-only repository; no whole-family PASS",
+  "status": "FINITE_EXISTING_PROOF_REUSABLE_REMAINING_RUNTIME_GAPS",
+  "frozenRevision": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "model": {
+    "selected": "gpt-6.1-sol",
+    "effort": "high",
+    "actual": "UNKNOWN"
+  },
+  "governing": {
+    "rulesSha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38",
+    "contractSha256": "62afda54233d3f27e894d0108c6d12a99a217f11aa686a33550739a93d6c75ed",
+    "ownerContractSupersedesHistoricalRouting": true
+  },
+  "receipts": {
+    "ca3d_auth": {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-ca3d-auth-Unicode-safe/safe-integration-outcomes-auth-service-1-integrationTest.json",
+      "sha256": "61780934d507ddf6a8427ce84884cab4d23fe84f63c609971b42169121eb7faf",
+      "producer": {
+        "checkoutSha": "e3488c02a73d57b14cd22566c984e6a02fff2f2c",
+        "prHeadSha": "ca3d3ff07795abe32fdf99d3fb638ce8cc4cb821",
+        "service": "auth-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38443009381",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "result": {
+        "PASSED": 171,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "qualification": "SOURCE_METHOD cases individually verified against exact current test bytes; producer remains historical ca3d, not f8b run"
+    },
+    "897_browser": {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-897-next5.safe.json",
+      "producerHead": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+      "run": 38495986019,
+      "artifact": 11864765908,
+      "result": "two named finite client cases PASS; total next5 failed"
+    },
+    "a032_gateway": {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-a032-P11-case.safe.json",
+      "producer": {
+        "checkoutSha": "9f0732ba13baa2626282692bd5b9aeb4f0531c14",
+        "prHeadSha": "a03215a363aee844f42067fcf5243e7d49f85bff",
+        "service": "api-gateway",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38493688140",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "result": "one exact P11 case PASS; inherited3SKIP excluded"
+    },
+    "a032_auth_aggregate": {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-a032-AuthIT.safe.json",
+      "result": "172PASS0FES run38493688140 checkout9f0732ba13baa2626282692bd5b9aeb4f0531c14",
+      "qualification": "Aggregate does not identify the other171 methods; never used to fabricate named results"
+    }
+  },
+  "currentProductionSources": [
+    {
+      "source": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+      "sha256": "e336adeeb457255065e274814651718c18f88830b558082bbdf6da39c6cc9b9a"
+    },
+    {
+      "source": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "sha256": "b5cef648221489390b9c2d2746bb5791a75dd1e2858d91001cf952226c5779b7"
+    },
+    {
+      "source": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/SessionAdmissionService.java",
+      "sha256": "47fe22d35bcdeb3518594d5b529df7ca0d2948dfe0453f99f6272268ec41b092"
+    }
+  ],
+  "sourceReuseQualification": {
+    "ca3d_to_f8b_auth_shared_proto_changedPaths": [
+      "services/auth-service/auth-app/build.gradle.kts",
+      "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java"
+    ],
+    "meaning": "Auth production/shared/proto unchanged in this bounded diff; selected test files exact SHA equal. Build/harness byte equivalence not claimed; current full-gate proof independent."
+  },
+  "observations": [
+    {
+      "id": "Q03-REUSE-01",
+      "boundaries": [
+        "BOUNDARY-01"
+      ],
+      "existingMethods": [
+        {
+          "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+          "method": "passwordLoginSelectsStudentAndRoleSwitchIssuesTeacherBoundAccess",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+          "sourceSha256": "12782449226348a9f3e154c6c862e91538d5d1016367a0c2dd86babe61afd832",
+          "xmlOrdinal": 19,
+          "ordinal": 3,
+          "status": "PASSED"
+        }
+      ],
+      "actualReceipt": "ca3d_auth",
+      "proved": "Actual Auth HTTP login selects STUDENT; session lists STUDENT+TEACHER; explicit TEACHER selection issues bound access/version2 and subsequent session GET is TEACHER.",
+      "limits": "Two-role synthetic account only; no HEADMAN/ADMIN default, two-tab Vue persistence or wrong-role domain command assertion.",
+      "remainingObservableStep": "One multi-role Vue journey through Gateway: explicit HEADMAN/ADMIN choice/reload/two tabs and wrong-selected-role domain denial with unchanged state."
+    },
+    {
+      "id": "Q03-REUSE-02",
+      "boundaries": [
+        "BOUNDARY-02",
+        "BOUNDARY-03"
+      ],
+      "existingMethods": [
+        {
+          "classname": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+          "method": "terminalRoleRemainsVisibleWithoutSelectionAndSuspendedActiveRoleIsClearedOnRefresh",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+          "sourceSha256": "1a2626b77562a95917f8b3c0e4b539111397d6f0cb982571b723d9d15cdc5024",
+          "xmlOrdinal": 24,
+          "ordinal": 18,
+          "status": "PASSED"
+        }
+      ],
+      "actualReceipt": "ca3d_auth",
+      "proved": "Actual PostgreSQL terminal EXPELLED grant remains visible/readOnly but cannot select; SUSPENDED TEACHER selection refused; suspended selected STUDENT refresh clears active role and increments session version.",
+      "limits": "Direct JDBC authority; not terminal-history HTTP read/write, mixed terminal-STUDENT+active-TEACHER independence or browser role controls.",
+      "remainingObservableStep": "Reuse DB rule; observe terminal history/read-only and unaffected active TEACHER via real Gateway+Vue after terminal/revoke transition."
+    },
+    {
+      "id": "Q03-REUSE-03",
+      "boundaries": [
+        "BOUNDARY-02",
+        "RESEARCH-P06",
+        "RESEARCH-P08"
+      ],
+      "existingMethods": [
+        {
+          "classname": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+          "method": "revokeAllCoversEveryOwnSessionAndAppendsOneEvent",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+          "sourceSha256": "1a2626b77562a95917f8b3c0e4b539111397d6f0cb982571b723d9d15cdc5024",
+          "xmlOrdinal": 24,
+          "ordinal": 17,
+          "status": "PASSED"
+        },
+        {
+          "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+          "method": "bootstrapBearerOnlyLogoutAndLogoutAllAreAllowedByTheExactScope",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+          "sourceSha256": "12782449226348a9f3e154c6c862e91538d5d1016367a0c2dd86babe61afd832",
+          "xmlOrdinal": 19,
+          "ordinal": 6,
+          "status": "PASSED"
+        }
+      ],
+      "actualReceipt": "ca3d_auth",
+      "proved": "Actual PG revokeAll revokes two own OTP/TMA sessions, commits one LOGOUT_ALL event, and later snapshot is SESSION_REVOKED; real Auth HTTP allows bootstrap logout-all scope.",
+      "limits": "DB and direct Auth HTTP are complementary; no complete Gateway/browser all-session cookie/access/refresh denial after logout-all.",
+      "remainingObservableStep": "Two real client sessions: logout-all in one; next protected read and refresh in both refused; read unchanged protected data."
+    },
+    {
+      "id": "Q03-REUSE-04",
+      "boundaries": [
+        "BOUNDARY-02",
+        "RESEARCH-P06",
+        "RESEARCH-P08"
+      ],
+      "existingMethods": [
+        {
+          "classname": "ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthorityIT",
+          "method": "refreshRejectsOlderJtiAndNeverExtendsAbsoluteExpiry",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+          "sourceSha256": "1a2626b77562a95917f8b3c0e4b539111397d6f0cb982571b723d9d15cdc5024",
+          "xmlOrdinal": 24,
+          "ordinal": 15,
+          "status": "PASSED"
+        },
+        {
+          "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+          "method": "refreshCookieCasHasOneWinnerAndKeepsAbsoluteExpiry",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+          "sourceSha256": "12782449226348a9f3e154c6c862e91538d5d1016367a0c2dd86babe61afd832",
+          "xmlOrdinal": 19,
+          "ordinal": 1,
+          "status": "PASSED"
+        }
+      ],
+      "actualReceipt": "ca3d_auth",
+      "proved": "Actual PG rejects previous/unknown JTI; actual Auth HTTP concurrent refresh has one200/one409 and preserves original JWT expiration/cookie max-age.",
+      "limits": "Does not advance a real client across absolute expiry or prove every cookie/CSRF/CORS path.",
+      "remainingObservableStep": "At accepted absolute-expiry boundary observe Gateway/PWA/TMA protected read+refresh denial and neutral client; retain D002 offline exception."
+    },
+    {
+      "id": "Q03-REUSE-05",
+      "boundaries": [
+        "BOUNDARY-07",
+        "RESEARCH-P10"
+      ],
+      "existingMethods": [
+        {
+          "classname": "ru.rutcampustrack.auth.integration.SessionAuthFlowIT",
+          "method": "passwordChangeCommitsClearRevokesBearerAndReplacesCredential",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+          "sourceSha256": "12782449226348a9f3e154c6c862e91538d5d1016367a0c2dd86babe61afd832",
+          "xmlOrdinal": 19,
+          "ordinal": 8,
+          "status": "PASSED"
+        },
+        {
+          "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+          "method": "passwordResetIsPurposeBoundAtomicAndRevokesEverySession",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "sourceSha256": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+          "xmlOrdinal": 7,
+          "ordinal": 3,
+          "status": "PASSED"
+        },
+        {
+          "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+          "method": "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "sourceSha256": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+          "xmlOrdinal": 7,
+          "ordinal": 4,
+          "status": "PASSED"
+        }
+      ],
+      "actualReceipt": "ca3d_auth",
+      "proved": "Existing named real Auth HTTP change/reset/Unicode methods PASS; current exact test bytes retained.",
+      "limits": "See dedicated P10 verified-case for credential-data sensitivity; not whole credentials/admin-copy/export/browser acceptance, composed/decomposed pair or all role grants.",
+      "remainingObservableStep": "Reuse exact credential/hash/session/server checks; observe accepted reset/change client flow and old access/refresh denial; existing credential-projection/export authority checks joined only by exact evidence."
+    },
+    {
+      "id": "Q03-REUSE-06",
+      "boundaries": [
+        "BOUNDARY-06",
+        "D003"
+      ],
+      "existingMethods": [
+        {
+          "classname": "ru.rutcampustrack.auth.integration.TmaIT",
+          "method": "replayCannotAuthenticateAfterTelegramBindingIsRemoved",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/TmaIT.java",
+          "sourceSha256": "c3a819f34c4ba0efb8907afb6e883d8f5922346d91806a221eab5dc152d3f0f4",
+          "xmlOrdinal": 20,
+          "ordinal": 3,
+          "status": "PASSED"
+        },
+        {
+          "classname": "ru.rutcampustrack.auth.integration.TmaIT",
+          "method": "replayReadsChangedGrantsInsteadOfReissuingPreviousSelectedAuthority",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/TmaIT.java",
+          "sourceSha256": "c3a819f34c4ba0efb8907afb6e883d8f5922346d91806a221eab5dc152d3f0f4",
+          "xmlOrdinal": 20,
+          "ordinal": 4,
+          "status": "PASSED"
+        }
+      ],
+      "actualReceipt": "ca3d_auth",
+      "proved": "Actual Auth HTTP signed proof reuse after unbind returns401 without new auth_sessions; suspended-grant replay yields neutral session with null active role and current SUSPENDED grants.",
+      "limits": "Synthetic signer; not native Telegram host, external bot, all age boundaries or same-session idempotence.",
+      "remainingObservableStep": "Reuse finite unbind proof; current897 browser reuse/suspend already proves real adapter+UI distinction; native provider/device remains separate only where required."
+    },
+    {
+      "id": "Q03-REUSE-07",
+      "boundaries": [
+        "BOUNDARY-02",
+        "RESEARCH-P06"
+      ],
+      "existingMethods": [
+        {
+          "classname": "ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT",
+          "method": "durableRevokeSurvivesReconstructionAndRealAuthorityOutageFailsClosed",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+          "sourceSha256": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2",
+          "xmlOrdinal": 11,
+          "ordinal": 3,
+          "status": "PASSED"
+        }
+      ],
+      "actualReceipt": "ca3d_auth",
+      "proved": "Real PostgreSQL durable revoke survives fresh datasource/authority reconstruction; real paused-DB outage typed fail-closed and recovery preserves authority/JTI/state; named case existing PASS.",
+      "limits": "Standalone MockMvc admission over genuine PG; reconstruction is not Auth OS process restart; no Gateway/browser/all-role outage closure.",
+      "remainingObservableStep": "Do not replay PG/outage proof; on reusable real Auth process restart keep DB, then verify revoked session denied/live control admitted via Gateway."
+    },
+    {
+      "id": "Q03-REUSE-08",
+      "boundaries": [
+        "BOUNDARY-02",
+        "BOUNDARY-06",
+        "RESEARCH-P08"
+      ],
+      "existingMethods": [
+        {
+          "method": "Playwright test at historical source line 278",
+          "source": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sourceRevision": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+          "sourceSha256": "8db10a60dd144d87cb2609f73b963ddbdeaa123a096cafae6886d26d1c22a540",
+          "status": "passed"
+        },
+        {
+          "method": "Playwright test at historical source line 296",
+          "source": "tests/e2e/specs/mobile-real-server.spec.ts",
+          "sourceRevision": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+          "sourceSha256": "8db10a60dd144d87cb2609f73b963ddbdeaa123a096cafae6886d26d1c22a540",
+          "status": "passed"
+        }
+      ],
+      "actualReceipt": "897_browser",
+      "proved": "Real Vue/Chromium/backend: second session revokes browser session -> login/no protected nav/old bearer401; repeated valid TMA proof -> TEACHER UI then actual suspension -> neutral/no nav, role403 and protected read/write403.",
+      "limits": "Historical exact finite cases; synthetic Telegram host; no logout-all, absolute expiry, unaffected role or native provider; three other next5 cases failed/timed out. Current f8b checking source/lines changed.",
+      "remainingObservableStep": "Use current genuine CI results when separately available; no unchanged full Auth replay needed for these two historical accepted boundaries."
+    },
+    {
+      "id": "Q03-REUSE-09",
+      "boundaries": [
+        "BOUNDARY-08",
+        "RESEARCH-P11"
+      ],
+      "existingMethods": [
+        {
+          "xmlOrdinal": 3,
+          "suiteOrdinal": 1,
+          "ordinal": 3,
+          "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitIT",
+          "method": "fixedAndChunkedLoginBodiesOver4096AreRejectedBeforeUpstreamHttp",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java",
+          "sourceSha256": "c95fc94ba6b76902bea007c45db7576b49ac8fe17d34afa472c741c31d1527ee"
+        }
+      ],
+      "actualReceipt": "a032_gateway",
+      "proved": "Existing real Gateway TCP fixed/chunked 4097 ->413 without upstream; exact4096 reaches loopback HTTP upstream, no reference-count error.",
+      "limits": "Upstream witness is not genuine Auth credentials/direct-Auth reachability; inherited three composite skips not PASS; B014 frozen and excluded.",
+      "remainingObservableStep": "Only direct-Auth reachability/filter boundary remains if independently required; do not repeat or substitute frozen IP-limit witness."
+    },
+    {
+      "id": "Q03-REUSE-10",
+      "boundaries": [
+        "BOUNDARY-04",
+        "BOUNDARY-05"
+      ],
+      "existingMethods": [
+        {
+          "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+          "method": "passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "sourceSha256": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+          "xmlOrdinal": 7,
+          "ordinal": 8,
+          "status": "PASSED"
+        },
+        {
+          "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+          "method": "passwordResetFailedAttemptsSurviveANewChallenge",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "sourceSha256": "954457e0176db17feecb6fc5dd115eae098cf8b1eb7a93acd393c377a1ec817d",
+          "xmlOrdinal": 7,
+          "ordinal": 7,
+          "status": "PASSED"
+        },
+        {
+          "classname": "ru.rutcampustrack.auth.integration.QrLoginFlowIT",
+          "method": "browserBoundSingleWinnerExchangeAndLostResponseReplaySurviveQrExpiry",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+          "sourceSha256": "f9660422c25624bdffbbf31b0ad9505b933164df8c332e6480d29129c2beb88e",
+          "xmlOrdinal": 16,
+          "ordinal": 5,
+          "status": "PASSED"
+        },
+        {
+          "classname": "ru.rutcampustrack.auth.integration.QrLoginFlowIT",
+          "method": "sourceRevocationAndSourceOrTargetAuthorityDriftFenceExchangeAndRecovery",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+          "sourceSha256": "f9660422c25624bdffbbf31b0ad9505b933164df8c332e6480d29129c2beb88e",
+          "xmlOrdinal": 16,
+          "ordinal": 1,
+          "status": "PASSED"
+        }
+      ],
+      "actualReceipt": "ca3d_auth",
+      "proved": "Existing named real HTTP PostgreSQL/Redis OTP-reset expiry/consume/budget and QR single-winner/replay/revocation methods PASS.",
+      "limits": "Finite listed paths; exact login OTP120s/3-in5min/concurrent consume and all dangerous-action purposes cannot be inferred from reset/QR counts; no mobile QR UI requirement.",
+      "remainingObservableStep": "Inspect existing corresponding exact accepted OTP boundary proof only if matrix still lacks it; execute only missing public observable, preserve current accepted retry/no new response policy."
+    }
+  ],
+  "matrixDisposition": {
+    "BOUNDARY-01_to_08": "Remain UNKNOWN families; refine with listed finite proved boundaries only",
+    "unaffectedRole": "Concrete remaining Auth refresh/Gateway+Vue proof after other-role terminal/revoke; no bug inferred",
+    "OSrestart": "Missing real Auth OS process restart proof; authority reconstruction cannot substitute",
+    "B013_B014": "FROZEN/EXCLUDED FROM THIS WORK; no equivalent execution or preparation",
+    "Q012": "Out of scope"
+  },
+  "nextConcreteRuntimeStep": "After current critical CI is resolved, reuse one synthetic multi-role Gateway+Vue journey for terminal/unaffected-role and logout-all/expiry/reset readback; add real Auth OS restart only for the durable-restart gap. Reuse listed existing PG/HTTP/QR/TMA/Unicode proofs; no new full Auth audit/suite.",
+  "effects": {
+    "repositoryWrites": false,
+    "testsJavaNodeBrowserDockerNetwork": false,
+    "credentialRawLogExportPrivateEnvReads": false,
+    "createdOnly": "/workspace/scratch/rct-validation/q03_existing_auth_proof_join/outcome.safe.json"
+  },
+  "P20_restart_reuse_4065": {
+    "verdict": "NO: existing P20 cannot close BOUNDARY-02 / RESEARCH-P06 durable-revocation-after-real-Auth-restart clause; this is missing proof, not an observed defect.",
+    "actualProof": "current-9f09-application-recovery.safe.json: producer9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2/run38541704229/artifact11883208936/digest sha256:b8177131827276c34f77a84f850a6643ed838266b63b55680d1ed9279eb5cf83; actual restore job115777784325 step38 SUCCESS313s and all four named application recovery API phases PASS. Checkout558049cbc660046bb067f573c8213d502a8af997/treee6a46fede37a826bd8e5a93f00a8c569a022b264 officially joined to3908+9f09 in current-9f09-checkout.safe.json.",
+    "sourceJoin": "Current4065 application-recovery.spec.ts SHA fcb60e300d5ac50b80ede67d92432c43296f9420c5d03d70f2ae42a36f364d1e, scripts/test-application-recovery.py SHA8466796677406a7d6dfa653fb2b81f912d680bc8cc6583ea8f64dc74e07dd156 and scripts/recovery.py SHA1d5dc8d93a8f2aaf4ecf1c65aaae94776e57c582986c2178786df417fb926296 byte-identical9f09. Current CI critical db_services→attachment block byte-identical9f09 (SHAf7b7d6188c7244554a814f6e89b919ed6707fea2373d806f56b1c68b77382ce5).",
+    "qualifiedReuse": "CI1351–1401 stops all app writers including auth-service, restores fresh Academic/Schedule/Mongo targets, disconnects sourceDBs and restarts same app containers/images/signing volume. Thus real Auth restart/restoredDB and later successful admission are reusable API facts.",
+    "missingWitness": "No pre-backup deliberate session revocation or saved revoked access/refresh identity/control in Seed19–26/seed.json316–325. Pending385–386 logs in; admit413–417 logs in again and saves ONLY post-restart bearer tokens. Attachment420–435 reuses that new token. Python verify516+ checks transfer/history/replay, not revoked-session denial. Incidental auth rows in full DB inventory cannot substitute for an identified revoked fixture and HTTP oracle.",
+    "finiteNextAssertion": "Keep the existing P20 lifecycle/harness: before backup deliberately revoke one owned synthetic session, retain its access+refresh privately and a separate still-live control; after actual Auth restart on retained/restored authority DB assert old access and refresh401 through Gateway while the preexisting live control remains200. Existing4058 logout-all proof separately covers revocation itself; do not repeat it or equate fresh credential admission/changed password with this restart assertion.",
+    "limits": "P20 APIRequestContexts only; no browser or wholeQ03/P20 promotion. No runtime/network/Source/shared-doc changes; existing own outcome only; Q012 pending/B013B014 frozen. SelectedSol6.1/high actualUNKNOWN."
+  },
+  "P20_restart_witness_author_ready": {
+    "author_commit": "0edb038dad1c7aa30b797d437b4ccd9a20643806",
+    "status": "AUTHOR_COMMITTED_SOURCE_AND_ORACLE_CHECKS_PASS_ACTUAL_RESTART_NOT_RUN",
+    "source_sha256": {
+      "tests/e2e/fixtures/application-recovery.spec.ts": "525cfc1f05ffa5b0f6fd0669a2f50c2694f01b7897990e2f62f3368f9ea7923d",
+      "services/auth-service/auth-app/src/main/resources/application.yml": "b59ac631cf4a0a75775d7f3bf8d563a3841357442812071b24999add4de2f315",
+      "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/AuthSessionController.java": "c938d973102fb910f8539ace9f01529a8c9325fb7611397ef659047f81c799d2",
+      "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2"
+    },
+    "clean": true,
+    "control_result": {
+      "valid_pair_passed": true,
+      "resurrected_access_rejected": true,
+      "resurrected_refresh_rejected": true,
+      "expired_denial_rejected": true,
+      "exact_helper_sha256": "9545fdfd09a95fc9e39112954b20fe03e2a3a7d02038b0018da076656d6c307f",
+      "qualification": "RAM oracle sensitivity only; no Auth, Gateway, DB or restart runtime"
+    },
+    "tool_session": {
+      "id": 16177,
+      "exit": 0,
+      "reaped": true
+    },
+    "private_input_cleanup": "No actual credential/private witness generated locally. Exact helper control used synthetic proofs only in RAM; own TMP/control module+selected config+cache+PWlink removed; finite control log retained0600.",
+    "checks": "Node16177 all PASS7.492s; exact-helper RAM oracle controls only, actual Auth restart NOT_RUN; independent review next"
+  },
+  "P20_restart_witness_independent_Source_review": {
+    "verdict": "APPROVE_SOURCE; no blocking findings. Exact author0edb038dad1c7aa30b797d437b4ccd9a20643806/frozen4065; fixtureSHA525cfc1f05ffa5b0f6fd0669a2f50c2694f01b7897990e2f62f3368f9ea7923d independently matches clean current file. Actual added Auth restart witness NOT_RUN, no BOUNDARY-02/P06 PASS yet. Requested/selectedSol6.1/high actualUNKNOWN.",
+    "scopeAndBasis": "Only one application-recovery.spec.ts diff4065 (113+/1-), current governing TASK/CURRENT/decisions/questions/resources/RULES and own P20 finite-NO disposition; author q03_recovery_revocation and Root Q03-existing-finite-auth-proof-reuse#P20_restart_witness_author_ready. Independently opened actual Auth admission/targeted revoke/session response/cookie/JWT/TTL code and existing unchanged owned CI restore/upload/cleanup/config boundaries.",
+    "oracle": "Seed407–428 creates two actual same-student sessions after slow original setup; admit itself requires login/session200 and selected role. Capture issued target refresh before second login overwrites context cookie; exact target SID matches both issued proofs, control SID differs. Live control deletes only targetSID204. Both before backup and after real restore/restart, exact original access401 and original refresh cookie+same-origin401 are bracketed by same retained control access200, with exact controlSID/user identity before. Admit523–524 executes this BEFORE any fresh admissions; original pending admissions do not replace either retained proof. Auth selected-revoke uses durable authority; unchanged CI stops Auth among all writers, restores AcademicDB, restarts same apps/signing volume, and excludes sourceDB endpoints. No logout-all/password/fresh-login substitute.",
+    "timeQualification": "JWT metadata decoding is explicitly not signature verification; original real admission/issued cookie plus unchanged Gateway live control supply authenticity/context. Helpers enforce common issuer/subject, exact session linkage, nearby access issuance and all three exp values strictly after ordinary Node Date.now before+after HTTP checks. No page/security clock mutation; only old educational clock setup remains. Current access900s/refresh604800s. If future backup/restart exceeds accessTTL or issuance skew60s, fixture fails closed instead of claiming durable denial from expiry; success still requires an unexpired retained control.",
+    "privacyAndLifetime": "Proofs only RAM and one bounded private checkpoint outside artifacts; current0700 run/ownership marker, seed absent-output guard, savewx0600, postrestore regular non-symlink0600 size<=65536 read. Payload claims/token/cookie/IDs never asserted through value-printing expect or logged: all new failures fixed strings; safe reporter/private guards remain. Explicit artifact allowlist uploads only closed safe JSON, not checkpoint/storageState/request bodies. API context disposed in existing finally. Existing CI retains private job-temporary run/bundle until ephemeral runner disposal; this review does NOT claim immediate checkpoint deletion or secure erasure. No new local real credential was generated in author controls.",
+    "preservation": "All original setup/pending/transfer/history/exact replay/attachment assertions/statuses and CI clocks/timeouts/gates unchanged; only seed phaseOutputs array expanded to include private witness. API-only/no browser and narrow Q03 restart clause, not wholeQ03 or externalfilesystem acceptance.",
+    "controls": "Recorded actual Node16177 formatter/strictselectedTSC/exact-helper RAM controls/ordinaryhooks/commit PASS7.492s, all owned processes reaped/TMP+linkgone. Independently read recorded control: TypeScript AST extracts EXACT requireValue/proofClaims/requireUnexpiredWitness/verifyRevocation functions from this file, transpiles, finite request fake checks actualpaths/explicitoldcookie+Origin; valid200/401/401/200 passes; resurrected access200 and refresh200 each reject their specific static error; expired denied access rejects before HTTP. Exact helperSHA9545fdfd09a95fc9e39112954b20fe03e2a3a7d02038b0018da076656d6c307f. This is oracle sensitivity only, not real Auth/signature/DB/process restart evidence; no additional reviewer execution.",
+    "next": "Integrate exact approved fixture and reuse existing otherwise-required ordinary P20 lane. Only after seed/admit plus actual successful retained-DB Auth restart receipts can Root close this narrow remaining clause. No new stand/runner or repeated PG/outage/logout-all campaign.",
+    "effects": "Existing own outcome appended only; no Source/shared docs edits/native checks/network/DB/CI/browser/credentials/subagents. B013B014 frozen/Q012 pending unchanged."
+  }
+}

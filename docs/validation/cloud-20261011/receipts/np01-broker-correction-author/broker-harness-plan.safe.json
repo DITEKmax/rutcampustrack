@@ -1,0 +1,124 @@
+{
+  "utc": "2026-10-12T05:02:09.894067+00:00",
+  "scope": "SOURCE_ONLY twoNEW files",
+  "state": "CORRECTED_SOURCE_READY_FOR_INDEPENDENT_RECHECK_RUNTIME_NOT_RUN",
+  "base_sha": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "case": "BotCredentialBrokerBridgeIT.actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+  "created_files": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "sha256": "d586e179eaaef8565940b7812fda77f472e25d32e0bd154756e329867eabd966",
+      "lines": 547
+    },
+    {
+      "path": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+      "sha256": "53e5908543256940ca473e2421aa3d247c54d9976aa1b7a17f05d07463746050",
+      "lines": 609
+    }
+  ],
+  "old24_and_65seal": "Exact verified unchanged; no generated/product/config edits",
+  "classpath_owner": "ci_academic_heap artifact-only74bca165963b5fd719ad1d817b326105c408e4eb/ad21eb3f554c465665b662714c62bdd15612e8cd2b5ff8c529b9508cd90f9454 root reviewed/integrated908; GRAPH_COMPILE1 separate source-read-only owner active, actual two new harness compile/link and full Academic IT remain pending. Own WT build unchanged, no consumer compile before root sole exact dependency import/publication.",
+  "checks_done": [
+    "Python AST without runner imports/network",
+    "Pure extracted exact-NEW card helpers: old oracle accepts wrong NEW deletion; corrected rejects deletion/fulltext change, exact positive passes",
+    "Pure closed worker environment with fake parent data only: unrelated credential/JDK/Python override names omitted, required missing input denied",
+    "12 static source controls; no real parent environment values read",
+    "git scoped whitespace",
+    "24 original owned paths byteexact",
+    "65-member DOMAIN1 archive byteexact",
+    "Original9f two-source/checkpoint/review preserved"
+  ],
+  "checks_not_run": [
+    "Java compile/link of these two new files",
+    "Actual signals/worker reaping/child env runtime",
+    "Actual Docker loopback binding inspect",
+    "Auth->Rabbit->Redis->nativeconsumer/provider normal/retry/DLQ/heldlease flow",
+    "Current unfiltered Academic unit/IT dependency regression; separate scope/lease"
+  ],
+  "cases": [
+    {
+      "id": "NP01-BR-01",
+      "source": "T002/P12/L01/P21",
+      "expected": "ActualAuthJdbc change/clear/gen/sessionrevoke/v2outbox committed; JPApublisher findsrow, realRabbitSenderconfirms andSENT; actualconsumer cleanupCard then realRediscompleted and nativeRabbitACKcounter+ready0/unacked0"
+    },
+    {
+      "id": "NP01-BR-02",
+      "source": "T002/P12",
+      "expected": "Republish exactsame producedstored envelope with actualsender: nativeACKcounter advances; originalcompletedRedis marker and exact provider delete/edit/notice effects unchanged"
+    },
+    {
+      "id": "NP01-BR-03",
+      "source": "T002",
+      "expected": "Actual unlinkedAuthreset retains originalUID/v2/noTelegram snapshot; exact originalUID cards removed; capture separate oldforeign and NEWforeign (own_chat,message_id)/fulltext and preserve both, no redirectednotice"
+    },
+    {
+      "id": "NP01-BR-04",
+      "source": "T002/P12",
+      "expected": "Providerconfirmedwrite/lostreply +refuseddelete keeps UNCERTAIN/PENDING; actualconsumer Redisrelease observed, nativeRabbitredelivery, ACKcounter unchanged; no sanitation edit/no completed marker"
+    },
+    {
+      "id": "NP01-BR-05",
+      "source": "T002/P12",
+      "expected": "Actualworker process frozenonlyafter actualRedisNone, rechecked/resumedifclaim raced, killed+awaited; durableRabbitready1/unacked0/consumers0 andtrackerPENDING/providerstillsecret; freshworker getsoriginaldelivery and confirmedexactdelete ->CLEANED/Rediscompleted/nativeACK with providerstate retained; await/reap only owned worker while supervisor remains alive, keep this released-claim death window distinct"
+    },
+    {
+      "id": "NP01-BR-07",
+      "source": "T002/P12/root held-lease boundary04:36",
+      "expected": "Actual default300s processing lease, PTTL270000..300000 and unacked1/ACK unchanged/PENDING/exactownfulltext before provider effect; SIGKILL only ownedworker +actual await/reap +Java registered ProcessHandle terminal callback. Original opaque processing key survives; one fresh worker causes >=two native Rabbit redeliveries proving NACK/requeue while ACKunchanged. Every heldlease sample bracketed by same Rediskey asserts PENDING/exactowncard/NEWforeignfulltext. Naturalexpiry measured fromactualPTTL/monotonicclock (no TTL shortening/Rediswrites) enables exact originalcard delete/SQLCLEANED/Rediscompleted/nativeACK/emptyqueue, oldforeign+NEWforeign exact unchanged."
+    },
+    {
+      "id": "NP01-BR-06",
+      "source": "existing password.changed version boundary/consumer DLQ policy",
+      "expected": "Negative wirecode991 oncopy ofactualstored envelope withneweventID; nativeactualhandler ValueError -> realdurableDLQ x-death(queue,reason=rejected), actualRedisclaimreleased/uncompleted; negative wireinput not claimed realAuthproducer output"
+    }
+  ],
+  "resources": {
+    "grant": "Separate NP01_BROKER1 after independent source recheck and root coherent dependency publication; no current runtime lease",
+    "jvm": "OneGradle768MiB/maxworker1 +one reviewed current testfork1GiB; explicit integration task/fullAcademicIT separate grant, no full Boot app",
+    "containers": [
+      "ownpostgres:16-alpine",
+      "ownrabbitmq:3.13-management-alpine",
+      "ownredis:7-alpine"
+    ],
+    "namespace": "Randomown label and fresh own Rabbit vhost. Every declared PG/Rabbit AMQP+management/Redis port explicitly127.0.0.1:0; actualinspect gating ALL published bindings beforeuse",
+    "python": "READONLY pinnedPython3.12: supervisor/provider/observer +ONE actualconsumer at a time; three worker lifetimes/two sequential replacements, no worker overlap/AIchildren/daemon",
+    "socketservers": "sameJavafork AcademicproductionNettyTLS+syntheticcontrol HTTP; supervisorAiohttp exactcardprovider",
+    "floor": "4GiB disk prelaunch/periodic; measure new source+containers/heap capacity beforelease",
+    "allocation": "No Docker/JVM/network allocation yet. Beforegrant inspect actual available CPU/cgroup memory/free disk and planned images/current source bytes. Runtime incremental disk/image/container sizes UNKNOWN until allowed inspection; retain4GiB floor and source/evidence. Root must authorize measured budget before launch."
+  },
+  "clocks": {
+    "Authcommand": "fixedUTC2026-10-12T00:00:00Z withmonotonic secondsequence; actualJDBCports commandclock only",
+    "DB/JPAoutboxsent/Rabbit/Redis": "actual ownruntime clocks; no TTL/expiry changes, BotGuard default300s/7d",
+    "deadlines": "JVMsupervisor600s total (natural default300s expiry included); monotonic Python observable30s, each ownreleased/held freeze15s, providerHTTP5s, worker stop5+forcewait5, parentTERM15/workerall10/parent5, providercleanup5, keytool30. Toolpoll<=60s, no sleep daemon. Lease default300/completion7d unchanged.",
+    "teaching": "No teachingtime policy in this flow; Europe/Moscow unchanged"
+  },
+  "cleanup": [
+    "Python signal handler cancels supervisor once; supervisorfinally kills+awaits/reaps only current ownedworker before exiting; callback Java checks previously captured own ProcessHandle terminal; normal three worker lifetimes/reaps required",
+    "Java cleanup first TERM supervisor while controlHTTP remains available; wait15. Fallback forceonly registered/current descendants then awaittheirterminal whileparentalive beforeparentkill. Unexpected parentdeath attempts only known ownhandles and reports unsettled rather than falseclosed; external runner retains exact ownPIDs onfailure",
+    "Afterworkerreap close observerAMQP, generic/protectedgrpc, Redis and BotHTTP, release provider gate and close provider5s; Java await controlthreads/NettyTLS10s, close JPA and broker resources",
+    "Try-resources closes only threefresh nonreuseowncontainers; future external receipt must identify own containerIDs and inspect absent afterrun; no sharedqueue/volume/data/globalprune",
+    "OwnTempDir synthetickey PKCS12 mode600; child environments explicit own synthetic mapping, no parentcredential reads/copy; workerstdout/stderr DEVNULL, keytoolDISCARD, only safe booleans/counts/phase/PTTL/elapsed/redelivery/PIDs; raw future logXMLprivate600 and excluded from safe transfer"
+  ],
+  "limitations": [
+    "Actual AuthJdbc credential transaction/outbox/real broker flow planned, not AuthHTTP/passwordpolicy/fullapplication startup",
+    "External Telegram not exercised; own realistic loopback provider exactmessage state",
+    "All broker/nativeACK/retry/DLQ and childcleanup/loopback actuals NOT_RUN until separate lease; source guard PASS does not close runtime P12/T002",
+    "Same UID host process isolation/no hard per-process cgroup claim; closed environments protect unrelatedparent inputs, trusted synthetic service tokens requiredonlyworker own protected capability"
+  ],
+  "frozen_source_sha": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "old24_verified_exact": true,
+  "old65seal_verified_exact": true,
+  "worktree_clean": true,
+  "original_broker_source_sha": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+  "source_findings": {
+    "BR-T01": "Exact new/old tuple+fulltext helper controls, meaningful harmless wrongNEW deletion/text mutation proof; actual provider sensitivity planned separately",
+    "BR-G01": "Java child ProcessBuilder env.clear minimal LANG/LC_ALL/TZ +own required mapping, worker explicit11 inputs+9 runtime fields; no inherited unrelated credentials or JDK/Python overrides",
+    "BR-G02": "Worker PID registered only if actual supervisor child; handle/onExit captured at start; Python signal handled once, bounded ownkill/wait then worker_reaped callback while supervisor alive; Java TERM waits15 then ownworkerterminal before parentforce, explicit unsettled failure with ownPID metadata",
+    "BR-R01": "All declared exposed ports explicit HostIp127.0.0.1 ephemeral0 and PublishAllPortsfalse; each container native inspected immediately afterstart, everypublished binding127/exactdeclaredset/positivehostport required"
+  },
+  "selective_future_sensitivity": {
+    "state": "PROPOSED_NOT_RUN_REQUIRES_ROOT_BOUNDED_RUNTIME_DECISION_AFTER_NORMAL_GREEN",
+    "BR-T01": "In isolated same ownedprovider harness copy after resetcleanup before exactNEW oracle, delete ONLY capturednewforeign_key; retain exactoldforeign_key/text. Native intended BridgeFailure must occur at exactNEW invariant, no infra/syntax fault; restore source/provider fixture and final normal samecase green. Harmless extracted purehelper proof already actualPASS, no actual provider mutation yet.",
+    "heldlease": "No defective production consumer exposure proposed; use source grounded actual correct NACK/requeue boundary only. Runtime assertion failure should retain safe actual keytype/PTTL/ack/ready/unacked/PENDING/cardpredicate/ownPID facts, never secret/token/text."
+  }
+}

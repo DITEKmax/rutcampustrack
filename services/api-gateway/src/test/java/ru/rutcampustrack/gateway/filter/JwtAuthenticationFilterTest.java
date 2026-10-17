@@ -1,21 +1,14 @@
 package ru.rutcampustrack.gateway.filter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
-import org.springframework.mock.web.server.MockServerWebExchange;
-import reactor.core.publisher.Mono;
-import ru.rutcampustrack.gateway.config.PublicKeyConfig;
-
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -29,13 +22,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
+import reactor.core.publisher.Mono;
+import ru.rutcampustrack.gateway.config.PublicKeyConfig;
 
 class JwtAuthenticationFilterTest {
 
@@ -111,9 +110,11 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void authHeaderWithoutBearerPrefix_returns401() {
-        var exchange = exchange(MockServerHttpRequest.get("/api/academic/groups")
-                .header(HttpHeaders.AUTHORIZATION, "Basic sometoken")
-                .build());
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.get("/api/academic/groups")
+                                .header(HttpHeaders.AUTHORIZATION, "Basic sometoken")
+                                .build());
         var chain = mock(GatewayFilterChain.class);
 
         filter.filter(exchange, chain).block();
@@ -124,16 +125,17 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void validAccess_protectedRoute_setsPrivateExpectationsAndStripsIdentityHeaders() {
-        String token = generateAccessToken(Map.of("role", "STUDENT"),
-                futureExpiry());
-        var exchange = exchange(MockServerHttpRequest.get("/api/academic/groups")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .header("X-User-Id", "666")
-                .header("X-Internal-Token", "forged")
-                .header("X-Login", "forged")
-                .header("x-gRoUp-Id", "666")
-                .header("X-iS-HeAdMaN", "true")
-                .build());
+        String token = generateAccessToken(Map.of("role", "STUDENT"), futureExpiry());
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.get("/api/academic/groups")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .header("X-User-Id", "666")
+                                .header("X-Internal-Token", "forged")
+                                .header("X-Login", "forged")
+                                .header("x-gRoUp-Id", "666")
+                                .header("X-iS-HeAdMaN", "true")
+                                .build());
         ArgumentCaptor<org.springframework.web.server.ServerWebExchange> captor =
                 ArgumentCaptor.forClass(org.springframework.web.server.ServerWebExchange.class);
         var chain = mock(GatewayFilterChain.class);
@@ -150,29 +152,52 @@ class JwtAuthenticationFilterTest {
                 .noneMatch(name -> name.equalsIgnoreCase("X-Group-Id"));
         assertThat(forwarded.getRequest().getHeaders().keySet())
                 .noneMatch(name -> name.equalsIgnoreCase("X-Is-Headman"));
-        assertThat((String) forwarded.getAttribute(JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE))
+        assertThat(
+                        (String)
+                                forwarded.getAttribute(
+                                        JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE))
                 .isEqualTo(token);
-        assertThat((String) forwarded.getAttribute(JwtAuthenticationFilter.EXPECTED_USER_ID_ATTRIBUTE))
+        assertThat(
+                        (String)
+                                forwarded.getAttribute(
+                                        JwtAuthenticationFilter.EXPECTED_USER_ID_ATTRIBUTE))
                 .isEqualTo("123");
-        assertThat((String) forwarded.getAttribute(JwtAuthenticationFilter.EXPECTED_SESSION_ID_ATTRIBUTE))
+        assertThat(
+                        (String)
+                                forwarded.getAttribute(
+                                        JwtAuthenticationFilter.EXPECTED_SESSION_ID_ATTRIBUTE))
                 .isEqualTo(SESSION_ID);
-        assertThat((String) forwarded.getAttribute(JwtAuthenticationFilter.EXPECTED_SESSION_VERSION_ATTRIBUTE))
+        assertThat(
+                        (String)
+                                forwarded.getAttribute(
+                                        JwtAuthenticationFilter.EXPECTED_SESSION_VERSION_ATTRIBUTE))
                 .isEqualTo("7");
-        assertThat((String) forwarded.getAttribute(JwtAuthenticationFilter.EXPECTED_ROLES_VERSION_ATTRIBUTE))
+        assertThat(
+                        (String)
+                                forwarded.getAttribute(
+                                        JwtAuthenticationFilter.EXPECTED_ROLES_VERSION_ATTRIBUTE))
                 .isEqualTo("3");
-        assertThat((Instant) forwarded.getAttribute(JwtAuthenticationFilter.ORIGINAL_ACCESS_EXPIRY_ATTRIBUTE))
+        assertThat(
+                        (Instant)
+                                forwarded.getAttribute(
+                                        JwtAuthenticationFilter.ORIGINAL_ACCESS_EXPIRY_ATTRIBUTE))
                 .isInstanceOf(Instant.class);
-        assertThat((String) forwarded.getAttribute(JwtAuthenticationFilter.AUTHENTICATED_USER_ID_ATTRIBUTE))
+        assertThat(
+                        (String)
+                                forwarded.getAttribute(
+                                        JwtAuthenticationFilter.AUTHENTICATED_USER_ID_ATTRIBUTE))
                 .isNull();
     }
 
     @Test
     void validAccess_withOptionalGroupIdString_passesWithoutLegacyGroupHeader() {
-        String token = generateAccessToken(Map.of("role", "STUDENT", "group_id", "42"),
-                futureExpiry());
-        var exchange = exchange(MockServerHttpRequest.get("/api/academic/groups")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build());
+        String token =
+                generateAccessToken(Map.of("role", "STUDENT", "group_id", "42"), futureExpiry());
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.get("/api/academic/groups")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .build());
         ArgumentCaptor<org.springframework.web.server.ServerWebExchange> captor =
                 ArgumentCaptor.forClass(org.springframework.web.server.ServerWebExchange.class);
         var chain = mock(GatewayFilterChain.class);
@@ -187,9 +212,11 @@ class JwtAuthenticationFilterTest {
     @Test
     void validAccess_withoutGroupId_passes() {
         String token = generateAccessToken(Map.of("role", "TEACHER"), futureExpiry());
-        var exchange = exchange(MockServerHttpRequest.get("/api/academic/groups")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build());
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.get("/api/academic/groups")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .build());
         var chain = acceptingChain();
 
         filter.filter(exchange, chain).block();
@@ -199,15 +226,23 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void validAccess_headmanRoleIsRecognizedWithoutLocalAuthorization() {
-        String token = generateAccessToken(Map.of(
-                "role", "HEADMAN",
-                "status", "EXPELLED",
-                "is_headman", true,
-                "readOnly", true
-        ), futureExpiry());
-        var exchange = exchange(MockServerHttpRequest.get("/api/academic/groups")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build());
+        String token =
+                generateAccessToken(
+                        Map.of(
+                                "role",
+                                "HEADMAN",
+                                "status",
+                                "EXPELLED",
+                                "is_headman",
+                                true,
+                                "readOnly",
+                                true),
+                        futureExpiry());
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.get("/api/academic/groups")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .build());
         var chain = acceptingChain();
 
         filter.filter(exchange, chain).block();
@@ -218,9 +253,11 @@ class JwtAuthenticationFilterTest {
     @Test
     void validAccess_onPostLogout_setsExpectationsForLiveAdmission() {
         String token = generateAccessToken(Map.of("role", "STUDENT"), futureExpiry());
-        var exchange = exchange(MockServerHttpRequest.post("/api/auth/logout")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build());
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.post("/api/auth/logout")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .build());
         ArgumentCaptor<org.springframework.web.server.ServerWebExchange> captor =
                 ArgumentCaptor.forClass(org.springframework.web.server.ServerWebExchange.class);
         var chain = mock(GatewayFilterChain.class);
@@ -229,31 +266,41 @@ class JwtAuthenticationFilterTest {
         filter.filter(exchange, chain).block();
 
         verify(chain).filter(any());
-        assertThat((String) captor.getValue()
-                .getAttribute(JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE))
+        assertThat(
+                        (String)
+                                captor.getValue()
+                                        .getAttribute(
+                                                JwtAuthenticationFilter
+                                                        .ORIGINAL_ACCESS_TOKEN_ATTRIBUTE))
                 .isEqualTo(token);
     }
 
     @Test
     void missingOrMalformedBearer_onPostLogout_remainsIdempotentAndUnauthenticated() {
         assertLogoutPasses(MockServerHttpRequest.post("/api/auth/logout").build());
-        assertLogoutPasses(MockServerHttpRequest.post("/api/auth/logout")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer not.a.jwt")
-                .build());
+        assertLogoutPasses(
+                MockServerHttpRequest.post("/api/auth/logout")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer not.a.jwt")
+                        .build());
     }
 
     @Test
     void validBootstrap_onAllowedLogoutPassesWithoutAdmissionExpectations() {
         String token = generateBootstrapToken();
-        var exchange = exchange(MockServerHttpRequest.post("/api/auth/logout")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build());
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.post("/api/auth/logout")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .build());
         var chain = acceptingChain();
 
         filter.filter(exchange, chain).block();
 
         verify(chain).filter(any());
-        assertThat((String) exchange.getAttribute(JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE))
+        assertThat(
+                        (String)
+                                exchange.getAttribute(
+                                        JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE))
                 .isNull();
     }
 
@@ -261,43 +308,67 @@ class JwtAuthenticationFilterTest {
     void bootstrapSelectedRevokeAllowsOnlyExactDeleteTargetRoute() {
         String token = generateBootstrapToken();
         for (String target : java.util.List.of(SESSION_ID, "not-a-uuid")) {
-            var allowed = exchange(MockServerHttpRequest.delete("/api/auth/sessions/" + target)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token).build());
+            var allowed =
+                    exchange(
+                            MockServerHttpRequest.delete("/api/auth/sessions/" + target)
+                                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                    .build());
             var chain = acceptingChain();
             filter.filter(allowed, chain).block();
             verify(chain).filter(any());
         }
-        for (String path : java.util.List.of("/api/auth/sessions", "/api/auth/sessions/",
-                "/api/auth/sessions/" + SESSION_ID + "/", "/api/auth/sessions/" + SESSION_ID + "/child")) {
-            var denied = exchange(MockServerHttpRequest.delete(path)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token).build());
+        for (String path :
+                java.util.List.of(
+                        "/api/auth/sessions",
+                        "/api/auth/sessions/",
+                        "/api/auth/sessions/" + SESSION_ID + "/",
+                        "/api/auth/sessions/" + SESSION_ID + "/child")) {
+            var denied =
+                    exchange(
+                            MockServerHttpRequest.delete(path)
+                                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                    .build());
             var chain = mock(GatewayFilterChain.class);
             filter.filter(denied, chain).block();
-            assertThat(denied.getResponse().getStatusCode()).as(path).isEqualTo(HttpStatus.FORBIDDEN);
+            assertThat(denied.getResponse().getStatusCode())
+                    .as(path)
+                    .isEqualTo(HttpStatus.FORBIDDEN);
             verify(chain, never()).filter(any());
         }
-        for (var method : java.util.List.of(org.springframework.http.HttpMethod.GET,
-                org.springframework.http.HttpMethod.POST, org.springframework.http.HttpMethod.PUT)) {
-            var denied = exchange(MockServerHttpRequest.method(method, "/api/auth/sessions/" + SESSION_ID)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token).build());
+        for (var method :
+                java.util.List.of(
+                        org.springframework.http.HttpMethod.GET,
+                        org.springframework.http.HttpMethod.POST,
+                        org.springframework.http.HttpMethod.PUT)) {
+            var denied =
+                    exchange(
+                            MockServerHttpRequest.method(method, "/api/auth/sessions/" + SESSION_ID)
+                                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                    .build());
             var chain = mock(GatewayFilterChain.class);
             filter.filter(denied, chain).block();
-            assertThat(denied.getResponse().getStatusCode()).as(method.toString()).isEqualTo(HttpStatus.FORBIDDEN);
+            assertThat(denied.getResponse().getStatusCode())
+                    .as(method.toString())
+                    .isEqualTo(HttpStatus.FORBIDDEN);
             verify(chain, never()).filter(any());
         }
-        var unauthenticated = exchange(MockServerHttpRequest.delete("/api/auth/sessions/" + SESSION_ID).build());
+        var unauthenticated =
+                exchange(MockServerHttpRequest.delete("/api/auth/sessions/" + SESSION_ID).build());
         var chain = mock(GatewayFilterChain.class);
         filter.filter(unauthenticated, chain).block();
-        assertThat(unauthenticated.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(unauthenticated.getResponse().getStatusCode())
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
         verify(chain, never()).filter(any());
     }
 
     @Test
     void validBootstrap_onProtectedRoute_isDeniedBeforeAdmission() {
         String token = generateBootstrapToken();
-        var exchange = exchange(MockServerHttpRequest.post("/api/academic/groups")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build());
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.post("/api/academic/groups")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .build());
         var chain = mock(GatewayFilterChain.class);
 
         filter.filter(exchange, chain).block();
@@ -309,9 +380,11 @@ class JwtAuthenticationFilterTest {
     @Test
     void expiredAccess_returns401() {
         String token = generateAccessToken(Map.of("role", "STUDENT"), expiredExpiry());
-        var exchange = exchange(MockServerHttpRequest.get("/api/academic/groups")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build());
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.get("/api/academic/groups")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .build());
         var chain = mock(GatewayFilterChain.class);
 
         filter.filter(exchange, chain).block();
@@ -322,9 +395,11 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void malformedJwt_returns401() {
-        var exchange = exchange(MockServerHttpRequest.get("/api/academic/groups")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer not.a.jwt")
-                .build());
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.get("/api/academic/groups")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer not.a.jwt")
+                                .build());
         var chain = mock(GatewayFilterChain.class);
 
         filter.filter(exchange, chain).block();
@@ -335,13 +410,15 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void optionsRequest_stripsClientIdentityHeadersAndPassesThrough() {
-        var exchange = exchange(MockServerHttpRequest.options("/api/academic/groups")
-                .header("X-User-Id", "999")
-                .header("X-Internal-Token", "forged")
-                .header("X-Login", "forged")
-                .header("x-GROUP-id", "999")
-                .header("x-is-HEADMAN", "true")
-                .build());
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.options("/api/academic/groups")
+                                .header("X-User-Id", "999")
+                                .header("X-Internal-Token", "forged")
+                                .header("X-Login", "forged")
+                                .header("x-GROUP-id", "999")
+                                .header("x-is-HEADMAN", "true")
+                                .build());
         ArgumentCaptor<org.springframework.web.server.ServerWebExchange> captor =
                 ArgumentCaptor.forClass(org.springframework.web.server.ServerWebExchange.class);
         var chain = mock(GatewayFilterChain.class);
@@ -385,6 +462,65 @@ class JwtAuthenticationFilterTest {
         assertUnauthorized(reason, signedRawToken(claims));
     }
 
+    @ParameterizedTest(name = "{0} fractional fixture at millisecond {1}")
+    @MethodSource("numericDateFixtureBoundaries")
+    void fractionalDateFixturePreservesNonzeroFractionAtWallSecondBoundary(
+            String field, long millis) throws Exception {
+        long second = Instant.now().getEpochSecond() + ("exp".equals(field) ? 60 : -5);
+        Map<String, Object> claims = validAccessClaims();
+        BigDecimal value =
+                fractionalNumericDate(Date.from(Instant.ofEpochMilli(second * 1_000L + millis)));
+        claims.put(field, value);
+        String token = signedRawToken(claims);
+        var payload =
+                new ObjectMapper().readTree(Base64.getUrlDecoder().decode(token.split("\\.")[1]));
+        var raw = payload.get(field);
+        boolean fractional = raw.decimalValue().remainder(BigDecimal.ONE).signum() != 0;
+        System.out.printf(
+                "NumericDate fixture field=%s millis=%d node=%s integral=%s fractional=%s%n",
+                field, millis, raw.getNodeType(), raw.isIntegralNumber(), fractional);
+        assertUnauthorized("controlled raw NumericDate boundary", token);
+        assertThat(fractional).as("fixture must have a nonzero fractional second").isTrue();
+    }
+
+    @ParameterizedTest(name = "legacy whole-second {0} fixture is valid")
+    @MethodSource("numericDateFields")
+    void legacyWholeWallSecondFixtureSerializesAsIntegralAndIsCorrectlyForwarded(String field)
+            throws Exception {
+        long second = Instant.now().getEpochSecond() + ("exp".equals(field) ? 60 : -5);
+        // Keep a nonzero units digit so BigDecimal's scientific input has scale zero.
+        if (second % 10 == 0) second += "exp".equals(field) ? 1 : -1;
+        Map<String, Object> claims = validAccessClaims();
+        claims.put(field, BigDecimal.valueOf((second * 1_000L) / 1000.0));
+        String token = signedRawToken(claims);
+        var payload =
+                new ObjectMapper().readTree(Base64.getUrlDecoder().decode(token.split("\\.")[1]));
+        assertThat(payload.get(field).isIntegralNumber()).isTrue();
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.get("/api/academic/groups")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .build());
+        var chain = acceptingChain();
+        filter.filter(exchange, chain).block();
+        verify(chain).filter(any());
+        assertThat(exchange.getResponse().getStatusCode()).isNull();
+    }
+
+    private static Stream<String> numericDateFields() {
+        return Stream.of("iat", "exp");
+    }
+
+    private static Stream<Arguments> numericDateFixtureBoundaries() {
+        return Stream.of(
+                Arguments.of("iat", 0L),
+                Arguments.of("iat", 1L),
+                Arguments.of("iat", 999L),
+                Arguments.of("exp", 0L),
+                Arguments.of("exp", 1L),
+                Arguments.of("exp", 999L));
+    }
+
     private static Stream<Arguments> invalidAccessClaims() {
         return Stream.of(
                 invalid("missing issuer", claims -> claims.remove("iss")),
@@ -393,26 +529,36 @@ class JwtAuthenticationFilterTest {
                 invalid("missing audience", claims -> claims.remove("aud")),
                 invalid("wrong audience", claims -> claims.put("aud", "other-audience")),
                 invalid("wrong type audience", claims -> claims.put("aud", 7L)),
-                invalid("multiple audiences", claims ->
-                        claims.put("aud", java.util.List.of("rutcampustrack", "other-audience"))),
+                invalid(
+                        "multiple audiences",
+                        claims ->
+                                claims.put(
+                                        "aud",
+                                        java.util.List.of("rutcampustrack", "other-audience"))),
                 invalid("missing issued-at", claims -> claims.remove("iat")),
                 invalid("string issued-at", claims -> claims.put("iat", "not-a-number")),
-                invalid("non-whole issued-at", claims -> claims.put("iat",
-                        BigDecimal.valueOf(Instant.now().minusSeconds(5).toEpochMilli() / 1000.0))),
-                invalid("future issued-at", claims -> claims.put("iat",
-                        Date.from(Instant.now().plusSeconds(60)))),
+                invalid(
+                        "non-whole issued-at",
+                        claims ->
+                                claims.put("iat", fractionalNumericDate((Date) claims.get("iat")))),
+                invalid(
+                        "future issued-at",
+                        claims -> claims.put("iat", Date.from(Instant.now().plusSeconds(60)))),
                 invalid("missing expiration", claims -> claims.remove("exp")),
                 invalid("string expiration", claims -> claims.put("exp", "not-a-number")),
-                invalid("non-whole expiration", claims -> claims.put("exp",
-                        BigDecimal.valueOf(Instant.now().plusSeconds(60).toEpochMilli() / 1000.0))),
-                invalid("issued-at is not before expiration", claims -> {
-                    Date expiry = (Date) claims.get("exp");
-                    claims.put("iat", expiry);
-                }),
+                invalid(
+                        "non-whole expiration",
+                        claims ->
+                                claims.put("exp", fractionalNumericDate((Date) claims.get("exp")))),
+                invalid(
+                        "issued-at is not before expiration",
+                        claims -> {
+                            Date expiry = (Date) claims.get("exp");
+                            claims.put("iat", expiry);
+                        }),
                 invalid("nonpositive subject", claims -> claims.put("sub", "0")),
                 invalid("negative subject", claims -> claims.put("sub", "-1")),
-                invalid("overflow subject", claims ->
-                        claims.put("sub", "9223372036854775808")),
+                invalid("overflow subject", claims -> claims.put("sub", "9223372036854775808")),
                 invalid("missing subject", claims -> claims.remove("sub")),
                 invalid("nonstring subject", claims -> claims.put("sub", 123L)),
                 invalid("wrong type token use", claims -> claims.put("token_use", 1L)),
@@ -429,14 +575,17 @@ class JwtAuthenticationFilterTest {
                 invalid("null group id", claims -> claims.put("group_id", null)),
                 invalid("wrong type headman flag", claims -> claims.put("is_headman", "false")),
                 invalid("missing read-only flag", claims -> claims.remove("readOnly")),
-                invalid("wrong type read-only flag", claims -> claims.put("readOnly", "false"))
-        );
+                invalid("wrong type read-only flag", claims -> claims.put("readOnly", "false")));
     }
 
     private static Arguments invalid(String reason, Consumer<Map<String, Object>> mutation) {
         Map<String, Object> claims = validAccessClaims();
         mutation.accept(claims);
         return Arguments.of(reason, claims);
+    }
+
+    private static BigDecimal fractionalNumericDate(Date date) {
+        return BigDecimal.valueOf(date.toInstant().getEpochSecond()).add(new BigDecimal("0.125"));
     }
 
     private static Map<String, Object> validAccessClaims() {
@@ -493,16 +642,18 @@ class JwtAuthenticationFilterTest {
     private static String signedRawToken(Map<String, Object> claims) {
         try {
             Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
-            String header = encoder.encodeToString("{\"alg\":\"RS256\",\"typ\":\"JWT\"}"
-                    .getBytes(StandardCharsets.UTF_8));
+            String header =
+                    encoder.encodeToString(
+                            "{\"alg\":\"RS256\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
             Map<String, Object> payloadClaims = new LinkedHashMap<>(claims);
-            for (String name : new String[]{"iat", "exp"}) {
+            for (String name : new String[] {"iat", "exp"}) {
                 Object value = payloadClaims.get(name);
                 if (value instanceof Date date) {
                     payloadClaims.put(name, date.getTime() / 1_000L);
                 }
             }
-            String payload = encoder.encodeToString(new ObjectMapper().writeValueAsBytes(payloadClaims));
+            String payload =
+                    encoder.encodeToString(new ObjectMapper().writeValueAsBytes(payloadClaims));
             String signingInput = header + "." + payload;
             Signature signature = Signature.getInstance("SHA256withRSA");
             signature.initSign(keyPair.getPrivate());
@@ -518,14 +669,17 @@ class JwtAuthenticationFilterTest {
     }
 
     private void assertUnauthorized(String reason, String token) {
-        var exchange = exchange(MockServerHttpRequest.get("/api/academic/groups")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build());
-        var chain = mock(GatewayFilterChain.class);
+        var exchange =
+                exchange(
+                        MockServerHttpRequest.get("/api/academic/groups")
+                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                .build());
+        var chain = acceptingChain();
 
         filter.filter(exchange, chain).block();
 
-        assertThat(exchange.getResponse().getStatusCode()).as(reason)
+        assertThat(exchange.getResponse().getStatusCode())
+                .as(reason)
                 .isEqualTo(HttpStatus.UNAUTHORIZED);
         verify(chain, never()).filter(any());
     }
@@ -547,7 +701,10 @@ class JwtAuthenticationFilterTest {
         filter.filter(exchange, chain).block();
 
         verify(chain).filter(any());
-        assertThat((String) exchange.getAttribute(JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE))
+        assertThat(
+                        (String)
+                                exchange.getAttribute(
+                                        JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE))
                 .isNull();
     }
 

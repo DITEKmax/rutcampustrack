@@ -1,0 +1,126 @@
+{
+  "scope": "INDEPENDENT_SELECTED_SOURCE_RAM_ONLY",
+  "controls": [
+    {
+      "name": "exact_25_members_plus_inner_manifest_CRC_bytes_modes",
+      "outcome": "PASS_SOURCE_RAM"
+    },
+    {
+      "name": "sealed_build_partial_document_positive_894_903_no_actual_prefix_read",
+      "outcome": "PASS_SOURCE_RAM"
+    },
+    {
+      "name": "partial_document_sha256",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": null
+    },
+    {
+      "name": "partial_document_mode",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": null
+    },
+    {
+      "name": "partial_document_nlink",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": null
+    },
+    {
+      "name": "partial_document_uid",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": null
+    },
+    {
+      "name": "partial_document_path",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": null
+    },
+    {
+      "name": "64_effects_OR_one_second_force_and_final_force",
+      "outcome": "PASS_SOURCE_RAM"
+    },
+    {
+      "name": "clock_consumed_during_scan",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": "FRESH_WINDOW_STOP"
+    },
+    {
+      "name": "fresh_resource_after_scan",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": "CHEAP_RESOURCE_OR_ALLOC_CAP"
+    },
+    {
+      "name": "slow_scan",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": "ALLOCATION_SAMPLE_STALE"
+    },
+    {
+      "name": "slow_cheap",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": "ALLOCATION_SAMPLE_STALE"
+    },
+    {
+      "name": "entry_headroom",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": "OWN_SAMPLE_HEADROOM"
+    },
+    {
+      "name": "forced_final_over_cap",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": "CHEAP_RESOURCE_OR_ALLOC_CAP"
+    },
+    {
+      "name": "mutable_old",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": "PROTECTED_PREFIX_NODE_CHANGED"
+    },
+    {
+      "name": "missing_old",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": "PROTECTED_PREFIX_NODE_MISSING"
+    },
+    {
+      "name": "foreign_outside_app",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": "FOREIGN_PREFIX_ADDITION"
+    },
+    {
+      "name": "new_alias",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": "NEW_MEMBER_BOUND"
+    },
+    {
+      "name": "new_oversize",
+      "outcome": "PASS_SOURCE_RAM",
+      "denial_code": "NEW_MEMBER_BOUND"
+    },
+    {
+      "name": "F01_exact_manifest_consumer_keyerror_before_namespace",
+      "outcome": "PASS_SOURCE_RAM",
+      "exception_key": "files"
+    },
+    {
+      "name": "F02_receipt_write_and_implicit_flush_after_cleanup_boundary",
+      "outcome": "PASS_SOURCE_RAM",
+      "external_gate_before_boundary": true,
+      "write_after_boundary": true,
+      "actual_file_effects": 0
+    },
+    {
+      "name": "F02_actual_RAM_BufferedWriter_implicit_failure_close_writes_after_denial",
+      "outcome": "PASS_SOURCE_RAM",
+      "explicit_flush_gate_denied": true,
+      "pending_bytes_flushed_after_boundary": true,
+      "actual_file_effects": 0
+    },
+    {
+      "name": "whole903_selected_loop_positive_excludes_all894_mocked_writer_only",
+      "outcome": "PASS_SOURCE_RAM"
+    }
+  ],
+  "native_stage_runtime": "NOT_RUN",
+  "actual_prefix_scan": false,
+  "private_ENV_key_data_body_reads": false,
+  "source_import_main": false,
+  "actual_file_effects_outside_own_review": 0,
+  "limits": "Source/SAFE metadata and selected RAM adapters only; not native transport/capacity/timing or complete artifact proof."
+}

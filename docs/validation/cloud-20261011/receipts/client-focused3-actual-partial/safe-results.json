@@ -1,0 +1,54 @@
+{
+  "status": "failed",
+  "runnerErrors": 0,
+  "unsafeArtifact": false,
+  "suppressedStdoutBytes": 0,
+  "suppressedStderrBytes": 0,
+  "results": [
+    {
+      "file": "mobile-real-server.spec.ts",
+      "line": 14,
+      "project": "chromium",
+      "status": "failed",
+      "expectedStatus": "passed",
+      "durationMs": 3,
+      "errorCount": 1,
+      "errorLocations": [
+        {
+          "file": "mobile-real-server.spec.ts",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "file": "mobile-real-server.spec.ts",
+      "line": 61,
+      "project": "chromium",
+      "status": "failed",
+      "expectedStatus": "passed",
+      "durationMs": 6,
+      "errorCount": 1,
+      "errorLocations": [
+        {
+          "file": "mobile-real-server.spec.ts",
+          "line": 61
+        }
+      ]
+    },
+    {
+      "file": "mobile-real-server.spec.ts",
+      "line": 142,
+      "project": "chromium",
+      "status": "failed",
+      "expectedStatus": "passed",
+      "durationMs": 4,
+      "errorCount": 1,
+      "errorLocations": [
+        {
+          "file": "mobile-real-server.spec.ts",
+          "line": 142
+        }
+      ]
+    }
+  ]
+}

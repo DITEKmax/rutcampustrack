@@ -1,13 +1,12 @@
 package ru.rutcampustrack.auth.session.port;
 
-import ru.rutcampustrack.auth.session.model.RoleGrant;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import ru.rutcampustrack.auth.session.model.RoleGrant;
 
 /** Read-only PostgreSQL queries needed by public authentication/session APIs. */
 public interface AuthSessionQueryPort {
@@ -34,15 +33,15 @@ public interface AuthSessionQueryPort {
             List<RoleGrant> grants,
             String displayName,
             Map<Long, String> grantContextLabels,
-            Map<Long, String> groupLabels
-    ) {
+            Map<Long, String> groupLabels) {
         public LoginAuthority {
             if (userId <= 0 || rolesVersion <= 0) {
                 throw new IllegalArgumentException("user and version must be positive");
             }
             grants = List.copyOf(Objects.requireNonNull(grants, "grants"));
             Objects.requireNonNull(displayName, "displayName");
-            grantContextLabels = Map.copyOf(Objects.requireNonNull(grantContextLabels, "grantContextLabels"));
+            grantContextLabels =
+                    Map.copyOf(Objects.requireNonNull(grantContextLabels, "grantContextLabels"));
             groupLabels = Map.copyOf(Objects.requireNonNull(groupLabels, "groupLabels"));
         }
 
@@ -52,11 +51,7 @@ public interface AuthSessionQueryPort {
     }
 
     /** Real user/group labels used by current-session responses. */
-    record UserIdentity(
-            long userId,
-            String displayName,
-            Map<Long, String> groupLabels
-    ) {
+    record UserIdentity(long userId, String displayName, Map<Long, String> groupLabels) {
         public UserIdentity {
             if (userId <= 0) {
                 throw new IllegalArgumentException("userId must be positive");
@@ -85,8 +80,7 @@ public interface AuthSessionQueryPort {
             Instant createdAt,
             Instant lastSeenAt,
             Instant refreshExpiresAt,
-            Instant revokedAt
-    ) {
+            Instant revokedAt) {
         public SessionMetadata {
             sessionId = Objects.requireNonNull(sessionId, "sessionId");
             Objects.requireNonNull(authMethod, "authMethod");
@@ -115,8 +109,7 @@ public interface AuthSessionQueryPort {
             String clientLabel,
             String locationLabel,
             Instant createdAt,
-            Instant lastSeenAt
-    ) {
+            Instant lastSeenAt) {
         public SessionView {
             sessionId = Objects.requireNonNull(sessionId, "sessionId");
             Objects.requireNonNull(authMethod, "authMethod");
@@ -134,8 +127,7 @@ public interface AuthSessionQueryPort {
             Instant occurredAt,
             String authMethod,
             String clientLabel,
-            String locationLabel
-    ) {
+            String locationLabel) {
         public HistoryView {
             if (id <= 0) {
                 throw new IllegalArgumentException("id must be positive");

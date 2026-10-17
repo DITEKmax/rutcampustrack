@@ -1,0 +1,10 @@
+{
+  "phase": "format",
+  "nativeExit": 0,
+  "expectedNativeExit": 0,
+  "diagnosticBytes": 66,
+  "codeStyleMessageObserved": false,
+  "parserErrorPrefixObserved": false,
+  "cause": "NONE",
+  "accepted": true
+}

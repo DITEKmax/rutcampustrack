@@ -1,0 +1,49 @@
+{
+  "payload_verdict": "APPROVE_SOURCE",
+  "restart_verdict": "APPROVE_SOURCE",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/context_correction_review/CURRENT.json",
+      "name": "CURRENT.json",
+      "sha256": "9f99563a290bb1b286df98299134bea609af999f9c3d62b0078b35bee5a71d5a",
+      "bytes": 916,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/context_correction_review/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "sha256": "1d31061e53aa2feb67e9cbc02802c3f894cf8c734db411d17d96e7b3fa371751",
+      "bytes": 1910,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/context_correction_review/payload-review.md",
+      "name": "payload-review.md",
+      "sha256": "ed7aadade7fdcd8d05886822bea5fdfb970a348441ac866a2ce1f964941c6e29",
+      "bytes": 5394,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/context_correction_review/restart-review.md",
+      "name": "restart-review.md",
+      "sha256": "8a968a823494696cd9e70d9476793a36bf07c4bf7cb86ce46e8401ef10a2de3c",
+      "bytes": 5793,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/context_correction_review/recheck-static.py",
+      "name": "recheck-static.py",
+      "sha256": "bc6537b6cf56e118576713d02a099098acd2c51b6c2f9db4cf819cb4da974325",
+      "bytes": 9438,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/context_correction_review/static-recheck.safe.json",
+      "name": "static-recheck.safe.json",
+      "sha256": "7a006ea989a77f3de0a5986c8810bf7fc3d638bbf1413226a3c0b1bdb1f4524f",
+      "bytes": 10783,
+      "mode": 384
+    }
+  ],
+  "private_values_runtime_data_or_payload_included": false
+}

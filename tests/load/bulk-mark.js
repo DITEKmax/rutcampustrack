@@ -17,12 +17,12 @@
  *          tests/load/bulk-mark.js
  */
 
-import http from 'k6/http';
-import { check, sleep } from 'k6';
+import http from 'k6/http'
+import { check, sleep } from 'k6'
 
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
-const HEADMAN_LOGIN = __ENV.HEADMAN_LOGIN || 'headman';
-const HEADMAN_PASSWORD = __ENV.HEADMAN_PASSWORD || 'headman_test_pass';
+const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080'
+const HEADMAN_LOGIN = __ENV.HEADMAN_LOGIN || 'headman'
+const HEADMAN_PASSWORD = __ENV.HEADMAN_PASSWORD || 'headman_test_pass'
 
 export const options = {
   vus: 10,
@@ -36,59 +36,59 @@ export const options = {
     test: 'bulk-mark',
     scope: 'hot-path',
   },
-};
+}
 
 // Setup — один раз перед прогоном: логин, получение JWT + group + lesson id.
 export function setup() {
   const loginRes = http.post(
     `${BASE_URL}/api/auth/login`,
     JSON.stringify({ login: HEADMAN_LOGIN, password: HEADMAN_PASSWORD }),
-    { headers: { 'Content-Type': 'application/json' } }
-  );
+    { headers: { 'Content-Type': 'application/json' } },
+  )
 
-  check(loginRes, { 'login 200': (r) => r.status === 200 });
-  const accessToken = loginRes.json('access_token');
+  check(loginRes, { 'login 200': (r) => r.status === 200 })
+  const accessToken = loginRes.json('access_token')
   if (!accessToken) {
-    throw new Error(`login failed: ${loginRes.status} ${loginRes.body}`);
+    throw new Error(`login failed: ${loginRes.status} ${loginRes.body}`)
   }
 
   // Получаем текущее активное lesson для группы старосты
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0]
   const scheduleRes = http.get(`${BASE_URL}/api/schedule/lessons?date=${today}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  })
 
-  check(scheduleRes, { 'schedule 200': (r) => r.status === 200 });
-  const lessons = scheduleRes.json() || [];
-  const activeLesson = lessons.find((l) => l.status === 'active' || l.status === 'closed');
+  check(scheduleRes, { 'schedule 200': (r) => r.status === 200 })
+  const lessons = scheduleRes.json() || []
+  const activeLesson = lessons.find((l) => l.status === 'active' || l.status === 'closed')
 
   if (!activeLesson) {
-    console.warn('No active lesson for today — bulk-mark test will skip mark step');
+    console.warn('No active lesson for today — bulk-mark test will skip mark step')
   }
 
   return {
     accessToken,
     lessonId: activeLesson?.id || null,
     groupId: activeLesson?.groupId || null,
-  };
+  }
 }
 
 export default function (data) {
   if (!data.lessonId) {
-    sleep(1);
-    return;
+    sleep(1)
+    return
   }
 
   // Генерируем 30 mock'овых marks (userId 100..129 — достаточно для
   // perf seed'а из M05). На реальном прогоне — backend вернёт partial
   // success если какие-то userId не из группы.
-  const marks = [];
+  const marks = []
   for (let userId = 100; userId < 130; userId++) {
     marks.push({
       userId,
       status: 'present',
       lessonId: data.lessonId,
-    });
+    })
   }
 
   const res = http.post(
@@ -100,19 +100,19 @@ export default function (data) {
         Authorization: `Bearer ${data.accessToken}`,
       },
       tags: { endpoint: 'marks/batch' },
-    }
-  );
+    },
+  )
 
   check(res, {
     'batch 200/207': (r) => r.status === 200 || r.status === 207,
     'response has marks array': (r) => {
       try {
-        return Array.isArray(r.json('marks'));
+        return Array.isArray(r.json('marks'))
       } catch {
-        return false;
+        return false
       }
     },
-  });
+  })
 
-  sleep(1);  // "думает" между batch'ами (реалистичный паттерн старосты)
+  sleep(1) // "думает" между batch'ами (реалистичный паттерн старосты)
 }

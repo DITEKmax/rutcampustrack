@@ -1,74 +1,81 @@
 package ru.rutcampustrack.academic.homework;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Phase 61-02 / D-01, D-02, D-15: подтверждает, что после миграции V13:
+ *
  * <ul>
- *   <li>{@code homeworks.lesson_date DATE NOT NULL} и {@code homeworks.lesson_number INT NOT NULL} существуют;</li>
- *   <li>колонка {@code homeworks.lesson_id} удалена;</li>
- *   <li>индекс {@code idx_hw_lesson} удалён, индекс {@code idx_homeworks_group_date} создан.</li>
+ *   <li>{@code homeworks.lesson_date DATE NOT NULL} и {@code homeworks.lesson_number INT NOT NULL}
+ *       существуют;
+ *   <li>колонка {@code homeworks.lesson_id} удалена;
+ *   <li>индекс {@code idx_hw_lesson} удалён, индекс {@code idx_homeworks_group_date} создан.
  * </ul>
  *
- * Чистая schema-only проверка через {@code information_schema}/{@code pg_indexes} — не создаёт записей
- * и не зависит от остальных тестов.
+ * Чистая schema-only проверка через {@code information_schema}/{@code pg_indexes} — не создаёт
+ * записей и не зависит от остальных тестов.
  */
 class HomeworkMigrationIT extends AbstractAcademicIntegrationTest {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
     @Test
     void lessonDateColumnExistsAndIsNotNull() {
-        String isNullable = jdbcTemplate.queryForObject(
-                "SELECT is_nullable FROM information_schema.columns " +
-                        "WHERE table_name = 'homeworks' AND column_name = 'lesson_date'",
-                String.class);
+        String isNullable =
+                jdbcTemplate.queryForObject(
+                        "SELECT is_nullable FROM information_schema.columns "
+                                + "WHERE table_name = 'homeworks' AND column_name = 'lesson_date'",
+                        String.class);
         assertThat(isNullable).isEqualTo("NO");
     }
 
     @Test
     void lessonNumberColumnSupportsAcceptedDateOnlyMode() {
-        String isNullable = jdbcTemplate.queryForObject(
-                "SELECT is_nullable FROM information_schema.columns " +
-                        "WHERE table_name = 'homeworks' AND column_name = 'lesson_number'",
-                String.class);
+        String isNullable =
+                jdbcTemplate.queryForObject(
+                        "SELECT is_nullable FROM information_schema.columns "
+                                + "WHERE table_name = 'homeworks' AND column_name = 'lesson_number'",
+                        String.class);
         assertThat(isNullable).isEqualTo("YES");
-        String constraint = jdbcTemplate.queryForObject(
-                "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname='homeworks_binding_mode_chk'",
-                String.class);
+        String constraint =
+                jdbcTemplate.queryForObject(
+                        "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname='homeworks_binding_mode_chk'",
+                        String.class);
         assertThat(constraint).contains("binding_mode", "DATE", "lesson_number IS NULL", "LESSON");
     }
 
     @Test
     void lessonIdColumnIsRemoved() {
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM information_schema.columns " +
-                        "WHERE table_name = 'homeworks' AND column_name = 'lesson_id'",
-                Integer.class);
+        Integer count =
+                jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM information_schema.columns "
+                                + "WHERE table_name = 'homeworks' AND column_name = 'lesson_id'",
+                        Integer.class);
         assertThat(count).isZero();
     }
 
     @Test
     void indexIdxHwLessonIsRemoved() {
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM pg_indexes " +
-                        "WHERE tablename = 'homeworks' AND indexname = 'idx_hw_lesson'",
-                Integer.class);
+        Integer count =
+                jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM pg_indexes "
+                                + "WHERE tablename = 'homeworks' AND indexname = 'idx_hw_lesson'",
+                        Integer.class);
         assertThat(count).isZero();
     }
 
     @Test
     void indexIdxHomeworksGroupDateExists() {
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM pg_indexes " +
-                        "WHERE tablename = 'homeworks' AND indexname = 'idx_homeworks_group_date'",
-                Integer.class);
+        Integer count =
+                jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM pg_indexes "
+                                + "WHERE tablename = 'homeworks' AND indexname = 'idx_homeworks_group_date'",
+                        Integer.class);
         assertThat(count).isEqualTo(1);
     }
 }

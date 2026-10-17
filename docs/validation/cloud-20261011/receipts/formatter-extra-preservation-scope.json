@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T08:21:51.821419+00:00",
+  "writer": "ci_academic_heap",
+  "allowed": [
+    "two additional dynamic SVG percentage text nodes in same HeadmanStatsTrendChart.vue and TeacherJournalChart.vue; exact original text bytes/targeted prettier-ignore only",
+    "minimal pinned project-version Angular compiler and CSS parser in own VM cache; no project lock/dependency changes",
+    "remove ONLY two existing leading documentation-link comments from each of web-panel tsconfig.json and tsconfig.app.json after same-checker original JSONC failure proof; preserve removed prose in receipt and TypeScript parsed values exactly"
+  ],
+  "unchanged": "no gate/validator weakening, broad ignore, new UI/design or accepted behavior change; separate small preservation/config commits before mechanical bulk",
+  "resource": "Node512MiB/disk128MiB; Java/Python/SQL not yet granted"
+}

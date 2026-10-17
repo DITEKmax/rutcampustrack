@@ -1,0 +1,74 @@
+{
+  "time": "2026-10-12T06:11:02.762349+00:00",
+  "640existing_shared_aliases_match_prior608copies_plus32Root": true,
+  "32referenceSHAs_modes_lengths_match_oldaccepteddedup_plans": true,
+  "knownRootownership_path_lineage": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/immutable-historical-dedup-plan.json",
+      "sha256": "2bdac020d7d7eebfc5b0dc66a6e2a13e2a934fe76105919d1d53587ffc28c34e",
+      "entries": 480,
+      "frozen_intent": "Never mutate hardlinked original assets in place; any later change must use atomic replace/copy first"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/immutable-historical-dedup-NP01-plan.json",
+      "sha256": "78c3d4ea70e0acd3400673d69c20ffa3ffbabd74b3b04573f6685d47fc6b9f45",
+      "entries": 128,
+      "frozen_intent": "historicalassets COW before any latermodification"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/immutable-historical-dedup-result.json",
+      "sha256": "d484a53aae4e96f55e451a3c03a578ca92fc307dac1cbd52f4e7d1f2cfb71b91",
+      "safe_protection": "historical sources immutable; future edits require atomic COW",
+      "facts": {
+        "at": "2026-10-12T00:29:03.180848+00:00",
+        "phase": "immutable-historical-dedup",
+        "entries": 480,
+        "exact_hashes_modes_and_worktree_git_status_preserved": true
+      }
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/immutable-historical-dedup-NP01-result.json",
+      "sha256": "a905a4f8a32e98e01baaff5919602bd3a1e1645091586055abcff75f5f561362",
+      "safe_protection": "untouched; writer Gitstatus maychangeindependently, neverclaimwholeWTfreeze",
+      "facts": {
+        "at": "2026-10-12T01:36:14.534373+00:00",
+        "phase": "NP01-historical-dedup-complete",
+        "paths": 128,
+        "exact_bytes_modes_paths_preserved": true
+      }
+    }
+  ],
+  "active_writer_exact_asset_paths": [
+    {
+      "root": "/workspace/rutcampustrack",
+      "current_head": "88ce37afbd4e3870fe95cc7be17be5c072f530b3",
+      "shared_alias_paths": 32,
+      "dirty_path_count": 390,
+      "dirty_alias_intersections": [],
+      "freeze_scope": "exact immutable publicassetpaths only, no branch freeze",
+      "actual_freeze": "PENDING_ROOT_COORDINATION"
+    },
+    {
+      "root": "/workspace/rct-worktrees/np01-domain-bot",
+      "current_head": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+      "shared_alias_paths": 32,
+      "dirty_path_count": 0,
+      "dirty_alias_intersections": [],
+      "freeze_scope": "exact immutable publicassetpaths only, no branch freeze",
+      "actual_freeze": "PENDING_ROOT_COORDINATION"
+    },
+    {
+      "root": "/workspace/rct-worktrees/ci-academic-heap",
+      "current_head": "d18484795137298777d0845afcd078dca91eb590",
+      "shared_alias_paths": 0,
+      "dirty_path_count": 0,
+      "dirty_alias_intersections": [],
+      "freeze_scope": "exact immutable publicassetpaths only, no branch freeze",
+      "actual_freeze": "PENDING_ROOT_COORDINATION"
+    }
+  ],
+  "historical_clientformat_runtime": "included in exact Rootowned480 historicaldedup paths; no new candidates or inferred author permission there",
+  "new_freeze_not_claimed": true,
+  "unknown_alias_groups": 0,
+  "resource_mutations": false
+}

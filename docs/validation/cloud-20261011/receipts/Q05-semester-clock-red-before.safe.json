@@ -1,0 +1,77 @@
+{
+  "at": "2026-10-14T03:15:17.306358+00:00",
+  "defect": "DF-SEMESTER-MOSCOW-DATE-001",
+  "severity": "P2",
+  "status": "CONFIRMED_DOMAIN_UNIT_RED_CORRECTION_IN_PROGRESS",
+  "base": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+  "source": "TASK-CONTRACT Moscow educational dates regardlessJVMUTC; SemesterService staticLocalDate.now checks",
+  "counterexample": "JVMUTC/fixedUTC21:30 meansMoscow nextday; candidateendingUTCtoday isalreadyendedMoscow; oldservice accepts through realvalidation/save-returncandidate instead of BadRequest",
+  "actual": {
+    "result": {
+      "direct_pid": 624370,
+      "native_exit": 1,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 624370,
+          "start_ticks": 20127815
+        },
+        {
+          "pid": 624405,
+          "start_ticks": 20127924
+        },
+        {
+          "pid": 624475,
+          "start_ticks": 20130013
+        },
+        {
+          "pid": 624479,
+          "start_ticks": 20130035
+        },
+        {
+          "pid": 624638,
+          "start_ticks": 20133420
+        },
+        {
+          "pid": 624641,
+          "start_ticks": 20133436
+        },
+        {
+          "pid": 624696,
+          "start_ticks": 20135765
+        },
+        {
+          "pid": 624729,
+          "start_ticks": 20135950
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": false
+    },
+    "source_pins": {
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "6ddfc6f60184f5591a145a0cf53cf9491c9b58ea211535ce87b9b75ee66e9238",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "7587a718e2a2e48c3b70c05ee9155d790695c3e6850503fc4cdea1ea551439b0",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "3fda8c7ce2511db86df36b70f83ff5550780b6a666106132623abb1d89b2d720"
+    },
+    "peak_owned_sampled_rss": 1642946560,
+    "elapsed_seconds": 85.502,
+    "disk_growth": 67801088,
+    "jdk": "/workspace/rct-cloud-setup/jdk21",
+    "closed_xml": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "selected_method_only": true,
+      "expected_assertion_missing_BadRequest": true,
+      "source_frame_new_method": true
+    },
+    "xml_sha256": "1a1247d52833e49fc319e8f9d79c6c068e1034f484b380a8cf2e8076dce94e17"
+  },
+  "limits": "Directdomainunit/mockpersistence counterexample, no actualHTTP/PG/clientclaim; futureEducationalTimefixturewiring separately justified; no securityClock change",
+  "next": "correctselectededucationalClock+Moscow date, focusedGREEN/existingclass/selectedPG2/independentreview/genuineQ05"
+}

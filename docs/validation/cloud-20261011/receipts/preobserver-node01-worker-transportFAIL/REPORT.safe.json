@@ -1,0 +1,73 @@
+{
+  "toolSession": 11274,
+  "nativeExit": 1,
+  "oldCausalRed": {
+    "exit": 1,
+    "allPredicates": 24,
+    "parser": 0,
+    "accepted": true
+  },
+  "newGreen": {
+    "exit": 0,
+    "allPredicates": 24,
+    "parser": 0
+  },
+  "worker": {
+    "pass": false,
+    "childNativeExit": 0,
+    "caseCount": 3,
+    "failedTestsRetained": true,
+    "markerAbsent": true,
+    "earlyWorkerCauseTransported": false,
+    "lateFixtureCauseTransported": false,
+    "unknownFallbackTransported": true,
+    "bodiesNotStarted": true,
+    "noBrowserApi": true
+  },
+  "laterPhases": "NOT_RUN",
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 440705,
+      "start_ticks": 11046534,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 440709,
+      "start_ticks": 11046611,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 440734,
+      "start_ticks": 11046850,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 440812,
+      "start_ticks": 11047074,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 440819,
+      "start_ticks": 11047084,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 440882,
+      "start_ticks": 11047393,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 440898,
+      "start_ticks": 11047534,
+      "exactBirthAbsent": true
+    }
+  ],
+  "sourceBeforePreserved": {
+    "artifact-privacy.ts": "1c779db3ec603340f6c8dfe78e5799d9befd25b82e6cb5064c292648423726db",
+    "safe-reporter.ts": "7db6e044a9b462d608aca467729f37d60ff5c3a1e8a11b5851015aeb0b217ebe"
+  },
+  "ownTempsRemoved": true,
+  "lease": "RELEASED",
+  "actualCIcause": "UNKNOWN",
+  "noBrowserAPI": true
+}

@@ -1,0 +1,47 @@
+{
+  "utc": "2026-10-12T08:10:59.773956+00:00",
+  "observed_terminal_reason": "SUPERVISION_ERROR",
+  "observed_exception_type": "ProcessLookupError",
+  "observed_traceback": null,
+  "observed_errno": null,
+  "observed_proc_path": null,
+  "limitation": "Original f539 run_owned catches BaseException and retains type(caught).__name__ only. No actual exception traceback, errno or failing /proc PID was retained; exact observed frame is UNKNOWN.",
+  "guard_path": "/workspace/scratch/rct-validation/np01_broker_actual/broker-attempt03/guard-reviewed-f539.py",
+  "guard_sha256": "f539f126bb5591e89f1a9e1f6ac72fbb91ba0da39fccda02cd773ca515acf706",
+  "guard_ast_sha256": "030d20687fe94e10ae80a986df93d01bfd8fb4debc70330e2757e1eaa9a4cf03",
+  "candidate_source_frames": [
+    {
+      "function": "process_table",
+      "line": 31,
+      "operation": "(path / 'stat').read_text()",
+      "exception_handled": "FileNotFoundError only"
+    },
+    {
+      "function": "run_owned.refresh",
+      "lines": [
+        118,
+        136
+      ],
+      "operation": "process_table()"
+    },
+    {
+      "function": "run_owned",
+      "lines": [
+        176,
+        179
+      ],
+      "operation": "type-only BaseException capture"
+    }
+  ],
+  "candidate_errno": "ESRCH (3) maps to ProcessLookupError; this mapping is source knowledge, not a retained observed errno.",
+  "process_result_sha256": "5ccbff4267281ecb73921ba14447e88c13af0cccc9f4bdd4582451302f69baeb",
+  "private_log": {
+    "path": "/workspace/scratch/rct-validation/np01_broker_actual/broker-attempt03/private/broker1-native.log",
+    "bytes": 5045,
+    "mode": "0o600",
+    "sha256": "4bc336dd511e5f913e84afb918e0a559f1e8b5546272f24223378abde5621f9e"
+  },
+  "no_raw_logs_or_env_dumped": true,
+  "author_for_new_helper": "host_runtime_prepare",
+  "new_runtime_or_source_changes": false
+}

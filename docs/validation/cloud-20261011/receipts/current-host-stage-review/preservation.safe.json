@@ -1,0 +1,8 @@
+{
+  "author_stage26_manifest_unchanged": true,
+  "earlier_NP_audit_export_host_reviews_safe_files_exact": 123,
+  "prior9review_manifests_exact": true,
+  "source_author_root_or_payload_writes": "NONE",
+  "whole_old_private_or_unrelated_source_rehash": "Not repeated; only own prior safe review seals and exact scoped stage receipts checked",
+  "runtime": "NOT_RUN"
+}

@@ -1,0 +1,54 @@
+{
+  "at": "2026-10-11T21:30:42.896934+00:00",
+  "subject": "prior8a9 historical argv recovery",
+  "status": "EXACT_ARGV_UNRECOVERED",
+  "historical_final_revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5",
+  "search_scopes": [
+    "/workspace/scratch/rct-validation/security_developer",
+    ".agent/evidence/security-validation"
+  ],
+  "available_source": {
+    "path": "/workspace/scratch/rct-validation/security_developer/review-packet.md",
+    "sha256": "ab60cac9e37b67dd39bde6288d402660cfa7e7bbb6b24994f18daefa2f9bff3c",
+    "line": 18,
+    "kind": "contemporaneousauthorreviewpacket commonwrapperdescription, NOT perinvocationargv"
+  },
+  "recorded_common_wrapper_prefix": "/workspace/rct-cloud-setup/run-gradle.py --no-daemon --max-workers=2",
+  "historical_runs": [
+    {
+      "phase": "red-unit-01",
+      "elapsed_seconds_from_source": 68,
+      "argv": null,
+      "task_order": "UNKNOWN",
+      "test_filter_argv": "UNKNOWN",
+      "additional_flags": "UNKNOWN"
+    },
+    {
+      "phase": "red-runtime-02",
+      "elapsed_seconds_from_source": 77,
+      "argv": null,
+      "task_order": "UNKNOWN",
+      "test_filter_argv": "UNKNOWN",
+      "additional_flags": "UNKNOWN"
+    },
+    {
+      "phase": "green-03",
+      "elapsed_seconds_from_source": 153,
+      "argv": null,
+      "task_order": "UNKNOWN",
+      "test_filter_argv": "UNKNOWN",
+      "additional_flags": "UNKNOWN"
+    },
+    {
+      "phase": "fixture-control-04",
+      "elapsed_seconds_from_source": 66,
+      "argv": null,
+      "task_order": "UNKNOWN",
+      "test_filter_argv": "UNKNOWN",
+      "additional_flags": "UNKNOWN"
+    }
+  ],
+  "available_other_evidence": "XML executioncounts/testnames and Gradle tasklogs are existing outcome receipts; they do not recover exactargv",
+  "no_reproduction_for_metadata_only": true,
+  "current_SECURITY2_2C": "exactfullcommands recorded attempts.ndjson +commands-supplement.json; do not substitute them for prior8a9 argv"
+}

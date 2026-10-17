@@ -1,0 +1,84 @@
+{
+  "status": "PURE_SELECTED_ACTUAL_AST_NATIVE0",
+  "original_guard_sha256": "f539f126bb5591e89f1a9e1f6ac72fbb91ba0da39fccda02cd773ca515acf706",
+  "new_guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "cases": [
+    {
+      "case": "actual parse positive including spaces/comm parentheses/Z and all birth fields",
+      "status": "PASS"
+    },
+    {
+      "case": "gone stat read",
+      "injected_errno": 2,
+      "original": {
+        "original_behavior": "ENOENT already omitted only missing row"
+      },
+      "corrected": "omit999only; preserve100/300/400 all parsed fields",
+      "status": "PASS"
+    },
+    {
+      "case": "gone stat read",
+      "injected_errno": 3,
+      "original": {
+        "type": "ProcessLookupError",
+        "errno": 3,
+        "specifically_failed": true
+      },
+      "corrected": "omit999only; preserve100/300/400 all parsed fields",
+      "status": "PASS"
+    },
+    {
+      "case": "unexpected errno failclosed both original/corrected",
+      "errno": 1,
+      "status": "PASS"
+    },
+    {
+      "case": "unexpected errno failclosed both original/corrected",
+      "errno": 13,
+      "status": "PASS"
+    },
+    {
+      "case": "unexpected errno failclosed both original/corrected",
+      "errno": 5,
+      "status": "PASS"
+    },
+    {
+      "case": "unexpected errno failclosed both original/corrected",
+      "errno": 22,
+      "status": "PASS"
+    },
+    {
+      "case": "unexpected errno failclosed both original/corrected",
+      "errno": 9,
+      "status": "PASS"
+    },
+    {
+      "case": "unexpected type/unknown errno propagated unchanged",
+      "type": "RuntimeError",
+      "status": "PASS"
+    },
+    {
+      "case": "unexpected type/unknown errno propagated unchanged",
+      "type": "FileNotFoundError",
+      "status": "PASS"
+    },
+    {
+      "case": "malformed parse failclosed",
+      "status": "PASS"
+    },
+    {
+      "case": "malformed parse failclosed",
+      "status": "PASS"
+    },
+    {
+      "case": "parsed table fullowned ancestry/adoptedZ; numericforeign rejected/birthreuse denied",
+      "status": "PASS"
+    }
+  ],
+  "actual_historical_runtime_errno_frame": "UNKNOWN; only ProcessLookupError was retained",
+  "synthetic_ESRCH_errno3_is_not_a_recorded_historical_errno": true,
+  "actual_proc_reads": 0,
+  "actual_signals": 0,
+  "actual_children": 0,
+  "new_guard_runtime": "NOT_RUN"
+}

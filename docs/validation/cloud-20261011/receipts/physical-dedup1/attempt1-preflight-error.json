@@ -1,0 +1,6 @@
+{
+  "utc": "2026-10-12T06:32:38.319503+00:00",
+  "type": "OSError",
+  "message": "[Errno 40] Too many levels of symbolic links: '/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/synthetic-cases/symlink-public'",
+  "no_more_mutations": true
+}

@@ -1,0 +1,242 @@
+[
+  {
+    "id": "SB-L03-01",
+    "route": "POST /auth/login",
+    "controller": "AuthController#login",
+    "dto": "LoginRequest",
+    "validation": "NotBlank login/password; meaningful nonblank password cannot fail these constraints",
+    "advice": "shared MethodArgumentNotValid / malformed; auth-domain InvalidCredentials401",
+    "representation": "default record toString exposes password if invoked; no inspected actual requestbody logsite",
+    "cache": "success/domainproblem no-store; sharedvalidation relies on effective securityheaders, NOT_RUN",
+    "tests": "AuthIT/LoginRateLimiterIT/BcryptDoSMitigationIT exist, no executed new markercheck",
+    "oracle": "invalid body safe400, wrong synthetic credentials401, no secret marker in response/log; no issued session",
+    "priority": 3,
+    "runtime": "NOT_RUN unless explicitreviewed8a9receipt reuse",
+    "research_ids": [
+      "L03",
+      "P03",
+      "P10",
+      "P17"
+    ],
+    "accepted_sources": [
+      "TASK-CONTRACT section4 Security initialpasswordexception",
+      "JS-SYSTEM-01/03/04/13 as applicable"
+    ]
+  },
+  {
+    "id": "SB-L03-02",
+    "route": "POST /auth/change-password",
+    "controller": "AuthSessionController#changePassword",
+    "dto": "ChangePasswordRequest",
+    "validation": "NotBlank current/new; password-policy domain exceptions",
+    "advice": "shared validation; auth-domain AuthSessionException",
+    "representation": "redacted toString",
+    "cache": "success/domainproblem no-store; effective invalid requestheaders NOT_RUN",
+    "tests": "AuthSessionControllerTest + SessionAuthFlowIT + PasswordPolicyTest exist",
+    "oracle": "current password required; policy error no newpassword echo; failure no changed credential/session state; successful change revokes all sessions",
+    "priority": 3,
+    "runtime": "NOT_RUN unless explicitreviewed8a9receipt reuse",
+    "research_ids": [
+      "L03",
+      "P03",
+      "P10",
+      "P17"
+    ],
+    "accepted_sources": [
+      "TASK-CONTRACT section4 Security initialpasswordexception",
+      "JS-SYSTEM-01/03/04/13 as applicable"
+    ]
+  },
+  {
+    "id": "SB-L03-03",
+    "route": "POST /auth/otp/verify and /auth/otp/verify-by-code",
+    "controller": "AuthController#verifyOtp / #verifyOtpByCode",
+    "dto": "OtpVerifyRequest/OtpVerifyByCodeRequest",
+    "validation": "NotBlank+Size6 on code; code length!=6 enters shared rejectedValue",
+    "advice": "shared validation, NOT QR/reset scopedadvisor; OtpExpired authdomain401",
+    "representation": "default record toString includes code; no body logsite identified",
+    "cache": "controller200/domain401 no-store; real validation effectiveSecurityheaders NOT_RUN",
+    "tests": "OtpIT/AuthOtpFlowIT/OtpServiceTest exist; no discovered sensitive rejectedvalue test",
+    "oracle": "invalid synthetic marker code yields400 and no marker in body/log, no session/effect; service not entered",
+    "priority": 1,
+    "runtime": "NOT_RUN unless explicitreviewed8a9receipt reuse",
+    "research_ids": [
+      "L03",
+      "P03",
+      "P10",
+      "P17"
+    ],
+    "accepted_sources": [
+      "TASK-CONTRACT section4 Security initialpasswordexception",
+      "JS-SYSTEM-01/03/04/13 as applicable"
+    ]
+  },
+  {
+    "id": "SB-L03-04",
+    "route": "POST /auth/password-reset/{request,verify,complete}",
+    "controller": "PasswordResetController",
+    "dto": "PasswordResetRequest/VerifyRequest/CompleteRequest",
+    "validation": "challenge/code/resetTicket/newPassword bounded; verifyPattern6",
+    "advice": "PasswordResetValidationExceptionHandler HIGHEST scoped removes rejected values; authdomainPasswordReset generic deniedtext; malformed shared generic",
+    "representation": "secret-bearing Verify/Complete redacted",
+    "cache": "validation+domain no-store explicit; malformed effectiveheaders NOT_RUN",
+    "tests": "existing PasswordReset validation/flow tests; reuse source, do not rerun blindly",
+    "oracle": "marker validation redacted, purpose isolation/TTL/attempts/session revoke durable; no credential disclosure",
+    "priority": 3,
+    "runtime": "NOT_RUN unless explicitreviewed8a9receipt reuse",
+    "research_ids": [
+      "L03",
+      "P03",
+      "P10",
+      "P17"
+    ],
+    "accepted_sources": [
+      "TASK-CONTRACT section4 Security initialpasswordexception",
+      "JS-SYSTEM-01/03/04/13 as applicable"
+    ]
+  },
+  {
+    "id": "SB-L03-05",
+    "route": "POST /auth/qr/challenges, /auth/qr/status, /auth/qr/exchange, /auth/qr/preview, /auth/qr/decision",
+    "controller": "QrLoginController",
+    "dto": "QrLoginProofRequest/ApprovalRequest/DecisionRequest",
+    "validation": "proof constraints / decisionenum",
+    "advice": "QrLoginExceptionHandler scopedHIGHEST genericINVALID_REQUEST/no-store",
+    "representation": "redacted proof DTOs",
+    "cache": "explicit no-store",
+    "tests": "reviewed8a9 QR controller/real QrLoginFlowIT evidence reused; candidate previously ruledout",
+    "oracle": "generic400/no token echo, lifecycle/revoke currentauthority; no new runtime claimed",
+    "priority": 4,
+    "runtime": "NOT_RUN unless explicitreviewed8a9receipt reuse",
+    "research_ids": [
+      "L03",
+      "P03",
+      "P10",
+      "P17"
+    ],
+    "accepted_sources": [
+      "TASK-CONTRACT section4 Security initialpasswordexception",
+      "JS-SYSTEM-01/03/04/13 as applicable"
+    ]
+  },
+  {
+    "id": "SB-L03-06",
+    "route": "POST /auth/tma",
+    "controller": "AuthController#tmaAuth",
+    "dto": "TmaAuthRequest",
+    "validation": "NotBlank initData; service guarded numeric/future validation",
+    "advice": "sharedvalidation; authdomainTmaValidation401 safeconstantprooftext",
+    "representation": "default record toString includes initData; no invoked body logsite identified",
+    "cache": "success/domainproblem no-store",
+    "tests": "reviewed8a9 TmaIT/TmaServiceTest evidence reused D003; norepeat",
+    "oracle": "no proof marker/log; valid reusable86400s proof only with live authority; rejected invalid proof no sessions",
+    "priority": 4,
+    "runtime": "NOT_RUN unless explicitreviewed8a9receipt reuse",
+    "research_ids": [
+      "L03",
+      "P03",
+      "P10",
+      "P17"
+    ],
+    "accepted_sources": [
+      "TASK-CONTRACT section4 Security initialpasswordexception",
+      "JS-SYSTEM-01/03/04/13 as applicable"
+    ]
+  },
+  {
+    "id": "SB-L03-07",
+    "route": "POST /auth/refresh; GET /auth/session; PUT /auth/session/active-role; logout/all",
+    "controller": "AuthController#refresh/AuthSessionController",
+    "dto": "RefreshRequest is not active REST input: actual refreshCookie API; role requesttypedAuthRole",
+    "validation": "cookie/proof service; role JSONenum unknown readfailure",
+    "advice": "authdomain session generic/no-store; shared malformed/validation",
+    "representation": "token DTOredaction test exists; unused RefreshRequest defaulttoString is not activebodyleak",
+    "cache": "explicit session/controller/domain no-store; invaliddefault effectiveheaders NOT_RUN",
+    "tests": "SessionAuthFlowIT/LogoutLifecycleIT/SameSiteCookieContractIT/AuthTokenDtoRedactionTest existing",
+    "oracle": "currentsessionauthority/revoke/cookieclear; no access/refresh/internal token in error/log",
+    "priority": 3,
+    "runtime": "NOT_RUN unless explicitreviewed8a9receipt reuse",
+    "research_ids": [
+      "L03",
+      "P03",
+      "P10",
+      "P17"
+    ],
+    "accepted_sources": [
+      "TASK-CONTRACT section4 Security initialpasswordexception",
+      "JS-SYSTEM-01/03/04/13 as applicable"
+    ]
+  },
+  {
+    "id": "SB-L03-08",
+    "route": "POST /internal/report-download-tickets/redeem",
+    "controller": "InternalReportDownloadTicketController",
+    "dto": "RedeemReportDownloadTicketRequest",
+    "validation": "ticket NotBlank+Pattern43 => invalidnonblank marker sharedrejectedvalue",
+    "advice": "sharedvalidation, no scopedticket validationadvisor found; internalissuersecret filter first",
+    "representation": "defaultrecord tostring ticket",
+    "cache": "effective securitycache NOT_RUN",
+    "tests": "ReportDownloadTicketServiceTest, ticket runtimecoverage existence, no marker oraclefound",
+    "oracle": "synthetic issuer authorized test only; invalid ticket400 noecho; unauthorized401 and no parsed proof; redemption single-use/currentpermission",
+    "priority": 2,
+    "runtime": "NOT_RUN unless explicitreviewed8a9receipt reuse",
+    "research_ids": [
+      "L03",
+      "P03",
+      "P10",
+      "P17"
+    ],
+    "accepted_sources": [
+      "TASK-CONTRACT section4 Security initialpasswordexception",
+      "JS-SYSTEM-01/03/04/13 as applicable"
+    ]
+  },
+  {
+    "id": "SB-L03-09",
+    "route": "POST /internal/auth/confirm-{semester-deletion,map-deletion,user-archive}",
+    "controller": "three internal confirmationcontrollers",
+    "dto": "ConfirmSemesterDeletionRequest/ConfirmMapDeletionRequest/ConfirmUserArchiveRequest",
+    "validation": "NotBlank internalToken/password etc",
+    "advice": "SemesterDeletionConfirmationExceptionHandler assignablethree HIGHEST removesrejectedvalues + genericmalformed",
+    "representation": "redactedtoString",
+    "cache": "filter andadvisor explicitno-store",
+    "tests": "existing confirmation tests; no new run",
+    "oracle": "password proof safeerrors; requiredlive grants/actor/scope checked; issuersecret not echoed",
+    "priority": 3,
+    "runtime": "NOT_RUN unless explicitreviewed8a9receipt reuse",
+    "research_ids": [
+      "L03",
+      "P03",
+      "P10",
+      "P17"
+    ],
+    "accepted_sources": [
+      "TASK-CONTRACT section4 Security initialpasswordexception",
+      "JS-SYSTEM-01/03/04/13 as applicable"
+    ]
+  },
+  {
+    "id": "SB-L03-10",
+    "route": "GET /academic/users/{id}, create user response",
+    "controller": "UserController#getUser/createUser; UserAssembler#toResponse",
+    "dto": "UserResponse/UserCreatedResponse initialPassword",
+    "validation": "initialpassword grant-authorized response is ownerexception; not invalidrequestecho",
+    "advice": "academic/shared errors separate",
+    "representation": "DTO contains acceptedinitialPassword, no blanketremoval authorized",
+    "cache": "controller getUser no explicitcache; effective securityheaders must verify",
+    "tests": "UserArchiveLifecycleIT and Auth SessionAuthFlowIT related sources; no named UserPasswordCompatibilityIT exists, credentialgrant oracle coverage UNKNOWN",
+    "oracle": "only admin credentials grant, !passwordChanged; no initial plaintext after change; unauthorized/foreign denied, response no-store; legitimate synthetic authorized value allowed",
+    "priority": 2,
+    "runtime": "NOT_RUN unless explicitreviewed8a9receipt reuse",
+    "research_ids": [
+      "L03",
+      "P03",
+      "P10",
+      "P17"
+    ],
+    "accepted_sources": [
+      "TASK-CONTRACT section4 Security initialpasswordexception",
+      "JS-SYSTEM-01/03/04/13 as applicable"
+    ]
+  }
+]

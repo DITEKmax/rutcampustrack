@@ -1,0 +1,50 @@
+{
+  "revision": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+  "source_revision": "fbcb788fd19ebf6444f9af8217916d11cdbc9e85",
+  "native_push": {
+    "direct_pid": 617466,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 617466,
+        "start_ticks": 19772335
+      },
+      {
+        "pid": 617467,
+        "start_ticks": 19772336
+      },
+      {
+        "pid": 617468,
+        "start_ticks": 19772336
+      },
+      {
+        "pid": 617472,
+        "start_ticks": 19772374
+      },
+      {
+        "pid": 617470,
+        "start_ticks": 19772374
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "transport_remote_designated_equal": true,
+  "transport_main_unchanged": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "authenticated_PR": {
+    "head": "f8b09391978b2a4e0fc201fac957fa5b3486d3b1",
+    "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "draft": true,
+    "state": "open",
+    "merged": false,
+    "merge": "5b17c81248229d9b142a2b3580ce5de6657c6bb6",
+    "url": "https://github.com/DITEKmax/rutcampustrack/pull/2"
+  },
+  "qualification": "PARTIAL_CHECKPOINT_CURRENT_GATES_PENDING_NOT_FINAL_D009"
+}

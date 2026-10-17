@@ -23,6 +23,5 @@ public interface InternalReportDownloadTicketApi {
     @ApiResponse(responseCode = "503", description = "Session or ticket store unavailable")
     @PostMapping("/report-download-tickets/redeem")
     ResponseEntity<ReportDownloadTicketRedemptionResponse> redeem(
-            @Valid @RequestBody RedeemReportDownloadTicketRequest request
-    );
+            @Valid @RequestBody RedeemReportDownloadTicketRequest request);
 }

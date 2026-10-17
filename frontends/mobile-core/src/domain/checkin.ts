@@ -1,4 +1,10 @@
-import type { StudentCheckinAck, StudentCheckinCommand, StudentToday, TodayLesson, UnavailableReason } from '../api/types'
+import type {
+  StudentCheckinAck,
+  StudentCheckinCommand,
+  StudentToday,
+  TodayLesson,
+  UnavailableReason,
+} from '../api/types'
 import { StudentApiError } from '../api/student-client'
 
 export interface CheckinAttempt {
@@ -46,11 +52,14 @@ export class CheckinCommandRecovery {
           return ack
         },
         (error: unknown) => {
-          if (!isAmbiguousCheckinFailure(error) && this.pending.get(lessonId) === pending) this.pending.delete(lessonId)
+          if (!isAmbiguousCheckinFailure(error) && this.pending.get(lessonId) === pending)
+            this.pending.delete(lessonId)
           throw error
         },
       )
-      .finally(() => { pending.inFlight = null })
+      .finally(() => {
+        pending.inFlight = null
+      })
     pending.inFlight = completion
     return completion
   }
@@ -85,14 +94,20 @@ export function newIdempotencyKey(): string {
   return crypto.randomUUID()
 }
 
-export function remainingSeconds(serverNow: string, retryAt: string | null, now = Date.now()): number {
+export function remainingSeconds(
+  serverNow: string,
+  retryAt: string | null,
+  now = Date.now(),
+): number {
   if (!retryAt) return 0
   const elapsed = Math.max(0, now - Date.parse(serverNow))
   return Math.max(0, Math.ceil((Date.parse(retryAt) - Date.parse(serverNow) - elapsed) / 1000))
 }
 
 export function countdownLabel(seconds: number): string {
-  const minutes = Math.floor(seconds / 60).toString().padStart(2, '0')
+  const minutes = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, '0')
   return `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`
 }
 
@@ -102,7 +117,9 @@ export function applyCheckinAck(today: StudentToday, ack: StudentCheckinAck): St
     // A replayed idempotency receipt retains its original serverNow. The query's
     // last fresh Today projection remains the clock baseline until refetch wins.
     serverNow: today.serverNow,
-    lessons: today.lessons.map((lesson) => lesson.schedule.id === ack.lessonId ? lessonFromAck(lesson, ack) : lesson),
+    lessons: today.lessons.map((lesson) =>
+      lesson.schedule.id === ack.lessonId ? lessonFromAck(lesson, ack) : lesson,
+    ),
   }
 }
 
@@ -113,22 +130,32 @@ function lessonFromAck(lesson: TodayLesson, ack: StudentCheckinAck): TodayLesson
     request: ack.request,
     checkinEligibility: {
       allowed: false,
-      reason: ack.outcome === 'PRESENT' ? 'ALREADY_PRESENT'
-        : ack.request?.origin === 'AUTO_GEO_FAILURE' && ack.retryAt ? 'COOLDOWN' : 'PENDING_CONFIRMATION',
+      reason:
+        ack.outcome === 'PRESENT'
+          ? 'ALREADY_PRESENT'
+          : ack.request?.origin === 'AUTO_GEO_FAILURE' && ack.retryAt
+            ? 'COOLDOWN'
+            : 'PENDING_CONFIRMATION',
       retryAt: ack.retryAt,
     },
   }
 }
 
 export function isPendingCheckin(lesson: TodayLesson): boolean {
-  return lesson.request?.status === 'PENDING'
-    || lesson.checkinEligibility.reason === 'PENDING_CONFIRMATION'
+  return (
+    lesson.request?.status === 'PENDING' ||
+    lesson.checkinEligibility.reason === 'PENDING_CONFIRMATION'
+  )
 }
 
 export function eligibilityLabel(lesson: TodayLesson, countdown: number): string {
   if (lesson.attendance?.status === 'PRESENT') return 'Отметка подтверждена'
-  if (isPendingCheckin(lesson) && lesson.checkinEligibility.reason !== 'COOLDOWN'
-    && lesson.checkinEligibility.reason !== 'ELIGIBLE') return 'На подтверждении у старосты'
+  if (
+    isPendingCheckin(lesson) &&
+    lesson.checkinEligibility.reason !== 'COOLDOWN' &&
+    lesson.checkinEligibility.reason !== 'ELIGIBLE'
+  )
+    return 'На подтверждении у старосты'
   const labels: Record<TodayLesson['checkinEligibility']['reason'], string> = {
     ELIGIBLE: 'Можно отметиться',
     ALREADY_PRESENT: 'Отметка подтверждена',
@@ -137,7 +164,8 @@ export function eligibilityLabel(lesson: TodayLesson, countdown: number): string
     WINDOW_CLOSED: 'Время отметки закончилось',
     GEO_BLOCKED: 'Отметка по геолокации недоступна',
     PENDING_CONFIRMATION: 'На подтверждении у старосты',
-    COOLDOWN: countdown > 0 ? `Повтори через ${countdownLabel(countdown)}` : 'Можно повторить отметку',
+    COOLDOWN:
+      countdown > 0 ? `Повтори через ${countdownLabel(countdown)}` : 'Можно повторить отметку',
     HEADMAN_ABSENT_REQUIRES_APPEAL: 'Нужна заявка на «н»',
     HEADMAN_USES_JOURNAL: 'Отметку ставит староста в журнале',
     DEPENDENCY_UNAVAILABLE: 'Статус будет доступен при подключении',

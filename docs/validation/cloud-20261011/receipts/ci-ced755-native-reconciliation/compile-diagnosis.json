@@ -1,0 +1,43 @@
+{
+  "producer": "ced755a0f6e6817ef6f477aeb4f6a964ecfd1810",
+  "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7",
+  "failures": [
+    {
+      "job_id": 114688682585,
+      "source": "BotCredentialBrokerBridgeIT.java:280",
+      "error": "incompatible types: inference variable T has incompatible bounds",
+      "bounds": [
+        "IntPredicate,Object",
+        "Integer"
+      ],
+      "task": "compileTestJava",
+      "nativeTestsExecuted": 0
+    },
+    {
+      "job_id": 114688682561,
+      "source": "BotCredentialBrokerBridgeIT.java:280",
+      "error": "incompatible types: inference variable T has incompatible bounds",
+      "bounds": [
+        "IntPredicate,Object",
+        "Integer"
+      ],
+      "task": "compileTestJava",
+      "nativeTestsExecuted": 0
+    },
+    {
+      "job_id": 114688682357,
+      "source": "BotCredentialBrokerBridgeIT.java:280",
+      "error": "incompatible types: inference variable T has incompatible bounds",
+      "bounds": [
+        "IntPredicate,Object",
+        "Integer"
+      ],
+      "task": "compileTestJava",
+      "nativeTestsExecuted": 0
+    }
+  ],
+  "interpretation": "AssertJ assertThat overload target typing conflicts with generic TransactionTemplate.execute Integer result; test-harness compilation failure before Academic runtime",
+  "sourceExpression": "assertThat(tx.execute(status -> publisher.publishBatch())).isEqualTo(1);",
+  "source_sha256": "d586e179eaaef8565940b7812fda77f472e25d32e0bd154756e329867eabd966",
+  "sourceMutations": false
+}

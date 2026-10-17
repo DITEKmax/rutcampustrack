@@ -1,0 +1,22 @@
+{
+  "producer": "1aa6c6451dba5cd39decfdce80a615e26bb65f77",
+  "actual_ci_checkout": "c13da959f25559a709608c8dea6c9ac4cab8b60d",
+  "merge_parents": [
+    "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+    "1aa6c6451dba5cd39decfdce80a615e26bb65f77"
+  ],
+  "checkout_tree": "02a184ae140857507818601e5e9243d04ede227b",
+  "tree_equals_head": true,
+  "run_id": 38467301679,
+  "selected_case": "RecurringScheduleItemIT.capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert",
+  "case_status": "PASSED",
+  "counts": {
+    "PASSED": 205,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  },
+  "source_sha256": "1ca4ea6f8c02b9d32f329c7af879d68f1f7cf45184e9955fc9379789900907e9",
+  "qualification": "ActualSAFEproducer checkout and public Git merge-parent/tree join, not whole product/L07 acceptance"
+}

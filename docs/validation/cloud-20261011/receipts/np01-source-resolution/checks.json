@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-10-12T00:52:48.874117+00:00",
+  "state": "PASS_SOURCE_RECEIPT_CHECKS",
+  "checks": [
+    "29 source bytes SHA256 match currentpaths, withexplicitownercontractD009advance",
+    "Everyquotedfragment matchesexact1-basedsource line",
+    "Canonical851 retainedregistry distinctfromarchivedcopy manifest",
+    "ADMINdefaultrole vsanyactiveown grant",
+    "Noexistingcredential/bindinggeneration;role/sessiontimestamps unsuitable",
+    "Redisallkeys-lru +existingTTL remainnotsolelifetimeauthority",
+    "Additiveproposal2methods andclosedcommands withsafeUNKNOWN",
+    "19unique boundedcases remainPLANNED;NP01GAP",
+    "Noactualcredential/privatekey/signedURL/rawstdout inoutputs"
+  ],
+  "trackedWrites": 0,
+  "sourceManifestWrites": 0,
+  "runtimeRuns": 0,
+  "metadataToolLimitation": "DefaultPython hasnogrpc module; no install/testruntime attempted; writerverifies pinned1.73 inassignedenvironment."
+}

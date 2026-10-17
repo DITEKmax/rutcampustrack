@@ -1,0 +1,21 @@
+{
+  "scope": "FRESH_NEXT03_READONLY18_METADATA_SOURCE_REVIEW_BIND",
+  "entries": [
+    {
+      "path": "READY.safe.json",
+      "sha256": "9cb46b0b27dc83752910ad126f1e31feba0181314c6a2e6524c9dcd3ea4e3bb8",
+      "bytes": 1484
+    },
+    {
+      "path": "current19-source.safe.json",
+      "sha256": "2808998996ebb1fdd94701204502bd5a446cd1b4077f7fb6309498da777fed86",
+      "bytes": 4038
+    },
+    {
+      "path": "preflight/preflight.safe.json",
+      "sha256": "aa0729acb8a8cd3d4f5e1ca9274cf7cf7f07f20eb0bdc36db6a244d9f437123c",
+      "bytes": 13687
+    }
+  ],
+  "runtime": "NOT_RUN"
+}

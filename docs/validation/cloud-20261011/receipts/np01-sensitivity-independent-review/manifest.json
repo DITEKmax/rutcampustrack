@@ -1,0 +1,76 @@
+{
+  "verdict": "APPROVE_FINITE_EVIDENCE",
+  "scope": "NP01-BR-T01 selective sensitivity and unchanged restored same-case normal7",
+  "utc": "2026-10-12T17:08:06.094835+00:00",
+  "reviewed_manifest_sha256": "09dd9b0a71e944a85fe7ce2fab6dafc7e41517888f671e710ae7dfc0c8301b44",
+  "entries": [
+    {
+      "path": "CURRENT.md",
+      "sha256": "7983628fd5b16fc217444e2dd29fe809b5d8734ce227d702a76139af34575574",
+      "bytes": 279,
+      "mode": "0600"
+    },
+    {
+      "path": "HANDOFF.md",
+      "sha256": "ae1e9dbacc88d74a9722b15fd586fb98046331899cb3cd8564d780c0df882642",
+      "bytes": 8420,
+      "mode": "0600"
+    },
+    {
+      "path": "attempts.ndjson",
+      "sha256": "d4dcd1968e3a041373ff3719eb1e4f20d788329fc308848715febe51fa9ec30b",
+      "bytes": 215,
+      "mode": "0600"
+    },
+    {
+      "path": "check-closure.py",
+      "sha256": "57ffc782ee8b4526a07b8ece66e1940c4815675018b82f2d668e88335e6e3732",
+      "bytes": 18241,
+      "mode": "0600"
+    },
+    {
+      "path": "critical-source-causality.safe.json",
+      "sha256": "2d9a4dd0bbb38f3883ae8769c4f4623314ef6c41703703b3de57466311b5b88e",
+      "bytes": 758,
+      "mode": "0600"
+    },
+    {
+      "path": "final-readback.safe.json",
+      "sha256": "7cccb97b0b4ab774bf057c598c3049d161f0f59a7d33efde5bd1dac87bfede8b",
+      "bytes": 534,
+      "mode": "0600"
+    },
+    {
+      "path": "findings.safe.json",
+      "sha256": "1097c7935dc67fffec92dcc0e7e00f721a9da8a98895e817cfb7604591a6fc2c",
+      "bytes": 730,
+      "mode": "0600"
+    },
+    {
+      "path": "finite-native-readback.safe.json",
+      "sha256": "9221a5919490630a861edcf2bd2b73594e683347499e7409e9204372fec76bc9",
+      "bytes": 4592,
+      "mode": "0600"
+    },
+    {
+      "path": "independent-checks.safe.json",
+      "sha256": "6c3953c5d83ca63755f7f5b7174d5b17025f9784d893dba1c5ec072d050faccf",
+      "bytes": 729392,
+      "mode": "0600"
+    },
+    {
+      "path": "input-ledger.json",
+      "sha256": "33058f6c7cdbb689c50d205158fbff27bad3abf37a0688e4839f39ba38f485c4",
+      "bytes": 1561,
+      "mode": "0600"
+    },
+    {
+      "path": "sealed-inputs.safe.json",
+      "sha256": "98fe4fc0ff0bd02c59eef55efb2b0c43bfef3fff814b290a563118d29b32c370",
+      "bytes": 3278,
+      "mode": "0600"
+    }
+  ],
+  "native_replay": false,
+  "whole_product_acceptance": "NOT_ASSESSED"
+}

@@ -1,0 +1,5 @@
+# Render only into the deployment secret file, using SHA256 password digests.
+# Existing app clients retain the default identity and its matching REDIS_PASSWORD.
+user default on #__APPLICATION_PASSWORD_SHA256__ ~* &* +@all
+# No keys/channels, data reads/writes, Lua, CONFIG, SCAN or SLOWLOG GET.
+user rct_monitor on #__MONITOR_PASSWORD_SHA256__ resetkeys resetchannels -@all +ping +info +client|setname +slowlog|len

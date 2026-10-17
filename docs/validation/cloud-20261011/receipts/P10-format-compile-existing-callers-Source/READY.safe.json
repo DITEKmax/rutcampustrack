@@ -1,0 +1,147 @@
+{
+  "schema": "P10_FORMAT_COMPILE_PARAMETER_REUSE_SOURCE_READY_V1",
+  "utc": "2026-10-13T10:32:20.929268+00:00",
+  "state": "FORMAT_PARAMETERS_READY_REVIEW_PENDING_COMPILE_UNBOUND_NO_NATIVE_GRANT",
+  "requested_model_effort": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "worktree": "/workspace/rct-worktrees/shared-validator-execution-20261013",
+  "semantic_commit": "425b40dd43dbc729ed923a586c6a280891a435cf",
+  "source_sha256": "a2865bfef3dc00c1208476677e82dea0b30e75679e454b1ab226a53a3dbc7e33",
+  "source_behavior_changes": 0,
+  "prior_source_packet": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-unicode-http-source/REPORT.safe.json",
+  "prior_source_packet_sha256": "9616383cbe24afe2ae2520fa49c1ace6bd77dbb8bfdfcaacbb7463a2e306b3d2",
+  "reused_from": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p06-format-compile-source",
+  "callback_files_byte_identical": {
+    "format01/run-format-owned.py": "59bbcb00d2f525b11646173e671fa5a1a65a2b999b799cc099f71f5ac41ff89c",
+    "format01/logged-format-child.py": "a6335bc39fea3558eeba6095ab4ecdbe77758f604f08a92f9a47325d84aaf6b6",
+    "compile01/run-green-owned.py": "c5afaa7d6fd4bb6fe98a609d19694e66f9819a560df5beb9afdbf8d51e7d563a",
+    "compile01/logged-green-child.py": "7cd5a5befea7efbb68ce426530851e0c8221203f56dcda56ce0eed6480bfaf66",
+    "compile01/compile-p06.init.gradle": "2090000e8198fd1e04c03ab9887d25db222d5a1f6eb686be47d0e7a584ad87b0"
+  },
+  "delta": "Only formatter target literal and plan/grant/manifest path-hash-head-lease-namespace bindings; formerly accepted P06 test0669 added to protected pins. No callback/compiler-init/guard/cap change.",
+  "review_state": "Independent P10 whole criticalSource review ACTIVE; frozen425b40/a286 until findings. FreshRoot grants separate afteracceptedSource.",
+  "source_pin_count_format": 17,
+  "closed_result_reused": {
+    "schema": "ExistingP06 boundedprivate-log exactwholemarker counting pattern; no newparser or helper.",
+    "format_markers": {
+      "RCT_P06_FORMAT_TARGETS_1": 2
+    },
+    "compile_markers": {
+      "RCT_P06_AUTH_COMPILE_MAIN_OK": 1,
+      "RCT_P06_AUTH_COMPILE_TEST_OK": 1
+    },
+    "qualification": "Legacy fixedP06 marker spelling reused byte-identically; identifies these declaredchecking tasks, notP06 acceptance. Native0/validexactmarkers/sourceproof/settledallbirths required, missing-duplicate-invalid-noexecutionneverPASS.",
+    "privacy": "Ownedmode600regularnofollowlog<=8MiB readinRAM; ONLYfixedmarker counts0/1/2/OVER_CAP +fixedsafe statuses/booleans/exit. No rawlines/messages/loghash/privateXML/credentials."
+  },
+  "format": {
+    "plan": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/format01/format-plan.safe.json",
+    "grant_template": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/format01/grant-template.private.json",
+    "dispatch_argv": [
+      "/usr/bin/python3",
+      "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/format01/run-format-owned.py",
+      "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/format01/root-format-grant01.private.json",
+      "<FRESH_ROOT_GRANT_SHA256>"
+    ],
+    "effectful_serial_argv": [
+      [
+        "bash",
+        "./gradlew",
+        "--offline",
+        "--no-daemon",
+        "--no-parallel",
+        "--max-workers=1",
+        "--console=plain",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+        "-I",
+        "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/format01/format-journal.init.gradle",
+        "formatJava"
+      ],
+      [
+        "bash",
+        "./gradlew",
+        "--offline",
+        "--no-daemon",
+        "--no-parallel",
+        "--max-workers=1",
+        "--console=plain",
+        "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+        "-I",
+        "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/format01/format-journal.init.gradle",
+        "formatJavaCheck"
+      ]
+    ],
+    "target": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "allowed_write": "ExactlyownedAuthOtpFlowIT canonicalSpotless apply; no compile/tests/containerfixtureinitialization.",
+    "formatter": "ExistingSpotless7.0.4 / GoogleJavaFormat1.25.2 AOSP unchanged; no package/config edits.",
+    "run": "/tmp/rct-p10-format-20261013-attempt01"
+  },
+  "compile": {
+    "plan": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/compile01/green-plan.safe.json",
+    "grant_template": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/compile01/grant-template.private.json",
+    "dispatch_argv": [
+      "/usr/bin/python3",
+      "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/compile01/run-green-owned.py",
+      "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/compile01/root-compile-grant01.private.json",
+      "<SEPARATE_FRESH_ROOT_GRANT_SHA256>"
+    ],
+    "effectful_argv": [
+      "bash",
+      "./gradlew",
+      "--offline",
+      "--no-daemon",
+      "--no-parallel",
+      "--max-workers=1",
+      "--console=plain",
+      "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+      "--rerun-tasks",
+      "-I",
+      "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-format-compile-source/compile01/compile-p06.init.gradle",
+      ":services:auth-service:auth-app:compileJava",
+      ":services:auth-service:auth-app:compileTestJava"
+    ],
+    "run": "/tmp/rct-p10-compile-20261013-attempt01",
+    "binding_state": "NULLbase/testSHA/manifestSHA untilactualformat+mechanicalcommit, failbeforeeffects; neverinventfuturehash.",
+    "scope": "Auth main+testcompile andrequiredexistingcompiledependencies; rerun-tasks/offline/no tests/fixtures/IT/XML/apps/PGRedisRabbit/API."
+  },
+  "limits_unchanged": {
+    "phase_seconds": 300,
+    "cleanup_margin_seconds": 60,
+    "workspace_floor_bytes": 4294967296,
+    "disk_growth_cap_bytes": 2147483648,
+    "shared_stop_bytes": 16106127360,
+    "shared_reserve_bytes": 1073741824,
+    "shared_growth_cap_bytes": 4294967296,
+    "owned_rss_cap_bytes": 4294967296,
+    "private_log_cap_bytes": 8388608
+  },
+  "grant_window_proposal_seconds": 360,
+  "active_seconds": 300,
+  "cleanup_seconds": 60,
+  "runtime_paths_and_environment": {
+    "JAVA_HOME": "/workspace/rct-cloud-setup/jdk21",
+    "GRADLE_USER_HOME": "/workspace/.gradle",
+    "PATH": "/workspace/rct-cloud-setup/jdk21/bin:/usr/local/bin:/usr/bin:/bin",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "TZ": "UTC",
+    "TMPDIR": "<EXACTOWNRUN>/private-tmp",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONSAFEPATH": "1"
+  },
+  "post_format_binding": "Preserve beforea286, require existingJava token/string/char/text-block/import equivalence+mode+outside-target17protectedpins andGitdiff; ordinaryseparatemechanicalcommit. ParameterbindcompileNULLfields fromactualformattedSource/head/manifest andfreshRootgrant only.",
+  "resources_qualification": "Soleheavy freshRootcapacity/clock/source/ownership admission atdispatch; no currentmeasuresclaimed. SampledRSS/disk/sharedcap controls nothardisolation. ExistingP06limits/direct-parent/b78/settlementcleanupunchanged.",
+  "actual_test_path": "AfterRoot integration prefer existingnormalCI Auth realHTTP/PGRedisRabbit integrationTest and SAFE_SOURCE_METHOD collector. No local3DBbudget/setup/research or newworkflow.",
+  "effects": {
+    "nativeJava_Gradle_Node": 0,
+    "HTTP_API_PG_Docker_browser_network": 0,
+    "product_Root_or_frozenSource_changes": 0
+  },
+  "blockers": [
+    "P10criticalSource reviewfindings mustresolve beforeformatgrant",
+    "FreshRootformatgrant absent",
+    "Compilebinding afteractualformat; separatefreshRootcompilegrant absent"
+  ],
+  "parent_P10": "UNKNOWN",
+  "B013_reuse": false
+}

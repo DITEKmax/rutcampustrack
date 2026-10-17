@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-12T00:32:30.707906+00:00",
+  "pairs": [
+    {
+      "author": "fa02ce439dfb989fc28eaddcbf1a8840d16bf9ff",
+      "integrated": "725dce40e712b8f20ba4021c795b04d887905454",
+      "stable_patch_id": "a5cdb7f42ce1d4ad60fff96a91b8757c52f2fb45",
+      "verdict": "EXACT_PATCH_PASS"
+    },
+    {
+      "author": "d674ea1ff1d26bf40f2585e0a3438c1896e60a1b",
+      "integrated": "d5510a2cd94349fb534197e0aead2d2e12ab8c55",
+      "stable_patch_id": "005c72bf93746c9bb2a8db1a8d7d1ffa768385db",
+      "verdict": "EXACT_PATCH_PASS"
+    }
+  ],
+  "independent_review": "receipts/ntr-seal-review/completion.json",
+  "source_gate_runs": [
+    6490,
+    30094
+  ],
+  "source_gates": "Gitleaks/largefile/EOF/whitespace PASS; JSON/YAML noapplicablefiles",
+  "native_auto_hook": "absent/unobserved; explicitprecommit native0",
+  "np01": "GAP unchanged",
+  "runtime": "reusequalifiedauthoractualred/green andproviderchecks; no rootfullAuth/clientPASS"
+}

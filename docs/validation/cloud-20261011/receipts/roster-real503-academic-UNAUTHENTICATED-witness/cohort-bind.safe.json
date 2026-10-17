@@ -1,0 +1,95 @@
+{
+  "schema": "RCT_FOCUS3_CURRENT96_COHORT_BIND_V1",
+  "cohort": "restart-20261013-next04",
+  "ready_sha256": "31171f9462e810b754bed82bfc1c998daad8e6779f51dc64b4c28e66274e4526",
+  "execution_checkout_sha": "48124f576f51cc62fbdd95c7908b61d587f9e36d",
+  "current_academic_source_sha256": "49dbdf2833a6be5ac35c3b873570139d62b4b965ed52370b7543590c9a998e3b",
+  "current_academic_payload_source_verified": true,
+  "critical_TLS_Admin_FULL_edge_directspoof": true,
+  "host_cleanup_dispatch_at": "2026-10-13T04:00:27.100201+00:00",
+  "receipts": {
+    "artifact_source": {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/artifact-source.safe.json",
+      "sha256": "1f9b083e9984a05fa638a16e7f55d08f3cd3542093d5863a4702d6b72ccd890f"
+    },
+    "runtime_mapping": {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/runtime-mapping.safe.json",
+      "sha256": "8959984326b2c2b2c6e6aa770998303b81e63c4bbac86eb29a5bf6dc83623438"
+    },
+    "critical_readiness": {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/stand-readiness.safe.json",
+      "sha256": "75d261b458495c97f84980cd43c449e83b479cb50822286f2cd7f0ad66ab9f7d"
+    },
+    "host_live8": {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next04_actual/host-live8.safe.json",
+      "sha256": "a66f9543ebcc2d4213b41bbe8ad9465c54bbdee7f934e730a1bc4dc26a088151"
+    }
+  },
+  "live8": [
+    {
+      "service": "mongo",
+      "wrapper_pid": 461115,
+      "wrapper_birth_ticks": 11639963,
+      "child_pid": 461118,
+      "child_birth_ticks": 11640097,
+      "tool_session": 43694
+    },
+    {
+      "service": "academic",
+      "wrapper_pid": 461665,
+      "wrapper_birth_ticks": 11643896,
+      "child_pid": 461668,
+      "child_birth_ticks": 11644002,
+      "tool_session": 48052
+    },
+    {
+      "service": "auth",
+      "wrapper_pid": 462746,
+      "wrapper_birth_ticks": 11650945,
+      "child_pid": 462749,
+      "child_birth_ticks": 11650959,
+      "tool_session": 51813
+    },
+    {
+      "service": "schedule",
+      "wrapper_pid": 463318,
+      "wrapper_birth_ticks": 11654372,
+      "child_pid": 463360,
+      "child_birth_ticks": 11654401,
+      "tool_session": 86173
+    },
+    {
+      "service": "attendance",
+      "wrapper_pid": 463421,
+      "wrapper_birth_ticks": 11654871,
+      "child_pid": 463429,
+      "child_birth_ticks": 11654950,
+      "tool_session": 39876
+    },
+    {
+      "service": "bff",
+      "wrapper_pid": 463308,
+      "wrapper_birth_ticks": 11654359,
+      "child_pid": 463341,
+      "child_birth_ticks": 11654386,
+      "tool_session": 83644
+    },
+    {
+      "service": "gateway",
+      "wrapper_pid": 463304,
+      "wrapper_birth_ticks": 11654355,
+      "child_pid": 463324,
+      "child_birth_ticks": 11654377,
+      "tool_session": 28218
+    },
+    {
+      "service": "notification",
+      "wrapper_pid": 463262,
+      "wrapper_birth_ticks": 11654342,
+      "child_pid": 463313,
+      "child_birth_ticks": 11654366,
+      "tool_session": 19257
+    }
+  ],
+  "qualification": "Root adopted exactnext04 fouractualfacts/new159/current481/same8; D00214894all9reaped/leaseRELEASED. Chronologicalactor selection qualified/notUIIDequality; no concurrentdomainwriter."
+}

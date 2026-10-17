@@ -1,18 +1,17 @@
 package ru.rutcampustrack.academic.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Real database fixtures shared by the L5A assignment authority integration
- * tests.  Producers still use the REST entrypoints; SQL here creates isolated
- * users, grants, groups, semesters, and canonical subject type rows only.
+ * Real database fixtures shared by the L5A assignment authority integration tests. Producers still
+ * use the REST entrypoints; SQL here creates isolated users, grants, groups, semesters, and
+ * canonical subject type rows only.
  */
 public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicIntegrationTest {
 
@@ -21,52 +20,111 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
     private static final String CURRENT_SEMESTER_NAME =
             "L5A current authority semester " + LocalDate.now(MOSCOW);
 
-    @Autowired
-    protected JdbcTemplate jdbcTemplate;
+    @Autowired protected JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    protected ObjectMapper objectMapper;
+    @Autowired protected ObjectMapper objectMapper;
 
-    @Autowired
-    protected ru.rutcampustrack.shared.security.InternalJwtTestFactory internalTokens;
+    @Autowired protected ru.rutcampustrack.shared.security.InternalJwtTestFactory internalTokens;
 
-    protected org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder signedHeadman(
-            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request, long userId, long groupId) {
-        long rolesVersion = jdbcTemplate.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, userId);
+    protected org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+            signedHeadman(
+                    org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+                            request,
+                    long userId,
+                    long groupId) {
+        long rolesVersion =
+                jdbcTemplate.queryForObject(
+                        "SELECT roles_version FROM users WHERE id=?", Long.class, userId);
         long sessionVersion = 1L;
-        return request.header("X-Internal-Token", internalTokens.validToken(userId,UUID.randomUUID(),sessionVersion,rolesVersion,
-                "HEADMAN","ACTIVE",groupId,true,false));
+        return request.header(
+                "X-Internal-Token",
+                internalTokens.validToken(
+                        userId,
+                        UUID.randomUUID(),
+                        sessionVersion,
+                        rolesVersion,
+                        "HEADMAN",
+                        "ACTIVE",
+                        groupId,
+                        true,
+                        false));
     }
 
-    protected void successfulAdoptionReceipts(ru.rutcampustrack.academic.grpc.ScheduleGrpcClient schedule) {
-        org.mockito.Mockito.when(schedule.installAssignmentLifecycle(org.mockito.ArgumentMatchers.any(UUID.class),
-                org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.isNull(),
-                org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.eq("CLOSE_UNASSIGN")))
-                .thenAnswer(call -> {
-                    org.assertj.core.api.Assertions.assertThat(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
-                    return ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt.newBuilder()
-                            .setOperationId(call.getArgument(0,UUID.class).toString()).setState("APPLIED").build();
-                });
-        org.mockito.Mockito.when(schedule.installAssignmentLifecycle(org.mockito.ArgumentMatchers.any(UUID.class),
-                org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any(),
-                org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.eq("ADOPT_UNASSIGNED")))
-                .thenAnswer(call -> {
-                    org.assertj.core.api.Assertions.assertThat(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
-                    Long target=call.getArgument(2);
-                    org.assertj.core.api.Assertions.assertThat(jdbcTemplate.queryForObject(
-                            "SELECT lifecycle_state FROM assignments WHERE id=?",String.class,target)).isEqualTo("PREPARED");
-                    return ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt.newBuilder()
-                            .setOperationId(call.getArgument(0,UUID.class).toString()).setState("APPLIED").build();
-                });
-        org.mockito.Mockito.when(schedule.commitAssignmentClose(org.mockito.ArgumentMatchers.any(UUID.class),org.mockito.ArgumentMatchers.any()))
-                .thenAnswer(call -> {
-                    org.assertj.core.api.Assertions.assertThat(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
-                    UUID operation=call.getArgument(0);
-                    org.assertj.core.api.Assertions.assertThat(jdbcTemplate.queryForObject(
-                            "SELECT state FROM assignment_replacement_operations WHERE operation_id=?",String.class,operation)).isEqualTo("APPLIED");
-                    return ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt.newBuilder()
-                            .setOperationId(operation.toString()).setState("COMMITTED").build();
-                });
+    protected void successfulAdoptionReceipts(
+            ru.rutcampustrack.academic.grpc.ScheduleGrpcClient schedule) {
+        org.mockito.Mockito.when(
+                        schedule.installAssignmentLifecycle(
+                                org.mockito.ArgumentMatchers.any(UUID.class),
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.isNull(),
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.eq("CLOSE_UNASSIGN")))
+                .thenAnswer(
+                        call -> {
+                            org.assertj.core.api.Assertions.assertThat(
+                                            org.springframework.transaction.support
+                                                    .TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .isFalse();
+                            return ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt
+                                    .newBuilder()
+                                    .setOperationId(call.getArgument(0, UUID.class).toString())
+                                    .setState("APPLIED")
+                                    .build();
+                        });
+        org.mockito.Mockito.when(
+                        schedule.installAssignmentLifecycle(
+                                org.mockito.ArgumentMatchers.any(UUID.class),
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.any(),
+                                org.mockito.ArgumentMatchers.eq("ADOPT_UNASSIGNED")))
+                .thenAnswer(
+                        call -> {
+                            org.assertj.core.api.Assertions.assertThat(
+                                            org.springframework.transaction.support
+                                                    .TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .isFalse();
+                            Long target = call.getArgument(2);
+                            org.assertj.core.api.Assertions.assertThat(
+                                            jdbcTemplate.queryForObject(
+                                                    "SELECT lifecycle_state FROM assignments WHERE id=?",
+                                                    String.class,
+                                                    target))
+                                    .isEqualTo("PREPARED");
+                            return ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt
+                                    .newBuilder()
+                                    .setOperationId(call.getArgument(0, UUID.class).toString())
+                                    .setState("APPLIED")
+                                    .build();
+                        });
+        org.mockito.Mockito.when(
+                        schedule.commitAssignmentClose(
+                                org.mockito.ArgumentMatchers.any(UUID.class),
+                                org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(
+                        call -> {
+                            org.assertj.core.api.Assertions.assertThat(
+                                            org.springframework.transaction.support
+                                                    .TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .isFalse();
+                            UUID operation = call.getArgument(0);
+                            org.assertj.core.api.Assertions.assertThat(
+                                            jdbcTemplate.queryForObject(
+                                                    "SELECT state FROM assignment_replacement_operations WHERE operation_id=?",
+                                                    String.class,
+                                                    operation))
+                                    .isEqualTo("APPLIED");
+                            return ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt
+                                    .newBuilder()
+                                    .setOperationId(operation.toString())
+                                    .setState("COMMITTED")
+                                    .build();
+                        });
     }
 
     protected Fixture newFixture(String label) {
@@ -74,45 +132,91 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
         // V8 caps groups.name at 32 characters; keep enough UUID material to
         // make concurrently-created fixture groups distinct without using the
         // caller label in the persisted name.
-        long groupId = insertGroup("L5A-" + suffix.substring(0, 12) + "-" + suffix.substring(12, 24));
-        long headmanId = insertUser("l5a-h-" + suffix.substring(0, 20), "Headman", "Student",
-                "student", true, groupId, null);
-        jdbcTemplate.update("INSERT INTO user_role_grants (user_id,role,status,group_id,created_at,updated_at) "
+        long groupId =
+                insertGroup("L5A-" + suffix.substring(0, 12) + "-" + suffix.substring(12, 24));
+        long headmanId =
+                insertUser(
+                        "l5a-h-" + suffix.substring(0, 20),
+                        "Headman",
+                        "Student",
+                        "student",
+                        true,
+                        groupId,
+                        null);
+        jdbcTemplate.update(
+                "INSERT INTO user_role_grants (user_id,role,status,group_id,created_at,updated_at) "
                         + "VALUES (?,'student','active',?,NOW(),NOW()), (?,'headman','active',?,NOW(),NOW())",
-                headmanId, groupId, headmanId, groupId);
+                headmanId,
+                groupId,
+                headmanId,
+                groupId);
         String employee1 = "L5A-" + suffix.substring(0, 12) + "-1";
         String employee2 = "L5A-" + suffix.substring(0, 12) + "-2";
         String employeeWithoutGrant = "L5A-" + suffix.substring(0, 12) + "-3";
-        long teacher1 = insertUser("l5a-t1-" + suffix.substring(0, 18), "Teacher", "One",
-                "teacher", false, null, employee1);
-        long teacher2 = insertUser("l5a-t2-" + suffix.substring(0, 18), "Teacher", "Two",
-                "teacher", false, null, employee2);
-        long teacherWithoutGrant = insertUser("l5a-t3-" + suffix.substring(0, 18), "Teacher", "Three",
-                "teacher", false, null, employeeWithoutGrant);
+        long teacher1 =
+                insertUser(
+                        "l5a-t1-" + suffix.substring(0, 18),
+                        "Teacher",
+                        "One",
+                        "teacher",
+                        false,
+                        null,
+                        employee1);
+        long teacher2 =
+                insertUser(
+                        "l5a-t2-" + suffix.substring(0, 18),
+                        "Teacher",
+                        "Two",
+                        "teacher",
+                        false,
+                        null,
+                        employee2);
+        long teacherWithoutGrant =
+                insertUser(
+                        "l5a-t3-" + suffix.substring(0, 18),
+                        "Teacher",
+                        "Three",
+                        "teacher",
+                        false,
+                        null,
+                        employeeWithoutGrant);
         insertGrant(teacher1, "active");
         insertGrant(teacher2, "active");
 
         LocalDate dateFrom = allocateSemesterFrom();
-        long semesterId = jdbcTemplate.queryForObject(
-                "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
-                        + "VALUES (?, ?, ?, false, NOW()) RETURNING id",
-                Long.class,
-                "L5A " + label + " semester " + suffix,
-                dateFrom, dateFrom.plusDays(29));
+        long semesterId =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
+                                + "VALUES (?, ?, ?, false, NOW()) RETURNING id",
+                        Long.class,
+                        "L5A " + label + " semester " + suffix,
+                        dateFrom,
+                        dateFrom.plusDays(29));
         LocalDate dateTo = dateFrom.plusDays(29);
-        return new Fixture(groupId, headmanId, teacher1, teacher2, teacherWithoutGrant,
-                employee1, employee2, employeeWithoutGrant, semesterId, dateFrom, dateTo);
+        return new Fixture(
+                groupId,
+                headmanId,
+                teacher1,
+                teacher2,
+                teacherWithoutGrant,
+                employee1,
+                employee2,
+                employeeWithoutGrant,
+                semesterId,
+                dateFrom,
+                dateTo);
     }
 
     protected long insertSubject(long groupId, String name, String... lessonTypes) {
         if (lessonTypes.length == 0 || lessonTypes.length > 3) {
             throw new IllegalArgumentException("fixture subject needs one to three lesson types");
         }
-        StringBuilder sql = new StringBuilder(
-                "WITH inserted_subject AS ("
-                        + "INSERT INTO subjects (name, type, group_id) VALUES (?, ?::subject_type, ?) RETURNING id"
-                        + "), inserted_lesson_types AS ("
-                        + "INSERT INTO subject_lesson_types (subject_id, lesson_type) ");
+        StringBuilder sql =
+                new StringBuilder(
+                        "WITH inserted_subject AS ("
+                                + "INSERT INTO subjects (name, type, group_id) VALUES (?, ?::subject_type, ?) RETURNING id"
+                                + "), inserted_lesson_types AS ("
+                                + "INSERT INTO subject_lesson_types (subject_id, lesson_type) ");
         for (int index = 0; index < lessonTypes.length; index++) {
             if (index > 0) {
                 sql.append(" UNION ALL ");
@@ -131,17 +235,23 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
     }
 
     protected long ensureCurrentActiveSemester() {
-        List<Long> existing = jdbcTemplate.query(
-                "SELECT id FROM semesters WHERE name = ? ORDER BY id DESC LIMIT 1",
-                (rs, rowNum) -> rs.getLong(1), CURRENT_SEMESTER_NAME);
+        List<Long> existing =
+                jdbcTemplate.query(
+                        "SELECT id FROM semesters WHERE name = ? ORDER BY id DESC LIMIT 1",
+                        (rs, rowNum) -> rs.getLong(1),
+                        CURRENT_SEMESTER_NAME);
         long semesterId;
         if (existing.isEmpty()) {
             LocalDate from = LocalDate.now(MOSCOW).minusDays(5);
             LocalDate to = LocalDate.now(MOSCOW).plusDays(30);
-            semesterId = jdbcTemplate.queryForObject(
-                    "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
-                            + "VALUES (?, ?, ?, false, NOW()) RETURNING id",
-                    Long.class, CURRENT_SEMESTER_NAME, from, to);
+            semesterId =
+                    jdbcTemplate.queryForObject(
+                            "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
+                                    + "VALUES (?, ?, ?, false, NOW()) RETURNING id",
+                            Long.class,
+                            CURRENT_SEMESTER_NAME,
+                            from,
+                            to);
         } else {
             semesterId = existing.get(0);
         }
@@ -151,7 +261,8 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
     }
 
     protected List<Long> activeSemesterIds() {
-        return jdbcTemplate.query("SELECT id FROM semesters WHERE is_active = true ORDER BY id",
+        return jdbcTemplate.query(
+                "SELECT id FROM semesters WHERE is_active = true ORDER BY id",
                 (rs, rowNum) -> rs.getLong(1));
     }
 
@@ -163,60 +274,75 @@ public abstract class AbstractAssignmentAuthorityIT extends AbstractAcademicInte
     }
 
     protected long assignmentCount(long subjectId) {
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM assignments WHERE subject_id = ?", Integer.class, subjectId);
+        Integer count =
+                jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM assignments WHERE subject_id = ?",
+                        Integer.class,
+                        subjectId);
         return count == null ? 0L : count;
     }
 
     protected long insertGroup(String name) {
         return jdbcTemplate.queryForObject(
                 "INSERT INTO groups (name, is_active) VALUES (?, true) RETURNING id",
-                Long.class, name);
+                Long.class,
+                name);
     }
 
-    private long insertUser(String login,
-                            String lastName,
-                            String firstName,
-                            String role,
-                            boolean headman,
-                            Long groupId,
-                            String employeeNumber) {
+    private long insertUser(
+            String login,
+            String lastName,
+            String firstName,
+            String role,
+            boolean headman,
+            Long groupId,
+            String employeeNumber) {
         return jdbcTemplate.queryForObject(
                 "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
                         + "is_headman, group_id, employee_number, password_changed, created_at, updated_at) "
                         + "VALUES (?, NULL, ?, ?, ?::user_role, 'active'::account_status, ?, ?, ?, false, NOW(), NOW()) "
                         + "RETURNING id",
-                Long.class, login, lastName, firstName, role, headman, groupId, employeeNumber);
+                Long.class,
+                login,
+                lastName,
+                firstName,
+                role,
+                headman,
+                groupId,
+                employeeNumber);
     }
 
     private void insertGrant(long userId, String status) {
         jdbcTemplate.update(
                 "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
                         + "VALUES (?, 'teacher', ?, NULL, NOW(), NOW())",
-                userId, status);
+                userId,
+                status);
     }
 
     private LocalDate allocateSemesterFrom() {
         LocalDate candidate = LocalDate.of(2200, 1, 1);
-        while (Boolean.TRUE.equals(jdbcTemplate.queryForObject(
-                "SELECT EXISTS (SELECT 1 FROM semesters WHERE date_from <= ? AND date_to >= ?)",
-                Boolean.class, candidate.plusDays(29), candidate))) {
+        while (Boolean.TRUE.equals(
+                jdbcTemplate.queryForObject(
+                        "SELECT EXISTS (SELECT 1 FROM semesters WHERE date_from <= ? AND date_to >= ?)",
+                        Boolean.class,
+                        candidate.plusDays(29),
+                        candidate))) {
             candidate = candidate.plusDays(31);
         }
         return candidate;
     }
 
-    protected record Fixture(long groupId,
-                             long headmanId,
-                             long teacher1Id,
-                             long teacher2Id,
-                             long teacherWithoutGrantId,
-                             String employee1,
-                             String employee2,
-                             String employeeWithoutGrant,
-                             long semesterId,
-                             LocalDate dateFrom,
-                             LocalDate dateTo) {
-    }
-
+    protected record Fixture(
+            long groupId,
+            long headmanId,
+            long teacher1Id,
+            long teacher2Id,
+            long teacherWithoutGrantId,
+            String employee1,
+            String employee2,
+            String employeeWithoutGrant,
+            long semesterId,
+            LocalDate dateFrom,
+            LocalDate dateTo) {}
 }

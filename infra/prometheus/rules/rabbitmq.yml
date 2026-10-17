@@ -1,45 +1,53 @@
-# M13 G19 — RabbitMQ alert rules (после image switch на management-alpine).
-#
-# DLQBacklog был перенесён сюда из service-health.yml (был silent
-# dangling до G19 из-за отсутствия rabbitmq_prometheus экспортёра).
-# RabbitMQQueueBacklog покрывает non-DLQ очереди (consumer'ы отстают).
-# RabbitMQConnectionLost — все consumer'ы отвалились.
 groups:
-  - name: rabbitmq
-    rules:
-      # DLQ накопление — consumer постоянно падает на message'ах,
-      # они улетают в DLQ-очередь. > 10 сообщений = точно проблема.
-      # До M13 G19 алёрт был silent (rabbitmq_queue_messages не
-      # экспортировался без management plugin'а).
-      - alert: DLQBacklog
-        expr: rabbitmq_queue_messages{queue=~".*\\.dlq"} > 10
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "DLQ {{ $labels.queue }} > 10 сообщений"
-          description: "{{ $value }} сообщений в DLQ {{ $labels.queue }}. Consumer постоянно падает — проверь handler exceptions в Loki ({service=~\"rct-.*\"} |= \"DLQ\")."
-
-      # Non-DLQ очереди — нормально иметь pending messages, но если
-      # > 1000 сообщений висит 5 мин, consumer не справляется (slow
-      # processing, deadlock, нехватка thread'ов).
-      - alert: RabbitMQQueueBacklog
-        expr: rabbitmq_queue_messages{queue!~".*\\.dlq"} > 1000
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Очередь {{ $labels.queue }} > 1000 pending"
-          description: "{{ $value }} pending messages в {{ $labels.queue }} > 5 мин. Consumer отстаёт — проверь thread pool / DB latency / external calls."
-
-      # Consumer'ы отвалились — connection count = 0 значит ни один
-      # сервис не подключён к Rabbit. Catastrophic для асинхронного
-      # eventing — все события копятся, outbox lag растёт.
-      - alert: RabbitMQConnectionLost
-        expr: rabbitmq_connections == 0
-        for: 1m
-        labels:
-          severity: critical
-        annotations:
-          summary: "RabbitMQ без активных подключений"
-          description: "Ни один сервис не подключён к RabbitMQ. Все consumer'ы отвалились или RabbitMQ перезапустился без graceful reconnect. Проверь network + service logs."
+- name: rabbitmq
+  rules:
+  - alert: DLQBacklog
+    expr: rabbitmq_detailed_queue_messages{queue=~".*\\.dlq"} > 0
+    for: 1m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: Retained DLQ message in {{ $labels.queue }}
+      description: A message exhausted bounded processing or is permanently invalid and remains isolated. Inspect safe reason/IDs
+        and the DLQ runbook; preserve the message and avoid an infinite redrive loop.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md
+  - alert: RabbitMQQueueBacklog
+    expr: rabbitmq_detailed_queue_messages{queue!~".*\\.dlq"} > 1000
+    for: 5m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: "\u041E\u0447\u0435\u0440\u0435\u0434\u044C {{ $labels.queue }} > 1000 pending"
+      description: "{{ $value }} pending messages \u0432 {{ $labels.queue }} > 5 \u043C\u0438\u043D. Consumer \u043E\u0442\
+        \u0441\u0442\u0430\u0451\u0442 \u2014 \u043F\u0440\u043E\u0432\u0435\u0440\u044C thread pool / DB latency / external\
+        \ calls."
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md
+  - alert: RabbitMQConnectionLost
+    expr: rabbitmq_connections == 0
+    for: 1m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: "RabbitMQ \u0431\u0435\u0437 \u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0445 \u043F\u043E\u0434\u043A\u043B\
+        \u044E\u0447\u0435\u043D\u0438\u0439"
+      description: "\u041D\u0438 \u043E\u0434\u0438\u043D \u0441\u0435\u0440\u0432\u0438\u0441 \u043D\u0435 \u043F\u043E\u0434\
+        \u043A\u043B\u044E\u0447\u0451\u043D \u043A RabbitMQ. \u0412\u0441\u0435 consumer'\u044B \u043E\u0442\u0432\u0430\u043B\
+        \u0438\u043B\u0438\u0441\u044C \u0438\u043B\u0438 RabbitMQ \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u0442\
+        \u0438\u043B\u0441\u044F \u0431\u0435\u0437 graceful reconnect. \u041F\u0440\u043E\u0432\u0435\u0440\u044C network\
+        \ + service logs."
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md
+  - alert: RabbitMQConsumerMissing
+    expr: rabbitmq_detailed_queue_consumers{queue!~".*\\.(dlq|retry)"} == 0 and on (job, instance, vhost, queue) rabbitmq_detailed_queue_messages
+      > 0
+    for: 2m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: Pending queue {{ $labels.queue }} has no consumer
+      description: Messages cannot be processed. Inspect consumer readiness, broker connection and retry budget. Do not purge/requeue
+        poison messages blindly. Retry TTL queues intentionally have no consumer and are excluded.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md

@@ -1,0 +1,27 @@
+{
+  "utc": "2026-10-12T05:15:36.888101+00:00",
+  "revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "runtime": "NOT_RUN",
+  "held_lease_exact_runtime": "PENDING",
+  "scope": "READ_ONLY frozen corrected2; author OTHERpaths not reviewed",
+  "source_findings_closed": [
+    "BR-T01",
+    "BR-G01",
+    "BR-G02",
+    "BR-R01"
+  ],
+  "next": "Root exact source integration/coherent compile + separate measured bounded NP01_BROKER1 lease, then independent qualified runtime review",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model": "UNKNOWN",
+  "actual_effort": "UNKNOWN",
+  "owned_runtime_processes_or_resources": "NONE",
+  "terminal_OTHERpaths_WIP_not_reviewed": [
+    "services/notification-bot/bot/__main__.py",
+    "services/notification-bot/bot/notifications/password_changed.py",
+    "services/notification-bot/tests/test_bot_credential_cards.py",
+    "services/notification-bot/tests/np01_bridge_runner.py"
+  ],
+  "frozen_old24_exact_aa713": true
+}

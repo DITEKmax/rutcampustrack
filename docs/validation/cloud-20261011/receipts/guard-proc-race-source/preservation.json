@@ -1,0 +1,41 @@
+{
+  "utc": "2026-10-12T08:16:03.048180+00:00",
+  "status": "PASS_TARGETED_OLD_SOURCE_AND_SEAL_PRESERVATION",
+  "seals": [
+    {
+      "manifest": "/workspace/scratch/rct-validation/current_artifact_corrections_v2/manifest.json",
+      "sha256": "ff9f2c4121641cd7b530a9eb57919e83051492a666328ed9f649d91e2004c968",
+      "safe_files_verified": 24
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/current_artifact_correction_v2_review/manifest.json",
+      "sha256": "64715bd8880fb714f45f3cd3a719a442fc43384018e3067ce1c3a7dc321459ee",
+      "safe_files_verified": 10
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/current_client_artifacts/manifest.json",
+      "sha256": "840492d38bfd204fe37c9bb46e89d3a3fdbc7957ad31ad1e9ca6ca058523ea7f",
+      "safe_files_verified": 24
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/current_host_stage/manifest.json",
+      "sha256": "6fa4a78f3a3b3a5593456487306da86964a1f8ec078f75ef37ab6e68b80b7cd2",
+      "safe_files_verified": 26
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/current_vue_stage/manifest.json",
+      "sha256": "59dc74c777dbbb6e5d074474e548b682d05dd523bd9817088cf32ed232cd05bf",
+      "safe_files_verified": 13
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/physical_dedup1/manifest.json",
+      "sha256": "70bd8a7d4aadd226913551dd852e701d6cf2d0df54671fc89c84f3e1e78db687",
+      "safe_files_verified": 36
+    }
+  ],
+  "original_f539_source_byteexact": true,
+  "new_diff_exact_roundtrip_to_original": "importerrno + only narrow process_table catch",
+  "no_product_JAR_Vue_payload_or_key_mutation": true,
+  "history_source7350_deps8272_JAR16_full_rehash": "NOT_REPEATED per packet; previously accepted proofs retained",
+  "actual_runtime_child_signal_proc_io": 0
+}

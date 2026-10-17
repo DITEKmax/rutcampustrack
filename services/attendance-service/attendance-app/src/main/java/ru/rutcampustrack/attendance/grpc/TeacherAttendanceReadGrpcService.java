@@ -5,16 +5,30 @@ import io.grpc.Context;
 import io.grpc.Deadline;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentAttendanceEntry;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
-import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
-import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.exception.ReportExportUnavailableException;
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.report.ReportService;
@@ -26,6 +40,7 @@ import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescr
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocument;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 import ru.rutcampustrack.teacher.grpc.TeacherAttachmentDownload;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportResponse;
@@ -34,7 +49,10 @@ import ru.rutcampustrack.teacher.grpc.TeacherExcuseAttachment;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseAttachmentRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherExcuseResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherGroupStats;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalCell;
+import ru.rutcampustrack.teacher.grpc.TeacherJournalMetrics;
+import ru.rutcampustrack.teacher.grpc.TeacherJournalLessonMetrics;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalStudent;
@@ -42,29 +60,14 @@ import ru.rutcampustrack.teacher.grpc.TeacherLessonRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonSummary;
 import ru.rutcampustrack.teacher.grpc.TeacherRosterEntry;
-import ru.rutcampustrack.teacher.grpc.TeacherStatsFilter;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsExportRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsExportResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsMetric;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsScope;
-import ru.rutcampustrack.teacher.grpc.TeacherStatsSort;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsSubjectOption;
 import ru.rutcampustrack.teacher.grpc.TeacherStudentStats;
-import ru.rutcampustrack.teacher.grpc.TeacherGroupStats;
-
-import java.time.Clock;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /** Server-scoped, read-only teacher attendance and excuse boundary. */
 @GrpcService
@@ -80,54 +83,97 @@ public final class TeacherAttendanceReadGrpcService
     private final ExcuseRepository excuseRepository;
     private final RequestAttachmentRepository attachmentRepository;
     private final Clock clock;
+    private final Clock educationalClock;
     private final TeacherAttendanceExportService exportService;
     private final TeacherStatsExportService statsExportService;
 
-    public TeacherAttendanceReadGrpcService(ReportService reportService,
-                                            ScheduleGrpcClient scheduleGrpcClient,
-                                            AcademicGrpcClient academicGrpcClient,
-                                            ExcuseRepository excuseRepository,
-                                            RequestAttachmentRepository attachmentRepository,
-                                            Clock clock) {
-        this(reportService, scheduleGrpcClient, academicGrpcClient, excuseRepository,
-                attachmentRepository, clock, null, null);
+    public TeacherAttendanceReadGrpcService(
+            ReportService reportService,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AcademicGrpcClient academicGrpcClient,
+            ExcuseRepository excuseRepository,
+            RequestAttachmentRepository attachmentRepository,
+            Clock clock) {
+        this(
+                reportService,
+                scheduleGrpcClient,
+                academicGrpcClient,
+                excuseRepository,
+                attachmentRepository,
+                clock,
+                null,
+                null);
+    }
+
+    public TeacherAttendanceReadGrpcService(
+            ReportService reportService,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AcademicGrpcClient academicGrpcClient,
+            ExcuseRepository excuseRepository,
+            RequestAttachmentRepository attachmentRepository,
+            Clock clock,
+            TeacherAcademicGrpcClient teacherAcademicGrpcClient,
+            DocumentRendererGrpcClient documentRendererGrpcClient) {
+        this(
+                reportService,
+                scheduleGrpcClient,
+                academicGrpcClient,
+                excuseRepository,
+                attachmentRepository,
+                clock,
+                teacherAcademicGrpcClient,
+                documentRendererGrpcClient,
+                new EducationalTime(clock));
     }
 
     @Autowired
-    public TeacherAttendanceReadGrpcService(ReportService reportService,
-                                            ScheduleGrpcClient scheduleGrpcClient,
-                                            AcademicGrpcClient academicGrpcClient,
-                                            ExcuseRepository excuseRepository,
-                                            RequestAttachmentRepository attachmentRepository,
-                                            Clock clock,
-                                            TeacherAcademicGrpcClient teacherAcademicGrpcClient,
-                                            DocumentRendererGrpcClient documentRendererGrpcClient) {
+    public TeacherAttendanceReadGrpcService(
+            ReportService reportService,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AcademicGrpcClient academicGrpcClient,
+            ExcuseRepository excuseRepository,
+            RequestAttachmentRepository attachmentRepository,
+            Clock clock,
+            TeacherAcademicGrpcClient teacherAcademicGrpcClient,
+            DocumentRendererGrpcClient documentRendererGrpcClient,
+            EducationalTime educationalTime) {
         this.reportService = reportService;
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.academicGrpcClient = academicGrpcClient;
         this.excuseRepository = excuseRepository;
         this.attachmentRepository = attachmentRepository;
         this.clock = clock;
-        this.exportService = new TeacherAttendanceExportService(reportService, scheduleGrpcClient,
-                academicGrpcClient, teacherAcademicGrpcClient, documentRendererGrpcClient,
-                this::readTeacherJournal);
-        this.statsExportService = new TeacherStatsExportService(reportService, academicGrpcClient,
-                teacherAcademicGrpcClient, documentRendererGrpcClient);
+        this.educationalClock = educationalTime.clock();
+        this.exportService =
+                new TeacherAttendanceExportService(
+                        reportService,
+                        scheduleGrpcClient,
+                        academicGrpcClient,
+                        teacherAcademicGrpcClient,
+                        documentRendererGrpcClient,
+                        this::readTeacherJournal);
+        this.statsExportService =
+                new TeacherStatsExportService(
+                        reportService,
+                        academicGrpcClient,
+                        teacherAcademicGrpcClient,
+                        documentRendererGrpcClient);
     }
 
     @Override
-    public void getTeacherLesson(TeacherLessonRequest request,
-                                 StreamObserver<TeacherLessonResponse> responseObserver) {
+    public void getTeacherLesson(
+            TeacherLessonRequest request, StreamObserver<TeacherLessonResponse> responseObserver) {
         try {
             InternalJwtClaims claims = requireTeacher();
             long lessonId = positive(request.getLessonId(), "lesson_id");
-            LessonAttendanceResponse response = reportService
-                    .getTeacherLessonAttendance(lessonId, claims.userId());
+            LessonAttendanceResponse response =
+                    reportService.getTeacherLessonAttendance(lessonId, claims.userId());
             LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
             Map<Long, TicketMarker> markers = ticketMarkers(lessonId);
-            TeacherLessonResponse.Builder result = TeacherLessonResponse.newBuilder()
-                    .setLesson(toSummary(lesson))
-                    .setServerNow(clock.instant().toString());
+            TeacherLessonResponse.Builder result =
+                    TeacherLessonResponse.newBuilder()
+                            .setLesson(toSummary(lesson))
+                            .setServerNow(clock.instant().toString());
             for (StudentAttendanceEntry entry : response.getEntries()) {
                 result.addRoster(toRosterEntry(entry, markers.get(entry.getUserId())));
             }
@@ -139,11 +185,57 @@ public final class TeacherAttendanceReadGrpcService
     }
 
     @Override
-    public void getTeacherJournal(TeacherJournalRequest request,
-                                   StreamObserver<TeacherJournalResponse> responseObserver) {
+    public void getTeacherJournal(
+            TeacherJournalRequest request,
+            StreamObserver<TeacherJournalResponse> responseObserver) {
         try {
             InternalJwtClaims claims = requireTeacher();
-            responseObserver.onNext(readTeacherJournal(claims.userId(), request.getLessonIdsList(), request.getPastOnly()));
+            if (!request.getIncludeMetrics()
+                            && (!request.getAggregateLessonIdsList().isEmpty()
+                                    || request.hasMetricsStudentId())
+                    || request.hasMetricsStudentId() && request.getMetricsStudentId() <= 0) {
+                throw new BadRequestException("Invalid journal metrics selection");
+            }
+            TeacherJournalResponse response =
+                    request.getIncludeMetrics() && request.getLessonIdsList().isEmpty()
+                            ? TeacherJournalResponse.newBuilder()
+                                    .setServerNow(clock.instant().toString())
+                                    .build()
+                            : readTeacherJournal(
+                                    claims.userId(),
+                                    request.getLessonIdsList(),
+                                    request.getPastOnly());
+            if (request.getIncludeMetrics()) {
+                if (!request.getAggregateLessonIdsList().containsAll(request.getLessonIdsList())) {
+                    throw new BadRequestException("Display lessons are outside metrics context");
+                }
+                var value =
+                        reportService.getTeacherJournalMetrics(
+                                request.getAggregateLessonIdsList(),
+                                claims.userId(),
+                                request.hasMetricsStudentId()
+                                        ? request.getMetricsStudentId()
+                                        : null);
+                TeacherJournalMetrics.Builder metrics =
+                        TeacherJournalMetrics.newBuilder()
+                                .addAllStudents(
+                                        value.students().stream()
+                                                .map(this::toStudentStats)
+                                                .toList())
+                                .setServerNow(value.serverNow().toString());
+                if (value.selectedStudentId() != null)
+                    metrics.setSelectedStudentId(value.selectedStudentId());
+                for (var point : value.series())
+                    metrics.addSeries(
+                            TeacherJournalLessonMetrics.newBuilder()
+                                    .setLessonId(point.lessonId())
+                                    .setPresent(toMetric(point.present()))
+                                    .setPresentOrExcused(toMetric(point.presentOrExcused()))
+                                    .setExcused(toMetric(point.excused()))
+                                    .setAbsent(toMetric(point.absent())));
+                response = response.toBuilder().setMetrics(metrics).build();
+            }
+            responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (RuntimeException error) {
             responseObserver.onError(toStatus(error));
@@ -151,8 +243,9 @@ public final class TeacherAttendanceReadGrpcService
     }
 
     @Override
-    public void exportTeacherAttendance(TeacherAttendanceExportRequest request,
-                                       StreamObserver<TeacherAttendanceExportResponse> responseObserver) {
+    public void exportTeacherAttendance(
+            TeacherAttendanceExportRequest request,
+            StreamObserver<TeacherAttendanceExportResponse> responseObserver) {
         try {
             InternalJwtClaims claims = requireTeacher();
             responseObserver.onNext(exportService.export(request, claims.userId()));
@@ -162,29 +255,48 @@ public final class TeacherAttendanceReadGrpcService
         }
     }
 
-    private TeacherJournalResponse readTeacherJournal(long teacherId, List<Long> requestedIds, boolean pastOnly) {
+    private TeacherJournalResponse readTeacherJournal(
+            long teacherId, List<Long> requestedIds, boolean pastOnly) {
         List<Long> lessonIds = requestedIds.stream().filter(id -> id > 0).distinct().toList();
-        if (lessonIds.isEmpty() || lessonIds.size() > 100 || lessonIds.size() != requestedIds.size()) {
-            throw Status.INVALID_ARGUMENT.withDescription("lesson_ids must contain 1..100 positive ids")
+        if (lessonIds.isEmpty()
+                || lessonIds.size() > 100
+                || lessonIds.size() != requestedIds.size()) {
+            throw Status.INVALID_ARGUMENT
+                    .withDescription("lesson_ids must contain 1..100 positive ids")
                     .asRuntimeException();
         }
+        Instant teachingNow = educationalClock.instant();
         List<LessonRoster> rosters = new ArrayList<>();
         for (Long lessonId : lessonIds) {
-            LessonAttendanceResponse attendance = reportService
-                    .getTeacherLessonAttendance(lessonId, teacherId);
+            LessonAttendanceResponse attendance =
+                    reportService.getTeacherLessonAttendance(lessonId, teacherId);
             LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
-            if (pastOnly && !"closed".equalsIgnoreCase(lesson.getStatus())) {
-                throw Status.INVALID_ARGUMENT.withDescription("past_only requires CLOSED lessons").asRuntimeException();
+            if (pastOnly && !completedHistoryLesson(lesson, teachingNow)) {
+                throw Status.INVALID_ARGUMENT
+                        .withDescription("past_only requires completed history lessons")
+                        .asRuntimeException();
             }
             Map<Long, TicketMarker> markers = ticketMarkers(lessonId);
-            List<TeacherRosterEntry> entries = attendance.getEntries().stream()
-                    .map(entry -> {
-                        TeacherRosterEntry value = toRosterEntry(entry, markers.get(entry.getUserId()));
-                        return pastOnly && !value.getRecordPresent()
-                                ? value.toBuilder().setStatus("absent").setSymbol("н")
-                                        .setAutoAbsent(false).build() : value;
-                    })
-                    .toList();
+            List<TeacherRosterEntry> entries =
+                    attendance.getEntries().stream()
+                            .map(
+                                    entry -> {
+                                        TeacherRosterEntry value =
+                                                toRosterEntry(
+                                                        entry, markers.get(entry.getUserId()));
+                                        return pastOnly
+                                                        && "closed"
+                                                                .equalsIgnoreCase(
+                                                                        lesson.getStatus())
+                                                        && !value.getRecordPresent()
+                                                ? value.toBuilder()
+                                                        .setStatus("absent")
+                                                        .setSymbol("н")
+                                                        .setAutoAbsent(false)
+                                                        .build()
+                                                : value;
+                                    })
+                            .toList();
             rosters.add(new LessonRoster(lesson, entries));
         }
         JournalScope scope = null;
@@ -193,50 +305,63 @@ public final class TeacherAttendanceReadGrpcService
             if (scope == null) {
                 scope = lessonScope;
             } else if (!scope.equals(lessonScope)) {
-                throw Status.INVALID_ARGUMENT.withDescription(
-                                "lesson_ids must share group, subject, and semester")
+                throw Status.INVALID_ARGUMENT
+                        .withDescription("lesson_ids must share group, subject, and semester")
                         .asRuntimeException();
             }
         }
-        rosters.sort(Comparator.comparing((LessonRoster value) -> value.lesson().getDate())
-                .thenComparing(value -> value.lesson().getLessonNumber())
-                .thenComparing(value -> value.lesson().getId()));
+        rosters.sort(
+                Comparator.comparing((LessonRoster value) -> value.lesson().getDate())
+                        .thenComparing(value -> value.lesson().getLessonNumber())
+                        .thenComparing(value -> value.lesson().getId()));
 
         Map<Long, StudentJournalAccumulator> students = new HashMap<>();
         List<TeacherLessonSummary> lessons = new ArrayList<>();
         for (LessonRoster roster : rosters) {
             lessons.add(toSummary(roster.lesson()));
             for (TeacherRosterEntry entry : roster.entries()) {
-                StudentJournalAccumulator student = students.computeIfAbsent(
-                        entry.getStudentId(), id -> new StudentJournalAccumulator(
-                                entry.getStudentId(), entry.getDisplayName()));
-                student.cells().put(roster.lesson().getId(), TeacherJournalCell.newBuilder()
-                        .setLessonId(roster.lesson().getId())
-                        .setStatus(entry.getStatus())
-                        .setSymbol(entry.getSymbol())
-                        .setSource(entry.getSource())
-                        .setRecordPresent(entry.getRecordPresent())
-                        .setPendingTicket(entry.getPendingTicket())
-                        .setAutoAbsent(entry.getAutoAbsent())
-                        .setTicketId(entry.getTicketId())
-                        .setExcuseType(entry.getExcuseType())
-                        .setExcuseReason(entry.getExcuseReason())
-                        .build());
+                StudentJournalAccumulator student =
+                        students.computeIfAbsent(
+                                entry.getStudentId(),
+                                id ->
+                                        new StudentJournalAccumulator(
+                                                entry.getStudentId(), entry.getDisplayName()));
+                student.cells()
+                        .put(
+                                roster.lesson().getId(),
+                                TeacherJournalCell.newBuilder()
+                                        .setLessonId(roster.lesson().getId())
+                                        .setStatus(entry.getStatus())
+                                        .setSymbol(entry.getSymbol())
+                                        .setSource(entry.getSource())
+                                        .setRecordPresent(entry.getRecordPresent())
+                                        .setPendingTicket(entry.getPendingTicket())
+                                        .setAutoAbsent(entry.getAutoAbsent())
+                                        .setTicketId(entry.getTicketId())
+                                        .setExcuseType(entry.getExcuseType())
+                                        .setExcuseReason(entry.getExcuseReason())
+                                        .build());
             }
         }
-        List<TeacherJournalStudent> resultStudents = students.values().stream()
-                .sorted(Comparator.comparing(StudentJournalAccumulator::displayName,
-                        Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
-                        .thenComparingLong(StudentJournalAccumulator::studentId))
-                .map(student -> TeacherJournalStudent.newBuilder()
-                        .setStudentId(student.studentId())
-                        .setDisplayName(student.displayName())
-                        .addAllCells(student.cells().entrySet().stream()
-                                .sorted(Map.Entry.comparingByKey())
-                                .map(Map.Entry::getValue)
-                                .toList())
-                        .build())
-                .toList();
+        List<TeacherJournalStudent> resultStudents =
+                students.values().stream()
+                        .sorted(
+                                Comparator.comparing(
+                                                StudentJournalAccumulator::displayName,
+                                                Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+                                        .thenComparingLong(StudentJournalAccumulator::studentId))
+                        .map(
+                                student ->
+                                        TeacherJournalStudent.newBuilder()
+                                                .setStudentId(student.studentId())
+                                                .setDisplayName(student.displayName())
+                                                .addAllCells(
+                                                        student.cells().entrySet().stream()
+                                                                .sorted(Map.Entry.comparingByKey())
+                                                                .map(Map.Entry::getValue)
+                                                                .toList())
+                                                .build())
+                        .toList();
         return TeacherJournalResponse.newBuilder()
                 .addAllLessons(lessons)
                 .addAllStudents(resultStudents)
@@ -244,24 +369,44 @@ public final class TeacherAttendanceReadGrpcService
                 .build();
     }
 
+    private static boolean completedHistoryLesson(LessonResponse lesson, Instant now) {
+        if ("closed".equalsIgnoreCase(lesson.getStatus())) return true;
+        if (!"cancelled".equalsIgnoreCase(lesson.getStatus())) return false;
+        try {
+            Instant ended =
+                    LocalDate.parse(lesson.getDate())
+                            .atTime(LocalTime.parse(lesson.getEndTime()))
+                            .atZone(ZoneId.of("Europe/Moscow"))
+                            .toInstant();
+            return !ended.isAfter(now);
+        } catch (RuntimeException invalidTiming) {
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule returned invalid cancelled lesson timing");
+        }
+    }
+
     @Override
-    public void getTeacherStats(TeacherStatsRequest request,
-                                StreamObserver<TeacherStatsResponse> responseObserver) {
+    public void getTeacherStats(
+            TeacherStatsRequest request, StreamObserver<TeacherStatsResponse> responseObserver) {
         try {
             InternalJwtClaims claims = requireTeacher();
             TeacherStatsScope scope = request.getScope();
             ReportService.TeacherStatsQuery query = statsQuery(request);
-            ReportService.TeacherStatsResult result = reportService.getTeacherStats(query, claims.userId());
-            TeacherStatsResponse.Builder response = TeacherStatsResponse.newBuilder()
-                    .setScope(scope)
-                    .setSemesterId(result.semesterId())
-                    .setLessonsCount(result.lessonsCount())
-                    .setServerNow(result.serverNow().toString());
+            ReportService.TeacherStatsResult result =
+                    reportService.getTeacherStats(query, claims.userId());
+            TeacherStatsResponse.Builder response =
+                    TeacherStatsResponse.newBuilder()
+                            .setScope(scope)
+                            .setSemesterId(result.semesterId())
+                            .setLessonsCount(result.lessonsCount())
+                            .setServerNow(result.serverNow().toString());
             if (result.periodFrom() != null) response.setPeriodFrom(result.periodFrom().toString());
             if (result.periodTo() != null) response.setPeriodTo(result.periodTo().toString());
             result.students().stream().map(this::toStudentStats).forEach(response::addStudents);
             result.groups().stream().map(this::toGroupStats).forEach(response::addGroups);
-            result.subjectOptions().stream().map(this::toSubjectOption).forEach(response::addSubjectOptions);
+            result.subjectOptions().stream()
+                    .map(this::toSubjectOption)
+                    .forEach(response::addSubjectOptions);
             responseObserver.onNext(response.build());
             responseObserver.onCompleted();
         } catch (RuntimeException error) {
@@ -270,19 +415,26 @@ public final class TeacherAttendanceReadGrpcService
     }
 
     @Override
-    public void exportTeacherStats(TeacherStatsExportRequest request,
-                                   StreamObserver<TeacherStatsExportResponse> responseObserver) {
+    public void exportTeacherStats(
+            TeacherStatsExportRequest request,
+            StreamObserver<TeacherStatsExportResponse> responseObserver) {
         try {
             InternalJwtClaims claims = requireTeacher();
             if (!request.hasStatsRequest()) {
-                throw Status.INVALID_ARGUMENT.withDescription("stats_request is required").asRuntimeException();
-            }
-            if (statsExportService == null) {
-                throw Status.UNAVAILABLE.withDescription("Teacher statistics export is not configured")
+                throw Status.INVALID_ARGUMENT
+                        .withDescription("stats_request is required")
                         .asRuntimeException();
             }
-            responseObserver.onNext(statsExportService.export(
-                    statsQuery(request.getStatsRequest()), claims.userId(), request.getFormat()));
+            if (statsExportService == null) {
+                throw Status.UNAVAILABLE
+                        .withDescription("Teacher statistics export is not configured")
+                        .asRuntimeException();
+            }
+            responseObserver.onNext(
+                    statsExportService.export(
+                            statsQuery(request.getStatsRequest()),
+                            claims.userId(),
+                            request.getFormat()));
             responseObserver.onCompleted();
         } catch (RuntimeException error) {
             responseObserver.onError(toStatus(error));
@@ -293,18 +445,21 @@ public final class TeacherAttendanceReadGrpcService
         TeacherStatsScope scope = request.getScope();
         if (scope != TeacherStatsScope.TEACHER_STATS_STUDENTS
                 && scope != TeacherStatsScope.TEACHER_STATS_GROUPS) {
-            throw Status.INVALID_ARGUMENT.withDescription("stats scope is required").asRuntimeException();
-        }
-        List<Long> lessonIds = request.getLessonIdsList().stream()
-                .filter(id -> id > 0)
-                .distinct()
-                .toList();
-        if (lessonIds.size() != request.getLessonIdsCount() || lessonIds.size() > 5_000) {
-            throw Status.INVALID_ARGUMENT.withDescription("lesson_ids must contain unique positive ids")
+            throw Status.INVALID_ARGUMENT
+                    .withDescription("stats scope is required")
                     .asRuntimeException();
         }
-        ReportService.TeacherStatsScope domainScope = scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
-                ? ReportService.TeacherStatsScope.STUDENTS : ReportService.TeacherStatsScope.GROUPS;
+        List<Long> lessonIds =
+                request.getLessonIdsList().stream().filter(id -> id > 0).distinct().toList();
+        if (lessonIds.size() != request.getLessonIdsCount() || lessonIds.size() > 5_000) {
+            throw Status.INVALID_ARGUMENT
+                    .withDescription("lesson_ids must contain unique positive ids")
+                    .asRuntimeException();
+        }
+        ReportService.TeacherStatsScope domainScope =
+                scope == TeacherStatsScope.TEACHER_STATS_STUDENTS
+                        ? ReportService.TeacherStatsScope.STUDENTS
+                        : ReportService.TeacherStatsScope.GROUPS;
         return new ReportService.TeacherStatsQuery(
                 lessonIds,
                 domainScope,
@@ -312,16 +467,25 @@ public final class TeacherAttendanceReadGrpcService
                 request.getSubjectId(),
                 request.getLessonTypesList(),
                 request.getSortsList().stream()
-                        .map(sort -> new ReportService.TeacherStatsSort(sort.getColumn(), sort.getDescending()))
+                        .map(
+                                sort ->
+                                        new ReportService.TeacherStatsSort(
+                                                sort.getColumn(), sort.getDescending()))
                         .toList(),
                 request.getFiltersList().stream()
-                        .map(filter -> new ReportService.TeacherStatsFilter(
-                                filter.getColumn(),
-                                filter.getContains(),
-                                filter.hasMinPercent() ? filter.getMinPercent() : null,
-                                filter.hasMaxPercent() ? filter.getMaxPercent() : null,
-                                filter.hasMinValue() ? filter.getMinValue() : null,
-                                filter.hasMaxValue() ? filter.getMaxValue() : null))
+                        .map(
+                                filter ->
+                                        new ReportService.TeacherStatsFilter(
+                                                filter.getColumn(),
+                                                filter.getContains(),
+                                                filter.hasMinPercent()
+                                                        ? filter.getMinPercent()
+                                                        : null,
+                                                filter.hasMaxPercent()
+                                                        ? filter.getMaxPercent()
+                                                        : null,
+                                                filter.hasMinValue() ? filter.getMinValue() : null,
+                                                filter.hasMaxValue() ? filter.getMaxValue() : null))
                         .toList(),
                 positive(request.getSemesterId(), "semester_id"));
     }
@@ -349,7 +513,8 @@ public final class TeacherAttendanceReadGrpcService
                 .build();
     }
 
-    private TeacherStatsSubjectOption toSubjectOption(ReportService.TeacherStatsSubjectOption option) {
+    private TeacherStatsSubjectOption toSubjectOption(
+            ReportService.TeacherStatsSubjectOption option) {
         return TeacherStatsSubjectOption.newBuilder()
                 .setGroupId(option.groupId())
                 .setSubjectId(option.subjectId())
@@ -367,41 +532,61 @@ public final class TeacherAttendanceReadGrpcService
     }
 
     @Override
-    public void getTeacherExcuse(TeacherExcuseRequest request,
-                                 StreamObserver<TeacherExcuseResponse> responseObserver) {
+    public void getTeacherExcuse(
+            TeacherExcuseRequest request, StreamObserver<TeacherExcuseResponse> responseObserver) {
         try {
             InternalJwtClaims claims = requireTeacher();
             String requestId = required(request.getRequestId(), "request_id");
-            ExcuseTicket ticket = excuseRepository.findById(requestId)
-                    .orElseThrow(() -> Status.NOT_FOUND.withDescription("request not found")
-                            .asRuntimeException());
+            ExcuseTicket ticket =
+                    excuseRepository
+                            .findById(requestId)
+                            .orElseThrow(
+                                    () ->
+                                            Status.NOT_FOUND
+                                                    .withDescription("request not found")
+                                                    .asRuntimeException());
             List<LessonResponse> lessons = authorizedTicketLessons(ticket, claims.userId());
             if (lessons.isEmpty()) {
-                throw Status.NOT_FOUND.withDescription("request not found")
-                        .asRuntimeException();
+                throw Status.NOT_FOUND.withDescription("request not found").asRuntimeException();
             }
-            TeacherExcuseResponse.Builder result = TeacherExcuseResponse.newBuilder()
-                    .setRequestId(ticket.getId())
-                    .setRequestKind("EXCUSE")
-                    .setStatus(ticket.getStatus() == null ? "" : ticket.getStatus().name().toLowerCase(Locale.ROOT))
-                    .setStudentId(value(ticket.getStudentId()))
-                    .setStudentName(value(ticket.getStudentName()))
-                    .setGroupId(value(ticket.getGroupId()))
-                    .setExcuseType(ticket.getExcuseType() == null ? "" : ticket.getExcuseType().name().toLowerCase(Locale.ROOT))
-                    .setComment(value(ticket.getComment()))
-                    .setCreatedAt(ticket.getCreatedAt() == null ? "" : ticket.getCreatedAt().toString())
-                    .setDecisionBy(value(ticket.getDecisionBy()))
-                    .setDecisionAt(ticket.getDecisionAt() == null ? "" : ticket.getDecisionAt().toString())
-                    .setDecisionComment(value(ticket.getDecisionComment()))
-                    .setServerNow(clock.instant().toString());
+            TeacherExcuseResponse.Builder result =
+                    TeacherExcuseResponse.newBuilder()
+                            .setRequestId(ticket.getId())
+                            .setRequestKind("EXCUSE")
+                            .setStatus(
+                                    ticket.getStatus() == null
+                                            ? ""
+                                            : ticket.getStatus().name().toLowerCase(Locale.ROOT))
+                            .setStudentId(value(ticket.getStudentId()))
+                            .setStudentName(value(ticket.getStudentName()))
+                            .setGroupId(value(ticket.getGroupId()))
+                            .setExcuseType(
+                                    ticket.getExcuseType() == null
+                                            ? ""
+                                            : ticket.getExcuseType()
+                                                    .name()
+                                                    .toLowerCase(Locale.ROOT))
+                            .setComment(value(ticket.getComment()))
+                            .setCreatedAt(
+                                    ticket.getCreatedAt() == null
+                                            ? ""
+                                            : ticket.getCreatedAt().toString())
+                            .setDecisionBy(value(ticket.getDecisionBy()))
+                            .setDecisionAt(
+                                    ticket.getDecisionAt() == null
+                                            ? ""
+                                            : ticket.getDecisionAt().toString())
+                            .setDecisionComment(value(ticket.getDecisionComment()))
+                            .setServerNow(clock.instant().toString());
             if (ticket.getDecisionBy() != null && ticket.getDecisionBy() > 0) {
                 Deadline lookupDeadline = Deadline.after(3, TimeUnit.SECONDS);
                 Deadline requestDeadline = Context.current().getDeadline();
                 if (requestDeadline != null) {
                     lookupDeadline = lookupDeadline.minimum(requestDeadline);
                 }
-                String decisionByName = academicGrpcClient.getAuditUserDisplayName(
-                        ticket.getDecisionBy(), lookupDeadline);
+                String decisionByName =
+                        academicGrpcClient.getAuditUserDisplayName(
+                                ticket.getDecisionBy(), lookupDeadline);
                 if (decisionByName != null) {
                     result.setDecisionByName(decisionByName);
                 }
@@ -410,20 +595,29 @@ public final class TeacherAttendanceReadGrpcService
                 result.addLessons(toSummary(lesson));
             }
             if (ticket.getAttachmentDescriptors() != null) {
-                for (RequestAttachmentDescriptorDocument descriptor : ticket.getAttachmentDescriptors()) {
-                    if (descriptor == null || descriptor.getId() == null
+                for (RequestAttachmentDescriptorDocument descriptor :
+                        ticket.getAttachmentDescriptors()) {
+                    if (descriptor == null
+                            || descriptor.getId() == null
                             || !AttachmentState.ACTIVE.equals(descriptor.getState())
                             || expired(descriptor.getExpiresAt())) {
                         continue;
                     }
-                    result.addAttachments(TeacherExcuseAttachment.newBuilder()
-                            .setAttachmentId(descriptor.getId())
-                            .setFileName(value(descriptor.getName()))
-                            .setContentType(value(descriptor.getContentType()))
-                            .setSize(value(descriptor.getSize()))
-                            .setUploadedAt(descriptor.getUploadedAt() == null ? "" : descriptor.getUploadedAt().toString())
-                            .setExpiresAt(descriptor.getExpiresAt() == null ? "" : descriptor.getExpiresAt().toString())
-                            .build());
+                    result.addAttachments(
+                            TeacherExcuseAttachment.newBuilder()
+                                    .setAttachmentId(descriptor.getId())
+                                    .setFileName(value(descriptor.getName()))
+                                    .setContentType(value(descriptor.getContentType()))
+                                    .setSize(value(descriptor.getSize()))
+                                    .setUploadedAt(
+                                            descriptor.getUploadedAt() == null
+                                                    ? ""
+                                                    : descriptor.getUploadedAt().toString())
+                                    .setExpiresAt(
+                                            descriptor.getExpiresAt() == null
+                                                    ? ""
+                                                    : descriptor.getExpiresAt().toString())
+                                    .build());
                 }
             }
             responseObserver.onNext(result.build());
@@ -434,43 +628,62 @@ public final class TeacherAttendanceReadGrpcService
     }
 
     @Override
-    public void downloadTeacherExcuseAttachment(TeacherExcuseAttachmentRequest request,
-                                                 StreamObserver<TeacherAttachmentDownload> responseObserver) {
+    public void downloadTeacherExcuseAttachment(
+            TeacherExcuseAttachmentRequest request,
+            StreamObserver<TeacherAttachmentDownload> responseObserver) {
         try {
             InternalJwtClaims claims = requireTeacher();
             String requestId = required(request.getRequestId(), "request_id");
             String attachmentId = required(request.getAttachmentId(), "attachment_id");
-            ExcuseTicket ticket = excuseRepository.findById(requestId)
-                    .orElseThrow(() -> Status.NOT_FOUND.withDescription("request not found")
-                            .asRuntimeException());
+            ExcuseTicket ticket =
+                    excuseRepository
+                            .findById(requestId)
+                            .orElseThrow(
+                                    () ->
+                                            Status.NOT_FOUND
+                                                    .withDescription("request not found")
+                                                    .asRuntimeException());
             if (authorizedTicketLessons(ticket, claims.userId()).isEmpty()) {
-                throw Status.NOT_FOUND.withDescription("request not found")
-                        .asRuntimeException();
+                throw Status.NOT_FOUND.withDescription("request not found").asRuntimeException();
             }
-            boolean described = ticket.getAttachmentDescriptors() != null
-                    && ticket.getAttachmentDescriptors().stream()
-                    .anyMatch(descriptor -> descriptor != null
-                            && attachmentId.equals(descriptor.getId())
-                            && AttachmentState.ACTIVE.equals(descriptor.getState())
-                            && !expired(descriptor.getExpiresAt()));
+            boolean described =
+                    ticket.getAttachmentDescriptors() != null
+                            && ticket.getAttachmentDescriptors().stream()
+                                    .anyMatch(
+                                            descriptor ->
+                                                    descriptor != null
+                                                            && attachmentId.equals(
+                                                                    descriptor.getId())
+                                                            && AttachmentState.ACTIVE.equals(
+                                                                    descriptor.getState())
+                                                            && !expired(descriptor.getExpiresAt()));
             if (!described) {
-                throw Status.NOT_FOUND.withDescription("attachment not found")
-                        .asRuntimeException();
+                throw Status.NOT_FOUND.withDescription("attachment not found").asRuntimeException();
             }
-            RequestAttachmentDocument document = attachmentRepository.findById(attachmentId)
-                    .filter(value -> requestId.equals(value.getRequestId()))
-                    .filter(value -> Objects.equals(ticket.getStudentId(), value.getOwnerStudentId()))
-                    .filter(value -> AttachmentState.ACTIVE.equals(value.getState()))
-                    .filter(value -> !expired(value.getExpiresAt()))
-                    .orElseThrow(() -> Status.NOT_FOUND.withDescription("attachment not found")
-                            .asRuntimeException());
+            RequestAttachmentDocument document =
+                    attachmentRepository
+                            .findById(attachmentId)
+                            .filter(value -> requestId.equals(value.getRequestId()))
+                            .filter(
+                                    value ->
+                                            Objects.equals(
+                                                    ticket.getStudentId(),
+                                                    value.getOwnerStudentId()))
+                            .filter(value -> AttachmentState.ACTIVE.equals(value.getState()))
+                            .filter(value -> !expired(value.getExpiresAt()))
+                            .orElseThrow(
+                                    () ->
+                                            Status.NOT_FOUND
+                                                    .withDescription("attachment not found")
+                                                    .asRuntimeException());
             byte[] data = document.getData() == null ? new byte[0] : document.getData().getData();
-            responseObserver.onNext(TeacherAttachmentDownload.newBuilder()
-                    .setFileName(value(document.getName()))
-                    .setContentType(value(document.getContentType()))
-                    .setSize(data.length)
-                    .setData(ByteString.copyFrom(data))
-                    .build());
+            responseObserver.onNext(
+                    TeacherAttachmentDownload.newBuilder()
+                            .setFileName(value(document.getName()))
+                            .setContentType(value(document.getContentType()))
+                            .setSize(data.length)
+                            .setData(ByteString.copyFrom(data))
+                            .build());
             responseObserver.onCompleted();
         } catch (RuntimeException error) {
             responseObserver.onError(toStatus(error));
@@ -482,7 +695,8 @@ public final class TeacherAttendanceReadGrpcService
         if (!"TEACHER".equals(claims.domainRole())
                 || !"ACTIVE".equals(claims.status())
                 || claims.userId() <= 0) {
-            throw Status.PERMISSION_DENIED.withDescription("teacher role is required")
+            throw Status.PERMISSION_DENIED
+                    .withDescription("teacher role is required")
                     .asRuntimeException();
         }
         return claims;
@@ -490,9 +704,12 @@ public final class TeacherAttendanceReadGrpcService
 
     private Map<Long, TicketMarker> ticketMarkers(long lessonId) {
         Map<Long, TicketMarker> result = new HashMap<>();
-        for (ExcuseTicket ticket : excuseRepository.findByLessonIdsInAndStatusIn(
-                List.of(lessonId), VISIBLE_TICKET_STATUSES)) {
-            if (ticket == null || ticket.getStudentId() == null || ticket.getLessonIds() == null
+        for (ExcuseTicket ticket :
+                excuseRepository.findByLessonIdsInAndStatusIn(
+                        List.of(lessonId), VISIBLE_TICKET_STATUSES)) {
+            if (ticket == null
+                    || ticket.getStudentId() == null
+                    || ticket.getLessonIds() == null
                     || !ticket.getLessonIds().contains(lessonId)) {
                 continue;
             }
@@ -506,31 +723,32 @@ public final class TeacherAttendanceReadGrpcService
     }
 
     private TeacherRosterEntry toRosterEntry(StudentAttendanceEntry entry, TicketMarker marker) {
-        boolean noTicketExcuse = marker == null
-                && "excused".equalsIgnoreCase(entry.getStatus());
-        boolean automaticAbsent = entry.getStatus() != null
-                && "absent".equalsIgnoreCase(entry.getStatus())
-                && "auto_scheduler".equalsIgnoreCase(entry.getSource());
-        TeacherRosterEntry.Builder result = TeacherRosterEntry.newBuilder()
-                .setStudentId(value(entry.getUserId()))
-                .setDisplayName(value(entry.getDisplayName()))
-                .setStatus(value(entry.getStatus()))
-                .setSymbol(value(entry.getSymbol()))
-                // Preserve a machine-readable distinction for a manual EXCUSED
-                // record that has no persisted student ticket.  The UI must not
-                // invent a request card for this case.
-                .setSource(noTicketExcuse ? "NO_TICKET" : value(entry.getSource()))
-                .setRecordPresent(entry.getStatus() != null)
-                .setPendingTicket(marker != null && marker.pending())
-                .setAutoAbsent(automaticAbsent)
-                .setTicketId(marker == null ? "" : value(marker.ticketId()))
-                .setExcuseType(value(entry.getExcuseType()))
-                .setExcuseReason(value(entry.getExcuseReason()))
-                .setExcuseComment(value(entry.getComment()))
-                .setAttachmentId(value(entry.getAttachmentId()))
-                .setAttachmentName(value(entry.getAttachmentName()))
-                .setAttachmentContentType(value(entry.getAttachmentContentType()))
-                .setAttachmentSize(value(entry.getAttachmentSize()));
+        boolean noTicketExcuse = marker == null && "excused".equalsIgnoreCase(entry.getStatus());
+        boolean automaticAbsent =
+                entry.getStatus() != null
+                        && "absent".equalsIgnoreCase(entry.getStatus())
+                        && "auto_scheduler".equalsIgnoreCase(entry.getSource());
+        TeacherRosterEntry.Builder result =
+                TeacherRosterEntry.newBuilder()
+                        .setStudentId(value(entry.getUserId()))
+                        .setDisplayName(value(entry.getDisplayName()))
+                        .setStatus(value(entry.getStatus()))
+                        .setSymbol(value(entry.getSymbol()))
+                        // Preserve a machine-readable distinction for a manual EXCUSED
+                        // record that has no persisted student ticket.  The UI must not
+                        // invent a request card for this case.
+                        .setSource(noTicketExcuse ? "NO_TICKET" : value(entry.getSource()))
+                        .setRecordPresent(entry.getStatus() != null)
+                        .setPendingTicket(marker != null && marker.pending())
+                        .setAutoAbsent(automaticAbsent)
+                        .setTicketId(marker == null ? "" : value(marker.ticketId()))
+                        .setExcuseType(value(entry.getExcuseType()))
+                        .setExcuseReason(value(entry.getExcuseReason()))
+                        .setExcuseComment(value(entry.getComment()))
+                        .setAttachmentId(value(entry.getAttachmentId()))
+                        .setAttachmentName(value(entry.getAttachmentName()))
+                        .setAttachmentContentType(value(entry.getAttachmentContentType()))
+                        .setAttachmentSize(value(entry.getAttachmentSize()));
         return result.build();
     }
 
@@ -542,7 +760,9 @@ public final class TeacherAttendanceReadGrpcService
                 LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
                 reportService.authorizeTeacherLesson(lesson, teacherId);
                 result.add(lesson);
-            } catch (AccessDeniedException | ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException ignored) {
+            } catch (AccessDeniedException
+                    | ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException
+                            ignored) {
                 // Project a mixed ticket only over the teacher's current active groups.
             }
         }
@@ -550,36 +770,39 @@ public final class TeacherAttendanceReadGrpcService
     }
 
     private TeacherLessonSummary toSummary(LessonResponse lesson) {
-        AcademicGrpcClient.SubjectDetails subject = academicGrpcClient
-                .getSubjectDetailsByIds(List.of(lesson.getSubjectId()))
-                .get(lesson.getSubjectId());
+        AcademicGrpcClient.SubjectDetails subject =
+                academicGrpcClient
+                        .getSubjectDetailsByIds(List.of(lesson.getSubjectId()))
+                        .get(lesson.getSubjectId());
         String groupName = academicGrpcClient.getGroup(lesson.getGroupId()).getName();
-        TeacherLessonSummary.Builder response = TeacherLessonSummary.newBuilder()
-                .setLessonId(lesson.getId())
-                .setScheduleItemId(lesson.getScheduleItemId())
-                .setGroupId(lesson.getGroupId())
-                .setGroupName(value(groupName))
-                .setSubjectId(lesson.getSubjectId())
-                .setSubjectName(subject == null ? "" : value(subject.name()))
-                .setSemesterId(lesson.getSemesterId())
-                .setLessonType(value(lesson.getLessonType()))
-                .setLessonDate(value(lesson.getDate()))
-                .setLessonNumber(lesson.getLessonNumber())
-                .setStartTime(value(lesson.getStartTime()))
-                .setEndTime(value(lesson.getEndTime()))
-                .setRoom(value(lesson.getRoom()))
-                .setStatus(value(lesson.getStatus()))
-                .setOccurrenceId(Long.toString(lesson.getOccurrenceId()))
-                .setGeneration(safeInt(lesson.getGeneration()))
-                .setRevision(safeInt(lesson.getRevision()))
-                .setOneOff(lesson.getScheduleItemId() <= 0)
-                .setMoved(lesson.getRevision() > 1 || lesson.getGeneration() > 1)
-                .setCancelled("cancelled".equalsIgnoreCase(lesson.getStatus()));
+        TeacherLessonSummary.Builder response =
+                TeacherLessonSummary.newBuilder()
+                        .setLessonId(lesson.getId())
+                        .setScheduleItemId(lesson.getScheduleItemId())
+                        .setGroupId(lesson.getGroupId())
+                        .setGroupName(value(groupName))
+                        .setSubjectId(lesson.getSubjectId())
+                        .setSubjectName(subject == null ? "" : value(subject.name()))
+                        .setSemesterId(lesson.getSemesterId())
+                        .setLessonType(value(lesson.getLessonType()))
+                        .setLessonDate(value(lesson.getDate()))
+                        .setLessonNumber(lesson.getLessonNumber())
+                        .setStartTime(value(lesson.getStartTime()))
+                        .setEndTime(value(lesson.getEndTime()))
+                        .setRoom(value(lesson.getRoom()))
+                        .setStatus(value(lesson.getStatus()))
+                        .setOccurrenceId(Long.toString(lesson.getOccurrenceId()))
+                        .setGeneration(safeInt(lesson.getGeneration()))
+                        .setRevision(safeInt(lesson.getRevision()))
+                        .setOneOff(lesson.getScheduleItemId() <= 0)
+                        .setMoved(lesson.getRevision() > 1 || lesson.getGeneration() > 1)
+                        .setCancelled("cancelled".equalsIgnoreCase(lesson.getStatus()));
         if ("cancelled".equalsIgnoreCase(lesson.getStatus()) && lesson.hasCancellationReason()) {
             response.setCancellationReason(lesson.getCancellationReason());
         }
         if (lesson.hasAssignmentId()) response.setAssignmentId(lesson.getAssignmentId());
-        if (lesson.hasAssignedTeacherId()) response.setAssignedTeacherId(lesson.getAssignedTeacherId());
+        if (lesson.hasAssignedTeacherId())
+            response.setAssignedTeacherId(lesson.getAssignedTeacherId());
         return response.build();
     }
 
@@ -593,7 +816,8 @@ public final class TeacherAttendanceReadGrpcService
 
     private static long positive(long value, String field) {
         if (value <= 0) {
-            throw Status.INVALID_ARGUMENT.withDescription(field + " must be positive")
+            throw Status.INVALID_ARGUMENT
+                    .withDescription(field + " must be positive")
                     .asRuntimeException();
         }
         return value;
@@ -601,7 +825,8 @@ public final class TeacherAttendanceReadGrpcService
 
     private static String required(String value, String field) {
         if (value == null || value.isBlank()) {
-            throw Status.INVALID_ARGUMENT.withDescription(field + " is required")
+            throw Status.INVALID_ARGUMENT
+                    .withDescription(field + " is required")
                     .asRuntimeException();
         }
         return value;
@@ -620,37 +845,47 @@ public final class TeacherAttendanceReadGrpcService
             return grpc;
         }
         if (error instanceof AccessDeniedException) {
-            return Status.PERMISSION_DENIED.withDescription("teacher lesson is out of scope")
-                    .withCause(error).asRuntimeException();
+            return Status.PERMISSION_DENIED
+                    .withDescription("teacher lesson is out of scope")
+                    .withCause(error)
+                    .asRuntimeException();
         }
         if (error instanceof BadRequestException) {
-            return Status.INVALID_ARGUMENT.withDescription(error.getMessage())
-                    .withCause(error).asRuntimeException();
+            return Status.INVALID_ARGUMENT
+                    .withDescription(error.getMessage())
+                    .withCause(error)
+                    .asRuntimeException();
         }
         if (error instanceof AcademicServiceUnavailableException
                 || error instanceof ScheduleServiceUnavailableException
                 || error instanceof ReportExportUnavailableException) {
-            return Status.UNAVAILABLE.withDescription(error.getMessage())
-                    .withCause(error).asRuntimeException();
+            return Status.UNAVAILABLE
+                    .withDescription(error.getMessage())
+                    .withCause(error)
+                    .asRuntimeException();
         }
-        if (error instanceof ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException) {
-            return Status.NOT_FOUND.withDescription(error.getMessage()).withCause(error).asRuntimeException();
+        if (error
+                instanceof
+                ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException) {
+            return Status.NOT_FOUND
+                    .withDescription(error.getMessage())
+                    .withCause(error)
+                    .asRuntimeException();
         }
-        return Status.INTERNAL.withDescription("Teacher read failed").withCause(error).asRuntimeException();
+        return Status.INTERNAL
+                .withDescription("Teacher read failed")
+                .withCause(error)
+                .asRuntimeException();
     }
 
-    private record TicketMarker(String ticketId, boolean pending) {
-    }
+    private record TicketMarker(String ticketId, boolean pending) {}
 
-    private record LessonRoster(LessonResponse lesson, List<TeacherRosterEntry> entries) {
-    }
+    private record LessonRoster(LessonResponse lesson, List<TeacherRosterEntry> entries) {}
 
     private record JournalScope(long groupId, long subjectId, long semesterId) {
         private static JournalScope from(LessonResponse lesson) {
             return new JournalScope(
-                    lesson.getGroupId(),
-                    lesson.getSubjectId(),
-                    lesson.getSemesterId());
+                    lesson.getGroupId(), lesson.getSubjectId(), lesson.getSemesterId());
         }
     }
 

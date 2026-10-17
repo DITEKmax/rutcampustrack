@@ -1,0 +1,22 @@
+{
+  "time": "2026-10-12T06:43:05.700479+00:00",
+  "state": "FINITE_RECONCILIATION_COMPLETE_FAILURES_EXACT",
+  "producer": "ced755a0f6e6817ef6f477aeb4f6a964ecfd1810",
+  "checkout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7",
+  "all4terminal": true,
+  "actual30executedcheckouts_verified": true,
+  "CI": "FAILURE",
+  "Coverage": "FAILURE",
+  "Security": "SUCCESS_BUILTIMAGESSKIP",
+  "OpenAPI": "SUCCESS",
+  "Authunit": 140,
+  "AuthIT": 169,
+  "Auth_failed_errors_skipped": 0,
+  "Academic": "NO_RESULTS_COMPILEFAILURE_beforetests",
+  "Chromium": "9PASS0FAILSKIP_stopcontainersSUCCESS",
+  "GatewayIT": "9PASS3SKIP",
+  "source_mutations": false,
+  "runtime": "NOT_RUN_BY_REVIEWER",
+  "processes": [],
+  "next": "Rootsoleauthor corrections/newcurrentgates"
+}

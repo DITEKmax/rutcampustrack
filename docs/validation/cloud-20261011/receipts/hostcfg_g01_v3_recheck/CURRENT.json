@@ -1,0 +1,54 @@
+{
+  "state": "COMPLETED_BOUNDED_RECHECK",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_effort": "UNKNOWN",
+  "root_head": "0753aec1fadea48e87e459552b9630f35170d2f9",
+  "product_producer": "cd3f237acffd4f0b9dd2a74babb2ee822376f0cb",
+  "scope": "READ_ONLY NEWv3 HOSTCFG-G01 source and no-output syntheticENV recheck",
+  "runtime": "NOT_RUN",
+  "restored": [
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "bytes": 88529,
+      "sha256": "e7cbc981e7d1f621f4a6390c0d88f2cbeb5ccfce347a9d324a30389685d2778e",
+      "restore": "full byte reread; TASK/decisions/questions exact SHA bridge to immediately preceding full textual read, changed CURRENT/resources/packet read fully"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "bytes": 10005,
+      "sha256": "75c629ad2efcf891ff4604fb6ec16cff4b27fd608780a5565314a95ee22b11d9",
+      "restore": "full byte reread; TASK/decisions/questions exact SHA bridge to immediately preceding full textual read, changed CURRENT/resources/packet read fully"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "bytes": 19030,
+      "sha256": "7e5ffeca2b1c13801e556c156737da6b5aa921f4e78c85b3507f7ed40970b34b",
+      "restore": "full byte reread; TASK/decisions/questions exact SHA bridge to immediately preceding full textual read, changed CURRENT/resources/packet read fully"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "bytes": 9948,
+      "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65",
+      "restore": "full byte reread; TASK/decisions/questions exact SHA bridge to immediately preceding full textual read, changed CURRENT/resources/packet read fully"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "bytes": 3916,
+      "sha256": "0d64ad9f48ad7a211a4c3937fd9497395d982dc8027befd2210d66071e9af2ac",
+      "restore": "full byte reread; TASK/decisions/questions exact SHA bridge to immediately preceding full textual read, changed CURRENT/resources/packet read fully"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-hostcfg-g01-v3-recheck.md",
+      "bytes": 3396,
+      "sha256": "c953a482f4c3f77f2608da821c4877ac16ee1d37f91fa1e7dbbdd70cdc0ceb5c",
+      "restore": "full byte reread; TASK/decisions/questions exact SHA bridge to immediately preceding full textual read, changed CURRENT/resources/packet read fully"
+    }
+  ],
+  "utc": "2026-10-12T10:00:06.517549+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "HOSTCFG-G01": "CLOSED_SOURCE_AND_ACTUAL_SYNTHETIC_ENV",
+  "source_manifest_sha256": "1f20137db35518dcbad5bafedbfc64744bf48b78c8e2044b979dd27133a47c6f",
+  "blocking_findings": [],
+  "next": "Root records source closure before separate concrete stand/resource grant; prior original review remains immutable"
+}

@@ -1,0 +1,177 @@
+{
+  "schema": "RCT_P06_STATUS_RED_RESTORE_ACTUAL_V1",
+  "utc": "2026-10-13T08:30:29.737488+00:00",
+  "disposition": "CAUSAL_XML_GATE_REJECTED_EXACT_SOURCE_AND_COMPILED_RESTORE_PASS",
+  "tool_session": 47612,
+  "tool_exit": 1,
+  "source_commit": "4db89b1876ee7aa8a80b021dabdb7e664a4a0da3",
+  "test_sha256": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2",
+  "causal_red_accepted": false,
+  "rejecting_predicate": "UNKNOWN_PENDING_SEPARATE_CLOSED_DATA_DIAGNOSTIC",
+  "xml_check": {
+    "schema": "RCT_P06_STATUS_XML_CHECK_V1",
+    "causal_red_valid": false,
+    "private_xml_retained_unhashed": true
+  },
+  "restore_compiler": {
+    "native_exit": 0,
+    "source_exact": true,
+    "compiled_exact": true,
+    "no_second_pg_test": true
+  },
+  "terminal": {
+    "direct_pid": 499571,
+    "native_exit": 1,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 499571,
+        "start_ticks": 13377819
+      },
+      {
+        "pid": 499572,
+        "start_ticks": 13377823
+      },
+      {
+        "pid": 499606,
+        "start_ticks": 13377930
+      },
+      {
+        "pid": 499781,
+        "start_ticks": 13380072
+      },
+      {
+        "pid": 499785,
+        "start_ticks": 13380098
+      },
+      {
+        "pid": 499976,
+        "start_ticks": 13383010
+      },
+      {
+        "pid": 500377,
+        "start_ticks": 13384572
+      },
+      {
+        "pid": 500513,
+        "start_ticks": 13385361
+      },
+      {
+        "pid": 500582,
+        "start_ticks": 13385440
+      },
+      {
+        "pid": 500804,
+        "start_ticks": 13387728
+      },
+      {
+        "pid": 500808,
+        "start_ticks": 13387751
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": false,
+    "source_restored": true,
+    "compiled_class_restored": true,
+    "container_settled": true,
+    "utc": "2026-10-13T08:28:32.527926+00:00",
+    "peaks": {
+      "memory": 8015392768,
+      "min_workspace_free": 7135285248,
+      "owned_rss": 1492086784,
+      "log_bytes": 10660
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": false,
+    "qualification": "Compile and selected class XML validation required before PASS"
+  },
+  "all12_births_absent": true,
+  "identities": [
+    {
+      "pid": 499571,
+      "start_ticks": 13377819,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 499572,
+      "start_ticks": 13377823,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 499606,
+      "start_ticks": 13377930,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 499781,
+      "start_ticks": 13380072,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 499785,
+      "start_ticks": 13380098,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 499976,
+      "start_ticks": 13383010,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 500377,
+      "start_ticks": 13384572,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 500513,
+      "start_ticks": 13385361,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 500582,
+      "start_ticks": 13385440,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 500804,
+      "start_ticks": 13387728,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 500808,
+      "start_ticks": 13387751,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 499486,
+      "start_ticks": 13377769,
+      "exact_birth_absent": true
+    }
+  ],
+  "owned_container_roles": {
+    "postgres": 1,
+    "ryuk": 1,
+    "probe": 0,
+    "mongo": 0,
+    "rabbitmq": 0,
+    "redis": 0
+  },
+  "owned_sessions": 1,
+  "containers_settled_foreign_container_volume_network_baseline_restored": true,
+  "source_all_pins_and_compiled_class_restored_exact": true,
+  "worktree_clean": true,
+  "private_tmp_envelope_removed": true,
+  "metadata_client_pids_synchronously_waited_count": 93,
+  "metadata_client_births": "NOT_CAPTURED",
+  "raw_xml_logs_private600_unhashed_unexported": true,
+  "second_pg_test_executed": false,
+  "green_runtime_authorized": false,
+  "parent_disposition": "UNKNOWN",
+  "native_lease": "RELEASED",
+  "qualification": "Failed checking acceptance is not product FAIL/PASS/sensitivity proof. Causal privateXML retained; no rawattrs/errors/bodies/hash emitted. Restorecompiler/source/class PASS and complete cleanup independent of rejected causal gate; no replay or assertion/cap change."
+}

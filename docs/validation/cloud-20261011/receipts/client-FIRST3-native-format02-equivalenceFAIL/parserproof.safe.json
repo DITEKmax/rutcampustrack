@@ -1,0 +1,85 @@
+{
+  "kind": "STRICT_TS_MECHANICAL_PROOF",
+  "typescript": "5.9.3",
+  "pass": false,
+  "rows": [
+    {
+      "path": "tests/e2e/playwright.first3.config.ts",
+      "beforeSha256": "a7fa0e1ab77d24dd1badc98234ad60cbc9c5e0adc5ec507b67325eee30615bfc",
+      "afterSha256": "8ea669255385a66c4a4eb3e5303ff6f4a89d9ed2b0582e5944b09a4745eb9cde",
+      "parseCodesBefore": [],
+      "parseCodesAfter": [],
+      "strictOrderedAstEqual": true,
+      "orderedAstBeforeSha256": "92764e0abcf6f3be81589cb94cbadf6327c7ee74a06614e36b1814ca21b5748a",
+      "orderedAstAfterSha256": "92764e0abcf6f3be81589cb94cbadf6327c7ee74a06614e36b1814ca21b5748a",
+      "orderedLiteralKindTextEqual": true,
+      "commentsEqual": true,
+      "emissions": [
+        {
+          "mode": "CommonJS",
+          "directBytesEqual": true,
+          "beforeSha256": "d8bbbcf7a739471de38c3e70d1824ef2a18a6ddc10a1d92adccd31510218712e",
+          "afterSha256": "d8bbbcf7a739471de38c3e70d1824ef2a18a6ddc10a1d92adccd31510218712e"
+        },
+        {
+          "mode": "ESNext",
+          "directBytesEqual": true,
+          "beforeSha256": "f154e813950ead347d64af07a01f12edb1b93a682f90819dde16649365ddacdc",
+          "afterSha256": "f154e813950ead347d64af07a01f12edb1b93a682f90819dde16649365ddacdc"
+        }
+      ]
+    },
+    {
+      "path": "tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "beforeSha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+      "afterSha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+      "parseCodesBefore": [],
+      "parseCodesAfter": [],
+      "strictOrderedAstEqual": true,
+      "orderedAstBeforeSha256": "121e97a95ee20279d13757adfe2985a68a44cb7f778033e0a8aebc780e77edfe",
+      "orderedAstAfterSha256": "121e97a95ee20279d13757adfe2985a68a44cb7f778033e0a8aebc780e77edfe",
+      "orderedLiteralKindTextEqual": true,
+      "commentsEqual": true,
+      "emissions": [
+        {
+          "mode": "CommonJS",
+          "directBytesEqual": true,
+          "beforeSha256": "697f4a0076059ee689d6db6acf0f9d012f5a00970a99648c15b04eab9cc3a402",
+          "afterSha256": "697f4a0076059ee689d6db6acf0f9d012f5a00970a99648c15b04eab9cc3a402"
+        },
+        {
+          "mode": "ESNext",
+          "directBytesEqual": true,
+          "beforeSha256": "9c268900582f499c4edf5e996ef66ed8a68c8e42c28789e3a21c914991a41cb6",
+          "afterSha256": "9c268900582f499c4edf5e996ef66ed8a68c8e42c28789e3a21c914991a41cb6"
+        }
+      ]
+    },
+    {
+      "path": "tests/e2e/fixtures/first3-observer.ts",
+      "beforeSha256": "324dab7a2b2ca4156f4240f1c08e4281a2924663e73e5b6a4773d6c0684c5624",
+      "afterSha256": "80db172a5bc8defd789ddf6e47eb8f2eb35015b68fcbe7d8b355c968f626922e",
+      "parseCodesBefore": [],
+      "parseCodesAfter": [],
+      "strictOrderedAstEqual": false,
+      "orderedAstBeforeSha256": "7acbf6e4e82e0bf7019d3e32b5712508122405a1b7308f695f636e56eaea8695",
+      "orderedAstAfterSha256": "6d50d4c8ce7d55384c1f449d3486d28142dd0fd77d3892cd10a484561b2ad8d6",
+      "orderedLiteralKindTextEqual": true,
+      "commentsEqual": true,
+      "emissions": [
+        {
+          "mode": "CommonJS",
+          "directBytesEqual": false,
+          "beforeSha256": "7799a66ff704816a791c62d69a524c050e009924850cf424c2969dbc785bd029",
+          "afterSha256": "f27c975556f95f67dd53a37e4a4af5da74e1c88e578c203d018d5cedc20e59f6"
+        },
+        {
+          "mode": "ESNext",
+          "directBytesEqual": false,
+          "beforeSha256": "eba055089c3e9d4f10590ada9a0b8b3e0051c4f6c8d615c8f13862100fdd9ca2",
+          "afterSha256": "6f063cc17df7dde734982e46eab0860a234eeeb2e43955ee8272e32e9c4182d6"
+        }
+      ]
+    }
+  ]
+}

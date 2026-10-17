@@ -1,0 +1,12 @@
+{
+  "time": "2026-10-12T11:00:12.171746+00:00",
+  "scope": "CRA-VIEWPORT-T02",
+  "severity": "P2",
+  "outcome": "CONFIRMED_SOURCE_CONFIG_BLOCKER",
+  "cause": "Inherited Desktop project.use viewport overrides global mobile viewport; effective1280x720 vsclaimed390x844",
+  "affected": "NEW cloud-accepted-playwright.ts only",
+  "source_review": "/workspace/scratch/rct-validation/client_acceptance_independent_review/viewport-merge.safe.json",
+  "writer": "client_real_acceptance",
+  "correction": "Explicit selectedproject.use viewport afterdevice spread; preservebrowser/privacy settings",
+  "runtime": "NOT_RUN"
+}

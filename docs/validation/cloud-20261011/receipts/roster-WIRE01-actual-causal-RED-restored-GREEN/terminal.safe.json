@@ -1,0 +1,62 @@
+{
+  "direct_pid": 491585,
+  "native_exit": 0,
+  "terminal_reason": "NATIVE_TERMINAL",
+  "signal_count": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "all_members_including_Z_after": [],
+  "known_owned_identities": [
+    {
+      "pid": 491585,
+      "start_ticks": 12786185
+    },
+    {
+      "pid": 491586,
+      "start_ticks": 12786191
+    },
+    {
+      "pid": 491618,
+      "start_ticks": 12786296
+    },
+    {
+      "pid": 491848,
+      "start_ticks": 12789239
+    },
+    {
+      "pid": 491888,
+      "start_ticks": 12789480
+    },
+    {
+      "pid": 491934,
+      "start_ticks": 12789932
+    },
+    {
+      "pid": 491969,
+      "start_ticks": 12790003
+    },
+    {
+      "pid": 492291,
+      "start_ticks": 12793156
+    },
+    {
+      "pid": 492327,
+      "start_ticks": 12793406
+    }
+  ],
+  "adopted_waitpid_receipts": [],
+  "supervision_error_type": null,
+  "phase_success": true,
+  "source_restored": true,
+  "compiled_class_restored": true,
+  "utc": "2026-10-13T06:49:06.866210+00:00",
+  "peaks": {
+    "memory": 7101497344,
+    "min_workspace_free": 8203390976,
+    "owned_rss": 1367580672,
+    "log_bytes": 17345
+  },
+  "expected_native_exit": 0,
+  "native_phase_pass": true,
+  "qualification": "Compile and selected class XML validation required before PASS"
+}

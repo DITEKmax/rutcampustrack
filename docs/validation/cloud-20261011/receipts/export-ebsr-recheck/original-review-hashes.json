@@ -1,0 +1,74 @@
+[
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/REPORT.md",
+    "sha256": "62c5501f8696c9b948e968ac632d8e320f0a09c77add10376a89fefddeedbaea",
+    "bytes": 18278,
+    "matches_immutable_original": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/findings.json",
+    "sha256": "923917eca8999b57d3e224a881bf4157eb79eb5847b18faa09f2aaec4ad97947",
+    "bytes": 5120,
+    "matches_immutable_original": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/review-ledger.json",
+    "sha256": "de3389f915c2178eb2418cd2d8cae0d9cbbba85e371aa51f12a0135ef9a15ceb",
+    "bytes": 2417,
+    "matches_immutable_original": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/source-ledger.json",
+    "sha256": "1b039b4e862fc0fac3d6bf1f90adc9bad8e7deec490b3bd45f5ea220027a6e79",
+    "bytes": 23490,
+    "matches_immutable_original": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/frozen-source-manifest.json",
+    "sha256": "cafe36f8647c253f98342cc6979552e8f3367e3d4fa14c33da2bc4bd484b7929",
+    "bytes": 17219,
+    "matches_immutable_original": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/dependency-manifest.json",
+    "sha256": "1cf5abe4f7304c7b42953055a624453c8cabb5e928fb28b5a6cecab43a1e3bc4",
+    "bytes": 3265,
+    "matches_immutable_original": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/evidence-review.json",
+    "sha256": "86b74a6597e87804ff323a5bbc86883c0b2c6d9f8e633ae6224704a9130491d6",
+    "bytes": 99200,
+    "matches_immutable_original": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/early-source-equivalence.json",
+    "sha256": "7e7b1075a790c2cb74064d9a22aa4d6fb24794f0a9ce0cc991764d3265e22797",
+    "bytes": 13619,
+    "matches_immutable_original": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/openapi-compatibility.json",
+    "sha256": "ed8ac3dd140377dc390b7bc48a48ce424ba8a942355332666544ea6e2d4267a8",
+    "bytes": 3444,
+    "matches_immutable_original": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/CURRENT.json",
+    "sha256": "97b11eb662bfd1e9c67926ce45c91ea1edb63d77d410ac0043dbdcb02aec4bd7",
+    "bytes": 1040,
+    "matches_immutable_original": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/attempts.ndjson",
+    "sha256": "a4d0c46585b092bc8bead9cd1c15fd554f9b4a3542ec8ecfc51bb1fbad2bc3ab",
+    "bytes": 1567,
+    "matches_immutable_original": true
+  },
+  {
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/export-backend-security-review/immutable-review-manifest.json",
+    "sha256": "dbd84c167a96f290c526987fba479fd8567940c2d29396e6e3d07ae03c546ab2",
+    "bytes": 2865,
+    "matches_immutable_original": true
+  }
+]

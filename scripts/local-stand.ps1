@@ -379,9 +379,18 @@ function Get-ValidatedConfig {
     $artifacts = Verify-Artifacts $pins
     $config = (Invoke-Compose @('config','--format','json')) -join "`n" | ConvertFrom-Json
     if ($config.services.'notification-bot') { throw 'BOT_SERVICE_IN_NORMAL_CONFIG_REFUSED' }
+    $attendanceToAcademic = $config.services.'academic-service'.environment.ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN
     foreach ($token in @($config.services.'academic-service'.environment.ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN,
         $config.services.'academic-service'.environment.SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN,
-        $config.services.'notification-web'.environment.BOT_TO_NOTIFICATION_SERVICE_TOKEN)) { Assert-DirectedToken $token }
+        $config.services.'notification-web'.environment.BOT_TO_NOTIFICATION_SERVICE_TOKEN,
+        $attendanceToAcademic)) { Assert-DirectedToken $token }
+    if ($config.services.'attendance-service'.environment.ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN -cne $attendanceToAcademic) { throw 'ATTENDANCE_ACADEMIC_DIRECTION_MISMATCH' }
+    foreach ($other in @($config.services.'academic-service'.environment.ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN,
+        $config.services.'academic-service'.environment.SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN,
+        $config.services.'academic-service'.environment.ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN,
+        $config.services.'notification-web'.environment.BOT_TO_NOTIFICATION_SERVICE_TOKEN)) {
+        if ($attendanceToAcademic -ceq $other) { throw 'ATTENDANCE_ACADEMIC_DIRECTION_MUST_BE_INDEPENDENT' }
+    }
     foreach ($service in $config.services.PSObject.Properties) {
         $value = $service.Value
         if ($value.build -or $value.tmpfs -or $value.pull_policy -cne 'never') { throw 'BUILD_PULL_OR_TMPFS_REFUSED' }
@@ -1790,7 +1799,10 @@ try {
         }
         $values = [ordered]@{}
         foreach ($key in @('POSTGRES_ACADEMIC_PASSWORD','POSTGRES_SCHEDULE_PASSWORD','MONGO_ROOT_PASSWORD','MONGO_PASSWORD','MONGO_NOTIFICATION_PASSWORD','REDIS_PASSWORD','RABBITMQ_PASSWORD','GRPC_SECRET','INTERNAL_ISSUER_SECRET','ALERT_WEBHOOK_SECRET','CAMPUS_MAP_USAGE_HMAC_KEY')) { $values[$key] = New-Secret }
-        foreach ($key in @('ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN','SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN','BOT_TO_NOTIFICATION_SERVICE_TOKEN')) { $values[$key] = Convert-HexToDirectedToken (New-Secret) }
+        foreach ($key in @('ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN','SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN','ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN','BOT_TO_NOTIFICATION_SERVICE_TOKEN')) { $values[$key] = Convert-HexToDirectedToken (New-Secret) }
+        foreach ($key in @('ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN','SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN','BOT_TO_NOTIFICATION_SERVICE_TOKEN')) {
+            if ($values.ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN -ceq $values[$key]) { throw 'ATTENDANCE_ACADEMIC_DIRECTION_MUST_BE_INDEPENDENT' }
+        }
         $ec = [Security.Cryptography.ECDsa]::Create([Security.Cryptography.ECCurve+NamedCurves]::nistP256)
         try { $ecParams = $ec.ExportParameters($true) } finally { $ec.Dispose() }
         $values.VAPID_PRIVATE_KEY = [Convert]::ToBase64String($ecParams.D).TrimEnd('=').Replace('+','-').Replace('/','_')

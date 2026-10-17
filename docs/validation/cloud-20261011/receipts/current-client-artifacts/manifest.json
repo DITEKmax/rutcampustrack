@@ -1,0 +1,130 @@
+{
+  "at": "2026-10-12T04:38:52.353607+00:00",
+  "revision": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+  "status": "CURRENT8JAR_AND2VUE_BUILD_READY_RUNTIME_NOT_RUN",
+  "safe_files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/CURRENT.json",
+      "sha256": "4b0643887b285a55960f3dd081d613526e44a9fd1e3c5f3187e117d5d8fe7ae8",
+      "bytes": 1285
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/FINAL-result.json",
+      "sha256": "75cab57fbd20f76a7b49da7988b87812dd91f17442a3ee9bd06629e31a2af4c7",
+      "bytes": 1939
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/HANDOFF.md",
+      "sha256": "a0cb9877ca4ff2b8bba8c44506757bed53c8394063d4c6636a67fac4af90414c",
+      "bytes": 7751
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/artifact-inspection-result.json",
+      "sha256": "4ec013b46d4833cfbb1a284c96986e631a50062e5008787e3bc2145ec7ac2984",
+      "bytes": 1137
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/boot8-receipt.json",
+      "sha256": "cadef4c4b55707f1cae7c785de228ba048a7c3567b1aa28e9ed4e92e29c4350c",
+      "bytes": 1871
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/build-baseline.json",
+      "sha256": "e52b52c3bd2e65ea23de75d09789617d8d9722d0714d5e3bdfe9c12f22badbb3",
+      "bytes": 73
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/build-only.py",
+      "sha256": "593019dee2f2d144bd0ba594c1544a85567c027e7850f3dc7f96caf39a0e8558",
+      "bytes": 7365
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/build-plan.json",
+      "sha256": "c4e5fa70eb4848b2732c62e8b8dc031638abc2406065aa72d171092354368217",
+      "bytes": 3061
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/deps-reuse-result.json",
+      "sha256": "52f541378fc16abb7035fcb9b0fedc599c97499a8b5ac595e9ffefc81494d440",
+      "bytes": 599
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/eight-production-jars.json",
+      "sha256": "118c657392261c7e55b4c456331f1f2a731deacf35957b2621242dcb2b1f71da",
+      "bytes": 9175
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/empty-user.npmrc",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/frozen-source-large-duplicate-proposal.json",
+      "sha256": "a3b506f4d6e63e2f52cc71ba07adec6fb6b477eb84d25f00ad57a4f812efab0d",
+      "bytes": 342735
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/full-payload-union-proposal.json",
+      "sha256": "4ceb02f27943ffe884ee98fdfde8146fdb84b1c9a993f89897699a74e9d2aff0",
+      "bytes": 2561
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/inspect-artifacts.py",
+      "sha256": "371869a1933fc7c4c6ff33e3b952481f4320551815661ef0a0f6b0ba4676e655",
+      "bytes": 9221
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/inspection-attempt1.json",
+      "sha256": "d776cc31c99470c2d8329bf7bcf50097b0667aa2ee92063abb0e2b051b34cfb9",
+      "bytes": 623
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/installed-deps-before.json",
+      "sha256": "3dd7d2837dc15ef2e5b5dd65916541ec6bc8c90cedc395b3a36d813321b26e70",
+      "bytes": 1673457
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/lease-release.json",
+      "sha256": "8493162459525c7181911667de0e968ee41760670aab495c45c6495fdd000a64",
+      "bytes": 650
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/preflight.json",
+      "sha256": "1b9a933af5b632dd5763f6f4d78d8f5027f02b395553bf87a79443cb55862403",
+      "bytes": 2393
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/presentation-immutable-capacity-proposal.json",
+      "sha256": "ce2863225dc28cd79cae7abdb64a0dceb8bcdc741becbf89d0c1e78159c699fe",
+      "bytes": 9421
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/production-vue-bundles.json",
+      "sha256": "77ae3a2881848ed4f594214b5245bdaadd53742a45f4ee3f8dee9f6a5d24349e",
+      "bytes": 6301
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/pwa-receipt.json",
+      "sha256": "7ea1ba7e09e8daf6e78bd18c496d29eb74be701cac67d01b33f8ff38e513ec82",
+      "bytes": 1285
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/source-immutable-capacity-proposal.json",
+      "sha256": "593937cfd73b61f190c8abb389f4f2915f867ccefda42b9a3e00f0c2bd3ed430",
+      "bytes": 2840
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/source-inputs-before.json",
+      "sha256": "d1f45099aa801b2469afdfc9819b9822516cefd087ca8179c0c31ed17d2fb73b",
+      "bytes": 1765406
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_client_artifacts/tma-receipt.json",
+      "sha256": "4b0643887b285a55960f3dd081d613526e44a9fd1e3c5f3187e117d5d8fe7ae8",
+      "bytes": 1285
+    }
+  ],
+  "total_safe_file_bytes": 3852434,
+  "private_raw_logs_excluded": true,
+  "artifact_bodies": "Exact ownWT paths/SHA/modes in eight-production-jars and production-vue-bundles; no copies"
+}

@@ -1,0 +1,17 @@
+{
+  "job_id": 115262001797,
+  "run_id": 38387263916,
+  "head_sha": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+  "run_attempt": 1,
+  "job_status": "completed",
+  "job_conclusion": "failure",
+  "step": {
+    "number": 9,
+    "name": "Boot isolated Vue auth stack",
+    "status": "completed",
+    "conclusion": "failure",
+    "started_at": "2026-10-13T11:04:31Z",
+    "completed_at": "2026-10-13T11:05:59Z"
+  },
+  "qualification": "Boundedread-onlyactualjobmetadataONLY/no log/readers/artifact/API privatecontexts"
+}

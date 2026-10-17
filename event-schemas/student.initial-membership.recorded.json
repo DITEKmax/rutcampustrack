@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "student.initial-membership.recorded",
+  "description": "Private initial-membership attendance backfill; identity only, no credentials.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
+  "properties": {
+    "traceparent": {"$ref": "_common.json#/$defs/traceparent"},
+    "request_id": {"$ref": "_common.json#/$defs/requestId"},
+    "event_type": {
+      "const": "student.initial-membership.recorded"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion",
+      "const": 1
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "const": "academic-service"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "history_id",
+        "student_id",
+        "group_id",
+        "semester_id",
+        "joined_on",
+        "semester_ends_on"
+      ],
+      "properties": {
+        "history_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "student_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "group_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "semester_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "joined_on": {
+          "type": "string",
+          "format": "date"
+        },
+        "semester_ends_on": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    }
+  }
+}

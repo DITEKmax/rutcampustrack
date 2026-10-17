@@ -1,0 +1,8 @@
+{
+  "state": "REAPED",
+  "child_pid": 209133,
+  "group": 209133,
+  "members_including_Z": [],
+  "reason": "STOP_REQUEST",
+  "signal_count": 2
+}

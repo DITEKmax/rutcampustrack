@@ -7,27 +7,27 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 
 /**
- * Request DTO for manual attendance marking by headman (D-11).
- * Java record — no Lombok per contract module rules.
+ * Request DTO for manual attendance marking by headman (D-11). Java record — no Lombok per contract
+ * module rules.
  */
 @Schema(description = "Запрос на ручную отметку посещаемости старостой")
 public record MarkRequest(
-        @Schema(description = "Статус посещаемости",
-                example = "PRESENT",
-                allowableValues = {"PRESENT", "ABSENT", "EXCUSED"},
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull AttendanceStatus status,
-
-        @Schema(description = "Тип уважительной причины; обязателен для EXCUSED",
-                example = "ILLNESS")
-        ExcuseType excuseType,
-
+        @Schema(
+                        description = "Статус посещаемости",
+                        example = "PRESENT",
+                        allowableValues = {"PRESENT", "ABSENT", "EXCUSED"},
+                        requiredMode = Schema.RequiredMode.REQUIRED)
+                @NotNull
+                AttendanceStatus status,
+        @Schema(
+                        description = "Тип уважительной причины; обязателен для EXCUSED",
+                        example = "ILLNESS")
+                ExcuseType excuseType,
         @Schema(description = "Комментарий старосты (до 1000 символов)", maxLength = 1000)
-        @Size(max = 1000) String comment,
-
+                @Size(max = 1000)
+                String comment,
         String expectedStatus,
-        String expectedRevision
-) {
+        String expectedRevision) {
     public MarkRequest(AttendanceStatus status, ExcuseType excuseType, String comment) {
         this(status, excuseType, comment, null, null);
     }

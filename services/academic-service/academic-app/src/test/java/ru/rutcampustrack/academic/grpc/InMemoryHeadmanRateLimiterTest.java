@@ -1,15 +1,15 @@
 package ru.rutcampustrack.academic.grpc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * M16 G7 — unit-тесты для in-memory fallback {@link InMemoryHeadmanRateLimiter}.
  *
- * <p>Проверяют что fallback работает идентично прежнему ConcurrentHashMap +
- * TokenBucket внутри AcademicGrpcServiceImpl (M06 G8b implementation).
+ * <p>Проверяют что fallback работает идентично прежнему ConcurrentHashMap + TokenBucket внутри
+ * AcademicGrpcServiceImpl (M06 G8b implementation).
  */
 class InMemoryHeadmanRateLimiterTest {
 

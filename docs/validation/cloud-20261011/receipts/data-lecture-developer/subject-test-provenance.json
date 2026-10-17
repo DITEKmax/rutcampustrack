@@ -1,0 +1,16 @@
+{
+  "status": "UNKNOWN_INITIAL_TO_COMMITTED_SOURCE_EQUIVALENCE",
+  "stable_commit": "c115f61996fd415d20286a0787f4985b80a59a24",
+  "initial_sha256_recorded": "1b05815bfcf0cffc1f634e978345d7633de87e3c4cfdf3c1983e798a9cef96f5",
+  "committed_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+  "committed_snapshot": "/workspace/scratch/rct-validation/data_lecture_developer/SubjectListDataIT-committed-c115.java.txt",
+  "initial_snapshot": "NOT_PRESERVED",
+  "initial_exact_comment": "UNKNOWN; remembered correction concerned claimed HTTP admission inclusion, exact bytes not retained",
+  "current_exact_comment": "// Hibernate measures JPA statements only; independent JDBC calls are outside this diagnostic.",
+  "comment_only_claim": "author-described at time of correction; cannot independently byte-prove from available artifacts",
+  "actual_results_preserved": "initial page PASS observed at initial source hash; green teacher pending/exactresume and restoredNetty PASS at exact committed source hashes",
+  "runtime_repeated": false,
+  "product_changed": false,
+  "reviewer_notified": "/root/data_lecture_review",
+  "root_notified": true
+}

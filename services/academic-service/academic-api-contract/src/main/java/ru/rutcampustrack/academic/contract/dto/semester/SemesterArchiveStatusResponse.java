@@ -13,5 +13,4 @@ public record SemesterArchiveStatusResponse(
         SemesterTransition transition,
         boolean releasePending,
         boolean writeBlocked,
-        SemesterArchiveOperationResponse operation) {
-}
+        SemesterArchiveOperationResponse operation) {}

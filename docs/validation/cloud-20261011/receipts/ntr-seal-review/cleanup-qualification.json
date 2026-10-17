@@ -1,0 +1,34 @@
+{
+  "author_cleanup": {
+    "time": "2026-10-11T23:23:33.642851+00:00",
+    "action": "NTR01_terminal_cleanup_release",
+    "red_session": 86023,
+    "red_native_exit": 1,
+    "green_session": 48663,
+    "green_native_exit": 0,
+    "immediate292green_hashes_still_exact": true,
+    "owned_live_java": [],
+    "owned_green_phase_container_observations": [],
+    "container_id_parse_limitation": "knownowned startup IDs parsed original selected XML; no foreignresourceinspection",
+    "lease": "NOTIFY3_RELEASED",
+    "foreign_resources_untouched": true,
+    "owned_green_phase_container_observations_from_original_XML": [
+      {
+        "id": "509a66c4ff2eeb688c3b96cb20b34091c90388662b74d72a72ab9267a6c0e234",
+        "inspect_exit": 1,
+        "running": false
+      },
+      {
+        "id": "fe3bf5464af8c9aa1732af0ee2ceddd608e2519d883afbec2afa5a44833514c2",
+        "inspect_exit": 1,
+        "running": false
+      }
+    ],
+    "raw_XML_ID_extraction_count": 2
+  },
+  "green_startup_IDs_independently_match_original_raw_XML": true,
+  "green_cleanup_claim": "Author subsequent inspect_exit1/absent for exact two original startup IDs; reviewer performs no Docker readback.",
+  "red_startup_IDs": "Not separately preserved; exact red-ID cleanup UNKNOWN",
+  "reviewer_runtime_resources_created": 0,
+  "reviewer_java_gradle_docker_browser_mutations_children": "NONE"
+}

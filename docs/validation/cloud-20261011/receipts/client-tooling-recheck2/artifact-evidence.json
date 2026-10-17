@@ -1,0 +1,37 @@
+{
+  "exit": 0,
+  "browser": "NOT_STARTED",
+  "artifactCount": 6,
+  "markerAbsent": true,
+  "suiteStatus": "passed",
+  "unexpectedFailureSemanticsReusedFrom": "/workspace/scratch/rct-validation/client_tooling_recheck/unexpected-outcome-proof.json",
+  "passed": 3,
+  "failedExpectedFailed": 2,
+  "unsafeArtifact": false,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/safe-results.json",
+      "sha256": "3abc2c609dbc1b0c9281524aee3ab67e160b9fe2e341d05e8a9979a6fa933bff"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/privacy.control-failed-fix-acda6-redacted-before-any-browser/error-context.md",
+      "sha256": "b8482d8f7654d1a7757f4b87f690016c6f847bc53254df1e9ebd74f61068d742"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/privacy.control-failed-sen-45f95-omatic-context-are-redacted/error-context.md",
+      "sha256": "66de0b6c48d70c6202d096074f2011c326a92709149e90ceb2f6a50dd8318f8c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/privacy.control-successful-c3b73-rker-output-are-not-emitted/control.json",
+      "sha256": "fb783160ef34ecfce1c16e33101e17591e35df1595808bda55ad10a9c20f7a58"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_tooling_recheck2/playwright-controls/privacy.control-only-the-c-92ad4--before-credential-creation/guard-control.json",
+      "sha256": "b475e6c867bc06667d263897997e14cd9defd2e24edd40f9f11f1d0739002c19"
+    }
+  ]
+}

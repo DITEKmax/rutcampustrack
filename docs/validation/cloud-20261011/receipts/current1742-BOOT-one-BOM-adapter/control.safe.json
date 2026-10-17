@@ -1,0 +1,1 @@
+{"source_only":true,"directed_groups":1,"passed":true,"checks":{"old_framing_refused_leading_BOM":true,"one_BOM_exact_original_body":true,"no_BOM_unchanged":true,"double_BOM_denied":true,"interior_BOM_denied":true,"status_denied":true,"unknown_schema_denied":true,"error_denied":true,"ambiguity_denied":true},"actual_SDK_native_private_response_read":false}

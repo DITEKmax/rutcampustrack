@@ -1,0 +1,38 @@
+{
+  "original_helper_sha256": "d15666183a74ad6caacdd25f16815131d818f2b2a04b2a99786f105a29d1fd44",
+  "helper_sha256": "6f763b5e42675fbdc5137f102e41429a29fa10ba2096b9f8015cb801562b6ab1",
+  "dispatcher_sha256": "7fba14a14cf2ee3e49c21ca11339615ee8d61acf6f2dddbe6c9b3bd3fc039ede",
+  "original_source_manifest": "d0d42f5e33d4e939073e43482d58dd551bda8922a26816ba0eb1d563eb2804e6",
+  "all8_accepted_pins_unchanged": true,
+  "five_existing_boot_bootstrap_functions_byteexact": {
+    "need": true,
+    "identity": true,
+    "directory": true,
+    "read_fd": true,
+    "public_bytes": true
+  },
+  "dispatcher_commands": [
+    [
+      "/usr/bin/python3",
+      "-B",
+      "/workspace/scratch/rct-validation/current1742_boot_mcp_private_consumer_four_boundary_r1/dispatch-fixed.py",
+      "prepare"
+    ],
+    [
+      "/usr/bin/python3",
+      "-B",
+      "/workspace/scratch/rct-validation/current1742_boot_mcp_private_consumer_four_boundary_r1/dispatch-fixed.py",
+      "consume"
+    ]
+  ],
+  "b78_call_parameters": {
+    "deadline_seconds": 45,
+    "term_seconds": 5,
+    "kill_seconds": 5,
+    "observe": "existing_resource_UTC_callback_shape",
+    "status": "existing_birth_status_callback_shape"
+  },
+  "four_directed_controls": "PASS",
+  "source_only": true,
+  "live_sdk_native_called": false
+}

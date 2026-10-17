@@ -1,0 +1,36 @@
+groups:
+- name: datastores
+  rules:
+  - alert: PostgreSQLUnavailable
+    expr: pg_up == 0
+    for: 1m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: PostgreSQLUnavailable {{ $labels.service }}
+      description: Exporter is running but cannot query the store. Check store readiness, least-privilege monitoring identity
+        and network. Do not reuse an application/admin credential.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: MongoDBUnavailable
+    expr: mongodb_up == 0
+    for: 1m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: MongoDBUnavailable {{ $labels.service }}
+      description: Exporter is running but cannot query the store. Check store readiness, least-privilege monitoring identity
+        and network. Do not reuse an application/admin credential.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: RedisUnavailable
+    expr: redis_up == 0
+    for: 1m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: RedisUnavailable {{ $labels.service }}
+      description: Exporter is running but cannot query the store. Check store readiness, least-privilege monitoring identity
+        and network. Do not reuse an application/admin credential.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md

@@ -1,0 +1,142 @@
+{
+  "utc": "2026-10-12T05:17:40.596809+00:00",
+  "source_sha": "ff43303e59f424f999ce7d02e2a68a48bbaebdc1",
+  "archive": "/workspace/scratch/rct-validation/np01_domain_bot/sealed/ci731-compatibility-source-safe.zip",
+  "sha256": "936620f6c85da7d20ed5b1cc3faf6e6906c2816568643274f92523f19b7df7b7",
+  "bytes": 96725,
+  "members": 26,
+  "raw_logs_excluded": true,
+  "runtime": "NOT_RUN",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "sha256": "620db5be40b6bc66de87bb82451280d4f4daccb82ef0e41a1833d2d0f685ff3c",
+      "bytes": 2414
+    },
+    {
+      "path": "before-source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "sha256": "5944fa5e4b0979d82f957a1e4e7da4e8c01bc48e0b07a2eb3206a30970d2db50",
+      "bytes": 8169
+    },
+    {
+      "path": "before-source/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "sha256": "7c98e90a008514ccc9649a6e5db5464f408f1e177a444ebc21284c96bf9d8236",
+      "bytes": 43335
+    },
+    {
+      "path": "before-source/services/notification-bot/bot/__main__.py",
+      "sha256": "e1495aa9f21957456529fe5a704f3cc9f8e9e1294fbbe9622e0c0ec84d8f8ce0",
+      "bytes": 12351
+    },
+    {
+      "path": "before-source/services/notification-bot/bot/notifications/password_changed.py",
+      "sha256": "e1dd015d606307a153b5ecab315f96266bf40dc6bd75685fdc6dfb90f35f1fb5",
+      "bytes": 2345
+    },
+    {
+      "path": "before-source/services/notification-bot/tests/np01_bridge_runner.py",
+      "sha256": "a7c4f6a8875698785fe9fa8c45e9f6e94830e8c3d96f252f1f640cc11acdbe5f",
+      "bytes": 17418
+    },
+    {
+      "path": "before-source/services/notification-bot/tests/test_bot_credential_cards.py",
+      "sha256": "13e8baaeba999a3be6527b0a4793dc008ae10ebcffb097132c064c9b8e824e99",
+      "bytes": 14169
+    },
+    {
+      "path": "ci731-before-auth-it-failure-extract.json",
+      "sha256": "680128d1657af516a0b632eb1f64ffebee8dfa777b7f0a5bd474b62a6e303942",
+      "bytes": 1164
+    },
+    {
+      "path": "ci731-before-it-academic-xml-diagnostic.json",
+      "sha256": "351bf4ace92ef8e4b37f8bc0b3fc252b5e2a761c5180ddefb38d44090e45a4e9",
+      "bytes": 5489
+    },
+    {
+      "path": "ci731-before-safe-it-academic.json",
+      "sha256": "1768e8858c10460cd1dca068617982b29e6ca85336f62895ceec5f28704cc591",
+      "bytes": 262776
+    },
+    {
+      "path": "ci731-before-safe-it-auth.json",
+      "sha256": "a3a3ba500f493f822544a1d97e8e111c2615349c2104b9302fd0d8c4c0c0a27c",
+      "bytes": 95902
+    },
+    {
+      "path": "ci731-original-ruff-diagnostics.safe.json",
+      "sha256": "8635e5e767b6d93fae8444208e994fc5ee71d1db319494f3ac060aab0704b300",
+      "bytes": 1017
+    },
+    {
+      "path": "commit-stat.safe.txt",
+      "sha256": "002ed24ad88046635de7910db948244a3c7f6e41811519f6574e2add18dc769b",
+      "bytes": 737
+    },
+    {
+      "path": "corrected-source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "sha256": "ba9e35c4105e64a55d71027dc077fa0fee87ca0ffdaa16e1a5de51cfb3183533",
+      "bytes": 8208
+    },
+    {
+      "path": "corrected-source/services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "sha256": "8fe4478d887cc346770d2678ca8ad2aadf59ca3ca19016aca1f4af20002485eb",
+      "bytes": 45967
+    },
+    {
+      "path": "corrected-source/services/notification-bot/bot/__main__.py",
+      "sha256": "828a2cad57d9124734a429863a7db4513767f0775f3e9e3130d3d39d69f3e7fa",
+      "bytes": 12351
+    },
+    {
+      "path": "corrected-source/services/notification-bot/bot/notifications/password_changed.py",
+      "sha256": "573b4e1218e27008cdf98b3a9b8d6dae9c354a5783b9fc73899ee6b061eb852a",
+      "bytes": 2346
+    },
+    {
+      "path": "corrected-source/services/notification-bot/tests/np01_bridge_runner.py",
+      "sha256": "c91c068b4b157bf267d4791d6920715ef228cf2abec3f950a7367c6794e1e1ca",
+      "bytes": 17418
+    },
+    {
+      "path": "corrected-source/services/notification-bot/tests/test_bot_credential_cards.py",
+      "sha256": "fc6d9f6a8c4bba73b25885758bf55bad0f74abfd42c5b906b3ce2e2b6c128baf",
+      "bytes": 14222
+    },
+    {
+      "path": "ruff.safe.json",
+      "sha256": "e605ff0e77d7d565cb27afb50a6db34f72a74f559e23d4415a184d59377ce82b",
+      "bytes": 1353
+    },
+    {
+      "path": "scope-before.safe.json",
+      "sha256": "004ee74416f74806be47c89dfc62ccb405fcdc0cb1e470e7bf11fc4ba4845b96",
+      "bytes": 3129
+    },
+    {
+      "path": "source-diff.safe.patch",
+      "sha256": "8fbed23009a0cf74c3922c9ff7b58810d9ef3b9343d88a7b65728222b5704ea8",
+      "bytes": 10565
+    },
+    {
+      "path": "source-guards-and-finite-proof-disposition.safe.json",
+      "sha256": "340109e1a729125fb6a0f1dd29f3d5582cae77fd852787df7560809bafde904d",
+      "bytes": 3683
+    },
+    {
+      "path": "source-inventory.safe.json",
+      "sha256": "4d934c80913108702ee983151ec8c0b691f2cfe6470caafc6c8e8173fca8b736",
+      "bytes": 3582
+    },
+    {
+      "path": "sourcehooks.safe.json",
+      "sha256": "2b4d0100dcc58764fe57d09e6d1906ef1b8aeb90479b673ea47ebce48e5abf01",
+      "bytes": 2326
+    },
+    {
+      "path": "verify-source-safe.py",
+      "sha256": "e5efe639fd7e82adf5305e7e09d72c7edea1fbd04a209f222ff9d02f84e8b54b",
+      "bytes": 6321
+    }
+  ]
+}

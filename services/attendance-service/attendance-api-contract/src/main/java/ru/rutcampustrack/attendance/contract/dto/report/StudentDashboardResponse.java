@@ -1,16 +1,17 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import org.springframework.hateoas.RepresentationModel;
 
-import java.util.List;
-
 /**
- * Aggregated payload for the student PWA / Mini-App home dashboard (v9.0).
- * One-call response combining overall %, status donut breakdown,
- * per-week timeseries, and top missed subjects — avoids chatty clients.
+ * Aggregated payload for the student PWA / Mini-App home dashboard (v9.0). One-call response
+ * combining overall %, status donut breakdown, per-week timeseries, and top missed subjects —
+ * avoids chatty clients.
  */
-@Schema(description = "Сводка для главного экрана студента: общий %, donut по статусам, недельный тренд, топ пропусков")
+@Schema(
+        description =
+                "Сводка для главного экрана студента: общий %, donut по статусам, недельный тренд, топ пропусков")
 public class StudentDashboardResponse extends RepresentationModel<StudentDashboardResponse> {
 
     private final OverallStats overall;
@@ -18,18 +19,30 @@ public class StudentDashboardResponse extends RepresentationModel<StudentDashboa
     private final List<WeeklyStat> weekly;
     private final List<TopMissedSubject> topMissed;
 
-    public StudentDashboardResponse(OverallStats overall,
-                                    StatusBreakdown breakdown,
-                                    List<WeeklyStat> weekly,
-                                    List<TopMissedSubject> topMissed) {
+    public StudentDashboardResponse(
+            OverallStats overall,
+            StatusBreakdown breakdown,
+            List<WeeklyStat> weekly,
+            List<TopMissedSubject> topMissed) {
         this.overall = overall;
         this.breakdown = breakdown;
         this.weekly = weekly;
         this.topMissed = topMissed;
     }
 
-    public OverallStats getOverall() { return overall; }
-    public StatusBreakdown getBreakdown() { return breakdown; }
-    public List<WeeklyStat> getWeekly() { return weekly; }
-    public List<TopMissedSubject> getTopMissed() { return topMissed; }
+    public OverallStats getOverall() {
+        return overall;
+    }
+
+    public StatusBreakdown getBreakdown() {
+        return breakdown;
+    }
+
+    public List<WeeklyStat> getWeekly() {
+        return weekly;
+    }
+
+    public List<TopMissedSubject> getTopMissed() {
+        return topMissed;
+    }
 }

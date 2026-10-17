@@ -1,0 +1,183 @@
+{
+  "recorded_at": "2026-10-11T22:30:31.742065+00:00",
+  "author_receipts": [
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/CURRENT.md",
+      "sha256": "8b9125c92e6e5107439b6dda839bd1f00c1fcf39cf036b4603ab7ff3bba79349",
+      "bytes": 1692
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/attempts.ndjson",
+      "sha256": "3a14d36a6193eb52fe51d29b46953ef789ca3ccd52b3895abdeefa4a4fda475a",
+      "bytes": 1832
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/control-01.log",
+      "sha256": "fa845003e2f964988ac4e8804c18e355559f6065081d685e4abc4ea972efbee0",
+      "bytes": 106
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/control-final.log",
+      "sha256": "1ae11e2bd0266c3d59ff90ed9b5abbd5524cc0d43ab8b0c642b9dbf4fd2402ab",
+      "bytes": 109
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/current-academic-source-identity.json",
+      "sha256": "7dec2c037902eb2dd18229445b386ea9b3e5c5fe36e1274cde28c9c3f43794df",
+      "bytes": 639
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/local-no-results.json",
+      "sha256": "668c46346385519c702ecf953b9c3ca59bf036932cf7257f024916f5151c6096",
+      "bytes": 555
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/privacy-mutation-red.log",
+      "sha256": "9be154f08e2ad7885f46b6ab28a6ecd44e4e5de97fab3a38e6f33130998770e4",
+      "bytes": 1652
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/source-ready.json",
+      "sha256": "bb29e61e7699328ff541945bbfd9d3fe6b8e2a60926716bb7cda6ad162dfde4b",
+      "bytes": 1495
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/source-ready.md",
+      "sha256": "e84656f44d85442d9241e6fb59ab1ba459fbf5d47b48d86a31fe5b4b54efd160",
+      "bytes": 1896
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/workflow-preservation.json",
+      "sha256": "eafb85bcf2cb43716ef1ca7fe04fcc48e2f1e6c0d13ac40d26a68e83467fb879",
+      "bytes": 393
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/launch-provenance-clarification.md",
+      "sha256": "775d28f52da2789d9d0508e3dc39ba04ca1f3f9e6163691bba3b038b55b15864",
+      "bytes": 1335
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_evidence_developer/launch-provenance-clarification.json",
+      "sha256": "149362cd8fbac2a154595c3e79e78a6695cfb1a6a537e88ceccd9c8581679825",
+      "bytes": 3884
+    }
+  ],
+  "original_local_artifact": {
+    "path": "/workspace/rct-worktrees/ci-evidence/build/ci-test-outcomes/api-gateway/test/safe-outcomes.json",
+    "sha256": "668c46346385519c702ecf953b9c3ca59bf036932cf7257f024916f5151c6096",
+    "safe_copy_byte_equal": true,
+    "metadata": {
+      "checkoutSha": "b6114f4084f757d04d166ab995b57b4f4697042f",
+      "prHeadSha": "b6114f4084f757d04d166ab995b57b4f4697042f",
+      "service": "api-gateway",
+      "task": "test",
+      "job": "java-unit-test",
+      "runId": null,
+      "runAttempt": null,
+      "event": "LOCAL_CONTROL",
+      "testStepOutcome": "UNKNOWN"
+    },
+    "collection": "NO_RESULTS",
+    "acceptance": "NOT_ASSESSED",
+    "summary": {
+      "PASSED": 0,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    }
+  },
+  "actual_local_control_logs": {
+    "initial_control_count": 8,
+    "privacy_red_control_count": 9,
+    "privacy_red_failures": 2,
+    "privacy_red_assertions": [
+      "Privacy marker leaked into safe outcome artifact",
+      "Untracked source class identity must remain null"
+    ],
+    "restored_final_control_count": 10,
+    "restored_final_outcome": "OK",
+    "current_control_source_methods": [
+      "test_success_static_identity_and_exact_checkout_metadata",
+      "test_failure_error_skip_kept_without_messages_properties_or_streams",
+      "test_parameter_values_and_unknown_valid_identifiers_never_become_identity",
+      "test_nested_class_maps_and_source_strings_comments_cannot_invent_methods",
+      "test_missing_and_empty_data_are_no_results_even_if_step_succeeded",
+      "test_declared_missing_and_explicit_notrun_cases_are_not_executed",
+      "test_malformed_entity_and_oversize_xml_fail_closed_without_raw_error",
+      "test_other_task_and_untracked_source_do_not_pollute_selected_scope",
+      "test_wrong_job_and_invalid_metadata_are_rejected_without_echoing_values",
+      "test_symlinked_report_is_not_read_or_hashed"
+    ],
+    "runtime_prelaunch_source_equivalence": "UNKNOWN_NOT_CAPTURED; author clarification explicitly preserves this limitation",
+    "exact_argv_and_tool_exit": "AUTHOR_RECOVERED_FROM_ORIGINAL_TOOL_HISTORY; raw tool JSON not saved, reviewer opened retrospective clarification and raw safe logs",
+    "qualified_claim": "Initial8/red9/final10 log outcomes observed. Current source/commit identity confirmed independently. Historical final10 execution-source fingerprint remains UNKNOWN; no current source runtime PASS inferred.",
+    "recovered_argv": [
+      "python3",
+      "tests/harness/test_ci_test_outcomes.py"
+    ],
+    "recovered_cwd": "/workspace/rct-worktrees/ci-evidence",
+    "retrospective_runs": [
+      {
+        "phase": "initial8",
+        "argv": [
+          "python3",
+          "tests/harness/test_ci_test_outcomes.py"
+        ],
+        "cwd": "/workspace/rct-worktrees/ci-evidence",
+        "redirection": "/workspace/scratch/rct-validation/ci_evidence_developer/control-01.log 2>&1",
+        "tool_chunk": "4ecd82",
+        "tool_terminal_exit": 0,
+        "child_exit": 0,
+        "tool_session_id": null,
+        "observed": "8 tests OK",
+        "prelaunch_source_sha256": "UNKNOWN not computed/persisted",
+        "binding_to_final": "NOT_CLAIMED preliminary WIP changed later"
+      },
+      {
+        "phase": "privacy-red9",
+        "argv": [
+          "python3",
+          "tests/harness/test_ci_test_outcomes.py"
+        ],
+        "cwd": "/workspace/rct-worktrees/ci-evidence",
+        "launcher": "subprocess.run(argv,cwd=root,capture_output=True,text=True) inside author Python mutation helper",
+        "tool_chunk": "95df28",
+        "outer_helper_exit": 0,
+        "child_exit": "NONZERO asserted during run; exact numeric code UNKNOWN not printed/persisted",
+        "tool_session_id": null,
+        "observed": "9 tests FAILED2: untracked source identity + parameter/unknown valid identifier privacy",
+        "log": "privacy-mutation-red.log",
+        "mutation": "Actual collector classname allowlist removed",
+        "restore": "finally restores captured original bytes; checksum not persisted then",
+        "prelaunch_source_sha256": "UNKNOWN not computed/persisted"
+      },
+      {
+        "phase": "final10",
+        "argv": [
+          "python3",
+          "tests/harness/test_ci_test_outcomes.py"
+        ],
+        "cwd": "/workspace/rct-worktrees/ci-evidence",
+        "redirection": "/workspace/scratch/rct-validation/ci_evidence_developer/control-final.log 2>&1",
+        "tool_chunk": "6ff1e1",
+        "tool_terminal_exit": 0,
+        "child_exit": 0,
+        "exit_reason": "Python test was the last shell command in that actual exec; native shell0 corresponds to child0",
+        "tool_session_id": null,
+        "observed": "10 tests OK, 0.299s",
+        "prelaunch_source_sha256": "UNKNOWN not computed/persisted",
+        "source_sequence": "Final class declaration guard/control edit, Ruff format then run. Later reads/Ruff --check/lint/gitdiff/add/commit only, no subsequent authored source edit recorded.",
+        "binding_to_final": "UNKNOWN as independently measured exact execution-byte provenance; chronology supports equivalence, no prelaunch digest/snapshot"
+      }
+    ]
+  },
+  "actual_remote_CI_upload_native_readback": "NOT_RUN",
+  "reviewer_runtime": "NOT_RUN; source/YAML/AST/hash metadata only",
+  "freshness_scope": "Hosted CI jobs start with separate checkout/workspaces, but selected directory scope is NOT guaranteed against symlinked ancestors. Source-level CIO01 demonstrates cross-task XML acceptance and outside-checkout source reads; fix required before integration. Outside clean CI, XML freshness/actual execution-source binding are not attested; acceptance always NOT_ASSESSED.",
+  "provenance_hash_checks": {
+    "post_hoc_source_hashes_equal_current_committed_source": true,
+    "post_hoc_log_hashes_equal_actual_safe_log_bytes": true,
+    "prelaunch_source_equivalence": "UNKNOWN; no fabrication or history-only rerun"
+  }
+}

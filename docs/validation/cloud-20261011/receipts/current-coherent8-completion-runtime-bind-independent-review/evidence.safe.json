@@ -1,0 +1,123 @@
+{
+  "scope": "PARAMETER_ONLY_COHERENT8_BIND_REVIEW",
+  "source_manifest_sha256": "8ca101cb7024fb09718db7b5ef91eac4c0d4b531d12ae868034b6f16b375460f",
+  "source_ZIP_sha256": "13b19c3ef76ea5e9915b3ef560df6de610f3d576c03ff9b9e7468a802ed64bad",
+  "source_ZIP_bytes": 12744,
+  "source7_members": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "bytes": 2973,
+      "sha256": "b59499f6030571217103841dddb857a79d2d6731c831061afe805db6ed98d792",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/binding-controls.py",
+      "name": "binding-controls.py",
+      "bytes": 8524,
+      "sha256": "6fd14f2a8043a9c1e92fadb1f05123ac122ae95be51d730c226bf5718d819ee7",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/binding-controls.safe.json",
+      "name": "binding-controls.safe.json",
+      "bytes": 1894,
+      "sha256": "6c7b10fc7af870c4a9e7231cb56d6f73204060f04bc2d5e0f620b70105e8b50b",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/bound-authorities.safe.json",
+      "name": "bound-authorities.safe.json",
+      "bytes": 7269,
+      "sha256": "6ceb68f16b90190ae5a40209a3f89377c1668df1720e358e181ef154e22aef56",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/effective-commands.safe.json",
+      "name": "effective-commands.safe.json",
+      "bytes": 4495,
+      "sha256": "7c3a01ff54344cd71c57c05b1bf74a30226ba7b295dd95ee119555824d5c624a",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/resources.safe.json",
+      "name": "resources.safe.json",
+      "bytes": 383,
+      "sha256": "d94b08541c855e941627927fae71d6c76cb18e7a08a0b5ca402d1f93c173cede",
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/restart-grant.template.safe.json",
+      "name": "restart-grant.template.safe.json",
+      "bytes": 3997,
+      "sha256": "99c86520d7a3ce5a7af527b4ccbb9814512392a3c803adc6562b756f440d74a8",
+      "mode": 384
+    }
+  ],
+  "source_and_SAFE_authority13_exact": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/manifest.json",
+      "sha256": "89d65e95b77227fa2e6b0f7c3d177331697c1ff48348d50172c8e72ab62170cf"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/runtime-binding.py",
+      "sha256": "be1488b5995accb02212c36e4ce919fe2ddac61de50eeeb9d7d43d58571ecc24"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/run-academic-restart.py",
+      "sha256": "529188289a8c9d4c882eb52f626533b20ba4934fbc7ce2b3ee99974ada6fffb0"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_review/manifest.json",
+      "sha256": "0c62f39e6a4043b6db866dd148f9920ecf34ed6109c058d451388801e4e74403"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/actual-completion01/manifest.json",
+      "sha256": "229e1feb703384470fda755203cb540eb95c663921b28e0cbfcb3f2124c7409a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/manifest.json",
+      "sha256": "1e7e26e631f7ece9a0d1b7d30ec60d586a7ce4c4c4d9f5fcbe53e913258070c8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/restart-boundary.py",
+      "sha256": "f044c87bcf7041a79a174aab8b458de3e0029d45d55a8103f729b937882e5bcb"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/docker-up-restart.py",
+      "sha256": "7cbd2c02a181b43128c49eee3c31576026d36f0065ed9dd6695743225b02a60e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-mongo-restart.py",
+      "sha256": "813ed8280c7beb950d8b7ffd22994ed22f2d96d6fd00e0e8d74489b258c12bd5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-service-restart.py",
+      "sha256": "7eaed78b02b45bfe43d8468913a364b812c19b4717d48a61ebe5a8ff92a090bd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_review/docker_correction_recheck/manifest.json",
+      "sha256": "be10ab5e53c9a0bdba6de125902859bd4745f0a55d97bc332e21d9ec9f0b5d2f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/stopped-native-data-fence157.safe.json",
+      "sha256": "d368d1d211b71f0d364f86bb71ac5f79bfe0170a7f155e893fbd257d9e16e11f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py",
+      "sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0"
+    }
+  ],
+  "actual_completion_manifest": "229e1feb703384470fda755203cb540eb95c663921b28e0cbfcb3f2124c7409a",
+  "actual_completion_ZIP": "2ddd37fd5822256633b091229e22dea9bf393a3d794e8ceeb85a34a31a37fd9f",
+  "actual_stage_result_SHA": "5db63c65badd68539926defeb146fb5cb6f2fe5e9fb35d689192185250d46643",
+  "actual_stage_commit_SHA": "10589f902536c9861a20a7fde981e9ad6c2b40a28d8147fcb7818fe3107b3449",
+  "actual_stage_spec_SHA": "6549d980fb816a7ee305da7f83eedd17d63d69c610c6fcac80d641371e42671e",
+  "source_executor_config_payload_changes": false,
+  "author24_controls": "INSPECTED_NOT_RERUN",
+  "independent_finite_groups": 11,
+  "actual_runtime_prerequisites": "NOT_PASSED",
+  "no_actual_prefix_JAR_data_private_resources_ports_operation": true,
+  "model_requested_selected": "Sol6.1/xhigh",
+  "model_actual": "UNKNOWN"
+}

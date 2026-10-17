@@ -1,21 +1,10 @@
 package ru.rutcampustrack.notification.push;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import nl.martijndwars.webpush.Encoding;
-import nl.martijndwars.webpush.Notification;
-import nl.martijndwars.webpush.PushService;
-import nl.martijndwars.webpush.Utils;
-import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
-import org.bouncycastle.jce.interfaces.ECPublicKey;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.jwt.JwtClaims;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -30,25 +19,35 @@ import java.util.Base64;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import nl.martijndwars.webpush.Encoding;
+import nl.martijndwars.webpush.Notification;
+import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Utils;
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
+import org.bouncycastle.jce.interfaces.ECPublicKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Verifies the real web-push 5.1.2 request path against a task-owned endpoint.
  *
- * <p>The delivery service unit suite mocks {@link PushService}, so it cannot
- * detect a jose4j/Apache HttpClient incompatibility. This test keeps all key
- * material in memory and sends only to a loopback {@link HttpServer}.</p>
+ * <p>The delivery service unit suite mocks {@link PushService}, so it cannot detect a jose4j/Apache
+ * HttpClient incompatibility. This test keeps all key material in memory and sends only to a
+ * loopback {@link HttpServer}.
  */
 class PushLibraryCompatibilityTest {
 
     private static final String SUBJECT = "mailto:push-test@example.test";
     private static final byte[] AUTH = {
-            0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-            0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10
+        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+        0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10
     };
-    private static final byte[] PAYLOAD = "{\"title\":\"Тест\",\"body\":\"loopback\"}"
-            .getBytes(StandardCharsets.UTF_8);
+    private static final byte[] PAYLOAD =
+            "{\"title\":\"Тест\",\"body\":\"loopback\"}".getBytes(StandardCharsets.UTF_8);
 
     @BeforeAll
     static void installBouncyCastle() {
@@ -72,12 +71,8 @@ class PushLibraryCompatibilityTest {
         String endpoint = origin + "/push";
         try {
             PushService pushService = new PushService(vapidKeyPair, SUBJECT);
-            Notification notification = new Notification(
-                    endpoint,
-                    subscriptionKeyPair.getPublic(),
-                    AUTH,
-                    PAYLOAD,
-                    60);
+            Notification notification =
+                    new Notification(endpoint, subscriptionKeyPair.getPublic(), AUTH, PAYLOAD, 60);
 
             HttpResponse response = pushService.send(notification, Encoding.AES128GCM);
 
@@ -92,7 +87,8 @@ class PushLibraryCompatibilityTest {
             assertThat(request.path()).isEqualTo("/push");
             assertThat(request.body()).isNotEmpty();
             assertThat(request.body().length).isGreaterThan(PAYLOAD.length);
-            assertThat(new String(request.body(), StandardCharsets.UTF_8)).doesNotContain("loopback");
+            assertThat(new String(request.body(), StandardCharsets.UTF_8))
+                    .doesNotContain("loopback");
 
             Headers headers = request.headers();
             assertThat(headers.getFirst("TTL")).isEqualTo("60");
@@ -111,8 +107,13 @@ class PushLibraryCompatibilityTest {
 
             String authorization = headers.getFirst("Authorization");
             assertThat(authorization).startsWith("vapid t=").contains(", k=");
-            String token = authorization.substring("vapid t=".length(), authorization.indexOf(", k="));
-            assertThat(Base64.getUrlDecoder().decode(authorization.substring(authorization.indexOf(", k=") + 4)))
+            String token =
+                    authorization.substring("vapid t=".length(), authorization.indexOf(", k="));
+            assertThat(
+                            Base64.getUrlDecoder()
+                                    .decode(
+                                            authorization.substring(
+                                                    authorization.indexOf(", k=") + 4)))
                     .containsExactly(Utils.encode((ECPublicKey) vapidKeyPair.getPublic()));
 
             JsonWebSignature signature = new JsonWebSignature();
@@ -122,8 +123,8 @@ class PushLibraryCompatibilityTest {
             assertThat(signature.verifySignature()).isTrue();
             JwtClaims claims = JwtClaims.parse(signature.getUnverifiedPayload());
             URI endpointUri = URI.create(endpoint);
-            assertThat(claims.getAudience()).containsExactly(
-                    endpointUri.getScheme() + "://" + endpointUri.getHost());
+            assertThat(claims.getAudience())
+                    .containsExactly(endpointUri.getScheme() + "://" + endpointUri.getHost());
             assertThat(claims.getSubject()).isEqualTo(SUBJECT);
         } finally {
             server.stop(0);
@@ -147,16 +148,17 @@ class PushLibraryCompatibilityTest {
         throw new AssertionError("Missing " + name + " in Crypto-Key: " + header);
     }
 
-    private static void capture(HttpExchange exchange,
-                                AtomicReference<CapturedRequest> captured) throws IOException {
+    private static void capture(HttpExchange exchange, AtomicReference<CapturedRequest> captured)
+            throws IOException {
         byte[] body;
         try (exchange) {
             body = exchange.getRequestBody().readAllBytes();
-            captured.set(new CapturedRequest(
-                    exchange.getRequestMethod(),
-                    exchange.getRequestURI().getPath(),
-                    exchange.getRequestHeaders(),
-                    body));
+            captured.set(
+                    new CapturedRequest(
+                            exchange.getRequestMethod(),
+                            exchange.getRequestURI().getPath(),
+                            exchange.getRequestHeaders(),
+                            body));
             exchange.getResponseHeaders().add("X-Push-Test", "accepted");
             byte[] response = "accepted".getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(201, response.length);
@@ -166,7 +168,5 @@ class PushLibraryCompatibilityTest {
         }
     }
 
-    private record CapturedRequest(String method, String path, Headers headers, byte[] body) {
-    }
-
+    private record CapturedRequest(String method, String path, Headers headers, byte[] body) {}
 }

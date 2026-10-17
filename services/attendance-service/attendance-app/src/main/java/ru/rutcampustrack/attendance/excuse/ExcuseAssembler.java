@@ -1,5 +1,9 @@
 package ru.rutcampustrack.attendance.excuse;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -8,15 +12,10 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.contract.dto.excuse.ExcuseTicketResponse;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 
-import java.util.List;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 /**
- * Maps {@link ExcuseTicket} entities into HATEOAS {@link ExcuseTicketResponse} models
- * (Phase 59-02). Status is serialised as lowercase to match Mongo storage and the
- * event payloads defined in D-19 / D-20.
+ * Maps {@link ExcuseTicket} entities into HATEOAS {@link ExcuseTicketResponse} models (Phase
+ * 59-02). Status is serialised as lowercase to match Mongo storage and the event payloads defined
+ * in D-19 / D-20.
  */
 @Component
 public class ExcuseAssembler {
@@ -35,26 +34,26 @@ public class ExcuseAssembler {
                 ticket.getDecisionComment(),
                 ticket.getDecisionAt(),
                 ticket.getCreatedAt(),
-                ticket.getUpdatedAt()
-        );
+                ticket.getUpdatedAt());
     }
 
     public EntityModel<ExcuseTicketResponse> toModel(ExcuseTicket ticket) {
         ExcuseTicketResponse response = toResponse(ticket);
-        Link self = linkTo(methodOn(ExcuseController.class).getTicketById(ticket.getId())).withSelfRel();
+        Link self =
+                linkTo(methodOn(ExcuseController.class).getTicketById(ticket.getId()))
+                        .withSelfRel();
         return EntityModel.of(response, self);
     }
 
     public PagedModel<EntityModel<ExcuseTicketResponse>> toPagedModel(Page<ExcuseTicket> page) {
-        List<EntityModel<ExcuseTicketResponse>> content = page.getContent().stream()
-                .map(this::toModel)
-                .toList();
-        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(
-                page.getSize(),
-                page.getNumber(),
-                page.getTotalElements(),
-                page.getTotalPages()
-        );
+        List<EntityModel<ExcuseTicketResponse>> content =
+                page.getContent().stream().map(this::toModel).toList();
+        PagedModel.PageMetadata metadata =
+                new PagedModel.PageMetadata(
+                        page.getSize(),
+                        page.getNumber(),
+                        page.getTotalElements(),
+                        page.getTotalPages());
         return PagedModel.of(content, metadata);
     }
 }

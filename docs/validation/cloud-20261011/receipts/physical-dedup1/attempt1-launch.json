@@ -1,0 +1,14 @@
+{
+  "utc": "2026-10-12T06:32:29.452275+00:00",
+  "command": [
+    "python3",
+    "/workspace/scratch/rct-validation/physical_dedup1/dedup.py"
+  ],
+  "source_sha256": "5428d126123c0a7329ac592e96842613c6465d482f6d725b7a60192d10d2f774",
+  "permission_packet": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-physical-dedup1.md",
+  "writer": "host_runtime_prepare sole DEDUP1",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_model_effort": "UNKNOWN",
+  "fresh_preflight_immediately_before_exact_mutation": true
+}

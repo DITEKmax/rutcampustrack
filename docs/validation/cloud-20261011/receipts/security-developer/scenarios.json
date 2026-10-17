@@ -1,0 +1,73 @@
+[
+  {
+    "id": "SD-01",
+    "source_ids": [
+      "JS-SYSTEM-13",
+      "D003",
+      "P07",
+      "P17"
+    ],
+    "roles_grants": "synthetic linked Telegram account with current roles",
+    "client": "actual auth HTTP;TMA client route identified",
+    "prestate": "valid synthetic HMAC;invalid timestamp or reusable proof",
+    "action": "POST /auth/tma;repeat after binding/grant change",
+    "expected": "malformed/future401 no insert;valid window issue with current authority",
+    "forbidden": "unexpected500;future proof session;stale grants",
+    "status": "PASS",
+    "evidence": "red-runtime-02/green-03;TmaServiceTest/TmaIT",
+    "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5"
+  },
+  {
+    "id": "SD-02",
+    "source_ids": [
+      "L04",
+      "JS-ADMIN-02",
+      "TASK-CONTRACT enum"
+    ],
+    "roles_grants": "current signed FULL admin;JPA synthetic active users",
+    "client": "auth+academic JPA;actual academic HTTP",
+    "prestate": "tr-TR restored in finally;known stable codes",
+    "action": "convert ADMIN/active;GET /academic/users status active/unknown",
+    "expected": "stable admin/active codes;known200 unknown400",
+    "forbidden": "locale codes;guess unknown permission",
+    "status": "PASS",
+    "evidence": "red-unit-01;green-03;fixture-control-04",
+    "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5"
+  },
+  {
+    "id": "SD-03",
+    "source_ids": [
+      "JS-HEADMAN-16",
+      "JS-HEADMAN-17",
+      "MANAGE_HOMEWORK"
+    ],
+    "roles_grants": "active signed STUDENT plus own-group helper durable permission",
+    "client": "actual Academic gRPC;Schedule HTTP/DB mocked upstream",
+    "prestate": "fresh granted helper,then revoked capability",
+    "action": "CheckAssistantPermission MANAGE_HOMEWORK;foreign group;next-homework query",
+    "expected": "own granttrue then revokefalse/foreignfalse;consumer selects lesson or403",
+    "forbidden": "denial valid grant;authorization foreign/revoked",
+    "status": "PASS",
+    "evidence": "red-runtime-02;green-03;AcademicGrpcIT;LessonApiIT.nextHomeworkLesson_selectsCurrentEligibleSnapshotWithoutHorizonAndEnforcesScope",
+    "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5"
+  },
+  {
+    "id": "L03-QR",
+    "source_ids": [
+      "L03",
+      "P17",
+      "JS-SYSTEM-13",
+      "AU-01"
+    ],
+    "roles_grants": "anonymous QR issuer;approved caller simulated only invalid validation",
+    "client": "actual HTTP public QR;standalone scoped advice",
+    "prestate": "invalid synthetic proof marker;malformed/unknown enum",
+    "action": "POST status/exchange;preview/decision validation",
+    "expected": "safe400 qr-login-failed INVALID_REQUEST,no-store,no reflected proof",
+    "forbidden": "proof echo/cache;actual handler omitted",
+    "status": "PASS",
+    "disposition": "existing-mechanism-sufficient;initial candidate disproved",
+    "evidence": "green-03 QrLoginFlowIT;fixture-control-04 QrLoginValidationExceptionHandlerTest",
+    "revision": "8a9d111dd8f47e41a4b23ba0b5b53736ab7b46f5"
+  }
+]

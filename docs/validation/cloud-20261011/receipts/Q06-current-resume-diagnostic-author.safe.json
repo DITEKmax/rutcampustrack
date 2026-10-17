@@ -1,0 +1,613 @@
+{
+  "status": "LOCAL_CHECKS_PASS_REVIEW_PENDING",
+  "scope": "Only existing assignment-lifecycle.spec.ts checking; product/config/shared Source excluded. No runtime/checkpoint reads.",
+  "observed": {
+    "producer": "838d671760633bcc3aed0524ea05cd63e7a76f3e",
+    "run": 38516604489,
+    "prepare": "PASS45187ms",
+    "pending": "PASS203ms",
+    "resume": "FAIL1462ms UNKNOWN/frame594 fallback",
+    "receipt": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/current-838d-assignment.safe.json"
+  },
+  "preserved_q12_commit": "0c53227592b75722e64bfce21ac3f22ddf182ee9",
+  "fixture_sha256": "98fe61048de9b24f3dfda1aac0ea981868ab5947ddd4eb9c52fbeeafc29dba18",
+  "active_native": null,
+  "active_session": null,
+  "runtime": "NOT_RUN",
+  "updated_utc": "2026-10-14T05:55:53.562189+00:00",
+  "authorized_scope": "Root explicit connected four-file diagnostic package: artifact-privacy, privacy.control, safe-reporter, assignment-lifecycle only. First resume DELETE mismatch exact closedroute/status, original204 preserved; pending503 and allscenario rules unchanged.",
+  "source_findings": [
+    "AssignmentController removeAssignment returns204 and assignTeacher/replaceAssignment return201; actualDTOrequest/response fields match fixture.",
+    "AssignmentClosureService pending catches remote resume RuntimeException; actual503 afterrestart possible but not observed status. DirectedSchedule service credential is separate from INTERNAL_ISSUER_SECRET; no claim commonAdmincause.",
+    "AssignmentUnassignmentWriter commitLocal explicitly excludes active/closed physical lessons; expected retained history coherent; TeacherReadFacade journal uses currentTeacherSubjects authority and pastOnly closed filtering.",
+    "artifact-privacy.ts reportedSpecLocation rejects every info.file except exactmobile-real-server.spec.ts; fixturefailures necessarily retain teststart594. No exactfailedassertion/status available."
+  ],
+  "product_defect": "UNKNOWN; no uniqueSourcecounterexample found",
+  "next": "Normalfourfilecommit→wholeindependentprivacyreview→RootordinaryCI alsorequiredforconfirmedAdminconfigfix; collectactualQ06frame/status beforecausefix.",
+  "source_before": {
+    "tests/e2e/fixtures/artifact-privacy.ts": "12c5c0cb6b8a49c815c763812177a76aa4d186e1873f6fa0ef341066a1dbaa67",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "772fd18ae2f3460d070feb3bbc81a456544162366c82f9b9a2c0c7b4eaf91690",
+    "tests/e2e/fixtures/assignment-lifecycle.spec.ts": "98fe61048de9b24f3dfda1aac0ea981868ab5947ddd4eb9c52fbeeafc29dba18"
+  },
+  "plan": "Fresh120s unchangedb78; RSS512MiB/growth256MiB/floor4GiB/shared15GiB/reserve1GiB. Only ownTMP/link; fourcachedchecks, unchangedprivacycontrols, actualfunctioncounterexample. No browser/network/runtime.",
+  "issued_utc": "2026-10-14T05:54:36.541122+00:00",
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "commands": [
+    {
+      "phase": "FORMAT_APPLY",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "fixtures/artifact-privacy.ts",
+        "artifact-controls/privacy.control.spec.ts",
+        "fixtures/safe-reporter.ts",
+        "fixtures/assignment-lifecycle.spec.ts"
+      ]
+    },
+    {
+      "phase": "FORMAT_IDEMPOTENCY",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "fixtures/artifact-privacy.ts",
+        "artifact-controls/privacy.control.spec.ts",
+        "fixtures/safe-reporter.ts",
+        "fixtures/assignment-lifecycle.spec.ts"
+      ]
+    },
+    {
+      "phase": "FORMAT_CHECK",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "fixtures/artifact-privacy.ts",
+        "artifact-controls/privacy.control.spec.ts",
+        "fixtures/safe-reporter.ts",
+        "fixtures/assignment-lifecycle.spec.ts"
+      ]
+    },
+    {
+      "phase": "STRICT_REAL_MOBILE_AND_Q06_TSC",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "-e",
+        "const ts=require(process.argv[1]);const c=ts.readConfigFile('tsconfig.real-mobile.json',ts.sys.readFile);if(c.error)process.exit(1);const parsed=ts.parseJsonConfigFileContent(c.config,ts.sys,process.cwd());const p=ts.createProgram([...new Set([...parsed.fileNames,'fixtures/assignment-lifecycle.spec.ts'])],{...parsed.options,noEmit:true});process.exit(parsed.errors.length+ts.getPreEmitDiagnostics(p).length?1:0)",
+        "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/typescript.js"
+      ]
+    },
+    {
+      "phase": "EXISTING_BROWSER_FREE_PRIVACY_CONTROLS",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "check-artifact-privacy.mjs"
+      ]
+    },
+    {
+      "phase": "ACTUAL_REPORTED_FRAME_COUNTEREXAMPLE",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+        "--max-old-space-size=512",
+        "-e",
+        "const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path'),ts=require(process.argv[1]);\nfunction actual(file){const text=fs.readFileSync(file,'utf8'),root=ts.createSourceFile(file,text,ts.ScriptTarget.Latest,true);const nodes=root.statements.filter(n=>(ts.isFunctionDeclaration(n)&&n.name.text==='reportedSpecLocation')||(ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>['publicSpec','publicSpecs'].includes(d.name.getText(root)))));assert.equal(nodes.length,2);return ts.transpileModule(nodes.map(n=>n.getText(root)).join('\\n')+'\\nglobalThis.actual=reportedSpecLocation',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText}\nconst fixture=process.argv[4],lines=fs.readFileSync(fixture,'utf8').trimEnd().split('\\n'),start=lines.findIndex(l=>l.startsWith(\"test('assignment lifecycle API phase'\"))+1,assertion=lines.indexOf('  expect(closed.status()).toBe(204);')+1;assert(assertion>0&&assertion<start);const info={file:fixture,line:start};\nconst run=file=>{const box={__dirname:path.dirname(process.argv[3]),resolve:path.resolve,readFileSync:fs.readFileSync};vm.runInNewContext(actual(file),box);return box.actual({stack:'Error: SYNTHETIC_SECRET\\n    at resume ('+fixture+':'+assertion+':3)'},info)};\nconst old=run(process.argv[2]),current=run(process.argv[3]);assert.equal(old.line,start);assert.equal(current.line,assertion);assert.equal(current.column,3);assert.equal(current.file,fixture);fs.writeFileSync(process.argv[5],JSON.stringify({old_actual_function_returns_test_start:true,new_actual_function_returns_resume_assertion:true,browser_or_backend_started:false}),{flag:'wx',mode:0o600});\n",
+        "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/typescript.js",
+        "/tmp/rct-q06-frame-status-t40b_fpk/old.ts",
+        "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/fixtures/artifact-privacy.ts",
+        "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+        "/tmp/rct-q06-frame-status-t40b_fpk/proof.safe.json"
+      ]
+    }
+  ],
+  "command_cwd": "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e",
+  "counterexample_source": "const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path'),ts=require(process.argv[1]);\nfunction actual(file){const text=fs.readFileSync(file,'utf8'),root=ts.createSourceFile(file,text,ts.ScriptTarget.Latest,true);const nodes=root.statements.filter(n=>(ts.isFunctionDeclaration(n)&&n.name.text==='reportedSpecLocation')||(ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>['publicSpec','publicSpecs'].includes(d.name.getText(root)))));assert.equal(nodes.length,2);return ts.transpileModule(nodes.map(n=>n.getText(root)).join('\\n')+'\\nglobalThis.actual=reportedSpecLocation',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText}\nconst fixture=process.argv[4],lines=fs.readFileSync(fixture,'utf8').trimEnd().split('\\n'),start=lines.findIndex(l=>l.startsWith(\"test('assignment lifecycle API phase'\"))+1,assertion=lines.indexOf('  expect(closed.status()).toBe(204);')+1;assert(assertion>0&&assertion<start);const info={file:fixture,line:start};\nconst run=file=>{const box={__dirname:path.dirname(process.argv[3]),resolve:path.resolve,readFileSync:fs.readFileSync};vm.runInNewContext(actual(file),box);return box.actual({stack:'Error: SYNTHETIC_SECRET\\n    at resume ('+fixture+':'+assertion+':3)'},info)};\nconst old=run(process.argv[2]),current=run(process.argv[3]);assert.equal(old.line,start);assert.equal(current.line,assertion);assert.equal(current.column,3);assert.equal(current.file,fixture);fs.writeFileSync(process.argv[5],JSON.stringify({old_actual_function_returns_test_start:true,new_actual_function_returns_resume_assertion:true,browser_or_backend_started:false}),{flag:'wx',mode:0o600});\n",
+  "counterexample_source_sha256": "6cb53342db6aae00e9aa643b1a89036570b7cc31111e897e59cdb61fa2f7a3e8",
+  "peaks": {
+    "rss": 477327360,
+    "shared": 5879582720
+  },
+  "check_results": [
+    {
+      "phase": "FORMAT_APPLY",
+      "seconds": 1.117,
+      "result": {
+        "direct_pid": 651503,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 651503,
+            "start_ticks": 21106957
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_IDEMPOTENCY",
+      "seconds": 1.018,
+      "result": {
+        "direct_pid": 651514,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 651514,
+            "start_ticks": 21107069
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "FORMAT_CHECK",
+      "seconds": 0.748,
+      "result": {
+        "direct_pid": 651525,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 651525,
+            "start_ticks": 21107169
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "STRICT_REAL_MOBILE_AND_Q06_TSC",
+      "seconds": 3.038,
+      "result": {
+        "direct_pid": 651536,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 651536,
+            "start_ticks": 21107243
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "EXISTING_BROWSER_FREE_PRIVACY_CONTROLS",
+      "seconds": 37.467,
+      "result": {
+        "direct_pid": 651551,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 651551,
+            "start_ticks": 21107551
+          },
+          {
+            "pid": 651558,
+            "start_ticks": 21107556
+          },
+          {
+            "pid": 651571,
+            "start_ticks": 21107729
+          },
+          {
+            "pid": 651584,
+            "start_ticks": 21107881
+          },
+          {
+            "pid": 651597,
+            "start_ticks": 21107971
+          },
+          {
+            "pid": 651682,
+            "start_ticks": 21111071
+          },
+          {
+            "pid": 651695,
+            "start_ticks": 21111183
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    },
+    {
+      "phase": "ACTUAL_REPORTED_FRAME_COUNTEREXAMPLE",
+      "seconds": 0.734,
+      "result": {
+        "direct_pid": 651708,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 651708,
+            "start_ticks": 21111295
+          }
+        ],
+        "adopted_waitpid_receipts": [],
+        "supervision_error_type": null,
+        "phase_success": true
+      }
+    }
+  ],
+  "failure_type": null,
+  "all_recorded_births_absent": true,
+  "dependency_link_absent": true,
+  "private_tmp_absent": true,
+  "stop_utc": "2026-10-14T05:55:20.777104+00:00",
+  "initial_attempt": {
+    "commands": [
+      {
+        "phase": "FORMAT_APPLY",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "--single-quote",
+          "fixtures/artifact-privacy.ts",
+          "artifact-controls/privacy.control.spec.ts"
+        ]
+      },
+      {
+        "phase": "FORMAT_IDEMPOTENCY",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--write",
+          "--single-quote",
+          "fixtures/artifact-privacy.ts",
+          "artifact-controls/privacy.control.spec.ts"
+        ]
+      },
+      {
+        "phase": "FORMAT_CHECK",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/prettier/bin/prettier.cjs",
+          "--check",
+          "--single-quote",
+          "fixtures/artifact-privacy.ts",
+          "artifact-controls/privacy.control.spec.ts"
+        ]
+      },
+      {
+        "phase": "REAL_MOBILE_TSC",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "/workspace/rutcampustrack/frontends/node_modules/typescript/bin/tsc",
+          "--noEmit",
+          "--project",
+          "tsconfig.real-mobile.json"
+        ]
+      },
+      {
+        "phase": "EXISTING_BROWSER_FREE_PRIVACY_CONTROLS",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "check-artifact-privacy.mjs"
+        ]
+      },
+      {
+        "phase": "ACTUAL_REPORTED_FRAME_COUNTEREXAMPLE",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+          "--max-old-space-size=512",
+          "-e",
+          "const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path'),ts=require(process.argv[1]);\nfunction actual(file){const text=fs.readFileSync(file,'utf8'),root=ts.createSourceFile(file,text,ts.ScriptTarget.Latest,true);const nodes=root.statements.filter(n=>(ts.isFunctionDeclaration(n)&&n.name.text==='reportedSpecLocation')||(ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>['publicSpec','publicSpecs'].includes(d.name.getText(root)))));assert.equal(nodes.length,2);return ts.transpileModule(nodes.map(n=>n.getText(root)).join('\n')+'\nglobalThis.actual=reportedSpecLocation',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText}\nconst fixture=process.argv[4],lines=fs.readFileSync(fixture,'utf8').trimEnd().split('\n'),start=lines.findIndex(l=>l.startsWith(\"test('assignment lifecycle API phase'\"))+1,assertion=lines.indexOf('  expect((await close(request, headman, checkpoint)).status()).toBe(204);')+1;assert(assertion>0&&assertion<start);const info={file:fixture,line:start};\nconst run=file=>{const box={__dirname:path.dirname(process.argv[3]),resolve:path.resolve,readFileSync:fs.readFileSync};vm.runInNewContext(actual(file),box);return box.actual({stack:'Error: SYNTHETIC_SECRET\\n    at resume ('+fixture+':'+assertion+':3)'},info)};\nconst old=run(process.argv[2]),current=run(process.argv[3]);assert.equal(old.line,start);assert.equal(current.line,assertion);assert.equal(current.column,3);assert.equal(current.file,fixture);fs.writeFileSync(process.argv[5],JSON.stringify({old_actual_function_returns_test_start:true,new_actual_function_returns_resume_assertion:true,assignment_source_unchanged:true,browser_or_backend_started:false}),{flag:'wx',mode:0o600});\n",
+          "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/typescript.js",
+          "/tmp/rct-q06-frame-check-c2nzm53r/old.ts",
+          "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/fixtures/artifact-privacy.ts",
+          "/workspace/rct-worktrees/first3-spec-frame-20261013/tests/e2e/fixtures/assignment-lifecycle.spec.ts",
+          "/tmp/rct-q06-frame-check-c2nzm53r/proof.safe.json"
+        ]
+      }
+    ],
+    "check_results": [
+      {
+        "phase": "FORMAT_APPLY",
+        "seconds": 0.791,
+        "result": {
+          "direct_pid": 651194,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 651194,
+              "start_ticks": 21091593
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "FORMAT_IDEMPOTENCY",
+        "seconds": 0.625,
+        "result": {
+          "direct_pid": 651205,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 651205,
+              "start_ticks": 21091671
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "FORMAT_CHECK",
+        "seconds": 0.655,
+        "result": {
+          "direct_pid": 651216,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 651216,
+              "start_ticks": 21091733
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "REAL_MOBILE_TSC",
+        "seconds": 2.611,
+        "result": {
+          "direct_pid": 651227,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 651227,
+              "start_ticks": 21091799
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "EXISTING_BROWSER_FREE_PRIVACY_CONTROLS",
+        "seconds": 37.047,
+        "result": {
+          "direct_pid": 651234,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 651234,
+              "start_ticks": 21092062
+            },
+            {
+              "pid": 651241,
+              "start_ticks": 21092067
+            },
+            {
+              "pid": 651254,
+              "start_ticks": 21092198
+            },
+            {
+              "pid": 651267,
+              "start_ticks": 21092332
+            },
+            {
+              "pid": 651288,
+              "start_ticks": 21092431
+            },
+            {
+              "pid": 651394,
+              "start_ticks": 21095520
+            },
+            {
+              "pid": 651407,
+              "start_ticks": 21095661
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "ACTUAL_REPORTED_FRAME_COUNTEREXAMPLE",
+        "seconds": 0.442,
+        "result": {
+          "direct_pid": 651420,
+          "native_exit": 1,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 651420,
+              "start_ticks": 21095764
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": false
+        }
+      }
+    ],
+    "counterexample_source": "const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path'),ts=require(process.argv[1]);\nfunction actual(file){const text=fs.readFileSync(file,'utf8'),root=ts.createSourceFile(file,text,ts.ScriptTarget.Latest,true);const nodes=root.statements.filter(n=>(ts.isFunctionDeclaration(n)&&n.name.text==='reportedSpecLocation')||(ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>['publicSpec','publicSpecs'].includes(d.name.getText(root)))));assert.equal(nodes.length,2);return ts.transpileModule(nodes.map(n=>n.getText(root)).join('\n')+'\nglobalThis.actual=reportedSpecLocation',{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText}\nconst fixture=process.argv[4],lines=fs.readFileSync(fixture,'utf8').trimEnd().split('\n'),start=lines.findIndex(l=>l.startsWith(\"test('assignment lifecycle API phase'\"))+1,assertion=lines.indexOf('  expect((await close(request, headman, checkpoint)).status()).toBe(204);')+1;assert(assertion>0&&assertion<start);const info={file:fixture,line:start};\nconst run=file=>{const box={__dirname:path.dirname(process.argv[3]),resolve:path.resolve,readFileSync:fs.readFileSync};vm.runInNewContext(actual(file),box);return box.actual({stack:'Error: SYNTHETIC_SECRET\\n    at resume ('+fixture+':'+assertion+':3)'},info)};\nconst old=run(process.argv[2]),current=run(process.argv[3]);assert.equal(old.line,start);assert.equal(current.line,assertion);assert.equal(current.column,3);assert.equal(current.file,fixture);fs.writeFileSync(process.argv[5],JSON.stringify({old_actual_function_returns_test_start:true,new_actual_function_returns_resume_assertion:true,assignment_source_unchanged:true,browser_or_backend_started:false}),{flag:'wx',mode:0o600});\n",
+    "counterexample_source_sha256": "4bf2e9e8f1b6bda95a23ae9812ab94a3d2b6dee53f7d1cbc45f5e581ea899504",
+    "failure_type": "AssertionError",
+    "stop_utc": "2026-10-14T05:52:45.192724+00:00",
+    "peaks": {
+      "rss": 425951232,
+      "shared": 5830045696
+    },
+    "diagnosis": "Five scoped Source checks PASS; only optional VM code failed due literal newline inside JS quoted strings (confirmed Source). No product/privacy failure. Closedprivacy receipt not retained by first caller before optional proof assertion; native PASS retained."
+  },
+  "repeat_reason": "Root authorized connected first-resume DELETE status diagnostic after initial5PASS; rerun affectedfourfilechecks/privacy once. Correct optional proof JS escaping; no unchanged backend rerun.",
+  "privacy_control": {
+    "state": "PRIVACY_BOUNDARIES_PASSED",
+    "normalChildStatus": 0,
+    "markerAbsent": true,
+    "producerBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": false
+    },
+    "originalMetadataLeakReproduced": true,
+    "expectedFailureRetained": true,
+    "successRetained": true,
+    "guardControl": {
+      "canonicalReporterAccepted": true,
+      "sameBasenameAlternateRejected": true,
+      "extraReporterRejected": true,
+      "traceRejected": true,
+      "videoRejected": true,
+      "screenshotRejected": true,
+      "missingSnapshotGuardRejected": true,
+      "wrongSnapshotGuardRejected": true
+    },
+    "interruptedChildStatus": 0,
+    "interruptedChildSignal": null,
+    "interruptionBoundary": {
+      "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
+      "markerAbsent": true,
+      "failureRetained": true,
+      "attachmentNotYetCreated": true,
+      "interrupted": true
+    },
+    "interruptionPassed": true,
+    "missingGuardRejectedBeforeOperation": true,
+    "browser": "NOT_STARTED"
+  },
+  "counterexample": {
+    "old_actual_function_returns_test_start": true,
+    "new_actual_function_returns_resume_assertion": true,
+    "browser_or_backend_started": false
+  },
+  "source_after_sha256": {
+    "fixtures/artifact-privacy.ts": "ecaa860f4603ccaedfdbdd3697d499f7cc2ecba6d06f9c97c77ea84923f7e0c7",
+    "artifact-controls/privacy.control.spec.ts": "165d0c7beabb246e708f4b967e002b570aab77b3d765143e19d048cffe81b774",
+    "fixtures/safe-reporter.ts": "8966d9516a358c6eaf2ba6e6dda599c3ba338a875ac020adb4017fda77596731",
+    "fixtures/assignment-lifecycle.spec.ts": "a310a0d4cf019af855b0fcccc0e6b93376bf4537c520c9398773098e4f20b894"
+  },
+  "native_seconds": 44.205,
+  "native_runs": 6,
+  "assignment_only_first_resume_status_diagnostic": true,
+  "assignment_all_other_bytes_identical": true,
+  "tool_session_terminal": {
+    "session_id": 54673,
+    "exit": 0,
+    "reaped": true
+  },
+  "source_final": {
+    "tests/e2e/fixtures/artifact-privacy.ts": {
+      "sha256": "ecaa860f4603ccaedfdbdd3697d499f7cc2ecba6d06f9c97c77ea84923f7e0c7",
+      "blob": "26f6af7ed8ad220592667feb3af9aa7f9bd2582d",
+      "lines": 163
+    },
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": {
+      "sha256": "165d0c7beabb246e708f4b967e002b570aab77b3d765143e19d048cffe81b774",
+      "blob": "8535c6a2240574d64c30d20cac853383b5fdc3c9",
+      "lines": 426
+    },
+    "tests/e2e/fixtures/safe-reporter.ts": {
+      "sha256": "8966d9516a358c6eaf2ba6e6dda599c3ba338a875ac020adb4017fda77596731",
+      "blob": "543c9fc163e5471b80003bde93b93fd1f236829d",
+      "lines": 405
+    },
+    "tests/e2e/fixtures/assignment-lifecycle.spec.ts": {
+      "sha256": "a310a0d4cf019af855b0fcccc0e6b93376bf4537c520c9398773098e4f20b894",
+      "blob": "de02edb0d8b97d77c9d83eb7e2e422814b5520cb",
+      "lines": 670
+    }
+  },
+  "scope_final": "Four checking files only: exactassignment reported frame admission, firstresumeDELETE closedHTTPcause, relevantexistingprivacypositive/negativecontrols. No product/config/API/clock/body/checkpoint changes. Actualfailurecause remainsUNKNOWN.",
+  "independent_review": "PENDING_WHOLE_FOUR_FILE_PRIVACY_REVIEW",
+  "source_pins": {
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentClosureService.java": "b18bbc5513f4ce24d1e978298ca3688d493cf82aeef0614987d498e9032b7198",
+    "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/replacement/AssignmentUnassignmentWriter.java": "df3b9e839b319488056501ad821c3dc2b0c628e35aa372d654e778ec9228a801",
+    "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/teacher/TeacherReadFacade.java": "59db986dfd4a6cb1d443d53226235af472b87dddbefb367fe724bcc593e16d5d"
+  },
+  "normal_commit_exit": 0,
+  "hooks_bypassed": false,
+  "normal_commit_output": "[codex/q06-resume-diagnosis-20261014 46111319] test(e2e): retain assignment resume failure location and status\n 4 files changed, 84 insertions(+), 9 deletions(-)\n",
+  "commit": "4611131922a8c86358d1987427324c5bf32abef3",
+  "worktree_clean": true
+}

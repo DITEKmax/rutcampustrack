@@ -1,0 +1,93 @@
+{
+  "utc": "2026-10-13T00:59:04.981864+00:00",
+  "entries": [
+    {
+      "path": "AST-input-delta.safe.json",
+      "sha256": "924111bfe762cc58f9ecb64f06fd4259f936ff51bda19f02cca1805256ff90c1",
+      "size": 485
+    },
+    {
+      "path": "CURRENT.json",
+      "sha256": "028277f6fdcadc176c9ad9512a5e102107af00a90e5800a42dc27b2dbe304a7f",
+      "size": 441
+    },
+    {
+      "path": "HANDOFF.md",
+      "sha256": "c78f67a91d152ea955ae81d740110e62ccd0473cda1a35ed1e7319c56dfdc6c7",
+      "size": 1944
+    },
+    {
+      "path": "controls.safe.json",
+      "sha256": "6e8df59f4e922d83d00d7c433392f658833d3023b2aac0529df28b9ccbb5524f",
+      "size": 2331
+    },
+    {
+      "path": "effective-commands.safe.json",
+      "sha256": "1ac295ea113fec0cef049ec4f18f5e8a0dd7e45ecf0899ddf665e82200de5e65",
+      "size": 2136
+    },
+    {
+      "path": "preflight/preflight.safe.json",
+      "sha256": "3fecee45b4fbe5f9ea4f8080ae06bfc4f867a80755ade29b8dbaa509abc5494b",
+      "size": 13092
+    },
+    {
+      "path": "preservation.safe.json",
+      "sha256": "b26c8b33bbc9498574b5162bb07034abdc540b0c9be0e637ca904e6a02ba9425",
+      "size": 510
+    },
+    {
+      "path": "restart-grant.template.safe.json",
+      "sha256": "80e0fbbec63212cab582af62a5090b83d142ae7a5d9419b0aa1b54e72ca1fec5",
+      "size": 4041
+    },
+    {
+      "path": "source/docker-up-restart.py",
+      "sha256": "69d967351ea5d578846ff00b399a053a0dfd8498a586207f3d294694ac74ecec",
+      "size": 6539
+    },
+    {
+      "path": "source/manifest.json",
+      "sha256": "42efc4c82158aac7a27e7973889b89517bd45b11e8da32f0e2b9af851dd57551",
+      "size": 2165
+    },
+    {
+      "path": "source/restart-boundary.py",
+      "sha256": "4cfa304b89721850da531d429cba030f9c658457793ad6448a8bf06f3eb9798b",
+      "size": 13338
+    },
+    {
+      "path": "source/run-academic-restart.py",
+      "sha256": "e671f91a181ac9a134961903c9cdc7f2832c158082fd83347cf0750ee45a7a2d",
+      "size": 9642
+    },
+    {
+      "path": "source/run-mongo-restart.py",
+      "sha256": "813ed8280c7beb950d8b7ffd22994ed22f2d96d6fd00e0e8d74489b258c12bd5",
+      "size": 11659
+    },
+    {
+      "path": "source/run-service-restart.py",
+      "sha256": "7eaed78b02b45bfe43d8468913a364b812c19b4717d48a61ebe5a8ff92a090bd",
+      "size": 7880
+    },
+    {
+      "path": "source/runtime-ancestor-anchors.safe.json",
+      "sha256": "f59dba685dbcc8e5fdea46d4d6ea392148006a41e82b7743862197fee42269eb",
+      "size": 1000
+    },
+    {
+      "path": "source-delta.safe.json",
+      "sha256": "c2a35efb352525b6221be1460b51142dd7c7821ba128fc28b4914c6ebed1ef4b",
+      "size": 8026
+    },
+    {
+      "path": "source-projection.safe.json",
+      "sha256": "c6861da62b1c928cebb9343a2194ea63d5f13c51263af6cc6b1ed0606706cea8",
+      "size": 7843
+    }
+  ],
+  "count": 17,
+  "private_inputs_excluded": true,
+  "runtime": "NOT_RUN"
+}

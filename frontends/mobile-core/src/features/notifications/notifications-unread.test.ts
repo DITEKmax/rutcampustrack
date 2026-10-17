@@ -4,11 +4,30 @@ import { NotificationsUnreadState } from './notifications-unread'
 
 function deferred() {
   let resolve!: (count: number) => void
-  const promise = new Promise<number>(accept => { resolve = accept })
+  const promise = new Promise<number>((accept) => {
+    resolve = accept
+  })
   return { promise, resolve }
 }
 function api(read: () => Promise<number>): NotificationsApi {
-  return { unreadCount: read, listHistory: async () => ({ items: [], pageNumber: 0, totalPages: 0, totalElements: 0 }), markRead: async () => undefined, markAllRead: async () => undefined, getPreferences: async () => ({ categories: { lessons: true, reminders: true, homework: true, tickets: true, schedule: true, group: true }, mutedUntil: null }), updatePreferences: async value => value }
+  return {
+    unreadCount: read,
+    listHistory: async () => ({ items: [], pageNumber: 0, totalPages: 0, totalElements: 0 }),
+    markRead: async () => undefined,
+    markAllRead: async () => undefined,
+    getPreferences: async () => ({
+      categories: {
+        lessons: true,
+        reminders: true,
+        homework: true,
+        tickets: true,
+        schedule: true,
+        group: true,
+      },
+      mutedUntil: null,
+    }),
+    updatePreferences: async (value) => value,
+  }
 }
 
 describe('NotificationsUnreadState', () => {
@@ -20,7 +39,10 @@ describe('NotificationsUnreadState', () => {
     const pending = state.refresh()
     expect(state.refresh()).toBe(pending)
     expect(read).toHaveBeenCalledTimes(1)
-    state.bind('generation2|account2', api(async () => 105))
+    state.bind(
+      'generation2|account2',
+      api(async () => 105),
+    )
     expect(state.view.count).toBeNull()
     await state.refresh()
     old.resolve(7)
@@ -32,7 +54,10 @@ describe('NotificationsUnreadState', () => {
 
   it('never publishes an in-flight count invalidated by read, all-read or realtime, then resolves server zero', async () => {
     const first = deferred()
-    const read = vi.fn().mockImplementationOnce(() => first.promise).mockResolvedValue(0)
+    const read = vi
+      .fn()
+      .mockImplementationOnce(() => first.promise)
+      .mockResolvedValue(0)
     const state = new NotificationsUnreadState()
     const values: (number | null)[] = []
     state.subscribe(() => values.push(state.view.count))
@@ -47,7 +72,11 @@ describe('NotificationsUnreadState', () => {
   })
 
   it('marks an unavailable count unknown and retries without carrying stale account values', async () => {
-    const read = vi.fn().mockResolvedValueOnce(4).mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(3)
+    const read = vi
+      .fn()
+      .mockResolvedValueOnce(4)
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce(3)
     const state = new NotificationsUnreadState()
     state.bind('account', api(read))
     await state.refresh()

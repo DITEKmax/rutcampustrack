@@ -1,0 +1,50 @@
+{
+  "state": "READONLY04_DIAGNOSIS_COMPLETE_NO_SEMANTIC_PROMOTION",
+  "files": [
+    {
+      "path": "OUTCOME.safe.json",
+      "bytes": 375,
+      "sha256": "b2fc09b99419d2a58b45a68e986c7685dc64e5c809e9629683c757f8541a6d9a"
+    },
+    {
+      "path": "REPORT.safe.json",
+      "bytes": 741,
+      "sha256": "8d82bebdf7179f57986cfb5c5d541fead6ee51e1c0d92cef30c708b3766737e2"
+    },
+    {
+      "path": "diff04-launch.safe.json",
+      "bytes": 535,
+      "sha256": "0544a7b2ca3a07fcf6200f5c28894abb8e4377d0aafa3d6c3aa160704b08c3f9"
+    },
+    {
+      "path": "diff04-outcome.safe.json",
+      "bytes": 63,
+      "sha256": "683d3dc56eb2ed4c0400061e7152e5b92cf06833f91e4c8e56678fd366fd801e"
+    },
+    {
+      "path": "diff04-process.safe.json",
+      "bytes": 147,
+      "sha256": "972f5db3b20110576ae489c614449e415261293f400d75de5ca0e27a5403ba63"
+    },
+    {
+      "path": "diff04-terminal.safe.json",
+      "bytes": 559,
+      "sha256": "7e2f336c6036ae03dff1092ec051a887f591f7b90d3e2a829d6b5b51fb037dd1"
+    },
+    {
+      "path": "diff04.safe.json",
+      "bytes": 59805,
+      "sha256": "4ef77381645ffb3b7d3b2931e9a5fcfb3dbbeceff2358439bdf53d51d68e309a"
+    },
+    {
+      "path": "summary.safe.json",
+      "bytes": 2196,
+      "sha256": "014cb776973e359dd568be16522b73c3ed872666e8443b361ad92a040092038c"
+    },
+    {
+      "path": "supervisor.safe.json",
+      "bytes": 119,
+      "sha256": "c1552535de63ada3b05d68638abd057e1a216b4b995b6a0b3a11c42df6c3f806"
+    }
+  ]
+}

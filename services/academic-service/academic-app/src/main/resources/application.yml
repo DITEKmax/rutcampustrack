@@ -44,6 +44,7 @@ spring:
     locations: classpath:db/migration
 
   rabbitmq:
+    publisher-confirm-type: simple
     host: rabbitmq
     port: 5672
     username: ${RABBITMQ_USER:rct_user}
@@ -79,8 +80,13 @@ grpc:
   auth:
     secret: ${GRPC_SECRET:}
   service-identity:
+    attendance-to-academic-token: ${ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN:}
     academic-to-schedule-token: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:}
+    academic-to-attendance-token: ${ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN:}
+    attendance-authority: ${ATTENDANCE_GRPC_TLS_AUTHORITY:attendance-service}
     schedule-to-academic-token: ${SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN:}
+    # Optional bot-only identity; protected RPCs deny access while unconfigured.
+    bot-to-academic-token: ${BOT_TO_ACADEMIC_SERVICE_TOKEN:}
   client:
     # Phase 61 D-04: резолв пары по (group, date, lessonNumber) для валидации ДЗ
     schedule-service:
@@ -89,11 +95,14 @@ grpc:
     attendance-service:
       address: dns:///attendance-service:19093
       negotiation-type: plaintext
+    document-renderer-service:
+      address: dns:///document-renderer-service:19095
+      negotiation-type: plaintext
 
 rutcampustrack:
   security:
     # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
-    required-env-vars: POSTGRES_ACADEMIC_PASSWORD,REDIS_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET,ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN,SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
+    required-env-vars: ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN,POSTGRES_ACADEMIC_PASSWORD,REDIS_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET,ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN,SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
     internal-issuer-client:
       secret: ${INTERNAL_ISSUER_SECRET:}
     internal-jwt:
@@ -145,6 +154,11 @@ management:
       enabled: true
   # M04 QA2 (NEW-58/59) — distributed tracing OTel → Tempo.
   tracing:
+    baggage:
+      remote-fields: requestId
+      tag-fields: requestId
+      correlation:
+        fields: requestId
     sampling:
       probability: 1.0
   otlp:

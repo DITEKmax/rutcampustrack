@@ -1,0 +1,56 @@
+{
+  "utc": "2026-10-12T15:56:10.323835+00:00",
+  "native_exit": 1,
+  "stage": "PRE_NAMESPACE_ROOT_ANCESTOR_GATE",
+  "error_type": "RuntimeError",
+  "safe_cause": "Tmp ancestor metadata differs between prepared default sandbox and approved native execution context",
+  "anchor_rows": [
+    {
+      "path": "/",
+      "expected_default_sandbox": {
+        "device": 27,
+        "inode": 1310721,
+        "uid": 65534,
+        "gid": 65534,
+        "mode": 493
+      },
+      "actual_authorized_execution": {
+        "device": 27,
+        "inode": 1310721,
+        "uid": 0,
+        "gid": 0,
+        "mode": 493
+      },
+      "same": false
+    },
+    {
+      "path": "/tmp",
+      "expected_default_sandbox": {
+        "device": 33,
+        "inode": 1,
+        "uid": 65534,
+        "gid": 65534,
+        "mode": 1023
+      },
+      "actual_authorized_execution": {
+        "device": 33,
+        "inode": 1,
+        "uid": 0,
+        "gid": 0,
+        "mode": 1023
+      },
+      "same": false
+    }
+  ],
+  "namespace_exists": false,
+  "curl_children_launched": 0,
+  "package_archive_downloads": 0,
+  "extraction_ABI_browser": "NOT_RUN",
+  "resources": {
+    "/workspace_available": 9510359040,
+    "/tmp_available": 7775879168,
+    "shared_memory": 4712804352
+  },
+  "lease": "RELEASED; no live native children",
+  "no_secret_grant_route_ENV_or_hash_published": true
+}

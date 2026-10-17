@@ -1,0 +1,54 @@
+{
+  "revision": "a03215a363aee844f42067fcf5243e7d49f85bff",
+  "artifact": 11863196875,
+  "digest": "sha256:1ebb80d037ea1b3ed5b0579910f48d507b1815b14f940e4948e93ffb572c15c8",
+  "metadata": {
+    "checkoutSha": "9f0732ba13baa2626282692bd5b9aeb4f0531c14",
+    "prHeadSha": "a03215a363aee844f42067fcf5243e7d49f85bff",
+    "service": "api-gateway",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38493688140",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "counts": {
+    "PASSED": 10,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 3,
+    "NOT_EXECUTED": 0
+  },
+  "case": {
+    "xmlOrdinal": 3,
+    "suiteOrdinal": 1,
+    "ordinal": 3,
+    "classname": "ru.rutcampustrack.gateway.ratelimit.RateLimitIT",
+    "method": "fixedAndChunkedLoginBodiesOver4096AreRejectedBeforeUpstreamHttp",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/RateLimitIT.java",
+    "sourceSha256": "c95fc94ba6b76902bea007c45db7576b49ac8fe17d34afa472c741c31d1527ee"
+  },
+  "qualified": "finite P11 real TCP upstream witness; inherited3CompositeSKIP notaccepted/B014notrun",
+  "reader": {
+    "direct_pid": 609454,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 609454,
+        "start_ticks": 19444291
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "private_input_gone": true
+}

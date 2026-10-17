@@ -1,0 +1,52 @@
+{
+  "project": "rct-client-host-config-20261012",
+  "cohort": "restart-20261013-next03",
+  "private_grant_path": "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next03.json",
+  "Docker6": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/docker-up-restart.py"
+  ],
+  "Mongo_server": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/run-mongo-restart.py",
+    "--phase",
+    "server",
+    "--grant",
+    "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next03.json"
+  ],
+  "Mongo_readiness": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/run-mongo-restart.py",
+    "--phase",
+    "readiness",
+    "--grant",
+    "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next03.json"
+  ],
+  "Academic": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/run-academic-restart.py",
+    "--service",
+    "academic",
+    "--grant",
+    "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next03.json"
+  ],
+  "other6": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/run-service-restart.py",
+    "--service",
+    "SERVICE_FROM_EXACT_AUTH_SCHEDULE_ATTENDANCE_BFF_GATEWAY_NOTIFICATION",
+    "--grant",
+    "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next03.json"
+  ],
+  "actual_startup": "NOT_AUTHORIZED_OR_RUN",
+  "preDocker_workspace_minimum": 9380818650,
+  "postDocker_workspace_before_hosts_minimum": 5368709120,
+  "workspace_floor": 4294967296,
+  "tmp_floor_plusMongoGrowth": 5368709120,
+  "shared_stop": 16106127360,
+  "shared_reserve": 1073741824,
+  "maximum_seconds": 1800,
+  "cleanup_dispatch_margin_seconds": 60,
+  "same_D012_explicit_authorization_requires_normal_platform_approval": true,
+  "reset_bootstrap_seed_rebuild_recopy": false
+}

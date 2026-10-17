@@ -2,6 +2,9 @@ package ru.rutcampustrack.gateway.filter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -16,10 +19,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 @Component
 public class PwaVersionPolicyFilter implements GlobalFilter, Ordered {
 
@@ -30,7 +29,8 @@ public class PwaVersionPolicyFilter implements GlobalFilter, Ordered {
     private final PwaVersionPolicyProperties properties;
     private final ObjectMapper objectMapper;
 
-    public PwaVersionPolicyFilter(PwaVersionPolicyProperties properties, ObjectMapper objectMapper) {
+    public PwaVersionPolicyFilter(
+            PwaVersionPolicyProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
         this.objectMapper = objectMapper;
     }
@@ -91,7 +91,9 @@ public class PwaVersionPolicyFilter implements GlobalFilter, Ordered {
         body.put("type", "https://ruttrack.site/problems/pwa-upgrade-required");
         body.put("title", "Upgrade Required");
         body.put("status", 426);
-        body.put("detail", "Эта версия RutTrack больше не поддерживается. Обновите PWA, чтобы продолжить.");
+        body.put(
+                "detail",
+                "Эта версия RutTrack больше не поддерживается. Обновите PWA, чтобы продолжить.");
 
         Map<String, String> extras = new LinkedHashMap<>();
         if (latest != null) {
@@ -107,7 +109,8 @@ public class PwaVersionPolicyFilter implements GlobalFilter, Ordered {
         try {
             return objectMapper.writeValueAsBytes(body);
         } catch (JsonProcessingException e) {
-            return "{\"status\":426,\"title\":\"Upgrade Required\"}".getBytes(StandardCharsets.UTF_8);
+            return "{\"status\":426,\"title\":\"Upgrade Required\"}"
+                    .getBytes(StandardCharsets.UTF_8);
         }
     }
 

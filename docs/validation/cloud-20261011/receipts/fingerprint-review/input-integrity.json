@@ -1,0 +1,302 @@
+{
+  "safe_author_files_verified": 12,
+  "safe_author_manifest_sha256": "b52ecde3bf819ecbf1743854f4f1e2e24d7b692d63a907b11f8678dc7226851f",
+  "inputs": [
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/sealed-safe-manifest.json",
+      "role": "safe-author-manifest",
+      "bytes": 1619,
+      "sha256": "b52ecde3bf819ecbf1743854f4f1e2e24d7b692d63a907b11f8678dc7226851f"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/provenance.json",
+      "role": "original-safe-author-receipt",
+      "bytes": 471,
+      "sha256": "1c5c854bbae1425b2d3c5d888985253b0d9d8ebfad8b55d2bffb2c00818a5367"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/historical-source.safe.json",
+      "role": "original-safe-author-receipt",
+      "bytes": 444,
+      "sha256": "481e30e1f40a6eac7a17e1260ffb33ed2c62d46dd725ca3ad442d0db71fa7697"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/historical-proof.safe.json",
+      "role": "original-safe-author-receipt",
+      "bytes": 428,
+      "sha256": "a3010c07154cdd5faa4132d2a0a28583b752316fcff28766315d076a4e0de71e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/baseline-historical.safe.json",
+      "role": "original-safe-author-receipt",
+      "bytes": 1131,
+      "sha256": "943f16a134375956358729f5ae1eff128809cc1e4edf7cda63afb8df9333b6e3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/corrected-historical.safe.json",
+      "role": "original-safe-author-receipt",
+      "bytes": 712,
+      "sha256": "02fc0761d1e5f74b899ef7eb12775ab23638cd4cd04c7bf0591665502b538864"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/sensitivity.safe.json",
+      "role": "original-safe-author-receipt",
+      "bytes": 1599,
+      "sha256": "2ccd0377e14cfa73557949d94a44be4837aa295b2e1eb6b8144cf713899b5c38"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/commit-checks.safe.json",
+      "role": "original-safe-author-receipt",
+      "bytes": 820,
+      "sha256": "6d68bf7bd1c22a9ed93862a230c20bd457020126d30e7f174b627e51cd587680"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/original-manifest.json",
+      "role": "original-safe-author-receipt",
+      "bytes": 1373535,
+      "sha256": "b654f0428d5a189c6886896f7d8529552aa4af1326ba72f13dcec07e552d3e5b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/verify.py",
+      "role": "original-safe-author-receipt",
+      "bytes": 3903,
+      "sha256": "2376ffd7f209861a6094484468933df0cfcb34f527da0b42127baddd3075462e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/sensitivity.py",
+      "role": "original-safe-author-receipt",
+      "bytes": 3703,
+      "sha256": "81e209736dc4f8deeb4e70d9ee9576067e66d6d9e3429072b3e88026bc707b1a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/summary.safe.json",
+      "role": "original-safe-author-receipt",
+      "bytes": 1944,
+      "sha256": "92cf2020ba8ce1d06b97bba82734ddbed7589ab188ca9f165b0f7e564d2bc277"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/security_fingerprint/gitleaks_8.24.3_checksums.txt",
+      "role": "original-safe-author-receipt",
+      "bytes": 1099,
+      "sha256": "eefa9ab1ee69571248a6fa070a2a7de0837dd9eb72745d131f8766206aac8ac2"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "role": "governing-input",
+      "bytes": 86218,
+      "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "role": "governing-input",
+      "bytes": 5338,
+      "sha256": "2d94df5f37f4617d34fb8813c3dedb4ed041a20eec830ccae6d4b08c097c3bb5"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "role": "governing-input",
+      "bytes": 11724,
+      "sha256": "d22223fb721663b89628b50b9522e90838530c5569b0a3bf9aef1dd42baa26cd"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "role": "governing-input",
+      "bytes": 9948,
+      "sha256": "abed4dbf6e29fa7ce6b6383673bd4b8babd31f2eabbc7229a229735f7782df65"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "role": "governing-input",
+      "bytes": 2806,
+      "sha256": "ae63028aca376f221f01563ea09d90d199ea2d1602fe03bee2afb22b3fb132d4"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-fingerprint-review.md",
+      "role": "governing-input",
+      "bytes": 3135,
+      "sha256": "ae5aa6a0bfa55af53779ff24ef223f59bf5a95a1302700c6a45431137b675c74"
+    },
+    {
+      "path": "/workspace/rutcampustrack/AGENTS.md",
+      "role": "process-input",
+      "bytes": 4327,
+      "sha256": "5caaf9a0830814b9d0618e59f6455bc40a69a03143c2f77bc4d9e54e64c161fe"
+    },
+    {
+      "path": "/workspace/rutcampustrack/.agent/orchestration-v2/RULES.md",
+      "role": "process-input",
+      "bytes": 24809,
+      "sha256": "2b9a859cc86e056ee4298170d90a73550ca8a60573dab8289579a9075ede6b38"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/agent-workflow.md",
+      "role": "process-input",
+      "bytes": 7916,
+      "sha256": "21fd80824d409caa7737a13eba47cf8bdf9428dd23bd1f52893fccb83ad98937"
+    },
+    {
+      "path": "/workspace/rutcampustrack/tests/AGENTS.md",
+      "role": "process-input",
+      "bytes": 5464,
+      "sha256": "95b79b185f6cbee1ed0547479f09e715c7c923940e7dd603ea8b478265c45c37"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/skills/project/rct-verification/SKILL.md",
+      "role": "process-input",
+      "bytes": 1733,
+      "sha256": "0e6fcff4a21736a932bc2afb7740b9171df89d95599bc349d688bc8f3ab810aa"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/skills/project/rct-source-resolution/SKILL.md",
+      "role": "process-input",
+      "bytes": 1557,
+      "sha256": "3860dcd425467637b850e25ee3c47054e82eef9416509ba163f0a47ac021af7d"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/receipts/checkpoint636-native-gitleaks-metadata.json",
+      "role": "native-job-safe-metadata",
+      "bytes": 1319,
+      "sha256": "e184519d05eaed6d15486b9510f22ba376505d34a0c6200175a4fed180501a84"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/transfer-manifest.json",
+      "role": "previous-completed-NTR-preserved",
+      "bytes": 8220,
+      "sha256": "ef14d832b696ba678dc0ebdf68a530387ada0164cc0b085ee12b96b0db450b2c"
+    },
+    {
+      "path": "/workspace/rct-worktrees/security-fingerprint/.gitleaksignore",
+      "role": "reviewed-current-source",
+      "bytes": 210,
+      "sha256": "b151fa8f6efc1340a37d1dc616aae0c803e5d2404ed063381f7128a5e03a1ba8"
+    }
+  ],
+  "private_reports_logs_finding_secret_fields": "NOT_OPENED_OR_COPIED",
+  "previous_NTR_package_preserved": [
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/audit.py",
+      "bytes": 26059,
+      "sha256": "f6418136ef1a2f392496e39da91d834cb00c22c4be7df309f395763f15c0e4b7"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/cleanup-qualification.json",
+      "bytes": 1369,
+      "sha256": "38fcefbe001366d1dbd1d25297e5c6b2c207ce422da6796450f146231cdf6203"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/completion.json",
+      "bytes": 1356,
+      "sha256": "0021edcfba36d46fa86359104a72c1b2f712bd09e1c55219e7c11240c16efd66"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/findings.md",
+      "bytes": 11528,
+      "sha256": "f65bd5dd69207a17e74caaaab12786bbd61d91689bd5585dfeeac410ccbe9f2e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/governing/CURRENT.md",
+      "bytes": 4601,
+      "sha256": "5c3e2713a896818c43b1cf2820dad9b90606bbfb3305a86913610cc7af7686a8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/governing/TASK-CONTRACT.md",
+      "bytes": 86218,
+      "sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/governing/decisions.md",
+      "bytes": 11724,
+      "sha256": "d22223fb721663b89628b50b9522e90838530c5569b0a3bf9aef1dd42baa26cd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/governing/packet-ntr-seal-review.md",
+      "bytes": 3686,
+      "sha256": "c9e6393b1b40860662e15a7adc275d1d60b1007c23b95c7e2893528c0721faae"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/governing/questions.md",
+      "bytes": 9930,
+      "sha256": "27f657586c7bca1cba84457063741fa5f744ee9d57021900a27b8b5cafeace17"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/governing/resources.md",
+      "bytes": 2111,
+      "sha256": "8cbedffb12e5cacdc74d3f52ecbc493d0872d648e852d1b90efe7cd1afdf9f92"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/immutable-author-25-originals.zip",
+      "bytes": 70007,
+      "sha256": "f05c655bf04c06e5a409cc855e022f00790bcf11293140d4b250326d81f61317"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/immutable-prior-review-originals.zip",
+      "bytes": 301166,
+      "sha256": "53a1ffbea1d68a2b2e0040cc56af388b72bda09211c6a6c114e5fde886af3214"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/immutable-review-manifest.json",
+      "bytes": 3995,
+      "sha256": "963248387fc87ea4fcd890f97b1eab13db3be62a13444ef08733840eced85f88"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/immutable-review-receipts.zip",
+      "bytes": 486302,
+      "sha256": "6e023ee291f5b9b067e6902560a07eccab5602ee9f30b5becf9e0b19b8e128d3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/lifecycle-and-private-log-identity.json",
+      "bytes": 2973,
+      "sha256": "200d7b0e9466e47f4c2fcc402aca79094d22234e8d67ce957504beb54f54abee"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/oracle-evidence-audit.json",
+      "bytes": 2006,
+      "sha256": "c476de563df8a380e67f5b4806bdc6eca18eef320d8ed92cdcd1e487eb291484"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/original-input-integrity.json",
+      "bytes": 131321,
+      "sha256": "5fbe5cb97464f0e7333f6596eb914fd8fe9ab8678458577c9bac78cc95bb18ab"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/prior-partial/findings.md",
+      "bytes": 10080,
+      "sha256": "8e99b8245ee01a0fb2262ff77e6185b23879adbd596123230521534c9e3244a2"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/prior-review-reuse.json",
+      "bytes": 12838,
+      "sha256": "94a6d1e69eb7837f71be744e6b5a12e56d0598830ef4bea835994410e23928bd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/review.json",
+      "bytes": 2006,
+      "sha256": "57f2d59ec8a09e59782b38ddbf60afa7a6cf7a00f9b8af5609ba2af330991a4a"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/reviewed-change.patch",
+      "bytes": 3168,
+      "sha256": "06b1f5254815fa6859fc1e9b8beb337004f44319b2971babb66a97ab3dafcc86"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/safe-publication-audit.json",
+      "bytes": 620,
+      "sha256": "46e401d450cf86bf547462ca748519466b0236ff75bf6ac66741e7889552c8a0"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/source-equivalence.json",
+      "bytes": 87653,
+      "sha256": "cab16d774b74c40110d13cefd49aba44acdb7f87800b435140aed7ee3b8c4639"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ntr_seal_review/verification.json",
+      "bytes": 517,
+      "sha256": "4eee72d9652d0e7f07bdd5a87db075dbd475121db08811512a5b0d8a5a5fd1c2"
+    }
+  ],
+  "previous_NTR_transfer_manifest_sha256": "ef14d832b696ba678dc0ebdf68a530387ada0164cc0b085ee12b96b0db450b2c",
+  "binary_and_archive_hashes": {
+    "gitleaks": "e18325d568268b6efb6cd0cc721f8bea5667f4cd1c8d03618ab61987f41269ad",
+    "archive": "9991e0b2903da4c8f6122b5c3186448b927a5da4deef1fe45271c3793f4ee29c"
+  }
+}

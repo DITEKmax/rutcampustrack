@@ -1,0 +1,104 @@
+{
+  "status": "SOURCE_READY_PAYLOAD_HEADERS_NOT_RUN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/CURRENT.json",
+      "name": "CURRENT.json",
+      "sha256": "b3efeb3b49d6eae4659f42ec161317dba1a56ed7c88df7ffe844dfa5779fe5bf",
+      "bytes": 695,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/HANDOFF.md",
+      "name": "HANDOFF.md",
+      "sha256": "dddb9a62ae982d2ca28fcbd9c391f5acd056ef694ab7c3d293c32b08f18d6431",
+      "bytes": 4031,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/approved-packages.safe.json",
+      "name": "approved-packages.safe.json",
+      "sha256": "99da88e8e8a5f9a046110638da97288881a246c7ede3a7d881183ebcfd1ae66c",
+      "bytes": 7332,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/download-headers.py",
+      "name": "download-headers.py",
+      "sha256": "52338ef2fc182905fdb52ec83c3c609ed804acea69ac41a348f255bf86d3ad19",
+      "bytes": 15964,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/launch-schema.safe.json",
+      "name": "launch-schema.safe.json",
+      "sha256": "f60f1a31dea02360b84cd1aa2dcd8964c43f4e09836145c579dd39d11f506cd3",
+      "bytes": 2819,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/namespace-anchors.safe.json",
+      "name": "namespace-anchors.safe.json",
+      "sha256": "5f51ccb4b666c22ea2634c83c43a4e3b521037c1fb474a74066b3847f643642d",
+      "bytes": 531,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/prep-errors.safe.json",
+      "name": "prep-errors.safe.json",
+      "sha256": "b2b467749f4fec8f97563eb29028b3cecad0f1b5523eebccd6b9bc0486cdbd81",
+      "bytes": 352,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/preservation.safe.json",
+      "name": "preservation.safe.json",
+      "sha256": "2b2b4b1fbd91ca6a830dd6ba6fe4475bb8199bf40463a13a772b76fa6158e33e",
+      "bytes": 401,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/public-headers.py",
+      "name": "public-headers.py",
+      "sha256": "353e14f9b3f19a431c02a7e3fc276672364c940bd9ab3b574b9760c45869d615",
+      "bytes": 7611,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/public-tool-identity.safe.json",
+      "name": "public-tool-identity.safe.json",
+      "sha256": "7db36cb3f73130a5a0f7a374bcb6ff1b4d507816794a44dccdee836cab170efc",
+      "bytes": 375,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/source-controls.py",
+      "name": "source-controls.py",
+      "sha256": "5f7441290e6e172ec5a6ed8462d6ddf0e7c676f03fdd7c65bae7998977348b80",
+      "bytes": 7987,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/source-controls.safe.json",
+      "name": "source-controls.safe.json",
+      "sha256": "5b128081d46cb51a91dfe752bce60e3191843c51d0a8ce268c3fec9ded4e16ed",
+      "bytes": 5828,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/source-review-advisories.safe.json",
+      "name": "source-review-advisories.safe.json",
+      "sha256": "a58e2318d803dc1d6d324b73b4753b890390fbaaf1dd558a98e94170ff2f5698",
+      "bytes": 827,
+      "mode": 384
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/browser_webkit_payload_prepare/upstream-requirement-inventory.safe.json",
+      "name": "upstream-requirement-inventory.safe.json",
+      "sha256": "147cf515bb2f99fe12f13d2a81211364a4c62de4ddfd93f338bddd1acd277522",
+      "bytes": 9475,
+      "mode": 384
+    }
+  ],
+  "private_grant_ENV_keys_rawlogs_library_payload_or_browserdata_included": false
+}

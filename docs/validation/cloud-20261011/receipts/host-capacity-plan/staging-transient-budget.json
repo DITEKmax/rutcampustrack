@@ -1,0 +1,43 @@
+{
+  "full8_final_distinct_file_estimate": 172953600,
+  "all_service_directory_path_count": 378,
+  "directory_4KiB_estimate": 1548288,
+  "Vue_TWO_copy_file4KiB_estimate": 7983104,
+  "final_public_stage192MiB_reserve": 201326592,
+  "standard_sequential_layertools_transient128MiB_reserve": 134217728,
+  "each_service_extract_files": [
+    {
+      "service": "auth",
+      "undeduplicated_4KiB_rounded_files": 109764608
+    },
+    {
+      "service": "academic",
+      "undeduplicated_4KiB_rounded_files": 110944256
+    },
+    {
+      "service": "schedule",
+      "undeduplicated_4KiB_rounded_files": 103141376
+    },
+    {
+      "service": "attendance",
+      "undeduplicated_4KiB_rounded_files": 107065344
+    },
+    {
+      "service": "bff",
+      "undeduplicated_4KiB_rounded_files": 58998784
+    },
+    {
+      "service": "gateway",
+      "undeduplicated_4KiB_rounded_files": 63074304
+    },
+    {
+      "service": "notification",
+      "undeduplicated_4KiB_rounded_files": 95756288
+    },
+    {
+      "service": "renderer",
+      "undeduplicated_4KiB_rounded_files": 57483264
+    }
+  ],
+  "qualification": "128MiB transient plus192MiB final =320MiB stage envelope. Standard extraction then atomic moves/hardlink duplicate replacements within NEW own stage; no second full copies. Directory overhead actual UNKNOWN; floor/alloc measured before each service. No extraction executed."
+}

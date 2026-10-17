@@ -1,0 +1,196 @@
+{
+  "utc": "2026-10-13T07:52:05.509207+00:00",
+  "status": "SOURCE_PLAN_READY_NATIVE_NOT_GRANTED",
+  "frozen_source_revision": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+  "purpose": "Current signed T008 journal requires fresh genuine Academic receiver and Attendance sender JARs; other6same908 retained",
+  "future_own_prefix": "/tmp/rct-journal-twojar-refresh-20261013-attempt01",
+  "future_source_sibling": "/workspace/scratch/rct-validation/current_journal_twojar_refresh_prepare",
+  "no_prefix_or_checkout_created": true,
+  "author_productWT": "READONLY; B013 guard mutation remains frozen, neverretry",
+  "materialization": {
+    "source_blobs": 787,
+    "logical_bytes": 4476062,
+    "modules": [
+      "services/academic-service/academic-app",
+      "services/academic-service/academic-api-contract",
+      "services/attendance-service/attendance-app",
+      "services/attendance-service/attendance-api-contract",
+      "services/shared/shared-web",
+      "services/shared/shared-web-api",
+      "services/shared/shared-events",
+      "services/shared/shared-logback",
+      "services/shared/shared-outbox",
+      "services/shared/shared-security",
+      "services/shared/shared-observability"
+    ],
+    "clone_argv": [
+      "/usr/bin/git",
+      "clone",
+      "--shared",
+      "--no-checkout",
+      "/workspace/rutcampustrack",
+      "/tmp/rct-journal-twojar-refresh-20261013-attempt01/checkout"
+    ],
+    "sparse": "same old exact selectedpath list plus Attendanceapp/API main; workingfiles1000/1000/nlink1; immutableGitobjects only readonlyalternate; all required Rootobjects retained",
+    "checkout_argv": [
+      "/usr/bin/git",
+      "-C",
+      "/tmp/rct-journal-twojar-refresh-20261013-attempt01/checkout",
+      "checkout",
+      "--detach",
+      "597716c3cae9f7d7f601cb5b5279baf598d841ef"
+    ],
+    "source_no_symlink_gitlink": true
+  },
+  "build_argv": [
+    "/usr/bin/python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    "--offline",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--console=plain",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+    "--project-cache-dir",
+    "/tmp/rct-journal-twojar-refresh-20261013-attempt01/project-cache",
+    ":services:academic-service:academic-app:bootJar",
+    ":services:attendance-service:attendance-app:bootJar"
+  ],
+  "build_cwd": "/tmp/rct-journal-twojar-refresh-20261013-attempt01/checkout",
+  "build_environment": "Exact sanitized oldBUILD env: JDK21/PATH/CI/LANG; ownnew HOME/TMPDIR/projectcache; existing pinned /workspace/.gradle reuse; no parent JAVA/Spring/credential/proxy values",
+  "standard_generateGitProperties": "unchangedroot task writes7git.properties outputs ONLYnewcheckout; this doesnotbuild other5apps. Required shared jars/proto/classes derived outputs only as standard2task dependencygraph",
+  "build_only": [
+    "AcademicbootJar",
+    "AttendancebootJar"
+  ],
+  "excluded": [
+    "test",
+    "integrationTest",
+    "AuthbootJar",
+    "other6applicationbootJar",
+    "clockfixtureJar build",
+    "Docker",
+    "app",
+    "browser",
+    "API",
+    "keygen",
+    "datareset",
+    "stage extraction"
+  ],
+  "caps": {
+    "all_new_tmp": 1610612736,
+    "workspace_floor": 4294967296,
+    "tmp_floor_plus_retained_mongo_growth": 5368709120,
+    "shared_stop": 16106127360,
+    "shared_reserve": 1073741824,
+    "combined_owned_RSS": 2147483648,
+    "gradle_heap": 805306368,
+    "metaspace": 268435456,
+    "workspace_cache_net_growth_cap": 8388608,
+    "build_seconds": 900,
+    "cleanup_seconds": 60
+  },
+  "caps_qualification": "Caps not footprintestimates. Exact current build+twoapp allocated bytes UNKNOWN until boundedactual. GlobalGradlecache netWSstop8MiB includesforeignwrites; sampled/sharedUID limits not hardOS isolation. Build fresh cheapresources+UTC LAST and boundedperiodic allocated-prefix snapshot, exactentry/final; do not restore old high-frequency full-prefixwalkcost. Any monitor adjustment needs narrow source review, not silentguardweaken. No size/capraise proposed.",
+  "current_resources": {
+    "workspace": 8165908480,
+    "tmp": 7499886592,
+    "shared": 5420347392,
+    "preDocker_threshold": 9380818650,
+    "preDocker_deficit": 1214910170,
+    "postDocker_threshold": 5368709120
+  },
+  "old_measured_reference": {
+    "Academic96JAR_bytes": 99771572,
+    "Academic96BUILDprefix_allocated": 134656000,
+    "retainedAttendance908JAR_bytes": 95976000,
+    "qualification": "differentproducer/singleAcademicbaseline only; not forecast/actualtwo597buildfootprint"
+  },
+  "future_artifacts": [
+    {
+      "service": "academic",
+      "jar": "/tmp/rct-journal-twojar-refresh-20261013-attempt01/checkout/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "Start_Class": "ru.rutcampustrack.academic.AcademicApplication",
+      "readiness": "http://127.0.0.1:9091/actuator/health/liveness",
+      "producer": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "sha256": "UNKNOWN_BEFORE_ACTUAL_BUILD"
+    },
+    {
+      "service": "attendance",
+      "jar": "/tmp/rct-journal-twojar-refresh-20261013-attempt01/checkout/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "Start_Class": "ru.rutcampustrack.attendance.AttendanceApplication",
+      "readiness": "http://127.0.0.1:9093/actuator/health/liveness",
+      "producer": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+      "sha256": "UNKNOWN_BEFORE_ACTUAL_BUILD"
+    }
+  ],
+  "retained_other6": [
+    {
+      "service": "auth",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95",
+      "unchanged": true
+    },
+    {
+      "service": "schedule",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03",
+      "unchanged": true
+    },
+    {
+      "service": "bff",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea",
+      "unchanged": true
+    },
+    {
+      "service": "gateway",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39",
+      "unchanged": true
+    },
+    {
+      "service": "notification",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c",
+      "unchanged": true
+    },
+    {
+      "service": "renderer",
+      "producer": "908fc8c27be82e4a0d7db7bf4d7b2c4a62225916",
+      "jar": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712",
+      "unchanged": true
+    }
+  ],
+  "artifact_proof": [
+    "both embeddedgit.commit.id exact597716, standardBootJar MainClassJarLauncher/StartClass/manifest/classes/lib/idx/layers/JDK21",
+    "standardcurrent generated additiveRPC classes in both archives; source13+2reviewedbytes and fulltracked787beforeafter equality",
+    "bothactualJAR size/allocated/SHA/CRC/regularuniquecontainedZIPmembers/fullmemberSHA/recursive fixtureabsence through existing verify-jar-isolation.py",
+    "futureactual classpath.idx eachmodule derived/order/dups/path/exactlibraryset; sole canonical Bootjarmode-tools unindexed allowed by current packaging; no hardcoded old Academic182count for newtwo",
+    "BUILDterminal/reaped/nonemptycurrenttwo artifacts only; no source/libraryclasses-only/hash-of-secret assumptions"
+  ],
+  "stage_and_runtime_later": {
+    "authority": "separate actualBuildresult SHA plus fresh STAGE then standRootgrant, notBUILDgrant",
+    "minimal_delta": "existing inspect/stage/runtime-bind pattern extended from fixedAcademic to exacttuple Academic+Attendance; no newuniversalrunner",
+    "apps": [
+      "/tmp/rct-journal-twojar-refresh-20261013-attempt01/payload/academic/app",
+      "/tmp/rct-journal-twojar-refresh-20261013-attempt01/payload/attendance/app"
+    ],
+    "payload": "fullstandardlayered eachJAR intoNEW644files/755dirs/nlink1; noold600link/chmod/nooverwrite/no recopy oldothers; exactappfiles/noextras/readability/manifest+idx proof",
+    "runtime_specs": "ONLY Academic+Attendance cwd/classpath replacements using each NEWfullapp and actual canonical idx; same accepted externalclockposition/flags/JDK/privateENV POINTERS/requirednames/ports/TLS/securityclock/teaching06Z. Remaining5Java specs byteequal andnativeRenderer unchanged; effective8producer2new597+6old908 explicit",
+    "old_artifacts": "all original8archives/Academic96/app1797/source89d6/spec6549 immutable; newseparate result/commit/spec/helperpins",
+    "native_data": "same authoritative160fence23c83d/new5retainedvol/nativeMongoDBkey; nobootstrap/reset/key/read/copy; fixedrestarthelpers need new2artifact binding ONLYafterfullactualstage/source review",
+    "stand_capacity": "Currentworkspace belowunchanged9.3808GB preDocker threshold. Root must choose separate authorized OWNcapacity recovery; no cleanup/delete/prune/thresholdchange in this scope."
+  },
+  "review_needs": [
+    "one narrow coherent author delta on exactfrozenrevision/module tuple/787ledger/2tasks/2artifactinspect +same b78/caps/context/grant pins; original96onlyhelper cannot execute597 unchanged",
+    "targeted actual source/manifest-to-consumer fullpins and strictwrongrevision/unexpectedtask/artifact/classpath denies; expiry-duringpreflight/resource controls and per-effect receipt writes preserve prior fixes",
+    "actual BUILDreadonlyartifact/source review then separate STAGEbinding proof; runtime2artifact/schema/committed-result helperpins +data160 reuse quickreview, no fullhistoricalreview reset",
+    "CI exact597selected8 Attendance real outcomes and requiredgates remainseparate; newBootJar availability is not journal200/clientPASS"
+  ]
+}

@@ -1,0 +1,1659 @@
+{
+  "revision": "6e2376c39fa733a0e645d5d929f132a6448a953d",
+  "four_service_Clock_mention_file_count": 58,
+  "explicit_typed_consumer_count": 8,
+  "files": [
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/ClockConfig.java",
+      "sha256": "65b30a45ceae379f42b42a7e3d98b53d8d8a836a54910a0d6e4d9a7bbadcb4f7",
+      "typed_consumer": false,
+      "classification": "REAL_CLOCK_FACTORY_PLUS_TYPED_WRAPPER",
+      "source_lines": [
+        {
+          "line": 5,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 27,
+          "source": "public Clock clock() {"
+        },
+        {
+          "line": 28,
+          "source": "return Clock.system(ZoneId.of(\"Europe/Moscow\"));"
+        },
+        {
+          "line": 31,
+          "source": "public EducationalTime educationalTime(Clock realClock) {"
+        },
+        {
+          "line": 32,
+          "source": "return new EducationalTime(realClock);"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/dashboard/ActivityWindow.java",
+      "sha256": "73a447cbc2c96bac3eec45586a7487e078a5665123740072f43bf6992c3a161f",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 16,
+          "source": "public static ActivityWindow of(String period, String bucket, Clock clock) {"
+        },
+        {
+          "line": 21,
+          "source": "Instant now = clock.instant().truncatedTo(ChronoUnit.MILLIS);"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/dashboard/DashboardActivityService.java",
+      "sha256": "1f1fe5791499e7e8202f3336bf41707b28ba10ae3b089fd995d97da59a430182",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 21,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 23,
+          "source": "RequestContext context, Clock clock) {"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/OutboxConfig.java",
+      "sha256": "7d757478ba989c7b0fea7ff7036fa4118ca95d799ccecc8d79dc5cd67349ace7",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 94,
+          "source": "return new OutboxCleanupJob(storage, Clock.systemUTC(), retentionDays);"
+        },
+        {
+          "line": 102,
+          "source": "return new IdempotencyCleanupJob(store, Clock.systemUTC(), retentionDays);"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupArchivalService.java",
+      "sha256": "aea14701aa48bec756b22c544e0e6a63b5237e94ca33e472937f103a6edd7b9e",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 36,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 38,
+          "source": "public GroupArchivalService(ApplicationEventPublisher publisher, Clock clock) {"
+        },
+        {
+          "line": 49,
+          "source": "archive(group, LocalDate.now(clock).getYear());"
+        },
+        {
+          "line": 60,
+          "source": "archive(group, LocalDate.now(clock).getYear(), actorUserId, null);"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupPromotionService.java",
+      "sha256": "9ea5b8055962e78bb82c629014f9098f9d0d15c064a88b29c4d6f7be8aa03f68",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 60,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 70,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 130,
+          "source": "LocalDate today = LocalDate.now(clock);"
+        },
+        {
+          "line": 172,
+          "source": "LocalDate today = LocalDate.now(clock);"
+        },
+        {
+          "line": 183,
+          "source": "|| !cycleDateTo(requested).isBefore(LocalDate.now(clock))) {"
+        },
+        {
+          "line": 292,
+          "source": "LocalDate createdOn = group.getCreatedAt().atZoneSameInstant(clock.getZone()).toLocalDate();"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "sha256": "233098652924be91f3be8c5888a328d6d1077bf7982f947399aaa4940730b5e1",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 71,
+          "source": "new ru.rutcampustrack.academic.homework.HomeworkLifecycle(java.time.Clock.system(java.time.ZoneId.of(\"Europe/Moscow\")));"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveCoordinator.java",
+      "sha256": "5322119f86e2e303ad7e0ad75b0ed0b63e1b11b2be0d22f63ac6a4211d103eed",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 30,
+          "source": "private java.time.Clock notificationClock = java.time.Clock.system(java.time.ZoneId.of(\"Europe/Moscow\"));"
+        },
+        {
+          "line": 203,
+          "source": "&& !new HomeworkLifecycle(notificationClock).archived(homework);"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkEditPersistence.java",
+      "sha256": "5007098dad8f220cdd86056cf2f7bb99ce8c53f45db023a07be87279a728120a",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 46,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 52,
+          "source": "ApplicationEventPublisher events, Clock clock) {"
+        },
+        {
+          "line": 175,
+          "source": "&& operation.desired().lessonDate().isBefore(LocalDate.now(clock.withZone(ZoneId.of(\"Europe/Moscow\")))))"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkLifecycle.java",
+      "sha256": "2cb4ae28ce7943f8e05d97f8d372ac0c088ac0fa6e80954114ae5af8763aa03f",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 14,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 15,
+          "source": "public HomeworkLifecycle(Clock clock) { this.clock = clock; }"
+        },
+        {
+          "line": 18,
+          "source": "&& homework.getLessonDate().isBefore(LocalDate.now(clock.withZone(ZoneId.of(\"Europe/Moscow\"))));"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkNotificationJob.java",
+      "sha256": "5778ec0f837bccc9d8b9c8156329513ffabb0f4b614f7573abc9139ffef3bd6d",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 60,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 71,
+          "source": "Clock clock) {"
+        },
+        {
+          "line": 91,
+          "source": "LocalDate today = LocalDate.now(clock);"
+        },
+        {
+          "line": 148,
+          "source": "LocalDate today = LocalDate.now(clock);"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkScopeValidator.java",
+      "sha256": "19283350e5dedb03e58730c3be8510e43b0849975b30b59b975e1a563a935f0a",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 14,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 15,
+          "source": "public HomeworkScopeValidator(JdbcTemplate jdbc, Clock clock) { this.jdbc = jdbc; this.clock = clock; }"
+        },
+        {
+          "line": 17,
+          "source": "if (date == null || date.isBefore(LocalDate.now(clock.withZone(ZoneId.of(\"Europe/Moscow\"))))) {"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkService.java",
+      "sha256": "d23d0530a1358a235592af2b8064bb8b3fe1234305b6a04be67f7e913da8b869",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 61,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 78,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 109,
+          "source": "Clock clock, HomeworkPublicationPersistence publicationPersistence,"
+        },
+        {
+          "line": 127,
+          "source": "Clock clock, HomeworkPublicationPersistence publicationPersistence,"
+        },
+        {
+          "line": 142,
+          "source": "Clock clock) {"
+        },
+        {
+          "line": 233,
+          "source": "if (request.lessonDate().isBefore(LocalDate.now(clock))) {"
+        },
+        {
+          "line": 640,
+          "source": "return homeworkRepository.findArchive(groupId, semesterId, LocalDate.now(clock.withZone(java.time.ZoneId.of(\"Europe/Moscow\"))),"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java",
+      "sha256": "fe85b4cff85f6a327cf90ebe8326933260b214e70bdb06b5d4ce31a8a14a499d",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 35,
+          "source": "@Autowired private HomeworkLifecycle lifecycle = new HomeworkLifecycle(Clock.system(ZoneId.of(\"Europe/Moscow\")));"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java",
+      "sha256": "4bc4f9803ae5528de1196b6f9bbddb32100b74edca5a2fab0312c311f4d855b0",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 22,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 24,
+          "source": "public SemesterActivationJob(SemesterRepository repository, SemesterService service, Clock clock) {"
+        },
+        {
+          "line": 33,
+          "source": "LocalDate today = LocalDate.now(clock.withZone(ZoneId.of(\"Europe/Moscow\")));"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+      "sha256": "09decc675ef4de50650821416e647f8699a19256df67e812712b7f00f30d82fc",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 56,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 67,
+          "source": "Clock clock) {"
+        },
+        {
+          "line": 85,
+          "source": "assignmentRepository, jdbcTemplate, Clock.system(ZoneId.of(\"Europe/Moscow\")));"
+        },
+        {
+          "line": 158,
+          "source": "&& semester.getDateTo().isBefore(LocalDate.now(clock))"
+        },
+        {
+          "line": 258,
+          "source": "LocalDate today = LocalDate.now(clock.withZone(ZoneId.of(\"Europe/Moscow\")));"
+        },
+        {
+          "line": 430,
+          "source": "if (semester.getDateTo().isBefore(LocalDate.now(clock))) {"
+        }
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+      "sha256": "47211a3bf2b9b94cda4d12d312dec06d3f24e74d1a3ac8e0fcae557883aeec10",
+      "typed_consumer": true,
+      "classification": "EXPLICIT_TYPED_WITH_REAL_PARTITION",
+      "source_lines": [
+        {
+          "line": 10,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 44,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 47,
+          "source": "public StudentProjectionScopeService(StudentProjectionQuery query, Clock clock) {"
+        },
+        {
+          "line": 48,
+          "source": "this(query, clock, new EducationalTime(clock));"
+        },
+        {
+          "line": 52,
+          "source": "public StudentProjectionScopeService(StudentProjectionQuery query, Clock clock,"
+        },
+        {
+          "line": 53,
+          "source": "ObjectProvider<EducationalTime> educationalTime) {"
+        },
+        {
+          "line": 54,
+          "source": "this(query, clock, educationalTime.getIfAvailable(() -> new EducationalTime(clock)));"
+        },
+        {
+          "line": 57,
+          "source": "public StudentProjectionScopeService(StudentProjectionQuery query, Clock clock,"
+        },
+        {
+          "line": 58,
+          "source": "EducationalTime educationalTime) {"
+        },
+        {
+          "line": 92,
+          "source": "LocalDate serverDate = LocalDate.now(educationalClock.withZone(MOSCOW));"
+        },
+        {
+          "line": 209,
+          "source": "|| !session.isLiveAt(clock.instant())"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/ClockConfig.java",
+      "sha256": "78867aee5ddb4939e0f418129d3e3b65eac2d68bdb7119269c7b1d00f9cb1925",
+      "typed_consumer": false,
+      "classification": "REAL_CLOCK_FACTORY_PLUS_TYPED_WRAPPER",
+      "source_lines": [
+        {
+          "line": 5,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 20,
+          "source": "public Clock clock() {"
+        },
+        {
+          "line": 21,
+          "source": "return Clock.system(ZoneId.of(\"Europe/Moscow\"));"
+        },
+        {
+          "line": 24,
+          "source": "public EducationalTime educationalTime(Clock realClock) {"
+        },
+        {
+          "line": 25,
+          "source": "return new EducationalTime(realClock);"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/event/OutboxConfig.java",
+      "sha256": "3d24214bdd2ed256aee7d6531768349c4adc28456b8905aa40d11d9faa021a81",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 91,
+          "source": "return new OutboxCleanupJob(storage, Clock.systemUTC(), retentionDays);"
+        },
+        {
+          "line": 99,
+          "source": "return new IdempotencyCleanupJob(store, Clock.systemUTC(), retentionDays);"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/homework/HomeworkPlacementService.java",
+      "sha256": "47c5045c6478a20c45d8ebd689443edf6393527c8c17c07aba8b6e44773f9313",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 31,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 35,
+          "source": "ApplicationEventPublisher events, Clock clock) {"
+        },
+        {
+          "line": 404,
+          "source": "|| !LocalDateTime.now(clock.withZone(MOSCOW)).isBefore(cutoff)) {"
+        },
+        {
+          "line": 436,
+          "source": "private LocalDate today() { return LocalDate.now(clock.withZone(MOSCOW)); }"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/item/ScheduleItemService.java",
+      "sha256": "0e9ea5e1ef873155bea4d04310795578093c3cb54dfd23056311e5b2b6c882d7",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 39,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 47,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 62,
+          "source": "Clock clock) {"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/IsoParityReconciler.java",
+      "sha256": "cb8c2d02a6e2edfedcc38ad6ecb35d8972ebc785b396f584f721ba5c6830022c",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 54,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 59,
+          "source": "Clock clock) {"
+        },
+        {
+          "line": 103,
+          "source": "LocalDate today = LocalDate.now(clock);"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonGenerationService.java",
+      "sha256": "3972f212d51b45c44b1d65659afc32d6832609fb534bdc1d4414088d75f01e81",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 38,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 43,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 190,
+          "source": "OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonReminderJob.java",
+      "sha256": "47349953f5e557faf6685e767bd8003106bc7fefc0545809fb428ead69aff41e",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 50,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 56,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 71,
+          "source": "String nowMoscow = LocalDateTime.ofInstant(clock.instant(), MOSCOW).toString();"
+        },
+        {
+          "line": 92,
+          "source": "OffsetDateTime nowOffset = OffsetDateTime.ofInstant(clock.instant(), MOSCOW);"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonRoomWriter.java",
+      "sha256": "ed5e04f23fc5813fd539a517c39ca1136e30aea60a65c8feb7e5139deccacbf9",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 27,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 31,
+          "source": "public LessonRoomWriter(JdbcTemplate jdbc, Clock clock, ApplicationEventPublisher events,"
+        },
+        {
+          "line": 85,
+          "source": ".isAfter(LocalDateTime.now(clock.withZone(ZoneId.of(\"Europe/Moscow\"))))) throw conflict();"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java",
+      "sha256": "912320fe398b0c35170b60145f4ebab3d00bfb35218384c6d7a998876915b4da",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 63,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 75,
+          "source": "eventPublisher, recurringLifecycleWriter, entityManager, archiveWriteFence, Clock.systemUTC(), null);"
+        },
+        {
+          "line": 87,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 116,
+          "source": "LocalDateTime.now(clock.withZone(ZoneId.of(\"Europe/Moscow\"))).toString())"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java",
+      "sha256": "0ec4baa33d20efb5dd69e0e01161df641941d2f43d2b22f355fce94ef608a20a",
+      "typed_consumer": true,
+      "classification": "EXPLICIT_TYPED_WITH_REAL_PARTITION",
+      "source_lines": [
+        {
+          "line": 19,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 51,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 58,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 60,
+          "source": "ObjectProvider<EducationalTime> educationalTime) {"
+        },
+        {
+          "line": 62,
+          "source": "educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(), archiveWriteFence);"
+        },
+        {
+          "line": 68,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 83,
+          "source": "String nowMoscow = LocalDateTime.ofInstant(clock.instant(), MOSCOW).toString();"
+        },
+        {
+          "line": 118,
+          "source": "lesson.setClosedAt(OffsetDateTime.ofInstant(clock.instant(), MOSCOW));"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonTransferWriter.java",
+      "sha256": "4e71030ca4701ea5b913fca11d65ba6dd3c283b72d823a1545e903469a7f21c6",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 55,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 61,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 129,
+          "source": "LocalDate today = LocalDate.now(clock.withZone(MOSCOW));"
+        },
+        {
+          "line": 133,
+          "source": ".isAfter(java.time.LocalDateTime.now(clock.withZone(MOSCOW)));"
+        },
+        {
+          "line": 187,
+          "source": "OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));"
+        },
+        {
+          "line": 497,
+          "source": "OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/RecurringLessonLifecycleWriter.java",
+      "sha256": "42d5cf17b9882777fa202f469b56dc193f641f69d88fd83b1f9f2e472566e794",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 41,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 46,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 72,
+          "source": "OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));"
+        },
+        {
+          "line": 148,
+          "source": "OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));"
+        },
+        {
+          "line": 184,
+          "source": "OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonWriter.java",
+      "sha256": "7f3595d154b1d38099d7003b5a30c185985320f65752be1811451c21df183178",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 42,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 46,
+          "source": "public OneOffLessonWriter(JdbcTemplate jdbc, Clock clock,"
+        },
+        {
+          "line": 58,
+          "source": "public LocalDate today() { return LocalDate.now(clock.withZone(java.time.ZoneId.of(\"Europe/Moscow\"))); }"
+        },
+        {
+          "line": 85,
+          "source": "if (assignment != null && !date.isBefore(LocalDate.now(clock.withZone(java.time.ZoneId.of(\"Europe/Moscow\"))))) {"
+        },
+        {
+          "line": 158,
+          "source": "OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));"
+        },
+        {
+          "line": 244,
+          "source": "OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));"
+        },
+        {
+          "line": 350,
+          "source": "OffsetDateTime now = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/recurring/RecurringScheduleItemLifecycleWriter.java",
+      "sha256": "68d5e423b16f74e9342afcafe1052f432007fc37c0763ada0108a4ab31f8a078",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 34,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 41,
+          "source": "public RecurringScheduleItemLifecycleWriter(JdbcTemplate jdbc, Clock clock, ObjectMapper mapper,"
+        },
+        {
+          "line": 154,
+          "source": "if (!creationCap(request.assignmentId()).isAfter(LocalDate.now(clock.withZone(MOSCOW)))) {"
+        },
+        {
+          "line": 166,
+          "source": "boolean active = creationCap(number(current.get(\"assignment_id\"))).isAfter(LocalDate.now(clock.withZone(MOSCOW)));"
+        },
+        {
+          "line": 222,
+          "source": "LocalDateTime now = LocalDateTime.now(clock.withZone(MOSCOW));"
+        }
+      ]
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/recurring/RecurringScheduleItemWriter.java",
+      "sha256": "cd0fb6a2c76fa95fd99c4e6da53170636a6931ab621f74396e6736529c5e044d",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 47,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 52,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 118,
+          "source": "OffsetDateTime createdAt = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/adminactivity/AdminActivityWindow.java",
+      "sha256": "8a76c07651cb6ac4ac18ac902f7fe2a54a7fad7c89cdeca118be51c422417f27",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 18,
+          "source": "public static AdminActivityWindow of(AdminActivityQuery query, Clock clock) {"
+        },
+        {
+          "line": 26,
+          "source": "Instant now = clock.instant();"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/audit/LessonActionService.java",
+      "sha256": "9a5a6eacbd922ac2fc7607efc6676e00a56b0447d10e2d30a7918f8138d460a1",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 22,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 25,
+          "source": "public LessonActionService(MongoTemplate mongo, Clock clock, OutboxStorage outbox, ObjectMapper mapper) {"
+        },
+        {
+          "line": 39,
+          "source": "append(UUID.randomUUID().toString(), clock.instant(), \"attendance-service\", payload("
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/audit/RejectedAttendanceActionService.java",
+      "sha256": "9a1844f67d51b7d5612ff8caefc028e02d8907e053b5a964012d19e7d376535b",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 39,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 43,
+          "source": "AcademicGrpcClient academic, MongoTransactionManager manager, Clock clock,"
+        },
+        {
+          "line": 53,
+          "source": "enroll(new Attempt(UUID.randomUUID().toString(), clock.instant(), lessonId,"
+        },
+        {
+          "line": 73,
+          "source": "enroll(new Attempt(UUID.randomUUID().toString(), clock.instant(), lesson.getId(),"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/checkin/AttendanceWritePortImpl.java",
+      "sha256": "150a28dc91c5a68779908ae1c7187e36bbcc9d8d234efe1d6d4df718367dd853",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 40,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 46,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 57,
+          "source": "Clock clock) {"
+        },
+        {
+          "line": 78,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 131,
+          "source": "Instant now = clock.instant();"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/ClockConfig.java",
+      "sha256": "76496b896c589aa030878ffd8d83c8ed934e35552c981714fdbf19a08e908f10",
+      "typed_consumer": false,
+      "classification": "REAL_CLOCK_FACTORY_PLUS_TYPED_WRAPPER",
+      "source_lines": [
+        {
+          "line": 5,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 22,
+          "source": "* <p>Тесты делают {@code @MockitoBean Clock clock;"
+        },
+        {
+          "line": 23,
+          "source": "* when(clock.instant()).thenReturn(Instant.parse(\"2026-04-22T10:00:00Z\"));}"
+        },
+        {
+          "line": 31,
+          "source": "public Clock clock() {"
+        },
+        {
+          "line": 32,
+          "source": "return Clock.system(ZoneId.of(\"Europe/Moscow\"));"
+        },
+        {
+          "line": 35,
+          "source": "public EducationalTime educationalTime(Clock realClock) {"
+        },
+        {
+          "line": 36,
+          "source": "return new EducationalTime(realClock);"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/event/OutboxConfig.java",
+      "sha256": "fd1fd254828938be8d53cd91a7749dbe7993054f678b41a7f7b3d1d6a4cd15c3",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 75,
+          "source": "return new OutboxCleanupJob(storage, Clock.systemUTC(), retentionDays);"
+        },
+        {
+          "line": 83,
+          "source": "return new IdempotencyCleanupJob(store, Clock.systemUTC(), retentionDays);"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/excuse/ExcuseService.java",
+      "sha256": "5736e1dca4b2e6fc78c5619db02e3031845a15d104c880511aef4cdb972f49a4",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 88,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 100,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 123,
+          "source": "Clock clock) {"
+        },
+        {
+          "line": 197,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 300,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 370,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 497,
+          "source": "Instant now = clock.instant();"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AdminActivityGrpcService.java",
+      "sha256": "37d80e659d7b99296b382085a8d787f24ce06a0bf1c5d093464e804a935f5b0e",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 15,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 16,
+          "source": "public AdminActivityGrpcService(AcademicAdminPermissionClient authority, AdminActivityReadRepository repository, Clock clock) {"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcService.java",
+      "sha256": "1cf34694187d3b06ebc2ef12bdac8392b7ee64ae9e1841fb738f9e33d7767192",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 82,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 91,
+          "source": "Clock clock) {"
+        },
+        {
+          "line": 102,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 130,
+          "source": ".setServerNow(clock.instant().toString());"
+        },
+        {
+          "line": 243,
+          "source": ".setServerNow(clock.instant().toString())"
+        },
+        {
+          "line": 396,
+          "source": ".setServerNow(clock.instant().toString());"
+        },
+        {
+          "line": 587,
+          "source": "return expiresAt != null && !expiresAt.isAfter(clock.instant());"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/journal/JournalLessonPolicy.java",
+      "sha256": "49a9fce2fd41b8d63f9d56068bf9ae0e9e929d95dd2371e835a672238ff8e795",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 61,
+          "source": "public static void requireStarted(Timing timing, Clock clock) {"
+        },
+        {
+          "line": 65,
+          "source": "if (clock == null || clock.instant().isBefore(timing.startsAt())) {"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/latecheckin/LateCheckinService.java",
+      "sha256": "57e1d1d068bfa49b3717b13fcbe8dfb8abb4eab2b8263f51bd282d2236080af7",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 71,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 83,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 124,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 213,
+          "source": "Instant cutoff = clock.instant().minus(HEADMAN_HISTORY_DAYS, ChronoUnit.DAYS);"
+        },
+        {
+          "line": 319,
+          "source": "Instant now = clock.instant();"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/AttendanceAttachmentService.java",
+      "sha256": "e5c790585e261b2af332db0f64be9c1c599b7e83a81f7d737f6782cc43561731",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 44,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 46,
+          "source": "public AttendanceAttachmentService(RequestAttachmentRepository repository, Clock clock) {"
+        },
+        {
+          "line": 58,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 122,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 140,
+          "source": "Instant now = clock.instant();"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/MarkingService.java",
+      "sha256": "b6c72492247236c177cb5647ae260030e5ef73f6b3f0fe652e8c5e8c921fbc35",
+      "typed_consumer": true,
+      "classification": "EXPLICIT_TYPED_WITH_REAL_PARTITION",
+      "source_lines": [
+        {
+          "line": 39,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 89,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 102,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 105,
+          "source": "ObjectProvider<EducationalTime> educationalTime) {"
+        },
+        {
+          "line": 108,
+          "source": "educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(), grpcTaskExecutor,"
+        },
+        {
+          "line": 119,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 142,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 175,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 274,
+          "source": "guardedPairLock(lesson, userId, \"ATTENDANCE_CLEARED\", clock.instant());"
+        },
+        {
+          "line": 583,
+          "source": "Instant now = clock.instant();"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanGroupCompositionService.java",
+      "sha256": "ae3b451943228d2aed3ddc5d097c1964cc08ee73d9ecf627b46653150ddeb4e5",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 35,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 38,
+          "source": "DocumentRendererGrpcClient converter, HeadmanGroupCompositionRenderer renderer, Clock clock) {"
+        },
+        {
+          "line": 121,
+          "source": "return new HeadmanGroupCompositionModel(snapshot.getGroupName(), LocalDate.now(clock), rows);"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanStatsService.java",
+      "sha256": "5dd7eca4011bd47e91424c070451f01d47ca59dc93119699945a11490067b810",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 136,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 143,
+          "source": "RequestContext requestContext, Clock clock) {"
+        },
+        {
+          "line": 160,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 228,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 550,
+          "source": "Instant generatedAt = clock.instant();"
+        },
+        {
+          "line": 689,
+          "source": "LocalDate today = LocalDate.now(clock);"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanWeeklyReportService.java",
+      "sha256": "4c2177caa9f728c3a33a927e45b5828c560c41f4c09f65b2dd7ed78d73105cbb",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 75,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 79,
+          "source": "return buildWeeksResponse(academicGrpcClient.getActiveSemester(), LocalDate.now(clock));"
+        },
+        {
+          "line": 146,
+          "source": "List<LocalDate> weekStarts = normalizeWeekStarts(requestedWeekStarts, semester, LocalDate.now(clock));"
+        },
+        {
+          "line": 156,
+          "source": "var generatedAt = clock.instant();"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java",
+      "sha256": "5b6d6f53cdf5ae5a1739e789f35993bb4ae182e9a0242473db232aa0d89a70ba",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 81,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 88,
+          "source": "RequestContext requestContext, Clock clock, JournalAttachmentPort journalAttachmentPort) {"
+        },
+        {
+          "line": 138,
+          "source": "java.time.Instant now = clock.instant();"
+        },
+        {
+          "line": 707,
+          "source": "studentRows, groupRows, subjectOptions, clock.instant());"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/studentprojection/StudentAttendanceProjectionService.java",
+      "sha256": "8515738f490af674c4d76c71a10ef13f5204b5223acd67f4e71efa49a0383c66",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 61,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 67,
+          "source": "Clock clock) {"
+        },
+        {
+          "line": 127,
+          "source": "clock.instant(),"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/StudentAttendanceSnapshotService.java",
+      "sha256": "d865f5cd7f3febd5e3048b057ed767a05a9af7b8e4f647555a58c4060b774e40",
+      "typed_consumer": true,
+      "classification": "EXPLICIT_TYPED_WITH_REAL_PARTITION",
+      "source_lines": [
+        {
+          "line": 20,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 72,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 81,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 82,
+          "source": "ObjectProvider<EducationalTime> educationalTime) {"
+        },
+        {
+          "line": 84,
+          "source": "pairRepository, educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock());"
+        },
+        {
+          "line": 93,
+          "source": "Clock clock"
+        },
+        {
+          "line": 108,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 183,
+          "source": "Instant opensAt = date.atTime(startsAt).atZone(clock.getZone()).toInstant().minus(BUFFER);"
+        },
+        {
+          "line": 184,
+          "source": "Instant closesAt = date.atTime(endsAt).atZone(clock.getZone()).toInstant().plus(BUFFER);"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/student/StudentCheckinService.java",
+      "sha256": "b7b0e8a5abef6456b10a5fff8b1e664b6cfeac7dd1612bfb7a7eaa17d32a6179",
+      "typed_consumer": true,
+      "classification": "EXPLICIT_TYPED_WITH_REAL_PARTITION",
+      "source_lines": [
+        {
+          "line": 38,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 77,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 93,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 95,
+          "source": "ObjectProvider<EducationalTime> educationalTime) {"
+        },
+        {
+          "line": 99,
+          "source": "educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(),"
+        },
+        {
+          "line": 115,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 146,
+          "source": "Clock clock"
+        },
+        {
+          "line": 167,
+          "source": "Instant eligibilityAt = clock.instant();"
+        },
+        {
+          "line": 499,
+          "source": "static void validateWindow(Lesson lesson, Instant now, Clock clock) {"
+        },
+        {
+          "line": 500,
+          "source": "Instant opensAt = lesson.date().atTime(lesson.startsAt()).atZone(clock.getZone()).toInstant()"
+        },
+        {
+          "line": 502,
+          "source": "Instant closesAt = lesson.date().atTime(lesson.endsAt()).atZone(clock.getZone()).toInstant()"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestService.java",
+      "sha256": "810b41614afc2c254f700f1c0eaecc3ce31a041c5acc6e69ebc41297bed8beae",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 75,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 85,
+          "source": "Clock clock"
+        },
+        {
+          "line": 499,
+          "source": "if (document.getExpiresAt() != null && !clock.instant().isBefore(document.getExpiresAt())) {"
+        }
+      ]
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "sha256": "cc8a49b090b7995889ff6c1feea2292d81609d69a5f9ce3f6a59126d1e5817b9",
+      "typed_consumer": true,
+      "classification": "EXPLICIT_TYPED_WITH_REAL_PARTITION",
+      "source_lines": [
+        {
+          "line": 79,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 167,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 189,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 195,
+          "source": "mongoTemplate, transactionTemplate, clock, journalAttachmentPort, new EducationalTime(clock));"
+        },
+        {
+          "line": 214,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 216,
+          "source": "ObjectProvider<EducationalTime> educationalTime) {"
+        },
+        {
+          "line": 221,
+          "source": "educationalTime.getIfAvailable(() -> new EducationalTime(clock)));"
+        },
+        {
+          "line": 239,
+          "source": "Clock clock,"
+        },
+        {
+          "line": 241,
+          "source": "EducationalTime educationalTime) {"
+        },
+        {
+          "line": 366,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 405,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 428,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 455,
+          "source": "Instant now = retentionClock.instant();"
+        },
+        {
+          "line": 490,
+          "source": "Instant now = retentionClock.instant();"
+        },
+        {
+          "line": 688,
+          "source": "Instant now = retentionClock.instant();"
+        },
+        {
+          "line": 753,
+          "source": "pairWriteCoordinator.lock(semesterId, studentId, lessonId, groupId, retentionClock.instant());"
+        },
+        {
+          "line": 754,
+          "source": "expireOne(current, retentionClock.instant());"
+        },
+        {
+          "line": 777,
+          "source": "Instant updateAt = retentionClock.instant();"
+        },
+        {
+          "line": 793,
+          "source": "|| current.getExpiresAt() == null || retentionClock.instant().isBefore(current.getExpiresAt())) {"
+        },
+        {
+          "line": 831,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 852,
+          "source": "Instant uploadedAt = retentionClock.instant();"
+        },
+        {
+          "line": 920,
+          "source": "consumeBudget(studentId, semesterId, clock.instant());"
+        },
+        {
+          "line": 922,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 1070,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 1473,
+          "source": "Instant now = retentionClock.instant();"
+        },
+        {
+          "line": 1520,
+          "source": "pairWriteCoordinator.lockSemesterForWrite(requireAttachmentSemester(ticket), clock.instant());"
+        },
+        {
+          "line": 1544,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 1658,
+          "source": "Instant now = clock.instant();"
+        },
+        {
+          "line": 1899,
+          "source": "Instant now = clock.instant();"
+        }
+      ]
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/MobileBffRuntimeConfig.java",
+      "sha256": "70adb9601b2cd08d77d52c0028e9cf77489d0d58caf1c6f2daf9eb2add5b54bd",
+      "typed_consumer": false,
+      "classification": "REAL_CLOCK_FACTORY_PLUS_TYPED_WRAPPER",
+      "source_lines": [
+        {
+          "line": 5,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 15,
+          "source": "return Clock.system(ZoneId.of(\"Europe/Moscow\"));"
+        },
+        {
+          "line": 18,
+          "source": "public EducationalTime educationalTime(Clock realClock) {"
+        },
+        {
+          "line": 19,
+          "source": "return new EducationalTime(realClock);"
+        }
+      ]
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java",
+      "sha256": "b10e83bcb5b393eb6cd2833187febfd769304594e2c61f643925a83668ee4c80",
+      "typed_consumer": true,
+      "classification": "EXPLICIT_TYPED_WITH_REAL_PARTITION",
+      "source_lines": [
+        {
+          "line": 27,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 36,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 39,
+          "source": "public MobileProblemHandler(Clock clock) {"
+        },
+        {
+          "line": 40,
+          "source": "this(clock, new EducationalTime(clock));"
+        },
+        {
+          "line": 44,
+          "source": "public MobileProblemHandler(Clock clock,"
+        },
+        {
+          "line": 45,
+          "source": "ObjectProvider<EducationalTime> educationalTime) {"
+        },
+        {
+          "line": 46,
+          "source": "this(clock, educationalTime.getIfAvailable(() -> new EducationalTime(clock)));"
+        },
+        {
+          "line": 49,
+          "source": "public MobileProblemHandler(Clock clock, EducationalTime educationalTime) {"
+        },
+        {
+          "line": 61,
+          "source": "Duration.between(educationalClock.instant(), error.retryAt()).toMillis() / 1000.0));"
+        },
+        {
+          "line": 123,
+          "source": "status.getReasonPhrase(), detail, URI.create(request.getRequestURI()), clock.instant(),"
+        }
+      ]
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/security/MobileIdentityFilter.java",
+      "sha256": "02188171baa862b76aa39a73095fdc7aa3fd57c6f3d91e7a22b2e70376c1ed1a",
+      "typed_consumer": false,
+      "classification": "UNCHANGED_REAL_CLOCK_OR_EXPLICIT_REAL_SOURCE",
+      "source_lines": [
+        {
+          "line": 52,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 55,
+          "source": "MobileRequestContext context, ObjectMapper objectMapper, Clock clock) {"
+        },
+        {
+          "line": 91,
+          "source": "Instant.now(clock), null, ProblemCode.INVALID_SESSION, null, null);"
+        },
+        {
+          "line": 105,
+          "source": "URI.create(request.getRequestURI()), clock.instant(), null,"
+        }
+      ]
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/student/StudentQueryService.java",
+      "sha256": "af02aae65c403bfd9df8a11793c6b1379282b056af879e89739935ab4d506830",
+      "typed_consumer": true,
+      "classification": "EXPLICIT_TYPED_WITH_REAL_PARTITION",
+      "source_lines": [
+        {
+          "line": 28,
+          "source": "import ru.rutcampustrack.shared.web.time.EducationalTime;"
+        },
+        {
+          "line": 55,
+          "source": "private final Clock clock;"
+        },
+        {
+          "line": 59,
+          "source": "MobileScheduleClient schedule, MobileAttendanceClient attendance, Clock clock,"
+        },
+        {
+          "line": 60,
+          "source": "ObjectProvider<EducationalTime> educationalTime) {"
+        },
+        {
+          "line": 62,
+          "source": "educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock());"
+        },
+        {
+          "line": 66,
+          "source": "MobileScheduleClient schedule, MobileAttendanceClient attendance, Clock clock) {"
+        },
+        {
+          "line": 87,
+          "source": "clock.instant(), links(\"today\", \"/api/v1/student/today\", \"schedule\", \"/api/v1/student/schedule\"));"
+        },
+        {
+          "line": 93,
+          "source": "LocalDate date = LocalDate.now(clock);"
+        },
+        {
+          "line": 196,
+          "source": "Instant serverNow = clock.instant();"
+        }
+      ]
+    }
+  ],
+  "critical_unchanged_sources": [
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/AttendanceAttachmentService.java",
+      "sha256": "e5c790585e261b2af332db0f64be9c1c599b7e83a81f7d737f6782cc43561731",
+      "equals_pretyped_b3b0f319": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/HeadmanRequestService.java",
+      "sha256": "810b41614afc2c254f700f1c0eaecc3ce31a041c5acc6e69ebc41297bed8beae",
+      "equals_pretyped_b3b0f319": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/TeacherAttendanceReadGrpcService.java",
+      "sha256": "1cf34694187d3b06ebc2ef12bdac8392b7ee64ae9e1841fb738f9e33d7767192",
+      "equals_pretyped_b3b0f319": true
+    },
+    {
+      "path": "services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/security/MobileIdentityFilter.java",
+      "sha256": "02188171baa862b76aa39a73095fdc7aa3fd57c6f3d91e7a22b2e70376c1ed1a",
+      "equals_pretyped_b3b0f319": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java",
+      "sha256": "f77651e3ae4ba71883bdc0fa984ffe03d70c33bf8c5d60f99eb97a84494d9ce3",
+      "equals_pretyped_b3b0f319": true
+    }
+  ],
+  "limits": "Source inventory is not Spring/JVM/runtime admission proof; unchanged educational consumers keep real Clock, not silently enrolled."
+}

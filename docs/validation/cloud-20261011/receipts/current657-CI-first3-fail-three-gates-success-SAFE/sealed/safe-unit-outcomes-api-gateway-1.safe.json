@@ -1,0 +1,37 @@
+{
+  "artifact_id": 11781303486,
+  "name": "safe-unit-outcomes-api-gateway-1",
+  "archive_bytes": 6216,
+  "archive_sha256": "377106deb39e07aad55ca012b4cd8458c665323e769e03c1e4f0ad2b21a6511d",
+  "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "api-gateway",
+        "task": "test",
+        "job": "java-unit-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 168,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": null,
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

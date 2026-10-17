@@ -1,0 +1,326 @@
+{
+  "head_sha": "e4e922add972586a342d49aeaafa93ff84715cac",
+  "event": "pull_request",
+  "run_attempt": 1,
+  "observed_at": "2026-10-14T07:29:24.868Z",
+  "runs": [
+    {
+      "id": 38525988847,
+      "name": "CI",
+      "event": "pull_request",
+      "head_sha": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38525988847",
+      "created_at": "2026-10-14T07:04:13Z",
+      "run_started_at": "2026-10-14T07:04:13Z",
+      "jobs": [
+        {
+          "id": 115726332551,
+          "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:04:48Z",
+          "completed_at": "2026-10-14T07:05:22Z"
+        },
+        {
+          "id": 115726332753,
+          "name": "Java IT \u2014 notification-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:06:04Z",
+          "completed_at": "2026-10-14T07:09:15Z"
+        },
+        {
+          "id": 115726332785,
+          "name": "Synthetic database and file recovery",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:05:42Z",
+          "completed_at": "2026-10-14T07:06:41Z"
+        },
+        {
+          "id": 115726332822,
+          "name": "Java unit \u2014 api-gateway",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:06:43Z",
+          "completed_at": "2026-10-14T07:07:57Z"
+        },
+        {
+          "id": 115726332825,
+          "name": "Java unit \u2014 notification-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:06:17Z",
+          "completed_at": "2026-10-14T07:08:31Z"
+        },
+        {
+          "id": 115726332835,
+          "name": "Java unit \u2014 auth-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:05:07Z",
+          "completed_at": "2026-10-14T07:07:40Z"
+        },
+        {
+          "id": 115726332836,
+          "name": "ShellCheck scripts",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:06:19Z",
+          "completed_at": "2026-10-14T07:06:46Z"
+        },
+        {
+          "id": 115726332858,
+          "name": "Java unit \u2014 attendance-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:06:41Z",
+          "completed_at": "2026-10-14T07:08:42Z"
+        },
+        {
+          "id": 115726332865,
+          "name": "Java unit \u2014 schedule-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:06:44Z",
+          "completed_at": "2026-10-14T07:08:36Z"
+        },
+        {
+          "id": 115726332884,
+          "name": "Grafana dashboards structure",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:06:19Z",
+          "completed_at": "2026-10-14T07:06:39Z"
+        },
+        {
+          "id": 115726332888,
+          "name": "Python Lint & Test",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:06:47Z",
+          "completed_at": "2026-10-14T07:07:46Z"
+        },
+        {
+          "id": 115726332935,
+          "name": "Mobile Vue workspace",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:07:48Z",
+          "completed_at": "2026-10-14T07:09:02Z"
+        },
+        {
+          "id": 115726332995,
+          "name": "Playwright E2E auth flow",
+          "status": "completed",
+          "conclusion": "failure",
+          "started_at": "2026-10-14T07:07:59Z",
+          "completed_at": "2026-10-14T07:28:39Z"
+        },
+        {
+          "id": 115726333037,
+          "name": "Java unit \u2014 academic-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:07:39Z",
+          "completed_at": "2026-10-14T07:10:11Z"
+        },
+        {
+          "id": 115726333049,
+          "name": "Java IT \u2014 academic-service",
+          "status": "completed",
+          "conclusion": "failure",
+          "started_at": "2026-10-14T07:07:41Z",
+          "completed_at": "2026-10-14T07:19:43Z"
+        },
+        {
+          "id": 115726333058,
+          "name": "Java IT \u2014 attendance-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:07:42Z",
+          "completed_at": "2026-10-14T07:12:08Z"
+        },
+        {
+          "id": 115726333080,
+          "name": "Java IT \u2014 schedule-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:07:27Z",
+          "completed_at": "2026-10-14T07:10:48Z"
+        },
+        {
+          "id": 115726333105,
+          "name": "Java IT \u2014 api-gateway",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:07:40Z",
+          "completed_at": "2026-10-14T07:09:24Z"
+        },
+        {
+          "id": 115726333161,
+          "name": "Java IT \u2014 auth-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:06:50Z",
+          "completed_at": "2026-10-14T07:13:43Z"
+        }
+      ]
+    },
+    {
+      "id": 38525988846,
+      "name": "OpenAPI Drift Guard",
+      "event": "pull_request",
+      "head_sha": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38525988846",
+      "created_at": "2026-10-14T07:04:13Z",
+      "run_started_at": "2026-10-14T07:04:13Z",
+      "jobs": [
+        {
+          "id": 115726332332,
+          "name": "OpenAPI \u2194 generated types drift",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:04:16Z",
+          "completed_at": "2026-10-14T07:04:44Z"
+        }
+      ]
+    },
+    {
+      "id": 38525988835,
+      "name": "Coverage",
+      "event": "pull_request",
+      "head_sha": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38525988835",
+      "created_at": "2026-10-14T07:04:13Z",
+      "run_started_at": "2026-10-14T07:04:13Z",
+      "jobs": [
+        {
+          "id": 115726332339,
+          "name": "Mobile Vue coverage \u2014 PWA, TMA, mobile-core",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:04:46Z",
+          "completed_at": "2026-10-14T07:05:40Z"
+        },
+        {
+          "id": 115726332479,
+          "name": "Python coverage \u2014 notification-bot",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:04:46Z",
+          "completed_at": "2026-10-14T07:05:56Z"
+        },
+        {
+          "id": 115726332514,
+          "name": "Java coverage \u2014 academic-service",
+          "status": "completed",
+          "conclusion": "failure",
+          "started_at": "2026-10-14T07:05:24Z",
+          "completed_at": "2026-10-14T07:18:26Z"
+        },
+        {
+          "id": 115726332590,
+          "name": "Java coverage \u2014 auth-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:05:27Z",
+          "completed_at": "2026-10-14T07:11:59Z"
+        },
+        {
+          "id": 115726332599,
+          "name": "Java coverage \u2014 notification-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:05:58Z",
+          "completed_at": "2026-10-14T07:09:43Z"
+        },
+        {
+          "id": 115726332617,
+          "name": "Java coverage \u2014 schedule-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:06:12Z",
+          "completed_at": "2026-10-14T07:09:46Z"
+        },
+        {
+          "id": 115726332650,
+          "name": "Java coverage \u2014 api-gateway",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:05:39Z",
+          "completed_at": "2026-10-14T07:07:40Z"
+        },
+        {
+          "id": 115726332703,
+          "name": "Java coverage \u2014 attendance-service",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:05:48Z",
+          "completed_at": "2026-10-14T07:10:53Z"
+        },
+        {
+          "id": 115731112220,
+          "name": "Diff coverage report",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-10-14T07:18:27Z",
+          "completed_at": "2026-10-14T07:18:26Z"
+        }
+      ]
+    },
+    {
+      "id": 38525988831,
+      "name": "Security",
+      "event": "pull_request",
+      "head_sha": "e4e922add972586a342d49aeaafa93ff84715cac",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/DITEKmax/rutcampustrack/actions/runs/38525988831",
+      "created_at": "2026-10-14T07:04:13Z",
+      "run_started_at": "2026-10-14T07:04:13Z",
+      "jobs": [
+        {
+          "id": 115726332354,
+          "name": "Gitleaks (secrets)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:04:35Z",
+          "completed_at": "2026-10-14T07:04:53Z"
+        },
+        {
+          "id": 115726332495,
+          "name": "Trivy (filesystem)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:04:55Z",
+          "completed_at": "2026-10-14T07:05:46Z"
+        },
+        {
+          "id": 115726332640,
+          "name": "Trivy (config \u2014 Dockerfile + compose)",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-14T07:05:43Z",
+          "completed_at": "2026-10-14T07:06:10Z"
+        },
+        {
+          "id": 115726333600,
+          "name": "Trivy (built images)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "started_at": "2026-10-14T07:04:14Z",
+          "completed_at": "2026-10-14T07:04:14Z"
+        }
+      ]
+    }
+  ],
+  "scope": "Metadata only; case receipts separately current-e4e9-*",
+  "actual_checkout": "6caa6a15fb6226e0342233665a8b324edcf98f2c reported by real Academic SAFE producer; separate treeproof not read"
+}

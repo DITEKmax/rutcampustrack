@@ -6,9 +6,8 @@ import org.springframework.hateoas.RepresentationModel;
 /**
  * Minimal teacher candidate returned by headman subject search.
  *
- * <p>The lookup deliberately excludes login, contact data and role grants.
- * Employee number is included because it is the accepted teacher-picker
- * identifier in the headman workflow.</p>
+ * <p>The lookup deliberately excludes login, contact data and role grants. Employee number is
+ * included because it is the accepted teacher-picker identifier in the headman workflow.
  */
 @Schema(description = "Минимальный профиль преподавателя для выбора в предмете")
 public class TeacherLookupResponse extends RepresentationModel<TeacherLookupResponse> {
@@ -25,12 +24,27 @@ public class TeacherLookupResponse extends RepresentationModel<TeacherLookupResp
         this.employeeNumber = employeeNumber;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getEmployeeNumber() { return employeeNumber; }
-    public void setEmployeeNumber(String employeeNumber) { this.employeeNumber = employeeNumber; }
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getEmployeeNumber() {
+        return employeeNumber;
+    }
+
+    public void setEmployeeNumber(String employeeNumber) {
+        this.employeeNumber = employeeNumber;
+    }
 }

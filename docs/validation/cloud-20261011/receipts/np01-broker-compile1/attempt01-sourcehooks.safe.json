@@ -1,0 +1,21 @@
+{
+  "utc": "2026-10-12T06:38:29.177671+00:00",
+  "command": [
+    "uv",
+    "--offline",
+    "tool",
+    "run",
+    "--from",
+    "pre-commit==4.6.2",
+    "pre-commit",
+    "run",
+    "--files",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "services/notification-bot/tests/np01_broker_bridge_runner.py"
+  ],
+  "native_exit": 2,
+  "elapsed_seconds": 0.017,
+  "output": "error: Failed to initialize cache at `/home/agent/.cache/uv`\n  cause: failed to open file `/home/agent/.cache/uv/CACHEDIR.TAG`: Read-only file system (os error 30)\n",
+  "source_only": true,
+  "Gradle_JVM_containers_workers_services": "NOT_RUN"
+}

@@ -1,0 +1,105 @@
+{
+  "schema": "RCT_INDEPENDENT_LIFECYCLE_R1_SELECTED_AST_RAM_V1",
+  "source_sha256": "b278d0ee9f3eac08f57ff2ce658d7d2d249e57f2b60b19f6e0de9d038f9bb1b2",
+  "original_proof_reused_sha256": "e4281124cc54890151798074f78f9f0e1cb9a891639aa7e780508fb354543132",
+  "controls": [
+    {
+      "code": "DEADLINE_BEFORE_FIRST_CHILD",
+      "passed": true,
+      "link_removed": true,
+      "link_remaining": false,
+      "guard_call_count": 0,
+      "exception_type": "AssertionError",
+      "primary_identity_preserved": false,
+      "outcome_pass": false,
+      "literal_settle_required": false,
+      "real_fs_or_native_effects": false
+    },
+    {
+      "code": "DEADLINE_AFTER_SETTLED_CHILD",
+      "passed": true,
+      "link_removed": true,
+      "link_remaining": false,
+      "guard_call_count": 1,
+      "exception_type": "AssertionError",
+      "primary_identity_preserved": false,
+      "outcome_pass": false,
+      "literal_settle_required": false,
+      "real_fs_or_native_effects": false
+    },
+    {
+      "code": "RECEIPT_ERROR_AFTER_SETTLED",
+      "passed": true,
+      "link_removed": true,
+      "link_remaining": false,
+      "guard_call_count": 1,
+      "exception_type": "ValueError",
+      "primary_identity_preserved": true,
+      "outcome_pass": false,
+      "literal_settle_required": false,
+      "real_fs_or_native_effects": false
+    },
+    {
+      "code": "UNKNOWN_GUARD_CALL",
+      "passed": true,
+      "link_removed": false,
+      "link_remaining": true,
+      "guard_call_count": 1,
+      "exception_type": "ValueError",
+      "primary_identity_preserved": true,
+      "outcome_pass": false,
+      "literal_settle_required": false,
+      "real_fs_or_native_effects": false
+    },
+    {
+      "code": "UNSETTLED_RETURN",
+      "passed": true,
+      "link_removed": false,
+      "link_remaining": true,
+      "guard_call_count": 1,
+      "exception_type": null,
+      "primary_identity_preserved": false,
+      "outcome_pass": false,
+      "literal_settle_required": false,
+      "real_fs_or_native_effects": false
+    },
+    {
+      "code": "NONBOOLEAN_SETTLE",
+      "passed": true,
+      "link_removed": false,
+      "link_remaining": true,
+      "guard_call_count": 1,
+      "exception_type": null,
+      "primary_identity_preserved": false,
+      "outcome_pass": false,
+      "literal_settle_required": true,
+      "real_fs_or_native_effects": false
+    },
+    {
+      "code": "REPLACED_LINK",
+      "passed": true,
+      "link_removed": false,
+      "link_remaining": true,
+      "guard_call_count": 1,
+      "exception_type": "AssertionError",
+      "primary_identity_preserved": false,
+      "outcome_pass": false,
+      "literal_settle_required": false,
+      "real_fs_or_native_effects": false
+    },
+    {
+      "code": "PRIMARY_AND_REPLACED_LINK",
+      "passed": true,
+      "link_removed": false,
+      "link_remaining": true,
+      "guard_call_count": 1,
+      "exception_type": "ValueError",
+      "primary_identity_preserved": true,
+      "outcome_pass": false,
+      "literal_settle_required": false,
+      "real_fs_or_native_effects": false
+    }
+  ],
+  "all8_passed": true,
+  "native_checking": "NOT_RUN"
+}

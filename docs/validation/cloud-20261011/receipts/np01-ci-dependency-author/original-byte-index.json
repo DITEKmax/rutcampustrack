@@ -1,0 +1,67 @@
+{
+  "source": "/workspace/scratch/rct-validation/np01_config/ci-python-bridge",
+  "manifest": "sealed-manifest.safe.json",
+  "files": [
+    {
+      "path": "verification.safe.json",
+      "original_sha256": "775eadc36608cea6db7bff755f3b4441c6ea3faa5f461e6a315005f52c8bf0f9",
+      "original_bytes": 1687,
+      "working_sha256": "775eadc36608cea6db7bff755f3b4441c6ea3faa5f461e6a315005f52c8bf0f9",
+      "working_bytes": 1687,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "verify-ci.py",
+      "original_sha256": "22e920664a28b399c341234a3a5d147504b31504c6c76ea6d87dab70590da82e",
+      "original_bytes": 5760,
+      "working_sha256": "22e920664a28b399c341234a3a5d147504b31504c6c76ea6d87dab70590da82e",
+      "working_bytes": 5760,
+      "transformation": "byte equal; copied source preserved losslessly in read-only wrapper",
+      "working_path": "verify-ci.py.readable.zip",
+      "working_archive_member": "verify-ci.py",
+      "working_container_sha256": "0b5dbfdee751fa28c35a9588d7ddfc1dd44cd03e9176b77860ad4cbffaf2abdd",
+      "working_container_bytes": 2381
+    },
+    {
+      "path": "before-ci.yml",
+      "original_sha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+      "original_bytes": 14123,
+      "working_sha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+      "working_bytes": 14123,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "before-coverage.yml",
+      "original_sha256": "8b51280581b5f319237c8681a1bba5c4f74ab90aae13c11d377f95fddf09399d",
+      "original_bytes": 8524,
+      "working_sha256": "8b51280581b5f319237c8681a1bba5c4f74ab90aae13c11d377f95fddf09399d",
+      "working_bytes": 8524,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "commit-checks.safe.json",
+      "original_sha256": "687dd2357eaf860e7e35889b5bea69c656a9382578c7ad6d3378a08e5d74a6f8",
+      "original_bytes": 282,
+      "working_sha256": "687dd2357eaf860e7e35889b5bea69c656a9382578c7ad6d3378a08e5d74a6f8",
+      "working_bytes": 282,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "summary.safe.json",
+      "original_sha256": "833705e1c6e47cabbef2c5d702f9c3fa1b572847fb44cb032de8c817f4cb057e",
+      "original_bytes": 1586,
+      "working_sha256": "833705e1c6e47cabbef2c5d702f9c3fa1b572847fb44cb032de8c817f4cb057e",
+      "working_bytes": 1586,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "sealed-manifest.safe.json",
+      "original_sha256": "a74113625090faf7f096dc7a047d835cf028e99b3c9a91eaf45c2f0f6810008d",
+      "original_bytes": 787,
+      "working_sha256": "a74113625090faf7f096dc7a047d835cf028e99b3c9a91eaf45c2f0f6810008d",
+      "working_bytes": 787,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

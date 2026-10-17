@@ -1,5 +1,10 @@
 package ru.rutcampustrack.academic.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -11,19 +16,13 @@ import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.repository.TeacherSubjectGroupRepository;
 
-import java.util.List;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * M05 Группа 1 — regression guard для composite indexes (V17, DECISION D2):
- *   idx_tsg_group_semester ON teacher_subject_groups (group_id, semester_id)
- *   idx_hw_group_semester  ON homeworks (group_id, semester_id)
+ * M05 Группа 1 — regression guard для composite indexes (V17, DECISION D2): idx_tsg_group_semester
+ * ON teacher_subject_groups (group_id, semester_id) idx_hw_group_semester ON homeworks (group_id,
+ * semester_id)
  *
- * <p>Проверяет что hot queries {@code findByGroupIdAndSemesterId} на обеих
- * таблицах выполняются быстрее 50ms на seed-dataset (1800 rows каждая).
+ * <p>Проверяет что hot queries {@code findByGroupIdAndSemesterId} на обеих таблицах выполняются
+ * быстрее 50ms на seed-dataset (1800 rows каждая).
  *
  * <p>Seed идемпотентен: id ≥ 900000 и DELETE перед вставкой.
  */
@@ -41,15 +40,20 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
     @Autowired private JdbcTemplate jdbc;
     @Autowired private TeacherSubjectGroupRepository tsgRepository;
     @Autowired private HomeworkRepository homeworkRepository;
-    @Autowired private org.springframework.transaction.PlatformTransactionManager transactionManager;
+
+    @Autowired
+    private org.springframework.transaction.PlatformTransactionManager transactionManager;
 
     @BeforeEach
     void seed() {
         // Reset owns teardown; seed canonical types atomically with their parents.
-        new org.springframework.transaction.support.TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+        new org.springframework.transaction.support.TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status -> {
 
-        // 3 семестра, id 900001..900003 (даты вне возможных prod-семестров).
-        jdbc.update("""
+                            // 3 семестра, id 900001..900003 (даты вне возможных prod-семестров).
+                            jdbc.update(
+                                    """
                 INSERT INTO semesters (id, name, date_from, date_to, is_active, created_at)
                 VALUES
                   (900001, 'M05 perf 2024/25 fall', DATE '2024-09-01', DATE '2025-01-31', FALSE, NOW()),
@@ -58,15 +62,18 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
                 ON CONFLICT (id) DO NOTHING
                 """);
 
-        // 20 групп.
-        jdbc.update("""
+                            // 20 групп.
+                            jdbc.update(
+                                    """
                 INSERT INTO groups (id, name, is_active, created_at)
                 SELECT 900000 + g.go, 'М05-G' || g.go, TRUE, NOW() - INTERVAL '200 days'
                   FROM generate_series(1, ?) AS g(go)
-                """, GROUPS);
+                """,
+                                    GROUPS);
 
-        // 20 teachers.
-        jdbc.update("""
+                            // 20 teachers.
+                            jdbc.update(
+                                    """
                 INSERT INTO users (id, login, last_name, first_name, role, status, created_at, updated_at)
                 SELECT
                     900100 + t.to_,
@@ -77,8 +84,9 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
                   FROM generate_series(1, 20) AS t(to_)
                 """);
 
-        // subjects: group-scoped, GROUPS × SUBJECTS_PER_GROUP = 300.
-        jdbc.update("""
+                            // subjects: group-scoped, GROUPS × SUBJECTS_PER_GROUP = 300.
+                            jdbc.update(
+                                    """
                 INSERT INTO subjects (id, name, type, group_id, created_at)
                 SELECT
                     900000 + (g.go * 100 + s.so),
@@ -88,12 +96,16 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
                     NOW()
                   FROM generate_series(1, ?) AS g(go),
                        generate_series(1, ?) AS s(so)
-                """, GROUPS, SUBJECTS_PER_GROUP);
-        jdbc.update("INSERT INTO subject_lesson_types(subject_id,lesson_type) "
-                + "SELECT id,type FROM subjects WHERE id >= 900000");
+                """,
+                                    GROUPS,
+                                    SUBJECTS_PER_GROUP);
+                            jdbc.update(
+                                    "INSERT INTO subject_lesson_types(subject_id,lesson_type) "
+                                            + "SELECT id,type FROM subjects WHERE id >= 900000");
 
-        // TSG: GROUPS × SEMESTERS × TSG_SLOTS = 1800 rows.
-        jdbc.update("""
+                            // TSG: GROUPS × SEMESTERS × TSG_SLOTS = 1800 rows.
+                            jdbc.update(
+                                    """
                 INSERT INTO teacher_subject_groups (
                     id, teacher_id, subject_id, group_id, semester_id, assigned_at
                 )
@@ -107,10 +119,12 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
                   FROM generate_series(1, ?) AS g(go),
                        generate_series(1, ?) AS sem(so),
                        generate_series(1, ?) AS slot(so)
-                """, GROUPS, SEMESTERS, TSG_SLOTS);
+                """,
+                                    GROUPS, SEMESTERS, TSG_SLOTS);
 
-        // Homeworks: GROUPS × SEMESTERS × SUBJECTS_PER_GROUP × 2 = 1800.
-        jdbc.update("""
+                            // Homeworks: GROUPS × SEMESTERS × SUBJECTS_PER_GROUP × 2 = 1800.
+                            jdbc.update(
+                                    """
                 INSERT INTO homeworks (
                     id, group_id, subject_id, semester_id,
                     lesson_date, lesson_number,
@@ -137,11 +151,12 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
                        generate_series(1, ?) AS sem(so),
                        generate_series(1, ?) AS subj(so),
                        generate_series(1, 2) AS hw(ho)
-                """, GROUPS, SEMESTERS, SUBJECTS_PER_GROUP);
+                """,
+                                    GROUPS, SEMESTERS, SUBJECTS_PER_GROUP);
 
-        jdbc.execute("ANALYZE teacher_subject_groups");
-        jdbc.execute("ANALYZE homeworks");
-        });
+                            jdbc.execute("ANALYZE teacher_subject_groups");
+                            jdbc.execute("ANALYZE homeworks");
+                        });
     }
 
     @Test
@@ -151,13 +166,19 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
 
         tsgRepository.findByGroupIdAndSemesterId(groupId, semesterId); // warm-up
 
-        long[] timings = IntStream.range(0, 5).mapToLong(i -> {
-            long start = System.nanoTime();
-            var result = tsgRepository.findByGroupIdAndSemesterId(groupId, semesterId);
-            long elapsed = (System.nanoTime() - start) / 1_000_000L;
-            assertThat(result).isNotEmpty();
-            return elapsed;
-        }).toArray();
+        long[] timings =
+                IntStream.range(0, 5)
+                        .mapToLong(
+                                i -> {
+                                    long start = System.nanoTime();
+                                    var result =
+                                            tsgRepository.findByGroupIdAndSemesterId(
+                                                    groupId, semesterId);
+                                    long elapsed = (System.nanoTime() - start) / 1_000_000L;
+                                    assertThat(result).isNotEmpty();
+                                    return elapsed;
+                                })
+                        .toArray();
 
         long best = LongStream.of(timings).min().orElseThrow();
         log.info("Q2 tsg findBy(group,sem) timings(ms): {} — best={}ms", timings, best);
@@ -173,14 +194,19 @@ class AcademicPerformanceIT extends AbstractAcademicIntegrationTest {
 
         homeworkRepository.findByGroupIdAndSemesterId(groupId, semesterId); // warm-up
 
-        long[] timings = IntStream.range(0, 5).mapToLong(i -> {
-            long start = System.nanoTime();
-            List<Homework> result = homeworkRepository
-                    .findByGroupIdAndSemesterId(groupId, semesterId);
-            long elapsed = (System.nanoTime() - start) / 1_000_000L;
-            assertThat(result).isNotEmpty();
-            return elapsed;
-        }).toArray();
+        long[] timings =
+                IntStream.range(0, 5)
+                        .mapToLong(
+                                i -> {
+                                    long start = System.nanoTime();
+                                    List<Homework> result =
+                                            homeworkRepository.findByGroupIdAndSemesterId(
+                                                    groupId, semesterId);
+                                    long elapsed = (System.nanoTime() - start) / 1_000_000L;
+                                    assertThat(result).isNotEmpty();
+                                    return elapsed;
+                                })
+                        .toArray();
 
         long best = LongStream.of(timings).min().orElseThrow();
         log.info("Q3 hw findBy(group,sem) timings(ms): {} — best={}ms", timings, best);

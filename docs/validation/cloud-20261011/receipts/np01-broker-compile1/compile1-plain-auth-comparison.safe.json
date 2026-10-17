@@ -1,0 +1,13 @@
+{
+  "reference81d666_vs_current9a46fcfe_member_names_equal": true,
+  "changed_member_rows": [
+    {
+      "entry": "git.properties",
+      "class": false,
+      "before_bytes": 280,
+      "after_bytes": 294
+    }
+  ],
+  "class_members_changed": 0,
+  "qualification": "Current own b4a0-produced plain JAR, not byte-equal claim to earlier18265-produced reference; changed producer metadata explicitly retained."
+}

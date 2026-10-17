@@ -1,8 +1,7 @@
 package ru.rutcampustrack.documentrenderer.render;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.time.Duration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "document-renderer")
 public class DocumentRendererProperties {

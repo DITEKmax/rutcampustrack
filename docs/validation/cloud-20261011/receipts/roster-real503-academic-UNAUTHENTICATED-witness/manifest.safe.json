@@ -1,0 +1,59 @@
+{
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1363,
+      "sha256": "e996f95057f416e9cc369b44a4a085c7e8ca8e72aeb023aa86fdf43485620420"
+    },
+    {
+      "path": "OUTCOME.safe.json",
+      "bytes": 322,
+      "sha256": "bc107ff2b0845f74415ecc08485f8944e4b31dc27958ef2027cc36217e3a8149"
+    },
+    {
+      "path": "REPORT.safe.json",
+      "bytes": 5055,
+      "sha256": "b8d76828d34fb9bb515e59065f756871760437a1dac09a05c1e4930f025cba74"
+    },
+    {
+      "path": "cohort-bind.safe.json",
+      "bytes": 3278,
+      "sha256": "edd0f1a6bb5c5df18301e31dfbf4410654baa30fd5b235ca1076fcb33fe2f805"
+    },
+    {
+      "path": "prior01-context-block.safe.json",
+      "bytes": 780,
+      "sha256": "e1f4c627b96b1686221f2c4245209eb2f8062f3f69a69ec0431202b9853bea82"
+    },
+    {
+      "path": "supervisor.safe.json",
+      "bytes": 117,
+      "sha256": "4650867370981c61f3a134bbdf7d74ef212e0518d2237698a7f5d93f059a831a"
+    },
+    {
+      "path": "witness-launch.safe.json",
+      "bytes": 390,
+      "sha256": "f3e231222c0f7f35c5db2401dd3b306c660267e979f57cbe0f3edc53d333328a"
+    },
+    {
+      "path": "witness-outcome.safe.json",
+      "bytes": 91,
+      "sha256": "9db90d3e9586b6a97a330f5c2b31d4ce652af98d36952ec2ef05adce424bfef9"
+    },
+    {
+      "path": "witness-process.safe.json",
+      "bytes": 147,
+      "sha256": "25444eafae4805c98b0a09ca5b22cbdfdfa7c982a0c09f63f36115ba04dacad9"
+    },
+    {
+      "path": "witness-terminal.safe.json",
+      "bytes": 562,
+      "sha256": "a9742ec6a0323e12cdf7a7005d58b54631a0e70788dcd67d2e1aa80796ddbe73"
+    },
+    {
+      "path": "witness.safe.json",
+      "bytes": 664,
+      "sha256": "c54c379bc973a25488df01f0e0e9f9d5cc68dabf1c45b9613a4c43652f0ca1a2"
+    }
+  ]
+}

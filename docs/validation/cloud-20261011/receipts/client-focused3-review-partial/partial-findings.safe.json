@@ -1,0 +1,23 @@
+[
+  {
+    "id": "FOCUS3-ASYNC01",
+    "severity": "P2",
+    "classification": "Source-only async diagnostic/harness correctness blocker; no product/API runtime failure or credential disclosure observed",
+    "path": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-preparation-5ced/observer.ts",
+    "lines": [
+      83,
+      258,
+      337
+    ],
+    "observation": "bounded() Promise.race returns after timer but does not cancel or settle underlying operation. finish() wraps failureReads12s (DOM3s) without tracking/awaiting underlying read promises; failureRead awaits unbounded response.dispose then calls add, and failureReads may start new GETs after finish returned. add has no ended guard.",
+    "static_counterexample": [
+      "SESSION GET/json finishes and sets actorIsExpected true; response.dispose remains unresolved beyond outer12s",
+      "finish timeout catches, records END/diagnosticCompleted=false, clears token and returns to original sanitizer/fixture teardown",
+      "dispose later resolves; failureRead appends SESSION event after END and failureReads starts additional GETs with cleared/undefined token, possibly during next original test or context teardown"
+    ],
+    "impact": "Source guarantee of observer async settlement before test teardown is false; closed observations may be changed after END or reflect a later case. Resource guard can eventually reap processes but does not restore per-case temporal correctness.",
+    "minimal_required_correction": "Keep/settle all started observer read work or explicitly stop/cancel it; prevent any post-timeout/post-END new request or persist callback and clear token in guaranteed final cleanup. Preserve original test assertions/status, readonly UI-token policy, closed facts and bounded overall deadline. Source-only finite controls should model delayed dispose/callback and confirm no post-END GET/persist.",
+    "reviewer_execution": "Only static actual source inspection; no Node/browser/API/helper/runtime executed",
+    "privacy_qualifier": "No raw body/name/token/error serialized in inspected path; finding concerns asynchronous correctness/lifetime, not actual leaked secret."
+  }
+]

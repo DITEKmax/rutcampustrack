@@ -1,0 +1,141 @@
+{
+  "name": "green17",
+  "source_commit": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "source_inputs_unchanged": 7032,
+  "native_session_id": 66227,
+  "native_exit_code": 0,
+  "result": "PASS",
+  "counts": {
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "staleCleanupCasCannotCompleteAfterRenderSettlement()",
+      "status": "PASS",
+      "seconds": "2.763"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "sanitationIsAllowedOnlyForDefinitivelySettledRender()",
+      "status": "PASS",
+      "seconds": "1.149"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "credentialChangeInvalidatesUnsettledCardsAndPreservesFirstFence()",
+      "status": "PASS",
+      "seconds": "1.254"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "identityAttemptCasAndTerminalReceiptsCannotBeRewritten()",
+      "status": "PASS",
+      "seconds": "1.102"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "concurrentCredentialWritesSerializeVersionsAndOriginalCardFence()",
+      "status": "PASS",
+      "seconds": "0.882"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "unlinkArchiveAndFinalDeleteRetainOriginalCleanupIdentity()",
+      "status": "PASS",
+      "seconds": "1.071"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "unknownStatesMissingReceiptsAndNullInvalidationCannotCompleteCleanup()",
+      "status": "PASS",
+      "seconds": "0.941"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "rollbackAndCommitCoverVersionInvalidationAndOutboxTogether()",
+      "status": "PASS",
+      "seconds": "1.107"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "sanitationIsRejectedWhileRenderIsInFlightOrUncertain()",
+      "status": "PASS",
+      "seconds": "1.11"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "confirmedDeletionAndAbsenceSettleUnresolvedCardsAndLateReceiptKeepsCleanup()",
+      "status": "PASS",
+      "seconds": "1.061"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "actualTupleChangesAdvanceOnlyTheirOwnGeneration()",
+      "status": "PASS",
+      "seconds": "0.916"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "overflowFailsWithoutReusingGenerationOrChangingCredentialTuple()",
+      "status": "PASS",
+      "seconds": "0.804"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "historicalV56UpgradePreservesRowsAndOldChecksums()",
+      "status": "PASS",
+      "seconds": "0.993"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT",
+      "case": "freshFullChainAndMetadataOnlyTableValidateAndRepeat()",
+      "status": "PASS",
+      "seconds": "0.984"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.FlywayMigrationIT",
+      "case": "checksumConsistencyAfterFullMigrate()",
+      "status": "PASS",
+      "seconds": "0.76"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.FlywayMigrationIT",
+      "case": "dataPreservationAcrossMigrations()",
+      "status": "PASS",
+      "seconds": "0.93"
+    },
+    {
+      "class": "ru.rutcampustrack.academic.migration.FlywayMigrationIT",
+      "case": "freshInstallAppliesAllMigrations()",
+      "status": "PASS",
+      "seconds": "0.862"
+    }
+  ],
+  "native_xml": [
+    {
+      "file": "TEST-ru.rutcampustrack.academic.migration.BotCredentialLifecycleMigrationIT.xml",
+      "sha256": "c1f4980c5e759aca8f3aa314e628d671a783c638f301fcc87cc91c0d9265b670",
+      "bytes": 155347,
+      "tests": 14
+    },
+    {
+      "file": "TEST-ru.rutcampustrack.academic.migration.FlywayMigrationIT.xml",
+      "sha256": "437f3b1a1c2369d55d454d34da2d4da8e1e26ddcdda660632497d2d14b6a0acb",
+      "bytes": 34294,
+      "tests": 3
+    }
+  ],
+  "terminal_sha256": "4bd686070f6f8e998bc55e288ad87193f84f8125af9b273ec617b8f4315a3fa4",
+  "container_ids": [
+    "2730bf9ae2fa900b9d28b0a64fe2e0bba40668c7981cf46419fe77ca4eb2c51d",
+    "32599a02211f87e2462f2dc7699a2d59fb9086867d59c0ef7a1608b2863b7d96"
+  ],
+  "free_bytes": 5883097088,
+  "lease": "NP01_CONTRACT1",
+  "utc": "2026-10-12T01:57:43Z",
+  "limits": "Common migration/PostgreSQL and selected legacy Flyway only; no AcademicTLS/Authproducer/bot/provider full acceptance."
+}

@@ -1,0 +1,114 @@
+{
+  "run": "green-mvr-06",
+  "session": 38765,
+  "exit_code": 0,
+  "build_success": "1m39s",
+  "suite_results": [
+    {
+      "task": "test",
+      "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "6.013",
+      "xml": "/workspace/scratch/rct-validation/file_boundaries_developer/green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml"
+    },
+    {
+      "task": "test",
+      "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.091",
+      "xml": "/workspace/scratch/rct-validation/file_boundaries_developer/green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml"
+    },
+    {
+      "task": "test",
+      "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.08",
+      "xml": "/workspace/scratch/rct-validation/file_boundaries_developer/green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml"
+    },
+    {
+      "task": "test",
+      "suite": "ru.rutcampustrack.academic.map.CampusMapAdminServiceTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "1.85",
+      "xml": "/workspace/scratch/rct-validation/file_boundaries_developer/green-mvr-06-test-xml/TEST-ru.rutcampustrack.academic.map.CampusMapAdminServiceTest.xml"
+    },
+    {
+      "task": "integrationTest",
+      "suite": "ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "4.27",
+      "xml": "/workspace/scratch/rct-validation/file_boundaries_developer/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.GrpcClientDeadlineTest.xml"
+    },
+    {
+      "task": "integrationTest",
+      "suite": "ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "2.628",
+      "xml": "/workspace/scratch/rct-validation/file_boundaries_developer/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.IntegrationTestNamingConventionIT.xml"
+    },
+    {
+      "task": "integrationTest",
+      "suite": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.055",
+      "xml": "/workspace/scratch/rct-validation/file_boundaries_developer/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest.xml"
+    },
+    {
+      "task": "integrationTest",
+      "suite": "ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.034",
+      "xml": "/workspace/scratch/rct-validation/file_boundaries_developer/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.arch.ScheduledMustHaveSchedulerLockTest.xml"
+    },
+    {
+      "task": "integrationTest",
+      "suite": "ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT",
+      "tests": "37",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "40.673",
+      "xml": "/workspace/scratch/rct-validation/file_boundaries_developer/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapFileBoundaryIT.xml"
+    },
+    {
+      "task": "integrationTest",
+      "suite": "ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "1.683",
+      "xml": "/workspace/scratch/rct-validation/file_boundaries_developer/green-mvr-06-integrationTest-xml/TEST-ru.rutcampustrack.academic.map.CampusMapReadRepositoryIT.xml"
+    }
+  ],
+  "source_unchanged_since_prelaunch": {
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java": true,
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java": true,
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java": true
+  },
+  "no_browser": "NOT_RUN"
+}

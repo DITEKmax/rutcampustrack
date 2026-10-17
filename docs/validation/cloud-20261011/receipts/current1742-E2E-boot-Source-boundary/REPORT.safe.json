@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-13T11:15:12.652478+00:00",
+  "scope": "CURRENT1742_E2E_BOOT_SOURCE_BOUNDARY",
+  "result": "BOOT_SOURCE_USES_DOCKER_COMPOSE_BEFORE_PLAYWRIGHT_CAUSE_NOT_YET_PROVED",
+  "source_paths": {
+    ".github/workflows/ci.yml": "2d6740b9c28e0717d66c0c663f420822b4dd3c0a9055aa3e284a5e00f9e1687f",
+    "docker-compose.e2e.yml": "2807d5a8c4cec7ff8f87b30107f9c19c83bd3570330b35596192d7d2039daf76",
+    "services/auth-service/Dockerfile": "503fac94af3793c27933f9c4e6da6bb3d03568da5ea43052a640fdaf41c35ee8",
+    "services/api-gateway/Dockerfile": "50e11abb77c16ded5cb59b78d297cf04635aab1f139a0f7a2f1a01c106b4a3f3",
+    ".dockerignore": "f3c683992215c2d87445756b839b16ba13c81b00d07c5f28643fd73171480879"
+  },
+  "qualification": "Onlysourceopened: BootisolatedVueauthstack compose config thenup--build--wait480 precedesPlaywright andFIRST3; safeFIRST3upload conditional skipsifexecution skipped. AuthGatewayDockerfiles buildbootJar-x test; tracked .dockerignore excludesdocs. DoesNOT establish currentbuild/servicefailcause or prove unrelatedness/newAuthnoeffect. MetadataBootFAIL remainsUNKNOWNcause; no native/sourceedit/retry orrawlogread."
+}

@@ -1,0 +1,60 @@
+{
+  "artifact_id": 11876059194,
+  "name": "safe-integration-outcomes-academic-service-1",
+  "archive_bytes": 21637,
+  "archive_sha256": "1fbec94c57f40ead6ecb2aaa2992645825725bc59dd7cbaf3db294cd3786884b",
+  "producer": "e4e922add972586a342d49aeaafa93ff84715cac",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "6caa6a15fb6226e0342233665a8b324edcf98f2c",
+        "prHeadSha": "e4e922add972586a342d49aeaafa93ff84715cac",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38525988847",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "failure"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 447,
+        "FAILED": 1,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": {
+        "xmlOrdinal": 67,
+        "suiteOrdinal": 1,
+        "ordinal": 3,
+        "classname": "ru.rutcampustrack.academic.user.UserSearchIT",
+        "method": "archivedRegistryFilterIncludesArchivedAccountsAndRestoredRoleHistory",
+        "status": "FAILED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java",
+        "sourceSha256": "2efdde78e2786428cfcf5276bde6a816a661b513ed8447319076c5f293860e70"
+      },
+      "failed_or_error_cases": [
+        {
+          "xmlOrdinal": 67,
+          "suiteOrdinal": 1,
+          "ordinal": 3,
+          "classname": "ru.rutcampustrack.academic.user.UserSearchIT",
+          "method": "archivedRegistryFilterIncludesArchivedAccountsAndRestoredRoleHistory",
+          "status": "FAILED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserSearchIT.java",
+          "sourceSha256": "2efdde78e2786428cfcf5276bde6a816a661b513ed8447319076c5f293860e70"
+        }
+      ],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false,
+  "qualification": "447 passed, sole failure is exact new signed-admin archive query counterexample on unchanged product. SAFE schema does not include assertion value/type; numeric subcause not observed. Real PostgreSQL method result, not a local ENV stop."
+}

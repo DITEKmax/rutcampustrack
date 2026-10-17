@@ -1,29 +1,31 @@
 package ru.rutcampustrack.attendance.grpc;
 
 import io.grpc.StatusRuntimeException;
+
 import net.devh.boot.grpc.client.inject.GrpcClient;
+
 import org.springframework.stereotype.Component;
+
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
-import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.schedule.grpc.ActiveLessonRequest;
 import ru.rutcampustrack.schedule.grpc.LessonByIdRequest;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest;
 import ru.rutcampustrack.schedule.grpc.LessonsByIdsRequest;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
-import ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest;
 import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * gRPC client wrapper for Schedule Service.
- * All calls use a 3-second deadline to prevent cascading timeouts.
- * StatusRuntimeException is translated to domain exceptions
- * which are then mapped to HTTP status codes by GlobalExceptionHandler.
+ * gRPC client wrapper for Schedule Service. All calls use a 3-second deadline to prevent cascading
+ * timeouts. StatusRuntimeException is translated to domain exceptions which are then mapped to HTTP
+ * status codes by GlobalExceptionHandler.
  */
 @Component
 public class ScheduleGrpcClient {
@@ -33,46 +35,57 @@ public class ScheduleGrpcClient {
 
     public LessonResponse getActiveLesson(Long groupId, String timestamp) {
         try {
-            LessonResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getActiveLesson(ActiveLessonRequest.newBuilder()
-                            .setGroupId(groupId)
-                            .setTimestamp(timestamp)
-                            .build());
+            LessonResponse response =
+                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getActiveLesson(
+                                    ActiveLessonRequest.newBuilder()
+                                            .setGroupId(groupId)
+                                            .setTimestamp(timestamp)
+                                            .build());
             requireTransferReadable(response);
             return response;
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
-                throw new ResourceNotFoundException("Lesson", "groupId/timestamp", groupId + "/" + timestamp);
+                throw new ResourceNotFoundException(
+                        "Lesson", "groupId/timestamp", groupId + "/" + timestamp);
             }
-            throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
     public LessonResponse getLessonById(Long lessonId) {
         try {
-            LessonResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getLessonById(LessonByIdRequest.newBuilder()
-                            .setLessonId(lessonId)
-                            .build());
+            LessonResponse response =
+                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getLessonById(
+                                    LessonByIdRequest.newBuilder().setLessonId(lessonId).build());
             requireTransferReadable(response);
             return response;
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
                 throw new ResourceNotFoundException("Lesson", "id", lessonId);
             }
-            throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
     /** Request detail must validate physical scope before a terminal dependency fallback. */
     public LessonResponse getScopedLessonById(long lessonId, long groupId, long semesterId) {
         try {
-            LessonResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getLessonById(LessonByIdRequest.newBuilder().setLessonId(lessonId).build());
+            LessonResponse response =
+                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getLessonById(
+                                    LessonByIdRequest.newBuilder().setLessonId(lessonId).build());
             if (response == null) {
-                throw new ScheduleServiceUnavailableException("Schedule returned no lesson snapshot");
+                throw new ScheduleServiceUnavailableException(
+                        "Schedule returned no lesson snapshot");
             }
-            if (response.getId() != lessonId || response.getGroupId() != groupId
+            if (response.getId() != lessonId
+                    || response.getGroupId() != groupId
                     || response.getSemesterId() != semesterId) {
                 throw new ConflictException("Пара заявки изменилась; обнови данные");
             }
@@ -85,49 +98,61 @@ public class ScheduleGrpcClient {
                         throw new AccessDeniedException("Schedule отклонил доступ к паре заявки");
                 case INVALID_ARGUMENT, FAILED_PRECONDITION, OUT_OF_RANGE, ALREADY_EXISTS, ABORTED ->
                         throw new ConflictException("Schedule отклонил чтение пары заявки");
-                default -> throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
+                default ->
+                        throw new ScheduleServiceUnavailableException(
+                                "Schedule Service unavailable: " + e.getStatus().getCode(),
+                                e.getStatus().getCode());
             }
         }
     }
 
-    public LessonsResponse getLessonsByGroup(Long groupId, Long semesterId, String dateFrom, String dateTo) {
+    public LessonsResponse getLessonsByGroup(
+            Long groupId, Long semesterId, String dateFrom, String dateTo) {
         try {
-            LessonsResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getLessonsByGroup(LessonsByGroupRequest.newBuilder()
-                            .setGroupId(groupId)
-                            .setSemesterId(semesterId)
-                            .setDateFrom(dateFrom)
-                            .setDateTo(dateTo)
-                            .build());
+            LessonsResponse response =
+                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getLessonsByGroup(
+                                    LessonsByGroupRequest.newBuilder()
+                                            .setGroupId(groupId)
+                                            .setSemesterId(semesterId)
+                                            .setDateFrom(dateFrom)
+                                            .setDateTo(dateTo)
+                                            .build());
             response.getLessonsList().forEach(this::requireTransferReadable);
             return response;
         } catch (StatusRuntimeException e) {
-            throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
     /**
-     * GRPC-04 (D-25): batch-fetch compact lesson info by IDs.
-     * Used by ExcuseService to validate that lessonIds belong to the student's group.
-     * Empty/null input returns an empty list without making a network call.
+     * GRPC-04 (D-25): batch-fetch compact lesson info by IDs. Used by ExcuseService to validate
+     * that lessonIds belong to the student's group. Empty/null input returns an empty list without
+     * making a network call.
      */
     public List<LessonInfo> getLessonsByIds(List<Long> lessonIds) {
         if (lessonIds == null || lessonIds.isEmpty()) {
             return List.of();
         }
         try {
-            List<LessonInfo> lessons = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .getLessonsByIds(LessonsByIdsRequest.newBuilder()
-                            .addAllLessonIds(lessonIds)
-                            .build())
-                    .getLessonsList();
+            List<LessonInfo> lessons =
+                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                            .getLessonsByIds(
+                                    LessonsByIdsRequest.newBuilder()
+                                            .addAllLessonIds(lessonIds)
+                                            .build())
+                            .getLessonsList();
             // LessonInfo predates the transfer-state fields. Resolve each compact
             // entry through LessonResponse so reads and write validations cannot
             // expose a partially applied transfer as final data.
             lessons.forEach(lesson -> getLessonById(lesson.getLessonId()));
             return lessons;
         } catch (StatusRuntimeException e) {
-            throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule Service unavailable: " + e.getStatus().getCode(),
+                    e.getStatus().getCode());
         }
     }
 
@@ -153,7 +178,11 @@ public class ScheduleGrpcClient {
         }
         String operationId = response.getTransferOperationId();
         throw new ScheduleServiceUnavailableException(
-                "Lesson transfer is " + state + (operationId == null || operationId.isBlank()
-                        ? "" : " (operation " + operationId + ")") + "; retry this request");
+                "Lesson transfer is "
+                        + state
+                        + (operationId == null || operationId.isBlank()
+                                ? ""
+                                : " (operation " + operationId + ")")
+                        + "; retry this request");
     }
 }

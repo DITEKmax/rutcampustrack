@@ -1,0 +1,50 @@
+{
+  "utc": "2026-10-12T10:32:57.727242+00:00",
+  "images": [
+    {
+      "id": "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+      "logical_bytes": 176465533,
+      "rootfs_type": "layers",
+      "layer_count": 10,
+      "storage_driver": "vfs"
+    },
+    {
+      "id": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+      "logical_bytes": 451303453,
+      "rootfs_type": "layers",
+      "layer_count": 14,
+      "storage_driver": "vfs"
+    },
+    {
+      "id": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+      "logical_bytes": 48216274,
+      "rootfs_type": "layers",
+      "layer_count": 8,
+      "storage_driver": "vfs"
+    },
+    {
+      "id": "sha256:cc6e50c173ff2cf38ffb812fb582450e9b40fc1f67eadd63e81071f18fc8cc96",
+      "logical_bytes": 722988783,
+      "rootfs_type": "layers",
+      "layer_count": 1,
+      "storage_driver": "vfs"
+    },
+    {
+      "id": "sha256:cdb912dd9171d42e2af4c677e2adfbb2a923621be23556f731fd7193d3cfa22f",
+      "logical_bytes": 721470337,
+      "rootfs_type": "layers",
+      "layer_count": 8,
+      "storage_driver": "vfs"
+    },
+    {
+      "id": "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058",
+      "logical_bytes": 39061364,
+      "rootfs_type": "layers",
+      "layer_count": 7,
+      "storage_driver": "vfs"
+    }
+  ],
+  "container_SizeRootFs_SizeRw": "UNKNOWN; exact containers already removed by authorized floor recovery before subsequent metadata request",
+  "actual_allocated_bytes_per_image_or_container": "UNKNOWN; logical Size is not allocated VFS bytes",
+  "image_body_ConfigENV_logs_or_store_traversal": false
+}

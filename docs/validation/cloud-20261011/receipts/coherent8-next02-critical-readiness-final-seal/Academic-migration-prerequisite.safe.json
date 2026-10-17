@@ -1,0 +1,26 @@
+{
+  "utc": "2026-10-12T23:24:11.092511+00:00",
+  "cohort": "restart-20261012-next02",
+  "proof_scope": "Academic boot/Flyway prerequisite only; no client readiness",
+  "aggregate_http": 200,
+  "aggregate_status": "UP",
+  "component_states": {
+    "db": "UP",
+    "diskSpace": "UP",
+    "grpcChannel": "UP",
+    "livenessState": "UP",
+    "ping": "UP",
+    "rabbit": "UP",
+    "readinessState": "UP",
+    "redis": "UP",
+    "ssl": "UP"
+  },
+  "psql_native_exit": 0,
+  "Flyway_metadata": {
+    "successful_count": 57,
+    "maximum_version": 57,
+    "failed_count": 0,
+    "SQL_checksum_missing_count": 0
+  },
+  "migration_before_Auth_condition": true
+}

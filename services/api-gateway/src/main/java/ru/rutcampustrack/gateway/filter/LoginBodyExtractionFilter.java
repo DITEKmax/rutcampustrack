@@ -2,6 +2,8 @@ package ru.rutcampustrack.gateway.filter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -23,23 +25,18 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
-
 /**
- * M03b Группа 9 (KI-8): извлекает {@code login} из JSON body POST
- * {@code /api/auth/login} и ставит header {@code X-Login} для composite
- * {@code (ip, login)} rate-limit.
+ * M03b Группа 9 (KI-8): извлекает {@code login} из JSON body POST {@code /api/auth/login} и ставит
+ * header {@code X-Login} для composite {@code (ip, login)} rate-limit.
  *
- * <p>Работает ПОСЛЕ {@link JwtAuthenticationFilter} (order -100), который
- * strip'ает клиентский {@code X-Login} — значит наш header гарантированно
- * внутренний. Order {@code -90} ставит фильтр до
- * {@code RequestRateLimiterGatewayFilterFactory} (он per-route, runs в
- * route filter chain после GlobalFilters).</p>
+ * <p>Работает ПОСЛЕ {@link JwtAuthenticationFilter} (order -100), который strip'ает клиентский
+ * {@code X-Login} — значит наш header гарантированно внутренний. Order {@code -90} ставит фильтр до
+ * {@code RequestRateLimiterGatewayFilterFactory} (он per-route, runs в route filter chain после
+ * GlobalFilters).
  *
- * <p>Тело кэшируется (DataBufferUtils.join + cache()) и прокидывается downstream
- * через ServerHttpRequestDecorator — Spring Cloud Gateway не поддерживает
- * прямой {@code CacheRequestBody} в GlobalFilter, поэтому реализация вручную.</p>
+ * <p>Тело кэшируется (DataBufferUtils.join + cache()) и прокидывается downstream через
+ * ServerHttpRequestDecorator — Spring Cloud Gateway не поддерживает прямой {@code CacheRequestBody}
+ * в GlobalFilter, поэтому реализация вручную.
  */
 @Component
 public class LoginBodyExtractionFilter implements GlobalFilter, Ordered {
@@ -72,23 +69,26 @@ public class LoginBodyExtractionFilter implements GlobalFilter, Ordered {
         }
 
         return DataBufferUtils.join(request.getBody(), MAX_BODY_BYTES)
-                .map(buffer -> {
-                    byte[] bytes = new byte[buffer.readableByteCount()];
-                    try {
-                        buffer.read(bytes);
-                        return bytes;
-                    } finally {
-                        DataBufferUtils.release(buffer);
-                    }
-                })
+                .map(
+                        buffer -> {
+                            byte[] bytes = new byte[buffer.readableByteCount()];
+                            try {
+                                buffer.read(bytes);
+                                return bytes;
+                            } finally {
+                                DataBufferUtils.release(buffer);
+                            }
+                        })
                 .defaultIfEmpty(new byte[0])
-                .flatMap(bytes -> {
-                    String login = extractLogin(bytes);
-                    ServerHttpRequestDecorator decorated = cachedBodyDecorator(request, bytes, login);
-                    ServerWebExchange mutated = exchange.mutate().request(decorated).build();
-                    return chain.filter(mutated);
-                })
-                .doOnDiscard(DataBuffer.class, DataBufferUtils::release)
+                .flatMap(
+                        bytes -> {
+                            String login = extractLogin(bytes);
+                            ServerHttpRequestDecorator decorated =
+                                    cachedBodyDecorator(request, bytes, login);
+                            ServerWebExchange mutated =
+                                    exchange.mutate().request(decorated).build();
+                            return chain.filter(mutated);
+                        })
                 .onErrorResume(DataBufferLimitException.class, ignored -> tooLarge(exchange));
     }
 
@@ -106,14 +106,14 @@ public class LoginBodyExtractionFilter implements GlobalFilter, Ordered {
                 }
             }
         } catch (Exception e) {
-            log.debug("Failed to parse /auth/login body for X-Login extraction: {}", e.getMessage());
+            log.debug(
+                    "Failed to parse /auth/login body for X-Login extraction: {}", e.getMessage());
         }
         return null;
     }
 
-    private ServerHttpRequestDecorator cachedBodyDecorator(ServerHttpRequest original,
-                                                           byte[] bodyBytes,
-                                                           String login) {
+    private ServerHttpRequestDecorator cachedBodyDecorator(
+            ServerHttpRequest original, byte[] bodyBytes, String login) {
         return new ServerHttpRequestDecorator(original) {
             @Override
             public HttpHeaders getHeaders() {

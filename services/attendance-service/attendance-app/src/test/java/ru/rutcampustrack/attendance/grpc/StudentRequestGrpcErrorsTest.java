@@ -1,18 +1,18 @@
 package ru.rutcampustrack.attendance.grpc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.attendance.student.StudentCheckinException;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class StudentRequestGrpcErrorsTest {
 
     @Test
     void unexpectedFailureRemainsInternalInsteadOfDependencyUnavailable() throws Exception {
-        RuntimeException transport = StudentRequestGrpcErrors.toStatus(
-                new IllegalStateException("programmer failure"));
+        RuntimeException transport =
+                StudentRequestGrpcErrors.toStatus(new IllegalStateException("programmer failure"));
 
         Status status = StatusProto.fromThrowable(transport);
 
@@ -23,9 +23,11 @@ class StudentRequestGrpcErrorsTest {
 
     @Test
     void missingGrpcIdentityMapsToInvalidSession() throws Exception {
-        RuntimeException transport = StudentRequestGrpcErrors.toStatus(
-                new StudentCheckinException(StudentCheckinException.Code.INVALID_SESSION,
-                        "internal identity is missing"));
+        RuntimeException transport =
+                StudentRequestGrpcErrors.toStatus(
+                        new StudentCheckinException(
+                                StudentCheckinException.Code.INVALID_SESSION,
+                                "internal identity is missing"));
 
         Status status = StatusProto.fromThrowable(transport);
 

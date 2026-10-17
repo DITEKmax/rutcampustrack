@@ -1,0 +1,125 @@
+{
+  "verdict": "CONFIRMED_FINITE_CAUSAL_RED",
+  "scope": "One current Academic enum filtered-row equality method; no whole-family PASS",
+  "producer": "538af12e280bc0e34b62c99c8823a7bb552d6ea6",
+  "actual_Academic_checkout": "6e5385ddbab9cc967e4ef7be5e1fe29c8198082d",
+  "count": 16,
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/CURRENT.md",
+      "relative_path": "CURRENT.md",
+      "bytes": 445,
+      "mode": "0o600",
+      "sha256": "6c8a853779b6f4f841bc2f8c284b491f8d41764bb4c91fd49093cc86bc0e1074"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/HANDOFF.md",
+      "relative_path": "HANDOFF.md",
+      "bytes": 5798,
+      "mode": "0o600",
+      "sha256": "336df2b094646e512bc38d3ab8be6830828a29db43aecd177ed1f93b7b3f53e5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/attempts.ndjson",
+      "relative_path": "attempts.ndjson",
+      "bytes": 1372,
+      "mode": "0o600",
+      "sha256": "bbd687a9ab364ac6c0d6ab601cbeafc133b49b5d5c11e17d7f4a27655be3edd6"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/closed-job-log-projection.safe.json",
+      "relative_path": "closed-job-log-projection.safe.json",
+      "bytes": 1097,
+      "mode": "0o600",
+      "sha256": "59f056c5d800e376cf928a3b2242636a0deb1838c6b1f09bb17f28d2b2b92078"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/closed-target-cause.safe.json",
+      "relative_path": "closed-target-cause.safe.json",
+      "bytes": 1892,
+      "mode": "0o600",
+      "sha256": "a7834a7904ca10fe661c49498e930f6181358d03ef1eb098f2933890d4435c58"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/download-safe.py",
+      "relative_path": "download-safe.py",
+      "bytes": 5497,
+      "mode": "0o600",
+      "sha256": "dce41240c6618eb01112e60eb49f54659895d6f415224365344db0454ceac84c"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/governing-input-ledger.safe.json",
+      "relative_path": "governing-input-ledger.safe.json",
+      "bytes": 1349,
+      "mode": "0o600",
+      "sha256": "9be9571962338e0343196a9089371c357077f90f5d6edb5cc04d8105dea13c07"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/metadata-initial.safe.json",
+      "relative_path": "metadata-initial.safe.json",
+      "bytes": 4642,
+      "mode": "0o600",
+      "sha256": "bd1a272a4bfd24b9345c4ed25f5ce1bc8380a9e2dd6b01dac1abc7a957d2cfcd"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/metadata-terminal.safe.json",
+      "relative_path": "metadata-terminal.safe.json",
+      "bytes": 7679,
+      "mode": "0o600",
+      "sha256": "4048713b14056d944367e63a170689eda726da54a5d67e61bc7645211aff5393"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/producer-source-identity.safe.json",
+      "relative_path": "producer-source-identity.safe.json",
+      "bytes": 902,
+      "mode": "0o600",
+      "sha256": "32ec4c3a738428b31f73987de9d91acf491ade6fd1ec48efa90096156276b3b9"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/project-exact-target-xml.py",
+      "relative_path": "project-exact-target-xml.py",
+      "bytes": 6583,
+      "mode": "0o600",
+      "sha256": "15f0f138349a494fb944f1964b5a05deefe31f246ad789d337ecbbe7c417b548"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/safe-integration-outcomes-academic-service-1.json",
+      "relative_path": "safe-integration-outcomes-academic-service-1.json",
+      "bytes": 263894,
+      "mode": "0o600",
+      "sha256": "6360a650e3c71b90fa598142330906a4622b349ca0e89d1d702faf55f287ec86"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/safe-integration-outcomes-academic-service-1.zip",
+      "relative_path": "safe-integration-outcomes-academic-service-1.zip",
+      "bytes": 21438,
+      "mode": "0o600",
+      "sha256": "7d158626b6935bf394f07467b31120262aaed4389bdcaba05c5339a7e410e246"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/schema-qualification.safe.json",
+      "relative_path": "schema-qualification.safe.json",
+      "bytes": 697,
+      "mode": "0o600",
+      "sha256": "641e565cf68122a081af32ce9fdccdc5cb7d6935307fbf983e55d188276bb548"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/target-job-step-checkpoint.safe.json",
+      "relative_path": "target-job-step-checkpoint.safe.json",
+      "bytes": 2438,
+      "mode": "0o600",
+      "sha256": "f5bc9fbcec8ac1e7353d07525a889c211c096949d6bcd18dfca23aa88853ab92"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/ci_538af_locale_receipts/target-outcome.safe.json",
+      "relative_path": "target-outcome.safe.json",
+      "bytes": 2350,
+      "mode": "0o600",
+      "sha256": "fe070c777d4a5b56233478266a4f7ef6c1e6cce36d25a39a802d9c0531f9647f"
+    }
+  ],
+  "raw_XML_logs_artifact_carriers_private_values_included": false,
+  "local_native_or_source_mutation": false,
+  "requested_model_effort": "Sol6.1/high",
+  "actual_model_effort": "UNKNOWN"
+}

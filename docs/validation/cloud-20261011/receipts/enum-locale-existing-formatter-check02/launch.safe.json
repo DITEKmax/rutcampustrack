@@ -1,0 +1,23 @@
+{
+  "scope": "FORMAT_CHECK_ONLY",
+  "argv": [
+    "/bin/bash",
+    "./gradlew",
+    "--offline",
+    "--no-daemon",
+    "--max-workers=1",
+    "--console=plain",
+    "formatJavaCheck"
+  ],
+  "start": "2026-10-12T19:20:19.693435+00:00",
+  "stop": "2026-10-12T19:25:19.693435+00:00",
+  "source_before": [
+    "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d",
+    "4f62d5ac9724c9524697145734577954fbdf54c68162bd1af5e0166f376e98f9"
+  ],
+  "supervisor": {
+    "pid": 372044,
+    "birth": 8661241
+  },
+  "tests_API_Docker": "NOT_AUTHORIZED"
+}

@@ -1,0 +1,8 @@
+{
+  "utc": "2026-10-12T10:48:12.423515+00:00",
+  "pid": 269569,
+  "source_allocated": 935981056,
+  "workspace_free_before_copy": 9099075584,
+  "tmp_free_before_copy": 9439608832,
+  "phase": "COPY"
+}

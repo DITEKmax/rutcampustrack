@@ -1,0 +1,57 @@
+{
+  "scope": "SOURCE_READY_COMPLETION_ONLY_EXISTING1797",
+  "frozen_source_revision": "96c7aee0a114e978ce3ed2976127a2a59c1a69e3",
+  "existing_actual_JAR_SHA256": "4bc14708baff86a6c8b88824406cbe3513136c9664d8491fda3e3cec61c67b88",
+  "existing_actual_BUILD_receipt_SHA256": "08dd08de01d3c4fe5c0ebcea7cd53e22c41f36fb4d65e94b8d216b8aacda80ac",
+  "original_partial_manifest_SHA256": "77b75e656d7b3857879fa4936a59a4e3abddc85761462dbf81e382bb541fa824",
+  "academic_runtime_command": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/run-academic-restart.py",
+    "--service",
+    "academic",
+    "--grant",
+    "/workspace/scratch/rct-validation/current_host_config_v5/private/restart-launch-grant-next02.json"
+  ],
+  "BUILD_command": "NONE; copied unchangedBUILDlogic is provenance/lineage only, successful originalBUILD reused, no duplicatecompile/JAR",
+  "execution_context": "Approved native actor1000/root/tmp0 exactanchors; SourceOnly now, separate Root freshgrant before anycopy/runtime",
+  "phase_order": [
+    "Targeted completion-only SOURCE review",
+    "Fresh Root STAGE completion-only grant binds actual1596/01a6, no copy",
+    "Existing1797 readonly FD proof +canonical182 index +metadata publication only",
+    "Fresh approved157 retained-data coherentstand grant bound newAcademic/old7",
+    "Reuse coherentstand FIRST3 then sequentialmatrix; separatebrowsergrants"
+  ],
+  "actual_stage_resume_runtime": "1797 copies complete; specs/result/commit NOT_RUN",
+  "helpers": {
+    "build-academic.py": "f93efd0b1c55056abccd84f5deccd6cc363d2293af23c36f6b9f2e7b0a645745",
+    "completion-controls.py": "18553a05cdf5c3f1fda13c079c4b8035fdfd13f96447b89e78d687f2f57c560e",
+    "correction-controls.py": "689657ca8c49cdf0f00b72d435d991887b8e3861aa7be27ce73c21c018ffb532",
+    "inspect-academic.py": "ec0f1d6b06e0df15f83799865446e785835eb20f4c6167c7edde9f6eba11966f",
+    "partial-resume.py": "d2d880ae35083e3a5b765a4a39dd0a92555dd3bc2fe69d06b2b4b333e0c8adb5",
+    "refresh-boundary.py": "a6c56c607d4797e94de0c8e6b5b61b10e255c7308d904940ae1b242695f78272",
+    "resume-controls.py": "1b7a481068192ac22746a076ebecf905e90ca75d8797cec9253c3ede8adae6ba",
+    "run-academic-restart.py": "529188289a8c9d4c882eb52f626533b20ba4934fbc7ce2b3ee99974ada6fffb0",
+    "runtime-binding.py": "be1488b5995accb02212c36e4ce919fe2ddac61de50eeeb9d7d43d58571ecc24",
+    "source-controls.py": "78b542bbf63dbb632363773980f896b88b56a66c5c1c0bcc9a6867fee6f28e2c",
+    "stage-academic.py": "3c60e5aebc42d16b24f40a40c54c2544cdd5dd6b1a383f6caa79eca1064f8377",
+    "stage-app-writer.py": "f4c0ecea9653f82be0498457743f08906a15076d15d8e6b4ac3aac571abe5c75",
+    "stage-monitor.py": "02f705deffdba883460099359f36785b6521af4554923e8a886517cbff6ac4e1"
+  },
+  "no_universalrunner_or_sourcefixture_privacy_assertion_changes": true,
+  "original_manifest_sha256": "ac79d0c08f5c2c893a31ab9b30688eb11b2059f0ce18bf1e704373c24f4d076e",
+  "manifest_schema": "files absolute OWN children for real verify_package; entries relative archive inventory",
+  "receipt_effects": "preencode then fresh internal gate per create/truncate/raw partial write/fsync; raw descriptor close no pending buffer",
+  "targeted_original_review_sha256": "e287b34485a3c5d4e5aab6ff34f1c14eaf6e0e310e647cf23a62482bfe0868e9",
+  "fresh_targeted_recheck_then_Root_grant_required": true,
+  "stage_completion_command": [
+    "/usr/bin/python3",
+    "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/stage-academic.py",
+    "--grant",
+    "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/private/stage-grant.json",
+    "--complete-only"
+  ],
+  "canonical_library_rule": "183 bundled unchanged;182 canonical application-index libraries; sole fixed unindexed spring-boot-jarmode-tools-3.5.16.jar; all other differences denied",
+  "completion_manifest_sha256": "15963c993dca297d0d8ffc6e5bda25dc2c478b20821cef6ec6dfa627c27982d6",
+  "completion_receipt_sha256": "01a6f122bff2a4f20c2f6ef1a7e836ffcd46953e409c277e2418ae573e8223cd",
+  "new_root_grant_before_completion": true
+}

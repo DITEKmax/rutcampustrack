@@ -12,6 +12,7 @@ path runs first wins, the other gets None and exits silently.
 from __future__ import annotations
 
 import logging
+import re
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
@@ -76,6 +77,21 @@ async def handle_otp_verified(
     payload = event.get("payload", {}) or {}
     telegram_id = payload.get("telegram_id")
     if telegram_id is None:
-        logger.warning("otp.verified event missing telegram_id: %s", event)
+        logger.warning("otp.verified event missing telegram_id")
         return
-    await cleanup_otp_messages(int(telegram_id), bot=bot, tracker=tracker, reason="verified")
+    purpose = payload.get("purpose") or "login"
+    if purpose == "subject_delete":
+        challenge_id = payload.get("challenge_id")
+        if (
+            type(telegram_id) is not int
+            or telegram_id <= 0
+            or not isinstance(challenge_id, str)
+            or re.fullmatch(r"[A-Za-z0-9_-]{32}", challenge_id) is None
+        ):
+            logger.warning("Subject deletion OTP cleanup malformed")
+            return
+        purpose = f"subject_delete:{challenge_id}"
+    elif purpose != "login":
+        logger.warning("Unsupported OTP cleanup purpose")
+        return
+    await cleanup_otp_messages(int(telegram_id), bot=bot, tracker=tracker, reason="verified", purpose=purpose)

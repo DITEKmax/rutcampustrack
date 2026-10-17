@@ -1,0 +1,13 @@
+{
+  "runner_ast": "PASS",
+  "templates_json_yaml": "PASS",
+  "nine_docker_seven_host": "PASS",
+  "all_docker_images_exact_local_ids_pull_never_no_build": "PASS",
+  "all_published_ports_loopback": "PASS",
+  "grant_false_prevents_child_before_env_or_artifact_read": "PASS_ACTUAL_NATIVE2_SAFE_STATUS_ONLY",
+  "native_readiness": "NOT_RUN",
+  "app_browser": "NOT_RUN",
+  "root_source_sha": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+  "output_policy": "Child stdout/stderr DEVNULL; readiness HTTP status only, no body; no app logs/provider contents/browser traces",
+  "soft_resource_controls": "Observed RSS/shared-memory reserve/disk checks; no perprocess hardcgroup isolation claim"
+}

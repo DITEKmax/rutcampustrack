@@ -1,0 +1,17 @@
+{
+  "utc": "2026-10-12T10:20:24.640633+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "producer": "b3c0d04ede6b79c9818042e81074c848974d3ce9",
+  "resolved": [
+    "FMT-INVENTORY-01"
+  ],
+  "blocking_findings": [],
+  "exact_net_paths": 2092,
+  "integration": "exact Python16 replacement, no wholebed/06e0/bcf/983/H1",
+  "root_read_only_patch_apply_check_exit": 0,
+  "runtime_afterformat": "NOT_RUN",
+  "active_processes": [],
+  "selected": "Sol6.1/high",
+  "actual": "UNKNOWN",
+  "source_writes": false
+}

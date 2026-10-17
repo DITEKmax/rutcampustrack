@@ -1,0 +1,74 @@
+{
+  "scope": "LIGHT JSON/regex parser only; normal generators and TypeScript not rerun by reviewer",
+  "authGeneratedHeaderHashMatches": true,
+  "authCanonicalStates": [
+    "queued",
+    "preparing",
+    "ready",
+    "error"
+  ],
+  "generatedStates": [
+    "queued",
+    "preparing",
+    "ready",
+    "error"
+  ],
+  "statesMatch": true,
+  "manualBoundaryAcceptedStates": [
+    "queued",
+    "preparing",
+    "ready",
+    "error"
+  ],
+  "legacyDynamicKeys": [
+    "`/auth/admin/users/${number}/password-reset-link`",
+    "`/auth/sessions/${string}`"
+  ],
+  "paths": {
+    "/auth/export-jobs": {
+      "inSchema": true,
+      "literalKeyInGenerated": true
+    },
+    "/auth/export-jobs/{id}": {
+      "inSchema": true,
+      "literalKeyInGenerated": true
+    },
+    "/auth/export-jobs/{id}/file": {
+      "inSchema": true,
+      "literalKeyInGenerated": true
+    },
+    "/auth/export-jobs/{id}/ticket": {
+      "inSchema": true,
+      "literalKeyInGenerated": true
+    },
+    "/auth/sessions/{sessionId}": {
+      "inSchema": true,
+      "literalKeyInGenerated": true
+    },
+    "/auth/admin/users/{userId}/password-reset-link": {
+      "inSchema": true,
+      "literalKeyInGenerated": true
+    }
+  },
+  "academicRegistryPaths": {
+    "/academic/registry-exports/users": true,
+    "/academic/registry-exports/groups": true,
+    "/academic/registry-exports/users/formats": true,
+    "/academic/registry-exports/groups/formats": true
+  },
+  "academicGeneratedSha256": "84a9594175c0e531836544983a53fb741ae11c6252064f0db12dd1aeaa7367eb",
+  "scheduleUnchangedAgainstParent": true,
+  "scheduleSha256": "faa42b8abdae6d33d8a54f3b7992631a0562fc7db72484d7e2a70563a005144c",
+  "strictConsumerSourceSHA256": "a2b3321f165aceb8458fb8b7e004aed63cf7654af3e0488d3995042348d45304",
+  "strictConsumerActualResult": "frontend-auth-path-consumer-2 exit0 final reconstructed prelaunch source",
+  "generatorDependency": "21587695782fc5da3cee9c58589f9bed652e53e6 equivalent 381543370f08c2251daa00e80c16e3d441cfe072; generator verdict separate",
+  "legacyGeneratedObjectBodiesExact": {
+    "/auth/sessions/{sessionId}": true,
+    "/auth/admin/users/{userId}/password-reset-link": true
+  },
+  "schema_input": {
+    "label": "Auth OpenAPI source",
+    "sha256": "e929f282fe088766cc38c26ad45e9e7bed0b0bf4cfacf93fb03ac66d4aef2b4a"
+  },
+  "root_readable_presentation": "Hash identifier split from source label; exact original remains immutable-original-receipts.zip member. No original reviewer bytes modified."
+}

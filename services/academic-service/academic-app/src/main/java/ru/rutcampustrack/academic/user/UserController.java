@@ -1,5 +1,10 @@
 package ru.rutcampustrack.academic.user;
 
+import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
+import static ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT;
+import static ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER;
+
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -11,30 +16,22 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.academic.contract.api.UserApi;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
+import ru.rutcampustrack.academic.contract.dto.user.TeacherLookupResponse;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateAvatarRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserSummaryResponse;
-import ru.rutcampustrack.academic.contract.dto.user.TeacherLookupResponse;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
-import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
 import ru.rutcampustrack.academic.security.RequireRole;
 import ru.rutcampustrack.shared.web.audit.AdminAction;
 
-import java.util.List;
-
-import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
-import static ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT;
-import static ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER;
-
 /**
- * REST controller implementing UserApi contract.
- * Delegates all business logic to UserService.
- * Role enforcement via @RequireRole AOP aspect.
+ * REST controller implementing UserApi contract. Delegates all business logic to UserService. Role
+ * enforcement via @RequireRole AOP aspect.
  */
 @RestController
 public class UserController implements UserApi {
@@ -44,10 +41,11 @@ public class UserController implements UserApi {
     private final UserRoleGrantReader grantReader;
     private final UserArchiveService archiveService;
 
-    public UserController(UserService userService,
-                          UserAssembler userAssembler,
-                          UserRoleGrantReader grantReader,
-                          UserArchiveService archiveService) {
+    public UserController(
+            UserService userService,
+            UserAssembler userAssembler,
+            UserRoleGrantReader grantReader,
+            UserArchiveService archiveService) {
         this.userService = userService;
         this.userAssembler = userAssembler;
         this.grantReader = grantReader;
@@ -55,22 +53,30 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"USERS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"USERS_MANAGE"})
     @AdminAction("user.create")
     public ResponseEntity<EntityModel<UserCreatedResponse>> createUser(CreateUserRequest request) {
         return ResponseEntity.status(201).body(userService.createUser(request));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"USERS_VIEW"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"USERS_VIEW"})
     public ResponseEntity<EntityModel<UserResponse>> getUser(Long id) {
         User user = userService.findUserById(id);
         // BUG-006: ADMIN видит initialPassword пока пользователь его не сменил.
-        return ResponseEntity.ok(userAssembler.toAdminModel(user));
+        return ResponseEntity.ok()
+                .cacheControl(org.springframework.http.CacheControl.noStore())
+                .body(userAssembler.toAdminModel(user));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"USERS_VIEW"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"USERS_VIEW"})
     public ResponseEntity<PagedModel<EntityModel<UserResponse>>> listUsers(
             String search,
             String role,
@@ -79,15 +85,23 @@ public class UserController implements UserApi {
             Pageable pageable,
             PagedResourcesAssembler<UserResponse> assembler) {
         Page<User> page = userService.listUsers(search, role, status, roleStatus, pageable);
-        var grants = grantReader.findByUserIds(page.getContent().stream().map(User::getId).toList());
-        Page<UserResponse> responsePage = page.map(u -> userAssembler.toResponse(
-                u, false, grants.getOrDefault(u.getId(), java.util.List.of())));
-        return ResponseEntity.ok(assembler.toModel(responsePage,
-                response -> EntityModel.of(response)));
+        var grants =
+                grantReader.findByUserIds(page.getContent().stream().map(User::getId).toList());
+        Page<UserResponse> responsePage =
+                page.map(
+                        u ->
+                                userAssembler.toResponse(
+                                        u,
+                                        false,
+                                        grants.getOrDefault(u.getId(), java.util.List.of())));
+        return ResponseEntity.ok(
+                assembler.toModel(responsePage, response -> EntityModel.of(response)));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"USERS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"USERS_MANAGE"})
     @AdminAction("user.role.update")
     public ResponseEntity<EntityModel<UserResponse>> updateRoleGrant(
             Long id,
@@ -100,15 +114,20 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"USERS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"USERS_MANAGE"})
     @AdminAction("user.update")
-    public ResponseEntity<EntityModel<UserResponse>> updateUser(Long id, UpdateUserRequest request) {
+    public ResponseEntity<EntityModel<UserResponse>> updateUser(
+            Long id, UpdateUserRequest request) {
         User user = userService.updateUser(id, request);
         return ResponseEntity.ok(userAssembler.toModel(user));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"USERS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"USERS_MANAGE"})
     @AdminAction("user.patch")
     public ResponseEntity<EntityModel<UserResponse>> patchUser(Long id, PatchUserRequest request) {
         User user = userService.patchUser(id, request);
@@ -116,47 +135,78 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"USERS_ARCHIVE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"USERS_ARCHIVE"})
     @AdminAction("user.archive")
     public ResponseEntity<Void> archiveUser(Long id) {
         throw new org.springframework.web.server.ResponseStatusException(
                 org.springframework.http.HttpStatus.CONFLICT, "protectedroute_required");
     }
 
-    @Override @RequireRole(value={ADMIN}, admin={"USERS_ARCHIVE"})
-    public ResponseEntity<ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.Preview> previewUserArchive(Long id) {
-        return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore()).body(archiveService.preview(id));
-    }
-    @Override @RequireRole(value={ADMIN}, admin={"USERS_ARCHIVE"}) @AdminAction("user.archive")
-    public ResponseEntity<Void> archiveUserProtected(Long id,
-            ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.ArchiveRequest request) {
-        archiveService.archive(id,request);
-        return ResponseEntity.noContent().cacheControl(org.springframework.http.CacheControl.noStore()).build();
-    }
-    @Override @RequireRole(value={ADMIN}, admin={"USERS_ARCHIVE"}) @AdminAction("user.restore")
-    public ResponseEntity<Void> restoreUser(Long id,
-            ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.RestoreRequest request) {
-        archiveService.restore(id,request);
-        return ResponseEntity.noContent().cacheControl(org.springframework.http.CacheControl.noStore()).build();
+    @Override
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"USERS_ARCHIVE"})
+    public ResponseEntity<ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.Preview>
+            previewUserArchive(Long id) {
+        return ResponseEntity.ok()
+                .cacheControl(org.springframework.http.CacheControl.noStore())
+                .body(archiveService.preview(id));
     }
 
     @Override
-    @RequireRole(value={ADMIN}, admin={"USERS_MANAGE"})
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"USERS_ARCHIVE"})
+    @AdminAction("user.archive")
+    public ResponseEntity<Void> archiveUserProtected(
+            Long id,
+            ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.ArchiveRequest request) {
+        archiveService.archive(id, request);
+        return ResponseEntity.noContent()
+                .cacheControl(org.springframework.http.CacheControl.noStore())
+                .build();
+    }
+
+    @Override
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"USERS_ARCHIVE"})
+    @AdminAction("user.restore")
+    public ResponseEntity<Void> restoreUser(
+            Long id,
+            ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.RestoreRequest request) {
+        archiveService.restore(id, request);
+        return ResponseEntity.noContent()
+                .cacheControl(org.springframework.http.CacheControl.noStore())
+                .build();
+    }
+
+    @Override
+    @RequireRole(
+            value = {ADMIN},
+            admin = {"USERS_MANAGE"})
     @AdminAction("user.transfer")
-    public ResponseEntity<EntityModel<UserResponse>> transferStudent(Long id, TransferStudentRequest request) {
+    public ResponseEntity<EntityModel<UserResponse>> transferStudent(
+            Long id, TransferStudentRequest request) {
         User user = userService.transferStudent(id, request);
         return ResponseEntity.ok(userAssembler.toModel(user));
     }
 
     @Override
-    @RequireRole(value={ADMIN, TEACHER, STUDENT}, adminShared=true)
+    @RequireRole(
+            value = {ADMIN, TEACHER, STUDENT},
+            adminShared = true)
     public ResponseEntity<EntityModel<UserResponse>> getMe() {
         User user = userService.getMe();
         return ResponseEntity.ok(userAssembler.toModel(user));
     }
 
     @Override
-    @RequireRole(value={ADMIN, TEACHER, STUDENT}, adminShared=true)
+    @RequireRole(
+            value = {ADMIN, TEACHER, STUDENT},
+            adminShared = true)
     public ResponseEntity<EntityModel<UserResponse>> updateMyAvatar(UpdateAvatarRequest request) {
         User user = userService.updateMyAvatar(request.avatarId());
         return ResponseEntity.ok(userAssembler.toModel(user));
@@ -166,9 +216,8 @@ public class UserController implements UserApi {
     @RequireRole({STUDENT})
     public ResponseEntity<CollectionModel<EntityModel<UserResponse>>> listTeachers() {
         List<User> teachers = userService.listTeachers();
-        List<EntityModel<UserResponse>> models = teachers.stream()
-                .map(userAssembler::toModel)
-                .toList();
+        List<EntityModel<UserResponse>> models =
+                teachers.stream().map(userAssembler::toModel).toList();
         return ResponseEntity.ok(CollectionModel.of(models));
     }
 
@@ -179,19 +228,30 @@ public class UserController implements UserApi {
             org.springframework.data.domain.Pageable pageable,
             PagedResourcesAssembler<TeacherLookupResponse> assembler) {
         Page<User> page = userService.searchActiveTeachers(search, pageable);
-        Page<TeacherLookupResponse> responsePage = page.map(u -> new TeacherLookupResponse(
-                u.getId(), u.getDisplayName(), u.getEmployeeNumber()));
-        return ResponseEntity.ok(assembler.toModel(responsePage,
-                response -> EntityModel.of(response)));
+        Page<TeacherLookupResponse> responsePage =
+                page.map(
+                        u ->
+                                new TeacherLookupResponse(
+                                        u.getId(), u.getDisplayName(), u.getEmployeeNumber()));
+        return ResponseEntity.ok(
+                assembler.toModel(responsePage, response -> EntityModel.of(response)));
     }
 
     @Override
-    @RequireRole(value={STUDENT, TEACHER, ADMIN}, adminShared=true)
-    public ResponseEntity<CollectionModel<EntityModel<UserSummaryResponse>>> getUsersByIds(List<Long> ids) {
+    @RequireRole(
+            value = {STUDENT, TEACHER, ADMIN},
+            adminShared = true)
+    public ResponseEntity<CollectionModel<EntityModel<UserSummaryResponse>>> getUsersByIds(
+            List<Long> ids) {
         List<User> users = userService.findUsersByIds(ids);
-        List<EntityModel<UserSummaryResponse>> models = users.stream()
-                .map(u -> EntityModel.of(new UserSummaryResponse(u.getId(), u.getDisplayName())))
-                .toList();
+        List<EntityModel<UserSummaryResponse>> models =
+                users.stream()
+                        .map(
+                                u ->
+                                        EntityModel.of(
+                                                new UserSummaryResponse(
+                                                        u.getId(), u.getDisplayName())))
+                        .toList();
         return ResponseEntity.ok(CollectionModel.of(models));
     }
 }

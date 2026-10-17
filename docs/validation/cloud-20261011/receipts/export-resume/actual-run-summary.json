@@ -1,0 +1,246 @@
+{
+  "final_commit": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "product_commit": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+  "runs": [
+    {
+      "phase": "ebsr-compile-after-1",
+      "producer_head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+      "native_exit": 1,
+      "started": "2026-10-12T00:31:09.155458+00:00",
+      "finished": "2026-10-12T00:31:11.244654+00:00",
+      "duration_seconds": 2.089,
+      "source_unchanged": true,
+      "log_sha256": "198a92153a499d1674c72554679332967171693b5f90a3c9078f839c97c6b4c4",
+      "manifest_sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+      "task_execution": {},
+      "suites": [],
+      "resource_stop": null
+    },
+    {
+      "phase": "ebsr-compile-after-2",
+      "producer_head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+      "native_exit": 0,
+      "started": "2026-10-12T00:31:55.780452+00:00",
+      "finished": "2026-10-12T00:32:23.469641+00:00",
+      "duration_seconds": 27.689,
+      "source_unchanged": true,
+      "log_sha256": "e3cb992b241c9b12b13ae2ee7b5941e775b8fd55d1ce6a0365e2d8f508f716af",
+      "manifest_sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+      "task_execution": {},
+      "suites": [],
+      "resource_stop": null
+    },
+    {
+      "phase": "ebsr-crosslayer-after-1",
+      "producer_head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+      "native_exit": -15,
+      "started": "2026-10-12T00:32:40.056665+00:00",
+      "finished": "2026-10-12T00:33:05.066293+00:00",
+      "duration_seconds": 25.01,
+      "source_unchanged": true,
+      "log_sha256": "dd112f9f3325570b47849e90f4c350dc44f4cfc1ba201cc1f860bd1ba0ff63b2",
+      "manifest_sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+      "task_execution": {
+        ":services:auth-service:auth-app:integrationTest": "NOT_RUN"
+      },
+      "suites": [],
+      "resource_stop": "disk below parent 4GiB floor"
+    },
+    {
+      "phase": "ebsr-crosslayer-after-2",
+      "producer_head": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+      "native_exit": 1,
+      "started": "2026-10-12T00:43:00.513760+00:00",
+      "finished": "2026-10-12T00:43:56.294409+00:00",
+      "duration_seconds": 55.781,
+      "source_unchanged": true,
+      "log_sha256": "18e9b9f9307e09408e4b6e44901d2700d2ed1eccc68ac58b5895bac2dcda0976",
+      "manifest_sha256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+      "task_execution": {
+        ":services:auth-service:auth-app:integrationTest": "> Task :services:auth-service:auth-app:integrationTest"
+      },
+      "suites": [
+        {
+          "suite": "ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT",
+          "tests": 18,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0
+        }
+      ],
+      "resource_stop": null
+    },
+    {
+      "phase": "ebsr-crosslayer-after-3",
+      "producer_head": "e258af8f7b836814ad47aed3ded46060594f8567",
+      "native_exit": 0,
+      "started": "2026-10-12T00:46:04.672096+00:00",
+      "finished": "2026-10-12T00:47:07.521437+00:00",
+      "duration_seconds": 62.849,
+      "source_unchanged": true,
+      "log_sha256": "fdfbb88cf4896a115d2dbdb9a516d4e6a7fd388b99dc79db2ed449997b550d89",
+      "manifest_sha256": "5eac57c0886f516cd94e6e2faed2b80beba139642c26cf02368116e48dfdcb1b",
+      "task_execution": {
+        ":services:auth-service:auth-app:integrationTest": "> Task :services:auth-service:auth-app:integrationTest"
+      },
+      "suites": [
+        {
+          "suite": "ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT",
+          "tests": 18,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ],
+      "resource_stop": null
+    },
+    {
+      "phase": "ebsr-affected-unit-1",
+      "producer_head": "e258af8f7b836814ad47aed3ded46060594f8567",
+      "native_exit": 1,
+      "started": "2026-10-12T00:47:42.921066+00:00",
+      "finished": "2026-10-12T00:48:08.407246+00:00",
+      "duration_seconds": 25.486,
+      "source_unchanged": true,
+      "log_sha256": "468f8df4cdf53d734c27d85c2a566637c1eaa7e6263b39f024a81fea7654ec41",
+      "manifest_sha256": "5eac57c0886f516cd94e6e2faed2b80beba139642c26cf02368116e48dfdcb1b",
+      "task_execution": {
+        ":services:auth-service:auth-app:test": "> Task :services:auth-service:auth-app:test",
+        ":services:api-gateway:test": "NOT_RUN"
+      },
+      "suites": [
+        {
+          "suite": "ru.rutcampustrack.auth.controller.ReportDownloadTicketValidationTest",
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "ru.rutcampustrack.auth.events.ExportStateContractTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "ru.rutcampustrack.auth.export.ExportReportAuthorityTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+          "tests": 8,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0
+        }
+      ],
+      "resource_stop": null
+    },
+    {
+      "phase": "ebsr-affected-unit-2",
+      "producer_head": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+      "native_exit": 0,
+      "started": "2026-10-12T00:49:35.776565+00:00",
+      "finished": "2026-10-12T00:50:12.674320+00:00",
+      "duration_seconds": 36.898,
+      "source_unchanged": true,
+      "log_sha256": "1252dd7b3a38b558ca4a4f4305a62f05eb7a1ed3993bacf25de774581f1470a3",
+      "manifest_sha256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+      "task_execution": {
+        ":services:auth-service:auth-app:test": "> Task :services:auth-service:auth-app:test",
+        ":services:api-gateway:test": "> Task :services:api-gateway:test"
+      },
+      "suites": [
+        {
+          "suite": "ru.rutcampustrack.auth.service.ReportDownloadTicketServiceTest",
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "ru.rutcampustrack.gateway.security.ExportJobWorkerTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "ru.rutcampustrack.gateway.security.ReportDownloadTicketDownloadFilterTest",
+          "tests": 23,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ],
+      "resource_stop": null
+    },
+    {
+      "phase": "ebsr-auth-compatibility-1",
+      "producer_head": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+      "native_exit": 0,
+      "started": "2026-10-12T00:50:39.636610+00:00",
+      "finished": "2026-10-12T00:51:35.063803+00:00",
+      "duration_seconds": 55.427,
+      "source_unchanged": true,
+      "log_sha256": "fba5f4e93566c708504237afe94336cb177c81e2147d85809bfa95ab4f1d074b",
+      "manifest_sha256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+      "task_execution": {
+        ":services:auth-service:auth-app:integrationTest": "> Task :services:auth-service:auth-app:integrationTest"
+      },
+      "suites": [
+        {
+          "suite": "ru.rutcampustrack.auth.integration.AuthIT",
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "ru.rutcampustrack.auth.integration.ExportJobHttpIT",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "ru.rutcampustrack.auth.integration.OpenApiSnapshotIT",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ],
+      "resource_stop": null
+    },
+    {
+      "phase": "ebsr-jobs-compatibility-1",
+      "producer_head": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+      "native_exit": 0,
+      "started": "2026-10-12T00:52:26.726060+00:00",
+      "finished": "2026-10-12T00:53:03.410627+00:00",
+      "duration_seconds": 36.685,
+      "source_unchanged": true,
+      "log_sha256": "7022f3d911521ca6c6c4e82a614773953d84100e55e5a13d2590dc7433de8a15",
+      "manifest_sha256": "f8a799b3be731f75435ca9c142f017b05442adefd35256badb07f5e6bec5e16b",
+      "task_execution": {
+        ":services:auth-service:auth-app:integrationTest": "> Task :services:auth-service:auth-app:integrationTest"
+      },
+      "suites": [
+        {
+          "suite": "ru.rutcampustrack.auth.export.ExportJobsIT",
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ],
+      "resource_stop": null
+    }
+  ],
+  "scope": "Narrow EBSR01\u201304 corrections and concretely affected compatibility, not full export/client acceptance"
+}

@@ -1,0 +1,31 @@
+{
+  "status": "SOURCE_READY; generator plus actual pinned Settings controls verified",
+  "generator_commit": "84d56cb0691b28cbe47c46e8dc84ba03b380ac46",
+  "generator_parent_config_commit": "5d564870e631a276d88ac5a4b97463929f9b6687",
+  "created_source": [
+    "scripts/generate-bot-proto.py"
+  ],
+  "tracked_generated_writes": false,
+  "consumer_python": "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+  "consumer_env": {
+    "NP01_PYTHON_EXECUTABLE": "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "common_owner_command": [
+    "/workspace/scratch/rct-validation/np01_config/pinned-venv/bin/python",
+    "/workspace/rct-worktrees/np01-config/scripts/generate-bot-proto.py",
+    "--proto-dir",
+    "/workspace/rct-worktrees/np01-contract/proto",
+    "--output-dir",
+    "/workspace/rct-worktrees/np01-contract/services/notification-bot/bot/grpc_client"
+  ],
+  "checks": {
+    "pinned_settings_9_controls": "PASS; actual bot.config import, current pinned classes/validator; isolated env",
+    "generator_native_output": "PASS: identical pb2 plus exactly one verified relative import adaptation",
+    "determinism_import_descriptor": "PASS",
+    "wrong_versions_package_import_shape": "PASS rejection; destination unchanged",
+    "staged_gitleaks_parser_whitespace_size": "PASS"
+  },
+  "frozen_common_proto": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "limits": "No application/provider/secure RPC startup; common/domain own tracked generated outputs/runtime under root leases. No requirements/lock/gate edits. Original 5d source and receipts preserved. Venv is read only; no further installs."
+}

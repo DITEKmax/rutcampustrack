@@ -1,0 +1,33 @@
+{
+  "base": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "rows": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "beforeSha256": "7124c96250c6740c1efc312fa9ef03d464fa2f3e25a375afad00971bb27e4cce",
+      "mode": "0o600",
+      "ownCOW": true,
+      "nlinkBeforeFormat": 1
+    },
+    {
+      "path": "tests/e2e/playwright.first3.config.ts",
+      "beforeSha256": "a7fa0e1ab77d24dd1badc98234ad60cbc9c5e0adc5ec507b67325eee30615bfc",
+      "mode": "0o600",
+      "ownCOW": true,
+      "nlinkBeforeFormat": 1
+    },
+    {
+      "path": "tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "beforeSha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+      "mode": "0o600",
+      "ownCOW": true,
+      "nlinkBeforeFormat": 1
+    },
+    {
+      "path": "tests/e2e/fixtures/first3-observer.ts",
+      "beforeSha256": "324dab7a2b2ca4156f4240f1c08e4281a2924663e73e5b6a4773d6c0684c5624",
+      "mode": "0o600",
+      "ownCOW": true,
+      "nlinkBeforeFormat": 1
+    }
+  ]
+}

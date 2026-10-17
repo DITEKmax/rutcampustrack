@@ -1,0 +1,38 @@
+{
+  "time": "2026-10-11T23:30:48.678649+00:00",
+  "baseline_main": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "local_sha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+  "remote_branch_sha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+  "pr_head_sha": "63647fc9b63175e1e32b0773d57affc637ea1065",
+  "branch": "codex/server-validation-20261011",
+  "pr_url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+  "is_draft": true,
+  "target": "main",
+  "push_session": 68182,
+  "push_native_exit": 0,
+  "readback_session": 28303,
+  "readback_native_exit": 0,
+  "runs": [
+    {
+      "id": 38184430134,
+      "name": "Coverage"
+    },
+    {
+      "id": 38184430139,
+      "name": "CI"
+    },
+    {
+      "id": 38184430147,
+      "name": "Security"
+    },
+    {
+      "id": 38184430135,
+      "name": "OpenAPI Drift Guard"
+    }
+  ],
+  "run_state": "queued/in_progress exact636 checkpoint only notfinalPASS",
+  "actual_checkout_merge_sha": "UNKNOWN until actualjoblog",
+  "mandatory_manual_gate_session": 57652,
+  "mandatory_gate_native_exit": 0,
+  "state": "IN_PROGRESS notDONE"
+}

@@ -1,15 +1,27 @@
 package ru.rutcampustrack.academic.user;
 
+import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.lang.Nullable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.lang.Nullable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,22 +32,21 @@ import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
-import org.springframework.hateoas.EntityModel;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
-import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
-import ru.rutcampustrack.academic.entity.StudentGroupHistory;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
 import ru.rutcampustrack.academic.entity.Semester;
+import ru.rutcampustrack.academic.entity.StudentGroupHistory;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
-import ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService;
+import ru.rutcampustrack.academic.event.StudentInitialMembershipRecordedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
+import ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService;
 import ru.rutcampustrack.academic.history.HistoricalMembershipException;
 import ru.rutcampustrack.academic.history.HistoricalMembershipService;
 import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
@@ -44,34 +55,25 @@ import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
 import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
+import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
 import ru.rutcampustrack.academic.security.RequestContext;
 
-import java.security.SecureRandom;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-
 /**
- * Business logic for User domain: CRUD, login generation, BCrypt password,
- * headman cascade revoke, student group transfer with history.
+ * Business logic for User domain: CRUD, login generation, BCrypt password, headman cascade revoke,
+ * student group transfer with history.
  */
 @Service
 public class UserService {
     @Autowired
-    private ru.rutcampustrack.academic.notification.AcademicPersonalNotificationPublisher personalNotifications;
+    private ru.rutcampustrack.academic.notification.AcademicPersonalNotificationPublisher
+            personalNotifications;
 
-    private static final String CHARSET =
-            "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    private static final String CHARSET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
     private static final int PASSWORD_LENGTH = 12;
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
     private final SecureRandom secureRandom = new SecureRandom();
 
     private final UserRepository userRepository;
@@ -86,26 +88,31 @@ public class UserService {
     private final GroupHistoryCoverageRepository coverageRepository;
     private final UserRoleGrantWriter roleGrantWriter;
     private final UserRoleGrantReader roleGrantReader;
+
     @org.springframework.beans.factory.annotation.Autowired
     private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
+
     @org.springframework.beans.factory.annotation.Autowired
     private ru.rutcampustrack.academic.admin.AdminAccessService adminAccessService;
+
     private final GroupHeadmanAssignmentService headmanAssignmentService;
 
     @Autowired
-    public UserService(UserRepository userRepository,
-                       HeadmanAssistantRepository headmanAssistantRepository,
-                       StudentGroupHistoryRepository studentGroupHistoryRepository,
-                       RequestContext requestContext,
-                       UserAssembler userAssembler,
-                       @Nullable CacheManager cacheManager,
-                       ApplicationEventPublisher eventPublisher,
-                       GroupRepository groupRepository,
-                       SemesterRepository semesterRepository,
-                       GroupHistoryCoverageRepository coverageRepository,
-                       UserRoleGrantWriter roleGrantWriter,
-                       UserRoleGrantReader roleGrantReader,
-                       GroupHeadmanAssignmentService headmanAssignmentService) {
+    public UserService(
+            UserRepository userRepository,
+            HeadmanAssistantRepository headmanAssistantRepository,
+            StudentGroupHistoryRepository studentGroupHistoryRepository,
+            RequestContext requestContext,
+            UserAssembler userAssembler,
+            @Nullable CacheManager cacheManager,
+            ApplicationEventPublisher eventPublisher,
+            GroupRepository groupRepository,
+            SemesterRepository semesterRepository,
+            GroupHistoryCoverageRepository coverageRepository,
+            UserRoleGrantWriter roleGrantWriter,
+            UserRoleGrantReader roleGrantReader,
+            GroupHeadmanAssignmentService headmanAssignmentService,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.headmanAssistantRepository = headmanAssistantRepository;
         this.studentGroupHistoryRepository = studentGroupHistoryRepository;
@@ -119,36 +126,54 @@ public class UserService {
         this.roleGrantWriter = roleGrantWriter;
         this.roleGrantReader = roleGrantReader;
         this.headmanAssignmentService = headmanAssignmentService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /** Compatibility constructor for source-era unit tests that do not mutate membership. */
-    public UserService(UserRepository userRepository,
-                       HeadmanAssistantRepository headmanAssistantRepository,
-                       StudentGroupHistoryRepository studentGroupHistoryRepository,
-                       RequestContext requestContext,
-                       UserAssembler userAssembler,
-                       @Nullable CacheManager cacheManager,
-                       ApplicationEventPublisher eventPublisher) {
-        this(userRepository, headmanAssistantRepository, studentGroupHistoryRepository,
-                requestContext, userAssembler, cacheManager, eventPublisher,
-                null, null, null, null, null, null);
+    public UserService(
+            UserRepository userRepository,
+            HeadmanAssistantRepository headmanAssistantRepository,
+            StudentGroupHistoryRepository studentGroupHistoryRepository,
+            RequestContext requestContext,
+            UserAssembler userAssembler,
+            @Nullable CacheManager cacheManager,
+            ApplicationEventPublisher eventPublisher,
+            PasswordEncoder passwordEncoder) {
+        this(
+                userRepository,
+                headmanAssistantRepository,
+                studentGroupHistoryRepository,
+                requestContext,
+                userAssembler,
+                cacheManager,
+                eventPublisher,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                passwordEncoder);
     }
 
     @Transactional
     public EntityModel<UserCreatedResponse> createUser(CreateUserRequest request) {
-        adminAccess.mutation(null,"USERS_MANAGE");
-        if(request.role()==UserRole.ADMIN) {
-            adminAccess.requireFull();adminAccessService.validate(request.adminAccess());
-        } else if(request.adminAccess()!=null) throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
+        adminAccess.mutation(null, "USERS_MANAGE");
+        if (request.role() == UserRole.ADMIN) {
+            adminAccess.requireFull();
+            adminAccessService.validate(request.adminAccess());
+        } else if (request.adminAccess() != null)
+            throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
         validateCreateRoleData(request);
 
         // Lock and validate the group/semester before creating a STUDENT.  The
         // returned semester is captured once and becomes the authoritative
         // joined_at value for this transaction. Role-specific validation above
         // guarantees that a STUDENT always has a real group here.
-        EnrollmentContext enrollment = request.role() == UserRole.STUDENT
-                ? prepareInitialEnrollment(request.groupId())
-                : null;
+        EnrollmentContext enrollment =
+                request.role() == UserRole.STUDENT
+                        ? prepareInitialEnrollment(request.groupId())
+                        : null;
 
         // One account keeps one login even when later role grants are added.
         String login = generateLogin(request);
@@ -158,14 +183,16 @@ public class UserService {
         // handler is kept as a race-condition backstop (T-58-02-02).
         if (request.telegramId() != null
                 && userRepository.existsByTelegramId(request.telegramId())) {
-            throw new ConflictException("telegramId", request.telegramId(),
+            throw new ConflictException(
+                    "telegramId",
+                    request.telegramId(),
                     "Telegram ID уже привязан к другой учётной записи");
         }
         if (request.employeeNumber() != null
                 && !request.employeeNumber().isBlank()
                 && userRepository.existsByEmployeeNumber(request.employeeNumber())) {
-            throw new ConflictException("employeeNumber", request.employeeNumber(),
-                    "Табельный номер уже используется");
+            throw new ConflictException(
+                    "employeeNumber", request.employeeNumber(), "Табельный номер уже используется");
         }
 
         // Generate random plain-text password
@@ -197,7 +224,8 @@ public class UserService {
 
         user = userRepository.save(user);
         userRepository.flush();
-        if(request.role()==UserRole.ADMIN) adminAccessService.assignCreated(user.getId(),request.adminAccess());
+        if (request.role() == UserRole.ADMIN)
+            adminAccessService.assignCreated(user.getId(), request.adminAccess());
         else synchronizeRoleGrants(user);
         if (enrollment != null) {
             StudentGroupHistory history = new StudentGroupHistory();
@@ -207,47 +235,111 @@ public class UserService {
             history.setCreatedAt(now);
             history.setReason("initial-enrollment");
             studentGroupHistoryRepository.save(history);
+            studentGroupHistoryRepository.flush();
+            eventPublisher.publishEvent(
+                    new StudentInitialMembershipRecordedEvent(history, enrollment.semester()));
             evictGroupMembersAfterCommit(enrollment.group().getId());
         }
         return userAssembler.toCreatedModel(user, plainPassword);
     }
 
     public User findUserById(Long id) {
-        return userRepository.findByIdIncludingArchived(id)
+        return userRepository
+                .findByIdIncludingArchived(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
     }
 
     /**
-     * Unified list: case-insensitive search по login/ФИО/telegramId (BUG-006-1)
-     * + опциональные фильтры role/status через JPA Specification API (D-02).
-     * Пустые параметры → без ограничений (backward compatible).
+     * Unified list: case-insensitive search по login/ФИО/telegramId (BUG-006-1) + опциональные
+     * фильтры role/status через JPA Specification API (D-02). Пустые параметры → без ограничений
+     * (backward compatible).
      */
-    public Page<User> listUsers(String search,
-                                String roleFilter,
-                                AccountStatus statusFilter,
-                                String roleStatusFilter,
-                                Pageable pageable) {
+    public Page<User> listUsers(
+            String search,
+            String roleFilter,
+            AccountStatus statusFilter,
+            String roleStatusFilter,
+            Pageable pageable) {
         validateRoleFilter(roleFilter, roleStatusFilter);
-        Specification<User> spec = Specification
-                .where(UserSpecifications.matchesSearch(search))
-                .and(UserSpecifications.matchesGrant(roleFilter, roleStatusFilter))
-                .and(roleStatusFilter == null ? UserSpecifications.matchesStatus(statusFilter) : null);
-        Pageable effective = pageable.getSort().isSorted()
-                ? pageable
-                : org.springframework.data.domain.PageRequest.of(
-                        pageable.getPageNumber(),
-                        pageable.getPageSize(),
-                        org.springframework.data.domain.Sort.by("lastName", "firstName", "middleName"));
+        Specification<User> spec =
+                Specification.where(UserSpecifications.matchesSearch(search))
+                        .and(UserSpecifications.matchesGrant(roleFilter, roleStatusFilter))
+                        .and(
+                                roleStatusFilter == null
+                                        ? UserSpecifications.matchesStatus(statusFilter)
+                                        : null);
+        Pageable effective =
+                pageable.getSort().isSorted()
+                        ? pageable
+                        : org.springframework.data.domain.PageRequest.of(
+                                pageable.getPageNumber(),
+                                pageable.getPageSize(),
+                                org.springframework.data.domain.Sort.by(
+                                        "lastName", "firstName", "middleName"));
+        boolean archivedRole =
+                roleStatusFilter != null && "ARCHIVED".equalsIgnoreCase(roleStatusFilter.trim());
+        if (archivedRole || (roleStatusFilter == null && statusFilter == AccountStatus.ARCHIVED)) {
+            // A restored account can still have archived grants. Do not force account ARCHIVED
+            // when the administrator explicitly selects archived role history.
+            Map<String, String> columns =
+                    Map.ofEntries(
+                            Map.entry("id", "id"),
+                            Map.entry("login", "login"),
+                            Map.entry("lastName", "last_name"),
+                            Map.entry("firstName", "first_name"),
+                            Map.entry("middleName", "middle_name"),
+                            Map.entry("role", "role"),
+                            Map.entry("status", "status"),
+                            Map.entry("employeeNumber", "employee_number"),
+                            Map.entry("createdAt", "created_at"));
+            List<Sort.Order> orders = new ArrayList<>();
+            for (Sort.Order order : effective.getSort()) {
+                String column = columns.get(order.getProperty());
+                if (column == null)
+                    throw new BadRequestException("sort", "Недопустимое поле сортировки");
+                orders.add(order.withProperty(column));
+            }
+            if (orders.stream().noneMatch(order -> order.getProperty().equals("id")))
+                orders.add(Sort.Order.asc("id"));
+            Pageable archivedPage =
+                    effective.isPaged()
+                            ? PageRequest.of(
+                                    effective.getPageNumber(),
+                                    effective.getPageSize(),
+                                    Sort.by(orders))
+                            : Pageable.unpaged(Sort.by(orders));
+            String pattern =
+                    search == null || search.isBlank()
+                            ? null
+                            : "%"
+                                    + UserSpecifications.escapeLike(
+                                            search.trim().toLowerCase(Locale.ROOT))
+                                    + "%";
+            return userRepository.findAdminRegistryIncludingArchived(
+                    pattern,
+                    roleFilter == null || roleFilter.isBlank()
+                            ? null
+                            : roleFilter.trim().toLowerCase(Locale.ROOT),
+                    roleStatusFilter == null
+                            ? null
+                            : roleStatusFilter.trim().toLowerCase(Locale.ROOT),
+                    roleStatusFilter == null && statusFilter != null
+                            ? statusFilter.name().toLowerCase(Locale.ROOT)
+                            : null,
+                    archivedPage);
+        }
         return userRepository.findAll(spec, effective);
     }
 
     /** Legacy overload retained for source-era callers and tests. */
-    public Page<User> listUsers(String search,
-                                UserRole roleFilter,
-                                AccountStatus statusFilter,
-                                Pageable pageable) {
-        return listUsers(search, roleFilter == null ? null : roleFilter.name(),
-                statusFilter, null, pageable);
+    public Page<User> listUsers(
+            String search, UserRole roleFilter, AccountStatus statusFilter, Pageable pageable) {
+        return listUsers(
+                search,
+                roleFilter == null ? null : roleFilter.name(),
+                statusFilter,
+                null,
+                pageable);
     }
 
     /** Backward-compatible overload for internal callers (e.g. gRPC service). */
@@ -258,74 +350,103 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User updateRoleGrant(Long id, String roleName, RoleGrantUpdateRequest request) {
-        adminAccess.mutation(id,"USERS_MANAGE");
-        if("ADMIN".equalsIgnoreCase(roleName)) throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
+        adminAccess.mutation(id, "USERS_MANAGE");
+        if ("ADMIN".equalsIgnoreCase(roleName))
+            throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
         if (roleGrantReader == null || roleGrantWriter == null) {
             throw HistoricalMembershipException.precondition("Role grant writer is unavailable");
         }
         UserRole role = parseManagedRole(roleName);
-        User user = userRepository.findByIdForUpdate(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        var current = roleGrantReader.findByUserId(id).stream()
-                .filter(grant -> role.name().equals(grant.role()))
-                .findFirst();
+        User user =
+                userRepository
+                        .findByIdForUpdate(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        var current =
+                roleGrantReader.findByUserId(id).stream()
+                        .filter(grant -> role.name().equals(grant.role()))
+                        .findFirst();
         validateRoleGrantData(role, request, current.isPresent());
         RoleGrantStatus status = request.status();
         validateRoleStatus(role, status);
-        String previousStatus = current.map(grant -> grant.status().toUpperCase(java.util.Locale.ROOT))
-                .orElse(null);
-        boolean freshAssignment = "ARCHIVED".equals(previousStatus)
-                && user.getStatus() != AccountStatus.ARCHIVED;
+        String previousStatus =
+                current.map(grant -> grant.status().toUpperCase(java.util.Locale.ROOT))
+                        .orElse(null);
+        boolean freshAssignment =
+                "ARCHIVED".equals(previousStatus) && user.getStatus() != AccountStatus.ARCHIVED;
         if ("ARCHIVED".equals(previousStatus) && !freshAssignment) {
             throw new BadRequestException("Архивную роль нельзя изменить через этот endpoint");
         }
 
-        if (role == UserRole.ADMIN && current.isPresent() && !"ACTIVE".equals(current.get().status()) && !freshAssignment) {
-            throw new BadRequestException("Неактивную роль ADMIN нельзя реактивировать в этом пакете");
+        if (role == UserRole.ADMIN
+                && current.isPresent()
+                && !"ACTIVE".equals(current.get().status())
+                && !freshAssignment) {
+            throw new BadRequestException(
+                    "Неактивную роль ADMIN нельзя реактивировать в этом пакете");
         }
 
         Long grantGroupId = current.map(grant -> grant.groupId()).orElse(null);
-        if (role == UserRole.STUDENT && grantGroupId == null && current.isPresent()
+        if (role == UserRole.STUDENT
+                && grantGroupId == null
+                && current.isPresent()
                 && user.getRole() == UserRole.STUDENT) {
             grantGroupId = user.getGroupId();
         }
         boolean createdStudentHistory = false;
+        StudentInitialMembershipRecordedEvent initialMembership = null;
         if (role == UserRole.STUDENT) {
             if (current.isPresent() && !freshAssignment) {
-                if (request.groupId() != null && !java.util.Objects.equals(request.groupId(), grantGroupId)) {
+                if (request.groupId() != null
+                        && !java.util.Objects.equals(request.groupId(), grantGroupId)) {
                     throw HistoricalMembershipException.unsupported(
-                        "Изменение группы выполняется только через перевод с причиной");
+                            "Изменение группы выполняется только через перевод с причиной");
                 }
                 if (status == RoleGrantStatus.ACTIVE) {
                     if (grantGroupId == null) {
-                        throw new BadRequestException("Активная STUDENT роль требует группу; используй перевод с историей");
+                        throw new BadRequestException(
+                                "Активная STUDENT роль требует группу; используй перевод с"
+                                        + " историей");
                     }
-                    Long telegramId = request.telegramId() != null ? request.telegramId() : user.getTelegramId();
+                    Long telegramId =
+                            request.telegramId() != null
+                                    ? request.telegramId()
+                                    : user.getTelegramId();
                     applyStudentTelegram(user, telegramId);
                 } else if (request.telegramId() != null) {
                     applyStudentTelegram(user, request.telegramId());
                 }
             } else {
-                Long telegram = request.telegramId() != null ? request.telegramId() : user.getTelegramId();
+                Long telegram =
+                        request.telegramId() != null ? request.telegramId() : user.getTelegramId();
                 if (request.groupId() == null || telegram == null) {
-                    throw new BadRequestException("Для добавления STUDENT нужны группа и Telegram ID");
+                    throw new BadRequestException(
+                            "Для добавления STUDENT нужны группа и Telegram ID");
                 }
                 EnrollmentContext enrollment = prepareInitialEnrollment(request.groupId());
                 grantGroupId = enrollment.group().getId();
                 if (freshAssignment) {
                     requireCoveredGroup(enrollment.group(), LocalDate.now(MOSCOW));
                     if (!studentGroupHistoryRepository.findOpenByUserIdForUpdate(id).isEmpty()) {
-                        throw HistoricalMembershipException.precondition("Fresh role assignment cannot overlap membership");
+                        throw HistoricalMembershipException.precondition(
+                                "Fresh role assignment cannot overlap membership");
                     }
                 }
                 applyStudentTelegram(user, telegram);
                 StudentGroupHistory history = new StudentGroupHistory();
                 history.setUserId(user.getId());
                 history.setGroupId(grantGroupId);
-                history.setJoinedAt(freshAssignment ? LocalDate.now(MOSCOW) : enrollment.semester().getDateFrom());
+                history.setJoinedAt(
+                        freshAssignment
+                                ? LocalDate.now(MOSCOW)
+                                : enrollment.semester().getDateFrom());
                 history.setCreatedAt(OffsetDateTime.now());
                 history.setReason(freshAssignment ? "role-reassignment" : "initial-enrollment");
                 studentGroupHistoryRepository.save(history);
+                studentGroupHistoryRepository.flush();
+                if (!freshAssignment)
+                    initialMembership =
+                            new StudentInitialMembershipRecordedEvent(
+                                    history, enrollment.semester());
                 createdStudentHistory = true;
             }
         } else if (role == UserRole.TEACHER) {
@@ -334,7 +455,8 @@ public class UserService {
                     throw new BadRequestException("Для добавления TEACHER нужен табельный номер");
                 }
                 ensureEmployeeAvailable(user, request.employeeNumber());
-                if (user.getEmployeeNumber() == null) user.setEmployeeNumber(request.employeeNumber());
+                if (user.getEmployeeNumber() == null)
+                    user.setEmployeeNumber(request.employeeNumber());
             } else if (request.employeeNumber() != null
                     && !request.employeeNumber().isBlank()
                     && !request.employeeNumber().equals(user.getEmployeeNumber())) {
@@ -346,7 +468,9 @@ public class UserService {
                 throw new BadRequestException("Активная TEACHER роль требует табельный номер");
             }
         } else {
-            if (request.groupId() != null || request.employeeNumber() != null || request.telegramId() != null) {
+            if (request.groupId() != null
+                    || request.employeeNumber() != null
+                    || request.telegramId() != null) {
                 throw new BadRequestException("Для ADMIN role-data не поддерживается этим пакетом");
             }
         }
@@ -368,7 +492,8 @@ public class UserService {
                 case EXPELLED -> user.setStatus(AccountStatus.EXPELLED);
                 case SUSPENDED -> user.setStatus(AccountStatus.SUSPENDED);
                 case GRADUATED, DISMISSED -> user.setStatus(AccountStatus.ACTIVE);
-                case ARCHIVED -> throw new BadRequestException("ARCHIVED не применим к управляемой роли");
+                case ARCHIVED ->
+                        throw new BadRequestException("ARCHIVED не применим к управляемой роли");
             }
         }
 
@@ -395,11 +520,10 @@ public class UserService {
                 grantGroupId);
         if (role == UserRole.STUDENT) {
             roleGrantWriter.synchronizeDerivedHeadman(
-                    id,
-                    status == RoleGrantStatus.ACTIVE && saved.isHeadman(),
-                    grantGroupId);
+                    id, status == RoleGrantStatus.ACTIVE && saved.isHeadman(), grantGroupId);
             evictGroupMembersAfterCommit(grantGroupId);
         }
+        if (initialMembership != null) eventPublisher.publishEvent(initialMembership);
         return saved;
     }
 
@@ -408,30 +532,31 @@ public class UserService {
     }
 
     /**
-     * Bounded teacher lookup for headman subject assignment.  The durable grant
-     * is authoritative: a mixed-role account with an active TEACHER grant is a
-     * candidate even when its legacy scalar role belongs to another role.
+     * Bounded teacher lookup for headman subject assignment. The durable grant is authoritative: a
+     * mixed-role account with an active TEACHER grant is a candidate even when its legacy scalar
+     * role belongs to another role.
      */
     public Page<User> searchActiveTeachers(String search, Pageable pageable) {
         int pageSize = Math.max(1, Math.min(pageable.getPageSize(), 20));
-        Pageable bounded = org.springframework.data.domain.PageRequest.of(
-                pageable.getPageNumber(),
-                pageSize,
-                org.springframework.data.domain.Sort.by(
-                        org.springframework.data.domain.Sort.Order.asc("lastName"),
-                        org.springframework.data.domain.Sort.Order.asc("firstName"),
-                        org.springframework.data.domain.Sort.Order.asc("middleName"),
-                        org.springframework.data.domain.Sort.Order.asc("id")));
-        Specification<User> specification = Specification
-                .where(UserSpecifications.matchesTeacherLookup(search))
-                .and(UserSpecifications.matchesGrant("TEACHER", "ACTIVE"));
+        Pageable bounded =
+                org.springframework.data.domain.PageRequest.of(
+                        pageable.getPageNumber(),
+                        pageSize,
+                        org.springframework.data.domain.Sort.by(
+                                org.springframework.data.domain.Sort.Order.asc("lastName"),
+                                org.springframework.data.domain.Sort.Order.asc("firstName"),
+                                org.springframework.data.domain.Sort.Order.asc("middleName"),
+                                org.springframework.data.domain.Sort.Order.asc("id")));
+        Specification<User> specification =
+                Specification.where(UserSpecifications.matchesTeacherLookup(search))
+                        .and(UserSpecifications.matchesGrant("TEACHER", "ACTIVE"));
         return userRepository.findAll(specification, bounded);
     }
 
     /**
-     * Batch-резолв display-имён по списку ID (для STUDENT/TEACHER аудитных мест).
-     * Cap на size — 100 ids, защита от abuse через query string. Несуществующие
-     * ID молча пропускаются (downstream caller сам решит fallback по отсутствующему).
+     * Batch-резолв display-имён по списку ID (для STUDENT/TEACHER аудитных мест). Cap на size — 100
+     * ids, защита от abuse через query string. Несуществующие ID молча пропускаются (downstream
+     * caller сам решит fallback по отсутствующему).
      *
      * @param ids список ID, 1..100 элементов
      * @return найденные пользователи (порядок не гарантируется — callee должен мапить по id)
@@ -450,17 +575,17 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User updateUser(Long id, UpdateUserRequest request) {
-        adminAccess.mutation(id,"USERS_MANAGE");
-        if(request.role()==UserRole.ADMIN) {
+        adminAccess.mutation(id, "USERS_MANAGE");
+        if (request.role() == UserRole.ADMIN) {
             adminAccess.requireFull();
-            if(!adminAccessService.get(id).assigned()) throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
+            if (!adminAccessService.get(id).assigned())
+                throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
         }
-        User user = userRepository.findByIdForUpdate(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        ensureMembershipMutationSupported(
-                user,
-                request.role(),
-                request.groupId());
+        User user =
+                userRepository
+                        .findByIdForUpdate(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        ensureMembershipMutationSupported(user, request.role(), request.groupId());
         user.setLastName(request.lastName());
         user.setFirstName(request.firstName());
         user.setMiddleName(request.middleName());
@@ -476,7 +601,8 @@ public class UserService {
     }
 
     private void validateRoleFilter(String roleFilter, String roleStatusFilter) {
-        if (roleStatusFilter != null && !roleStatusFilter.isBlank()
+        if (roleStatusFilter != null
+                && !roleStatusFilter.isBlank()
                 && (roleFilter == null || roleFilter.isBlank())) {
             throw new BadRequestException("Фильтр статуса роли требует фильтр роли");
         }
@@ -488,12 +614,15 @@ public class UserService {
         if (roleStatusFilter != null && !roleStatusFilter.isBlank()) {
             RoleGrantStatus status;
             try {
-                status = RoleGrantStatus.valueOf(roleStatusFilter.trim().toUpperCase(java.util.Locale.ROOT));
+                status =
+                        RoleGrantStatus.valueOf(
+                                roleStatusFilter.trim().toUpperCase(java.util.Locale.ROOT));
             } catch (IllegalArgumentException ex) {
                 throw new BadRequestException("Недопустимый статус роли: " + roleStatusFilter);
             }
             if (!isApplicableRoleStatus(normalized, status)) {
-                throw new BadRequestException("Статус " + status + " не применим к роли " + normalized);
+                throw new BadRequestException(
+                        "Статус " + status + " не применим к роли " + normalized);
             }
         }
     }
@@ -502,7 +631,8 @@ public class UserService {
         if (roleName == null) throw new BadRequestException("Роль обязательна");
         try {
             UserRole role = UserRole.valueOf(roleName.trim().toUpperCase(java.util.Locale.ROOT));
-            if (role == UserRole.ADMIN || role == UserRole.STUDENT || role == UserRole.TEACHER) return role;
+            if (role == UserRole.ADMIN || role == UserRole.STUDENT || role == UserRole.TEACHER)
+                return role;
         } catch (IllegalArgumentException ignored) {
             // Use the same domain error for unknown and derived roles.
         }
@@ -511,34 +641,35 @@ public class UserService {
 
     private static void validateRoleStatus(UserRole role, RoleGrantStatus status) {
         if (status == null) throw new BadRequestException("Статус роли обязателен");
-        boolean valid = isApplicableRoleStatus(role.name(), status)
-                && status != RoleGrantStatus.ARCHIVED;
+        boolean valid =
+                isApplicableRoleStatus(role.name(), status) && status != RoleGrantStatus.ARCHIVED;
         if (!valid) throw new BadRequestException("Статус не применим к роли " + role);
     }
 
     private static boolean isApplicableRoleStatus(String role, RoleGrantStatus status) {
         return switch (role) {
-            case "STUDENT" -> status == RoleGrantStatus.ACTIVE
-                    || status == RoleGrantStatus.EXPELLED
-                    || status == RoleGrantStatus.GRADUATED
-                    || status == RoleGrantStatus.SUSPENDED
-                    || status == RoleGrantStatus.ARCHIVED;
-            case "TEACHER" -> status == RoleGrantStatus.ACTIVE
-                    || status == RoleGrantStatus.DISMISSED
-                    || status == RoleGrantStatus.SUSPENDED
-                    || status == RoleGrantStatus.ARCHIVED;
-            case "ADMIN" -> status == RoleGrantStatus.ACTIVE
-                    || status == RoleGrantStatus.ARCHIVED;
-            case "HEADMAN" -> status == RoleGrantStatus.ACTIVE
-                    || status == RoleGrantStatus.SUSPENDED
-                    || status == RoleGrantStatus.ARCHIVED;
+            case "STUDENT" ->
+                    status == RoleGrantStatus.ACTIVE
+                            || status == RoleGrantStatus.EXPELLED
+                            || status == RoleGrantStatus.GRADUATED
+                            || status == RoleGrantStatus.SUSPENDED
+                            || status == RoleGrantStatus.ARCHIVED;
+            case "TEACHER" ->
+                    status == RoleGrantStatus.ACTIVE
+                            || status == RoleGrantStatus.DISMISSED
+                            || status == RoleGrantStatus.SUSPENDED
+                            || status == RoleGrantStatus.ARCHIVED;
+            case "ADMIN" -> status == RoleGrantStatus.ACTIVE || status == RoleGrantStatus.ARCHIVED;
+            case "HEADMAN" ->
+                    status == RoleGrantStatus.ACTIVE
+                            || status == RoleGrantStatus.SUSPENDED
+                            || status == RoleGrantStatus.ARCHIVED;
             default -> false;
         };
     }
 
-    private static void validateRoleGrantData(UserRole role,
-                                              RoleGrantUpdateRequest request,
-                                              boolean existingGrant) {
+    private static void validateRoleGrantData(
+            UserRole role, RoleGrantUpdateRequest request, boolean existingGrant) {
         if (request == null) throw new BadRequestException("Данные роли обязательны");
         if (request.groupId() != null && request.groupId() <= 0) {
             throw new BadRequestException("groupId", "ID группы должен быть положительным");
@@ -546,13 +677,13 @@ public class UserService {
         if (request.telegramId() != null && request.telegramId() <= 0) {
             throw new BadRequestException("telegramId", "Telegram ID должен быть положительным");
         }
-        boolean hasEmployeeNumber = request.employeeNumber() != null
-                && !request.employeeNumber().isBlank();
+        boolean hasEmployeeNumber =
+                request.employeeNumber() != null && !request.employeeNumber().isBlank();
         switch (role) {
             case STUDENT -> {
                 if (hasEmployeeNumber) {
-                    throw new BadRequestException("employeeNumber",
-                            "Табельный номер не применим к роли STUDENT");
+                    throw new BadRequestException(
+                            "employeeNumber", "Табельный номер не применим к роли STUDENT");
                 }
                 if (!existingGrant && (request.groupId() == null || request.telegramId() == null)) {
                     throw new BadRequestException(
@@ -564,10 +695,12 @@ public class UserService {
                     throw new BadRequestException("groupId", "Группа не применима к роли TEACHER");
                 }
                 if (request.telegramId() != null) {
-                    throw new BadRequestException("telegramId", "Telegram ID не изменяется через роль TEACHER");
+                    throw new BadRequestException(
+                            "telegramId", "Telegram ID не изменяется через роль TEACHER");
                 }
                 if (!existingGrant && !hasEmployeeNumber) {
-                    throw new BadRequestException("employeeNumber", "Для добавления TEACHER нужен табельный номер");
+                    throw new BadRequestException(
+                            "employeeNumber", "Для добавления TEACHER нужен табельный номер");
                 }
             }
             case ADMIN -> {
@@ -575,10 +708,12 @@ public class UserService {
                     throw new BadRequestException("groupId", "Группа не применима к роли ADMIN");
                 }
                 if (hasEmployeeNumber) {
-                    throw new BadRequestException("employeeNumber", "Табельный номер не применим к роли ADMIN");
+                    throw new BadRequestException(
+                            "employeeNumber", "Табельный номер не применим к роли ADMIN");
                 }
                 if (request.telegramId() != null) {
-                    throw new BadRequestException("telegramId", "Telegram ID не изменяется через роль ADMIN");
+                    throw new BadRequestException(
+                            "telegramId", "Telegram ID не изменяется через роль ADMIN");
                 }
             }
         }
@@ -588,12 +723,17 @@ public class UserService {
         if (telegramId == null || telegramId <= 0) {
             throw new BadRequestException("Telegram ID должен быть положительным");
         }
-        userRepository.findByTelegramId(telegramId).ifPresent(existing -> {
-            if (!existing.getId().equals(current.getId())) {
-                throw new ConflictException("telegramId", telegramId,
-                        "Telegram ID уже привязан к другой учётной записи");
-            }
-        });
+        userRepository
+                .findByTelegramId(telegramId)
+                .ifPresent(
+                        existing -> {
+                            if (!existing.getId().equals(current.getId())) {
+                                throw new ConflictException(
+                                        "telegramId",
+                                        telegramId,
+                                        "Telegram ID уже привязан к другой учётной записи");
+                            }
+                        });
     }
 
     private void applyStudentTelegram(User user, Long telegramId) {
@@ -608,12 +748,17 @@ public class UserService {
         if (employeeNumber == null || employeeNumber.isBlank()) {
             throw new BadRequestException("Табельный номер обязателен");
         }
-        userRepository.findByEmployeeNumber(employeeNumber).ifPresent(existing -> {
-            if (!existing.getId().equals(current.getId())) {
-                throw new ConflictException("employeeNumber", employeeNumber,
-                        "Табельный номер уже используется");
-            }
-        });
+        userRepository
+                .findByEmployeeNumber(employeeNumber)
+                .ifPresent(
+                        existing -> {
+                            if (!existing.getId().equals(current.getId())) {
+                                throw new ConflictException(
+                                        "employeeNumber",
+                                        employeeNumber,
+                                        "Табельный номер уже используется");
+                            }
+                        });
     }
 
     @CacheEvict(value = "users", key = "#id")
@@ -621,38 +766,45 @@ public class UserService {
     public User patchUser(Long id, PatchUserRequest request) {
         adminAccess.begin("USERS_MANAGE");
         adminAccess.target(id);
-        if(request!=null && request.isHeadman()!=null) adminAccess.require("GROUPS_MANAGE");
-        if(request!=null && request.status()!=null && request.status()!=AccountStatus.ACTIVE) {
-            if(id.equals(requestContext.getUserId()) && adminAccessService.get(id).assigned())
-                throw new ru.rutcampustrack.shared.security.admin.AdminAccessException(org.springframework.http.HttpStatus.FORBIDDEN,"ADMIN_ACCESS_SELF_CHANGE_DENIED");
+        if (request != null && request.isHeadman() != null) adminAccess.require("GROUPS_MANAGE");
+        if (request != null
+                && request.status() != null
+                && request.status() != AccountStatus.ACTIVE) {
+            if (id.equals(requestContext.getUserId()) && adminAccessService.get(id).assigned())
+                throw new ru.rutcampustrack.shared.security.admin.AdminAccessException(
+                        org.springframework.http.HttpStatus.FORBIDDEN,
+                        "ADMIN_ACCESS_SELF_CHANGE_DENIED");
             adminAccess.protectLast(id);
         }
         if (request != null && request.status() == AccountStatus.ARCHIVED) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.CONFLICT, "protectedroute_required");
         }
-        boolean profileOnlyPatch = request != null
-                && request.isHeadman() == null
-                && request.groupId() == null
-                && request.status() == null
-                && request.telegramId() == null;
-        boolean canonicalHeadmanMutation = request != null
-                && request.isHeadman() != null
-                && headmanAssignmentService != null;
+        boolean profileOnlyPatch =
+                request != null
+                        && request.isHeadman() == null
+                        && request.groupId() == null
+                        && request.status() == null
+                        && request.telegramId() == null;
+        boolean canonicalHeadmanMutation =
+                request != null && request.isHeadman() != null && headmanAssignmentService != null;
         if (canonicalHeadmanMutation) {
             // The canonical operation owns all user locks before taking the
             // group lock. Combining it with a group move would make the
             // resulting membership ambiguous, so keep the old admin-users
             // action atomic and require two explicit operations.
             if (request.groupId() != null) {
-                User membershipSnapshot = userRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+                User membershipSnapshot =
+                        userRepository
+                                .findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
                 if (!java.util.Objects.equals(membershipSnapshot.getGroupId(), request.groupId())) {
                     throw new BadRequestException(
                             "groupId", "Назначение старосты нельзя совмещать с переводом группы");
                 }
             }
-            if (request.isHeadman() && request.status() != null
+            if (request.isHeadman()
+                    && request.status() != null
                     && request.status() != AccountStatus.ACTIVE) {
                 throw new BadRequestException(
                         "status", "Старостой может быть только активный студент");
@@ -663,47 +815,64 @@ public class UserService {
                 headmanAssignmentService.revokeLegacyHeadman(id);
             }
         }
-        if(!canonicalHeadmanMutation) adminAccess.mutation(id,"USERS_MANAGE");
-        User user = userRepository.findByIdForUpdate(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        String patchedLastName = request.lastName() == null
-                ? null : normalizeRequiredProfileField(request.lastName(), "lastName", "Фамилия");
-        String patchedFirstName = request.firstName() == null
-                ? null : normalizeRequiredProfileField(request.firstName(), "firstName", "Имя");
-        String patchedMiddleName = request.middleName() == null
-                ? null : normalizeOptionalProfileField(request.middleName(), 128, "middleName", "Отчество");
-        String patchedEmployeeNumber = request.employeeNumber() == null
-                ? null : normalizeOptionalProfileField(request.employeeNumber(), 32, "employeeNumber", "Табельный номер");
+        if (!canonicalHeadmanMutation) adminAccess.mutation(id, "USERS_MANAGE");
+        User user =
+                userRepository
+                        .findByIdForUpdate(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        String patchedLastName =
+                request.lastName() == null
+                        ? null
+                        : normalizeRequiredProfileField(request.lastName(), "lastName", "Фамилия");
+        String patchedFirstName =
+                request.firstName() == null
+                        ? null
+                        : normalizeRequiredProfileField(request.firstName(), "firstName", "Имя");
+        String patchedMiddleName =
+                request.middleName() == null
+                        ? null
+                        : normalizeOptionalProfileField(
+                                request.middleName(), 128, "middleName", "Отчество");
+        String patchedEmployeeNumber =
+                request.employeeNumber() == null
+                        ? null
+                        : normalizeOptionalProfileField(
+                                request.employeeNumber(), 32, "employeeNumber", "Табельный номер");
         if (request.employeeNumber() != null) {
-            boolean hasTeacherRole = user.getRole() == UserRole.TEACHER
-                    || roleGrantReader != null && roleGrantReader.findByUserId(id).stream()
-                    .anyMatch(grant -> "TEACHER".equalsIgnoreCase(grant.role()));
+            boolean hasTeacherRole =
+                    user.getRole() == UserRole.TEACHER
+                            || roleGrantReader != null
+                                    && roleGrantReader.findByUserId(id).stream()
+                                            .anyMatch(
+                                                    grant ->
+                                                            "TEACHER"
+                                                                    .equalsIgnoreCase(
+                                                                            grant.role()));
             if (hasTeacherRole && patchedEmployeeNumber == null) {
-                throw new BadRequestException("employeeNumber", "Для преподавателя табельный номер обязателен");
+                throw new BadRequestException(
+                        "employeeNumber", "Для преподавателя табельный номер обязателен");
             }
             if (patchedEmployeeNumber != null
                     && !java.util.Objects.equals(patchedEmployeeNumber, user.getEmployeeNumber())
                     && userRepository.existsByEmployeeNumber(patchedEmployeeNumber)) {
-                throw new ConflictException("employeeNumber", patchedEmployeeNumber,
+                throw new ConflictException(
+                        "employeeNumber",
+                        patchedEmployeeNumber,
                         "Табельный номер уже используется");
             }
         }
         Long oldGroupId = user.getGroupId();
         boolean oldHeadman = user.isHeadman();
-        ensureMembershipMutationSupported(
-                user,
-                null,
-                request.groupId());
+        ensureMembershipMutationSupported(user, null, request.groupId());
 
-        AccountStatus targetStatus = request.status() != null
-                ? request.status()
-                : user.getStatus();
+        AccountStatus targetStatus = request.status() != null ? request.status() : user.getStatus();
         if (request.isHeadman() != null && request.isHeadman()) {
             if (!canonicalHeadmanMutation && user.getRole() != UserRole.STUDENT) {
                 throw new BadRequestException("Только студент может быть назначен старостой");
             }
             if (!canonicalHeadmanMutation && targetStatus != AccountStatus.ACTIVE) {
-                throw new BadRequestException("Только активный студент может быть назначен старостой");
+                throw new BadRequestException(
+                        "Только активный студент может быть назначен старостой");
             }
         }
         if (isTerminalMembershipStatus(targetStatus)) {
@@ -739,7 +908,9 @@ public class UserService {
 
         // Headman revoke cascade (D-13)
         if (!canonicalHeadmanMutation
-                && request.isHeadman() != null && !request.isHeadman() && user.isHeadman()) {
+                && request.isHeadman() != null
+                && !request.isHeadman()
+                && user.isHeadman()) {
             revokeGroupAssistants(user.getGroupId());
             user.setHeadman(false);
         }
@@ -761,8 +932,11 @@ public class UserService {
 
         boolean groupChanged = !java.util.Objects.equals(oldGroupId, user.getGroupId());
 
-        // After headman flag change — evict groups and group_members caches for this user's group (per D-10)
-        if ((request.isHeadman() != null || groupChanged) && oldGroupId != null && cacheManager != null) {
+        // After headman flag change — evict groups and group_members caches for this user's group
+        // (per D-10)
+        if ((request.isHeadman() != null || groupChanged)
+                && oldGroupId != null
+                && cacheManager != null) {
             Cache groupsCache = cacheManager.getCache("groups");
             if (groupsCache != null) {
                 groupsCache.evict(oldGroupId);
@@ -804,10 +978,12 @@ public class UserService {
         return normalized;
     }
 
-    private static String normalizeOptionalProfileField(String value, int maxLength, String field, String label) {
+    private static String normalizeOptionalProfileField(
+            String value, int maxLength, String field, String label) {
         String normalized = value.trim();
         if (normalized.length() > maxLength) {
-            throw new BadRequestException(field, label + " не может быть длиннее " + maxLength + " символов");
+            throw new BadRequestException(
+                    field, label + " не может быть длиннее " + maxLength + " символов");
         }
         return normalized.isEmpty() ? null : normalized;
     }
@@ -815,10 +991,12 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public void archiveUser(Long id) {
-        adminAccess.mutation(id,"USERS_ARCHIVE");
+        adminAccess.mutation(id, "USERS_ARCHIVE");
         adminAccess.protectLast(id);
-        User user = userRepository.findByIdIncludingArchivedForUpdate(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        User user =
+                userRepository
+                        .findByIdIncludingArchivedForUpdate(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         Long oldGroupId = user.getGroupId();
         boolean wasHeadman = user.isHeadman();
         closeOpenMembershipOnTerminalStatus(id, LocalDate.now(MOSCOW));
@@ -840,13 +1018,20 @@ public class UserService {
     @CacheEvict(value = "group_members", key = "#request.newGroupId()")
     @Transactional
     public User transferStudent(Long id, TransferStudentRequest request) {
-        adminAccess.mutation(id,"USERS_MANAGE");
-        User user = userRepository.findByIdForUpdate(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        var studentGrant = roleGrantReader == null ? java.util.Optional.<ru.rutcampustrack.academic.contract.dto.user.RoleGrantViewResponse>empty()
-                : roleGrantReader.findByUserId(id).stream()
-                .filter(grant -> "STUDENT".equals(grant.role()))
-                .findFirst();
+        adminAccess.mutation(id, "USERS_MANAGE");
+        User user =
+                userRepository
+                        .findByIdForUpdate(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        var studentGrant =
+                roleGrantReader == null
+                        ? java.util.Optional
+                                .<ru.rutcampustrack.academic.contract.dto.user
+                                                .RoleGrantViewResponse>
+                                        empty()
+                        : roleGrantReader.findByUserId(id).stream()
+                                .filter(grant -> "STUDENT".equals(grant.role()))
+                                .findFirst();
         boolean legacyStudent = user.getRole() == UserRole.STUDENT;
         if (!legacyStudent && studentGrant.isEmpty()) {
             throw new BadRequestException("Перевод возможен только для студентов");
@@ -862,9 +1047,11 @@ public class UserService {
                     "Перевод требует текущую и новую управляемые группы");
         }
         if (oldGroupId.equals(newGroupId)) {
-            throw HistoricalMembershipException.invalid("Новая группа должна отличаться от текущей");
+            throw HistoricalMembershipException.invalid(
+                    "Новая группа должна отличаться от текущей");
         }
-        if (groupRepository == null || coverageRepository == null
+        if (groupRepository == null
+                || coverageRepository == null
                 || studentGroupHistoryRepository == null) {
             throw HistoricalMembershipException.precondition(
                     "Historical membership writer is unavailable");
@@ -876,28 +1063,43 @@ public class UserService {
         List<Long> groupIds = new ArrayList<>(List.of(oldGroupId, newGroupId));
         groupIds.sort(Comparator.naturalOrder());
         for (Long groupId : groupIds) {
-            groupRepository.findByIdForUpdate(groupId)
-                    .orElseThrow(() -> HistoricalMembershipException.notFound(
-                            "Group " + groupId + " not found"));
+            groupRepository
+                    .findByIdForUpdate(groupId)
+                    .orElseThrow(
+                            () ->
+                                    HistoricalMembershipException.notFound(
+                                            "Group " + groupId + " not found"));
         }
-        Group oldGroup = groupRepository.findById(oldGroupId)
-                .orElseThrow(() -> HistoricalMembershipException.notFound("Source group not found"));
-        Group newGroup = groupRepository.findById(newGroupId)
-                .orElseThrow(() -> HistoricalMembershipException.notFound("Destination group not found"));
+        Group oldGroup =
+                groupRepository
+                        .findById(oldGroupId)
+                        .orElseThrow(
+                                () ->
+                                        HistoricalMembershipException.notFound(
+                                                "Source group not found"));
+        Group newGroup =
+                groupRepository
+                        .findById(newGroupId)
+                        .orElseThrow(
+                                () ->
+                                        HistoricalMembershipException.notFound(
+                                                "Destination group not found"));
         LocalDate transferDate = LocalDate.now(MOSCOW);
         requireCoveredGroup(oldGroup, transferDate);
         requireCoveredGroup(newGroup, transferDate);
-        boolean hadActiveHeadmanGrant = userRepository.findActiveHeadmanIdsByGrantGroupId(oldGroupId).contains(id);
+        boolean hadActiveHeadmanGrant =
+                userRepository.findActiveHeadmanIdsByGrantGroupId(oldGroupId).contains(id);
 
-        List<StudentGroupHistory> openHistories = studentGroupHistoryRepository
-                .findOpenByUserIdForUpdate(id);
+        List<StudentGroupHistory> openHistories =
+                studentGroupHistoryRepository.findOpenByUserIdForUpdate(id);
         if (openHistories.size() != 1 || !oldGroupId.equals(openHistories.get(0).getGroupId())) {
             throw HistoricalMembershipException.precondition(
                     "Student must have exactly one open source membership history");
         }
         StudentGroupHistory oldHistory = openHistories.get(0);
         if (oldHistory.getJoinedAt() == null || oldHistory.getJoinedAt().isAfter(transferDate)) {
-            throw HistoricalMembershipException.precondition("Source membership history is invalid");
+            throw HistoricalMembershipException.precondition(
+                    "Source membership history is invalid");
         }
 
         // Close current group history entry
@@ -929,13 +1131,22 @@ public class UserService {
 
         // Leaving the managed group also ends this student's delegated access.
         // The group lock above serializes this with assistant/headman writes.
-        headmanAssistantRepository.findByGroupIdAndStudentIdAndIsActiveTrue(oldGroupId, id).ifPresent(assistant -> {
-            assistant.setActive(false);
-            assistant.setRevokedAt(OffsetDateTime.now());
-            headmanAssistantRepository.save(assistant);
-            if (personalNotifications != null) personalNotifications.assistant(id, oldGroupId, true, false,
-                    assistant.getPermissions(), new String[0]);
-        });
+        headmanAssistantRepository
+                .findByGroupIdAndStudentIdAndIsActiveTrue(oldGroupId, id)
+                .ifPresent(
+                        assistant -> {
+                            assistant.setActive(false);
+                            assistant.setRevokedAt(OffsetDateTime.now());
+                            headmanAssistantRepository.save(assistant);
+                            if (personalNotifications != null)
+                                personalNotifications.assistant(
+                                        id,
+                                        oldGroupId,
+                                        true,
+                                        false,
+                                        assistant.getPermissions(),
+                                        new String[0]);
+                        });
 
         user.setUpdatedAt(OffsetDateTime.now());
 
@@ -967,8 +1178,10 @@ public class UserService {
         }
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, oldGroupId));
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, newGroupId));
-        if (personalNotifications != null) personalNotifications.membership(id, oldGroupId, newGroupId, transferDate);
-        if (personalNotifications != null && hadActiveHeadmanGrant
+        if (personalNotifications != null)
+            personalNotifications.membership(id, oldGroupId, newGroupId, transferDate);
+        if (personalNotifications != null
+                && hadActiveHeadmanGrant
                 && !userRepository.findActiveHeadmanIdsByGrantGroupId(oldGroupId).contains(id))
             personalNotifications.headman(id, oldGroupId, true, false);
         return saved;
@@ -976,15 +1189,18 @@ public class UserService {
 
     public User getMe() {
         Long userId = requestContext.getUserId();
-        return userRepository.findById(userId)
+        return userRepository
+                .findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
     }
 
     @Transactional
     public User updateMyAvatar(String avatarId) {
         Long userId = requestContext.getUserId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         // Empty/blank string == clear (render initials).
         user.setAvatarId(avatarId == null || avatarId.isBlank() ? null : avatarId);
         user.setUpdatedAt(OffsetDateTime.now());
@@ -1000,14 +1216,18 @@ public class UserService {
 
     // --- Private helpers ---
 
-    /** User row is already locked; serialize the snapshot/outbox cascade with delegated-access writes. */
+    /**
+     * User row is already locked; serialize the snapshot/outbox cascade with delegated-access
+     * writes.
+     */
     private void revokeGroupAssistants(Long groupId) {
         if (groupId == null) return;
         if (personalNotifications == null) {
             headmanAssistantRepository.revokeAllByGroupId(groupId);
             return;
         }
-        groupRepository.findByIdForUpdate(groupId)
+        groupRepository
+                .findByIdForUpdate(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId));
         personalNotifications.revokeGroupAssistants(groupId);
     }
@@ -1020,12 +1240,19 @@ public class UserService {
         if (groupId == null || groupId <= 0) {
             throw HistoricalMembershipException.invalid("group_id must be positive");
         }
-        Group group = groupRepository.findByIdForUpdate(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId));
+        Group group =
+                groupRepository
+                        .findByIdForUpdate(groupId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId));
         Semester semester = resolveActiveSemester();
-        GroupHistoryCoverage coverage = coverageRepository.findById(groupId)
-                .orElseThrow(() -> HistoricalMembershipException.precondition(
-                        "Student enrollment requires managed group history coverage"));
+        GroupHistoryCoverage coverage =
+                coverageRepository
+                        .findById(groupId)
+                        .orElseThrow(
+                                () ->
+                                        HistoricalMembershipException.precondition(
+                                                "Student enrollment requires managed group history"
+                                                        + " coverage"));
         requireCoveredGroup(group, semester.getDateFrom());
         if (coverage.getCoverageFrom().isAfter(semester.getDateFrom())) {
             throw HistoricalMembershipException.precondition(
@@ -1039,14 +1266,16 @@ public class UserService {
         try {
             active = semesterRepository.findAllByIsActiveTrueOrderByIdAsc();
         } catch (RuntimeException error) {
-            throw HistoricalMembershipException.precondition("Active semester could not be resolved");
+            throw HistoricalMembershipException.precondition(
+                    "Active semester could not be resolved");
         }
         if (active == null || active.size() != 1) {
             throw HistoricalMembershipException.precondition(
                     "Exactly one active semester is required");
         }
         Semester semester = active.get(0);
-        if (semester.getDateFrom() == null || semester.getDateTo() == null
+        if (semester.getDateFrom() == null
+                || semester.getDateTo() == null
                 || semester.getDateFrom().isAfter(semester.getDateTo())) {
             throw HistoricalMembershipException.precondition("Active semester has invalid dates");
         }
@@ -1061,9 +1290,13 @@ public class UserService {
             throw HistoricalMembershipException.precondition(
                     "Historical membership writer is unavailable");
         }
-        GroupHistoryCoverage coverage = coverageRepository.findById(group.getId())
-                .orElseThrow(() -> HistoricalMembershipException.precondition(
-                        "Group history coverage is not established"));
+        GroupHistoryCoverage coverage =
+                coverageRepository
+                        .findById(group.getId())
+                        .orElseThrow(
+                                () ->
+                                        HistoricalMembershipException.precondition(
+                                                "Group history coverage is not established"));
         if (!HistoricalMembershipService.WRITER_VERSION.equals(coverage.getWriterVersion())
                 || coverage.getCoverageFrom() == null
                 || coverage.getCoverageFrom().isAfter(effectiveDate)) {
@@ -1072,9 +1305,8 @@ public class UserService {
         }
     }
 
-    private void ensureMembershipMutationSupported(User user,
-                                                   UserRole requestedRole,
-                                                   Long requestedGroupId) {
+    private void ensureMembershipMutationSupported(
+            User user, UserRole requestedRole, Long requestedGroupId) {
         if (requestedRole != null && requestedRole != user.getRole()) {
             throw HistoricalMembershipException.unsupported(
                     "Изменение роли пользователя требует управляемой истории членства");
@@ -1102,21 +1334,21 @@ public class UserService {
     }
 
     /**
-     * Closes the one managed open interval at the terminal transition date.
-     * The half-open interval remains valid for same-day and future-dated
-     * legacy rows by using max(joined_at, transitionDate); an uncovered user
-     * receives no synthetic history row.
+     * Closes the one managed open interval at the terminal transition date. The half-open interval
+     * remains valid for same-day and future-dated legacy rows by using max(joined_at,
+     * transitionDate); an uncovered user receives no synthetic history row.
      */
     private void closeOpenMembershipOnTerminalStatus(Long userId, LocalDate transitionDate) {
         if (userId == null || userId <= 0 || transitionDate == null) {
-            throw HistoricalMembershipException.invalid("Terminal membership transition is invalid");
+            throw HistoricalMembershipException.invalid(
+                    "Terminal membership transition is invalid");
         }
         if (studentGroupHistoryRepository == null) {
             throw HistoricalMembershipException.precondition(
                     "Historical membership writer is unavailable");
         }
-        List<StudentGroupHistory> openHistories = studentGroupHistoryRepository
-                .findOpenByUserIdForUpdate(userId);
+        List<StudentGroupHistory> openHistories =
+                studentGroupHistoryRepository.findOpenByUserIdForUpdate(userId);
         if (openHistories == null) {
             throw HistoricalMembershipException.precondition(
                     "Open membership lookup returned no coherent result");
@@ -1131,39 +1363,47 @@ public class UserService {
 
         StudentGroupHistory openHistory = openHistories.get(0);
         if (openHistory == null || openHistory.getJoinedAt() == null) {
-            throw HistoricalMembershipException.precondition(
-                    "Open membership interval is invalid");
+            throw HistoricalMembershipException.precondition("Open membership interval is invalid");
         }
-        LocalDate leftAt = transitionDate.isBefore(openHistory.getJoinedAt())
-                ? openHistory.getJoinedAt()
-                : transitionDate;
+        LocalDate leftAt =
+                transitionDate.isBefore(openHistory.getJoinedAt())
+                        ? openHistory.getJoinedAt()
+                        : transitionDate;
         openHistory.setLeftAt(leftAt);
         studentGroupHistoryRepository.save(openHistory);
     }
 
     /**
-     * Reopens a new managed interval after a terminal STUDENT grant is
-     * reactivated. The old closed row remains immutable; using today's
-     * canonical Moscow date avoids resurrecting the old semester-start row.
+     * Reopens a new managed interval after a terminal STUDENT grant is reactivated. The old closed
+     * row remains immutable; using today's canonical Moscow date avoids resurrecting the old
+     * semester-start row.
      */
-    private void openMembershipOnStudentReactivation(Long userId,
-                                                     Long groupId,
-                                                     LocalDate effectiveDate) {
-        if (userId == null || userId <= 0 || groupId == null || groupId <= 0
+    private void openMembershipOnStudentReactivation(
+            Long userId, Long groupId, LocalDate effectiveDate) {
+        if (userId == null
+                || userId <= 0
+                || groupId == null
+                || groupId <= 0
                 || effectiveDate == null) {
-            throw HistoricalMembershipException.invalid("Student reactivation membership is invalid");
+            throw HistoricalMembershipException.invalid(
+                    "Student reactivation membership is invalid");
         }
-        if (groupRepository == null || coverageRepository == null
+        if (groupRepository == null
+                || coverageRepository == null
                 || studentGroupHistoryRepository == null) {
             throw HistoricalMembershipException.precondition(
                     "Historical membership writer is unavailable");
         }
-        Group group = groupRepository.findByIdForUpdate(groupId)
-                .orElseThrow(() -> HistoricalMembershipException.notFound(
-                        "Group " + groupId + " not found"));
+        Group group =
+                groupRepository
+                        .findByIdForUpdate(groupId)
+                        .orElseThrow(
+                                () ->
+                                        HistoricalMembershipException.notFound(
+                                                "Group " + groupId + " not found"));
         requireCoveredGroup(group, effectiveDate);
-        List<StudentGroupHistory> openHistories = studentGroupHistoryRepository
-                .findOpenByUserIdForUpdate(userId);
+        List<StudentGroupHistory> openHistories =
+                studentGroupHistoryRepository.findOpenByUserIdForUpdate(userId);
         if (openHistories == null) {
             throw HistoricalMembershipException.precondition(
                     "Open membership lookup returned no coherent result");
@@ -1191,16 +1431,16 @@ public class UserService {
         if (request.telegramId() != null && request.telegramId() <= 0) {
             throw new BadRequestException("telegramId", "Telegram ID должен быть положительным");
         }
-        boolean hasEmployeeNumber = request.employeeNumber() != null
-                && !request.employeeNumber().isBlank();
+        boolean hasEmployeeNumber =
+                request.employeeNumber() != null && !request.employeeNumber().isBlank();
         switch (request.role()) {
             case STUDENT -> {
                 if (request.groupId() == null) {
                     throw new BadRequestException("groupId", "ID группы обязателен для студента");
                 }
                 if (hasEmployeeNumber) {
-                    throw new BadRequestException("employeeNumber",
-                            "Табельный номер не применим к роли STUDENT");
+                    throw new BadRequestException(
+                            "employeeNumber", "Табельный номер не применим к роли STUDENT");
                 }
                 validateTelegramForRole(request);
             }
@@ -1209,8 +1449,8 @@ public class UserService {
                     throw new BadRequestException("groupId", "Группа не применима к роли TEACHER");
                 }
                 if (!hasEmployeeNumber) {
-                    throw new BadRequestException("employeeNumber",
-                            "Табельный номер обязателен для преподавателя");
+                    throw new BadRequestException(
+                            "employeeNumber", "Табельный номер обязателен для преподавателя");
                 }
             }
             case ADMIN -> {
@@ -1218,8 +1458,8 @@ public class UserService {
                     throw new BadRequestException("groupId", "Группа не применима к роли ADMIN");
                 }
                 if (hasEmployeeNumber) {
-                    throw new BadRequestException("employeeNumber",
-                            "Табельный номер не применим к роли ADMIN");
+                    throw new BadRequestException(
+                            "employeeNumber", "Табельный номер не применим к роли ADMIN");
                 }
             }
         }
@@ -1242,48 +1482,50 @@ public class UserService {
     }
 
     /**
-     * Invalidates cached group rosters only after the membership transaction
-     * commits. Evicting before commit permits a concurrent reader to repopulate
-     * the five-minute cache from the old database snapshot.
+     * Invalidates cached group rosters only after the membership transaction commits. Evicting
+     * before commit permits a concurrent reader to repopulate the five-minute cache from the old
+     * database snapshot.
      */
     private void evictGroupMembersAfterCommit(Long... groupIds) {
         if (cacheManager == null) return;
-        List<Long> affected = Arrays.stream(groupIds)
-                .filter(groupId -> groupId != null && groupId > 0)
-                .distinct()
-                .toList();
+        List<Long> affected =
+                Arrays.stream(groupIds)
+                        .filter(groupId -> groupId != null && groupId > 0)
+                        .distinct()
+                        .toList();
         if (affected.isEmpty()) return;
-        Runnable evict = () -> {
-            Cache groupMembers = cacheManager.getCache("group_members");
-            if (groupMembers != null) {
-                affected.forEach(groupMembers::evict);
-            }
-        };
+        Runnable evict =
+                () -> {
+                    Cache groupMembers = cacheManager.getCache("group_members");
+                    if (groupMembers != null) {
+                        affected.forEach(groupMembers::evict);
+                    }
+                };
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override public void afterCommit() {
-                    evict.run();
-                }
-            });
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            evict.run();
+                        }
+                    });
         } else {
             evict.run();
         }
     }
 
-    private record EnrollmentContext(Group group, Semester semester, GroupHistoryCoverage coverage) {
-    }
+    private record EnrollmentContext(
+            Group group, Semester semester, GroupHistoryCoverage coverage) {}
 
     /**
-     * BUG-006-3 / D-08..D-11: enforces that {@code telegramId} is present for
-     * {@link UserRole#STUDENT} accounts. Teacher/admin accounts keep the field
-     * optional. A telegramId of {@code 0} is normalised to "missing" — some
-     * clients submit zero instead of null.
+     * BUG-006-3 / D-08..D-11: enforces that {@code telegramId} is present for {@link
+     * UserRole#STUDENT} accounts. Teacher/admin accounts keep the field optional. A telegramId of
+     * {@code 0} is normalised to "missing" — some clients submit zero instead of null.
      */
     private static void validateTelegramForRole(CreateUserRequest request) {
         if (request.role() == UserRole.STUDENT
                 && (request.telegramId() == null || request.telegramId() == 0L)) {
-            throw new BadRequestException("telegramId",
-                    "Telegram ID обязателен для студента");
+            throw new BadRequestException("telegramId", "Telegram ID обязателен для студента");
         }
     }
 
@@ -1299,13 +1541,15 @@ public class UserService {
         String normalizedStem = trimLogin(stem);
         String digitPart = digits.isBlank() ? "" : "-" + digits;
         int baseStemLength = Math.max(1, 32 - digitPart.length());
-        String baseStem = normalizedStem.substring(0, Math.min(normalizedStem.length(), baseStemLength));
+        String baseStem =
+                normalizedStem.substring(0, Math.min(normalizedStem.length(), baseStemLength));
         String base = trimLogin(baseStem + digitPart);
         if (!userRepository.existsByLogin(base)) return base;
         for (int suffix = 2; suffix < 10_000; suffix++) {
             String collisionPart = "-" + suffix;
             int candidateStemLength = Math.max(1, 32 - digitPart.length() - collisionPart.length());
-            String candidateStem = baseStem.substring(0, Math.min(baseStem.length(), candidateStemLength));
+            String candidateStem =
+                    baseStem.substring(0, Math.min(baseStem.length(), candidateStemLength));
             String candidate = trimLogin(candidateStem + digitPart + collisionPart);
             if (!userRepository.existsByLogin(candidate)) return candidate;
         }
@@ -1313,24 +1557,29 @@ public class UserService {
     }
 
     private String loginDigits(CreateUserRequest request) {
-        String source = request.telegramId() == null
-                ? request.employeeNumber()
-                : Long.toString(request.telegramId());
+        String source =
+                request.telegramId() == null
+                        ? request.employeeNumber()
+                        : Long.toString(request.telegramId());
         if (source == null) {
-            return String.format("%04d", Math.floorMod(userRepository.nextTeacherLoginSeq(), 10_000));
+            return String.format(
+                    "%04d", Math.floorMod(userRepository.nextTeacherLoginSeq(), 10_000));
         }
         String digits = source.replaceAll("\\D", "");
         if (digits.isBlank()) {
-            return String.format("%04d", Math.floorMod(userRepository.nextTeacherLoginSeq(), 10_000));
+            return String.format(
+                    "%04d", Math.floorMod(userRepository.nextTeacherLoginSeq(), 10_000));
         }
-        return digits.length() <= 4 ? String.format("%04d", Long.parseLong(digits))
+        return digits.length() <= 4
+                ? String.format("%04d", Long.parseLong(digits))
                 : digits.substring(digits.length() - 4);
     }
 
     private static String trimLogin(String value) {
-        String normalized = value.toLowerCase(java.util.Locale.ROOT)
-                .replaceAll("[^a-z0-9-]", "")
-                .replaceAll("^-+|-+$", "");
+        String normalized =
+                value.toLowerCase(java.util.Locale.ROOT)
+                        .replaceAll("[^a-z0-9-]", "")
+                        .replaceAll("^-+|-+$", "");
         return normalized.length() <= 32 ? normalized : normalized.substring(0, 32);
     }
 
@@ -1353,14 +1602,31 @@ public class UserService {
             if (replaced) continue;
             char c = lower.charAt(i);
             if (c >= 'а' && c <= 'я') {
-                String mapped = switch (c) {
-                    case 'а' -> "a"; case 'б' -> "b"; case 'в' -> "v"; case 'г' -> "g";
-                    case 'д' -> "d"; case 'е' -> "e"; case 'з' -> "z"; case 'и' -> "i";
-                    case 'к' -> "k"; case 'л' -> "l"; case 'м' -> "m"; case 'н' -> "n";
-                    case 'о' -> "o"; case 'п' -> "p"; case 'р' -> "r"; case 'с' -> "s";
-                    case 'т' -> "t"; case 'у' -> "u"; case 'ф' -> "f"; case 'ы' -> "y";
-                    case 'э' -> "e"; default -> "";
-                };
+                String mapped =
+                        switch (c) {
+                            case 'а' -> "a";
+                            case 'б' -> "b";
+                            case 'в' -> "v";
+                            case 'г' -> "g";
+                            case 'д' -> "d";
+                            case 'е' -> "e";
+                            case 'з' -> "z";
+                            case 'и' -> "i";
+                            case 'к' -> "k";
+                            case 'л' -> "l";
+                            case 'м' -> "m";
+                            case 'н' -> "n";
+                            case 'о' -> "o";
+                            case 'п' -> "p";
+                            case 'р' -> "r";
+                            case 'с' -> "s";
+                            case 'т' -> "t";
+                            case 'у' -> "u";
+                            case 'ф' -> "f";
+                            case 'ы' -> "y";
+                            case 'э' -> "e";
+                            default -> "";
+                        };
                 result.append(mapped);
             } else if (Character.isLetterOrDigit(c)) {
                 result.append(c);
@@ -1378,38 +1644,41 @@ public class UserService {
     }
 
     /**
-     * M05 audit fix (bug-hunter 1.1/1.2): evict rbac-cache ключи
-     * {@code <userId>:<groupId>} только ПОСЛЕ commit'а транзакции.
+     * M05 audit fix (bug-hunter 1.1/1.2): evict rbac-cache ключи {@code <userId>:<groupId>} только
+     * ПОСЛЕ commit'а транзакции.
      *
-     * <p>Если evict'ить внутри @Transactional — concurrent isHeadmanOf читает
-     * pre-commit snapshot из БД и перезаписывает cache старым значением до
-     * истечения TTL (60s), что позволяет ex-headman'у сохранять privileges.
+     * <p>Если evict'ить внутри @Transactional — concurrent isHeadmanOf читает pre-commit snapshot
+     * из БД и перезаписывает cache старым значением до истечения TTL (60s), что позволяет
+     * ex-headman'у сохранять privileges.
      *
-     * <p>Fallback вне активной транзакции — немедленный evict (сценарий
-     * unit-тестов и прямых вызовов из non-@Transactional-context).
+     * <p>Fallback вне активной транзакции — немедленный evict (сценарий unit-тестов и прямых
+     * вызовов из non-@Transactional-context).
      */
     private void evictRbacAfterCommit(Long userId, Long oldGroupId, Long newGroupId) {
         if (cacheManager == null) {
             return;
         }
-        Runnable evict = () -> {
-            Cache rbac = cacheManager.getCache("rbac");
-            if (rbac == null) {
-                return;
-            }
-            if (oldGroupId != null) {
-                rbac.evict(userId + ":" + oldGroupId);
-            }
-            if (newGroupId != null && !java.util.Objects.equals(oldGroupId, newGroupId)) {
-                rbac.evict(userId + ":" + newGroupId);
-            }
-        };
+        Runnable evict =
+                () -> {
+                    Cache rbac = cacheManager.getCache("rbac");
+                    if (rbac == null) {
+                        return;
+                    }
+                    if (oldGroupId != null) {
+                        rbac.evict(userId + ":" + oldGroupId);
+                    }
+                    if (newGroupId != null && !java.util.Objects.equals(oldGroupId, newGroupId)) {
+                        rbac.evict(userId + ":" + newGroupId);
+                    }
+                };
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override public void afterCommit() {
-                    evict.run();
-                }
-            });
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            evict.run();
+                        }
+                    });
         } else {
             evict.run();
         }

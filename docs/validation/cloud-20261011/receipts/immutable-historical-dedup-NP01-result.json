@@ -1,0 +1,10 @@
+{
+  "at": "2026-10-12T01:36:14.534373+00:00",
+  "phase": "NP01-historical-dedup-complete",
+  "paths": 128,
+  "exact_bytes_modes_paths_preserved": true,
+  "free_before": 5280665600,
+  "free_after": 6086045696,
+  "delta": 805380096,
+  "active_authored_source_files": "untouched; writer Gitstatus maychangeindependently, neverclaimwholeWTfreeze"
+}

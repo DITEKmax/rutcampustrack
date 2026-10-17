@@ -1,0 +1,101 @@
+{
+  "status": "PASS_INDEPENDENT_LIGHT_CLASSIFIER_CHECK",
+  "commit": "f09f7b2f2321dc4605b019a4fd1b52a0be0d4f10",
+  "path": "scripts/format-authored.mjs",
+  "source_sha256": "3de54e674f591b0e03a51d745ecfaf847bab3b9fc70431c92897abe990ed1960",
+  "source_bytes": 8764,
+  "root_snapshot_paths": 7334,
+  "exact_changed_paths": [
+    "docs/design/packets/JS-STUDENT-01/manifest.json",
+    "docs/presentations/manifest.json",
+    "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/assess.py",
+    "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/reconcile.py",
+    "docs/validation/cloud-20261011/receipts/ci-artifact-reconcile-636/source-SubjectListDataIT-actual-checkout.java",
+    "docs/validation/cloud-20261011/receipts/ci-generator-recheck/audit.py",
+    "docs/validation/cloud-20261011/receipts/ci-generator-recheck/clock_audit.py",
+    "docs/validation/cloud-20261011/receipts/clock-runtime-recheck/audit.py",
+    "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/check-runtime-receipts.py",
+    "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/final-check.py",
+    "docs/validation/cloud-20261011/receipts/export-ebsr-recheck/recheck.py",
+    "docs/validation/cloud-20261011/receipts/export-merged-repository-review/check.py",
+    "docs/validation/cloud-20261011/receipts/fingerprint-review/audit.py",
+    "docs/validation/cloud-20261011/receipts/fingerprint-review/author-originals/sensitivity.py",
+    "docs/validation/cloud-20261011/receipts/fingerprint-review/author-originals/verify.py",
+    "docs/validation/cloud-20261011/receipts/format-freeze-prep/inventory.py",
+    "docs/validation/cloud-20261011/receipts/manifest-post-hooks.json",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/audit_evidence.py",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/original-evidence/run-map-check.py",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapAdminServiceTest.java",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileBoundaryIT.java",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapFileFixture.java",
+    "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/map/CampusMapReadRepositoryIT.java",
+    "docs/validation/cloud-20261011/receipts/map-validation-review/audit_evidence.py",
+    "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/dispositions.py",
+    "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/queue.py",
+    "docs/validation/cloud-20261011/receipts/matrix-evidence-reconciliation/reconcile.py",
+    "docs/validation/cloud-20261011/receipts/notification-recovery-review/collect-review-inputs.py",
+    "docs/validation/cloud-20261011/receipts/np01-config-author/verify-config.py",
+    "docs/validation/cloud-20261011/receipts/np01-source-resolution/source-ledger.py",
+    "docs/validation/cloud-20261011/receipts/ntr-seal-review/audit.py",
+    "docs/validation/cloud-20261011/receipts/security-fingerprint-author/sensitivity.py",
+    "docs/validation/cloud-20261011/receipts/security-fingerprint-author/verify.py",
+    "docs/validation/cloud-20261011/receipts/source-manifest-recovery/check-dependencies.py",
+    "docs/validation/cloud-20261011/receipts/source-manifest-recovery/propose-restoration.py",
+    "docs/validation/cloud-20261011/skills/manifest.json"
+  ],
+  "verified_originals": 33,
+  "precise_registry_paths": [
+    "docs/design/packets/JS-STUDENT-01/manifest.json",
+    "docs/presentations/manifest.json",
+    "docs/validation/cloud-20261011/receipts/manifest-post-hooks.json",
+    "docs/validation/cloud-20261011/skills/manifest.json"
+  ],
+  "java_targets_match_root_Spotless_policy": 1581,
+  "maintained_positive_controls": [
+    [
+      "docs/validation/cloud-20261011/receipts/scenario-sources/build-matrix.py",
+      "python"
+    ],
+    [
+      "scripts/generate-bot-proto.py",
+      "python"
+    ],
+    [
+      "docs/validation/cloud-20261011/receipts/fingerprint-review/maintained-new-helper.py",
+      "python"
+    ],
+    [
+      "docs/validation/cloud-20261011/receipts/map-validation-recheck/source/maintained-helper.java",
+      "java"
+    ],
+    [
+      "docs/validation/cloud-20261011/receipts/maintained/package.json",
+      "prettier"
+    ],
+    [
+      "tests/e2e/fixtures/artifact-privacy.ts",
+      "prettier"
+    ],
+    [
+      "tests/e2e/fixtures/mobile-dataset.ts",
+      "prettier"
+    ],
+    [
+      "frontends/landing/dist/index.html",
+      "prettier"
+    ],
+    [
+      "frontends/mobile-core/src/styles/tokens.pcss",
+      "prettier"
+    ],
+    [
+      "frontends/pwa-vue/src/App.vue",
+      "prettier"
+    ]
+  ],
+  "sql_targets": 6,
+  "all_original_declarations_and_driver_bytes_preserved_after_subtracting_only_exact_exclusions": true,
+  "formatter_runs": 0,
+  "limits": "Source/inventory classification only; 1581 is this root25668 snapshot, not future post-integration inventory or actual formatting success"
+}

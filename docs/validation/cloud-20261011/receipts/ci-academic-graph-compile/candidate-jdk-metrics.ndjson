@@ -1,0 +1,10 @@
+{"utc": "2026-10-12T05:05:28.173523+00:00", "free_bytes": 7205834752, "memory_current": 4451221504, "memory_max": 17179869184, "cpu_max": "400000 100000", "allocation_bytes": 880070656}
+{"utc": "2026-10-12T05:05:31.756269+00:00", "free_bytes": 7205814272, "memory_current": 4751073280, "memory_max": 17179869184, "cpu_max": "400000 100000", "allocation_bytes": 880091136}
+{"utc": "2026-10-12T05:05:35.285470+00:00", "free_bytes": 7205363712, "memory_current": 4844924928, "memory_max": 17179869184, "cpu_max": "400000 100000", "allocation_bytes": 880467968}
+{"utc": "2026-10-12T05:05:38.728768+00:00", "free_bytes": 7205359616, "memory_current": 4925112320, "memory_max": 17179869184, "cpu_max": "400000 100000", "allocation_bytes": 880472064}
+{"utc": "2026-10-12T05:05:42.235848+00:00", "free_bytes": 7205134336, "memory_current": 5004148736, "memory_max": 17179869184, "cpu_max": "400000 100000", "allocation_bytes": 880701440}
+{"utc": "2026-10-12T05:05:45.815900+00:00", "free_bytes": 7204311040, "memory_current": 5070458880, "memory_max": 17179869184, "cpu_max": "400000 100000", "allocation_bytes": 881598464}
+{"utc": "2026-10-12T05:05:49.354551+00:00", "free_bytes": 7203971072, "memory_current": 5231083520, "memory_max": 17179869184, "cpu_max": "400000 100000", "allocation_bytes": 879390720}
+{"utc": "2026-10-12T05:05:52.854648+00:00", "free_bytes": 7206338560, "memory_current": 5392568320, "memory_max": 17179869184, "cpu_max": "400000 100000", "allocation_bytes": 879620096}
+{"utc": "2026-10-12T05:05:56.365039+00:00", "free_bytes": 7204564992, "memory_current": 5449248768, "memory_max": 17179869184, "cpu_max": "400000 100000", "allocation_bytes": 881664000}
+{"utc": "2026-10-12T05:06:00.036457+00:00", "free_bytes": 7201218560, "memory_current": 5500686336, "memory_max": 17179869184, "cpu_max": "400000 100000", "allocation_bytes": 883445760}

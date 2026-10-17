@@ -1,0 +1,25 @@
+{
+  "state": "ROOT_ACTUAL_PUSH_AND_CURRENT_METADATA_VERIFIED",
+  "producer": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "local_sha": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+  "remote_sha": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+  "pr_head_sha": "a85219366ac9995fc0bc170ecf128bd4ab8a6cfc",
+  "pr_url": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+  "draft": true,
+  "base": "main",
+  "merged": false,
+  "advertised_merge_sha": "a932aae335267d6774a39f8b1c2284795b8ac54c",
+  "native_push_exit": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "event": "pull_request",
+  "run_attempt": 1,
+  "runs": {
+    "ci": 38480461362,
+    "coverage": 38480461526,
+    "security": 38480461287,
+    "openapi": 38480461454
+  },
+  "acceptance": "IN_PROGRESS_PENDING_GENUINE_FIRST3_AND_REMAINING5"
+}

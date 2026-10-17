@@ -1,0 +1,139 @@
+{
+  "schema": "RCT_P06_ONE_REAL_PG_ACTUAL_V1",
+  "utc": "2026-10-13T07:38:19.998994+00:00",
+  "tool_session": 72192,
+  "tool_exit": 0,
+  "source_commit": "4db89b1876ee7aa8a80b021dabdb7e664a4a0da3",
+  "test_sha256": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2",
+  "selected_class": "ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT",
+  "selected_method": "durableRevokeSurvivesReconstructionAndRealAuthorityOutageFailsClosed",
+  "counts": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "test_seconds": 11.493,
+  "fresh_xml_after_grant": true,
+  "exact_selected_nonempty_no_failure_error_skip": true,
+  "source_pins_and_complete_migrations_unchanged": true,
+  "callbacks_plan_guard_unchanged": true,
+  "worktree_clean": true,
+  "known8_process_births_absent": true,
+  "identities": [
+    {
+      "pid": 495946,
+      "start_ticks": 13076107,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 495947,
+      "start_ticks": 13076111,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 495981,
+      "start_ticks": 13076237,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 496153,
+      "start_ticks": 13078505,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 496156,
+      "start_ticks": 13078525,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 496315,
+      "start_ticks": 13080956,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 496690,
+      "start_ticks": 13082460,
+      "exact_birth_absent": true
+    },
+    {
+      "pid": 495856,
+      "start_ticks": 13076054,
+      "exact_birth_absent": true
+    }
+  ],
+  "owned_container_roles": {
+    "postgres": 1,
+    "ryuk": 1,
+    "probe": 0,
+    "mongo": 0,
+    "rabbitmq": 0,
+    "redis": 0
+  },
+  "owned_sessions": 1,
+  "owned_containers_settled_foreign_volume_network_baseline_restored": true,
+  "private_tmp_envelope_removed": true,
+  "metadata_client_pids_waited_count": 71,
+  "metadata_client_births": "NOT_CAPTURED; synchronous waited callbacks, no invented birth proof",
+  "terminal": {
+    "direct_pid": 495946,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 495946,
+        "start_ticks": 13076107
+      },
+      {
+        "pid": 495947,
+        "start_ticks": 13076111
+      },
+      {
+        "pid": 495981,
+        "start_ticks": 13076237
+      },
+      {
+        "pid": 496153,
+        "start_ticks": 13078505
+      },
+      {
+        "pid": 496156,
+        "start_ticks": 13078525
+      },
+      {
+        "pid": 496315,
+        "start_ticks": 13080956
+      },
+      {
+        "pid": 496690,
+        "start_ticks": 13082460
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true,
+    "container_settled": true,
+    "utc": "2026-10-13T07:37:30.750327+00:00",
+    "peaks": {
+      "memory": 8171888640,
+      "min_workspace_free": 7143960576,
+      "owned_rss": 1505062912,
+      "log_bytes": 5661
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": true,
+    "qualification": "Compile and selected class XML validation required before PASS"
+  },
+  "lease": "RELEASED",
+  "finite_oracle": "Own active STUDENT A/B positive; supported A revoke; new JDBC authority/admission/controller same PG and signer: A denied/Bvalid. Real ownedPG pause: valid B typed503 AUTHORITY_UNAVAILABLE/noJWT/no-store, JDBCrefreshunavailable. Unconditionalownunpause/recovery: Bvalid/Adenied, unchanged durable session/JTI/event tuple and knownBrefreshJTI stillvalid.",
+  "qualifications": [
+    "One selected realPG test only; production receiver MockMvc and reconstructed Java authority, not fullAuthOSprocessrestart/realGatewayHTTP/PWA/TMA/allroles.",
+    "P06parentUNKNOWN; focusedcritical mutation not yet performed.",
+    "No raw XML/log/error/body/token/IDs/JTI or privatebody hashes exported; privateXMLmode600 excluded/unhashed.",
+    "Existing conservative observer enforced2sessions/Ryuk2/probe4; actualone session/onePG/oneRyuk/zero observed probes."
+  ]
+}

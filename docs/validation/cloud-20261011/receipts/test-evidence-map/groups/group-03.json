@@ -1,0 +1,605 @@
+{
+  "group_id": "AUTH-QR-TMA",
+  "criterion": "guest QR isolated proofs/expiry/single winner/replay, signed TMA24h fresh authority admission",
+  "related_source_story_ids": [
+    "JS-SYSTEM-13",
+    "JS-SYSTEM-02",
+    "JS-STUDENT-08"
+  ],
+  "research_ids": [
+    "P06",
+    "P07",
+    "P08",
+    "P10",
+    "P11"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/BcryptDoSMitigationIT.java",
+      "class": "ru.rutcampustrack.auth.integration.BcryptDoSMitigationIT",
+      "methods": [
+        {
+          "method": "concurrentInvalidPassword_rejectsWithoutCpuBlowup",
+          "line": 56,
+          "assertion_evidence": [
+            {
+              "line": 94,
+              "expression": "assertThat(status429.get())"
+            },
+            {
+              "line": 97,
+              "expression": "assertThat(status401.get() + status429.get())"
+            },
+            {
+              "line": 99,
+              "expression": ".isEqualTo(50);"
+            },
+            {
+              "line": 100,
+              "expression": "assertThat(elapsedMs)"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/LoginRateLimiterIT.java",
+      "class": "ru.rutcampustrack.auth.integration.LoginRateLimiterIT",
+      "methods": [
+        {
+          "method": "fiveFailuresFromOneIp_triggersBlock",
+          "line": 42,
+          "assertion_evidence": [
+            {
+              "line": 53,
+              "expression": "assertThat(r.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 59,
+              "expression": "assertThat(blocked.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);"
+            },
+            {
+              "line": 62,
+              "expression": "assertThat(redis.hasKey(\"<literal-redacted>\")).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "attackerIpDoesNotBlockVictimIp",
+          "line": 65,
+          "assertion_evidence": [
+            {
+              "line": 76,
+              "expression": "assertThat(redis.hasKey(\"<literal-redacted>\")).isTrue();"
+            },
+            {
+              "line": 86,
+              "expression": "assertThat(victimLogin.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 88,
+              "expression": "assertThat(redis.hasKey(\"<literal-redacted>\")).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "successfulLoginClearsOnlyOwnIpLoginBucket",
+          "line": 91,
+          "assertion_evidence": [
+            {
+              "line": 102,
+              "expression": "assertThat(redis.opsForValue().get(\"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 110,
+              "expression": "assertThat(ok.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 113,
+              "expression": "assertThat(redis.opsForValue().get(\"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 115,
+              "expression": "assertThat(redis.hasKey(\"<literal-redacted>\")).isFalse();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/QrLoginFlowIT.java",
+      "class": "ru.rutcampustrack.auth.integration.QrLoginFlowIT",
+      "methods": [
+        {
+          "method": "browserBoundSingleWinnerExchangeAndLostResponseReplaySurviveQrExpiry",
+          "line": 51,
+          "assertion_evidence": [
+            {
+              "line": 53,
+              "expression": "assertThat(challenge.issue().ttl()).isEqualTo(5);"
+            },
+            {
+              "line": 54,
+              "expression": "assertThat(challenge.issue().pollAfterSeconds()).isEqualTo(1);"
+            },
+            {
+              "line": 55,
+              "expression": "assertThat(challenge.issue().qrPayload().contains(challenge.proof().issuerSecret())).isFalse();"
+            },
+            {
+              "line": 56,
+              "expression": "assertThat(challenge.issue().qrPayload().contains(\"<literal-redacted>\")).isFalse();"
+            },
+            {
+              "line": 57,
+              "expression": "assertThat(challenge.issue().qrPayload().contains(\"<literal-redacted>\")).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "rejectedExpiredAndSupersededChallengesCannotIssueAndRedisLimitsAreAuthoritative",
+          "line": 110,
+          "assertion_evidence": [
+            {
+              "line": 112,
+              "expression": "assertThat(post(\"<literal-redacted>\",old.proof(),null).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            },
+            {
+              "line": 113,
+              "expression": "assertThat(post(\"<literal-redacted>\",old.approval(),source).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);"
+            },
+            {
+              "line": 114,
+              "expression": "assertThat(post(\"<literal-redacted>\",decision(replacement,QrLoginDecisionRequest.Decision.REJECT),source).getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 115,
+              "expression": "assertThat(json.readTree(post(\"<literal-redacted>\",replacement.proof(),null).getBody()).path(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 116,
+              "expression": "assertThat(post(\"<literal-redacted>\",replacement.proof(),null).getStatusCode()).isEqualTo(HttpStatus.GONE);"
+            }
+          ]
+        },
+        {
+          "method": "sourceRevocationAndSourceOrTargetAuthorityDriftFenceExchangeAndRecovery",
+          "line": 155,
+          "assertion_evidence": [
+            {
+              "line": 162,
+              "expression": "assertThat(neutralLoginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 165,
+              "expression": "assertThat(post(\"<literal-redacted>\",bootstrapChallenge.approval(),bootstrap).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);"
+            },
+            {
+              "line": 166,
+              "expression": "assertThat(post(\"<literal-redacted>\",decision(bootstrapChallenge,QrLoginDecisionRequest.Decision.CONFIRM),bootstrap).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);"
+            },
+            {
+              "line": 167,
+              "expression": "assertThat(json.readTree(post(\"<literal-redacted>\",bootstrapChallenge.proof(),null).getBody()).path(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 169,
+              "expression": "assertThat(post(\"<literal-redacted>\",null,source).getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);"
+            }
+          ]
+        },
+        {
+          "method": "receiptFailureRollsBackSessionAuditAndCleanupOnlyDeletesOwnedExpiredQrMetadata",
+          "line": 192,
+          "assertion_evidence": [
+            {
+              "line": 198,
+              "expression": "assertThat(post(\"<literal-redacted>\",challenge.proof(),null).getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);"
+            },
+            {
+              "line": 199,
+              "expression": "assertThat(qrSessions()).isZero(); assertThat(qrLogins()).isZero();"
+            },
+            {
+              "line": 200,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\",Boolean.class,challenge.proof().challengeId())).isTrue();"
+            },
+            {
+              "line": 205,
+              "expression": "assertThat(recovered.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 206,
+              "expression": "assertThat(qrSessions()).isEqualTo(1); assertThat(qrLogins()).isEqualTo(1);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/TmaIT.java",
+      "class": "ru.rutcampustrack.auth.integration.TmaIT",
+      "methods": [
+        {
+          "method": "tma_withValidInitData_returnsTokenPair",
+          "line": 35,
+          "assertion_evidence": [
+            {
+              "line": 41,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 42,
+              "expression": "assertThat(response.getBody()).isNotNull();"
+            },
+            {
+              "line": 43,
+              "expression": "assertThat(response.getBody().accessToken()).isNotBlank();"
+            },
+            {
+              "line": 44,
+              "expression": "assertThat(response.getBody().refreshToken()).isNotBlank();"
+            },
+            {
+              "line": 45,
+              "expression": "assertThat(response.getBody().expiresIn()).isGreaterThan(0);"
+            }
+          ]
+        },
+        {
+          "method": "tma_withTamperedHash_returns401",
+          "line": 48,
+          "assertion_evidence": [
+            {
+              "line": 56,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            },
+            {
+              "line": 57,
+              "expression": "assertThat(response.getHeaders().getContentType().toString()).contains(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "tma_withExpiredAuthDate_returns401",
+          "line": 60,
+          "assertion_evidence": [
+            {
+              "line": 68,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "tma_withUnlinkedTelegramId_returns401",
+          "line": 71,
+          "assertion_evidence": [
+            {
+              "line": 78,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "tma_withReplayedInitDataInsideWindow_returnsToken",
+          "line": 89,
+          "assertion_evidence": [
+            {
+              "line": 96,
+              "expression": "assertThat(firstResponse.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 101,
+              "expression": "assertThat(replayResponse.getStatusCode()).isEqualTo(HttpStatus.OK);"
+            },
+            {
+              "line": 102,
+              "expression": "assertThat(replayResponse.getBody()).isNotNull();"
+            },
+            {
+              "line": 105,
+              "expression": "assertThat(replayResponse.getBody().refreshToken())"
+            }
+          ]
+        },
+        {
+          "method": "tma_withBitFlippedSignature_returns401",
+          "line": 115,
+          "assertion_evidence": [
+            {
+              "line": 128,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "tma_withDifferentBotTokenSignature_returns401",
+          "line": 136,
+          "assertion_evidence": [
+            {
+              "line": 144,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        },
+        {
+          "method": "tma_withMissingHashField_returns401",
+          "line": 151,
+          "assertion_evidence": [
+            {
+              "line": 160,
+              "expression": "assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AbstractIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/TmaServiceRepositoryFailureTest.java",
+      "class": "ru.rutcampustrack.auth.service.TmaServiceRepositoryFailureTest",
+      "methods": [
+        {
+          "method": "authenticate_repositoryFailureIsTypedAuthorityUnavailableBeforeSessionIssue",
+          "line": 32,
+          "assertion_evidence": [
+            {
+              "line": 43,
+              "expression": "assertThatThrownBy(() -> tmaService.authenticateWithInitData("
+            },
+            {
+              "line": 46,
+              "expression": "exception -> assertThat(exception.code())"
+            },
+            {
+              "line": 47,
+              "expression": ".isEqualTo(AuthSessionException.Code.AUTHORITY_UNAVAILABLE));"
+            },
+            {
+              "line": 49,
+              "expression": "verify(authService, never()).issueSession(any(), any(), any(), any(), any());"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:auth-service:auth-app:integrationTest --tests ru.rutcampustrack.auth.integration.BcryptDoSMitigationIT --tests ru.rutcampustrack.auth.integration.LoginRateLimiterIT --tests ru.rutcampustrack.auth.integration.QrLoginFlowIT --tests ru.rutcampustrack.auth.integration.TmaIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/auth-service/auth-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:auth-service:auth-app:test --tests ru.rutcampustrack.auth.service.TmaServiceRepositoryFailureTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/auth-service/auth-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:auth-service:auth-app:integrationTest",
+      ":services:auth-service:auth-app:test"
+    ],
+    "command_if_java": "./gradlew :services:auth-service:auth-app:integrationTest :services:auth-service:auth-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "QrLoginFlowIT real HTTP/PG/Redis; TmaIT positive replay matches D003 but revoked binding/account path must be selected separately. No real Telegram client/provider from HTTP alone.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

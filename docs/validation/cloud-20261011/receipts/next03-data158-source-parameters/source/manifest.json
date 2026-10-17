@@ -1,0 +1,49 @@
+{
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/docker-up-restart.py",
+      "relative_path": "docker-up-restart.py",
+      "sha256": "69d967351ea5d578846ff00b399a053a0dfd8498a586207f3d294694ac74ecec",
+      "size": 6539
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/restart-boundary.py",
+      "relative_path": "restart-boundary.py",
+      "sha256": "4cfa304b89721850da531d429cba030f9c658457793ad6448a8bf06f3eb9798b",
+      "size": 13338
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/run-academic-restart.py",
+      "relative_path": "run-academic-restart.py",
+      "sha256": "e671f91a181ac9a134961903c9cdc7f2832c158082fd83347cf0750ee45a7a2d",
+      "size": 9642
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/run-mongo-restart.py",
+      "relative_path": "run-mongo-restart.py",
+      "sha256": "813ed8280c7beb950d8b7ffd22994ed22f2d96d6fd00e0e8d74489b258c12bd5",
+      "size": 11659
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/run-service-restart.py",
+      "relative_path": "run-service-restart.py",
+      "sha256": "7eaed78b02b45bfe43d8468913a364b812c19b4717d48a61ebe5a8ff92a090bd",
+      "size": 7880
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/runtime-ancestor-anchors.safe.json",
+      "relative_path": "runtime-ancestor-anchors.safe.json",
+      "sha256": "f59dba685dbcc8e5fdea46d4d6ea392148006a41e82b7743862197fee42269eb",
+      "size": 1000
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/stopped-native-data-fence-next02.safe.json",
+      "relative_path": "external-authoritative-stopped158-fence",
+      "sha256": "152ceafcc5f392068ddbd0aaf68f856d92b68cd55cd61e1016941a68c75acd86",
+      "size": 55492
+    }
+  ],
+  "count": 7,
+  "actual_runtime": "NOT_RUN",
+  "original157_and_Academic89d6_preserved": true
+}

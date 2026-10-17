@@ -1,5 +1,10 @@
 package ru.rutcampustrack.notification.preferences;
 
+import java.time.Instant;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.bson.Document;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -12,12 +17,6 @@ import org.springframework.stereotype.Repository;
 import ru.rutcampustrack.notification.contract.dto.preferences.NotificationPreferencesDto;
 import ru.rutcampustrack.notification.contract.dto.preferences.UpdateNotificationPreferencesRequest;
 
-import java.time.Instant;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 /** Mongo authority. Redis is consulted only when a durable record has never existed. */
 @Repository
 public class NotificationPreferencesStore {
@@ -25,7 +24,8 @@ public class NotificationPreferencesStore {
     static final String TELEGRAM = "telegram_notification_preferences";
     static final String LEGACY_OWNERS = "notification_preference_legacy_bindings";
     static final String RECEIPTS = "notification_preference_mutation_receipts";
-    static final List<String> CATEGORIES = List.of("lessons", "reminders", "homework", "tickets", "schedule", "group");
+    static final List<String> CATEGORIES =
+            List.of("lessons", "reminders", "homework", "tickets", "schedule", "group");
 
     private final MongoTemplate mongo;
     private final StringRedisTemplate redis;
@@ -55,8 +55,8 @@ public class NotificationPreferencesStore {
         return userDto(upgradeCatalog(userId, existing));
     }
 
-    public NotificationPreferencesDto patchUser(long userId, UpdateNotificationPreferencesRequest request,
-                                               Instant now) {
+    public NotificationPreferencesDto patchUser(
+            long userId, UpdateNotificationPreferencesRequest request, Instant now) {
         user(userId);
         Document current = mongo.findById(userId, Document.class, USERS);
         Update patch = new Update();
@@ -75,22 +75,42 @@ public class NotificationPreferencesStore {
         Query query = profile == null ? legacySnapshot(userId, current) : id(userId);
         if (profile != null) {
             var types = new LinkedHashMap<>(NotificationPreferencesV2Service.types(profile));
-            for (var meaning : ru.rutcampustrack.notification.history.NotificationCatalog.meanings()) {
-                Boolean enabled = request.categories() == null ? null : request.categories().get(meaning.category());
+            for (var meaning :
+                    ru.rutcampustrack.notification.history.NotificationCatalog.meanings()) {
+                Boolean enabled =
+                        request.categories() == null
+                                ? null
+                                : request.categories().get(meaning.category());
                 if (enabled == null) continue;
                 var old = types.get(meaning.type().name());
-                types.put(meaning.type().name(), new ru.rutcampustrack.notification.contract.dto.preferences.NotificationPreferencesV2Dto.TypePreference(
-                        enabled, profile.getBoolean("splitChannels") ? old.telegram() : enabled, old.colorId()));
+                types.put(
+                        meaning.type().name(),
+                        new ru.rutcampustrack.notification.contract.dto.preferences
+                                .NotificationPreferencesV2Dto.TypePreference(
+                                enabled,
+                                profile.getBoolean("splitChannels") ? old.telegram() : enabled,
+                                old.colorId()));
             }
             query.addCriteria(Criteria.where("v2.revision").is(profile.getString("revision")));
-            patch.set("v2.types", NotificationPreferencesV2Service.encode(types)).set("v2.revision", java.util.UUID.randomUUID().toString());
+            patch.set("v2.types", NotificationPreferencesV2Service.encode(types))
+                    .set("v2.revision", java.util.UUID.randomUUID().toString());
         }
-        Document result = mongo.findAndModify(query, patch, FindAndModifyOptions.options().returnNew(true), Document.class, USERS);
-        if (result == null) throw unavailable("Concurrent preference mutation must be retried", null);
+        Document result =
+                mongo.findAndModify(
+                        query,
+                        patch,
+                        FindAndModifyOptions.options().returnNew(true),
+                        Document.class,
+                        USERS);
+        if (result == null)
+            throw unavailable("Concurrent preference mutation must be retried", null);
         return userDto(result);
     }
 
-    /** Caller validates the live binding; facet + legacy ownership insertion belongs to its transaction. */
+    /**
+     * Caller validates the live binding; facet + legacy ownership insertion belongs to its
+     * transaction.
+     */
     public Document telegram(long userId, long telegramId) {
         positive(userId);
         positive(telegramId);
@@ -116,17 +136,24 @@ public class NotificationPreferencesStore {
 
         mongo.upsert(id(telegramId), new Update().setOnInsert("userId", userId), LEGACY_OWNERS);
         Document owner = mongo.findById(telegramId, Document.class, LEGACY_OWNERS);
-        if (owner == null || !(owner.get("userId") instanceof Number ownerId) || ownerId.longValue() <= 0) {
+        if (owner == null
+                || !(owner.get("userId") instanceof Number ownerId)
+                || ownerId.longValue() <= 0) {
             throw unavailable("Legacy Telegram ownership is invalid", null);
         }
         if (ownerId.longValue() != userId) {
-            // This Telegram-only source already belonged to another account. Never copy it to a new facet.
+            // This Telegram-only source already belonged to another account. Never copy it to a new
+            // facet.
             globalEnabled = true;
             flags = defaults();
             mutedUntil = null;
         }
-        Update initial = new Update().setOnInsert("userId", userId).setOnInsert("telegramId", telegramId)
-                .setOnInsert("globalEnabled", globalEnabled).setOnInsert("categories", flags);
+        Update initial =
+                new Update()
+                        .setOnInsert("userId", userId)
+                        .setOnInsert("telegramId", telegramId)
+                        .setOnInsert("globalEnabled", globalEnabled)
+                        .setOnInsert("categories", flags);
         if (mutedUntil != null) initial.setOnInsert("mutedUntil", Date.from(mutedUntil));
         mongo.upsert(id(key), initial, TELEGRAM);
         existing = mongo.findById(key, Document.class, TELEGRAM);
@@ -134,19 +161,30 @@ public class NotificationPreferencesStore {
         return existing;
     }
 
-    public Document patchTelegram(long userId, long telegramId, Update patch, String compareField,
-                                  Boolean expected) {
+    public Document patchTelegram(
+            long userId, long telegramId, Update patch, String compareField, Boolean expected) {
         Query query = id(facetKey(userId, telegramId));
         if (compareField != null) query.addCriteria(Criteria.where(compareField).is(expected));
-        Document result = mongo.findAndModify(query, patch,
-                FindAndModifyOptions.options().returnNew(true), Document.class, TELEGRAM);
-        if (result == null) throw unavailable("Concurrent preference mutation must be retried", null);
+        Document result =
+                mongo.findAndModify(
+                        query,
+                        patch,
+                        FindAndModifyOptions.options().returnNew(true),
+                        Document.class,
+                        TELEGRAM);
+        if (result == null)
+            throw unavailable("Concurrent preference mutation must be retried", null);
         validateFacet(result, userId, telegramId);
         return result;
     }
 
-    public Document receipt(String key) { return mongo.findById(key, Document.class, RECEIPTS); }
-    public void insertReceipt(Document receipt) { mongo.insert(receipt, RECEIPTS); }
+    public Document receipt(String key) {
+        return mongo.findById(key, Document.class, RECEIPTS);
+    }
+
+    public void insertReceipt(Document receipt) {
+        mongo.insert(receipt, RECEIPTS);
+    }
 
     Document durableUser(long userId) {
         positive(userId);
@@ -164,37 +202,65 @@ public class NotificationPreferencesStore {
         Document profile = user.get("v2", Document.class);
         if (profile == null) return user;
         Object raw = profile.get("types");
-        if (!(raw instanceof Map<?, ?> values)) throw unavailable("Durable preference types are invalid", null);
-        if (values.keySet().equals(ru.rutcampustrack.notification.history.NotificationCatalog.typeIds())) return user;
-        if (!values.keySet().equals(ru.rutcampustrack.notification.history.NotificationCatalog.legacyTypeIds())
-                || profile.getString("revision") == null || !(profile.get("splitChannels") instanceof Boolean split)) {
+        if (!(raw instanceof Map<?, ?> values))
+            throw unavailable("Durable preference types are invalid", null);
+        if (values.keySet()
+                .equals(ru.rutcampustrack.notification.history.NotificationCatalog.typeIds()))
+            return user;
+        if (!values.keySet()
+                        .equals(
+                                ru.rutcampustrack.notification.history.NotificationCatalog
+                                        .legacyTypeIds())
+                || profile.getString("revision") == null
+                || !(profile.get("splitChannels") instanceof Boolean split)) {
             throw unavailable("Durable preference catalog is invalid", null);
         }
-        var old = NotificationPreferencesV2Service.decodeTypes(profile,
-                ru.rutcampustrack.notification.history.NotificationCatalog.legacyTypeIds());
+        var old =
+                NotificationPreferencesV2Service.decodeTypes(
+                        profile,
+                        ru.rutcampustrack.notification.history.NotificationCatalog.legacyTypeIds());
         var categories = durableCategories(user.get("categories"));
         var expanded = new LinkedHashMap<>(old);
         for (var meaning : ru.rutcampustrack.notification.history.NotificationCatalog.meanings()) {
             if (old.containsKey(meaning.type().name())) continue;
-            var sameCategory = ru.rutcampustrack.notification.history.NotificationCatalog.meanings().stream()
-                    .filter(candidate -> candidate.category().equals(meaning.category()))
-                    .map(candidate -> old.get(candidate.type().name())).filter(java.util.Objects::nonNull).toList();
-            if (sameCategory.isEmpty()) throw unavailable("New preference category has no migration authority", null);
-            boolean app = categories.get(meaning.category()) && sameCategory.stream().allMatch(value -> value.appPush());
-            boolean telegram = split ? sameCategory.stream().allMatch(value -> value.telegram()) : app;
-            expanded.put(meaning.type().name(), new ru.rutcampustrack.notification.contract.dto.preferences.NotificationPreferencesV2Dto.TypePreference(
-                    app, telegram, "violet"));
+            var sameCategory =
+                    ru.rutcampustrack.notification.history.NotificationCatalog.meanings().stream()
+                            .filter(candidate -> candidate.category().equals(meaning.category()))
+                            .map(candidate -> old.get(candidate.type().name()))
+                            .filter(java.util.Objects::nonNull)
+                            .toList();
+            if (sameCategory.isEmpty())
+                throw unavailable("New preference category has no migration authority", null);
+            boolean app =
+                    categories.get(meaning.category())
+                            && sameCategory.stream().allMatch(value -> value.appPush());
+            boolean telegram =
+                    split ? sameCategory.stream().allMatch(value -> value.telegram()) : app;
+            expanded.put(
+                    meaning.type().name(),
+                    new ru.rutcampustrack.notification.contract.dto.preferences
+                            .NotificationPreferencesV2Dto.TypePreference(app, telegram, "violet"));
         }
-        Document saved = patchV2(userId, profile.getString("revision"), new Update()
-                .set("v2.types", NotificationPreferencesV2Service.encode(expanded))
-                .set("v2.revision", java.util.UUID.randomUUID().toString()));
-        if (saved == null) throw unavailable("Concurrent preference catalog adoption must be retried", null);
+        Document saved =
+                patchV2(
+                        userId,
+                        profile.getString("revision"),
+                        new Update()
+                                .set("v2.types", NotificationPreferencesV2Service.encode(expanded))
+                                .set("v2.revision", java.util.UUID.randomUUID().toString()));
+        if (saved == null)
+            throw unavailable("Concurrent preference catalog adoption must be retried", null);
         return saved;
     }
 
     Document initializeV2(long userId, Document observed, Document profile) {
-        Document saved = mongo.findAndModify(legacySnapshot(userId, observed),
-                new Update().set("v2", profile), FindAndModifyOptions.options().returnNew(true), Document.class, USERS);
+        Document saved =
+                mongo.findAndModify(
+                        legacySnapshot(userId, observed),
+                        new Update().set("v2", profile),
+                        FindAndModifyOptions.options().returnNew(true),
+                        Document.class,
+                        USERS);
         if (saved != null) return saved;
         Document current = mongo.findById(userId, Document.class, USERS);
         if (current == null || current.get("v2", Document.class) == null) {
@@ -208,14 +274,24 @@ public class NotificationPreferencesStore {
         if (observed == null) throw unavailable("Durable preferences are unavailable", null);
         durableCategories(observed.get("categories"));
         instant(observed.get("mutedUntil"));
-        return Query.query(Criteria.where("_id").is(userId).and("v2").exists(false)
-                .and("categories").is(observed.get("categories"))
-                .and("mutedUntil").is(observed.get("mutedUntil")));
+        return Query.query(
+                Criteria.where("_id")
+                        .is(userId)
+                        .and("v2")
+                        .exists(false)
+                        .and("categories")
+                        .is(observed.get("categories"))
+                        .and("mutedUntil")
+                        .is(observed.get("mutedUntil")));
     }
 
     Document patchV2(long userId, String revision, Update update) {
-        return mongo.findAndModify(Query.query(Criteria.where("_id").is(userId).and("v2.revision").is(revision)),
-                update, FindAndModifyOptions.options().returnNew(true), Document.class, USERS);
+        return mongo.findAndModify(
+                Query.query(Criteria.where("_id").is(userId).and("v2.revision").is(revision)),
+                update,
+                FindAndModifyOptions.options().returnNew(true),
+                Document.class,
+                USERS);
     }
 
     static NotificationPreferencesDto userDto(Document document) {
@@ -224,20 +300,27 @@ public class NotificationPreferencesStore {
         Map<String, Boolean> categories;
         if (profile == null) categories = durableCategories(document.get("categories"));
         else {
-            if (profile.getString("revision") == null || !(profile.get("splitChannels") instanceof Boolean)) {
+            if (profile.getString("revision") == null
+                    || !(profile.get("splitChannels") instanceof Boolean)) {
                 throw unavailable("Durable preference profile is invalid", null);
             }
             var types = NotificationPreferencesV2Service.types(profile);
             categories = defaults();
-            for (var meaning : ru.rutcampustrack.notification.history.NotificationCatalog.meanings()) {
-                categories.merge(meaning.category(), types.get(meaning.type().name()).appPush(), (left, right) -> left && right);
+            for (var meaning :
+                    ru.rutcampustrack.notification.history.NotificationCatalog.meanings()) {
+                categories.merge(
+                        meaning.category(),
+                        types.get(meaning.type().name()).appPush(),
+                        (left, right) -> left && right);
             }
         }
-        return new NotificationPreferencesDto(Map.copyOf(categories), instant(document.get("mutedUntil")));
+        return new NotificationPreferencesDto(
+                Map.copyOf(categories), instant(document.get("mutedUntil")));
     }
 
     static Map<String, Boolean> durableCategories(Object raw) {
-        if (!(raw instanceof Map<?, ?> values)) throw unavailable("Durable preferences are invalid", null);
+        if (!(raw instanceof Map<?, ?> values))
+            throw unavailable("Durable preferences are invalid", null);
         Map<String, Boolean> result = new LinkedHashMap<>();
         for (String category : CATEGORIES) {
             if (!(values.get(category) instanceof Boolean enabled)) {
@@ -263,8 +346,11 @@ public class NotificationPreferencesStore {
     }
 
     private static void validateFacet(Document facet, long userId, long telegramId) {
-        if (facet == null || !(facet.get("userId") instanceof Number uid) || uid.longValue() != userId
-                || !(facet.get("telegramId") instanceof Number tid) || tid.longValue() != telegramId) {
+        if (facet == null
+                || !(facet.get("userId") instanceof Number uid)
+                || uid.longValue() != userId
+                || !(facet.get("telegramId") instanceof Number tid)
+                || tid.longValue() != telegramId) {
             throw unavailable("Durable Telegram preference identity is invalid", null);
         }
         globalEnabled(facet);
@@ -286,7 +372,8 @@ public class NotificationPreferencesStore {
 
     private static Instant legacyInstant(Object value, boolean allowEpoch) {
         if (value == null) return null;
-        if (!(value instanceof String text) || text.isBlank()) throw unavailable("Legacy mute is invalid", null);
+        if (!(value instanceof String text) || text.isBlank())
+            throw unavailable("Legacy mute is invalid", null);
         try {
             return Instant.parse(text);
         } catch (RuntimeException error) {
@@ -294,7 +381,9 @@ public class NotificationPreferencesStore {
                 try {
                     double epoch = Double.parseDouble(text);
                     if (Double.isFinite(epoch)) return Instant.ofEpochMilli((long) (epoch * 1000));
-                } catch (RuntimeException ignored) { /* reject malformed legacy state below */ }
+                } catch (RuntimeException ignored) {
+                    /* reject malformed legacy state below */
+                }
             }
             throw unavailable("Legacy mute is invalid", null);
         }
@@ -305,9 +394,19 @@ public class NotificationPreferencesStore {
         CATEGORIES.forEach(category -> values.put(category, true));
         return values;
     }
-    static String facetKey(long userId, long telegramId) { return userId + ":" + telegramId; }
-    private static Query id(Object id) { return Query.query(Criteria.where("_id").is(id)); }
-    private static void positive(long id) { if (id <= 0) throw new IllegalArgumentException("Positive user identity is required"); }
+
+    static String facetKey(long userId, long telegramId) {
+        return userId + ":" + telegramId;
+    }
+
+    private static Query id(Object id) {
+        return Query.query(Criteria.where("_id").is(id));
+    }
+
+    private static void positive(long id) {
+        if (id <= 0) throw new IllegalArgumentException("Positive user identity is required");
+    }
+
     static TransientDataAccessResourceException unavailable(String message, Throwable cause) {
         return new TransientDataAccessResourceException(message, cause);
     }

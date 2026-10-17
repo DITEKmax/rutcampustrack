@@ -1,52 +1,62 @@
 package ru.rutcampustrack.attendance.shared.port;
 
+import java.time.LocalDate;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-
-import java.time.LocalDate;
 
 /**
  * Write port for cross-domain attendance mutations.
  *
- * Lives in shared/port/ — has ZERO imports from checkin/ package so other
- * domains (excuse/, latecheckin/) can depend on it without breaking the
- * isolation rule (CLAUDE.md).
+ * <p>Lives in shared/port/ — has ZERO imports from checkin/ package so other domains (excuse/,
+ * latecheckin/) can depend on it without breaking the isolation rule (CLAUDE.md).
  *
- * Implemented by AttendanceWritePortImpl in checkin/ package.
+ * <p>Implemented by AttendanceWritePortImpl in checkin/ package.
  */
 public interface AttendanceWritePort {
 
     /**
-     * Upsert an attendance record for a student/lesson with the given status.
-     * Convenience overload — equivalent to {@link #mark(Long, Long, Long, Long, AttendanceStatus, AttendanceSource)}
+     * Upsert an attendance record for a student/lesson with the given status. Convenience overload
+     * — equivalent to {@link #mark(Long, Long, Long, Long, AttendanceStatus, AttendanceSource)}
      * with {@code source = HEADMAN_EXCUSE} (excuse approve cascade, D-16).
      */
-    void mark(Long studentId, Long lessonId, Long groupId, Long semesterId, AttendanceStatus status);
+    void mark(
+            Long studentId, Long lessonId, Long groupId, Long semesterId, AttendanceStatus status);
 
     /**
      * Upsert an attendance record for a student/lesson with explicit source.
      *
-     * If no document exists for (lessonId, studentId) a fresh document is inserted;
-     * otherwise the existing document's status/source/updatedAt are overwritten.
+     * <p>If no document exists for (lessonId, studentId) a fresh document is inserted; otherwise
+     * the existing document's status/source/updatedAt are overwritten.
      *
      * @param studentId the student whose attendance is being marked
-     * @param lessonId  the lesson
-     * @param groupId   the student's group (only used when inserting a fresh document)
-     * @param status    target AttendanceStatus (typically PRESENT for late-checkin approve,
-     *                  EXCUSED / FREE_ATTENDANCE for the excuse cascade)
-     * @param source    who/what is claiming this write (LATE_CHECKIN, HEADMAN_EXCUSE, ...)
+     * @param lessonId the lesson
+     * @param groupId the student's group (only used when inserting a fresh document)
+     * @param status target AttendanceStatus (typically PRESENT for late-checkin approve, EXCUSED /
+     *     FREE_ATTENDANCE for the excuse cascade)
+     * @param source who/what is claiming this write (LATE_CHECKIN, HEADMAN_EXCUSE, ...)
      */
-    void mark(Long studentId, Long lessonId, Long groupId, Long semesterId,
-              AttendanceStatus status, AttendanceSource source);
+    void mark(
+            Long studentId,
+            Long lessonId,
+            Long groupId,
+            Long semesterId,
+            AttendanceStatus status,
+            AttendanceSource source);
 
     /**
-     * Upsert with explicit source and an optional human-readable excuse reason.
-     * {@code excuseReason} is only meaningful for EXCUSED / FREE_ATTENDANCE via the
-     * excuse cascade; passing {@code null} clears the stored reason (e.g. when the
-     * status is overwritten by a non-excuse path).
+     * Upsert with explicit source and an optional human-readable excuse reason. {@code
+     * excuseReason} is only meaningful for EXCUSED / FREE_ATTENDANCE via the excuse cascade;
+     * passing {@code null} clears the stored reason (e.g. when the status is overwritten by a
+     * non-excuse path).
      */
-    void mark(Long studentId, Long lessonId, Long groupId, Long semesterId, AttendanceStatus status,
-              AttendanceSource source, String excuseReason);
+    void mark(
+            Long studentId,
+            Long lessonId,
+            Long groupId,
+            Long semesterId,
+            AttendanceStatus status,
+            AttendanceSource source,
+            String excuseReason);
 
     void markWithLesson(
             Long studentId,
@@ -58,6 +68,5 @@ public interface AttendanceWritePort {
             LocalDate lessonDate,
             AttendanceStatus status,
             AttendanceSource source,
-            Long markedBy
-    );
+            Long markedBy);
 }

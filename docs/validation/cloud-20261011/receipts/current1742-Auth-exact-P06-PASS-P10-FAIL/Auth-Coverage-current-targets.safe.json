@@ -1,0 +1,71 @@
+{
+  "metadata": {
+    "checkoutSha": "38d7b90194e05d55f0107106848bbedb8702bdf5",
+    "prHeadSha": "1742d1e806faa5c39c6d182a3554daa8f4239801",
+    "service": "auth-service",
+    "task": "integrationTest",
+    "job": "java-coverage",
+    "runId": "38387263972",
+    "runAttempt": "1",
+    "testStepScope": "unit+integration+report",
+    "event": "pull_request",
+    "testStepOutcome": "failure"
+  },
+  "collection": "RESULTS",
+  "summary": {
+    "PASSED": 170,
+    "FAILED": 1,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  },
+  "targets": [
+    {
+      "family": "P06",
+      "rows": [
+        {
+          "xmlOrdinal": 11,
+          "suiteOrdinal": 1,
+          "ordinal": 3,
+          "classname": "ru.rutcampustrack.auth.integration.InternalSessionAdmissionIT",
+          "method": "durableRevokeSurvivesReconstructionAndRealAuthorityOutageFailsClosed",
+          "status": "PASSED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/InternalSessionAdmissionIT.java",
+          "sourceSha256": "06691113c175a59a71f8aa8c965cc9eb4f4316b872ef44e735221bc1c79ed5e2"
+        }
+      ],
+      "source_exact": true
+    },
+    {
+      "family": "P10",
+      "rows": [
+        {
+          "xmlOrdinal": 7,
+          "suiteOrdinal": 1,
+          "ordinal": 4,
+          "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+          "method": "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries",
+          "status": "FAILED",
+          "identity": "SOURCE_METHOD",
+          "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+          "sourceSha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8"
+        }
+      ],
+      "source_exact": true
+    }
+  ],
+  "failed_or_error": [
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+      "method": "unicodePasswordChangeAndResetPreserveExactCredentialsAtHttpBoundaries",
+      "status": "FAILED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "sourceSha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8"
+    }
+  ]
+}

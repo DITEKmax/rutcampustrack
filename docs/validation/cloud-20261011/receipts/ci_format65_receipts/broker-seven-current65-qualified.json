@@ -1,0 +1,126 @@
+{
+  "verdict": "PASS_FINITE_SEVEN_CURRENT65_SOURCE_BOUND_NATIVE",
+  "producer": "65e0baeff26ac5673420bfc55e51a75085636423",
+  "checkout": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+  "run": 38236931589,
+  "job": 114769786169,
+  "artifact_id": 11741289574,
+  "artifact_digest": "5424a4c2a08781a8c3dfa873a9b09dd918a1564055b43db63faacb7ef3a8a39d",
+  "native_evidence": {
+    "collector": "safe-integration-outcomes-academic-service-1.json",
+    "metadata": {
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "prHeadSha": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "service": "academic-service",
+      "task": "integrationTest",
+      "job": "java-integration-test",
+      "runId": "38236931589",
+      "runAttempt": "1",
+      "event": "pull_request",
+      "testStepOutcome": "success"
+    },
+    "case": {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+      "method": "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "sourceSha256": "ac58bd3b01a8816a38a0bdc1abbefd3e484389b116e3b2048a42dd82a8105547"
+    },
+    "xml_sha256": "f727c0483721f063e5ad1355bad8e7c2d21ace3e0a14647bd1094794a0182726"
+  },
+  "java_source_sha256": "ac58bd3b01a8816a38a0bdc1abbefd3e484389b116e3b2048a42dd82a8105547",
+  "python_source_sha256": "a5753fb082e7f20a3c96abf9e35785d812f636f9e4d8c06d490ae3b53329ed0a",
+  "previous_source_oracles": "/workspace/scratch/rct-validation/ci_cd3_receipts/broker-seven-qualified-partial.json",
+  "mechanical_preservation_review": "nonangular_format_review/correction_recheck APPROVE_SOURCE exact2092; native Java1590/Python120 AST/literals equivalent",
+  "scenarios": [
+    {
+      "id": "NP01-BR-01",
+      "phase": "actual_auth_change_outbox_confirm_consumer_ack",
+      "oracles": [
+        "Real direct Auth JdbcSessionAuthority change emits v2 own UID and four metadata fields; revokes sessions and commits pending outbox/card invalidation",
+        "Real publisher confirms one event; native Rabbit ACK advances only with completed Redis marker, queue ready/unacked zero, PG pending/outbox_pending zero and initial cleared",
+        "Own credential marker gone; exact old foreign card preserved"
+      ]
+    },
+    {
+      "id": "NP01-BR-02",
+      "phase": "same_real_event_completed_dedup_ack",
+      "oracles": [
+        "Same actual event redelivery reaches acknowledged completed state",
+        "Delete/edit/notice effect counts unchanged; exact old foreign card unchanged"
+      ]
+    },
+    {
+      "id": "NP01-BR-03",
+      "phase": "actual_unlinked_reset_original_uid_cleanup",
+      "oracles": [
+        "Rebind former own chat to foreign account and create a NEW foreign card distinct from old card",
+        "Real unlinked reset v2 retains original own UID, omits recipient and has exactly three fields",
+        "Cleanup removes own reset marker; both exact old and NEW foreign key/text remain; no redirected notice"
+      ]
+    },
+    {
+      "id": "NP01-BR-04",
+      "phase": "uncertain_provider_keeps_real_claim_retry_without_ack",
+      "oracles": [
+        "Loopback provider accepts edit but loses response; real card becomes uncertain",
+        "Deletion refused: native redelivery count increases, ACK unchanged, claim released, Redis not completed, durable pending remains",
+        "Uncertain card and new foreign exact card remain; no unsafe edit sanitization"
+      ]
+    },
+    {
+      "id": "NP01-BR-05",
+      "phase": "actual_worker_death_durable_redelivery_recovery",
+      "oracles": [
+        "Freeze only own worker after actual Redis claim release, kill/reap real process",
+        "Native broker retains one ready message/zero consumer/unchanged ACK; durable pending/card survives",
+        "Fresh worker uses same broker/Redis/PG/provider; cleanup completes then completed+ACK observed; both exact foreign cards preserved"
+      ]
+    },
+    {
+      "id": "NP01-BR-07",
+      "phase": "worker_death_while_default_processing_lease_held + held_lease_blocks_premature_ack_until_natural_expiry",
+      "oracles": [
+        "Actual production default TTL300; held processing claim realRedis PTTL270000<pttl<=300000",
+        "Kill/reap actual holder; retained same key; restarted worker produces at least two redeliveries without ACK",
+        "While same key remains, ACK unchanged, durable pending positive and exact held/new foreign cards unchanged",
+        "No supervisor key expiry/release/complete writes: natural expiry/replacement only after measured elapsed>=initialPTTL-2000",
+        "After expiry cleanup removes exact held card/marker; actual completed marker, queue drain, zero pending/outbox_pending and ACK advancement; old+NEW exact foreign preserved"
+      ]
+    },
+    {
+      "id": "NP01-BR-06",
+      "phase": "unknown_version_real_dlq_releases_claim",
+      "oracles": [
+        "Actual event with fresh ID/version991 goes to real DLQ with x-death originalqueue/rejected",
+        "Redis claim absent/not completed; no pending cleanup; exact NEW foreign preserved",
+        "Observer acknowledges the inspected DLQ message; supervisor reaches completed"
+      ]
+    }
+  ],
+  "limits": {
+    "provider": "Actual persistent loopback Telegram API emulator; external Telegram NOT_EXERCISED",
+    "auth": "Actual JDBC credential transaction producer, public Auth HTTP NOT_EXERCISED",
+    "application": "Actual production components/nativeTLSgRPC; not full seven Boot applications or end-user/browser",
+    "numeric_receipt": "Successful test stdout/suite-time not exposed in safe collector/native job logs; exact PTTL/elapsed/checks UNKNOWN. Required bounds proven by exact assertion PASS.",
+    "coverage": "Current Coverage Academic job completed integrationTest SUCCESS/BUILD13m34s; overall CoverageFAIL due Vue sourceguard oracle. Named currentJUnit case retained byCI SAFE artifact.",
+    "sensitivity": "Meaningful BR-T01/earlyACK control still separate if not already accepted; normal seven-case repeat unnecessary for this exact source/outcome"
+  },
+  "qualification": "Mandatory seven sequential Python phases + Java qualified/childExit/default300/restarts/cleanup assertions retain identical semantics under independently reviewed formatting; named currentJUnit SOURCE_METHOD PASS satisfies them. Actual perphase duration/PTTL values omitted by safe collector and UNKNOWN. Real provider emulator/directJDBC limitations retained; notwholeproduct/security/8Bootclientstand PASS.",
+  "required_java_oracles": {
+    "child_exit": 0,
+    "qualified": true,
+    "failures": 0,
+    "worker_restarts": 2,
+    "workers_reaped": true,
+    "natural_held_lease_expiry": true,
+    "held_pttl_ms": "270000 < observed <= 300000",
+    "held_elapsed_ms": "observed >= initialPTTL -2000",
+    "held_redeliveries": ">=2",
+    "final_pg_own_pending": 0
+  }
+}

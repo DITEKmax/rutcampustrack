@@ -1,0 +1,453 @@
+{
+  "at": "2026-10-14T03:30:00.053880+00:00",
+  "workflow_sha256": "0d6e0237e950506dc194c6ab55b13bf1d85cce7c9b00e4091c5055bc6067de6f",
+  "yaml_parse": "PASS",
+  "inline_python_compiled": 3,
+  "closed_RAM_controls": [
+    {
+      "name": "actual_json_authority",
+      "pass": true,
+      "origin": "SEMESTER_AUTHORITY"
+    },
+    {
+      "name": "actual_json_clock",
+      "pass": true,
+      "origin": "FILE_CLOCK"
+    },
+    {
+      "name": "split_records",
+      "pass": true,
+      "origin": "UNKNOWN"
+    },
+    {
+      "name": "msg_only_frame",
+      "pass": true,
+      "origin": "UNKNOWN"
+    },
+    {
+      "name": "truncated",
+      "pass": true,
+      "origin": "UNKNOWN"
+    },
+    {
+      "name": "invalid",
+      "pass": true,
+      "origin": "UNKNOWN"
+    },
+    {
+      "name": "nonobject",
+      "pass": true,
+      "origin": "UNKNOWN"
+    },
+    {
+      "name": "nonstring_stack",
+      "pass": true,
+      "origin": "UNKNOWN"
+    }
+  ],
+  "first_discovery_parser_attempt": "wrong hardcodedjobkey KeyError beforecontrols; corrected existingjob enumeration; notproductFAIL",
+  "runtime": "NO_BROWSER_DOCKER_NETWORK_OR_PRODUCT_RUN",
+  "cached_node_checks": {
+    "checks": [
+      {
+        "phase": "format-apply",
+        "terminal": {
+          "direct_pid": 628914,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 628914,
+              "start_ticks": 20243406
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "format-check",
+        "terminal": {
+          "direct_pid": 628925,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 628925,
+              "start_ticks": 20243466
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "tsc",
+        "terminal": {
+          "direct_pid": 628936,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 628936,
+              "start_ticks": 20243579
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        }
+      },
+      {
+        "phase": "discovery-admin",
+        "terminal": {
+          "direct_pid": 628943,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 628943,
+              "start_ticks": 20243918
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        "sourceLines": [
+          451
+        ],
+        "expectedCount": 1,
+        "actual_count_matches": true
+      },
+      {
+        "phase": "discovery-role",
+        "terminal": {
+          "direct_pid": 628956,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 628956,
+              "start_ticks": 20244093
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        "sourceLines": [
+          825
+        ],
+        "expectedCount": 1,
+        "actual_count_matches": true
+      },
+      {
+        "phase": "discovery-five",
+        "terminal": {
+          "direct_pid": 628969,
+          "native_exit": 0,
+          "terminal_reason": "NATIVE_TERMINAL",
+          "signal_count": 0,
+          "settled": true,
+          "all_owned_processes_reaped": true,
+          "all_members_including_Z_after": [],
+          "known_owned_identities": [
+            {
+              "pid": 628969,
+              "start_ticks": 20244236
+            }
+          ],
+          "adopted_waitpid_receipts": [],
+          "supervision_error_type": null,
+          "phase_success": true
+        },
+        "sourceLines": [
+          230,
+          257,
+          298,
+          316,
+          405
+        ],
+        "expectedCount": 5,
+        "actual_count_matches": true
+      }
+    ],
+    "before_source_pins": {
+      ".github/workflows/ci.yml": "0d6e0237e950506dc194c6ab55b13bf1d85cce7c9b00e4091c5055bc6067de6f",
+      "tests/e2e/playwright.real-mobile.config.ts": "8400e46d462f4ad879d5860c34b308412b0965787d0bf9657659b6f6263ff5b9",
+      "tests/e2e/specs/mobile-real-server.spec.ts": "3b320d32e7f65f8532cb5d3d43cd2694fc2d78e2a775813bb984d4c4d6e66ea2",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts": "ee05a0aa84184c9dbf9add676fe19ff2ed5bf19704724a87e6aa90d11a224f4d"
+    },
+    "final_source_pins": {
+      ".github/workflows/ci.yml": "0d6e0237e950506dc194c6ab55b13bf1d85cce7c9b00e4091c5055bc6067de6f",
+      "tests/e2e/playwright.real-mobile.config.ts": "bec34ebf777726c21d2ad753362d5860b11fd6b30ceaa2e05937e25fedd21725",
+      "tests/e2e/specs/mobile-real-server.spec.ts": "3b320d32e7f65f8532cb5d3d43cd2694fc2d78e2a775813bb984d4c4d6e66ea2",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts": "ee05a0aa84184c9dbf9add676fe19ff2ed5bf19704724a87e6aa90d11a224f4d"
+    },
+    "own_sampled_peak_rss": 321581056,
+    "elapsed_seconds": 9.742,
+    "tmp_absent": true,
+    "no_browser_workers_or_network": true
+  },
+  "reviews": {
+    "Q03": "APPROVE_SOURCE_LOCAL_whole_and_executionselection",
+    "Q04": "APPROVE_SOURCE_LOCAL_targeted_candidate_waiter",
+    "Q15": "APPROVE_SOURCE_LOCAL_JSON_chain_F1_corrected",
+    "Q05": "APPROVE_SOURCE_LOCAL_0f7_F1_CLOSED"
+  },
+  "clock_source_pins": {
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "615d0534156e7c4e3ca219d164d503b4601a5d0c0d35aeb368ac88b1e7f685f9",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "bd160f75da6b62e7eb3395d8299dd86c8dde1f2aaef679c71c0594e31feb3cd5",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "74fa6ba7d0a8ca5f2497f6f4ab43087674e581bfd7f934c4e530bc69ddc2d7be"
+  },
+  "normal_source_hooks": {
+    "paths": [
+      ".github/workflows/ci.yml",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "tests/e2e/playwright.real-mobile.config.ts",
+      "tests/e2e/specs/mobile-real-server.spec.ts"
+    ],
+    "terminal": {
+      "direct_pid": 629195,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 629195,
+          "start_ticks": 20257762
+        },
+        {
+          "pid": 629207,
+          "start_ticks": 20257765
+        },
+        {
+          "pid": 629214,
+          "start_ticks": 20257793
+        },
+        {
+          "pid": 629235,
+          "start_ticks": 20257800
+        },
+        {
+          "pid": 629263,
+          "start_ticks": 20257871
+        },
+        {
+          "pid": 629264,
+          "start_ticks": 20257882
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "six_known_outcomes": [
+      {
+        "hook": "Gitleaks secret detection",
+        "passed": true,
+        "skipped": false,
+        "failed": false
+      },
+      {
+        "hook": "check yaml",
+        "passed": true,
+        "skipped": false,
+        "failed": false
+      },
+      {
+        "hook": "check json",
+        "passed": false,
+        "skipped": true,
+        "failed": false
+      },
+      {
+        "hook": "check for added large files",
+        "passed": true,
+        "skipped": false,
+        "failed": false
+      },
+      {
+        "hook": "fix end of files",
+        "passed": true,
+        "skipped": false,
+        "failed": false
+      },
+      {
+        "hook": "trim trailing whitespace",
+        "passed": true,
+        "skipped": false,
+        "failed": false
+      }
+    ],
+    "qualification": "5 applicable PASS; JSON hook N/A no JSON in7Sourcepaths; expecteddocsJSON gate willrun ondocs",
+    "root_projection_correction": "initial assertion assumed6PASS; actual5PASS+JSONN/A; no hook failure/no producttest"
+  },
+  "source_commit": "99f19b08efccfa91e8b5c9cf97bb993be81ac4e0",
+  "source_commit_record": {
+    "sha": "99f19b08efccfa91e8b5c9cf97bb993be81ac4e0",
+    "parent": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+    "paths": [
+      ".github/workflows/ci.yml",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts",
+      "tests/e2e/playwright.real-mobile.config.ts",
+      "tests/e2e/specs/mobile-real-server.spec.ts"
+    ],
+    "normal_git_commit_exit": 0,
+    "no_hook_bypass": true,
+    "source_sha256": {
+      ".github/workflows/ci.yml": "0d6e0237e950506dc194c6ab55b13bf1d85cce7c9b00e4091c5055bc6067de6f",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "bd160f75da6b62e7eb3395d8299dd86c8dde1f2aaef679c71c0594e31feb3cd5",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "615d0534156e7c4e3ca219d164d503b4601a5d0c0d35aeb368ac88b1e7f685f9",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "74fa6ba7d0a8ca5f2497f6f4ab43087674e581bfd7f934c4e530bc69ddc2d7be",
+      "tests/e2e/artifact-controls/privacy.control.spec.ts": "ee05a0aa84184c9dbf9add676fe19ff2ed5bf19704724a87e6aa90d11a224f4d",
+      "tests/e2e/playwright.real-mobile.config.ts": "bec34ebf777726c21d2ad753362d5860b11fd6b30ceaa2e05937e25fedd21725",
+      "tests/e2e/specs/mobile-real-server.spec.ts": "3b320d32e7f65f8532cb5d3d43cd2694fc2d78e2a775813bb984d4c4d6e66ea2"
+    }
+  },
+  "selected_PG": "PASS exact2methods/0FES/observerNONE/foreignbaselinepreserved; details Q05-semester-clock-author.safe.json",
+  "normal_docs_hooks": {
+    "terminal": {
+      "direct_pid": 630908,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 630908,
+          "start_ticks": 20287987
+        },
+        {
+          "pid": 630920,
+          "start_ticks": 20287991
+        },
+        {
+          "pid": 630927,
+          "start_ticks": 20288018
+        },
+        {
+          "pid": 630948,
+          "start_ticks": 20288029
+        },
+        {
+          "pid": 630979,
+          "start_ticks": 20288103
+        },
+        {
+          "pid": 630980,
+          "start_ticks": 20288103
+        },
+        {
+          "pid": 630981,
+          "start_ticks": 20288103
+        },
+        {
+          "pid": 631008,
+          "start_ticks": 20288113
+        },
+        {
+          "pid": 631009,
+          "start_ticks": 20288113
+        },
+        {
+          "pid": 631010,
+          "start_ticks": 20288113
+        },
+        {
+          "pid": 631011,
+          "start_ticks": 20288113
+        },
+        {
+          "pid": 631012,
+          "start_ticks": 20288113
+        },
+        {
+          "pid": 631023,
+          "start_ticks": 20288123
+        },
+        {
+          "pid": 631083,
+          "start_ticks": 20288139
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "six_known_outcomes": [
+      {
+        "hook": "Gitleaks secret detection",
+        "passed": true,
+        "skipped": false,
+        "failed": false
+      },
+      {
+        "hook": "check yaml",
+        "passed": false,
+        "skipped": true,
+        "failed": false
+      },
+      {
+        "hook": "check json",
+        "passed": true,
+        "skipped": false,
+        "failed": false
+      },
+      {
+        "hook": "check for added large files",
+        "passed": true,
+        "skipped": false,
+        "failed": false
+      },
+      {
+        "hook": "fix end of files",
+        "passed": true,
+        "skipped": false,
+        "failed": false
+      },
+      {
+        "hook": "trim trailing whitespace",
+        "passed": true,
+        "skipped": false,
+        "failed": false
+      }
+    ],
+    "qualification": "5applicablePASS/YAML_NA_noYAMLdocs; sourceYAMLgatepreviousPASS",
+    "package_doc_count": 21
+  }
+}

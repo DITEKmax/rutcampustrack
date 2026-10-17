@@ -1,0 +1,10 @@
+{
+  "schema": "RCT_P10_READONLY_MANIFEST_V1",
+  "files": {
+    "REPORT.safe.json": "c324d216bf939e9456198de89cdaabdf4cac13d188211ea361d9f47d194cca65",
+    "REPORT.md": "ded7850da74ff1dd647938676d30b1489e1a46cff1df1e8675f547e673cc7dbf"
+  },
+  "source_pins": 18,
+  "safe_selected_methods": 15,
+  "qualification": "OnlypublicSource/Safeper-method receipt metadata; no raw XML/logs/password/token/body or private-contenthash."
+}

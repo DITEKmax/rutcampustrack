@@ -1,0 +1,129 @@
+{
+  "created_utc": "2026-10-12T00:29:16.439605+00:00",
+  "base": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+  "status": "SOURCE_READY_RUNTIME_NOT_RUN",
+  "files": [
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/IssueReportDownloadTicketRequest.java",
+      "bytes": 23792,
+      "sha256": "a7060d0ec98d5b0be0702a073ba1363f5c17de5bab0d8369f7aa6629da668790",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/ReportDownloadKind.java",
+      "bytes": 1373,
+      "sha256": "ff8601e626feab612313f7187a3b013ca9650cbeb4ca68b77343c0ebe23e1db9",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+      "bytes": 13822,
+      "sha256": "7dc450b6adc59921b370e5088dd5f1df5b7e8c5d82873be0de03d2e63974728b",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportReportAuthority.java",
+      "bytes": 1646,
+      "sha256": "2d2a5f40311f003a7db0367ca9363bf84ec18fa23c4328be4e7d69656240da42",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/ReportDownloadTicketService.java",
+      "bytes": 18064,
+      "sha256": "e9176827943824ab5482d164246f5b0a09c5936eaf831f8f680330ba89d0670d",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/service/ReportDownloadTicketServiceTest.java",
+      "bytes": 19432,
+      "sha256": "4502feff97d96b53e951dd3059d86bc3d2d06c38711d24c92a36fe21a8678824",
+      "status": "M"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/RegistryExportAdmission.java",
+      "bytes": 1657,
+      "sha256": "d519948b0fdef72d0f245d8deebdcfc5f7fa93c52dd597960c1f131b9e63039f",
+      "status": "A"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java",
+      "bytes": 23152,
+      "sha256": "4024f716efa5f248a5ff5d0e8c07172606370c2f97b9006d5195037ebbe53169",
+      "status": "A"
+    }
+  ],
+  "protected_inputs": [
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java",
+      "sha256": "1a172acc80525c442117485465a1b39f62854e7d5d70d1466ae13ef7b2a77f22",
+      "matches_before3": true
+    },
+    {
+      "path": "build.gradle.kts",
+      "sha256": "5304f8bc9b710d9ce09e42d07cb873f2fbb02d6d4e88cb33efb180fa3cad2d32",
+      "matches_before3": true
+    },
+    {
+      "path": "services/auth-service/auth-app/build.gradle.kts",
+      "sha256": "2b73dd93e93b58c26d51889c89e3c6814524b88f33084ad2a55b65ef7c03c397",
+      "matches_before3": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/resources/application-test.yml",
+      "sha256": "9776635dc228238dc706046b9db5d3ed9282ad30bb91aebc53bcf39482f53ef9",
+      "matches_before3": true
+    }
+  ],
+  "review_original_bridge": [
+    {
+      "path": "REPORT.md",
+      "matches_original_archive": true
+    },
+    {
+      "path": "findings.json",
+      "matches_original_archive": true
+    },
+    {
+      "path": "review-ledger.json",
+      "matches_original_archive": true
+    },
+    {
+      "path": "source-ledger.json",
+      "matches_original_archive": true
+    },
+    {
+      "path": "frozen-source-manifest.json",
+      "matches_original_archive": true
+    },
+    {
+      "path": "dependency-manifest.json",
+      "matches_original_archive": true
+    },
+    {
+      "path": "evidence-review.json",
+      "matches_original_archive": true
+    },
+    {
+      "path": "early-source-equivalence.json",
+      "matches_original_archive": true
+    },
+    {
+      "path": "openapi-compatibility.json",
+      "matches_original_archive": true
+    },
+    {
+      "path": "CURRENT.json",
+      "matches_original_archive": true
+    },
+    {
+      "path": "attempts.ndjson",
+      "matches_original_archive": true
+    },
+    {
+      "path": "immutable-review-manifest.json",
+      "matches_original_archive": true
+    }
+  ],
+  "node_modules": "untracked read-only symlink preserved, never stage",
+  "accepted_client": "a7c86e1b unchanged, no frontend writes"
+}

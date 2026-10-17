@@ -3718,6 +3718,228 @@
         }
       }
     },
+    "/academic/subjects/{id}/deletion" : {
+      "post" : {
+        "tags" : [ "subject-deletion-controller" ],
+        "operationId" : "confirm",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConfirmRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/subjects/{id}/deletion-challenge" : {
+      "post" : {
+        "tags" : [ "subject-deletion-controller" ],
+        "operationId" : "challenge",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ChallengeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Challenge"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/academic/semesters" : {
       "get" : {
         "tags" : [ "Semester archive", "Semesters" ],
@@ -4142,6 +4364,238 @@
           },
           "401" : {
             "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/registry-exports/users" : {
+      "post" : {
+        "tags" : [ "registry-export-controller" ],
+        "operationId" : "users",
+        "parameters" : [ {
+          "name" : "X-Export-Job-Id",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "X-Export-Job-Lease",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Users"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/registry-exports/groups" : {
+      "post" : {
+        "tags" : [ "registry-export-controller" ],
+        "operationId" : "groups",
+        "parameters" : [ {
+          "name" : "X-Export-Job-Id",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "X-Export-Job-Lease",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Groups"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -6957,6 +7411,122 @@
         }
       }
     },
+    "/academic/admin/attendance/export" : {
+      "post" : {
+        "tags" : [ "admin-attendance-report-controller" ],
+        "operationId" : "generate",
+        "parameters" : [ {
+          "name" : "X-Export-Job-Id",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "X-Export-Job-Lease",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Export"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/academic/users/me/avatar" : {
       "patch" : {
         "tags" : [ "Users" ],
@@ -7968,6 +8538,200 @@
         }
       }
     },
+    "/academic/subjects/{id}/deletion-preview" : {
+      "get" : {
+        "tags" : [ "subject-deletion-controller" ],
+        "operationId" : "preview",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/subject-deletion-operations/{operationId}" : {
+      "get" : {
+        "tags" : [ "subject-deletion-controller" ],
+        "operationId" : "status",
+        "parameters" : [ {
+          "name" : "operationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/academic/semesters/{id}/delete-preview" : {
       "get" : {
         "tags" : [ "Semester archive", "Semesters" ],
@@ -8434,6 +9198,188 @@
           },
           "401" : {
             "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/registry-exports/users/formats" : {
+      "get" : {
+        "tags" : [ "registry-export-controller" ],
+        "operationId" : "userFormats",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/FormatOption"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/registry-exports/groups/formats" : {
+      "get" : {
+        "tags" : [ "registry-export-controller" ],
+        "operationId" : "groupFormats",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/FormatOption"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -10236,6 +11182,325 @@
         }
       }
     },
+    "/academic/admin/attendance" : {
+      "get" : {
+        "tags" : [ "admin-attendance-report-controller" ],
+        "operationId" : "read",
+        "parameters" : [ {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "search",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : ""
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "GROUP_NAME",
+            "enum" : [ "GROUP_NAME", "PRESENT_PERCENT", "PRESENT_OR_EXCUSED_PERCENT", "COUNTED_LESSONS", "PRESENT", "ABSENT", "EXCUSED" ]
+          }
+        }, {
+          "name" : "direction",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "ASC",
+            "enum" : [ "ASC", "DESC" ]
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 25
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/admin/attendance/semesters" : {
+      "get" : {
+        "tags" : [ "admin-attendance-report-controller" ],
+        "operationId" : "semesters",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Semesters"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/admin/attendance/formats" : {
+      "get" : {
+        "tags" : [ "admin-attendance-report-controller" ],
+        "operationId" : "formats",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/FormatOption"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/academic/admin-access/me" : {
       "get" : {
         "tags" : [ "admin-access-controller" ],
@@ -11881,6 +13146,92 @@
           }
         }
       },
+      "ConfirmRequest" : {
+        "type" : "object",
+        "properties" : {
+          "operationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "previewDigest" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "[0-9a-f]{64}"
+          },
+          "challengeId" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "[A-Za-z0-9_-]{32}"
+          },
+          "code" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "[0-9]{6}"
+          }
+        },
+        "required" : [ "challengeId", "code", "operationId", "previewDigest" ]
+      },
+      "Operation" : {
+        "type" : "object",
+        "properties" : {
+          "operationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "subjectId" : {
+            "type" : "string"
+          },
+          "semesterId" : {
+            "type" : "string"
+          },
+          "phase" : {
+            "type" : "string",
+            "enum" : [ "PREPARING", "SEALED", "COMMITTING", "COMPLETED", "RELEASING", "CANCELLED" ]
+          },
+          "retryable" : {
+            "type" : "boolean"
+          },
+          "reason" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ChallengeRequest" : {
+        "type" : "object",
+        "properties" : {
+          "operationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "previewDigest" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "[0-9a-f]{64}"
+          },
+          "password" : {
+            "type" : "string",
+            "maxLength" : 256,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "operationId", "password", "previewDigest" ]
+      },
+      "Challenge" : {
+        "type" : "object",
+        "properties" : {
+          "challengeId" : {
+            "type" : "string"
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "attemptsRemaining" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "CreateSemesterRequest" : {
         "type" : "object",
         "description" : "Запрос на создание нового академического семестра (ADMIN)",
@@ -11975,6 +13326,96 @@
             "type" : "string"
           }
         }
+      },
+      "SortOrder" : {
+        "type" : "object",
+        "properties" : {
+          "field" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "descending" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "field" ]
+      },
+      "Users" : {
+        "type" : "object",
+        "properties" : {
+          "search" : {
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "role" : {
+            "type" : "string",
+            "pattern" : "ADMIN|TEACHER|STUDENT|HEADMAN"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "ACTIVE", "EXPELLED", "SUSPENDED", "ARCHIVED" ]
+          },
+          "roleStatus" : {
+            "type" : "string",
+            "pattern" : "ACTIVE|EXPELLED|GRADUATED|SUSPENDED|DISMISSED|ARCHIVED"
+          },
+          "sorts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SortOrder"
+            },
+            "maxItems" : 8,
+            "minItems" : 0
+          },
+          "format" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "format" ]
+      },
+      "Groups" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "description" : "Разрез реестра групп администратора",
+            "enum" : [ "ACTIVE", "DRAFT", "ARCHIVED" ]
+          },
+          "search" : {
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "course" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 5,
+            "minimum" : 1
+          },
+          "studyMode" : {
+            "type" : "string",
+            "enum" : [ "FULL_TIME", "PART_TIME", "EXTRAMURAL" ]
+          },
+          "educationLevel" : {
+            "type" : "string",
+            "enum" : [ "BACHELOR", "SPECIALIST", "MASTER" ]
+          },
+          "sorts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SortOrder"
+            },
+            "maxItems" : 8,
+            "minItems" : 0
+          },
+          "format" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "format" ]
       },
       "CampusMapUploadPlanResponse" : {
         "type" : "object",
@@ -12745,6 +14186,34 @@
           }
         }
       },
+      "Export" : {
+        "type" : "object",
+        "properties" : {
+          "semesterId" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "[1-9][0-9]{0,18}"
+          },
+          "search" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "sort" : {
+            "type" : "string",
+            "enum" : [ "GROUP_NAME", "PRESENT_PERCENT", "PRESENT_OR_EXCUSED_PERCENT", "COUNTED_LESSONS", "PRESENT", "ABSENT", "EXCUSED" ]
+          },
+          "direction" : {
+            "type" : "string",
+            "enum" : [ "ASC", "DESC" ]
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "html", "pdf", "docx", "xlsx", "png" ]
+          }
+        },
+        "required" : [ "direction", "format", "search", "semesterId", "sort" ]
+      },
       "PatchUserRequest" : {
         "type" : "object",
         "description" : "Частичное обновление пользователя (PATCH)",
@@ -13314,6 +14783,23 @@
           }
         }
       },
+      "FormatOption" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "extension" : {
+            "type" : "string"
+          }
+        }
+      },
       "PlanTargetResponse" : {
         "type" : "object",
         "properties" : {
@@ -13507,6 +14993,12 @@
             "type" : "integer",
             "format" : "int32"
           },
+          "first" : {
+            "type" : "boolean"
+          },
+          "last" : {
+            "type" : "boolean"
+          },
           "size" : {
             "type" : "integer",
             "format" : "int32"
@@ -13524,18 +15016,12 @@
           "sort" : {
             "$ref" : "#/components/schemas/SortObject"
           },
-          "first" : {
-            "type" : "boolean"
-          },
-          "last" : {
-            "type" : "boolean"
-          },
-          "pageable" : {
-            "$ref" : "#/components/schemas/PageableObject"
-          },
           "numberOfElements" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "pageable" : {
+            "$ref" : "#/components/schemas/PageableObject"
           },
           "empty" : {
             "type" : "boolean"
@@ -13552,7 +15038,7 @@
           "sort" : {
             "$ref" : "#/components/schemas/SortObject"
           },
-          "unpaged" : {
+          "paged" : {
             "type" : "boolean"
           },
           "pageNumber" : {
@@ -13563,7 +15049,7 @@
             "type" : "integer",
             "format" : "int32"
           },
-          "paged" : {
+          "unpaged" : {
             "type" : "boolean"
           }
         }
@@ -13769,6 +15255,32 @@
           }
         }
       },
+      "DashboardDailyGrowthResponse" : {
+        "type" : "object",
+        "description" : "Суточный прирост карточек масштаба к концу вчерашнего дня Europe/Moscow",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "AVAILABLE", "UNKNOWN_HISTORY" ]
+          },
+          "baselineDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "studentsDelta" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64"
+          },
+          "teachersDelta" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64"
+          },
+          "groupsDelta" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int64"
+          }
+        }
+      },
       "EntityModelDashboardStatsResponse" : {
         "type" : "object",
         "properties" : {
@@ -13790,6 +15302,9 @@
           },
           "activeSemesterName" : {
             "type" : "string"
+          },
+          "dailyGrowth" : {
+            "$ref" : "#/components/schemas/DashboardDailyGrowthResponse"
           },
           "_links" : {
             "$ref" : "#/components/schemas/Links"
@@ -13989,6 +15504,130 @@
           },
           "page" : {
             "$ref" : "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "Page" : {
+        "type" : "object",
+        "properties" : {
+          "semester" : {
+            "$ref" : "#/components/schemas/Semester"
+          },
+          "search" : {
+            "type" : "string"
+          },
+          "sort" : {
+            "type" : "string",
+            "enum" : [ "GROUP_NAME", "PRESENT_PERCENT", "PRESENT_OR_EXCUSED_PERCENT", "COUNTED_LESSONS", "PRESENT", "ABSENT", "EXCUSED" ]
+          },
+          "direction" : {
+            "type" : "string",
+            "enum" : [ "ASC", "DESC" ]
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "observedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "rows" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Row"
+            }
+          }
+        }
+      },
+      "Row" : {
+        "type" : "object",
+        "properties" : {
+          "groupId" : {
+            "type" : "string"
+          },
+          "groupName" : {
+            "type" : "string"
+          },
+          "countedLessons" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "presentCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "absentCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "excusedCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "opportunities" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "presentPercent" : {
+            "type" : [ "number", "null" ],
+            "format" : "double"
+          },
+          "presentOrExcusedPercent" : {
+            "type" : [ "number", "null" ],
+            "format" : "double"
+          },
+          "dataState" : {
+            "type" : "string",
+            "enum" : [ "AVAILABLE", "NO_DATA" ]
+          }
+        }
+      },
+      "Semester" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "dateFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dateTo" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "archived" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Semesters" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Semester"
+            }
           }
         }
       },

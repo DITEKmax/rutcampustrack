@@ -1,0 +1,56 @@
+{
+  "sources": [
+    {
+      "path": "tests/e2e/fixtures/safe-reporter.ts",
+      "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+      "sha256": "bbf8f3381fe7e20eb426a34f625c836264096ac1dac7f30085e547b629749c4e",
+      "bytes": 3330,
+      "currentRootEqual": true
+    },
+    {
+      "path": "tests/e2e/fixtures/first3-observer.ts",
+      "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+      "sha256": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718",
+      "bytes": 36133,
+      "currentRootEqual": true
+    },
+    {
+      "path": "tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+      "sha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+      "bytes": 899,
+      "currentRootEqual": true
+    },
+    {
+      "path": "tests/e2e/specs/mobile-real-server.spec.ts",
+      "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+      "sha256": "886477c35ae40a0bc33b314ec6daabdea4582dafefa2fac3797a18e18016fd82",
+      "bytes": 18728,
+      "currentRootEqual": true
+    },
+    {
+      "path": "tests/e2e/playwright.first3.config.ts",
+      "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+      "sha256": "8ea669255385a66c4a4eb3e5303ff6f4a89d9ed2b0582e5944b09a4745eb9cde",
+      "bytes": 2137,
+      "currentRootEqual": true
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+      "sha256": "2d6740b9c28e0717d66c0c663f420822b4dd3c0a9055aa3e284a5e00f9e1687f",
+      "bytes": 16485,
+      "currentRootEqual": true
+    }
+  ],
+  "caseSourceLines": {
+    "STUDENT": 14,
+    "HEADMAN": 61,
+    "HELPER": 142
+  },
+  "assertionSource": "tests/e2e/specs/mobile-real-server.spec.ts",
+  "retries": 0,
+  "allowedCarriers": "Only exact four already closed JSON paths in first3-safe-1",
+  "runtime": false,
+  "rawPrivateRead": false
+}

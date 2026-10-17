@@ -1,0 +1,145 @@
+{
+  "at": "2026-10-11T23:24:26.049097+00:00",
+  "sources": [
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+      "sha256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+      "sha256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+      "sha256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/async-export.test.ts",
+      "sha256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/components/export-button.test.ts",
+      "sha256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+      "sha256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/components/ExportButton.vue",
+      "sha256": "fbb52f660a7ff4c9db09a1cbc54199727f4d818a9e55aaa9b59a59b0e175339d",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/report-download-client.ts",
+      "sha256": "c3d182a22004f2e4ebb0c62c493ab9ac6b9b62863f4e5d84de518adcde09aac4",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/frontends/mobile-core/src/shared/report-download-browser.ts",
+      "sha256": "01266aff2dd3c7671be66a773d067d476584d86d736fc8f4e3f0d69b3858c01e",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/design/COMPONENT_REGISTRY.md",
+      "sha256": "9bd46cf132d72ad0c8ee8ea40ead38f3fa7eda3f44c2f094c6567acaf1b0aede",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rct-worktrees/exports/docs/wireframes/admin/132-admin-users.md",
+      "sha256": "0bc918e6eea1d67d2baa40bcd72a6c1e4a958786bc7979127f46b49728bc0368",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-correction-packet.md",
+      "sha256": "b73614b32e690274e3c52dbde6d13c762c93ac282fdebdaacda36382d27f5d64",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/export_developer/frontend-ecr-correction-inventory.json",
+      "sha256": "c918d45607ea0dca11f1bde917166e4c758d8c6dfb7b988bb8f4bbef54d96972",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/export_developer/command-check.py",
+      "sha256": "e82260daed4f07e48c0659a01d0edd630592cbd7862fef2e97cf85f2622925e8",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "69e3c53ee22686ade036691e2e46dfd6535e170371c51f1c939e97f5b4749de5",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "41228c26c4d5806f7951d3d0a8d3f21dbfbd7e9f9556f4360e4b5e2b400f1c86",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "c005dcff44b704c2106bbc0761672d3b8c636f11bc6c3a0ccf9e570b3b747fd3",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "cfb57cb726b7456a47bdf8f365fdfaed89165b80869e2b48b1180805b6afa22b",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-export-client-review.md",
+      "sha256": "cac0b5c16cf3e2c1de93993e043733e51bf5f91a4384ce19d543fd60968167ae",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/skills/project/rutcampustrack-design/SKILL.md",
+      "sha256": "ade844d0da8923709e07f01c7ca26f4a50f5223b100903fb1341cafef62416a5",
+      "inspection": "narrow diff/critical handler/test, accepted design and restored contract input; lifecycle source dependency unchanged hash bridge"
+    }
+  ],
+  "reviewRevision": "a7c86e1bb180c209f0a0c65680040f2ab40d79f1",
+  "endingObservedHead": "12dcbcf4808f3d63ce1f33d70b6ee266117e91d4",
+  "endingSixClientSources": [
+    {
+      "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+      "sha256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+      "frozenMatch": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+      "sha256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+      "frozenMatch": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+      "sha256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+      "frozenMatch": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+      "sha256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+      "frozenMatch": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+      "sha256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+      "frozenMatch": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+      "sha256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+      "frozenMatch": true
+    }
+  ],
+  "originalEightPayloadsPreserved": true
+}

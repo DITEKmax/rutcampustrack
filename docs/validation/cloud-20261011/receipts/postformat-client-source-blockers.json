@@ -1,0 +1,30 @@
+{
+  "time": "2026-10-12T10:39:33.781777+00:00",
+  "scope": "POSTFORMAT_AND_CLIENT_REVIEW",
+  "outcome": "CONFIRMED_BLOCKERS",
+  "findings": [
+    {
+      "id": "FMT-ESLINT-01",
+      "severity": "P2",
+      "cause": "Prettier Vue output conflicts existing zero-warning ESLint style gates",
+      "observed": {
+        "mobile_core_warnings": 2926,
+        "pwa_warnings": 37,
+        "tma_warnings": 6,
+        "errors": 0
+      },
+      "root_revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "writer": "ci_academic_heap",
+      "next": "sameauthor source-grounded compatible reproducible formatting correction + meaningproof; rules retained"
+    },
+    {
+      "id": "CRA-EXPORT-T01",
+      "severity": "P2",
+      "cause": "New HTML-export test misses ignored-filter and missing ordinary-column regressions",
+      "revision": "8fe9fe946ded3174796778b33f84385c6f98473b",
+      "review_source": "/workspace/scratch/rct-validation/client_acceptance_independent_review/partial-findings.safe.json",
+      "writer": "client_real_acceptance",
+      "next": "NEWtest-only exact memory-oracles + source controls, independentrecheck"
+    }
+  ]
+}

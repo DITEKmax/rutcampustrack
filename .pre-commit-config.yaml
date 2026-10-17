@@ -15,7 +15,7 @@ repos:
     hooks:
       - id: check-yaml
         args: ['--allow-multiple-documents']
-        exclude: '(^|/)(helm|k8s)/.*\.ya?ml$'  # helm templates render invalid YAML
+        exclude: '(^|/)(helm|k8s)/.*\.ya?ml$' # helm templates render invalid YAML
       - id: check-json
       - id: check-added-large-files
         args: ['--maxkb=1024']

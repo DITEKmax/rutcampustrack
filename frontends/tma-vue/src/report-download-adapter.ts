@@ -1,5 +1,6 @@
 import {
   ReportDownloadResponseError,
+  reportFormat,
   type ReportDownloadPort,
   type ReportDownloadTicketIssuer,
   type ReportDownloadTicketRequest,
@@ -19,8 +20,8 @@ export interface TelegramReportDownloadHost {
 }
 
 export class TelegramReportDownloadHostError extends Error {
-  constructor() {
-    super('Telegram не удалось передать файл для скачивания.')
+  constructor(message = 'Telegram не удалось передать файл для скачивания.') {
+    super(message)
     this.name = 'TelegramReportDownloadHostError'
   }
 }
@@ -31,12 +32,14 @@ export function createTelegramReportDownloadPort(
   trustedOrigin: () => string = () => window.location.origin,
 ): ReportDownloadPort {
   return {
-    async download(request, isCurrent) {
+    carrier: 'telegram',
+    ...(tickets.pendingRequests ? { pendingRequests: () => tickets.pendingRequests!() } : {}),
+    async download(request, isCurrent, onState) {
       if (!isCurrent()) return 'stale'
       tickets.assertCurrent()
       if (!host.supportsFileDownload()) return 'unsupported'
 
-      const ticket = await tickets.issueTicket(request)
+      const ticket = await tickets.issueTicket(request, onState, isCurrent)
       tickets.assertCurrent()
       if (!isCurrent()) return 'stale'
 
@@ -47,25 +50,64 @@ export function createTelegramReportDownloadPort(
       tickets.assertCurrent()
       if (!isCurrent()) return 'stale'
 
-      const result = await new Promise<'accepted' | 'cancelled' | 'unsupported'>((resolve, reject) => {
-        try {
-          const submitted = host.requestFileDownload(params, (accepted) => {
-            resolve(accepted ? 'accepted' : 'cancelled')
-          })
-          if (!submitted) resolve('unsupported')
-        } catch {
-          reject(new TelegramReportDownloadHostError())
-        }
-      })
+      const result = await new Promise<'accepted' | 'cancelled' | 'unsupported' | 'stale'>(
+        (resolve, reject) => {
+          let settled = false
+          const finish = (action: () => void): void => {
+            if (settled) return
+            settled = true
+            clearTimeout(timeout)
+            action()
+          }
+          const timeout = setTimeout(
+            () =>
+              finish(() => {
+                try {
+                  tickets.assertCurrent()
+                  if (!isCurrent()) resolve('stale')
+                  else
+                    reject(
+                      new TelegramReportDownloadHostError(
+                        'Telegram не подтвердил скачивание. Попробуй ещё раз.',
+                      ),
+                    )
+                } catch (failure) {
+                  reject(failure)
+                }
+              }),
+            60_000,
+          )
+          try {
+            const submitted = host.requestFileDownload(params, (accepted) => {
+              finish(() => {
+                try {
+                  tickets.assertCurrent()
+                  resolve(!isCurrent() ? 'stale' : accepted ? 'accepted' : 'cancelled')
+                } catch (failure) {
+                  reject(failure)
+                }
+              })
+            })
+            if (!submitted) finish(() => resolve('unsupported'))
+          } catch {
+            finish(() => reject(new TelegramReportDownloadHostError()))
+          }
+        },
+      )
 
       tickets.assertCurrent()
-      return isCurrent() ? result : 'stale'
+      if (!isCurrent()) return 'stale'
+      if (result === 'accepted') tickets.markDelivered?.(request)
+      return result
     },
   }
 }
 
 export function buildTrustedHttpsDownloadUrl(origin: string, downloadPath: string): string {
-  if (typeof origin !== 'string' || !/^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(downloadPath)) {
+  if (
+    typeof origin !== 'string' ||
+    !/^\/api\/report-download\/[A-Za-z0-9_-]{43}$/.test(downloadPath)
+  ) {
     throw new ReportDownloadResponseError()
   }
   let trusted: URL
@@ -74,8 +116,15 @@ export function buildTrustedHttpsDownloadUrl(origin: string, downloadPath: strin
   } catch {
     throw new ReportDownloadResponseError()
   }
-  if (trusted.protocol !== 'https:' || trusted.origin !== origin || trusted.username || trusted.password
-    || trusted.pathname !== '/' || trusted.search || trusted.hash) {
+  if (
+    trusted.protocol !== 'https:' ||
+    trusted.origin !== origin ||
+    trusted.username ||
+    trusted.password ||
+    trusted.pathname !== '/' ||
+    trusted.search ||
+    trusted.hash
+  ) {
     throw new ReportDownloadResponseError()
   }
   const url = new URL(downloadPath, trusted.origin)
@@ -89,14 +138,9 @@ export function validateSuggestedFilename(
   filename: string,
   request: ReportDownloadTicketRequest,
 ): string {
-  const format = request.kind === 'TEACHER_JOURNAL' ? request.teacherJournal.format
-    : request.kind === 'TEACHER_STATS' ? request.teacherStats.format
-      : request.kind === 'HEADMAN_WEEKLY_CURRENT' ? request.headmanWeeklyCurrent.format
-        : request.kind === 'HEADMAN_WEEKLY_SELECTED' ? request.headmanWeeklySelected.format
-          : request.kind === 'HEADMAN_STATS' ? request.headmanStats.format
-            : request.kind === 'HEADMAN_GROUP_COMPOSITION' ? request.headmanGroupComposition.format
-              : request.headmanStatsTrend.format
-  const extension = request.kind === 'HEADMAN_STATS_TREND' ? format : format === 'png' ? 'zip' : format
+  const format = reportFormat(request)
+  const extension =
+    request.kind === 'HEADMAN_STATS_TREND' ? format : format === 'png' ? 'zip' : format
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$/.test(filename) || !filename.endsWith(`.${extension}`)) {
     throw new ReportDownloadResponseError()
   }

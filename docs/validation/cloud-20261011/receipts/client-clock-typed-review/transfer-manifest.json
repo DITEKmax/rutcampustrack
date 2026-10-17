@@ -1,0 +1,51 @@
+{
+  "target_sha": "6e2376c39fa733a0e645d5d929f132a6448a953d",
+  "verdict": "CHANGES_REQUESTED",
+  "source_directory": "/workspace/scratch/rct-validation/client_clock_typed_review",
+  "scope": "Immutable independent source/evidence review receipts only",
+  "safe_for_root_transfer": true,
+  "no_secrets_or_runtime_request_bodies": true,
+  "files": [
+    {
+      "name": "clock-boundary-audit.md",
+      "bytes": 7647,
+      "sha256": "8ed056e9017315dbf71474a4bc1581c6e48c9dc76e93516180aaeac1cb767371"
+    },
+    {
+      "name": "clock-consumer-inventory.json",
+      "bytes": 56705,
+      "sha256": "9e1ec1418113886c9ca97308c87b8beb2edef513f6699cee4111b941ce753063"
+    },
+    {
+      "name": "evidence-inputs.json",
+      "bytes": 5404,
+      "sha256": "aeb3dddfca063d590313d9e8ec10d1f06c73db0c1de253d0669315927b3daadd"
+    },
+    {
+      "name": "findings.md",
+      "bytes": 6023,
+      "sha256": "c6f8cb7844da7f7def71920f09cc2cf30ce01134536907bac12c66255a72ca28"
+    },
+    {
+      "name": "production-source-equivalence.json",
+      "bytes": 1646,
+      "sha256": "e06b141b397eef91ca4d2c2b99bef3ae3461914e1be924a485223ec625c69ebe"
+    },
+    {
+      "name": "review.json",
+      "bytes": 4394,
+      "sha256": "3f65fde5a80180b660378d9c8b1ff529e7ca60d11783dcf7011cd59b2cef7083"
+    },
+    {
+      "name": "session-fixture-counterexample.json",
+      "bytes": 867,
+      "sha256": "815cad0f5eee1d9aab42ed30321ddbaf48c6adb38372aaa350cbae523b677628"
+    },
+    {
+      "name": "source-identity.json",
+      "bytes": 15030,
+      "sha256": "173def6c5559cc694ca448b7767fce94c483bb9f20b6a95101d7f4a58f9e55ea"
+    }
+  ],
+  "manifest_self_excluded": true
+}

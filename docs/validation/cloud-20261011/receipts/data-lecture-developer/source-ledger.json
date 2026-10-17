@@ -1,0 +1,69 @@
+{
+  "revision": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "scope": "Original source ledger; actual runtime outcomes in run-manifest/results (no blanket runtime claim)",
+  "files": [
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectController.java",
+      "sha256": "57a32c410c3f657401d1315c290f08bab20b5b74842985530f11b7785b38a091"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectAssembler.java",
+      "sha256": "48b48354134092baa10f0252d2aeb45b370d1c3395b17a548710b5ff4669f86f"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+      "sha256": "47d13fbccfe5d2dd365bb0955865e198824b57e825486a4463d74a309fa7c496"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "sha256": "3bb45ef22b5415f0ae9cf9e37e27b63444c47ceb446b08072f53e259a3484d3c"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AssignmentRepository.java",
+      "sha256": "40ec50f2ae4d8e14fbfdd14e44e7c04219aedaae4e85123333a6ce5aa7e005a0"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "sha256": "ed617c7ba39e4614b6b180149205393208be452ce3bae2bf3f70654f5648a2ca"
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleGrpcServiceImpl.java",
+      "sha256": "d568b77fe7742fa11d17a7c20a122a3a7cab5610150deb8575190085c04a29f9"
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+      "sha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthority.java",
+      "sha256": "8e78a7c70214062aaa146610b594762bf3e53beb0cd5291aa6bc3919960e9f96"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/jdbc/JdbcSessionAuthorityIT.java",
+      "sha256": "7da5e9a96db8a753e6b7fdbdcb2e741cf9ed7e6ba48a99004f79d894424bfc1d"
+    },
+    {
+      "path": "docs/product/decisions/2026-09-29-semester-archive-write-lock.md",
+      "sha256": "9dde6e18eeee65052e270bd6c0528afe1f3c2302de6115bf5466bf73b62f6095"
+    },
+    {
+      "path": "docs/product/decisions/2026-10-02-user-restore-without-rights.md",
+      "sha256": "f3cb44eca63bef01ecc4c91ee60455aed3a2d966f94aa7ab640c5d8b8e52dd22"
+    },
+    {
+      "path": "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+      "sha256": "87af4670d5d8f996d940de9a56815cacc4befeaf90e5ea406a60871329bd4981"
+    },
+    {
+      "path": "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md",
+      "sha256": "38db8d7630fd2d33392a6fb0bc5032006a980dc6c0af8320a0421f2042f0ff33"
+    }
+  ],
+  "technical_resolution": {
+    "id": "T001",
+    "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+    "sha256_at_read": "7bc59b1f0302a4dd469191434f5c4709493ee24447d8df25e1c47b4e7eebfddf",
+    "classification": "technical publication consistency, not a new owner rule",
+    "fragment": "same published-active predicate; no uncompleted ADOPT_UNASSIGNED target"
+  }
+}

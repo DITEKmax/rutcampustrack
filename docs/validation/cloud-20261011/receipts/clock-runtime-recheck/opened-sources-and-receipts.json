@@ -1,0 +1,371 @@
+{
+  "at": "2026-10-11T23:24:23.922499+00:00",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/clock-runtime-bounded-completion.json",
+      "sha256": "f6e015503bfc0be54cf2497addf0d6d527eef1a0ab88ba34b677ee4900640043",
+      "bytes": 10510
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/clock-runtime-bounded-completion.md",
+      "sha256": "6f8cbe299ce3ac47709bde315fb062e34b31e94d527a5e1d2241005105e91555",
+      "bytes": 1452
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/compile-green-10a-launch.json",
+      "sha256": "f915529578d17ac06783676763ae24098cfdfc42b03ed9b787e098cc26a6c569",
+      "bytes": 1036196
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/compile-green-10a.log",
+      "sha256": "fa7b2a892a1e7f6eb05f82b15703919a277962ca296ade02cf47b2b53f5f5246",
+      "bytes": 13393
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-academic-10a-launch.json",
+      "sha256": "543eb949236a475972e8bb39e6b61e3b78e34a813470dbdf1d2824fafd250257",
+      "bytes": 1035982
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-academic-10a.log",
+      "sha256": "cc9aa3d3e75ea73ef88026876f20bc7625d709e6f6604eb57bca58b5aa4c833b",
+      "bytes": 6575
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-attendance-10a-launch.json",
+      "sha256": "de2e31124a974ea5d4a84a7c0dcfb35d06acf21783b20cc7aaf602ae616e4faa",
+      "bytes": 1036007
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-attendance-10a.log",
+      "sha256": "2f721a410395c5ea131113a47533fefbb7b7104cfe9ca74f3636f6b07a7a25e4",
+      "bytes": 9710
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/restored-green-10a-launch.json",
+      "sha256": "1143c1f321791cc942192f86754c44b3ae3a8873cac6c89d64484961c6d3162d",
+      "bytes": 1035942
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/restored-green-10a.log",
+      "sha256": "87c10cd5fba1c174e1a6adbd076c62480f7ea826ea1cf3f67e35809a22bc9998",
+      "bytes": 11519
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/current-artifacts-10a-launch.json",
+      "sha256": "d1a0ba87acc19537f04cff300d5d96654d264e35cec99375a13c618a4ee78019",
+      "bytes": 1035874
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/current-artifacts-10a.log",
+      "sha256": "448e9bc689d1be0bc1443bcb764e5a283ca1b12d15593558f89145abbcc8f029",
+      "bytes": 5655
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/EducationalSessionClockIsolationTest.java",
+      "sha256": "4bb1fe2655c0bdea657d89852db769c07daaf22b24a31da919226ebe9c6d4946",
+      "bytes": 4655
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/studentrequest/EducationalRetentionClockIsolationTest.java",
+      "sha256": "204de1d68bff64c6efc905db39604ed9a9f45e57cf36769385d8bd969f434291",
+      "bytes": 7526
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/mobile-bff/mobile-bff-app/src/test/java/ru/rutcampustrack/mobilebff/error/EducationalProblemClockIsolationTest.java",
+      "sha256": "4868dc86a1afce0cf79e08d082759677f449400017bf633d50963be0d2050fdf",
+      "bytes": 1467
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/compile-green-10a-xml.json",
+      "sha256": "9f166f0976570264a312416fbe76c366ddf8fda204a52063615793027e35a7e1",
+      "bytes": 2485
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/compile-green-10a-TEST-ru.rutcampustrack.academic.studentprojection.EducationalSessionClockIsolationTest.xml",
+      "sha256": "1909ca7daf480bb55626de731e4c26ca7014586e8712d480e05449880981bce3",
+      "bytes": 1864
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/compile-green-10a-TEST-ru.rutcampustrack.attendance.studentrequest.EducationalRetentionClockIsolationTest.xml",
+      "sha256": "f69c3d7033aec3e9036d4d0ef3ce0d7937b19cb66e706cbc2a9e8221b72adb82",
+      "bytes": 2184
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/compile-green-10a-TEST-ru.rutcampustrack.mobilebff.error.EducationalProblemClockIsolationTest.xml",
+      "sha256": "7672bf0cf574b6b12db13a247d01b696b7774bd9bd19d662271b374e037ba4a9",
+      "bytes": 529
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-academic-10a-xml.json",
+      "sha256": "cfb17295b1aaf16b7cc4a26ce8b3c49c82b54aae97effc9008ec908862651e76",
+      "bytes": 2315
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-academic-10a-TEST-ru.rutcampustrack.academic.studentprojection.EducationalSessionClockIsolationTest.xml",
+      "sha256": "07a0a7487e57ba1eff7152d3a7c01eccab11bf883f2c2daddf6efbe0bdf3b5be",
+      "bytes": 4928
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-academic-10a-TEST-ru.rutcampustrack.attendance.studentrequest.EducationalRetentionClockIsolationTest.xml",
+      "sha256": "f69c3d7033aec3e9036d4d0ef3ce0d7937b19cb66e706cbc2a9e8221b72adb82",
+      "bytes": 2184
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-academic-10a-TEST-ru.rutcampustrack.mobilebff.error.EducationalProblemClockIsolationTest.xml",
+      "sha256": "7672bf0cf574b6b12db13a247d01b696b7774bd9bd19d662271b374e037ba4a9",
+      "bytes": 529
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-attendance-10a-xml.json",
+      "sha256": "9121be974759298c2302b7f612897e6f47b161e5e1e82f95232c0ef75aa650a6",
+      "bytes": 705
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-attendance-10a-TEST-ru.rutcampustrack.attendance.studentrequest.EducationalRetentionClockIsolationTest.xml",
+      "sha256": "5267770e7055547f7f508f44d7dea9519b4eeb49fa4126ab0df07a544d00ebc8",
+      "bytes": 4937
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/restored-green-10a-xml.json",
+      "sha256": "77242a5c8c37cdba9332df862ce909d02bb26aa202f2d9b02cc492f6120516ea",
+      "bytes": 1933
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/restored-green-10a-TEST-ru.rutcampustrack.academic.studentprojection.EducationalSessionClockIsolationTest.xml",
+      "sha256": "16e14c96ac2dd1116cd9497e85b1c5bc4b5cc6a7d7df2577a571ef0fbfa4de13",
+      "bytes": 1864
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/restored-green-10a-TEST-ru.rutcampustrack.attendance.studentrequest.EducationalRetentionClockIsolationTest.xml",
+      "sha256": "cc3004619449953bcc74661e0d17d0a66f1c726bfce006826313e68980390db8",
+      "bytes": 2184
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative_academic-install.json",
+      "sha256": "40a6726127fdc0e20a904ad138e3042fd7624496c58846e5104b89073f85a897",
+      "bytes": 750
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative_academic-restore.json",
+      "sha256": "1ad014fa3ee667399880c66a1fa168d2fcab797300cdd2399018f12a521b1525",
+      "bytes": 601
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative_academic-original.java",
+      "sha256": "4bb1fe2655c0bdea657d89852db769c07daaf22b24a31da919226ebe9c6d4946",
+      "bytes": 4655
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-academic-10a-oracle.json",
+      "sha256": "763fcb14493c9add7a9935b13ac8e2992425ce7813330063b453015786982e09",
+      "bytes": 444
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative_attendance-install.json",
+      "sha256": "dc26df7f382820337082111b2c9bb20d7a63cd2c239ca91de49c2964f01ae32a",
+      "bytes": 762
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative_attendance-restore.json",
+      "sha256": "14a1ca5438cd2353ad4ccd172f4c303dd932d1e8bab1be66a90357fd862c1375",
+      "bytes": 608
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative_attendance-original.java",
+      "sha256": "204de1d68bff64c6efc905db39604ed9a9f45e57cf36769385d8bd969f434291",
+      "bytes": 7526
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/negative-attendance-10a-oracle.json",
+      "sha256": "c39067f361fa53bd7081f62772119161333d6df48966a21041891772c5501060",
+      "bytes": 455
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/fixture-clock-seam.py",
+      "sha256": "1d35cff08072c4d7b5bdd1b863236b61fd2b0c0b7f7459785e726f79c538682e",
+      "bytes": 2673
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/run-clock-phase.py",
+      "sha256": "3de8b4749c41d3679054a018f2fe94edc92c9e1cbcbad57237c2feec5ccae71a",
+      "bytes": 1731
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/capture-clock-xml.py",
+      "sha256": "d17e06dd5624c8e1374ec1e67d48c36909643dd20698740fb26148166a9df4c6",
+      "bytes": 2183
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/clock-bounded-runtime-plan.json",
+      "sha256": "943bb8ff765bf351a197f9559af49f23deea690114a2a054147b48621867f9f8",
+      "bytes": 9409
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/artifact-inspection-launch.json",
+      "sha256": "4bd525e3af3926fc0ae8b3bfe4bda466720619dcbc366c6d56c6f7f3e84f7e2e",
+      "bytes": 1931
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/artifact-inspection.log",
+      "sha256": "d71bed4e39e2567c12c0b5458a264d8a31af259aa4abe61eee545a9845ab14b6",
+      "bytes": 221
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/current-artifact-structure.json",
+      "sha256": "ca1350ac304b4436a3ea24138c417f3bc36b70dd036da9b866a91ef44b217b18",
+      "bytes": 2751
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "sha256": "050685c769dbaa503fa70871db30c2e50c46c5b6968f834ff98e83babe2934cb",
+      "bytes": 99554566
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "sha256": "1a16ca01201277336ceece0e75d23b3bb54f1c4d28c2923a4253550a25fe1a64",
+      "bytes": 93018667
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "sha256": "b8cfb9ef42a531aecfb4cb701fe6151e78d25b302d5db0ad84dd23e2f582a997",
+      "bytes": 95835362
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "sha256": "784f1ec15c05d18b0ac9dcf876abd2f1d5c51cc0b9ba94626458ecc0bd4b6c23",
+      "bytes": 50003899
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/build/e2e-clock/clock-fixture.jar",
+      "sha256": "517a1289709392596e774dde06c7144d748d45061e055dfabc185e9c21e6236a",
+      "bytes": 4140
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/tests/e2e/backend-clock/verify-jar-isolation.py",
+      "sha256": "2c1fb3a2722eef29ff536682068151488684a3e59b348d4fc6a1c698f82406e0",
+      "bytes": 3114
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/client_runtime_developer/check-built-educational-class.py",
+      "sha256": "355e20eb63617e5895d873689f22fdd4c3a63829f330fb10d9a1595c6bb856b2",
+      "bytes": 2668
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/tests/e2e/backend-clock/verify-jar-isolation-control.py",
+      "sha256": "1fea29bee736da492862abe90b70b1f6c56e3e8c24a3c52fb34149425f1cc9d7",
+      "bytes": 4018
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/shared/shared-web-api/src/main/java/ru/rutcampustrack/shared/web/time/EducationalTime.java",
+      "sha256": "419ebbf9105c8a805a60b3563ccba88864ac18923c7e096153f83d40330aa5a4",
+      "bytes": 319
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/shared/shared-web-api/build.gradle.kts",
+      "sha256": "88c458ed5bac640ad3034b1c89b33a331e5540f51521ce7215aee28eafd7f5ee",
+      "bytes": 1100
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/shared/shared-web/build.gradle.kts",
+      "sha256": "3b763bce4032f304d1f43fdd226c0bfbe14531f35a2a056578aa348b247e0bd3",
+      "bytes": 3645
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/mobile-bff/mobile-bff-app/build.gradle.kts",
+      "sha256": "7e0bd6be45eff9b6b98a43916009d2a7c7598862dccb09fdbb933d31df194d54",
+      "bytes": 2321
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/build.gradle.kts",
+      "sha256": "58d676307ae668e6a4dddecea21a1676e14f00cc74d49cc4f758d3f464cbd8ae",
+      "bytes": 16559
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/shared/shared-web/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports",
+      "sha256": "428f6d40fe9d1f88b0879db34c577ea5b3fcbd7a7686f08c947afc7d9d8ddd40",
+      "bytes": 70
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/ClockInitializer.java",
+      "sha256": "373c3085ad75706bd66a9b4120537d21e95a6b470e55a9e456370711a858e67d",
+      "bytes": 2730
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/tests/e2e/backend-clock/src/main/java/ru/rutcampustrack/e2e/FileClock.java",
+      "sha256": "8df7cc0a9df24db5c67ca706bf38f46a926fe1eeef9edcbcf93b113c4f906f95",
+      "bytes": 1431
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/tests/e2e/backend-clock/src/control/java/ru/rutcampustrack/e2e/ClockFixtureControl.java",
+      "sha256": "7e868795d0b933ba975c13d6700746b2e71f6b05d412ec155c8d759586735d11",
+      "bytes": 5219
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/ClockConfig.java",
+      "sha256": "65b30a45ceae379f42b42a7e3d98b53d8d8a836a54910a0d6e4d9a7bbadcb4f7",
+      "bytes": 1366
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/config/ClockConfig.java",
+      "sha256": "76496b896c589aa030878ffd8d83c8ed934e35552c981714fdbf19a08e908f10",
+      "bytes": 1281
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/ClockConfig.java",
+      "sha256": "78867aee5ddb4939e0f418129d3e3b65eac2d68bdb7119269c7b1d00f9cb1925",
+      "bytes": 738
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/MobileBffRuntimeConfig.java",
+      "sha256": "70adb9601b2cd08d77d52c0028e9cf77489d0d58caf1c6f2daf9eb2add5b54bd",
+      "bytes": 543
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+      "sha256": "47211a3bf2b9b94cda4d12d312dec06d3f24e74d1a3ac8e0fcae557883aeec10",
+      "bytes": 27033
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+      "sha256": "cc8a49b090b7995889ff6c1feea2292d81609d69a5f9ce3f6a59126d1e5817b9",
+      "bytes": 134336
+    },
+    {
+      "path": "/workspace/rct-worktrees/client-runtime/services/mobile-bff/mobile-bff-app/src/main/java/ru/rutcampustrack/mobilebff/error/MobileProblemHandler.java",
+      "sha256": "b10e83bcb5b393eb6cd2833187febfd769304594e2c61f643925a83668ee4c80",
+      "bytes": 6771
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/TASK-CONTRACT.md",
+      "sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+      "bytes": 84076
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/CURRENT.md",
+      "sha256": "69e3c53ee22686ade036691e2e46dfd6535e170371c51f1c939e97f5b4749de5",
+      "bytes": 8945
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/decisions.md",
+      "sha256": "41228c26c4d5806f7951d3d0a8d3f21dbfbd7e9f9556f4360e4b5e2b400f1c86",
+      "bytes": 9514
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/questions.md",
+      "sha256": "c005dcff44b704c2106bbc0761672d3b8c636f11bc6c3a0ccf9e570b3b747fd3",
+      "bytes": 8152
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/resources.md",
+      "sha256": "cfb57cb726b7456a47bdf8f365fdfaed89165b80869e2b48b1180805b6afa22b",
+      "bytes": 9222
+    },
+    {
+      "path": "/workspace/rutcampustrack/docs/validation/cloud-20261011/packet-clock-runtime-review.md",
+      "sha256": "5cd08b48411c1d3ee655c147b48f1c2f9b071d772b47567b538f2768ac02640b",
+      "bytes": 3238
+    }
+  ],
+  "raw_logs_XML": "Hashed/privately parsed only. No contents, streams, properties, sensitive values or failure bodies exported."
+}

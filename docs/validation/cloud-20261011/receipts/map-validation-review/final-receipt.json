@@ -1,0 +1,77 @@
+{
+  "at": "2026-10-11T22:30:56.034371+00:00",
+  "verdict": "CHANGES_REQUESTED",
+  "frozen_author_commit": "e68989d29e65008dbbeba7b8df1b80bcb070a538",
+  "parent": "e093eb988785ed48f26c4f3a561f168ed4d96401",
+  "owner_baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_model_metadata": "UNKNOWN",
+  "fallback": "NONE",
+  "scope": "Independent read-only five-file parser/sanitizer/test/evidence review; own scratch receipts only",
+  "author_source_equality": "PASS five current files = five final Git blobs = inventory = correction-prep = green prelaunch",
+  "original_xml_count_match": "PASS all25 XML files",
+  "actual_selected_green": {
+    "unit": {
+      "tests": 4,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "new_map_it": {
+      "tests": 19,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "selected_old_storage_it": {
+      "tests": 2,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "actual_before": {
+    "red01": "11 fixture ClassCastException failures; not productproof",
+    "red02": "11cases 5meaningful201vs400 failures 0skip",
+    "redserved03": "8cases 5meaningful failures 0skip;5PG BYTEA/GET200 exactbadbyte diagnostics andmatchingartifacts"
+  },
+  "runtime_revision_relationship": "Scoped uncommitted WIP on e093; exact prelaunch/final byte hashes verified, not retroactive finalcommit execution claim",
+  "findings": [
+    "MVR01 P2",
+    "MVR02 P2",
+    "MVR03 P2"
+  ],
+  "independent_java": "NOT_RUN",
+  "independent_gradle": "NOT_RUN",
+  "independent_docker": "NOT_RUN",
+  "independent_browser": "NOT_RUN",
+  "independent_mutations": "NOT_RUN",
+  "children": "NONE",
+  "product_writes": "NONE",
+  "limitations": [
+    "New review counterexamples have source derivation only; author must supply actual bounded before/after evidence",
+    "No browser render/network/TCP/signed-gateway proof",
+    "No whole map/file family acceptance or full PNG/CSS engine conformance",
+    "Terminal process/cleanup/exit are author receipts; no replay",
+    "Requested model/effort not measured actual metadata"
+  ],
+  "next": "Author corrects findings and provides bounded targeted evidence/finalsource hashes; independent changed-scope recheck; root integrates/shared docs/remote gates",
+  "files": [
+    "findings.md",
+    "findings.json",
+    "source-equivalence.json",
+    "original-xml-audit.json",
+    "original-log-audit.json",
+    "served-artifact-audit.json",
+    "input-hash-manifest.json",
+    "original-xml/",
+    "counterexample-xml-stylesheet.svg",
+    "counterexample-image-set.svg",
+    "audit_evidence.py"
+  ],
+  "skills": [
+    "cloud-environment-runtime",
+    "rct-source-resolution"
+  ]
+}

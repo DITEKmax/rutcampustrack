@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-13T00:59:04.981864+00:00",
+  "status": "READY_SOURCE_PARAMETERS_ONLY",
+  "runtime": "NOT_RUN",
+  "source_manifest_sha256": "42efc4c82158aac7a27e7973889b89517bd45b11e8da32f0e2b9af851dd57551",
+  "resources": {
+    "workspace_free": 9446313984,
+    "tmp_free": 7501271040,
+    "shared": 4956540928
+  },
+  "next": "Root targeted bind approval then fresh runtimegrant; no setup/rebuild/reset",
+  "originals_preserved": true
+}

@@ -1,0 +1,38 @@
+{
+  "time": "2026-10-12T06:12:46.650996+00:00",
+  "actual_free_bytes": 7115001856,
+  "stage_phase_required_bytes": 4630511616,
+  "runtime_phase_required_bytes": 8277277457,
+  "max_nonoverlap_phases_required_bytes": 8277277457,
+  "original_all_sum_preserved_bytes": 8411495185,
+  "full_accounted_subset": {
+    "candidates": 10831,
+    "potential_allocated_bytes": 1519378432,
+    "potential_headroom_after_recovery_bytes": 357102831,
+    "meets256MiBpotentialtarget": true,
+    "condition": "Rootmustfreezeall12153exactpaths first, incl32Rootassets/32NPassets andhistoricalclientformat/runtimeassets"
+  },
+  "optional_single_link_reference_subset": {
+    "candidates": 10799,
+    "potential_allocated_bytes": 1318010880,
+    "potential_headroom_after_recovery_bytes": 155735279,
+    "meets256MiBpotentialtarget": false,
+    "condition": "Excludeall32sharedrefgroups/201367552B if allaliasfreeze unavailable; stillRootbothsidefreeze required"
+  },
+  "unaccounted_or_foreign_exclusion": {
+    "groups": 0,
+    "candidates": 0,
+    "potential_bytes": 0
+  },
+  "actual_recovered_bytes": 0,
+  "actual_freeze": "NOT_SET",
+  "stage_containers_runtime": "NOT_RUN",
+  "no_overlap_required": "allstaging/transientsettled beforeDockerdata/apps; otherwise originalallsum applies",
+  "freshRootpremutationpreflight": "REQUIRED",
+  "resource_mutations": false,
+  "final_snapshot_time": "2026-10-12T06:14:53.523929+00:00",
+  "final_snapshot_free_bytes": 7114997760,
+  "final_full_potential_headroom_bytes": 357098735,
+  "final_single_ref_potential_headroom_bytes": 155731183,
+  "final_full_meets256MiB": true
+}

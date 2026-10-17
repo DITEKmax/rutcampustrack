@@ -1,0 +1,59 @@
+@import '../../styles/tokens.pcss';
+.rct-export {
+  display: grid;
+  gap: var(--rct-space-2);
+  min-inline-size: 0;
+}
+.rct-export button,
+.rct-export select {
+  min-block-size: var(--rct-control-min-touch);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  font: inherit;
+  @mixin rct-focus-ring;
+}
+.rct-export button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rct-space-2);
+  cursor: pointer;
+}
+.rct-export button svg {
+  inline-size: var(--rct-space-5);
+  block-size: var(--rct-space-5);
+}
+.rct-export__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rct-space-2);
+}
+.rct-export label {
+  display: grid;
+  gap: var(--rct-space-1);
+}
+.rct-export p {
+  margin: 0;
+  color: var(--rct-color-text-secondary);
+}
+.rct-export progress {
+  display: block;
+  inline-size: 100%;
+  accent-color: var(--rct-color-text-primary);
+}
+.rct-export__weeks {
+  display: grid;
+  gap: var(--rct-space-2);
+  inline-size: 100%;
+  margin: 0;
+  padding: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+}
+.rct-export .rct-export__choice {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-2);
+  min-block-size: var(--rct-control-min-touch);
+}

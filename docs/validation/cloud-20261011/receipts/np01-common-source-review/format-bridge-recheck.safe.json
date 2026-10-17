@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "source_before": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "source_after": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+  "independent_git_tree_paths_compared": 7032,
+  "changed_paths": [
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java"
+  ],
+  "imports_equal_after_sort": true,
+  "java_tokens_equal_after_whitespace_comments_and_adjacent_string_literals_normalized": true,
+  "retained_test_names": [
+    "freshFullChainAndMetadataOnlyTableValidateAndRepeat",
+    "historicalV56UpgradePreservesRowsAndOldChecksums",
+    "actualTupleChangesAdvanceOnlyTheirOwnGeneration",
+    "rollbackAndCommitCoverVersionInvalidationAndOutboxTogether",
+    "credentialChangeInvalidatesUnsettledCardsAndPreservesFirstFence",
+    "sanitationIsRejectedWhileRenderIsInFlightOrUncertain",
+    "confirmedDeletionAndAbsenceSettleUnresolvedCardsAndLateReceiptKeepsCleanup",
+    "sanitationIsAllowedOnlyForDefinitivelySettledRender",
+    "unlinkArchiveAndFinalDeleteRetainOriginalCleanupIdentity",
+    "identityAttemptCasAndTerminalReceiptsCannotBeRewritten",
+    "unknownStatesMissingReceiptsAndNullInvalidationCannotCompleteCleanup",
+    "staleCleanupCasCannotCompleteAfterRenderSettlement",
+    "overflowFailsWithoutReusingGenerationOrChangingCredentialTuple",
+    "concurrentCredentialWritesSerializeVersionsAndOriginalCardFence"
+  ],
+  "product_three_paths_identical": true,
+  "final_source_inventory": [
+    {
+      "path": "proto/academic.proto",
+      "revision": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+      "sha256": "23ba76698b62f8cf03cbcb38d105f99463eeee82201654a05e0b03b7e9401ae8",
+      "bytes": 22570
+    },
+    {
+      "path": "event-schemas/password.changed.json",
+      "revision": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+      "sha256": "ae71be029ccd73b3016989bc6270c9cfea0c360823c65d7bf4af8ba5d7cae452",
+      "bytes": 2360
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+      "revision": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+      "sha256": "d2ac433dc9a6556a4dc2def928356f98b1040ca75006c13ea41c047358bd5552",
+      "bytes": 9465
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+      "revision": "6830731ca81cc03a546ae7a98e0ddfc89605c8c4",
+      "sha256": "9e7ec0425e1be7d86dfcf7b04492488d0dd15c2048f42f70bd53d24df32f13f7",
+      "bytes": 28237
+    }
+  ],
+  "qualification": "Independent exact committed source bridge; author Spotless outcome separately reported; no new runtime execution"
+}

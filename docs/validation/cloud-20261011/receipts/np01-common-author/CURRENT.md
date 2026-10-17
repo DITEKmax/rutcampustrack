@@ -1,0 +1,9 @@
+# NP01 common terminal checkpoint
+
+Finalsource 28ed54bba56dc3fb2cdacffdcd56b0e102958087; actualcompile/DBproducer 6830731ca81cc03a546ae7a98e0ddfc89605c8c4; base2bca. Worktree /workspace/rct-worktrees/np01-contract clean. Exactlysixownedtrackedpaths listed final-source-bridge.safe.json.
+Common scoped result ready; no fullNP01/globalDONE claim. Existinglegacy proto/v1schema/all56oldmigrations exact. ScopedSpotless oneIT/native5339PASS;14testoracles token-identical.
+ActualnormalJava gen/Academic+Auth compileTestJava native43441PASS;904normalgeneratedJavaoutputs inventoried. Actual17DBnormal native66227PASS0F/0E/0S; fourselectiveknownbad native5231/13920/49432/76358 eachintentionalAssertionFAIL1/0E/0S. Restoredsamefour normalnative23469PASS0F/0E/0S. Sources7032exact683 throughout. AllnativeXML/terminal preservedprivate+safehashsummaries perruntimefolder beforeoverwrite.
+Then frozenconfig84d normalgenerator/currentpins wroteexactly2Pythonoutputs; allother7030trackedinputs exact683. Actualimport/oneof/pathchecks, canonicallegacydescriptor+sixinvariants/fivewire roundtrips, normalreproduction2/2 PASS. No handgenerated adaptation. Sourceproducer683 andfinal28ed remainexplicitlydifferent.
+NP01_CONTRACT1 resourcesreleased: noactiveJVM/Docker/native, normalownPG/Ryukcleanup completed; sixhistoricalJavaZombies only. Currentfree 5871595520B>4GiBfloor. No app/broker/browser. No futureNP01 runtimewithoutnewlease.
+Root/sourceconsumer received28ed beforedependentcompile. Independentcommonreader checks currentnative receipts. Finalsafe metadata package/terminal-summary.safe.json/handoff-manifest.safe.json contains sufficientscope-qualified evidence; rawlogs/XML remainprivate and excluded.
+NEWfollow-on afterthisseal/release: parentauthorizedsource-only reopenoriginalexportsf09, onlyExportJobHttpIT auditfact currentjob-scopedfixture correction; separatewt/scratch/receipt and runtimependingnewrootlease. Do not alterthisNPcommon/source orshareddeps.

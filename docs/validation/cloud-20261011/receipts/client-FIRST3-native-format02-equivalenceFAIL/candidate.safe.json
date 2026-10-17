@@ -1,0 +1,70 @@
+{
+  "kind": "ACTUAL_FORMAT_CANDIDATE_STRICT_PROOF_FAILED",
+  "toolSession": 90196,
+  "base": "8a83e32af1c317cc084486eba8009d2a44081cdb",
+  "formatterNativeExit": 0,
+  "strictProofNativeExit": 1,
+  "yamlParsedTreeEqual": true,
+  "allRunStringsExact": true,
+  "runStringCount": 28,
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "beforeSha256": "7124c96250c6740c1efc312fa9ef03d464fa2f3e25a375afad00971bb27e4cce",
+      "afterSha256": "7124c96250c6740c1efc312fa9ef03d464fa2f3e25a375afad00971bb27e4cce",
+      "modeBefore": "0o600",
+      "modeAfter": "0o600",
+      "afterNlink": 1
+    },
+    {
+      "path": "tests/e2e/playwright.first3.config.ts",
+      "beforeSha256": "a7fa0e1ab77d24dd1badc98234ad60cbc9c5e0adc5ec507b67325eee30615bfc",
+      "afterSha256": "8ea669255385a66c4a4eb3e5303ff6f4a89d9ed2b0582e5944b09a4745eb9cde",
+      "modeBefore": "0o600",
+      "modeAfter": "0o600",
+      "afterNlink": 1
+    },
+    {
+      "path": "tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "beforeSha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+      "afterSha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+      "modeBefore": "0o600",
+      "modeAfter": "0o600",
+      "afterNlink": 1
+    },
+    {
+      "path": "tests/e2e/fixtures/first3-observer.ts",
+      "beforeSha256": "324dab7a2b2ca4156f4240f1c08e4281a2924663e73e5b6a4773d6c0684c5624",
+      "afterSha256": "80db172a5bc8defd789ddf6e47eb8f2eb35015b68fcbe7d8b355c968f626922e",
+      "modeBefore": "0o600",
+      "modeAfter": "0o600",
+      "afterNlink": 1
+    }
+  ],
+  "selectedSourceGroupingObservation": {
+    "beforeAsConditionalBranchParenthesized": false,
+    "afterAsConditionalBranchParenthesized": true,
+    "qualification": "Readonly selected source grouping observation only; not full AST cause proof or approved normalization."
+  },
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 397251,
+      "start_ticks": 9867288,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 397262,
+      "start_ticks": 9867384,
+      "exactBirthAbsent": true
+    },
+    {
+      "pid": 397247,
+      "start_ticks": 9867247,
+      "exactBirthAbsent": true
+    }
+  ],
+  "typesListBrowserApi": "NOT_RUN",
+  "lease": "RELEASED",
+  "noMechanicalCommitOrSemanticPass": true,
+  "candidatePreserved": true
+}

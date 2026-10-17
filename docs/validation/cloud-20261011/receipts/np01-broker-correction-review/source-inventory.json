@@ -1,0 +1,31 @@
+{
+  "revision": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "parent": "9f7b0a1aed69def20efa7c336c108af0073b568e",
+  "working_head_observed": "cb778b155cab29c02abf294ba2093cf9149bed05",
+  "files": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+      "bytes": 35762,
+      "lines": 547,
+      "sha256": "d586e179eaaef8565940b7812fda77f472e25d32e0bd154756e329867eabd966",
+      "current_equal": true
+    },
+    {
+      "path": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+      "bytes": 30752,
+      "lines": 609,
+      "sha256": "53e5908543256940ca473e2421aa3d247c54d9976aa1b7a17f05d07463746050",
+      "current_equal": true
+    }
+  ],
+  "author20_archive": {
+    "sha256": "70cf8eca30b4ff5ff6f1018af3db64a6056bb7cf78d01091270d39efcb6d08c5",
+    "bytes": 62179,
+    "members": 20,
+    "all_members_exact": true,
+    "root_original_zip_exact": true
+  },
+  "original9f_safe13_exact": true,
+  "old24_current_exact": true,
+  "runtime": "NOT_RUN"
+}

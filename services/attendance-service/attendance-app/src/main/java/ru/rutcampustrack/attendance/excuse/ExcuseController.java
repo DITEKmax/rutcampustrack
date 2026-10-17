@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,22 +15,22 @@ import ru.rutcampustrack.attendance.contract.dto.excuse.ExcuseTicketResponse;
 import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusRequest;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
-import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.exception.LegacyEndpointRetiredException;
-import ru.rutcampustrack.attendance.security.RequireRole;
+import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.security.RequireRole;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 
 /**
- * REST controller for excuse tickets (Phase 59, D-04..D-09).
- * Implements {@link ExcuseApi} — all mappings/Swagger annotations live in the contract interface.
+ * REST controller for excuse tickets (Phase 59, D-04..D-09). Implements {@link ExcuseApi} — all
+ * mappings/Swagger annotations live in the contract interface.
  *
- * Per CLAUDE.md: controller only delegates to {@link ExcuseService} and wraps responses in
- * HATEOAS via {@link ExcuseAssembler}. All business logic, security, and exception handling
- * is centralised in the service + {@code GlobalExceptionHandler}.
+ * <p>Per CLAUDE.md: controller only delegates to {@link ExcuseService} and wraps responses in
+ * HATEOAS via {@link ExcuseAssembler}. All business logic, security, and exception handling is
+ * centralised in the service + {@code GlobalExceptionHandler}.
  *
- * D-09: every endpoint requires STUDENT role (headman is STUDENT + is_headman=true).
+ * <p>D-09: every endpoint requires STUDENT role (headman is STUDENT + is_headman=true).
  */
 @RestController
 public class ExcuseController implements ExcuseApi {
@@ -41,8 +40,11 @@ public class ExcuseController implements ExcuseApi {
     private final StudentRequestService studentRequestService;
     private final RequestContext requestContext;
 
-    public ExcuseController(ExcuseService excuseService, ExcuseAssembler excuseAssembler,
-                            StudentRequestService studentRequestService, RequestContext requestContext) {
+    public ExcuseController(
+            ExcuseService excuseService,
+            ExcuseAssembler excuseAssembler,
+            StudentRequestService studentRequestService,
+            RequestContext requestContext) {
         this.excuseService = excuseService;
         this.excuseAssembler = excuseAssembler;
         this.studentRequestService = studentRequestService;
@@ -90,15 +92,21 @@ public class ExcuseController implements ExcuseApi {
     @RequireRole(UserRole.STUDENT)
     public ResponseEntity<EntityModel<ExcuseTicketResponse>> updateStatus(
             String id, @Valid @RequestBody UpdateExcuseStatusRequest request) {
-        studentRequestService.decideExcuse(identity(), id,
-                request.status() == ExcuseTicketStatus.APPROVED, request.decisionComment());
+        studentRequestService.decideExcuse(
+                identity(),
+                id,
+                request.status() == ExcuseTicketStatus.APPROVED,
+                request.decisionComment());
         ExcuseTicket ticket = excuseService.getTicketById(id);
         return ResponseEntity.ok(excuseAssembler.toModel(ticket));
     }
 
     private StudentRequestModels.Identity identity() {
         Long userId = requestContext.getUserId();
-        return new StudentRequestModels.Identity(userId == null ? 0L : userId,
-                requestContext.getRole(), requestContext.getGroupId(), requestContext.isHeadman());
+        return new StudentRequestModels.Identity(
+                userId == null ? 0L : userId,
+                requestContext.getRole(),
+                requestContext.getGroupId(),
+                requestContext.isHeadman());
     }
 }

@@ -1,0 +1,87 @@
+{
+  "source": "/workspace/scratch/rct-validation/export_resume/ebsr-crosslayer-after-3-xml/services_auth-service_auth-app_integrationTest/TEST-ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT.xml",
+  "sha256": "cfb450251bce099b23d6d8aa35971d80a0027d85816a52044950d30a9d105587",
+  "suite": "ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT",
+  "counts": {
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "name": "freshAuthClaimPassesRealGatewayWorkerAndCommitsReadyBytes()",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[1] wire=8",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[2] wire=\"8\"",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[3] wire=null",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[4] wire=\"UNKNOWN\"",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[5] wire=[]",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[6] wire={}",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[7] wire=true",
+      "outcome": "PASS"
+    },
+    {
+      "name": "legacySixtySecondAuthorityWorksWhileTamperedChangedExpiredAndLongCapabilitiesNeverDispatch()",
+      "outcome": "PASS"
+    },
+    {
+      "name": "limitedLegacyIssuanceUsesCorrespondingCurrentViewGrantAndRevocation()",
+      "outcome": "PASS"
+    },
+    {
+      "name": "unavailableLiveRegistryAuthorityCannotIssueACapability()",
+      "outcome": "PASS"
+    },
+    {
+      "name": "limitedWithoutViewGrantsCannotIssueEitherRegistryCapability()",
+      "outcome": "PASS"
+    },
+    {
+      "name": "expiryBetweenRealAdmissionAndContentReadIsNotFoundWithoutBytes()",
+      "outcome": "PASS"
+    },
+    {
+      "name": "configuredAuthMapperPreservesAllCanonicalStringCodesAndRejectsMalformedRequiredKinds()",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[1] user=teacher",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[2] user=student",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[1] wire=8",
+      "outcome": "PASS"
+    },
+    {
+      "name": "[2] wire=\"8\"",
+      "outcome": "PASS"
+    }
+  ],
+  "xml_mtime_fresh": true,
+  "suite_timestamp_fresh": true
+}

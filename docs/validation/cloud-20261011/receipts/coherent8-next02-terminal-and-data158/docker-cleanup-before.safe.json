@@ -1,0 +1,18 @@
+{
+  "exact6_ids": [
+    "d5aab12c298934589f0198e12e5600b25c30b53f7bd8b622cee9b176fce47104",
+    "296a9e1e47972b8458b4091d17939091b2875a72d2017e84457fe6cb960b1d1b",
+    "dc6738b12fe6c322b5e5800c17a660c9f0f1068681978bb7200df573dbbbf38b",
+    "765216c9e7dc4126e9b41df4347dcb0ccb441b5b9d16ee2967d4d229145d20c6",
+    "79344c6b807860cf678e9a2aae4448d7856f98c996218396555b4bcdf3a3237b",
+    "8fd2280a0c28689488205b91155bf4362b4abe0d740de1577c311d7cc895aa0c"
+  ],
+  "five_volumes_preserve": [
+    "rct-client-host-config-20261012_owned-mongo-attendance",
+    "rct-client-host-config-20261012_owned-postgres-academic",
+    "rct-client-host-config-20261012_owned-postgres-schedule",
+    "rct-client-host-config-20261012_owned-rabbitmq",
+    "rct-client-host-config-20261012_owned-redis"
+  ],
+  "native_tmp_data_key_preserved": true
+}

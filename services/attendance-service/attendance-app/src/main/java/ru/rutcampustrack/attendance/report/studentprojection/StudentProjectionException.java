@@ -1,15 +1,13 @@
 package ru.rutcampustrack.attendance.report.studentprojection;
 
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-
 import java.util.Objects;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 
 /**
  * Signals that data cannot be used to build a student read projection.
  *
- * <p>The exception is deliberately independent from Spring and persistence so
- * that the projection calculators can be used by a future adapter without
- * changing their integrity boundary.</p>
+ * <p>The exception is deliberately independent from Spring and persistence so that the projection
+ * calculators can be used by a future adapter without changing their integrity boundary.
  */
 public final class StudentProjectionException extends RuntimeException {
 
@@ -44,34 +42,28 @@ public final class StudentProjectionException extends RuntimeException {
 
     public static StudentProjectionException invalidOccurrence(String detail) {
         return new StudentProjectionException(
-                Kind.INVALID_OCCURRENCE,
-                "Invalid attendance occurrence: " + detail);
+                Kind.INVALID_OCCURRENCE, "Invalid attendance occurrence: " + detail);
     }
 
     public static StudentProjectionException duplicateOccurrence(Long occurrenceId) {
         return new StudentProjectionException(
-                Kind.DUPLICATE_OCCURRENCE,
-                "Duplicate attendance occurrence id: " + occurrenceId);
+                Kind.DUPLICATE_OCCURRENCE, "Duplicate attendance occurrence id: " + occurrenceId);
     }
 
     public static StudentProjectionException unsupportedAttendanceStatus(
-            Long occurrenceId,
-            AttendanceStatus status) {
+            Long occurrenceId, AttendanceStatus status) {
         return new StudentProjectionException(
                 Kind.UNSUPPORTED_ATTENDANCE_STATUS,
-                "Unsupported attendance status " + status
-                        + " for occurrence " + occurrenceId);
+                "Unsupported attendance status " + status + " for occurrence " + occurrenceId);
     }
 
     public static StudentProjectionException invalidRoster(String detail) {
         return new StudentProjectionException(
-                Kind.INVALID_ROSTER,
-                "Invalid active participant roster: " + detail);
+                Kind.INVALID_ROSTER, "Invalid active participant roster: " + detail);
     }
 
     public static StudentProjectionException invalidMetrics(String detail) {
         return new StudentProjectionException(
-                Kind.INVALID_METRICS,
-                "Invalid attendance metrics: " + detail);
+                Kind.INVALID_METRICS, "Invalid attendance metrics: " + detail);
     }
 }

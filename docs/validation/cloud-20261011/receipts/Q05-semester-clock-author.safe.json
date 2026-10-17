@@ -1,0 +1,504 @@
+{
+  "goal": "Coherent semester educational Moscow date rules preserving real security clock",
+  "baseline": "10ab49dbe1e768642ab1c480e6f26f30a871874e",
+  "branch": "codex/rct-validation-semester-clock-20261014",
+  "scope": [
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java",
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java"
+  ],
+  "expected_red": "Old create wrongly accepts range ended Moscow-yesterday when JVM default UTC and accepted injected UTC clock is21:30",
+  "old_red": {
+    "result": {
+      "direct_pid": 623874,
+      "native_exit": 126,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 623874,
+          "start_ticks": 20110182
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": false
+    },
+    "source_pins": {
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "6ddfc6f60184f5591a145a0cf53cf9491c9b58ea211535ce87b9b75ee66e9238",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "7587a718e2a2e48c3b70c05ee9155d790695c3e6850503fc4cdea1ea551439b0",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "3fda8c7ce2511db86df36b70f83ff5550780b6a666106132623abb1d89b2d720"
+    },
+    "peak_owned_sampled_rss": 0,
+    "elapsed_seconds": 0.229,
+    "disk_growth": 4096,
+    "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/q05-clock-old-red.private.log"
+  },
+  "ordinary_clock_config": "UNCHANGED_2402b9d2b69a57692ee24b2735e114276d7af59a529418302cc5e2a046c37947",
+  "q05_fixture": "UNCHANGED_UNTRACKED_17150d",
+  "pg_runtime": "PASS_NARROW_EXACT2_EXISTING_PG_TRANSITION_METHODS_NO_API_FAMILY_CLAIM",
+  "status": "SELECTED2_PG_PASS_EXACT_OWNED_CLEANUP_COMPLETE",
+  "active_native": null,
+  "old_red02": {
+    "result": {
+      "direct_pid": 623992,
+      "native_exit": 1,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 623992,
+          "start_ticks": 20114300
+        },
+        {
+          "pid": 624025,
+          "start_ticks": 20114414
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": false
+    },
+    "source_pins": {
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "6ddfc6f60184f5591a145a0cf53cf9491c9b58ea211535ce87b9b75ee66e9238",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "7587a718e2a2e48c3b70c05ee9155d790695c3e6850503fc4cdea1ea551439b0",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "3fda8c7ce2511db86df36b70f83ff5550780b6a666106132623abb1d89b2d720"
+    },
+    "peak_owned_sampled_rss": 237314048,
+    "elapsed_seconds": 2.993,
+    "disk_growth": 12288,
+    "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/q05-clock-old-red02.private.log"
+  },
+  "old_red03": {
+    "result": {
+      "direct_pid": 624100,
+      "native_exit": 1,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 624100,
+          "start_ticks": 20119604
+        },
+        {
+          "pid": 624133,
+          "start_ticks": 20119707
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": false
+    },
+    "source_pins": {
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "6ddfc6f60184f5591a145a0cf53cf9491c9b58ea211535ce87b9b75ee66e9238",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "7587a718e2a2e48c3b70c05ee9155d790695c3e6850503fc4cdea1ea551439b0",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "3fda8c7ce2511db86df36b70f83ff5550780b6a666106132623abb1d89b2d720"
+    },
+    "peak_owned_sampled_rss": 655540224,
+    "elapsed_seconds": 18.023,
+    "disk_growth": 143360,
+    "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/q05-clock-old-red03.private.log"
+  },
+  "old_red04": {
+    "result": {
+      "direct_pid": 624370,
+      "native_exit": 1,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 624370,
+          "start_ticks": 20127815
+        },
+        {
+          "pid": 624405,
+          "start_ticks": 20127924
+        },
+        {
+          "pid": 624475,
+          "start_ticks": 20130013
+        },
+        {
+          "pid": 624479,
+          "start_ticks": 20130035
+        },
+        {
+          "pid": 624638,
+          "start_ticks": 20133420
+        },
+        {
+          "pid": 624641,
+          "start_ticks": 20133436
+        },
+        {
+          "pid": 624696,
+          "start_ticks": 20135765
+        },
+        {
+          "pid": 624729,
+          "start_ticks": 20135950
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": false
+    },
+    "source_pins": {
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "6ddfc6f60184f5591a145a0cf53cf9491c9b58ea211535ce87b9b75ee66e9238",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "7587a718e2a2e48c3b70c05ee9155d790695c3e6850503fc4cdea1ea551439b0",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "3fda8c7ce2511db86df36b70f83ff5550780b6a666106132623abb1d89b2d720"
+    },
+    "peak_owned_sampled_rss": 1642946560,
+    "elapsed_seconds": 85.502,
+    "disk_growth": 67801088,
+    "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/q05-clock-old-red04.private.log",
+    "jdk": "/workspace/rct-cloud-setup/jdk21",
+    "closed_xml": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "selected_method_only": true,
+      "expected_assertion_missing_BadRequest": true,
+      "source_frame_new_method": true
+    },
+    "xml_private_path": "/workspace/scratch/rct-validation/native_recovery_actual/q05-clock-old-red04.private.xml",
+    "xml_sha256": "1a1247d52833e49fc319e8f9d79c6c068e1034f484b380a8cf2e8076dce94e17"
+  },
+  "green": {
+    "result": {
+      "direct_pid": 625101,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 625101,
+          "start_ticks": 20148388
+        },
+        {
+          "pid": 625136,
+          "start_ticks": 20148501
+        },
+        {
+          "pid": 625478,
+          "start_ticks": 20151877
+        },
+        {
+          "pid": 625511,
+          "start_ticks": 20152094
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "pins_before_format": {
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "68dc45a4521b9b64933fedcf223a996a155a70c8422f4f21fd228cdff5f3f1cb",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "36edf785da753771477990cfd3152bde2cbd7e795754e8bebdb0e0e673a32200",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "3fda8c7ce2511db86df36b70f83ff5550780b6a666106132623abb1d89b2d720"
+    },
+    "final_source_pins": {
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "68dc45a4521b9b64933fedcf223a996a155a70c8422f4f21fd228cdff5f3f1cb",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "9faa45afd3b475f39fb427e46b2d7e7ffb22e34355f6d393db03c29ca635a1aa",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "59d2d32d6b336692f5f2e95fdbbe60009219e2863fa8d28fe384df8249e03770"
+    },
+    "peak_owned_sampled_rss": 1374871552,
+    "elapsed_seconds": 41.657,
+    "disk_growth": 815104,
+    "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/q05-clock-green.private.log",
+    "jdk": "/workspace/rct-cloud-setup/jdk21",
+    "formatter_scope_private_init_sha256": "00a4bcfb359c779a5515753b5313c1151118d89dba87bfeb1837cced0bc2d63f",
+    "untouched_pins": {
+      "tests/e2e/fixtures/semester-lifecycle.spec.ts": "17150d662d06e3e4758d32a27a8d6c95d39d8e0f71b39cea49ddeaf458bcda55",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/ClockConfig.java": "2402b9d2b69a57692ee24b2735e114276d7af59a529418302cc5e2a046c37947"
+    },
+    "closed_xml": {
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "new_control_executed": true
+    }
+  },
+  "context": "Frozen10ab, selected Sol6.1/high actualUNKNOWN; original Q05 WIP untracked17150d preserved in SAME WT; no main/sharedconfig/API/schema changes",
+  "required_behavior": "All semester educational date checks use selected EducationalTime and Moscow calendar; fallback ordinary clock compatible; direct constructors retained; scheduled activation and completed-range/refusal state remain coherent",
+  "constraints": "No ordinaryClock bean/security/audit timestamp changes; no browser/fullstand/network/deletion; B013/B014 FROZEN; sole3Sourcepaths",
+  "existing_patterns": "Existing ObjectProvider<EducationalTime> fallback constructor pattern; existing AOSP Spotless exacttargets; existingb78/JDK21/offline Gradle wrapper",
+  "acceptance": "Meaningful oldRED exactmissingBadRequest; current16unit0FES; selected2existing realPG transition/replay checks pending separately granted",
+  "verification": "OldRED04 actual1test/1AssertionError/0error; noNPE/infra. GREENformat+compileJava/compileTestJava+existingSemesterServiceTest16PASS; all processesreaped. First3 infra attempts preserved, notRED.",
+  "do_not": "Do not integrate Q05 fixture or broaden clock/security/API/schema; no newframework/wrapper/reviewcampaign; actual Q05 API runtime NOT_RUN",
+  "pg_preflight": {
+    "storage_driver": "vfs",
+    "docker_root": "/var/lib/docker",
+    "postgres_tag": "postgres:16",
+    "postgres_id": "sha256:275447c94b11b151decd1f29877965301d5a77032037c46de93d990f739f00a9",
+    "postgres_digest": "postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d",
+    "baseline_containers": 0,
+    "baseline_volumes": 11,
+    "baseline_networks": 3,
+    "free_bytes": 6207905792,
+    "MemAvailable_bytes": 15601590272,
+    "mutations": "NONE",
+    "grant": "EXECUTED_FINAL0f7_SAME_ROOT_RELEASED_FRESH_LEASE",
+    "tests": [
+      "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.futureActivationSurvivesReplayAndConcurrentDueTicksWithoutDisablingCurrent",
+      "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.expiredAndArchivedScheduledTargetsNeverReplaceActiveAndRestoreDoesNotReschedule"
+    ],
+    "existing_fixture_resources": "AbstractAcademicIntegrationTest creates1PostgreSQL16 fresh DB academic_ci_UUID/reusefalse; defaultTestcontainersRyuk/ephemeralport mayoccur; noexplicitcontainercap/tmpfs inclass. FixtureResetListener checks exactfreshownerDB/url before anyreset; noforeignDB allowed.",
+    "standard_observer": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p06-real-pg-one-test-source/it_container_observer.py",
+    "standard_observer_sha256": "0dec9cb57458eb3f7d0dd97f882ba7d6f6f351b8727f293166178f4e2b6d95bb",
+    "cached_ryuk": "0.11.0 and0.12.0 exactcached IDs/digests; standardSDKversion selects",
+    "standard_sdk_probe": "Rootlatergrantincludes cachedalpine3.17 / maximum2knownpublicResourceReaperclassprobes perSDKsession; defaultschecksremainenabled",
+    "heap_input": "/workspace/scratch/rct-validation/np01_contract/test-heap.gradle SHAa5eedff19aac60e48a39a776258e326270e355aca95e4125fbc5409efba28a26; Testheap768m/fork1"
+  },
+  "commit": "0f7fd4f6391489161d00a5f31b0d75b92390ff83",
+  "normal_commit": "PASS; exactly3assignedpaths; untrackedQ05fixture excluded; no local productruntime",
+  "F1_red": {
+    "result": {
+      "direct_pid": 627978,
+      "native_exit": 1,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 627978,
+          "start_ticks": 20223788
+        },
+        {
+          "pid": 628013,
+          "start_ticks": 20223884
+        },
+        {
+          "pid": 628102,
+          "start_ticks": 20227015
+        },
+        {
+          "pid": 628135,
+          "start_ticks": 20227253
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": false
+    },
+    "source_pins": {
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "68dc45a4521b9b64933fedcf223a996a155a70c8422f4f21fd228cdff5f3f1cb",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "9faa45afd3b475f39fb427e46b2d7e7ffb22e34355f6d393db03c29ca635a1aa",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "769d1f74d35f6587b9a99288b887aa211b9a645628555244076589dd71064049"
+    },
+    "peak_owned_sampled_rss": 1323163648,
+    "elapsed_seconds": 39.55,
+    "disk_growth": 1146880,
+    "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/q05-clock-F1-red.private.log",
+    "closed_xml": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "selected_method_only": true,
+      "expected_domain_active_false": true,
+      "failure_type_assertion": true,
+      "source_lines": [
+        "548"
+      ]
+    },
+    "xml_sha256": "b0522a85e8a637d8848f35902fdb99e9f12bd032152f4a9ee0f06f38d414c984"
+  },
+  "F1_green": {
+    "result": {
+      "direct_pid": 628536,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 628536,
+          "start_ticks": 20236398
+        },
+        {
+          "pid": 628569,
+          "start_ticks": 20236520
+        },
+        {
+          "pid": 628683,
+          "start_ticks": 20239062
+        },
+        {
+          "pid": 628724,
+          "start_ticks": 20239301
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "pins_before_format": {
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "f76c55901971973cce45bc7495591bc35f8d9ac071594456d6e7183d968b78e0",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "bd160f75da6b62e7eb3395d8299dd86c8dde1f2aaef679c71c0594e31feb3cd5",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "769d1f74d35f6587b9a99288b887aa211b9a645628555244076589dd71064049"
+    },
+    "final_source_pins": {
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "615d0534156e7c4e3ca219d164d503b4601a5d0c0d35aeb368ac88b1e7f685f9",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "bd160f75da6b62e7eb3395d8299dd86c8dde1f2aaef679c71c0594e31feb3cd5",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "74fa6ba7d0a8ca5f2497f6f4ab43087674e581bfd7f934c4e530bc69ddc2d7be"
+    },
+    "peak_owned_sampled_rss": 1085030400,
+    "elapsed_seconds": 34.211,
+    "disk_growth": 135168,
+    "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/q05-clock-F1-green.private.log",
+    "untouched_pins": {
+      "tests/e2e/fixtures/semester-lifecycle.spec.ts": "17150d662d06e3e4758d32a27a8d6c95d39d8e0f71b39cea49ddeaf458bcda55",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/ClockConfig.java": "2402b9d2b69a57692ee24b2735e114276d7af59a529418302cc5e2a046c37947"
+    },
+    "closed_xml": {
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "new_mutable_clock_control_executed": true
+    }
+  },
+  "F1_correction": "Retain selected original Clock; derive Moscow day from currentinstant at each5servicechecks+jobtick; mutablewithZonesnapshot regression provenRED/GREEN",
+  "initial_commit": "2952edc5653e56e002a2fcc9268b089d8520ea24",
+  "selected_pg01": {
+    "result": {
+      "direct_pid": 629585,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 629585,
+          "start_ticks": 20268385
+        },
+        {
+          "pid": 629618,
+          "start_ticks": 20268504
+        },
+        {
+          "pid": 629859,
+          "start_ticks": 20271450
+        },
+        {
+          "pid": 630298,
+          "start_ticks": 20273222
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    "source_pins": {
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java": "615d0534156e7c4e3ca219d164d503b4601a5d0c0d35aeb368ac88b1e7f685f9",
+      "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java": "bd160f75da6b62e7eb3395d8299dd86c8dde1f2aaef679c71c0594e31feb3cd5",
+      "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/semester/SemesterServiceTest.java": "74fa6ba7d0a8ca5f2497f6f4ab43087674e581bfd7f934c4e530bc69ddc2d7be"
+    },
+    "methods": [
+      "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.futureActivationSurvivesReplayAndConcurrentDueTicksWithoutDisablingCurrent",
+      "ru.rutcampustrack.academic.integration.SemesterArchiveStateIT.expiredAndArchivedScheduledTargetsNeverReplaceActiveAndRestoreDoesNotReschedule"
+    ],
+    "resource_observer_sha256": "0dec9cb57458eb3f7d0dd97f882ba7d6f6f351b8727f293166178f4e2b6d95bb",
+    "heap_input_sha256": "a5eedff19aac60e48a39a776258e326270e355aca95e4125fbc5409efba28a26",
+    "baseline_counts": [
+      0,
+      11,
+      3
+    ],
+    "session_namespaces": [
+      "f0854682-7b9a-41ee-80ae-3273e80198ab"
+    ],
+    "owned_ids_roles": {
+      "ff0af197b0ead14abf7273ae8ff86abfbe2128956d0ee8a05fdf43573d9fe394": "ryuk",
+      "12a0e78e7f0b39e954fb35563494218f7fae5f809c8b2638abc403845f720f18": "postgres"
+    },
+    "random_ports_default_memory_limits": {
+      "ff0af197b0ead14abf7273ae8ff86abfbe2128956d0ee8a05fdf43573d9fe394": {
+        "ports": {
+          "8080/tcp": [
+            {
+              "HostIp": "0.0.0.0",
+              "HostPort": "33114"
+            },
+            {
+              "HostIp": "::",
+              "HostPort": "33114"
+            }
+          ]
+        },
+        "memory_limit": 0,
+        "memory_swap_limit": 0
+      },
+      "12a0e78e7f0b39e954fb35563494218f7fae5f809c8b2638abc403845f720f18": {
+        "ports": {
+          "5432/tcp": [
+            {
+              "HostIp": "0.0.0.0",
+              "HostPort": "33115"
+            },
+            {
+              "HostIp": "::",
+              "HostPort": "33115"
+            }
+          ]
+        },
+        "memory_limit": 0,
+        "memory_swap_limit": 0
+      }
+    },
+    "default_container_memory_qualification": "No hard memory limit imposed; sampled shared cgroup includes container resources; no OS isolation claim.",
+    "peaks": {
+      "own_rss": 1599275008,
+      "shared_memory": 8333189120,
+      "min_free": 5179654144,
+      "log_bytes": 8289
+    },
+    "workspace_growth_bytes": 2359296,
+    "elapsed_seconds": 75.716,
+    "containers_settled_exact_foreign_baseline": true,
+    "cleanup_error_class": null,
+    "observer_failure": null,
+    "private_scope": "/workspace/scratch/rct-validation/native_recovery_actual/q05-clock-pg01",
+    "private_log": "/workspace/scratch/rct-validation/native_recovery_actual/q05-clock-pg01/native.private.log",
+    "own_tmp_removed": true,
+    "closed_xml": {
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "exact_selected_methods": true,
+      "xml_sha256": "3744c79d3ac4a32e407e397fd22921091c0d7b9944117e2be393d0711cbf0ac8",
+      "failure_classes": []
+    },
+    "foreign_after_counts": [
+      0,
+      11,
+      3
+    ],
+    "source_unchanged": true,
+    "private_xml": "/workspace/scratch/rct-validation/native_recovery_actual/q05-clock-pg01/selected-results.private.xml"
+  },
+  "review": "Root reports SAME independent targetedF1 recheck APPROVE_SOURCE_LOCAL final0f7"
+}

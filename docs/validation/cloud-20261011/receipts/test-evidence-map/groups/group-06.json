@@ -1,0 +1,2160 @@
+{
+  "group_id": "ACADEMIC-GROUPS",
+  "criterion": "dated roster intervals, headman/helper revocation, once-only spring promotion, server listing order/count",
+  "related_source_story_ids": [
+    "JS-ADMIN-03",
+    "JS-ADMIN-05",
+    "JS-ADMIN-06",
+    "JS-ADMIN-07",
+    "JS-ADMIN-15",
+    "JS-ADMIN-16",
+    "JS-ADMIN-17",
+    "JS-HEADMAN-32"
+  ],
+  "research_ids": [
+    "P04",
+    "P05",
+    "P13",
+    "P15",
+    "L07"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentIT.java",
+      "class": "ru.rutcampustrack.academic.group.GroupHeadmanAssignmentIT",
+      "methods": [
+        {
+          "method": "currentHeadmanCompositionUsesFreshGrantRosterAndGroupRoles",
+          "line": 49,
+          "assertion_evidence": [
+            {
+              "line": 59,
+              "expression": "assertThat(snapshot.getGroupName()).isEqualTo(fixture.name());"
+            },
+            {
+              "line": 60,
+              "expression": "assertThat(snapshot.getMembersList()).extracting(member -> member.getUserId())"
+            },
+            {
+              "line": 61,
+              "expression": ".containsExactly(fixture.secondId(), fixture.firstId(), fixture.thirdId());"
+            },
+            {
+              "line": 62,
+              "expression": "assertThat(snapshot.getMembersList()).extracting(member -> member.getGroupRole())"
+            },
+            {
+              "line": 63,
+              "expression": ".containsExactly(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\");"
+            },
+            {
+              "line": 64,
+              "expression": "assertThat(snapshot.getMembersList()).allSatisfy(member -> {"
+            },
+            {
+              "line": 65,
+              "expression": "assertThat(member.getDisplayName()).startsWith(\"<literal-redacted>\");"
+            },
+            {
+              "line": 66,
+              "expression": "assertThat(member.getLogin()).isNotBlank();"
+            },
+            {
+              "line": 69,
+              "expression": "assertThatThrownBy(() -> compositionReadService.read("
+            }
+          ]
+        },
+        {
+          "method": "assignmentChangesDurableHeadmanRevokesAssistantsAndReloadsRegistry",
+          "line": 97,
+          "assertion_evidence": [
+            {
+              "line": 110,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 111,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(fixture.firstId().intValue())))"
+            },
+            {
+              "line": 112,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(true)));"
+            },
+            {
+              "line": 121,
+              "expression": "assertThat(preview.assistantsToRevoke()).isEqualTo(1);"
+            },
+            {
+              "line": 122,
+              "expression": "assertThat(preview.currentHeadmanId()).isEqualTo(fixture.firstId());"
+            },
+            {
+              "line": 126,
+              "expression": "assertThat(changed.changed()).isTrue();"
+            },
+            {
+              "line": 127,
+              "expression": "assertThat(changed.assistantsRevoked()).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "activeStudentGrantKeepsMultiRoleHeadmanEligibleDuringProfileSync",
+          "line": 157,
+          "assertion_evidence": [
+            {
+              "line": 170,
+              "expression": "assertThat(assigned.changed()).isTrue();"
+            },
+            {
+              "line": 171,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 174,
+              "expression": "Long.class, fixture.firstId(), fixture.groupId())).isEqualTo(1L);"
+            },
+            {
+              "line": 179,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 181,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 182,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 185,
+              "expression": "Long.class, fixture.firstId(), fixture.groupId())).isEqualTo(1L);"
+            },
+            {
+              "line": 186,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 188,
+              "expression": "String.class, fixture.firstId())).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "legacyPatchConvergesThroughCanonicalPathAndKeepsOneActiveGrant",
+          "line": 200,
+          "assertion_evidence": [
+            {
+              "line": 207,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 210,
+              "expression": "Long.class, fixture.groupId())).isEqualTo(1L);"
+            },
+            {
+              "line": 211,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 213,
+              "expression": "Boolean.class, fixture.firstId())).isTrue();"
+            },
+            {
+              "line": 217,
+              "expression": "assertThat(jdbc.queryForObject("
+            }
+          ]
+        },
+        {
+          "method": "concurrentCandidatesHaveOneWinnerAndOneCasConflict",
+          "line": 223,
+          "assertion_evidence": [
+            {
+              "line": 250,
+              "expression": "assertThat(successes).isEqualTo(1);"
+            },
+            {
+              "line": 251,
+              "expression": "assertThat(conflicts).isEqualTo(1);"
+            },
+            {
+              "line": 252,
+              "expression": "assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 255,
+              "expression": "Long.class, fixture.groupId())).isEqualTo(1L);"
+            }
+          ]
+        },
+        {
+          "method": "archivedGroupAndNonMemberAreRejected",
+          "line": 261,
+          "assertion_evidence": [
+            {
+              "line": 266,
+              "expression": "assertThatThrownBy(() -> assignmentService.assign("
+            },
+            {
+              "line": 268,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);"
+            },
+            {
+              "line": 271,
+              "expression": "assertThatThrownBy(() -> assignmentService.assign("
+            },
+            {
+              "line": 273,
+              "expression": ".isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupNameParserTest.java",
+      "class": "ru.rutcampustrack.academic.group.GroupNameParserTest",
+      "methods": [
+        {
+          "method": "programType_fromDigit_1_returnsBachelor",
+          "line": 17,
+          "assertion_evidence": [
+            {
+              "line": 20,
+              "expression": "assertThat(t).isEqualTo(ProgramType.BACHELOR);"
+            },
+            {
+              "line": 21,
+              "expression": "assertThat(t.getMaxCourse()).isEqualTo(4);"
+            }
+          ]
+        },
+        {
+          "method": "programType_fromDigit_7_returnsMaster",
+          "line": 24,
+          "assertion_evidence": [
+            {
+              "line": 27,
+              "expression": "assertThat(t).isEqualTo(ProgramType.MASTER);"
+            },
+            {
+              "line": 28,
+              "expression": "assertThat(t.getMaxCourse()).isEqualTo(2);"
+            }
+          ]
+        },
+        {
+          "method": "programType_fromDigit_0_throwsUnknownProgramTypeException",
+          "line": 31,
+          "assertion_evidence": [
+            {
+              "line": 33,
+              "expression": "assertThatThrownBy(() -> ProgramType.fromDigit(0))"
+            },
+            {
+              "line": 34,
+              "expression": ".isInstanceOf(UnknownProgramTypeException.class)"
+            },
+            {
+              "line": 36,
+              "expression": ".isEqualTo(0);"
+            }
+          ]
+        },
+        {
+          "method": "parse_UIT311",
+          "line": 41,
+          "assertion_evidence": [
+            {
+              "line": 44,
+              "expression": "assertThat(p.prefix()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 45,
+              "expression": "assertThat(p.course()).isEqualTo(3);"
+            },
+            {
+              "line": 46,
+              "expression": "assertThat(p.type()).isEqualTo(1);"
+            },
+            {
+              "line": 47,
+              "expression": "assertThat(p.number()).isEqualTo(1);"
+            },
+            {
+              "line": 48,
+              "expression": "assertThat(p.toActive()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "parse_UVPv511_withLowercaseTailLetter",
+          "line": 51,
+          "assertion_evidence": [
+            {
+              "line": 54,
+              "expression": "assertThat(p.prefix()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 55,
+              "expression": "assertThat(p.course()).isEqualTo(5);"
+            },
+            {
+              "line": 56,
+              "expression": "assertThat(p.type()).isEqualTo(1);"
+            },
+            {
+              "line": 57,
+              "expression": "assertThat(p.number()).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "parse_archivedFormat_throws",
+          "line": 62,
+          "assertion_evidence": [
+            {
+              "line": 64,
+              "expression": "assertThatThrownBy(() -> parser.parse(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 65,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "parse_lowercaseFirstLetter_throws",
+          "line": 68,
+          "assertion_evidence": [
+            {
+              "line": 70,
+              "expression": "assertThatThrownBy(() -> parser.parse(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 71,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "parse_twoDigitsAfterDash_throws",
+          "line": 74,
+          "assertion_evidence": [
+            {
+              "line": 76,
+              "expression": "assertThatThrownBy(() -> parser.parse(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 77,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "parse_null_throws",
+          "line": 80,
+          "assertion_evidence": [
+            {
+              "line": 82,
+              "expression": "assertThatThrownBy(() -> parser.parse(null))"
+            },
+            {
+              "line": 83,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "parse_empty_throws",
+          "line": 86,
+          "assertion_evidence": [
+            {
+              "line": 88,
+              "expression": "assertThatThrownBy(() -> parser.parse(\"<literal-redacted>\"))"
+            },
+            {
+              "line": 89,
+              "expression": ".isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        },
+        {
+          "method": "promote_bachelor_course1_to_course2",
+          "line": 94,
+          "assertion_evidence": [
+            {
+              "line": 97,
+              "expression": "assertThat(r).isInstanceOf(GroupNameParser.PromoteResult.Renamed.class);"
+            },
+            {
+              "line": 98,
+              "expression": "assertThat(((GroupNameParser.PromoteResult.Renamed) r).newName()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "promote_bachelor_course4_archived",
+          "line": 101,
+          "assertion_evidence": [
+            {
+              "line": 104,
+              "expression": "assertThat(r).isInstanceOf(GroupNameParser.PromoteResult.Archived.class);"
+            }
+          ]
+        },
+        {
+          "method": "promote_master_course2_archived",
+          "line": 107,
+          "assertion_evidence": [
+            {
+              "line": 110,
+              "expression": "assertThat(r).isInstanceOf(GroupNameParser.PromoteResult.Archived.class);"
+            }
+          ]
+        },
+        {
+          "method": "promote_master_course1_to_course2",
+          "line": 113,
+          "assertion_evidence": [
+            {
+              "line": 116,
+              "expression": "assertThat(r).isInstanceOf(GroupNameParser.PromoteResult.Renamed.class);"
+            },
+            {
+              "line": 117,
+              "expression": "assertThat(((GroupNameParser.PromoteResult.Renamed) r).newName()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "parse_rejectsZeroAndCourseSix",
+          "line": 119,
+          "assertion_evidence": [
+            {
+              "line": 121,
+              "expression": "assertThatThrownBy(() -> parser.parse(\"<literal-redacted>\")).isInstanceOf(IllegalArgumentException.class);"
+            },
+            {
+              "line": 122,
+              "expression": "assertThatThrownBy(() -> parser.parse(\"<literal-redacted>\")).isInstanceOf(IllegalArgumentException.class);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java",
+      "class": "ru.rutcampustrack.academic.group.GroupPromotionCycleIT",
+      "methods": [
+        {
+          "method": "singleThenMassPromotionRejectsStaleAndRetriedPlansWithoutChangingIdentityOrHistory",
+          "line": 85,
+          "assertion_evidence": [
+            {
+              "line": 104,
+              "expression": ".andExpect(status().isForbidden());"
+            },
+            {
+              "line": 108,
+              "expression": "assertThat(singlePreview.path(\"<literal-redacted>\").asBoolean()).isTrue();"
+            },
+            {
+              "line": 109,
+              "expression": "assertThat(singlePreview.path(\"<literal-redacted>\").asBoolean()).isFalse();"
+            },
+            {
+              "line": 110,
+              "expression": "assertThat(singlePreview.path(\"<literal-redacted>\").asLong()).isEqualTo(cycleId);"
+            },
+            {
+              "line": 111,
+              "expression": "assertThat(singlePreview.path(\"<literal-redacted>\").asLong()).isEqualTo(firstGroup);"
+            },
+            {
+              "line": 112,
+              "expression": "assertThat(singlePreview.path(\"<literal-redacted>\").asInt()).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "automaticCatchUpReusesManualLedgerAndReplayDoesNotPromoteTwice",
+          "line": 178,
+          "assertion_evidence": [
+            {
+              "line": 194,
+              "expression": "assertThat(automaticCompletionFacts()).isEmpty();"
+            },
+            {
+              "line": 203,
+              "expression": "assertThat(automaticCompletionFacts()).hasSize(1);"
+            },
+            {
+              "line": 205,
+              "expression": "assertThat(fact.cycleSemesterId()).isEqualTo(cycleId);"
+            },
+            {
+              "line": 206,
+              "expression": "assertThat(fact.promoted()).isEqualTo(1);"
+            },
+            {
+              "line": 207,
+              "expression": "assertThat(fact.graduated()).isEqualTo(1);"
+            }
+          ]
+        },
+        {
+          "method": "massPromotionAdjacentCoursesFlushesInVacatedNameOrderAndRetainsHistory",
+          "line": 271,
+          "assertion_evidence": [
+            {
+              "line": 285,
+              "expression": "assertThat(preview.path(\"<literal-redacted>\").size()).isZero();"
+            },
+            {
+              "line": 286,
+              "expression": "assertThat(preview.path(\"<literal-redacted>\").size()).isEqualTo(3);"
+            },
+            {
+              "line": 287,
+              "expression": "assertThat(preview.path(\"<literal-redacted>\").size()).isEqualTo(1);"
+            },
+            {
+              "line": 292,
+              "expression": "assertThat(result.path(\"<literal-redacted>\").asBoolean()).isTrue();"
+            },
+            {
+              "line": 293,
+              "expression": "assertThat(groupName(first)).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 294,
+              "expression": "assertThat(groupName(second)).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "durationOnlyCorrectionInvalidatesPreviewWithoutResettingCycleLedger",
+          "line": 319,
+          "assertion_evidence": [
+            {
+              "line": 326,
+              "expression": "assertThat(legacyPreview.path(\"<literal-redacted>\").get(0).path(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 333,
+              "expression": ".andExpect(status().isConflict());"
+            },
+            {
+              "line": 335,
+              "expression": "assertThat(fourYearPreview.path(\"<literal-redacted>\")).isEqualTo(legacyPreview.path(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 336,
+              "expression": "assertThat(fourYearPreview.path(\"<literal-redacted>\").asText())"
+            },
+            {
+              "line": 340,
+              "expression": ".andExpect(status().isConflict());"
+            },
+            {
+              "line": 341,
+              "expression": "assertThat(groupName(groupId)).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 342,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\""
+            }
+          ]
+        },
+        {
+          "method": "archivedExtensionPreservesOriginalCutoffRosterAssignmentsAndOnceOnlyPromotion",
+          "line": 356,
+          "assertion_evidence": [
+            {
+              "line": 379,
+              "expression": "assertThat(rosterBefore).containsExactly(studentId);"
+            },
+            {
+              "line": 382,
+              "expression": "assertThat(invalidPlan.path(\"<literal-redacted>\").get(0).path(\"<literal-redacted>\").asText()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 388,
+              "expression": ".andExpect(status().isBadRequest());"
+            },
+            {
+              "line": 390,
+              "expression": ".andExpect(status().isBadRequest());"
+            },
+            {
+              "line": 391,
+              "expression": "assertThat(jdbc.queryForObject(\"<literal-redacted>\", Boolean.class, corrected)).isTrue();"
+            },
+            {
+              "line": 395,
+              "expression": "assertThat(groupName(corrected)).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupPromotionServiceTest.java",
+      "class": "ru.rutcampustrack.academic.group.GroupPromotionServiceTest",
+      "methods": [
+        {
+          "method": "preview_emptyDb_returnsEmptySummary",
+          "line": 119,
+          "assertion_evidence": [
+            {
+              "line": 123,
+              "expression": "assertThat(s.getToPromote()).isEmpty();"
+            },
+            {
+              "line": 124,
+              "expression": "assertThat(s.getToArchive()).isEmpty();"
+            },
+            {
+              "line": 125,
+              "expression": "assertThat(s.getConflicts()).isEmpty();"
+            },
+            {
+              "line": 126,
+              "expression": "assertThat(s.isDryRun()).isTrue();"
+            },
+            {
+              "line": 127,
+              "expression": "assertThat(s.isExecuted()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "automaticExecutionWaitsForMoscowAugustEighteenthAndACompletedSpringCycle",
+          "line": 130,
+          "assertion_evidence": [
+            {
+              "line": 138,
+              "expression": "assertThat(beforeDueService.executeAutomaticallyIfDue()).isEmpty();"
+            },
+            {
+              "line": 139,
+              "expression": "assertThat(group.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 145,
+              "expression": "assertThat(noCycleService.executeAutomaticallyIfDue()).isEmpty();"
+            },
+            {
+              "line": 146,
+              "expression": "assertThat(group.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 147,
+              "expression": "verify(groupRepository, never()).findAllActiveForPromotionUpdate();"
+            }
+          ]
+        },
+        {
+          "method": "automaticExecutionStartsAtMidnightAugustEighteenthInMoscow",
+          "line": 150,
+          "assertion_evidence": [
+            {
+              "line": 160,
+              "expression": "assertThat(result).isPresent();"
+            },
+            {
+              "line": 161,
+              "expression": "assertThat(result.orElseThrow().getToPromote()).hasSize(1);"
+            },
+            {
+              "line": 162,
+              "expression": "assertThat(group.getName()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "preview_bachelor_course1AndCourse4",
+          "line": 171,
+          "assertion_evidence": [
+            {
+              "line": 179,
+              "expression": "assertThat(s.getToPromote())"
+            },
+            {
+              "line": 181,
+              "expression": ".containsExactly(org.assertj.core.api.Assertions.tuple(\"<literal-redacted>\", \"<literal-redacted>\", Action.PROMOTE));"
+            },
+            {
+              "line": 182,
+              "expression": "assertThat(s.getToArchive())"
+            },
+            {
+              "line": 184,
+              "expression": ".containsExactly(org.assertj.core.api.Assertions.tuple(\"<literal-redacted>\", Action.ARCHIVE));"
+            },
+            {
+              "line": 185,
+              "expression": "assertThat(s.getConflicts()).isEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "preview_nameConflictDueToUnknownBlockingFreeing_abortsPrefix",
+          "line": 188,
+          "assertion_evidence": [
+            {
+              "line": 203,
+              "expression": "assertThat(s.getToPromote()).isEmpty();"
+            },
+            {
+              "line": 204,
+              "expression": "assertThat(s.getConflicts()).hasSize(1);"
+            },
+            {
+              "line": 205,
+              "expression": "assertThat(s.getConflicts().get(0).getPrefix()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 206,
+              "expression": "assertThat(s.getConflicts().get(0).getReason()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "preview_courseChain_resolvesWithoutConflict",
+          "line": 209,
+          "assertion_evidence": [
+            {
+              "line": 219,
+              "expression": "assertThat(s.getConflicts()).isEmpty();"
+            },
+            {
+              "line": 220,
+              "expression": "assertThat(s.getToPromote()).hasSize(2);"
+            },
+            {
+              "line": 221,
+              "expression": "assertThat(s.getToPromote())"
+            }
+          ]
+        },
+        {
+          "method": "preview_unknownType_putsPrefixInConflicts",
+          "line": 226,
+          "assertion_evidence": [
+            {
+              "line": 234,
+              "expression": "assertThat(s.getToPromote()).isEmpty();"
+            },
+            {
+              "line": 235,
+              "expression": "assertThat(s.getConflicts()).hasSize(1);"
+            },
+            {
+              "line": 236,
+              "expression": "assertThat(s.getConflicts().get(0).getReason()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 237,
+              "expression": "assertThat(s.getConflicts().get(0).getPrefix()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "preview_prefixesAreIndependent",
+          "line": 240,
+          "assertion_evidence": [
+            {
+              "line": 249,
+              "expression": "assertThat(s.getToPromote()).hasSize(1);"
+            },
+            {
+              "line": 250,
+              "expression": "assertThat(s.getToPromote().get(0).getFrom()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 251,
+              "expression": "assertThat(s.getConflicts()).hasSize(1);"
+            },
+            {
+              "line": 252,
+              "expression": "assertThat(s.getConflicts().get(0).getPrefix()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 253,
+              "expression": "assertThat(s.getConflicts().get(0).getReason()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "preview_courseSixReturnsBlockingConflict",
+          "line": 256,
+          "assertion_evidence": [
+            {
+              "line": 264,
+              "expression": "assertThat(s.getToPromote()).isEmpty();"
+            },
+            {
+              "line": 265,
+              "expression": "assertThat(s.getToArchive()).isEmpty();"
+            },
+            {
+              "line": 266,
+              "expression": "assertThat(s.getConflicts()).hasSize(1);"
+            },
+            {
+              "line": 267,
+              "expression": "assertThat(s.getConflicts().get(0).getReason()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 268,
+              "expression": "assertThat(s.getConflicts().get(0).getMessage())"
+            }
+          ]
+        },
+        {
+          "method": "execute_renamesGroupAndPublishesGroupRenamedEvent",
+          "line": 274,
+          "assertion_evidence": [
+            {
+              "line": 281,
+              "expression": "assertThat(g.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 282,
+              "expression": "assertThat(g.isActive()).isTrue();"
+            },
+            {
+              "line": 286,
+              "expression": "org.mockito.Mockito.verify(publisher, org.mockito.Mockito.atLeastOnce())"
+            },
+            {
+              "line": 288,
+              "expression": "assertThat(events.getAllValues())"
+            }
+          ]
+        },
+        {
+          "method": "execute_archivesMaxCourseAndPublishesGroupArchivedEvent",
+          "line": 292,
+          "assertion_evidence": [
+            {
+              "line": 299,
+              "expression": "assertThat(g.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 300,
+              "expression": "assertThat(g.isActive()).isFalse();"
+            },
+            {
+              "line": 301,
+              "expression": "assertThat(g.getArchivedAt()).isNotNull();"
+            },
+            {
+              "line": 302,
+              "expression": "assertThat(g.getAlphabeticCode()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 303,
+              "expression": "assertThat(g.getNumericCode()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "execute_respectsStoredDurationInsteadOfProgramTypeDefault",
+          "line": 315,
+          "assertion_evidence": [
+            {
+              "line": 323,
+              "expression": "assertThat(g.isActive()).isFalse();"
+            },
+            {
+              "line": 324,
+              "expression": "assertThat(g.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 325,
+              "expression": "assertThat(g.getAlphabeticCode()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 326,
+              "expression": "assertThat(g.getNumericCode()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 327,
+              "expression": "assertThat(g.getCurrentCourse()).isEqualTo(2);"
+            }
+          ]
+        },
+        {
+          "method": "execute_renamedGroupSynchronizesSplitCodeAndCourse",
+          "line": 331,
+          "assertion_evidence": [
+            {
+              "line": 339,
+              "expression": "assertThat(g.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 340,
+              "expression": "assertThat(g.getAlphabeticCode()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 341,
+              "expression": "assertThat(g.getNumericCode()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 342,
+              "expression": "assertThat(g.getCurrentCourse()).isEqualTo(2);"
+            },
+            {
+              "line": 343,
+              "expression": "assertThat(g.getTrainingDurationYears()).isEqualTo(4);"
+            }
+          ]
+        },
+        {
+          "method": "execute_perPrefixSavepoint_conflictedPrefixRolledBack",
+          "line": 346,
+          "assertion_evidence": [
+            {
+              "line": 356,
+              "expression": "assertThat(ok.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 358,
+              "expression": "assertThat(badUvp.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 359,
+              "expression": "assertThat(badUvp.isActive()).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "execute_renameChain_bachelor1to4_resolvesOrderingNoCollision",
+          "line": 362,
+          "assertion_evidence": [
+            {
+              "line": 374,
+              "expression": "assertThat(s.getConflicts()).isEmpty();"
+            },
+            {
+              "line": 375,
+              "expression": "assertThat(g1.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 376,
+              "expression": "assertThat(g2.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 377,
+              "expression": "assertThat(g3.getName()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 378,
+              "expression": "assertThat(g4.isActive()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "preview_parseError_putInConflicts",
+          "line": 382,
+          "assertion_evidence": [
+            {
+              "line": 392,
+              "expression": "assertThat(s.getToPromote()).isEmpty();"
+            },
+            {
+              "line": 393,
+              "expression": "assertThat(s.getToArchive()).isEmpty();"
+            },
+            {
+              "line": 394,
+              "expression": "assertThat(s.getConflicts()).hasSize(1);"
+            },
+            {
+              "line": 395,
+              "expression": "assertThat(s.getConflicts().get(0).getReason()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/group/GroupRegistryIT.java",
+      "class": "ru.rutcampustrack.academic.group.GroupRegistryIT",
+      "methods": [
+        {
+          "method": "registryCreateCoverageStatusCountsAndLegacyDurationAreServerDerived",
+          "line": 76,
+          "assertion_evidence": [
+            {
+              "line": 99,
+              "expression": "org.assertj.core.api.Assertions.assertThat(coverageRows).isEqualTo(1L);"
+            },
+            {
+              "line": 100,
+              "expression": "org.assertj.core.api.Assertions.assertThat(coverageFrom).isEqualTo(LocalDate.of(2045, 9, 1));"
+            },
+            {
+              "line": 110,
+              "expression": "org.assertj.core.api.Assertions.assertThat(reusedArchivedCode.getName())"
+            },
+            {
+              "line": 111,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 119,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 120,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", hasSize(1)))"
+            },
+            {
+              "line": 121,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(\"<literal-redacted>\")))"
+            }
+          ]
+        },
+        {
+          "method": "restoreArchivedGroupsIsAdminOnlyIdempotentAndKeepsLegacyNamesAndRegistryCounts",
+          "line": 171,
+          "assertion_evidence": [
+            {
+              "line": 194,
+              "expression": ".andExpect(status().isForbidden());"
+            },
+            {
+              "line": 195,
+              "expression": "org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 197,
+              "expression": ".isEqualTo(legacyName + \"<literal-redacted>\");"
+            },
+            {
+              "line": 200,
+              "expression": ".andExpect(status().isNoContent())"
+            },
+            {
+              "line": 201,
+              "expression": ".andExpect(content().string(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 203,
+              "expression": ".andExpect(status().isNoContent())"
+            },
+            {
+              "line": 204,
+              "expression": ".andExpect(content().string(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 205,
+              "expression": "org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject("
+            },
+            {
+              "line": 207,
+              "expression": ".isEqualTo(canonicalName);"
+            },
+            {
+              "line": 208,
+              "expression": "org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject("
+            }
+          ]
+        },
+        {
+          "method": "dashboardCountsOnlyActiveRoleGrantsAndRegistryActiveGroups",
+          "line": 247,
+          "assertion_evidence": [
+            {
+              "line": 273,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 274,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(Math.toIntExact(before.getTotalStudents() + 2))))"
+            },
+            {
+              "line": 275,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(Math.toIntExact(before.getTotalTeachers() + 2))))"
+            },
+            {
+              "line": 276,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(Math.toIntExact(before.getActiveGroups() + 1))))"
+            },
+            {
+              "line": 277,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(Math.toIntExact(before.getActiveGroups() + 1))));"
+            }
+          ]
+        },
+        {
+          "method": "registryFiltersBeforePaginationAndUsesIdenticalFiltersForEveryTabCount",
+          "line": 280,
+          "assertion_evidence": [
+            {
+              "line": 298,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 299,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", hasSize(1)))"
+            },
+            {
+              "line": 300,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(Math.toIntExact(thirdDraft))))"
+            },
+            {
+              "line": 301,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(3)))"
+            },
+            {
+              "line": 302,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(2)))"
+            },
+            {
+              "line": 303,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(3)))"
+            },
+            {
+              "line": 304,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(1)))"
+            },
+            {
+              "line": 305,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(1)));"
+            },
+            {
+              "line": 309,
+              "expression": ".andExpect(status().isOk())"
+            }
+          ]
+        },
+        {
+          "method": "registrySortsWholeResultWithStableTiesAndUnknownMetadataLastInBothDirections",
+          "line": 317,
+          "assertion_evidence": [
+            {
+              "line": 328,
+              "expression": "assertThat(registryIds(adminId, \"<literal-redacted>\")).containsExactly(b, g, c, d, a, e, f);"
+            },
+            {
+              "line": 329,
+              "expression": "assertThat(registryIds(adminId, \"<literal-redacted>\")).containsExactly(a, c, d, b, g, e, f);"
+            },
+            {
+              "line": 330,
+              "expression": "assertThat(registryIds(adminId, \"<literal-redacted>\")).containsExactly(a, d, g, c, b, e, f);"
+            },
+            {
+              "line": 331,
+              "expression": "assertThat(registryIds(adminId, \"<literal-redacted>\")).containsExactly(b, c, a, d, g, e, f);"
+            },
+            {
+              "line": 332,
+              "expression": "assertThat(registryIds(adminId, \"<literal-redacted>\")).containsExactly(e, b, d, c, a, f, g);"
+            }
+          ]
+        },
+        {
+          "method": "registryCreatesAllNineProgramTypesWithExplicitDurationAndRejectsInvalidQueryValues",
+          "line": 347,
+          "assertion_evidence": [
+            {
+              "line": 365,
+              "expression": ".andExpect(status().isCreated())"
+            },
+            {
+              "line": 366,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(digit)))"
+            },
+            {
+              "line": 367,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(mode)))"
+            },
+            {
+              "line": 368,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(level)))"
+            },
+            {
+              "line": 369,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(5)));"
+            },
+            {
+              "line": 373,
+              "expression": ".andExpect(status().isOk())"
+            },
+            {
+              "line": 374,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(1)))"
+            },
+            {
+              "line": 375,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(digit)))"
+            },
+            {
+              "line": 376,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(mode)))"
+            },
+            {
+              "line": 377,
+              "expression": ".andExpect(jsonPath(\"<literal-redacted>\", equalTo(level)));"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": true,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": true,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": true,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/grpc/HistoricalMembershipGrpcTest.java",
+      "class": "ru.rutcampustrack.academic.grpc.HistoricalMembershipGrpcTest",
+      "methods": [
+        {
+          "method": "datedRequestReturnsExactDateAndSemesterEcho",
+          "line": 27,
+          "assertion_evidence": [
+            {
+              "line": 47,
+              "expression": "assertThat(observer.error).isNull();"
+            },
+            {
+              "line": 48,
+              "expression": "assertThat(observer.value.getAsOfDate()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 49,
+              "expression": "assertThat(observer.value.getSemesterId()).isEqualTo(3L);"
+            },
+            {
+              "line": 50,
+              "expression": "assertThat(observer.value.getStudentsList()).extracting(StudentInfo::getUserId)"
+            },
+            {
+              "line": 51,
+              "expression": ".containsExactly(41L);"
+            }
+          ]
+        },
+        {
+          "method": "datedIdRequestUsesNoSemesterAndEchoesItsScope",
+          "line": 54,
+          "assertion_evidence": [
+            {
+              "line": 68,
+              "expression": "assertThat(observer.error).isNull();"
+            },
+            {
+              "line": 69,
+              "expression": "assertThat(observer.value.getGroupId()).isEqualTo(7L);"
+            },
+            {
+              "line": 70,
+              "expression": "assertThat(observer.value.getAsOfDate()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 71,
+              "expression": "assertThat(observer.value.getUserIdsList()).containsExactly(41L, 42L);"
+            }
+          ]
+        },
+        {
+          "method": "oneMissingPairedFieldIsInvalidArgument",
+          "line": 74,
+          "assertion_evidence": [
+            {
+              "line": 78,
+              "expression": "assertThatThrownBy(() -> service.getGroupMembers(GroupMembersRequest.newBuilder()"
+            },
+            {
+              "line": 83,
+              "expression": "assertThat(error.code())"
+            },
+            {
+              "line": 84,
+              "expression": ".isEqualTo(HistoricalMembershipException.Code.INVALID_ARGUMENT));"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+      "class": "ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+      "methods": [
+        {
+          "method": "serviceCreatedEnrollmentAndTransferAreDatedAndComplete",
+          "line": 129,
+          "assertion_evidence": [
+            {
+              "line": 136,
+              "expression": "assertThat(grantCount(student.getId(), \"<literal-redacted>\")).isEqualTo(1);"
+            },
+            {
+              "line": 137,
+              "expression": "assertThat(grantStatus(student.getId(), \"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 144,
+              "expression": "assertThat(withUnrelatedGrantRolesVersion).isGreaterThan(initialRolesVersion);"
+            },
+            {
+              "line": 145,
+              "expression": "assertThat(grantStatus(student.getId(), \"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 150,
+              "expression": "assertThat(assignedRolesVersion).isGreaterThan(initialRolesVersion);"
+            },
+            {
+              "line": 151,
+              "expression": "assertThat(grantStatus(student.getId(), \"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "terminalRoleGrantClosesHistoryAndReactivationStartsCanonicalInterval",
+          "line": 240,
+          "assertion_evidence": [
+            {
+              "line": 251,
+              "expression": "assertThat(afterExpulsion).hasSize(1);"
+            },
+            {
+              "line": 252,
+              "expression": "assertThat(afterExpulsion.get(0).getLeftAt()).isEqualTo(transitionDate);"
+            },
+            {
+              "line": 259,
+              "expression": "assertThat(afterReactivation).hasSize(2);"
+            },
+            {
+              "line": 260,
+              "expression": "assertThat(afterReactivation.get(0).getLeftAt()).isEqualTo(transitionDate);"
+            },
+            {
+              "line": 261,
+              "expression": "assertThat(afterReactivation.get(1).getJoinedAt()).isEqualTo(transitionDate);"
+            }
+          ]
+        },
+        {
+          "method": "revokedSelectionsStayClearedAfterImmediateRestoreAndArchivePreservesGrantHistory",
+          "line": 273,
+          "assertion_evidence": [
+            {
+              "line": 294,
+              "expression": "assertSelection(studentSession, null, 2);"
+            },
+            {
+              "line": 295,
+              "expression": "assertSelection(headmanSession, null, 2);"
+            },
+            {
+              "line": 296,
+              "expression": "assertSelection(teacherSession, teacherGrant, 1);"
+            },
+            {
+              "line": 297,
+              "expression": "assertThat(grantStatus(student.getId(), \"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 300,
+              "expression": "assertSelection(studentSession, null, 2);"
+            },
+            {
+              "line": 303,
+              "expression": "assertThat(grantId(student.getId(), \"<literal-redacted>\")).isEqualTo(studentGrant);"
+            },
+            {
+              "line": 304,
+              "expression": "assertSelection(studentSession, null, 2);"
+            },
+            {
+              "line": 305,
+              "expression": "assertSelection(headmanSession, null, 2);"
+            }
+          ]
+        },
+        {
+          "method": "selectionClearRollsBackWithGrantAndLegacySuspensionAlsoClearsSelection",
+          "line": 318,
+          "assertion_evidence": [
+            {
+              "line": 326,
+              "expression": "assertThatThrownBy(() -> new TransactionTemplate(transactionManager).executeWithoutResult(tx -> {"
+            },
+            {
+              "line": 329,
+              "expression": "assertSelection(session, null, 2);"
+            },
+            {
+              "line": 331,
+              "expression": "})).isInstanceOf(IllegalStateException.class)"
+            },
+            {
+              "line": 334,
+              "expression": "assertSelection(session, studentGrant, 1);"
+            },
+            {
+              "line": 335,
+              "expression": "assertThat(grantStatus(student.getId(), \"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 336,
+              "expression": "assertThat(rolesVersion(student.getId())).isEqualTo(originalRolesVersion);"
+            },
+            {
+              "line": 340,
+              "expression": "assertSelection(session, null, 2);"
+            },
+            {
+              "line": 343,
+              "expression": "assertSelection(session, null, 2);"
+            }
+          ]
+        },
+        {
+          "method": "managedEnrollmentRollsBackUserWhenHistoryInsertFails",
+          "line": 346,
+          "assertion_evidence": [
+            {
+              "line": 366,
+              "expression": "assertThatThrownBy(() -> userService.createUser(new CreateUserRequest("
+            },
+            {
+              "line": 370,
+              "expression": "assertThat(error).hasMessage(\"<literal-redacted>\"));"
+            },
+            {
+              "line": 375,
+              "expression": "assertThat(historySaveReached)"
+            },
+            {
+              "line": 377,
+              "expression": ".isTrue();"
+            },
+            {
+              "line": 378,
+              "expression": "assertThat(userWasPersistedBeforeHistoryFailure)"
+            },
+            {
+              "line": 380,
+              "expression": ".isTrue();"
+            },
+            {
+              "line": 381,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 384,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            }
+          ]
+        },
+        {
+          "method": "datedReadUsesOneRepeatableReadSnapshotWhileTransferCommits",
+          "line": 391,
+          "assertion_evidence": [
+            {
+              "line": 420,
+              "expression": "assertThat(historySnapshotReady.await(20, TimeUnit.SECONDS))"
+            },
+            {
+              "line": 422,
+              "expression": ".isTrue();"
+            },
+            {
+              "line": 427,
+              "expression": "assertThat(transferFuture.get(20, TimeUnit.SECONDS).getGroupId())"
+            },
+            {
+              "line": 428,
+              "expression": ".isEqualTo(destination.getId());"
+            },
+            {
+              "line": 433,
+              "expression": "assertThat(preTransferSnapshot.students())"
+            },
+            {
+              "line": 435,
+              "expression": ".containsExactly(student.getId());"
+            },
+            {
+              "line": 437,
+              "expression": "assertThat(historicalMembershipService.readRoster("
+            },
+            {
+              "line": 440,
+              "expression": ".isEmpty();"
+            },
+            {
+              "line": 441,
+              "expression": "assertThat(historicalMembershipService.readRoster("
+            },
+            {
+              "line": 444,
+              "expression": ".containsExactly(student.getId());"
+            }
+          ]
+        },
+        {
+          "method": "unsupportedDirectMembershipMutationLeavesUserUnchanged",
+          "line": 456,
+          "assertion_evidence": [
+            {
+              "line": 462,
+              "expression": "assertThatThrownBy(() -> userService.patchUser(student.getId(),"
+            },
+            {
+              "line": 464,
+              "expression": ".isInstanceOf(HistoricalMembershipException.class)"
+            },
+            {
+              "line": 465,
+              "expression": ".satisfies(error -> assertThat(((HistoricalMembershipException) error).code())"
+            },
+            {
+              "line": 466,
+              "expression": ".isEqualTo(HistoricalMembershipException.Code.UNSUPPORTED_MUTATION));"
+            },
+            {
+              "line": 468,
+              "expression": "assertThat(userRepository.findByIdIncludingArchived(student.getId()).orElseThrow().getGroupId())"
+            },
+            {
+              "line": 469,
+              "expression": ".isEqualTo(source.getId());"
+            },
+            {
+              "line": 470,
+              "expression": "assertThat(historyRepository.findByUserIdOrderByJoinedAtDesc(student.getId())).hasSize(1);"
+            }
+          ]
+        },
+        {
+          "method": "currentAssignmentWithClosedOnlyHistoryFailsClosed",
+          "line": 473,
+          "assertion_evidence": [
+            {
+              "line": 482,
+              "expression": "assertThatThrownBy(() -> historicalMembershipService.readRoster("
+            },
+            {
+              "line": 485,
+              "expression": "assertThat(error.code())"
+            },
+            {
+              "line": 486,
+              "expression": ".isEqualTo(HistoricalMembershipException.Code.FAILED_PRECONDITION));"
+            }
+          ]
+        },
+        {
+          "method": "currentAssignmentWithoutTargetHistoryFailsClosed",
+          "line": 489,
+          "assertion_evidence": [
+            {
+              "line": 501,
+              "expression": "assertThatThrownBy(() -> historicalMembershipService.readRoster("
+            },
+            {
+              "line": 503,
+              "expression": ".isInstanceOf(HistoricalMembershipException.class);"
+            },
+            {
+              "line": 504,
+              "expression": "assertThatThrownBy(() -> historicalMembershipService.readMemberUserIds("
+            },
+            {
+              "line": 506,
+              "expression": ".isInstanceOf(HistoricalMembershipException.class);"
+            },
+            {
+              "line": 511,
+              "expression": "String prefix = createdGroupIds.isEmpty() ? \"<literal-redacted>\" : \"<literal-redacted>\";"
+            },
+            {
+              "line": 546,
+              "expression": "private void assertSelection(UUID sessionId, Long grantId, long version) {"
+            },
+            {
+              "line": 547,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 549,
+              "expression": ".isEqualTo(grantId);"
+            },
+            {
+              "line": 550,
+              "expression": "assertThat(jdbcTemplate.queryForObject("
+            },
+            {
+              "line": 552,
+              "expression": ".isEqualTo(version);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserRepositorySearchIT.java",
+      "class": "ru.rutcampustrack.academic.user.UserRepositorySearchIT",
+      "methods": [
+        {
+          "method": "matchesSearch_findsByLastName_caseInsensitive",
+          "line": 71,
+          "assertion_evidence": [
+            {
+              "line": 76,
+              "expression": "assertThat(page.getContent())"
+            },
+            {
+              "line": 79,
+              "expression": ".doesNotContain(petrovId);"
+            }
+          ]
+        },
+        {
+          "method": "matchesSearch_findsByLogin_caseInsensitive",
+          "line": 82,
+          "assertion_evidence": [
+            {
+              "line": 87,
+              "expression": "assertThat(page.getContent())"
+            }
+          ]
+        },
+        {
+          "method": "matchesSearch_findsByTelegramIdSubstring",
+          "line": 92,
+          "assertion_evidence": [
+            {
+              "line": 97,
+              "expression": "assertThat(page.getContent())"
+            }
+          ]
+        },
+        {
+          "method": "matchesSearch_blank_returnsAll",
+          "line": 102,
+          "assertion_evidence": [
+            {
+              "line": 106,
+              "expression": "assertThat(empty).isNull();"
+            },
+            {
+              "line": 107,
+              "expression": "assertThat(nullSpec).isNull();"
+            },
+            {
+              "line": 112,
+              "expression": "assertThat(all.getContent()).extracting(User::getId)"
+            }
+          ]
+        },
+        {
+          "method": "matchesSearch_escapesLikeWildcard",
+          "line": 116,
+          "assertion_evidence": [
+            {
+              "line": 123,
+              "expression": "assertThat(page.getContent())"
+            },
+            {
+              "line": 126,
+              "expression": ".doesNotContain(ivanovId);"
+            }
+          ]
+        },
+        {
+          "method": "matchesSearch_combinedWithRoleViaAnd",
+          "line": 129,
+          "assertion_evidence": [
+            {
+              "line": 138,
+              "expression": "assertThat(page.getContent())"
+            },
+            {
+              "line": 141,
+              "expression": ".doesNotContain(petrovId);"
+            }
+          ]
+        },
+        {
+          "method": "escapeLike_escapesUnderscoreAndPercentAndBackslash",
+          "line": 144,
+          "assertion_evidence": [
+            {
+              "line": 146,
+              "expression": "assertThat(UserSpecifications.escapeLike(\"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 147,
+              "expression": "assertThat(UserSpecifications.escapeLike(\"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 148,
+              "expression": "assertThat(UserSpecifications.escapeLike(\"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 149,
+              "expression": "assertThat(UserSpecifications.escapeLike(\"<literal-redacted>\")).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": true,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/user/UserRepositorySortIT.java",
+      "class": "ru.rutcampustrack.academic.user.UserRepositorySortIT",
+      "methods": [
+        {
+          "method": "findByGroupId_returnsCyrillicSortedOrder",
+          "line": 37,
+          "assertion_evidence": [
+            {
+              "line": 50,
+              "expression": "assertThat(students)"
+            },
+            {
+              "line": 52,
+              "expression": ".containsExactly(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "findByGroupIdPageable_returnsCyrillicSortedOrder",
+          "line": 55,
+          "assertion_evidence": [
+            {
+              "line": 67,
+              "expression": "assertThat(students)"
+            },
+            {
+              "line": 69,
+              "expression": ".containsExactly(\"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\", \"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "findByGroupId_excludesArchivedAndSorts",
+          "line": 72,
+          "assertion_evidence": [
+            {
+              "line": 88,
+              "expression": "assertThat(students)"
+            },
+            {
+              "line": 90,
+              "expression": ".containsExactly(\"<literal-redacted>\", \"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.group.GroupHeadmanAssignmentIT --tests ru.rutcampustrack.academic.group.GroupPromotionCycleIT --tests ru.rutcampustrack.academic.group.GroupRegistryIT --tests ru.rutcampustrack.academic.integration.HistoricalMembershipIT --tests ru.rutcampustrack.academic.user.UserRepositorySearchIT --tests ru.rutcampustrack.academic.user.UserRepositorySortIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.group.GroupNameParserTest --tests ru.rutcampustrack.academic.group.GroupPromotionServiceTest --tests ru.rutcampustrack.academic.grpc.HistoricalMembershipGrpcTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:academic-service:academic-app:integrationTest",
+      ":services:academic-service:academic-app:test"
+    ],
+    "command_if_java": "./gradlew :services:academic-service:academic-app:integrationTest :services:academic-service:academic-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "HistoricalMembershipIT PG concurrency/rollback. GroupPromotionCycleIT covers archived extension fixed cutoff and once-only ledger. Wallclock scheduled firing and all current UI states are separate.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

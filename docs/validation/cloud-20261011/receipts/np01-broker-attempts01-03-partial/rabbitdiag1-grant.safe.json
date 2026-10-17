@@ -1,0 +1,31 @@
+{
+  "utc": "2026-10-12T07:11:15.938746+00:00",
+  "lease": "RABBIT_DIAG1",
+  "source_author": "b4a0f1067c8275696404f8d369ff4247bcec766c",
+  "root_source": "e58d7921356c00ccc8ff95b17ef50507dcbb4d70",
+  "compile1": "actualnative0/all7048sourcebyte-modeequal/ownPIDallabsent/ZEROtests/plainAuthclassesbyteequal cachedartifact gitmetadataonly differs",
+  "stage": "CURRENT_HOST_STAGE complete/native0/full10834members21668paths/2937uniqueinodes/currentstandardpayload modes644755/transient0/children0",
+  "fresh_free_bytes": 8396853248,
+  "fresh_shared_memory": 4408410112,
+  "scope": "Root message authorizes one bounded own Rabbit/JDK provisioning diagnosis; no suite repeat",
+  "command": "canonical run-gradle.py Auth:jar Academic:compileJava compileTestJava integrationTest --tests ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT --offline --no-daemon --no-parallel --max-workers=1 -Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m",
+  "disk_growth_cap": 2147483648,
+  "disk_floor": 4294967296,
+  "shared_memory_stop": 16106127360,
+  "shared_growth_cap": 4294967296,
+  "timeout_seconds": 900,
+  "test_timeout_seconds": 600,
+  "test_heap": "1GiB/maxParallelForks1",
+  "images": [
+    "sha256:81bd698b4594e751a3269e4dcd3e03a4a0ec0daf7b72e7aa1abd43cce9887542",
+    "sha256:1031d41f3f1611f61f0fe9011e26201967f460f93f96f92d5be0e823d59e7541",
+    "sha256:f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058"
+  ],
+  "ports": "actual127.0.0.1 ephemeral everyHostIp confirmed nativeinspect beforeacceptance",
+  "isolation": "only3owncontainers/queues/volumes/onefreshguardf539/onePythonconsumerworker atatime/minimalclosedenv/no realTelegram",
+  "cleanup": "recordexactIDs/PIDbirthticks/allstateinclZ; exactownednormalstop/remove/wait/reap; oldPID1Z untouched/no globalprune",
+  "failure_policy": "save nativeXML/outcome/private600output and safe actualphase/assertion beforeany retry. Existingtwoharnessfiles may minimally surface ONLY knownsafe failurephase/count/state booleans if needed, separate correctioncommit/rootreview; no product/domain/config policy change without concrete rootdesignation",
+  "parallel": "onlyNode512m lightweightPrettier sourcewriter separateCIWT mayrun, nootherGradle/Docker/browser. Hoststagecomplete, no apps/keys grant",
+  "mutation": "NOT_GRANTED until normalactualPASS then isolated exactnewforeigncard oracle controlledfault+restoregreen afterseparate Rootreview",
+  "deadline_seconds": 180
+}

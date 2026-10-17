@@ -1,0 +1,77 @@
+{
+  "artifact": 11877564886,
+  "producer": "ca9f225ae730a4cf36a2476feedccf69ac9f20bc",
+  "run": 38530338724,
+  "digest": "sha256:fea44c74ab1d2d1f083662fc7c522825c462e3c51387af1332a9be1051711342",
+  "bytes": 473,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "cloud-accepted-helper-capabilities.spec.ts",
+        "line": 21,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 2353,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      },
+      {
+        "file": "cloud-accepted-helper-capabilities.spec.ts",
+        "line": 124,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 7285,
+        "errorCount": 1,
+        "diagnostics": [
+          {
+            "stage": "UNKNOWN",
+            "cause": "UNKNOWN",
+            "httpStatus": 0
+          }
+        ],
+        "errorLocations": [
+          {
+            "file": "cloud-accepted-helper-capabilities.spec.ts",
+            "line": 149
+          }
+        ]
+      },
+      {
+        "file": "cloud-accepted-helper-capabilities.spec.ts",
+        "line": 176,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 2884,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "HELPER_VIEW_STATS",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HELPER_CANCEL_LESSONS",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HELPER_MANAGE_EXCUSES",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_read": false,
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION"
+}

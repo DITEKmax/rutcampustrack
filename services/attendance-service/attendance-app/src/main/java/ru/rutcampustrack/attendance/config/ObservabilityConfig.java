@@ -6,10 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 /**
- * M04 Группа 8 — регистрация {@link BusinessMetrics} для attendance-service.
- * Используется в CheckinService, ExcuseService, LateCheckinService для
- * счётчиков {@code attendance.checkin}, {@code excuse.created},
- * {@code late_checkin.created}.
+ * M04 Группа 8 — регистрация {@link BusinessMetrics} для attendance-service. Используется в
+ * CheckinService, ExcuseService, LateCheckinService для счётчиков {@code attendance.checkin},
+ * {@code excuse.created}, {@code late_checkin.created}.
  */
 @Configuration
 public class ObservabilityConfig {

@@ -1,0 +1,8 @@
+{
+  "time": "2026-10-11T23:55:15.793117+00:00",
+  "result": "UNKNOWN remotejoblog transportFAILED signedredirectForbidden beforedownload",
+  "raw_log_bytes": 0,
+  "selected_metadata": [],
+  "actual_job_state": "Gitleaks job114603624624 FAIL verifiedmetadata, exactfindingspending",
+  "security_run": 38184430147
+}

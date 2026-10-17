@@ -10,8 +10,7 @@ public record HeadmanStatsTrendResponse(
         HeadmanStatsTrendQueryRequest.Mode mode,
         List<Point> points,
         EmptyState emptyState,
-        List<HeadmanStatsResponse.FormatOption> formats
-) {
+        List<HeadmanStatsResponse.FormatOption> formats) {
     public HeadmanStatsTrendResponse {
         context = Objects.requireNonNull(context, "context");
         mode = Objects.requireNonNull(mode, "mode");
@@ -24,8 +23,7 @@ public record HeadmanStatsTrendResponse(
             HeadmanStatsResponse.Context context,
             HeadmanStatsTrendQueryRequest.Mode mode,
             List<Point> points,
-            EmptyState emptyState
-    ) {
+            EmptyState emptyState) {
         this(context, mode, points, emptyState, List.of());
     }
 
@@ -35,8 +33,7 @@ public record HeadmanStatsTrendResponse(
             LocalDate from,
             LocalDate to,
             TrendMetric present,
-            TrendMetric presentOrExcused
-    ) {
+            TrendMetric presentOrExcused) {
         public Point {
             key = Objects.requireNonNull(key, "key");
             label = Objects.requireNonNullElse(label, "");
@@ -57,8 +54,11 @@ public record HeadmanStatsTrendResponse(
             if (denominator == 0 && (numerator != 0 || percent != null)) {
                 throw new IllegalArgumentException("Empty trend metric must have a null percent");
             }
-            if (denominator > 0 && (percent == null || !Double.isFinite(percent)
-                    || percent < 0 || percent > 100)) {
+            if (denominator > 0
+                    && (percent == null
+                            || !Double.isFinite(percent)
+                            || percent < 0
+                            || percent > 100)) {
                 throw new IllegalArgumentException("Trend percent must be from 0 to 100");
             }
         }

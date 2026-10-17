@@ -1,0 +1,211 @@
+{
+  "job": 115800672276,
+  "head": "40580c6b6b5dbda40d01fde48eb5d455cded9d61",
+  "records": [
+    {
+      "log_line": 406,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 528,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 529,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 530,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 531,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 532,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 533,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 534,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 535,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 536,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 537,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 538,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 539,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 540,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 541,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 542,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 543,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    },
+    {
+      "log_line": 544,
+      "file": "frontends/mobile-core/src/features/homework/assistant-homework-back.test.ts",
+      "line": null,
+      "column": null,
+      "failed_header": true
+    }
+  ],
+  "classes": [
+    {
+      "log_line": 642,
+      "error_class": "TypeError"
+    },
+    {
+      "log_line": 656,
+      "error_class": "TypeError"
+    },
+    {
+      "log_line": 670,
+      "error_class": "TypeError"
+    },
+    {
+      "log_line": 684,
+      "error_class": "TypeError"
+    },
+    {
+      "log_line": 698,
+      "error_class": "TypeError"
+    },
+    {
+      "log_line": 712,
+      "error_class": "TypeError"
+    },
+    {
+      "log_line": 726,
+      "error_class": "TypeError"
+    },
+    {
+      "log_line": 740,
+      "error_class": "TypeError"
+    },
+    {
+      "log_line": 754,
+      "error_class": "TypeError"
+    },
+    {
+      "log_line": 768,
+      "error_class": "TypeError"
+    },
+    {
+      "log_line": 782,
+      "error_class": "TypeError"
+    },
+    {
+      "log_line": 796,
+      "error_class": "TypeError"
+    }
+  ],
+  "summaries": [
+    {
+      "log_line": 566,
+      "kind": "TestFiles",
+      "failed": 1,
+      "passed": 112,
+      "total": 113
+    },
+    {
+      "log_line": 567,
+      "kind": "Tests",
+      "failed": 17,
+      "passed": 1013,
+      "total": 1030
+    }
+  ],
+  "raw_values_not_emitted": true,
+  "transport_bounds": "SDKallocationunmeasured/postresponse32MiB/200klinecap",
+  "hints": "publicSourceframesanderrorclassesonly; uniqueproductcauseUNKNOWN",
+  "public_component_frames": [
+    {
+      "file": "frontends/mobile-core/src/features/schedule/HeadmanScheduleScreen.vue",
+      "line": 1669,
+      "column": 24
+    }
+  ],
+  "finite_error_property": "close",
+  "finite_error_predicate": "dictionary matched close is not a function; no rawmessage/value output",
+  "classification": "FAILED17existingassistant-homework-back tests withTypeError; currentSourcecustomrendererNode lacksnativeDialogclose; causalreproductionstillpending"
+}

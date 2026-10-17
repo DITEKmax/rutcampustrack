@@ -1,0 +1,63 @@
+{
+  "schema": "P10_FIXED_GITHUB_ARCHIVE_TRANSPORT_SOURCE_PLAN_V1",
+  "utc": "2026-10-13T15:16:25.936074+00:00",
+  "state": "SOURCE_PLAN_ONLY_NOT_IMPLEMENTED_NO_NATIVE_GRANT",
+  "Goal": "Reach the same original AuthJUnit through normal authenticated GitHubarchiveGET after SDK/FileService URL transfer403, preserving the exact bounded closedselector; determine actualP10 failure location before any product/oracle correction.",
+  "Context_evidence": "Actual05 nativegrant03 HTTP_ERROR403 atURL_OPEN beforebody; selectedframe/causeUNKNOWN. Finalf89d receipt has terminal122.048s beforecleanup but late readonlyposthard verification qualification. This is changed standardtransport, not identicalFileServiceURLretry or platformapproval workaround.",
+  "Relevant_scope": "NEW own checking parent/capture seam and plan only; frozen5dac104e product/test and old461134/94e957 sources/receipts immutable. No originaltestreplay.",
+  "Required_behavior": {
+    "fixed_argv": [
+      "/usr/bin/gh",
+      "api",
+      "--method",
+      "GET",
+      "repos/DITEKmax/rutcampustrack/actions/artifacts/11806374316/zip"
+    ],
+    "identity": "artifact11806374316/run38387263916/head1742/check38d7/192040B exact pinned8223 metadata",
+    "capture": "Reuse prior stdout-only exec-replace pattern: private700 ownrun, exclusive nofollow600 rawarchive leaf; resource.RLIMIT_FSIZE=1048576, stdout->archiveFD, stdin+stderr->/dev/null, fixedpublicargv, freshgrant/dir/source/resource/deadline guards beforecreate andexec. SamePID afterexec belongs to b78; no pipe/communicate/unbounded stdoutRAM.",
+    "normal_environment": "Copy only prior approved ENV_KEYS + byte-identical explicit_environment selector inRAM; keep existing ownedTMP/Python flags. Do not resetHOME/readconfigs or export values/keypresence/hash. Nativegh performs ordinary configured auth; no customheaders/tokenread/TLSchange/GH_DEBUG.",
+    "normal_public_keynames": [
+      "HOME",
+      "GH_CONFIG_DIR",
+      "GH_TOKEN",
+      "GITHUB_TOKEN",
+      "HTTPS_PROXY",
+      "HTTP_PROXY",
+      "ALL_PROXY",
+      "NO_PROXY",
+      "https_proxy",
+      "http_proxy",
+      "all_proxy",
+      "no_proxy",
+      "SSL_CERT_FILE",
+      "SSL_CERT_DIR",
+      "CURL_CA_BUNDLE",
+      "REQUESTS_CA_BUNDLE"
+    ],
+    "drain": "b78 unchanged supervises exec-replaced ghPID/group through terminal andwaitpid/allknownbirthsettlement; stderr discarded, no rawstderrparse. NonzeroGHexit/cap/resource/time failure yields finite captureFAIL; do not parse partialarchive or inferHTTPstatus fromstderr.",
+    "consumer": "After native0+settled, fresh Source94e957 pin before moduleexec, read own archive via nofollowFD/regularUID/mode600/nlink1/devinode/size<=1MiB+exact192040 andboundedread; invoke byte-identical selected_xml_from_zip and selected_xml_projection only. Othermembers neveropened/extracted. Save existing closedcase+lifecycle only and selectedXML600unhashed.",
+    "cleanup": "Archive leaf identity tracked before gh; finally only settled+knownbirthabsence + currentnofollow devinode/regularUID/mode600/nlink1 mayunlink temporaryZIP. Retain unknownmetadata/file and explicit reconciliation; independent primary/cleanup outcomes preserved. Keep privateXML only if legitimate capture succeeded; no ZIP/XML/bodyhash."
+  },
+  "Constraints": "OneRootfreshgrant/onefixedarchiveGET/oneb78 supervisedprocessphase;360wall/phase60cleanup60 and all originalmemory/disk/floor caps unchanged. No actualenv/auth/config/token/URL/body/log/XMLread now; no Sourcebehavior/proto/UI/test/fault/B013change.",
+  "Existing_patterns": {
+    "environment_selector_source": "/workspace/scratch/rct-validation/current1742_e2e_boot_cli_diagnostic_source/read-existing-boot.py",
+    "environment_selector_source_sha256": "163324076e8d284b3a54fde5b36b8dab172277e33a0ba9700b532d8eb5fe8d37",
+    "environment_function_sha256": "ab93d6ccabcb20c07a3366bf7e8f581fc2bb325058a02e1d308953bec50ad722",
+    "capture_stdout_only_source": "/workspace/scratch/rct-validation/current1742_e2e_boot_diagnostic_source_r2/capture-job-private.py",
+    "capture_source_sha256": "10ef7d979e33a4bdd209ed46d1fabf82717b3e51e7efc6386e91c5abbd9107b4",
+    "current_exact_selector": "/workspace/scratch/rct-validation/client_session_offline_acceptance/p10-current1742-failure-frame-source-network-r1-attempt05/logged-green-child.py",
+    "current_selector_source_sha256": "94e957778be9f03cbe6ec4320aae64050d9764a15e6a8c0f72006c3eb2e5cac7",
+    "b78": "unchangedb78c6129; explicitstr-env requirement preserved, no envNone guard bypass"
+  },
+  "Acceptance": "Root confirms minimal transport seam then Source implementation+smallselectedFD/cap/normalenv/cleanupcontrols+narrowprivacyreview; reuse acceptedZIP/XML/enum/lifecycle/corecaps proofs. No fulloldcampaign/newframework. Actualaccess onlyafterfreshgrant.",
+  "Verification": "Check sourceinverse: unchangedselector/18pins/TLS/metadata/caps; only normalenv selector + fixedGHcapture/native0privatearchiveconsume seam. Capture1byte overcap mustfail, stderr cannotmixZIP, partialnonzero notparsed, cleanupfailcannotmaskprimary. Exact output mustlocate reportedknownexception/firstAuthnumericframe/helper only; no message/errorbody/password read/export.",
+  "Do_not": "No secondSDK/identicalURLretry, alternateauth/headers/endpoint/launcher, fullENV copy, manualauth/configreads, TLS/thresholdweakening, rawURI/context/class/valuehash output, product/originaltest/B013.",
+  "minimal_implementation_delta": [
+    "Parent: replace8network-only context selection with alreadyapproved explicit_environment + existingprivateTMP/Python flags; same b78 supervisor/deadline/status/resources.",
+    "Capture: narrow existing stdout-only execGH source to fixedartifactzip endpoint, CAP1MiB andexactrunarchiveleaf/grantbindings; stderrDEVNULL, no rawCLI-errorclassifier.",
+    "Consumer: call current94e957 selectedfunctions on boundedprivatearchiveafter native0; preserve closedprimary/cleanup and strictmetadata; currentURLrequest branchnotused fornewtransport."
+  ],
+  "source_actor_effects": 0,
+  "originalHTTP403_and_P10cause": "UNKNOWN",
+  "next": "Root Source-seam authorization/implementation+targetedreview thennewfreshnormalapprovedgrant; no native or files/SDK retrieval fromthisplan."
+}

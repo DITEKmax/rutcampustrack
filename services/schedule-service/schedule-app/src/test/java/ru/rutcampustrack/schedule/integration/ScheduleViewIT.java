@@ -1,5 +1,15 @@
 package ru.rutcampustrack.schedule.integration;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,35 +24,20 @@ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
- * Integration tests for the schedule view endpoint (VIEW-01, VIEW-02).
- * Verifies access by any authenticated role and full response field coverage.
+ * Integration tests for the schedule view endpoint (VIEW-01, VIEW-02). Verifies access by any
+ * authenticated role and full response field coverage.
  */
 @AutoConfigureMockMvc
 class ScheduleViewIT extends AbstractScheduleIntegrationTest {
 
-    @MockitoBean
-    AcademicGrpcClient academicGrpcClient;
+    @MockitoBean AcademicGrpcClient academicGrpcClient;
 
-    @Autowired
-    MockMvc mockMvc;
+    @Autowired MockMvc mockMvc;
 
-    @Autowired
-    LessonRepository lessonRepository;
+    @Autowired LessonRepository lessonRepository;
 
-    @Autowired
-    ScheduleItemRepository scheduleItemRepository;
+    @Autowired ScheduleItemRepository scheduleItemRepository;
 
     private static final Long GROUP_ID = 1L;
     private static final String DATE_FROM = "2026-04-01";
@@ -88,23 +83,25 @@ class ScheduleViewIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void anyRoleCanView_student() throws Exception {
-        mockMvc.perform(get("/schedule/groups/" + GROUP_ID + "/lessons")
-                        .param("dateFrom", DATE_FROM)
-                        .param("dateTo", DATE_TO)
-                        .header("X-User-Id", "10")
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", GROUP_ID.toString())
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        get("/schedule/groups/" + GROUP_ID + "/lessons")
+                                .param("dateFrom", DATE_FROM)
+                                .param("dateTo", DATE_TO)
+                                .header("X-User-Id", "10")
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", GROUP_ID.toString())
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void anyRoleCanView_teacher() throws Exception {
-        mockMvc.perform(get("/schedule/groups/" + GROUP_ID + "/lessons")
-                        .param("dateFrom", DATE_FROM)
-                        .param("dateTo", DATE_TO)
-                        .header("X-User-Id", "20")
-                        .header("X-User-Role", "TEACHER"))
+        mockMvc.perform(
+                        get("/schedule/groups/" + GROUP_ID + "/lessons")
+                                .param("dateFrom", DATE_FROM)
+                                .param("dateTo", DATE_TO)
+                                .header("X-User-Id", "20")
+                                .header("X-User-Role", "TEACHER"))
                 .andExpect(status().isOk());
     }
 
@@ -112,16 +109,20 @@ class ScheduleViewIT extends AbstractScheduleIntegrationTest {
 
     @Test
     void responseContainsAllFields() throws Exception {
-        mockMvc.perform(get("/schedule/groups/" + GROUP_ID + "/lessons")
-                        .param("dateFrom", DATE_FROM)
-                        .param("dateTo", DATE_TO)
-                        .header("X-User-Id", "10")
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", GROUP_ID.toString())
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        get("/schedule/groups/" + GROUP_ID + "/lessons")
+                                .param("dateFrom", DATE_FROM)
+                                .param("dateTo", DATE_TO)
+                                .header("X-User-Id", "10")
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", GROUP_ID.toString())
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.lessonResponseList[0].id", notNullValue()))
-                .andExpect(jsonPath("$._embedded.lessonResponseList[0].groupId", is(GROUP_ID.intValue())))
+                .andExpect(
+                        jsonPath(
+                                "$._embedded.lessonResponseList[0].groupId",
+                                is(GROUP_ID.intValue())))
                 .andExpect(jsonPath("$._embedded.lessonResponseList[0].subjectId", is(100)))
                 .andExpect(jsonPath("$._embedded.lessonResponseList[0].room", is("A-101")))
                 .andExpect(jsonPath("$._embedded.lessonResponseList[0].status", notNullValue()))
@@ -134,13 +135,14 @@ class ScheduleViewIT extends AbstractScheduleIntegrationTest {
     @Test
     void defaultStatusFilter_excludesCancelled() throws Exception {
         // Without status param, CANCELLED lessons should be excluded (D-18)
-        mockMvc.perform(get("/schedule/groups/" + GROUP_ID + "/lessons")
-                        .param("dateFrom", DATE_FROM)
-                        .param("dateTo", DATE_TO)
-                        .header("X-User-Id", "10")
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", GROUP_ID.toString())
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        get("/schedule/groups/" + GROUP_ID + "/lessons")
+                                .param("dateFrom", DATE_FROM)
+                                .param("dateTo", DATE_TO)
+                                .header("X-User-Id", "10")
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", GROUP_ID.toString())
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.lessonResponseList", hasSize(2)));
     }
@@ -148,14 +150,15 @@ class ScheduleViewIT extends AbstractScheduleIntegrationTest {
     @Test
     void explicitStatusFilter_includesCancelled() throws Exception {
         // With explicit status including CANCELLED, all 3 lessons are returned
-        mockMvc.perform(get("/schedule/groups/" + GROUP_ID + "/lessons")
-                        .param("dateFrom", DATE_FROM)
-                        .param("dateTo", DATE_TO)
-                        .param("status", "PLANNED", "ACTIVE", "CLOSED", "CANCELLED")
-                        .header("X-User-Id", "10")
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", GROUP_ID.toString())
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        get("/schedule/groups/" + GROUP_ID + "/lessons")
+                                .param("dateFrom", DATE_FROM)
+                                .param("dateTo", DATE_TO)
+                                .param("status", "PLANNED", "ACTIVE", "CLOSED", "CANCELLED")
+                                .header("X-User-Id", "10")
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", GROUP_ID.toString())
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.lessonResponseList", hasSize(3)));
     }

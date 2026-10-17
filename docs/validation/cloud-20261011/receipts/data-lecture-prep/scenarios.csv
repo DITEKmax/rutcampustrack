@@ -1,0 +1,5 @@
+ID,accepted_sources,actual_symbols,runtime_status,disposition,oracle,next_check
+L05,JS-HEADMAN-11/12/13;JS-TEACHER-09,SubjectController/Assembler/Service;SubjectRepository,UNKNOWN,candidate correctness + measured diagnostics,ownIDs/scope/page/ACTIVE admission; countnotdefect,new SubjectListDataIT; lifecycle pendingteacher oracle
+L06,JS-HEADMAN-21;P21,ScheduleGrpcClient;ScheduleGrpcServiceImpl;ExcuseService,UNKNOWN,protective mechanism retained,pendingbetweenbatch/peritem gives entirefailure; recoveryexactIDs,new ScheduleGrpcBatchTransferIT + existing mutationno-write evidence
+L07,JS-ADMIN-09;2026-09-29 archive decision,SemesterArchiveStateIT;SemesterService,UNKNOWN,reuse meaningful concurrentPG test,soleactive/writeblocked/exactarchiveevent; restorewithoutreactivation,select existing concurrent method; mappingrisk separate
+L08,JS-SYSTEM-04;JS-ADMIN-02;2026-10-02 restore,AcademicFlyway;AuthJdbcSessionAuthority,UNKNOWN,sharedschema different-valid coupling,whollynewtuple; credential/session/event rollback,reuse selected existingIT after securityreceipt reconciliation

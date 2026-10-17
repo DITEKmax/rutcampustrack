@@ -1,0 +1,14 @@
+{
+  "case": "CASE-DATA-L05-PAGE-CURRENT-DEPENDENCY",
+  "producer_head": "63647fc9b63175e1e32b0773d57affc637ea1065",
+  "actual_checkout": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+  "run_id": "38184430139",
+  "test_source_sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+  "test_source_still_exact": true,
+  "teacher_path_preserved": true,
+  "native_merge_tree_identity": "Reused transferred native merge bridge; actual checkout tree not locally reopened or fetched by reviewer",
+  "producer_repository_sha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+  "merged_repository_different_from_producer": true,
+  "current_integrated_runtime": "NOT_RUN_BY_THIS_REVIEW",
+  "reuse_limit": "Earlier specific L05 page-method result remains qualified; no current merged startup/full Academic PASS."
+}

@@ -1,0 +1,80 @@
+{
+  "status": "SOURCE_READY_FOR_INDEPENDENT_REVIEW",
+  "at": "2026-10-11T21:19:15.030503+00:00",
+  "worktree": "/workspace/rct-worktrees/client-runtime",
+  "branch": "codex/rct-validation-client-runtime-20261011",
+  "frozenRoot": "c898889b7932bf8d139a23be15a0b34762f3a387",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "finalSourceSha": "049ab4e3b9629177decad650e4846fd36638f78c",
+  "commits": {
+    "rendererConfiguration": "e8ebe1831a36b811f6ae805b9a6830ed81bc7975",
+    "testClock": "049ab4e3b9629177decad650e4846fd36638f78c"
+  },
+  "inventory": {
+    "created": 10,
+    "modified": 4,
+    "deleted": 0,
+    "configOnly": "services/academic-service/academic-app/src/main/resources/application.yml",
+    "commonBuildOnly": "build.gradle.kts"
+  },
+  "implementation": {
+    "clock": "External e2eClock source set, compile-only Spring context from current Boot3.5.16 BOM, explicit jar/control tasks, no production dependency",
+    "initializer": "Explicit system-property opt-in + absolute file + bounded disposable marker + four educational service identities; differently named primary Clock, no bean override/security mocks",
+    "fileClock": "Moscow zone, strict bounded ISO instant, rereads atomic file; withZone shares file; malformed/missing fail, no fallback",
+    "launch": "Only four compose service entrypoints and read-only shared directory; direct existing main classes and production BOOT-INF classes/libs plus external jar",
+    "browserDataset": "Same directory instant passed as optional worker option to Node dataset and browser setFixedTime/Moscow zone, real timers remain",
+    "scenario": "Plain fresh student positive device geo→200/PRESENT/STUDENT_GEO, idempotent replay and reload effect; separate manualABSENT student valid/unavailable attemptedgeo→409 exactcode, ABSENT persists, no automatic request",
+    "rendererBoundary": "Actual Attendance private/plaintext19095 + existing global x-grpc-secret preserved; initial TLS wording corrected by root from actual source, no TLS/token-policy weakening"
+  },
+  "checks": {
+    "scopedTypeScript": "PASS",
+    "targetedPrettierTsJsYamlJson": "PASS",
+    "NodePrepareParser": "PASS",
+    "PythonArtifactInspectorParser": "PASS",
+    "YAMLOverrideParser": "PASS (onlyfourservices/entrypoints/read-only mount/no new env/ports/TLS)",
+    "teachingInputControl": "PASS Monday09 plus Sunday/night/malformed/missing-marker/missing-opt-in rejected",
+    "discoveryExisting": 16,
+    "discoveryClocked": 2,
+    "privacyControl": "PASS original metadata leak reproduced, canonical reporterguard, publicmarker absent stdio/all6files, expected failures retained",
+    "diffWhitespace": "PASS",
+    "frozenOriginalClientFormat": "240b10d5 CLEAN",
+    "newWorktree": "CLEAN",
+    "sourceByteIsolation": "PASS11files unchanged from c898; source-isolation-proof.json"
+  },
+  "notRun": [
+    "Gradle",
+    "Java compilation/controls",
+    "actual task graph",
+    "actual production Boot jar inventory",
+    "actual Clock injection/service startup",
+    "Docker",
+    "browser",
+    "positive geo/backend acceptance",
+    "native Academic-renderer conversion"
+  ],
+  "resources": {
+    "heavyLease": false,
+    "ownedProcesses": [],
+    "children": [],
+    "credentialsOrCertContentsRead": false,
+    "push": false,
+    "productUiOrAuthChanges": false,
+    "massFormatting": false
+  },
+  "dependencyNote": "Read-only symlinks to prior already-installed npm dependencies were used during lightchecks and removed; no dependency/lockfile changes. New worktree requires native npmci before rerunning checks. Discovery-only marker/instant lives in own scratch with no built jar.",
+  "sources": [
+    "clock-fixture-proposal.md(previousownreceipt)",
+    "packet-client-clock-config-developer.md(currentrootpacket)",
+    "ClockConfig/MobileBffRuntimeConfig",
+    "StudentCheckinService+StudentAttendanceSnapshotService(D005)",
+    "StudentApiModels+MobileAttendanceClient exactstatus/code",
+    "LessonSlot slot1 08:30–09:50",
+    "four production Dockerfiles",
+    "renderer application.yml19095 + Attendance rendererclientplaintext",
+    "Academic GrpcSecretClientInterceptor + ServiceIdentityServerInterceptor methodallowlist"
+  ],
+  "next": "Independent source/config review on049ab; corrections authorowned. After explicit lease build fixture/control, inspect4actual Bootjars, launch isolated realstack+clock override and run browser. No sourcecheck declared runtimePASS. Massformat only after finalfrozen-semantic assignment.",
+  "requestedModel": "gpt-6.1-sol",
+  "requestedEffort": "high",
+  "actualModelMetadata": "UNKNOWN"
+}

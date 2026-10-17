@@ -1,0 +1,66 @@
+{
+  "time": "2026-10-12T06:30:51.031Z",
+  "producer": "ced755a0f6e6817ef6f477aeb4f6a964ecfd1810",
+  "actualCheckout": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7",
+  "failures": [
+    {
+      "job_id": 114688682262,
+      "checkout": [
+        "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+      ],
+      "nativeSummary": [],
+      "ruff": [
+        {
+          "code": "I001",
+          "message": "I001 [*] Import block is un-sorted or un-formatted",
+          "location": "tests/np01_broker_bridge_runner.py:8:1"
+        }
+      ]
+    },
+    {
+      "job_id": 114688682357,
+      "checkout": [
+        "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+      ],
+      "nativeSummary": [
+        "2026-10-12T06:24:45.4013996Z /home/runner/work/rutcampustrack/rutcampustrack/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java:280: error: incompatible types: inference variable T has incompatible bounds",
+        "2026-10-12T06:24:45.5890086Z > Task :services:academic-service:academic-app:compileTestJava FAILED",
+        "2026-10-12T06:24:45.6919359Z   Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full outputNote: Recompile with -Xlint:deprecation for details.Note: Recompile with -Xlint:unchecked for details.Note: Some input files use unchecked or unsafe operations./home/runner/work/rutcampustrack/rutcampustrack/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java:280: error: incompatible types: inference variable T has incompatible bounds",
+        "2026-10-12T06:24:45.6959889Z BUILD FAILED in 1m 15s"
+      ],
+      "ruff": []
+    },
+    {
+      "job_id": 114688682561,
+      "checkout": [
+        "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+      ],
+      "nativeSummary": [
+        "2026-10-12T06:26:53.8090487Z > Task :services:academic-service:academic-app:compileTestJava FAILED",
+        "2026-10-12T06:26:53.8108479Z /home/runner/work/rutcampustrack/rutcampustrack/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java:280: error: incompatible types: inference variable T has incompatible bounds",
+        "2026-10-12T06:26:53.9080907Z   Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full outputNote: Recompile with -Xlint:deprecation for details.Note: Recompile with -Xlint:unchecked for details.Note: Some input files use unchecked or unsafe operations./home/runner/work/rutcampustrack/rutcampustrack/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java:280: error: incompatible types: inference variable T has incompatible bounds",
+        "2026-10-12T06:26:53.9101021Z BUILD FAILED in 59s"
+      ],
+      "ruff": []
+    },
+    {
+      "job_id": 114688682585,
+      "checkout": [
+        "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7"
+      ],
+      "nativeSummary": [
+        "2026-10-12T06:26:54.8570028Z /home/runner/work/rutcampustrack/rutcampustrack/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java:280: error: incompatible types: inference variable T has incompatible bounds",
+        "2026-10-12T06:26:54.9610641Z > Task :services:academic-service:academic-app:compileTestJava FAILED",
+        "2026-10-12T06:26:55.0673506Z   Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full outputNote: Recompile with -Xlint:deprecation for details.Note: Recompile with -Xlint:unchecked for details.Note: Some input files use unchecked or unsafe operations./home/runner/work/rutcampustrack/rutcampustrack/services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java:280: error: incompatible types: inference variable T has incompatible bounds",
+        "2026-10-12T06:26:55.0778480Z BUILD FAILED in 1m 2s"
+      ],
+      "ruff": []
+    }
+  ],
+  "academicNative": "NO_RESULTS for test and integrationTest; compileTestJava fails before execution",
+  "pending": [
+    "Auth CI/Coverage",
+    "Chromium stack boot"
+  ],
+  "mutations": false
+}

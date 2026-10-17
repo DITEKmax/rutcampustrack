@@ -1,7 +1,25 @@
 package ru.rutcampustrack.gateway.security;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.github.tomakehurst.wiremock.WireMockServer;
 import io.jsonwebtoken.Jwts;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPrivateKey;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.Date;
+import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -16,39 +34,20 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPrivateKey;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.any;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * M03a Группа 13 (14 P1-1): end-to-end contract-тест Gateway↔downstream
- * Internal JWT pipeline.
+ * M03a Группа 13 (14 P1-1): end-to-end contract-тест Gateway↔downstream Internal JWT pipeline.
  *
- * <p>Flow: клиент → Gateway (с валидным внешним JWT) → JwtAuthenticationFilter
- * валидирует подписью → InternalJwtIssuerFilter (через WireMock auth-service)
- * → issued Internal JWT через X-Internal-Token → downstream stub.</p>
+ * <p>Flow: клиент → Gateway (с валидным внешним JWT) → JwtAuthenticationFilter валидирует подписью
+ * → InternalJwtIssuerFilter (через WireMock auth-service) → issued Internal JWT через
+ * X-Internal-Token → downstream stub.
  *
  * <p>Проверяет инварианты:
+ *
  * <ul>
- *   <li>Валидный внешний JWT → downstream получает X-Internal-Token.</li>
- *   <li>Невалидная подпись внешнего JWT → 401, downstream НЕ вызывается.</li>
- *   <li>Истёкший внешний JWT → 401, downstream НЕ вызывается.</li>
- *   <li>Отсутствие Authorization header → 401.</li>
+ *   <li>Валидный внешний JWT → downstream получает X-Internal-Token.
+ *   <li>Невалидная подпись внешнего JWT → 401, downstream НЕ вызывается.
+ *   <li>Истёкший внешний JWT → 401, downstream НЕ вызывается.
+ *   <li>Отсутствие Authorization header → 401.
  * </ul>
  */
 // M14 G9: @ActiveProfiles("test") нужен для RequiredSecretsValidator
@@ -65,8 +64,7 @@ class InternalJwtIssuerIT {
     private static Instant internalTokenExpiry;
     static WireMockServer WIREMOCK;
 
-    @Autowired
-    WebTestClient client;
+    @Autowired WebTestClient client;
 
     @BeforeAll
     static void startInfra() throws NoSuchAlgorithmException {
@@ -75,30 +73,46 @@ class InternalJwtIssuerIT {
         externalKeyPair = gen.generateKeyPair();
 
         byte[] encoded = externalKeyPair.getPublic().getEncoded();
-        publicKeyPem = "-----BEGIN PUBLIC KEY-----\n"
-                + Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(encoded)
-                + "\n-----END PUBLIC KEY-----";
+        publicKeyPem =
+                "-----BEGIN PUBLIC KEY-----\n"
+                        + Base64.getMimeEncoder(64, new byte[] {'\n'}).encodeToString(encoded)
+                        + "\n-----END PUBLIC KEY-----";
 
         WIREMOCK = new WireMockServer(wireMockConfig().dynamicPort());
         WIREMOCK.start();
 
         // Auth-service public key — тот же ключ которым подписываются внешние JWT
-        WIREMOCK.stubFor(get(urlEqualTo("/auth/public-key")).willReturn(aResponse()
-                .withHeader("Content-Type", "application/json")
-                .withBody("{\"publicKey\":" + jsonString(publicKeyPem) + ",\"algorithm\":\"RS256\"}")));
+        WIREMOCK.stubFor(
+                get(urlEqualTo("/auth/public-key"))
+                        .willReturn(
+                                aResponse()
+                                        .withHeader("Content-Type", "application/json")
+                                        .withBody(
+                                                "{\"publicKey\":"
+                                                        + jsonString(publicKeyPem)
+                                                        + ",\"algorithm\":\"RS256\"}")));
 
         long now = Instant.now().getEpochSecond();
         internalTokenExpiry = Instant.ofEpochSecond(now + 60);
         internalToken = signInternalJwt(internalTokenExpiry);
-        WIREMOCK.stubFor(post(urlEqualTo("/internal/auth/admit"))
-                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json")
-                        .withBody(admissionResponseJson(internalToken, internalTokenExpiry))));
+        WIREMOCK.stubFor(
+                post(urlEqualTo("/internal/auth/admit"))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(200)
+                                        .withHeader("Content-Type", "application/json")
+                                        .withBody(
+                                                admissionResponseJson(
+                                                        internalToken, internalTokenExpiry))));
 
         // Downstream stub — /api/attendance/* echo query (возвращает 200)
-        WIREMOCK.stubFor(any(urlPathMatching("/attendance/.*"))
-                .willReturn(aResponse().withStatus(200).withBody("{\"ok\":true}")));
-        WIREMOCK.stubFor(any(urlPathMatching("/.*")).atPriority(20)
-                .willReturn(aResponse().withStatus(200).withBody("{}")));
+        WIREMOCK.stubFor(
+                any(urlPathMatching("/attendance/.*"))
+                        .willReturn(aResponse().withStatus(200).withBody("{\"ok\":true}")));
+        WIREMOCK.stubFor(
+                any(urlPathMatching("/.*"))
+                        .atPriority(20)
+                        .willReturn(aResponse().withStatus(200).withBody("{}")));
     }
 
     @AfterAll
@@ -109,7 +123,8 @@ class InternalJwtIssuerIT {
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry r) {
         r.add("gateway.auth-service-url", () -> "http://localhost:" + WIREMOCK.port());
-        r.add("rutcampustrack.security.internal-issuer-client.auth-service-url",
+        r.add(
+                "rutcampustrack.security.internal-issuer-client.auth-service-url",
                 () -> "http://localhost:" + WIREMOCK.port());
         r.add("AUTH_SERVICE_URL", () -> "http://localhost:" + WIREMOCK.port());
         r.add("ACADEMIC_SERVICE_URL", () -> "http://localhost:" + WIREMOCK.port());
@@ -129,36 +144,52 @@ class InternalJwtIssuerIT {
     @DisplayName("Валидный внешний JWT → downstream вызван с X-Internal-Token")
     void validExternalJwt_downstreamReceivesInternalToken() {
         WIREMOCK.resetRequests();
-        String jwt = signExternalJwt(42L, "STUDENT", "7", false,
-                new Date(System.currentTimeMillis() + 60_000));
+        String jwt =
+                signExternalJwt(
+                        42L, "STUDENT", "7", false, new Date(System.currentTimeMillis() + 60_000));
 
-        client.get().uri("/api/attendance/reports/student/stats")
+        client.get()
+                .uri("/api/attendance/reports/student/stats")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isOk();
+                .expectStatus()
+                .isOk();
 
         // Downstream WireMock получил X-Internal-Token с токеном от auth-service
-        List<com.github.tomakehurst.wiremock.stubbing.ServeEvent> events = WIREMOCK.getAllServeEvents();
-        boolean found = events.stream().anyMatch(ev -> {
-            String path = ev.getRequest().getUrl();
-            return path.startsWith("/attendance/") && ev.getRequest().getHeader("X-Internal-Token") != null
-                    && ev.getRequest().getHeader("X-Internal-Token").equals(internalToken);
-        });
-        assertThat(found).as("downstream должен получить X-Internal-Token от auth admission").isTrue();
+        List<com.github.tomakehurst.wiremock.stubbing.ServeEvent> events =
+                WIREMOCK.getAllServeEvents();
+        boolean found =
+                events.stream()
+                        .anyMatch(
+                                ev -> {
+                                    String path = ev.getRequest().getUrl();
+                                    return path.startsWith("/attendance/")
+                                            && ev.getRequest().getHeader("X-Internal-Token") != null
+                                            && ev.getRequest()
+                                                    .getHeader("X-Internal-Token")
+                                                    .equals(internalToken);
+                                });
+        assertThat(found)
+                .as("downstream должен получить X-Internal-Token от auth admission")
+                .isTrue();
 
         // Token-exchange был вызван хотя бы 1 раз
-        WIREMOCK.verify(com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
+        WIREMOCK.verify(
+                com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
                 postRequestedFor(urlEqualTo("/internal/auth/admit")));
     }
 
     @Test
-    @DisplayName("Student check-in route reaches Mobile BFF with internal JWT and no legacy identity headers")
+    @DisplayName(
+            "Student check-in route reaches Mobile BFF with internal JWT and no legacy identity headers")
     void studentCheckinRoute_reachesMobileBffWithTrustedIdentityOnly() {
         WIREMOCK.resetRequests();
-        String jwt = signExternalJwt(42L, "STUDENT", "7", false,
-                new Date(System.currentTimeMillis() + 60_000));
+        String jwt =
+                signExternalJwt(
+                        42L, "STUDENT", "7", false, new Date(System.currentTimeMillis() + 60_000));
 
-        client.post().uri("/api/v1/student/lessons/77/checkin")
+        client.post()
+                .uri("/api/v1/student/lessons/77/checkin")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                 .header("Idempotency-Key", "gateway-checkin-77")
                 .header("X-User-Id", "999")
@@ -168,16 +199,22 @@ class InternalJwtIssuerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"geo\":{\"kind\":\"UNAVAILABLE\",\"reason\":\"TIMEOUT\"}}")
                 .exchange()
-                .expectStatus().isOk();
+                .expectStatus()
+                .isOk();
 
-        WIREMOCK.verify(1, postRequestedFor(urlEqualTo("/api/v1/student/lessons/77/checkin"))
-                .withHeader("X-Internal-Token", com.github.tomakehurst.wiremock.client.WireMock
-                        .equalTo(internalToken))
-                .withoutHeader("X-User-Id")
-                .withoutHeader("X-User-Role")
-                .withoutHeader("X-Group-Id")
-                .withoutHeader("X-Is-Headman"));
-        WIREMOCK.verify(com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
+        WIREMOCK.verify(
+                1,
+                postRequestedFor(urlEqualTo("/api/v1/student/lessons/77/checkin"))
+                        .withHeader(
+                                "X-Internal-Token",
+                                com.github.tomakehurst.wiremock.client.WireMock.equalTo(
+                                        internalToken))
+                        .withoutHeader("X-User-Id")
+                        .withoutHeader("X-User-Role")
+                        .withoutHeader("X-Group-Id")
+                        .withoutHeader("X-Is-Headman"));
+        WIREMOCK.verify(
+                com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
                 postRequestedFor(urlEqualTo("/internal/auth/admit")));
     }
 
@@ -189,24 +226,32 @@ class InternalJwtIssuerIT {
         KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
         gen.initialize(2048);
         KeyPair rogue = gen.generateKeyPair();
-        String jwt = Jwts.builder()
-                .subject("42")
-                .issuer("rutcampustrack-auth")
-                .audience().add("rutcampustrack").and()
-                .claim("role", "STUDENT")
-                .expiration(new Date(System.currentTimeMillis() + 60_000))
-                .signWith(rogue.getPrivate())
-                .compact();
+        String jwt =
+                Jwts.builder()
+                        .subject("42")
+                        .issuer("rutcampustrack-auth")
+                        .audience()
+                        .add("rutcampustrack")
+                        .and()
+                        .claim("role", "STUDENT")
+                        .expiration(new Date(System.currentTimeMillis() + 60_000))
+                        .signWith(rogue.getPrivate())
+                        .compact();
 
-        client.get().uri("/api/attendance/reports/student/stats")
+        client.get()
+                .uri("/api/attendance/reports/student/stats")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED)
-                .expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
+                .expectStatus()
+                .isEqualTo(HttpStatus.UNAUTHORIZED)
+                .expectHeader()
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON);
 
         // Downstream /attendance/* НЕ вызывался
-        WIREMOCK.verify(0, com.github.tomakehurst.wiremock.client.WireMock
-                .anyRequestedFor(urlPathMatching("/attendance/.*")));
+        WIREMOCK.verify(
+                0,
+                com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor(
+                        urlPathMatching("/attendance/.*")));
         // Token-exchange НЕ вызывался (Gateway остановился на JwtAuthFilter)
         WIREMOCK.verify(0, postRequestedFor(urlEqualTo("/internal/auth/admit")));
     }
@@ -215,16 +260,25 @@ class InternalJwtIssuerIT {
     @DisplayName("Истёкший внешний JWT → 401, downstream НЕ вызывается")
     void expiredJwt_returns401_downstreamNotCalled() {
         WIREMOCK.resetRequests();
-        String jwt = signExternalJwt(42L, "STUDENT", "7", false,
-                new Date(System.currentTimeMillis() - 10_000));  // 10s в прошлом
+        String jwt =
+                signExternalJwt(
+                        42L,
+                        "STUDENT",
+                        "7",
+                        false,
+                        new Date(System.currentTimeMillis() - 10_000)); // 10s в прошлом
 
-        client.get().uri("/api/attendance/reports/student/stats")
+        client.get()
+                .uri("/api/attendance/reports/student/stats")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
+                .expectStatus()
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
 
-        WIREMOCK.verify(0, com.github.tomakehurst.wiremock.client.WireMock
-                .anyRequestedFor(urlPathMatching("/attendance/.*")));
+        WIREMOCK.verify(
+                0,
+                com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor(
+                        urlPathMatching("/attendance/.*")));
     }
 
     @Test
@@ -232,60 +286,82 @@ class InternalJwtIssuerIT {
     void noAuthHeader_returns401() {
         WIREMOCK.resetRequests();
 
-        client.get().uri("/api/attendance/reports/student/stats")
+        client.get()
+                .uri("/api/attendance/reports/student/stats")
                 .exchange()
-                .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
+                .expectStatus()
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
 
-        WIREMOCK.verify(0, com.github.tomakehurst.wiremock.client.WireMock
-                .anyRequestedFor(urlPathMatching("/attendance/.*")));
+        WIREMOCK.verify(
+                0,
+                com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor(
+                        urlPathMatching("/attendance/.*")));
     }
 
     @Test
     @DisplayName("DOCX export binary response is proxied without JSON/error rewriting")
     void headmanWeeklyDocxDownload_binaryResponsePassesThroughGateway() {
         WIREMOCK.resetRequests();
-        byte[] docxBytes = new byte[]{'P', 'K', 3, 4, 1, 2, 3};
-        WIREMOCK.stubFor(get(urlEqualTo("/attendance/reports/headman-weekly/current?weekStart=2026-04-27&format=docx"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader(HttpHeaders.CONTENT_TYPE,
-                                "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-                        .withHeader(HttpHeaders.CONTENT_DISPOSITION,
-                                "attachment; filename*=UTF-8''UVPV511_27.04.2026_03.05.2026.docx")
-                        .withBody(docxBytes)));
-        String jwt = signExternalJwt(42L, "STUDENT", "7", false,
-                new Date(System.currentTimeMillis() + 60_000));
+        byte[] docxBytes = new byte[] {'P', 'K', 3, 4, 1, 2, 3};
+        WIREMOCK.stubFor(
+                get(urlEqualTo(
+                                "/attendance/reports/headman-weekly/current?weekStart=2026-04-27&format=docx"))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(200)
+                                        .withHeader(
+                                                HttpHeaders.CONTENT_TYPE,
+                                                "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                                        .withHeader(
+                                                HttpHeaders.CONTENT_DISPOSITION,
+                                                "attachment; filename*=UTF-8''UVPV511_27.04.2026_03.05.2026.docx")
+                                        .withBody(docxBytes)));
+        String jwt =
+                signExternalJwt(
+                        42L, "STUDENT", "7", false, new Date(System.currentTimeMillis() + 60_000));
 
-        client.get().uri("/api/attendance/reports/headman-weekly/current?weekStart=2026-04-27&format=docx")
+        client.get()
+                .uri(
+                        "/api/attendance/reports/headman-weekly/current?weekStart=2026-04-27&format=docx")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                 .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-                .expectHeader().valueEquals(HttpHeaders.CONTENT_DISPOSITION,
+                .expectStatus()
+                .isOk()
+                .expectHeader()
+                .contentType(
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                .expectHeader()
+                .valueEquals(
+                        HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename*=UTF-8''UVPV511_27.04.2026_03.05.2026.docx")
                 .expectBody(byte[].class)
                 .value(body -> assertThat(body).containsExactly(docxBytes));
     }
 
-    private String signExternalJwt(long userId, String role, String groupId, boolean isHeadman, Date expiry) {
+    private String signExternalJwt(
+            long userId, String role, String groupId, boolean isHeadman, Date expiry) {
         long expirySecond = Math.floorDiv(expiry.getTime(), 1_000);
         long issuedSecond = Math.min(Instant.now().getEpochSecond() - 5, expirySecond - 1);
-        var builder = Jwts.builder()
-                .subject(String.valueOf(userId))
-                .issuer("rutcampustrack-auth")
-                .audience().add("rutcampustrack").and()
-                .claim("role", role)
-                .claim("is_headman", isHeadman)
-                .claim("status", "ACTIVE")
-                .claim("readOnly", false)
-                .claim("token_use", "access")
-                .claim("sid", "00000000-0000-0000-0000-000000000001")
-                .claim("sv", "7")
-                .claim("rv", "3")
-                .issuedAt(Date.from(Instant.ofEpochSecond(issuedSecond)))
-                .expiration(Date.from(Instant.ofEpochSecond(expirySecond)));
+        var builder =
+                Jwts.builder()
+                        .subject(String.valueOf(userId))
+                        .issuer("rutcampustrack-auth")
+                        .audience()
+                        .add("rutcampustrack")
+                        .and()
+                        .claim("role", role)
+                        .claim("is_headman", isHeadman)
+                        .claim("status", "ACTIVE")
+                        .claim("readOnly", false)
+                        .claim("token_use", "access")
+                        .claim("sid", "00000000-0000-0000-0000-000000000001")
+                        .claim("sv", "7")
+                        .claim("rv", "3")
+                        .issuedAt(Date.from(Instant.ofEpochSecond(issuedSecond)))
+                        .expiration(Date.from(Instant.ofEpochSecond(expirySecond)));
         if (groupId != null) builder.claim("group_id", groupId);
-        return builder.signWith((RSAPrivateKey) externalKeyPair.getPrivate(), Jwts.SIG.RS256).compact();
+        return builder.signWith((RSAPrivateKey) externalKeyPair.getPrivate(), Jwts.SIG.RS256)
+                .compact();
     }
 
     private static String signInternalJwt(Instant expiry) {
@@ -293,7 +369,9 @@ class InternalJwtIssuerIT {
         return Jwts.builder()
                 .subject("42")
                 .issuer("rutcampustrack-auth")
-                .audience().add("rutcampustrack-internal").and()
+                .audience()
+                .add("rutcampustrack-internal")
+                .and()
                 .claim("token_use", "internal")
                 .claim("sid", "00000000-0000-0000-0000-000000000001")
                 .claim("sv", "7")
@@ -309,8 +387,10 @@ class InternalJwtIssuerIT {
     }
 
     private static String admissionResponseJson(String token, Instant expiresAt) {
-        return "{\"internalToken\":" + jsonString(token)
-                + ",\"expiresAt\":" + jsonString(expiresAt.toString())
+        return "{\"internalToken\":"
+                + jsonString(token)
+                + ",\"expiresAt\":"
+                + jsonString(expiresAt.toString())
                 + ",\"sessionId\":\"00000000-0000-0000-0000-000000000001\""
                 + ",\"userId\":\"42\",\"sessionVersion\":\"7\",\"rolesVersion\":\"3\""
                 + ",\"role\":\"STUDENT\",\"status\":\"ACTIVE\",\"isHeadman\":false,\"readOnly\":false}";

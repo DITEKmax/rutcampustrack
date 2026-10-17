@@ -1,0 +1,136 @@
+{
+  "schema": "rct-p10-d013-bounded-source-inspection-v1",
+  "scope": "CURRENT1742_UNICODE_FAILURE_SOURCE_ONLY_NO_CAUSE_PROMOTION",
+  "selected_model": "gpt-6.1-sol",
+  "selected_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "test_source_sha256": "104e98b35098b82e201497b5db7d037d7fa2caa2acd1a023d27f291e4e0aa9b8",
+  "runtime_failure_predicate": "UNKNOWN_AWAIT_ORIGINAL_NUMERIC_FRAME",
+  "confirmed_source_mismatch": null,
+  "conclusions": [
+    {
+      "claim": "Raw JSON change/reset helper explicitly selects application/json with UTF-8; request serialization followed by String HttpEntity cannot be attributed to missing request charset from current Source.",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "lines": [
+        1164,
+        1167,
+        1168,
+        1177
+      ]
+    },
+    {
+      "claim": "Login helpers send LoginRequest DTO through TestRestTemplate.postForEntity; no Source customization of StringHttpMessageConverter/default charset/message converters found in relevant Auth/shared-web Source. Standard Jackson JSON UTF-8 is the intended boundary; actual wire not observed.",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "lines": [
+        1262,
+        1264,
+        1279,
+        1283
+      ]
+    },
+    {
+      "claim": "Positive change fixture has12 scalars/13 UTF8 bytes; positive reset has21 scalars/72 UTF8 bytes; both contain Nd and P/S and no surrogate. Reset contrast is different but also72 bytes, excluding accidental over-limit matcher hypothesis.",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "lines": [
+        210,
+        211,
+        214,
+        215,
+        370
+      ]
+    },
+    {
+      "claim": "Malformed branch replaces a parseable single newPassword field with an ASCII JSON escape that decodes to one unpaired surrogate embedded in the candidate. It avoids UTF8 replacement before sending. This is intentionally malformed Unicode scalar data, not necessarily malformed JSON syntax.",
+      "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "lines": [
+        1169,
+        1171,
+        1172
+      ]
+    },
+    {
+      "claim": "Accepted PasswordPolicy independently requires >=12 Unicode scalars, Unicode Nd and P/S, <=72 UTF8 bytes, rejects unpaired surrogates. Its bounds agree with selected fixture and negative oracles.",
+      "source": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java",
+      "lines": [
+        8,
+        9,
+        23,
+        30,
+        38,
+        39,
+        43,
+        44,
+        53
+      ]
+    },
+    {
+      "claim": "Change validates exact newPassword, BCrypt encodes its exact text and forwards it unchanged; reset validates/encodes/forwards exact newPassword. Only reset login lookup trims the account identifier, not the credential.",
+      "source": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+      "lines": [
+        644,
+        650,
+        674,
+        677,
+        693,
+        713,
+        716,
+        720,
+        729
+      ]
+    },
+    {
+      "claim": "Reset service/controller forward the same credential to AuthService; DTO's @NotBlank/@Size256 does not conflict with these selected scalar/byte bounds.",
+      "source": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+      "lines": [
+        324,
+        329,
+        331
+      ]
+    }
+  ],
+  "conditional_oracle_dependency": {
+    "kind": "UNVERIFIED_HYPOTHESIS_ONLY",
+    "predicate": "unicodePasswordPost contains/replace depends on compact exact JSON field spelling. If the actual original frame is1171, inspect mapper serialization configuration/actual helper predicate before product correction. No relevant global INDENT_OUTPUT/ESCAPE_NON_ASCII setting found; the only selected INDENT_OUTPUT reference is separate OpenApiSnapshotIT Source. No evidence this condition caused currentFAIL.",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+    "lines": [
+      1171,
+      1173
+    ]
+  },
+  "frame_interpretation_refs": {
+    "helper_before_HTTP": [
+      1171
+    ],
+    "HTTP_rejection_status": [
+      1183
+    ],
+    "negative_problem_and_sensitive_projection": [
+      1184,
+      1196
+    ],
+    "negative_protected_state": [
+      255,
+      276,
+      357
+    ],
+    "first_positive_change_status": [
+      283
+    ],
+    "exact_hash_and_initial_clear": [
+      1230,
+      1241
+    ],
+    "positive_reset_status": [
+      367
+    ],
+    "post_login_status": [
+      1266,
+      1286
+    ]
+  },
+  "recommendation": "Wait for the already authorized original numeric Auth frame; no Source-grounded charset/normalization/fixture correction is justified yet. No unchanged test replay or new test/packet prepared.",
+  "no_password_literals_or_response_bodies_or_value_hashes_exported": true,
+  "new_native_tests_or_child_process_campaigns": 0,
+  "product_source_or_shared_writes": 0,
+  "B013_retry": false
+}

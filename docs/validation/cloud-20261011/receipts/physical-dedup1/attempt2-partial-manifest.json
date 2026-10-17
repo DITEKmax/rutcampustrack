@@ -1,0 +1,54 @@
+{
+  "utc": "2026-10-12T06:35:09.563247+00:00",
+  "scope": "actual exact250 DEDUP1 replacements; terminal native1 solely duplicate-utc batchjournal TypeError; no temp/child remaining; full final verification PASS",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt2-dedup.py",
+      "sha256": "4d68920dc0e90de57166f39684ec71c98181c7145b0f0817b38fa60dddda0504",
+      "bytes": 19277
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt2-launch.json",
+      "sha256": "a2e6283a9151183c5a5332798b04febc1862b4edcccb4e0efc2b4cb3ed049bc2",
+      "bytes": 739
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt2-CURRENT.json",
+      "sha256": "425d071f39b24bf5ef5dbf15474d06ed07fdc244560fc22ede85659e7c983c20",
+      "bytes": 119
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt2-preflight.json",
+      "sha256": "d74c24eb39c6430fff4088dc4016512969e4dd157cc0716b1620f743643d3e18",
+      "bytes": 18874
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt2-journal.ndjson",
+      "sha256": "c86415514f8832c0daf016fe8f0f2b40fc18992a39ed72ad00aaa6199bfa26e8",
+      "bytes": 236119
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt2-link-ledger.json",
+      "sha256": "928e958709ace7c849a77fc9e767cfda903c76bdb1f84bfec21011667a303e00",
+      "bytes": 1087479
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt2-batches.json",
+      "sha256": "1a4b42011194eaa0eea3af551168374a254fb58e334a18e1701a88c020587b65",
+      "bytes": 383
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt2-RESULT.json",
+      "sha256": "d8180af50cd6736620680c68b32fbb8ed10e51291fe32a9f784fac210143421d",
+      "bytes": 1421
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/physical_dedup1/attempt2-PROCESS.json",
+      "sha256": "cbe7a7f51c391c59fb55f40adc82a99ceb5a30f21d95b6e09c9e47dcc0e45337",
+      "bytes": 340
+    }
+  ],
+  "actual_replacements": 250,
+  "observed_net_free_gain_bytes": 28913664,
+  "pid216393_absent": true
+}

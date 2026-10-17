@@ -7,9 +7,7 @@ import ru.rutcampustrack.shared.security.InternalJwtProperties;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 import ru.rutcampustrack.shared.security.PublicKeyProvider;
 
-/**
- * M03a: test PublicKeyProvider with in-memory keypair.
- */
+/** M03a: test PublicKeyProvider with in-memory keypair. */
 @TestConfiguration
 public class InternalJwtTestConfig {
 
@@ -25,12 +23,10 @@ public class InternalJwtTestConfig {
     public PublicKeyProvider testPublicKeyProvider(InternalJwtProperties properties) {
         return new PublicKeyProvider(properties) {
             @Override
-            public void init() {
-            }
+            public void init() {}
 
             @Override
-            public void refresh() {
-            }
+            public void refresh() {}
 
             @Override
             public java.security.PublicKey getPublicKey() {

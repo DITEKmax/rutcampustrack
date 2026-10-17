@@ -1,10 +1,10 @@
 package ru.rutcampustrack.academic.entity;
 
 import jakarta.persistence.*;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "campus_settings")

@@ -1,0 +1,2026 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "checkoutSha": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7",
+    "prHeadSha": "ced755a0f6e6817ef6f477aeb4f6a964ecfd1810",
+    "service": "notification-service",
+    "task": "test",
+    "job": "java-unit-test",
+    "runId": "38212208080",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "collection": "RESULTS",
+  "acceptance": "NOT_ASSESSED",
+  "xml": [
+    {
+      "ordinal": 1,
+      "sha256": "59ebca48ce43382bc1f9df4c726147b286c555b902649cc538d01c7c357b0758",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 8,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 8,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 2,
+      "sha256": "9dfdb4756962e8e78b9fefbf5a3e4134b7035fad324c568ad86daf46200660e3",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 3,
+      "sha256": "6c86df0765a60d0c4fbec02d9ac5f94b593e628a51a8c1a89ac40c67e5fcb507",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 7,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 7,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 4,
+      "sha256": "e0777c2e759210a217d0d731837c00ef5e66d8211bec17b7b728bdbafbca37b5",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 14,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 14,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 5,
+      "sha256": "04663fc35c8aaee2f731975ee90535d5af8e4145ff7dfb6cc736ffce2359d6eb",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 6,
+      "sha256": "9dd6d3c96b9c6c2729b7be1901b534aebc843f35ba55be341178df97ea59c569",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 7,
+      "sha256": "e7eb207fdd3cc5fccfc911268ff16ac11df38c836a62a217d8a81c416e0744e3",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 8,
+      "sha256": "166f0481c5376055d19f9a2abd5eb6ffb686d9f387a65c30d42323c3641e1858",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 15,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 15,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 9,
+      "sha256": "83e810727dc99f82ff396838f3ccefaf648b8b8b86ea1eba2c58d35260b64173",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 4,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 10,
+      "sha256": "bc40d9a03c85e6f23ac9ef3e73bbd626633402d1d58e581d982b37504bb9c33d",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 11,
+      "sha256": "a33218bed9baaef54247bde6c560cb21c586d9d4232c745d89c27ad81bdd92bd",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 12,
+      "sha256": "634076a9c6003301de63cfb3184b1afce56cb178cdc5b55e5325396756cb7415",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 13,
+      "sha256": "5d70d29dff2d950579008bd02219271dd3f42ae1a8361b2de32b61cdd0ca9e20",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 14,
+      "sha256": "b982cfb5fe165ff19bce6d4f4e69937f1b009d469a56c7127939073e1d0c63fd",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 5,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 15,
+      "sha256": "f00827916bbfa0efaa5528955c550c631cbd032119f35282733e82210aaa685a",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 17,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 17,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 16,
+      "sha256": "d93b65b0c1f6fd71fdad583b44b35902037b2d2dd41e232d04be85b050d313c6",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 17,
+      "sha256": "7bfe74dd7267dd61301e8f9e21c8f555b9ed1f20f694aa1b85d36185b4d5f04b",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 18,
+      "sha256": "119e79cfa8007671d585ff6b81f3eba5e712f42e5669534a0f407f54340faed1",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 6,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 19,
+      "sha256": "fee3a951d225a908a8885f54c9f7dc343e117458ba054c218ffd9968a99b84df",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 20,
+      "sha256": "8ee1aeb173ca3e31363808552311ddc87ed0c6765b0f6e3d99c1f98323c0e2cc",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 21,
+      "sha256": "585629651ff7333734e663c05a07d2c9a0bd9e424f059a46036d4e9c3e025fcc",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 10,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 10,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 22,
+      "sha256": "98e83855c6c5857d94009af7870f0a1df3bb3637bc4be3179bc99ee30245354f",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 1,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 23,
+      "sha256": "80de7e5bb526f25819e6c79bde8521290236f15530445a9fdd3196f629825bb3",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 24,
+      "sha256": "32199c8dafb74b45a35437e6f35dec10a09f46a619e8ba8c089d98a8358cde52",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 3,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 25,
+      "sha256": "9e4383ce5bca033b93efc477ac35dfa9feede1e3ade1794a82c2790f5c0499a3",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 2,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    },
+    {
+      "ordinal": 26,
+      "sha256": "8f98d9d26620a2582addecc5fbf3b2d8010d95007a7c639333742e324f3457d4",
+      "suites": [
+        {
+          "ordinal": 1,
+          "declared": {
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+          },
+          "observed": {
+            "PASSED": 4,
+            "FAILED": 0,
+            "ERROR": 0,
+            "SKIPPED": 0,
+            "NOT_EXECUTED": 0
+          },
+          "countsConsistent": true
+        }
+      ],
+      "state": "PARSED"
+    }
+  ],
+  "cases": [
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.alert.AlertControllerTest",
+      "method": "happyPath_publishesEachAlertAndReturns200",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+      "sourceSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.alert.AlertControllerTest",
+      "method": "missingAuthorization_returns401_andDoesNotPublish",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+      "sourceSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.alert.AlertControllerTest",
+      "method": "wrongBearerToken_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+      "sourceSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.alert.AlertControllerTest",
+      "method": "emptyAlertsArray_returns200WithZero",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+      "sourceSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.notification.alert.AlertControllerTest",
+      "method": "emptySecretProperty_rejectsAllRequests",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+      "sourceSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.notification.alert.AlertControllerTest",
+      "method": "malformedBody_noAlertsArray_returns400",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+      "sourceSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.notification.alert.AlertControllerTest",
+      "method": "nonBearerAuthorization_returns401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+      "sourceSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b"
+    },
+    {
+      "xmlOrdinal": 1,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.notification.alert.AlertControllerTest",
+      "method": "labelsWithNonStringValues_coercedSafely",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/alert/AlertControllerTest.java",
+      "sourceSha256": "4da0fad7609bf8d4c2404fb4250d4b4542ab0f9fb3f80c1554dba0f3d8c0fd2b"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.config.RabbitConfigTest",
+      "method": "dlqQueue_hasCorrectName",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/RabbitConfigTest.java",
+      "sourceSha256": "2c2327feb11d71b0672c1c2ee42c6702f40938ede225b080ef9396b3d4987539"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.config.RabbitConfigTest",
+      "method": "jacksonConverter_isCreatedWithObjectMapper",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/RabbitConfigTest.java",
+      "sourceSha256": "2c2327feb11d71b0672c1c2ee42c6702f40938ede225b080ef9396b3d4987539"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.config.RabbitConfigTest",
+      "method": "dlqExchange_isDirectWithCorrectName",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/RabbitConfigTest.java",
+      "sourceSha256": "2c2327feb11d71b0672c1c2ee42c6702f40938ede225b080ef9396b3d4987539"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.config.RabbitConfigTest",
+      "method": "eventsQueue_hasDlqArguments",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/RabbitConfigTest.java",
+      "sourceSha256": "2c2327feb11d71b0672c1c2ee42c6702f40938ede225b080ef9396b3d4987539"
+    },
+    {
+      "xmlOrdinal": 2,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.notification.config.RabbitConfigTest",
+      "method": "eventsExchange_isFanoutWithCorrectName",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/RabbitConfigTest.java",
+      "sourceSha256": "2c2327feb11d71b0672c1c2ee42c6702f40938ede225b080ef9396b3d4987539"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.config.SubscriptionAuthInterceptorTest",
+      "method": "subscribeRejectsUnknownWildcardAndMalformedDestinations",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+      "sourceSha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.config.SubscriptionAuthInterceptorTest",
+      "method": "subscriptionRechecksLiveAuthorityBeforeAcceptance",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+      "sourceSha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.config.SubscriptionAuthInterceptorTest",
+      "method": "dashboardSubscriptionUsesFreshCapabilityAuthorityAndExactDestination",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+      "sourceSha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.config.SubscriptionAuthInterceptorTest",
+      "method": "connectRequiresIdentityFromTicketHandshakeAttributes",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+      "sourceSha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.notification.config.SubscriptionAuthInterceptorTest",
+      "method": "subscribeAllowsOnlyTheAuthenticatedUserDestination",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+      "sourceSha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.notification.config.SubscriptionAuthInterceptorTest",
+      "method": "subscribePreservesOwnGroupAndHeadmanPermissions",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+      "sourceSha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8"
+    },
+    {
+      "xmlOrdinal": 3,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.notification.config.SubscriptionAuthInterceptorTest",
+      "method": "clientSendFramesAreRejected",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/SubscriptionAuthInterceptorTest.java",
+      "sourceSha256": "4131c5aadc94d91b47a2b7a779ae06988bdda0f11c77f0fb9d6783d2569bf6e8"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_sockjsStylePath_stillFindsTicket",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_headerAndDifferentQueryRejectedBeforeConsume",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_revokedIdentityRejectsAfterTicketConsume",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_malformedQueryTicketRejectedBeforeConsume",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_nonCanonicalHeaderRejectedBeforeConsume",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_headerAndSameQueryRejectedBeforeConsume",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_duplicateQueryIncludingEncodedNameRejectedBeforeConsume",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_duplicateHeaderRejectedBeforeConsume",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_consumedHeaderTicketRejectedWithoutAdmission",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_missingTicket_rejectsWith401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_ticketWithOtherParams_picksTicketOnly",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_validTicketStoresOnlyAdmittedSessionIdentity",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_invalidOrConsumedTicket_rejectsWith401",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 4,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.notification.config.TicketHandshakeInterceptorTest",
+      "method": "beforeHandshake_headerTicketUsesSameConsumeAndLiveAdmission",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/TicketHandshakeInterceptorTest.java",
+      "sourceSha256": "b4ade8631676d4fa46c3c7d7b0edabaa31e61a607f579b4f2b9dacbc6e73347f"
+    },
+    {
+      "xmlOrdinal": 5,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.config.WebSocketConfigTest",
+      "method": "stompHeartbeatScheduler_isInitializedDaemonThread",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WebSocketConfigTest.java",
+      "sourceSha256": "5ebe02e6094c55452ff9a67891890ab8300e16ad52bce3755bf3b212b264250c"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.config.WsSessionAdmissionOutboundInterceptorTest",
+      "method": "revokedAndUnknownSocketsNeverReceiveMessage",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+      "sourceSha256": "8d0dc2a7d8ef275e58a79372d6d1bd632a95ceb70aa43a17a59c9cbfcf5663fd"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.config.WsSessionAdmissionOutboundInterceptorTest",
+      "method": "forgedSessionAudiencePartialOrMalformedExportHeadersNeverReachJobAdmission",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+      "sourceSha256": "8d0dc2a7d8ef275e58a79372d6d1bd632a95ceb70aa43a17a59c9cbfcf5663fd"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.config.WsSessionAdmissionOutboundInterceptorTest",
+      "method": "exportDeliveryRequiresTheExactSocketSessionAudienceAndFreshJobAdmissionForEveryHint",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+      "sourceSha256": "8d0dc2a7d8ef275e58a79372d6d1bd632a95ceb70aa43a17a59c9cbfcf5663fd"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.config.WsSessionAdmissionOutboundInterceptorTest",
+      "method": "outboundMessageRequiresFreshAdmissionForItsSocket",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+      "sourceSha256": "8d0dc2a7d8ef275e58a79372d6d1bd632a95ceb70aa43a17a59c9cbfcf5663fd"
+    },
+    {
+      "xmlOrdinal": 6,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.notification.config.WsSessionAdmissionOutboundInterceptorTest",
+      "method": "dashboardDeliveryRechecksCapabilityForEveryMessageAndFailsClosedAfterRevocation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionAdmissionOutboundInterceptorTest.java",
+      "sourceSha256": "8d0dc2a7d8ef275e58a79372d6d1bd632a95ceb70aa43a17a59c9cbfcf5663fd"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.config.WsSessionBindingRegistryTest",
+      "method": "rejectedAdmissionEvictsBindingClosesTransportAndDoesNotRetry",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistryTest.java",
+      "sourceSha256": "913b8040c4464b3aa8121119aad5b1e726807447d2a8a1e723973ddcee38ac7a"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.config.WsSessionBindingRegistryTest",
+      "method": "unboundRawTransportsAreBoundedAndCapacityReturnsOnDisconnect",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistryTest.java",
+      "sourceSha256": "913b8040c4464b3aa8121119aad5b1e726807447d2a8a1e723973ddcee38ac7a"
+    },
+    {
+      "xmlOrdinal": 7,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.config.WsSessionBindingRegistryTest",
+      "method": "disconnectReleasesBindingAndClosesSocket",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/config/WsSessionBindingRegistryTest.java",
+      "sourceSha256": "913b8040c4464b3aa8121119aad5b1e726807447d2a8a1e723973ddcee38ac7a"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "missingBlockedUri_hostDefaultsToUnknown",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "malformedJson_gracefullyDropsWithoutException",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "directiveCaseNormalizedToLowercase",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "emptyBody_gracefullyHandled",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "unsupportedContentType_returns415",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "reportsApiFormat_batchArray_incrementsPerEntry",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "legacyFormat_topLevelFields_incrementsCounter",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "reportsApiFormat_nonCspViolationType_ignored",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "directiveNormalization_stripsSourceList",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "missingContentType_returns415",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "nullBody_gracefullyHandled",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "emptyReportsArray_noCounter",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "missingDirective_defaultsToUnknown",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "blockedUri_specialValue_inline_keptAsIs",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 8,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.notification.csp.CspReportControllerTest",
+      "method": "legacyFormat_singleViolation_incrementsCounter",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/csp/CspReportControllerTest.java",
+      "sourceSha256": "f57cb6bb76d4f4b8803d27d79974d870fa9261a554e2e49006dcf892ad188983"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.event.EventConsumerTest",
+      "method": "requestOwnerHistoryIsRetainedWithoutExternalSubmissionEchoOrRawBroadcast",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventConsumerTest.java",
+      "sourceSha256": "fb66630028b1c0e8811ea03fc9b0cd52c80117f0ce9c34ba78f3cb9188782502"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.event.EventConsumerTest",
+      "method": "authorityAndPreferenceOutagesPropagateBeforeIntentAndReplayClaimSkipsEverything",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventConsumerTest.java",
+      "sourceSha256": "fb66630028b1c0e8811ea03fc9b0cd52c80117f0ce9c34ba78f3cb9188782502"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.event.EventConsumerTest",
+      "method": "actorKeepsAllRoleHistoryButOnlyOtherEnabledUsersReceiveDurableIntent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventConsumerTest.java",
+      "sourceSha256": "fb66630028b1c0e8811ea03fc9b0cd52c80117f0ce9c34ba78f3cb9188782502"
+    },
+    {
+      "xmlOrdinal": 9,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.event.EventConsumerTest",
+      "method": "attendanceMarksAndTransferSourceCleanupRemainIndependentOfPresentation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventConsumerTest.java",
+      "sourceSha256": "fb66630028b1c0e8811ea03fc9b0cd52c80117f0ce9c34ba78f3cb9188782502"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.event.ExportReadyEventConsumerTest",
+      "method": "onlyPrivateMetadataAndServerGeneratedAuthorityHeadersLeaveTheConsumer",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumerTest.java",
+      "sourceSha256": "190ef5ef9c6a1cf72495b9980213c16ff58935e7f234cfffe37de5b70d389289"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.event.ExportReadyEventConsumerTest",
+      "method": "wrongProducerUnknownVersionStateAndMalformedAudienceAreRejected",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumerTest.java",
+      "sourceSha256": "190ef5ef9c6a1cf72495b9980213c16ff58935e7f234cfffe37de5b70d389289"
+    },
+    {
+      "xmlOrdinal": 10,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.event.ExportReadyEventConsumerTest",
+      "method": "actualTemplateAndSimpleBrokerPreservePrivateHeadersAndRecheckEachDelivery",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/ExportReadyEventConsumerTest.java",
+      "sourceSha256": "190ef5ef9c6a1cf72495b9980213c16ff58935e7f234cfffe37de5b70d389289"
+    },
+    {
+      "xmlOrdinal": 11,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.event.GroupEventTest",
+      "method": "groupFactsUseSealedRoleAudienceAndNeverUnprotectedGroupBroadcast",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/GroupEventTest.java",
+      "sourceSha256": "12132711b5d19967f96b5957ad6632f293fbb713ff64fce97df2ab99db233c44"
+    },
+    {
+      "xmlOrdinal": 12,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.exception.NotificationUnavailableBoundaryTest",
+      "method": "unavailableAuthorityReturnsSafeRetryableResponseWithoutPretendingEmptyPreferences",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/exception/NotificationUnavailableBoundaryTest.java",
+      "sourceSha256": "d0cc90a86f626b41eee4233b8ec37a90cdfb555abe67d158da44afbb6cefa0e6"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.history.NotificationAudienceAdmissionTest",
+      "method": "transferUsesEachFactualGroupAndCompleteTeacherTupleWithoutInventingLegacyAssignment",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationAudienceAdmissionTest.java",
+      "sourceSha256": "cf600f3c08056012366e86f8652e0cf59a217942a5202e49203cf36ca187377e"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.history.NotificationAudienceAdmissionTest",
+      "method": "privateDecisionDetailsNeverEnterOtherRecipientsProjectionAndActionsUsePhysicalTarget",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationAudienceAdmissionTest.java",
+      "sourceSha256": "cf600f3c08056012366e86f8652e0cf59a217942a5202e49203cf36ca187377e"
+    },
+    {
+      "xmlOrdinal": 13,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.history.NotificationAudienceAdmissionTest",
+      "method": "responseEchoRolesAndPrivateOwnerAreValidatedBeforeUnion",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationAudienceAdmissionTest.java",
+      "sourceSha256": "cf600f3c08056012366e86f8652e0cf59a217942a5202e49203cf36ca187377e"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.history.NotificationControllerTest",
+      "method": "unreadCountReturnsServiceValue",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationControllerTest.java",
+      "sourceSha256": "55cea294eafc1feb013762bbd173ed48a20babdc8a4068960978772d02d2e72d"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.history.NotificationControllerTest",
+      "method": "markAsReadReturns204OnSuccess",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationControllerTest.java",
+      "sourceSha256": "55cea294eafc1feb013762bbd173ed48a20babdc8a4068960978772d02d2e72d"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.history.NotificationControllerTest",
+      "method": "markAllReadReturns204",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationControllerTest.java",
+      "sourceSha256": "55cea294eafc1feb013762bbd173ed48a20babdc8a4068960978772d02d2e72d"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.history.NotificationControllerTest",
+      "method": "markAsReadThrowsAccessDeniedWhenForeign",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationControllerTest.java",
+      "sourceSha256": "55cea294eafc1feb013762bbd173ed48a20babdc8a4068960978772d02d2e72d"
+    },
+    {
+      "xmlOrdinal": 14,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.notification.history.NotificationControllerTest",
+      "method": "listDelegatesToServiceWithUserFromContext",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationControllerTest.java",
+      "sourceSha256": "55cea294eafc1feb013762bbd173ed48a20babdc8a4068960978772d02d2e72d"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "recordsActualCancellationWithoutFalseApproval",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "mapsLateCheckinDecidedApproved",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "mapsAttendanceMarkedByHeadman",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "mapsSupportedGroupBroadcasts",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "mapsHomeworkWeeklyDigest",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "mapsExcuseDecidedRejected",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "skipsUnknownType",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "skipsSystemEvents",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "skipsLateCheckinDecisionCommand",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "mapsHomeworkDueReminder",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 11,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "mapsLateCheckinDecidedRejected",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 12,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "malformedDecisionCannotBecomeFalseApproval",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 13,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "mapsExcuseDecidedApproved",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 14,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "skipsAttendanceMarkedByAuto",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 15,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "skipsAttendanceMarkedBySelf",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 16,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "mapsExcuseRequested",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 15,
+      "suiteOrdinal": 1,
+      "ordinal": 17,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerMapTypeTest",
+      "method": "skipsAttendanceMarkedWithoutMarkedBy",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerMapTypeTest.java",
+      "sourceSha256": "5b7dd018489e86ed91fd2f8b4c7ff9a9aa817c2f39193a8c58cc6849a2930a76"
+    },
+    {
+      "xmlOrdinal": 16,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryConsumerTest",
+      "method": "existingCommittedClaimSkipsTransactionalWriterOtherwiseDelegatesOriginalEnvelope",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryConsumerTest.java",
+      "sourceSha256": "9299b94a15b376fb1f3cb0ce5968bfdf121b0c4dfad70eeb7dffe758c5bb2746"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryEventProcessorTest",
+      "method": "cancellationSnapshotsOwnerAndPrivilegedRecipientsSeparatelyAndNotifiesOnlyAfterCommit",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryEventProcessorTest.java",
+      "sourceSha256": "cd5c4d79c2f7d2e29bb09af54026e73008e01f8fb3409f3c397a215c8bb8fdee"
+    },
+    {
+      "xmlOrdinal": 17,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryEventProcessorTest",
+      "method": "authorityFailureLeavesWriterUntouchedAndDedupNeverRequeriesAuthority",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryEventProcessorTest.java",
+      "sourceSha256": "cd5c4d79c2f7d2e29bb09af54026e73008e01f8fb3409f3c397a215c8bb8fdee"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryServiceTest",
+      "method": "markAsReadReturnsTrueOnUpdate",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryServiceTest.java",
+      "sourceSha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryServiceTest",
+      "method": "getUnreadCountDelegatesToRepository",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryServiceTest.java",
+      "sourceSha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryServiceTest",
+      "method": "markAllReadReturnsCount",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryServiceTest.java",
+      "sourceSha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryServiceTest",
+      "method": "invalidateUnreadCountEvictsCache",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryServiceTest.java",
+      "sourceSha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryServiceTest",
+      "method": "markAsReadReturnsFalseWhenNothingUpdated",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryServiceTest.java",
+      "sourceSha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f"
+    },
+    {
+      "xmlOrdinal": 18,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.notification.history.NotificationHistoryServiceTest",
+      "method": "invalidateUnreadCountTolerantToMissingCache",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationHistoryServiceTest.java",
+      "sourceSha256": "5305d89c968b8a4b0db9ff6938257038afac3cb371b3dffaf70b3b24b57fb30f"
+    },
+    {
+      "xmlOrdinal": 19,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.history.NotificationV2SerializationTest",
+      "method": "absentSummaryIsOmittedButRequiredNullsAndIsoDatesRemainOnTheWire",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/history/NotificationV2SerializationTest.java",
+      "sourceSha256": "663412418f977acf0967c51248cf3939e999c910f81c629104dffded892e867b"
+    },
+    {
+      "xmlOrdinal": 20,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.preferences.NotificationPreferencesServiceTest",
+      "method": "lessonClosedUsesLessonsPreferenceCategory",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/preferences/NotificationPreferencesServiceTest.java",
+      "sourceSha256": "8413c94043dcaf87f746c93a7e2f15d7e3f301e0b056cb0aef73ffaee8f32caa"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+      "method": "subscribe_updatesExistingSubscriptionAndKeepsCreatedAt",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+      "sourceSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+      "method": "subscribe_usesUserIdFromRequestContext",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+      "sourceSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+      "method": "unsubscribe_hasRequireRoleStudentAnnotation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+      "sourceSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+      "method": "subscribe_hasRequireRoleStudentAnnotation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+      "sourceSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 5,
+      "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+      "method": "subscribe_usesGroupIdFromRequestContext",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+      "sourceSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 6,
+      "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+      "method": "getVapidPublicKey_hasRequireRoleStudentAnnotation",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+      "sourceSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 7,
+      "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+      "method": "unsubscribe_deletesByUserIdAndEndpointAndReturns204",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+      "sourceSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 8,
+      "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+      "method": "subscribe_storesSubscriptionAndReturns201",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+      "sourceSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 9,
+      "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+      "method": "allRoleEnrollmentRequiresCoherentSignedContextAndTeacherAdminNeedNoHistoricalGroup",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+      "sourceSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9"
+    },
+    {
+      "xmlOrdinal": 21,
+      "suiteOrdinal": 1,
+      "ordinal": 10,
+      "classname": "ru.rutcampustrack.notification.push.PushControllerTest",
+      "method": "getVapidPublicKey_returns200WithPublicKey",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+      "sourceSha256": "e81ece3a84a33ffc47bc1f6b5bdf46b20c0b9ce24b15ae9cbb1c80ca5d01c3b9"
+    },
+    {
+      "xmlOrdinal": 22,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.push.PushLibraryCompatibilityTest",
+      "method": "sendEncryptsAndSignsRequestAndReturnsEndpointResponse",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushLibraryCompatibilityTest.java",
+      "sourceSha256": "f6d45fcb309a4ae403aec94b81621c98ff8c620467917086a5c80fc1b4a0d8f1"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.push.PushSubscriptionRepositoryTest",
+      "method": "pushMongoConfig_hasGroupIdIndex",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionRepositoryTest.java",
+      "sourceSha256": "7c850bcb004d462b6f731dc6c4f1d9c7926c342d4fc2fa15eacd75468562dd24"
+    },
+    {
+      "xmlOrdinal": 23,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.push.PushSubscriptionRepositoryTest",
+      "method": "pushMongoConfig_hasUniqUserEndpointIndex",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushSubscriptionRepositoryTest.java",
+      "sourceSha256": "7c850bcb004d462b6f731dc6c4f1d9c7926c342d4fc2fa15eacd75468562dd24"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest",
+      "method": "legacyGroupEntryPointsFailClosedWithoutSelectingSubscriptionsOrContactingProvider",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/WebPushDeliveryServiceTest.java",
+      "sourceSha256": "12f02934d333be8b36e17f54fe52b8c4a6dcc38d02d0e2d421414fa33467495e"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest",
+      "method": "providerEnvelopeUsesCanonicalTeacherActionAndFingerprintWithoutRawPayloadCredentials",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/WebPushDeliveryServiceTest.java",
+      "sourceSha256": "12f02934d333be8b36e17f54fe52b8c4a6dcc38d02d0e2d421414fa33467495e"
+    },
+    {
+      "xmlOrdinal": 24,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.push.WebPushDeliveryServiceTest",
+      "method": "rejectedStatusIsReturnedForDurableRetryAndExpiredEndpointOnlyIsRemoved",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/WebPushDeliveryServiceTest.java",
+      "sourceSha256": "12f02934d333be8b36e17f54fe52b8c4a6dcc38d02d0e2d421414fa33467495e"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.security.NotificationSignedContextTest",
+      "method": "rawHeadmanAndVersionedReadOnlyIdentitySurviveDomainNormalization",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/NotificationSignedContextTest.java",
+      "sourceSha256": "abac0dba4bc09656d7c7223f87677101f9d0600d73b6e24c8310a29fd4c6e1af"
+    },
+    {
+      "xmlOrdinal": 25,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.security.NotificationSignedContextTest",
+      "method": "legacyHeadersCannotAuthorizeRoleInboxAndIncompleteVersionsFailClosed",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/NotificationSignedContextTest.java",
+      "sourceSha256": "abac0dba4bc09656d7c7223f87677101f9d0600d73b6e24c8310a29fd4c6e1af"
+    },
+    {
+      "xmlOrdinal": 26,
+      "suiteOrdinal": 1,
+      "ordinal": 1,
+      "classname": "ru.rutcampustrack.notification.security.SecurityInfrastructureTest",
+      "method": "roleCheckAspect_rejectsTeacherWhenRequireRoleStudent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityInfrastructureTest.java",
+      "sourceSha256": "153470b9d132a462d88e42bb0f01888203dbc996e1a6032e2d8f322210d5f677"
+    },
+    {
+      "xmlOrdinal": 26,
+      "suiteOrdinal": 1,
+      "ordinal": 2,
+      "classname": "ru.rutcampustrack.notification.security.SecurityInfrastructureTest",
+      "method": "userContextFilter_populatesUserIdFromLegacyHeader",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityInfrastructureTest.java",
+      "sourceSha256": "153470b9d132a462d88e42bb0f01888203dbc996e1a6032e2d8f322210d5f677"
+    },
+    {
+      "xmlOrdinal": 26,
+      "suiteOrdinal": 1,
+      "ordinal": 3,
+      "classname": "ru.rutcampustrack.notification.security.SecurityInfrastructureTest",
+      "method": "userContextFilter_populatesGroupIdFromLegacyHeader",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityInfrastructureTest.java",
+      "sourceSha256": "153470b9d132a462d88e42bb0f01888203dbc996e1a6032e2d8f322210d5f677"
+    },
+    {
+      "xmlOrdinal": 26,
+      "suiteOrdinal": 1,
+      "ordinal": 4,
+      "classname": "ru.rutcampustrack.notification.security.SecurityInfrastructureTest",
+      "method": "roleCheckAspect_allowsStudentWhenRequireRoleStudent",
+      "status": "PASSED",
+      "identity": "SOURCE_METHOD",
+      "source": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/security/SecurityInfrastructureTest.java",
+      "sourceSha256": "153470b9d132a462d88e42bb0f01888203dbc996e1a6032e2d8f322210d5f677"
+    }
+  ],
+  "summary": {
+    "PASSED": 125,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  }
+}

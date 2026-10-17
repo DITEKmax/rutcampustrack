@@ -1,0 +1,35 @@
+[
+  {
+    "xmlOrdinal": 1,
+    "suiteOrdinal": 1,
+    "ordinal": 1,
+    "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+    "method": null,
+    "status": "SKIPPED",
+    "identity": "ORDINAL_ONLY",
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+    "sourceSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3"
+  },
+  {
+    "xmlOrdinal": 1,
+    "suiteOrdinal": 1,
+    "ordinal": 2,
+    "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+    "method": null,
+    "status": "SKIPPED",
+    "identity": "ORDINAL_ONLY",
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+    "sourceSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3"
+  },
+  {
+    "xmlOrdinal": 1,
+    "suiteOrdinal": 1,
+    "ordinal": 3,
+    "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+    "method": null,
+    "status": "SKIPPED",
+    "identity": "ORDINAL_ONLY",
+    "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+    "sourceSha256": "e1629a9f6be55269f7ab355b3a677dab9b61e00c7493b384df296d7741d723b3"
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "utc": "2026-10-12T05:04:26.397418+00:00",
+  "attempt": "baseline-jdk",
+  "native_exit": 1,
+  "phase": "New read-only graph diagnostic",
+  "safe_exception": "FileNotFoundException on shared-test-containers declared Java main classes directory after native compileJava NO-SOURCE",
+  "auth_plainjar_academic_main_and_test_compile_tasks": "SUCCEEDED_IN_NATIVE_LOG",
+  "product_or_type_failure": false,
+  "source_changes": 0,
+  "correction": "Record absent declared output and null actualhash; no invented payload/hash",
+  "tests_run": 0
+}

@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-11T23:04:12.623454+00:00",
+  "frozenClientRevision": "c0f6c43ee1cf354bf483ebb1ff8fdd8dca02b41b",
+  "endingObservedHead": "f2631845a04054befe50f3a2d4196a90beb77956",
+  "headAdvancedBySeparateAuthor": true,
+  "committedPathsAfterFrozenClient": [
+    "services/auth-service/auth-app/build.gradle.kts"
+  ],
+  "all27ClientBytesStillFrozen": true,
+  "clientSourceVerdictUnaffected": "post-freeze author advance is auth-app build config; no client path changed",
+  "statusShort": [
+    "?? frontends/node_modules",
+    "?? services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportCrossLayerBoundaryIT.java"
+  ]
+}

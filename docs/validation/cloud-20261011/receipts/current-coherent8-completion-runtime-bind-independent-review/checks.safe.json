@@ -1,0 +1,61 @@
+{
+  "scope": "FINITE_COHERENT8_BIND_PARAMETERS_ONLY",
+  "groups": [
+    {
+      "name": "actual229e_result_commit_spec_and_template_SHA_join",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    },
+    {
+      "name": "actual_unchanged_verify_package_rebind_runtime_consumer_returns_real_SAFE_specs_RAM_artifacts",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    },
+    {
+      "name": "wrong_exact_commit_digest",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Exact final reconciled stage commit required",
+      "modeled_namespace_closed": true
+    },
+    {
+      "name": "changed_member_inode",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "Frozen new Academic payload changed",
+      "modeled_namespace_closed": true
+    },
+    {
+      "name": "late_final_clock",
+      "outcome": "PASS_SOURCE_SAFE_RAM",
+      "exact_denial": "RAM expiry after full verification",
+      "modeled_namespace_closed": true
+    },
+    {
+      "name": "actual_original_DB_KEY_policy_newcohort1800_positive_RAM",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    },
+    {
+      "name": "original_policy_repeat_bootstrap_authorized_denied",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    },
+    {
+      "name": "original_policy_data_reset_authorized_denied",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    },
+    {
+      "name": "original_policy_reuse_existing_mongo_key_denied",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    },
+    {
+      "name": "original_policy_cohort_name_denied",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    },
+    {
+      "name": "other6_specs_equal_mixed8_producers_and_zero_copy_actual_SAFE_facts",
+      "outcome": "PASS_SOURCE_SAFE_RAM"
+    }
+  ],
+  "author24_campaign": "INSPECTED_NOT_EXECUTED",
+  "fixture_setup_only_reused": true,
+  "artifact_FS_namespace_JAR_tool_hash_clock": "RAM_MODELED",
+  "actual_private_prefix_JAR_data_ports_resources_operations": false,
+  "actual_runtime": "NOT_RUN",
+  "actual_capacity_namespace_data_readiness": "PREREQUISITE_NOT_PASSED"
+}

@@ -1,0 +1,15 @@
+{
+  "state": "ROOT_ACTUAL_PUSH_AND_CURRENT_METADATA_VERIFIED",
+  "producer": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+  "event": "pull_request",
+  "run_attempt": 1,
+  "runs": {
+    "ci": 38363252108,
+    "coverage": 38363252073,
+    "security": 38363251853,
+    "openapi": 38363251976
+  },
+  "schema_source_sha": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+  "reporter_sha256": "c69e4c46c2a03a285b11af11c03337bd2fd6472707148dd43bd4b928a757491c",
+  "privacy_sha256": "25ed1ffc57462e0c6d0ef37dc355e89cd85236cb0afb7f90a41ec68610585a82"
+}

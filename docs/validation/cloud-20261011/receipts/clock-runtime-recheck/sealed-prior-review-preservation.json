@@ -1,0 +1,74 @@
+{
+  "prior_manifest_sha256": "579f4ec513fabf15bfcbe1a6644535fa6c694c33833f5a7095efd43c9ece89e1",
+  "prior_manifest_matches_initial_sealed_handoff": true,
+  "prior_archive_sha_matches_manifest": true,
+  "prior_index_sha_matches_manifest": true,
+  "prior_sealed_member_count": 16,
+  "sealed_member_checks": [
+    {
+      "path": "CURRENT.md",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "artifact-qualification.json",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "audit.py",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "ci-evidence-reconciliation.json",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "ci-verdict.json",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "clock-library-source-verification.json",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "clock-library-verdict.json",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "clock-opened-sources.json",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "clock_audit.py",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "findings.md",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "generator-evidence-reconciliation.json",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "generator-verdict.json",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "opened-sources.json",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "source-identities.json",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "workflow-preservation.json",
+      "current_original_equals_sealed_member": true
+    },
+    {
+      "path": "original-byte-index.json",
+      "current_original_equals_sealed_member": true
+    }
+  ],
+  "all_prior_artifacts_preserved": true
+}

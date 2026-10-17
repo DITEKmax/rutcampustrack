@@ -1,0 +1,30 @@
+{
+  "schema": "PUBLIC_SOURCE_SEAL_V1",
+  "files": {
+    "AuthOtpFlowIT.before.java": {
+      "sha256": "271de110d7fb420314cdee82732bcfa08e872339b41353a7f355dc14411bcddd",
+      "bytes": 54236
+    },
+    "AuthOtpFlowIT.after.java": {
+      "sha256": "a2865bfef3dc00c1208476677e82dea0b30e75679e454b1ab226a53a3dbc7e33",
+      "bytes": 72883
+    },
+    "source.diff": {
+      "sha256": "2f40538b36070f93197480bc159260ebd2330a853bd94b44db4acb4fd3c75785",
+      "bytes": 20905
+    },
+    "controls-attempt01.safe.json": {
+      "sha256": "a4153603271121db0177ec7907d6592ff643a3017f2baf8ebf639318cedbdc08",
+      "bytes": 174
+    },
+    "controls.safe.json": {
+      "sha256": "9c11656cf1c7a1d9adecc0aa9d9d7a5a62a1848dc5ba6c082734baf0715f9eba",
+      "bytes": 925
+    },
+    "REPORT.safe.json": {
+      "sha256": "9616383cbe24afe2ae2520fa49c1ace6bd77dbb8bfdfcaacbb7463a2e306b3d2",
+      "bytes": 12669
+    }
+  },
+  "excluded": "No rawruntime XML/logs/credentials/privatecontent present."
+}

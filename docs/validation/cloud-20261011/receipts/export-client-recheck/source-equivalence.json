@@ -1,0 +1,189 @@
+{
+  "at": "2026-10-11T23:22:38.334673+00:00",
+  "frozenCorrection": "a7c86e1bb180c209f0a0c65680040f2ab40d79f1",
+  "frozenOriginal": "c0f6c43ee1cf354bf483ebb1ff8fdd8dca02b41b",
+  "observedHead": "12dcbcf4808f3d63ce1f33d70b6ee266117e91d4",
+  "unrelatedCommittedPathsAfterCorrection": [
+    "services/auth-service/auth-app/build.gradle.kts"
+  ],
+  "sixCorrectionFiles": [
+    {
+      "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.test.ts",
+      "sha256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+      "gitBlobSHA256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+      "authorSHA256": "a6151fbf72f36ca6c8696f6ec17761ade288482f64167d5c1f2863c2bf83f4ce",
+      "bytes": 18357,
+      "allMatch": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-users/AdminUsersScreen.vue",
+      "sha256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+      "gitBlobSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+      "authorSHA256": "3977eb022c7a94932dec36999343f8f5a4b7cb8db5c15ea0227825f021c3cc7f",
+      "bytes": 79174,
+      "allMatch": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-stats/HeadmanStatsScreen.vue",
+      "sha256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+      "gitBlobSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+      "authorSHA256": "9161ca67330bce2ceb4aada0a27d2b35a7a19429cc850125d3456f8393425c2b",
+      "bytes": 65148,
+      "allMatch": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/async-export.test.ts",
+      "sha256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+      "gitBlobSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+      "authorSHA256": "3b21fc9fc9e76d4551a16e51c896ece37aecac7caab5d7f6c536424c4d9f4b9d",
+      "bytes": 9685,
+      "allMatch": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/export-button.test.ts",
+      "sha256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+      "gitBlobSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+      "authorSHA256": "0a698bc8935fc91a4e01608ff236b370dd0c6ebaa840e398d744fe390e9b0b54",
+      "bytes": 7110,
+      "allMatch": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/fixtures/export-grant-gap.ts",
+      "sha256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+      "gitBlobSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+      "authorSHA256": "b9b9221899934b07b197151a6837fec1e89c8af87d66eb289ad3fd8783feac6c",
+      "bytes": 687,
+      "allMatch": true
+    }
+  ],
+  "unchangedOriginalClientFiles": [
+    {
+      "path": "frontends/mobile-core/src/api/generated/academic.types.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/api/generated/auth.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-groups/AdminGroupsScreen.vue",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-users/admin-users-client.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-journal/HeadmanJournalScreen.vue",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-stats/headman-stats-client.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/notifications/notifications-realtime.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherLessonExportControl.vue",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/index.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/report-download-client.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/report-download-selector.test.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/pwa-vue/src/App.vue",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/tma-vue/src/App.vue",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/tma-vue/src/report-download-adapter.test.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/tma-vue/src/report-download-adapter.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/tma-vue/src/tma-auth.test.ts",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/ExportButton.vue",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/export-button.pcss",
+      "matchesC0": true
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/report-download-browser.ts",
+      "matchesC0": true
+    }
+  ],
+  "unchangedOriginalCount": 23,
+  "oldSealedPayloads": [
+    {
+      "path": "CURRENT.md",
+      "matches": true
+    },
+    {
+      "path": "REPORT.md",
+      "matches": true
+    },
+    {
+      "path": "author-evidence-verification.json",
+      "matches": true
+    },
+    {
+      "path": "contract-compatibility.json",
+      "matches": true
+    },
+    {
+      "path": "ending-source-check.json",
+      "matches": true
+    },
+    {
+      "path": "findings.json",
+      "matches": true
+    },
+    {
+      "path": "source-equivalence.json",
+      "matches": true
+    },
+    {
+      "path": "source-ledger.json",
+      "matches": true
+    }
+  ],
+  "oldManifestSHA256": "7fda0f35f1a10de83657563d0f21437bb6a9250c3a9ee016217484e2b3f9c6c2"
+}

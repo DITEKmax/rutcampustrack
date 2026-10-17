@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
@@ -12,14 +13,12 @@ import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.InternalJwtProperties;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
 
-import java.io.IOException;
-
 /**
  * M03a: academic-service adaptation of {@link DualModeUserContextFilter}.
  *
- * Bridges the validated Internal JWT (or legacy {@code X-User-*} headers while
- * {@code legacyHeadersEnabled} is true) into the request-scoped
- * {@link RequestContext}, which depends on the contract-module {@link UserRole} enum.
+ * <p>Bridges the validated Internal JWT (or legacy {@code X-User-*} headers while {@code
+ * legacyHeadersEnabled} is true) into the request-scoped {@link RequestContext}, which depends on
+ * the contract-module {@link UserRole} enum.
  */
 @Component
 public class AcademicUserContextFilter extends DualModeUserContextFilter {
@@ -27,19 +26,20 @@ public class AcademicUserContextFilter extends DualModeUserContextFilter {
     private final RequestContext requestContext;
     private final InternalJwtProperties properties;
 
-    public AcademicUserContextFilter(InternalJwtValidator validator,
-                                     InternalJwtProperties properties,
-                                     RequestContext requestContext,
-                                     BusinessMetrics businessMetrics) {
+    public AcademicUserContextFilter(
+            InternalJwtValidator validator,
+            InternalJwtProperties properties,
+            RequestContext requestContext,
+            BusinessMetrics businessMetrics) {
         super(validator, properties, businessMetrics);
         this.requestContext = requestContext;
         this.properties = properties;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
         // Forward only the exact signed token accepted at the HTTP boundary.
         // Schedule validates the signature and frozen claims independently;
         // legacy X-User-* headers never become a binding actor identity.

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ru.rutcampustrack.academic.map.CampusMapAdminServiceTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-11T22:59:14" hostname="993a1bc854c1" time="1.85">
+  <properties/>
+  <testcase name="deletionRequiresAdminAndLivePasswordEvenForACompletedReplay()" classname="ru.rutcampustrack.academic.map.CampusMapAdminServiceTest" time="1.659"/>
+  <testcase name="firstPngUploadPublishesAnExplicitAbsentSvgSlotAtomically()" classname="ru.rutcampustrack.academic.map.CampusMapAdminServiceTest" time="0.127"/>
+  <testcase name="targetLookupRejectsNoncanonicalNumbersBeforeRepositoryAccess()" classname="ru.rutcampustrack.academic.map.CampusMapAdminServiceTest" time="0.003"/>
+  <testcase name="invalidMimeAndUnsafeSvgAreRejectedBeforeTheFloorLock()" classname="ru.rutcampustrack.academic.map.CampusMapAdminServiceTest" time="0.053"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/workspace/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.17.8/f09415827a71be7ed621c7bd02550678f28bc81c/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

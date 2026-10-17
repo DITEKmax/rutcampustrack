@@ -1,0 +1,29 @@
+{
+  "scratch": "/workspace/scratch/rct-validation/data_lecture_developer",
+  "stable_commit": "c115f61996fd415d20286a0787f4985b80a59a24",
+  "safe_receipts": [
+    "CURRENT.md",
+    "review-packet.md",
+    "inventory.json",
+    "scenarios.csv",
+    "run-manifest.json",
+    "test-results.json",
+    "resources.json",
+    "source-ledger.json",
+    "schema-ownership.md",
+    "initial-results.json",
+    "existing-results.json",
+    "control-1-results.json",
+    "green-1-results.json",
+    "l05-query-measurements.json",
+    "pending-teacher-observation.md",
+    "l06-counterfeit-test.java.txt",
+    "l06-normal-test.java.txt",
+    "attempts.ndjson",
+    "subject-test-provenance.json",
+    "subject-test-provenance.md",
+    "SubjectListDataIT-committed-c115.java.txt"
+  ],
+  "runtime_artifact_root": "/workspace/rct-worktrees/data-lecture/.agent/evidence/data-lecture-validation",
+  "raw_requests": "not printed"
+}

@@ -1,0 +1,23 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "compile02",
+  "source_revision": "7521982ef69e2fc29ea01c4100d28840d34079fd",
+  "native_exit": 0,
+  "disk_aborted": false,
+  "seconds": 78.481,
+  "counts": {
+    "tests": 0,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [],
+  "xml": [],
+  "all_source_inputs_unchanged": true,
+  "changed_paths": [],
+  "private_marker_match_files": 0,
+  "raw_artifacts_private": true,
+  "terminal_sha256": "bc9ff8bfb66864f9a716995690e44d3b3bf4a33b32ea8dca1c4a9f9427264fda",
+  "free_bytes": 9508904960,
+  "utc": "2026-10-12T02:54:07Z"
+}

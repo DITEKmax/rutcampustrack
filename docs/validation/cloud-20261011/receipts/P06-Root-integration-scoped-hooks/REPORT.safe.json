@@ -1,0 +1,21 @@
+{
+  "utc": "2026-10-13T09:21:52.979998+00:00",
+  "scope": "ROOT_P06_AUTH_INTEGRATION_FINAL",
+  "result": "ONE_AUTH_TEST_INTEGRATED_EXACT_AUTHOR_SOURCE_SEMANTIC_MECHANICAL_SCOPEDHOOKS_PASS",
+  "baseline": "597716c3cae9f7d7f601cb5b5279baf598d841ef",
+  "semantic_sha": "49db169eaa184e5743539dda8018a86d41b907f5",
+  "mechanical_sha": "ae027b11fba4908a22039e9c22249836a63df243",
+  "hooks": {
+    "semantic": {
+      "passed": 4,
+      "not_applicable_skipped": 2,
+      "failed_marker": false
+    },
+    "mechanical": {
+      "passed": 4,
+      "not_applicable_skipped": 2,
+      "failed_marker": false
+    }
+  },
+  "qualification": "ExactoneAuthIT formatted0669 ==author4db89; sourceparentRootmatching/wholeSource-review/formatcompile/realPG1PASS/qualifiedstatusRED/restoredGREEN/rechecks acceptedfiniteonly. Semantic76020 andmechanical24338native0/allownedreaped/superabsent nohooksbypass. CorrectclosedSkippedtoken counts supersede earlier0parserprefix count inRootsemanticentry; originalNativePASSunchanged. RootsharedWIPpreserved/Angular0; remotePRstill597/newheadnotpushed/no currentgatesyet. 597productiontwoJARs remainvalid becauseonlyAuthtestchanged, no JARrebuildneeded."
+}

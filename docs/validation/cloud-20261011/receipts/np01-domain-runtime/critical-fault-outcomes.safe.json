@@ -1,0 +1,57 @@
+{
+  "canonical_sha": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "tracked_inputs": 7046,
+  "normal_author_all_byte_exact_restored": true,
+  "isolated_all_byte_exact_restored": true,
+  "faults": [
+    {
+      "qualified": true,
+      "failure_type": "java.lang.AssertionError",
+      "expected_violation": "Missing PERMISSION_DENIED on first foreignUID request",
+      "frames": [
+        [
+          "denied",
+          "329"
+        ],
+        [
+          "privateForeignAndUnknownReadModesFailClosed",
+          "91"
+        ]
+      ],
+      "compile_infra_failure": false
+    },
+    {
+      "qualified": true,
+      "failure_type": "java.lang.AssertionError",
+      "expected_violation": "Missing INVALID_ARGUMENT on unknown renderoutcome991",
+      "frames": [
+        [
+          "denied",
+          "329"
+        ],
+        [
+          "forgedCardTupleAndUnknownOutcomesCannotCompleteOriginalCleanup",
+          "242"
+        ]
+      ],
+      "compile_infra_failure": false
+    },
+    {
+      "qualified": true,
+      "failure_type": "java.lang.AssertionError",
+      "expected_violation": "Missing FAILED_PRECONDITION on stale cleanup recordrevision after renderreceipt settles",
+      "frames": [
+        [
+          "denied",
+          "329"
+        ],
+        [
+          "invalidationCannotLoseStableRenderReceiptAndStaleCleanupCasCannotSettle",
+          "171"
+        ]
+      ],
+      "compile_infra_failure": false
+    }
+  ],
+  "restored_summary": "/workspace/scratch/rct-validation/np01_domain_bot/runtime/fault-restored01/summary.safe.json"
+}

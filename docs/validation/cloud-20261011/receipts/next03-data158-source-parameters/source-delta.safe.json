@@ -1,0 +1,48 @@
+{
+  "utc": "2026-10-13T00:56:10.509582+00:00",
+  "deltas": [
+    {
+      "file": "restart-boundary.py",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/restart-boundary.py",
+      "old_sha256": "f044c87bcf7041a79a174aab8b458de3e0029d45d55a8103f729b937882e5bcb",
+      "new_sha256": "4cfa304b89721850da531d429cba030f9c658457793ad6448a8bf06f3eb9798b",
+      "changed": true,
+      "diff": "--- /workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/restart-boundary.py\n+++ /workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/restart-boundary.py\n@@ -87,8 +87,8 @@\n             raise RuntimeError('Prior exact config/artifact/guard seal changed')\n     return PLAN / 'runtime' / grant['cohort_name'], remaining\n \n-DATA_FENCE = CORRECTION / 'stopped-native-data-fence157.safe.json'\n-DATA_FENCE_SHA = 'd368d1d211b71f0d364f86bb71ac5f79bfe0170a7f155e893fbd257d9e16e11f'\n+DATA_FENCE = Path('/workspace/scratch/rct-validation/current_host_runtime_bind_20261012/actual-next02/stopped-native-data-fence-next02.safe.json')\n+DATA_FENCE_SHA = '152ceafcc5f392068ddbd0aaf68f856d92b68cd55cd61e1016941a68c75acd86'\n PRIOR_CONTEXT_MANIFEST = Path('/workspace/scratch/rct-validation/current_host_restart_context_correction/manifest.json')\n PRIOR_CONTEXT_SHA = '7c03e6cb7cb1c200c7e788e8b7c28b0d6cabb8b5b8bfc29d37f906739ad68236'\n \n@@ -96,9 +96,9 @@\n     verify_execution_actor()\n     if (grant.get('stopped_mongo_data_fence_path') != str(DATA_FENCE)\n             or grant.get('stopped_mongo_data_fence_sha256') != DATA_FENCE_SHA):\n-        raise RuntimeError('NEW exact stopped157 metadata grant binding required')\n+        raise RuntimeError('NEW exact stopped158 metadata grant binding required')\n     if sha(DATA_FENCE) != DATA_FENCE_SHA:\n-        raise RuntimeError('Exact canonical157 stopped metadata changed')\n+        raise RuntimeError('Exact canonical158 stopped metadata changed')\n     if sha(PRIOR_CONTEXT_MANIFEST) != PRIOR_CONTEXT_SHA:\n         raise RuntimeError('Original approved context source changed')\n     for row in json.loads(PRIOR_CONTEXT_MANIFEST.read_text())['files']:\n@@ -106,8 +106,8 @@\n             raise RuntimeError('Original immutable context member changed')\n     fence = json.loads(DATA_FENCE.read_text())\n     nodes = fence['stopped_db_metadata_nodes']\n-    if len(nodes) != 157 or len({row['path'] for row in nodes}) != 157:\n-        raise RuntimeError('Exact157 unique metadata nodes required')\n+    if len(nodes) != 158 or len({row['path'] for row in nodes}) != 158:\n+        raise RuntimeError('Exact158 unique metadata nodes required')\n     return fence\n \n def metadata(path):\n"
+    },
+    {
+      "file": "docker-up-restart.py",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/docker-up-restart.py",
+      "old_sha256": "7cbd2c02a181b43128c49eee3c31576026d36f0065ed9dd6695743225b02a60e",
+      "new_sha256": "69d967351ea5d578846ff00b399a053a0dfd8498a586207f3d294694ac74ecec",
+      "changed": true,
+      "diff": "--- /workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/docker-up-restart.py\n+++ /workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/docker-up-restart.py\n@@ -36,7 +36,7 @@\n     if os.getuid()!=1000 or os.getgid()!=1000:\n         raise RuntimeError('Exact approved execution actor1000 required')\n     global OUT, cohort\n-    grant_path = OWN / 'private/restart-launch-grant-next02.json'\n+    grant_path = OWN / 'private/restart-launch-grant-next03.json'\n     for parent in reversed(grant_path.parents):\n         assert stat.S_ISDIR(parent.lstat().st_mode)\n     metadata = grant_path.lstat()\n"
+    },
+    {
+      "file": "run-mongo-restart.py",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-mongo-restart.py",
+      "old_sha256": "813ed8280c7beb950d8b7ffd22994ed22f2d96d6fd00e0e8d74489b258c12bd5",
+      "new_sha256": "813ed8280c7beb950d8b7ffd22994ed22f2d96d6fd00e0e8d74489b258c12bd5",
+      "changed": false,
+      "diff": ""
+    },
+    {
+      "file": "run-service-restart.py",
+      "original": "/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction/run-service-restart.py",
+      "old_sha256": "7eaed78b02b45bfe43d8468913a364b812c19b4717d48a61ebe5a8ff92a090bd",
+      "new_sha256": "7eaed78b02b45bfe43d8468913a364b812c19b4717d48a61ebe5a8ff92a090bd",
+      "changed": false,
+      "diff": ""
+    },
+    {
+      "file": "run-academic-restart.py",
+      "original": "/workspace/scratch/rct-validation/current_academic_stage_completion_prepare/run-academic-restart.py",
+      "old_sha256": "529188289a8c9d4c882eb52f626533b20ba4934fbc7ce2b3ee99974ada6fffb0",
+      "new_sha256": "e671f91a181ac9a134961903c9cdc7f2832c158082fd83347cf0750ee45a7a2d",
+      "changed": true,
+      "diff": "--- /workspace/scratch/rct-validation/current_academic_stage_completion_prepare/run-academic-restart.py\n+++ /workspace/scratch/rct-validation/current_host_restart_next03_parameters/source/run-academic-restart.py\n@@ -10,8 +10,8 @@\n \n OWN = Path('/workspace/scratch/rct-validation/current_host_config_v5')\n PLAN = Path('/workspace/scratch/rct-validation/current_host_restart_plan')\n-ANCESTOR_CORRECTION = Path('/workspace/scratch/rct-validation/current_host_restart_data157_docker_correction')\n-REFRESH = Path(__file__).parent\n+ANCESTOR_CORRECTION = Path('/workspace/scratch/rct-validation/current_host_restart_next03_parameters/source')\n+REFRESH = Path('/workspace/scratch/rct-validation/current_academic_stage_completion_prepare')\n ORIGINAL_RUNNER = ANCESTOR_CORRECTION / 'run-service-restart.py'\n GUARD = Path('/workspace/scratch/rct-validation/guard_proc_race_correction/bounded-child.py')\n GUARD_SHA = 'b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0'\n@@ -43,8 +43,15 @@\n     parser.add_argument('--grant', required=True)\n     args = parser.parse_args()\n     grant = json.loads(safe_owned(args.grant, OWN / 'private').read_text())\n-    if Path(args.grant) != OWN / 'private/restart-launch-grant-next02.json':\n-        raise RuntimeError('NEW exact next02 refreshed stand grant required')\n+    if Path(args.grant) != OWN / 'private/restart-launch-grant-next03.json':\n+        raise RuntimeError('NEW exact next03 refreshed stand grant required')\n+    # Exact NEW executing caller seal before the unchanged Academic helper import.\n+    overlay_manifest = ANCESTOR_CORRECTION / 'manifest.json'\n+    if digest(overlay_manifest) != grant.get('restart_ancestor_correction_manifest_sha256'):\n+        raise RuntimeError('Exact next03 executing caller seal required')\n+    overlay_rows = json.loads(overlay_manifest.read_text())['files']\n+    if not any(row['path'] == str(Path(__file__).absolute()) and digest(__file__) == row['sha256'] for row in overlay_rows):\n+        raise RuntimeError('Exact sealed next03 Academic executing source required')\n     # Pinned new helper bytes checked before helper execution (hash inserted at freeze).\n     helper = REFRESH / 'runtime-binding.py'\n     if digest(helper) != 'be1488b5995accb02212c36e4ce919fe2ddac61de50eeeb9d7d43d58571ecc24':\n@@ -52,7 +59,7 @@\n     refreshed = types.ModuleType('academic_runtime_binding')\n     refreshed.__file__ = str(helper)\n     exec(compile(helper.read_bytes(), str(helper), 'exec'), refreshed.__dict__)\n-    specs = refreshed.verify(grant, __file__)\n+    specs = refreshed.verify(grant, str(REFRESH / 'run-academic-restart.py'))\n     if grant.get('launch_authorized') is not True or grant.get('reviewed_guard_sha256') != GUARD_SHA:\n         raise RuntimeError('Root launch grant and fresh reviewed guard required')\n     if grant.get('heavy_leases_released') != {'NP01_BROKER1': True, 'FORMAT_JAVA': True, 'FORMAT_NODE': True}:\n"
+    }
+  ],
+  "originals_unchanged": true,
+  "new_runner_or_framework": false,
+  "runtime_permission": "NONE"
+}

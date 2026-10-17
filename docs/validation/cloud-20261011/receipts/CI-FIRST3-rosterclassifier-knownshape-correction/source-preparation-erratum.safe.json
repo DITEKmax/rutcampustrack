@@ -1,0 +1,8 @@
+{
+  "kind": "SOURCE_PREPARATION_ERRATUM",
+  "native": "NOT_RUN",
+  "cause": "Ownsourcebuilder selectedwrongGitcwd parentindex4 vsassignedWT; readonly gitdiffcheck129, afterexactoneobserver+scratchhelperwritesbeforecorrectedREADY produced.",
+  "correction": "UseexplicitassignedWT forscopedgitdiffcheck; native0/currentchangedpaths1 verified.",
+  "unknownForeignWrites": false,
+  "noRollbackOrRuntime": true
+}

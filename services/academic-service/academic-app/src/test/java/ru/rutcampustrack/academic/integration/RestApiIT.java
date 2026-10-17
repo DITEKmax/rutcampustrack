@@ -1,50 +1,46 @@
 package ru.rutcampustrack.academic.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 /**
- * End-to-end integration tests for the REST API layer.
- * Covers all critical paths across User, Semester, Threshold, Homework domains.
+ * End-to-end integration tests for the REST API layer. Covers all critical paths across User,
+ * Semester, Threshold, Homework domains.
  *
- * Uses AbstractAcademicIntegrationTest (Testcontainers PostgreSQL, no RabbitMQ/Redis).
- * Tests run in @Transactional for automatic rollback — DB state is restored per test.
+ * <p>Uses AbstractAcademicIntegrationTest (Testcontainers PostgreSQL, no RabbitMQ/Redis). Tests run
+ * in @Transactional for automatic rollback — DB state is restored per test.
  */
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RestApiIT extends AbstractAcademicIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private java.time.Clock clock;
+    @Autowired private java.time.Clock clock;
 
-    @Autowired
-    private ru.rutcampustrack.academic.group.GroupService groupService;
+    @Autowired private ru.rutcampustrack.academic.group.GroupService groupService;
 
     // Seed data IDs (from V2 migrations)
     private Long seedStudentId;
@@ -53,12 +49,15 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
 
     @BeforeEach
     void loadSeedIds() {
-        seedStudentId = jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'student'", Long.class);
-        seedGroupId = jdbcTemplate.queryForObject(
-                "SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
-        seedAdminId = jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        seedStudentId =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM users WHERE login = 'student'", Long.class);
+        seedGroupId =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
+        seedAdminId =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM users WHERE login = 'admin'", Long.class);
     }
 
     // =====================================================================
@@ -69,9 +68,14 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Order(1)
     @Transactional
     void testAdminCreateUser_returnsLoginAndPassword() throws Exception {
-        Long managedGroupId = groupService.createGroup(
-                new ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest("ТЕС-111")).getId();
-        String body = """
+        Long managedGroupId =
+                groupService
+                        .createGroup(
+                                new ru.rutcampustrack.academic.contract.dto.group
+                                        .CreateGroupRequest("ТЕС-111"))
+                        .getId();
+        String body =
+                """
                 {
                   "lastName": "Тестов",
                   "firstName": "Тест",
@@ -80,25 +84,276 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                   "groupId": %d,
                   "telegramId": 555000001
                 }
-                """.formatted(managedGroupId);
+                """
+                        .formatted(managedGroupId);
 
-        MvcResult result = mockMvc.perform(post("/academic/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.login", is("testov-test-0001")))
-                .andExpect(jsonPath("$.initialPassword", notNullValue()))
-                .andExpect(jsonPath("$._links.self.href", notNullValue()))
-                .andReturn();
+        MvcResult result =
+                mockMvc.perform(
+                                post("/academic/users")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(body)
+                                        .header("X-User-Id", seedAdminId)
+                                        .header("X-User-Role", "ADMIN")
+                                        .with(signedAdmin())
+                                        .header("X-Group-Id", "")
+                                        .header("X-Is-Headman", "false"))
+                        .andExpect(status().isCreated())
+                        .andExpect(jsonPath("$.login", is("testov-test-0001")))
+                        .andExpect(jsonPath("$.initialPassword", notNullValue()))
+                        .andExpect(jsonPath("$._links.self.href", notNullValue()))
+                        .andReturn();
 
         String content = result.getResponse().getContentAsString();
         JsonNode json = objectMapper.readTree(content);
         assertThat(json.get("login").asText()).isEqualTo("testov-test-0001");
         assertThat(json.get("initialPassword").asText()).hasSizeGreaterThan(0);
+    }
+
+    @Test
+    void duplicateIdentityResolvesToExistingAccountAndRoleFailuresLeaveCommittedStateUnchanged()
+            throws Exception {
+        // No test transaction: each HTTP mutation commits before the independent SQL readback.
+        long initialAccountCount =
+                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Long.class);
+        Long managedGroupId =
+                groupService
+                        .createGroup(
+                                new ru.rutcampustrack.academic.contract.dto.group
+                                        .CreateGroupRequest("ДУБ-111"))
+                        .getId();
+        long telegramId = 880004127L;
+        String occupiedEmployeeNumber = "Q04-4127";
+        String availableEmployeeNumber = "Q04-8259";
+        String studentBody =
+                """
+                {"lastName":"Дубликатов","firstName":"Тест","role":"STUDENT",
+                 "groupId":%d,"telegramId":%d}
+                """
+                        .formatted(managedGroupId, telegramId);
+        JsonNode student =
+                objectMapper.readTree(
+                        mockMvc.perform(
+                                        post("/academic/users")
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(studentBody)
+                                                .header("X-User-Id", seedAdminId)
+                                                .header("X-User-Role", "ADMIN")
+                                                .with(signedAdmin()))
+                                .andExpect(status().isCreated())
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsString());
+        long studentId = student.get("id").asLong();
+        String studentLogin = student.get("login").asText();
+        JsonNode teacher =
+                objectMapper.readTree(
+                        mockMvc.perform(
+                                        post("/academic/users")
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(
+                                                        """
+{"lastName":"Дубликатов","firstName":"Тест","role":"TEACHER",
+ "employeeNumber":"%s"}
+"""
+                                                                .formatted(occupiedEmployeeNumber))
+                                                .header("X-User-Id", seedAdminId)
+                                                .header("X-User-Role", "ADMIN")
+                                                .with(signedAdmin()))
+                                .andExpect(status().isCreated())
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsString());
+        long teacherId = teacher.get("id").asLong();
+        assertThat(teacherId).isNotEqualTo(studentId);
+        assertThat(teacher.get("login").asText()).isEqualTo(studentLogin + "-2");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Long.class))
+                .isEqualTo(initialAccountCount + 2);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=?",
+                                Long.class,
+                                studentId))
+                .isEqualTo(1);
+
+        java.util.function.Supplier<java.util.List<?>> durableState =
+                () ->
+                        java.util.List.of(
+                                jdbcTemplate.queryForList(
+                                        "SELECT * FROM users WHERE id IN (?, ?) ORDER BY id",
+                                        studentId,
+                                        teacherId),
+                                jdbcTemplate.queryForList(
+                                        "SELECT * FROM user_role_grants WHERE user_id IN (?, ?)"
+                                                + " ORDER BY id",
+                                        studentId,
+                                        teacherId),
+                                jdbcTemplate.queryForList(
+                                        "SELECT * FROM student_group_history WHERE user_id IN (?,"
+                                                + " ?) ORDER BY id",
+                                        studentId,
+                                        teacherId),
+                                jdbcTemplate.queryForObject(
+                                        "SELECT COUNT(*) FROM users", Long.class));
+        var beforeFailures = durableState.get();
+
+        mockMvc.perform(
+                        post("/academic/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(studentBody)
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.field", is("telegramId")));
+        // Private credential/hash snapshots are compared as booleans, never assertion payloads.
+        assertThat(beforeFailures.equals(durableState.get()))
+                .as("Duplicate identity must preserve committed account, grant and history state")
+                .isTrue();
+        mockMvc.perform(
+                        get("/academic/users")
+                                .param("search", Long.toString(telegramId))
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements", is(1)))
+                .andExpect(jsonPath("$._embedded.userResponseList[0].id", is((int) studentId)))
+                .andExpect(jsonPath("$._embedded.userResponseList[0].login", is(studentLogin)));
+
+        mockMvc.perform(
+                        put("/academic/users/{id}/roles/TEACHER", studentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"status":"ACTIVE","employeeNumber":"%s"}
+                                        """
+                                                .formatted(occupiedEmployeeNumber))
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.field", is("employeeNumber")));
+        assertThat(beforeFailures.equals(durableState.get()))
+                .as(
+                        "Occupied employee number must preserve committed account, grant and"
+                                + " history state")
+                .isTrue();
+
+        mockMvc.perform(
+                        put("/academic/users/{id}/roles/TEACHER", studentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"status":"ACTIVE","employeeNumber":"%s","groupId":%d}
+                                        """
+                                                .formatted(availableEmployeeNumber, managedGroupId))
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.field", is("groupId")));
+        assertThat(beforeFailures.equals(durableState.get()))
+                .as(
+                        "Invalid teacher role data must preserve committed account, grant and"
+                                + " history state")
+                .isTrue();
+
+        String preservedFields =
+                "SELECT"
+                        + " id,login,last_name,first_name,middle_name,password_hash,initial_password,telegram_id,role,status,group_id,is_headman,password_changed,created_at"
+                        + " FROM users WHERE id=?";
+        var studentIdentity = jdbcTemplate.queryForMap(preservedFields, studentId);
+        var teacherAccount = jdbcTemplate.queryForMap("SELECT * FROM users WHERE id=?", teacherId);
+        var studentGrant =
+                jdbcTemplate.queryForList(
+                        "SELECT * FROM user_role_grants WHERE user_id=? AND role='student' ORDER BY"
+                                + " id",
+                        studentId);
+        var studentHistory =
+                jdbcTemplate.queryForList(
+                        "SELECT * FROM student_group_history WHERE user_id=? ORDER BY id",
+                        studentId);
+        assertThat(studentGrant).hasSize(1);
+        assertThat(studentHistory).hasSize(1);
+
+        mockMvc.perform(
+                        put("/academic/users/{id}/roles/TEACHER", studentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"status":"ACTIVE","employeeNumber":"%s"}
+                                        """
+                                                .formatted(availableEmployeeNumber))
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is((int) studentId)))
+                .andExpect(jsonPath("$.login", is(studentLogin)));
+
+        assertThat(studentIdentity.equals(jdbcTemplate.queryForMap(preservedFields, studentId)))
+                .as("Adding a role must preserve the existing account identity and credentials")
+                .isTrue();
+        assertThat(
+                        teacherAccount.equals(
+                                jdbcTemplate.queryForMap(
+                                        "SELECT * FROM users WHERE id=?", teacherId)))
+                .as("Adding a role must preserve the other account")
+                .isTrue();
+        assertThat(
+                        studentGrant.equals(
+                                jdbcTemplate.queryForList(
+                                        "SELECT * FROM user_role_grants WHERE user_id=? AND"
+                                                + " role='student' ORDER BY id",
+                                        studentId)))
+                .as("Adding a teacher role must preserve the existing student grant")
+                .isTrue();
+        assertThat(
+                        studentHistory.equals(
+                                jdbcTemplate.queryForList(
+                                        "SELECT * FROM student_group_history WHERE user_id=? ORDER"
+                                                + " BY id",
+                                        studentId)))
+                .as("Adding a teacher role must preserve the existing student history")
+                .isTrue();
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Long.class))
+                .isEqualTo(initialAccountCount + 2);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=?",
+                                Long.class,
+                                studentId))
+                .isEqualTo(2);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=? AND"
+                                        + " role='teacher' AND status='active'",
+                                Long.class,
+                                studentId))
+                .isEqualTo(1);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT employee_number FROM users WHERE id=?",
+                                String.class,
+                                studentId))
+                .isEqualTo(availableEmployeeNumber);
+        mockMvc.perform(
+                        get("/academic/users/{id}", studentId)
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is((int) studentId)))
+                .andExpect(jsonPath("$.login", is(studentLogin)))
+                .andExpect(jsonPath("$.roles", hasSize(2)))
+                .andExpect(
+                        jsonPath(
+                                "$.roles[?(@.role == 'STUDENT' && @.status == 'ACTIVE')]",
+                                hasSize(1)))
+                .andExpect(
+                        jsonPath(
+                                "$.roles[?(@.role == 'TEACHER' && @.status == 'ACTIVE')]",
+                                hasSize(1)));
     }
 
     // =====================================================================
@@ -108,7 +363,8 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Test
     @Order(2)
     void testAdminCreateUser_validationError_returns400WithFieldErrors() throws Exception {
-        String body = """
+        String body =
+                """
                 {
                   "lastName": "",
                   "firstName": "",
@@ -116,17 +372,22 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                 }
                 """;
 
-        mockMvc.perform(post("/academic/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        post("/academic/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body)
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.type", containsString("validation")))
                 .andExpect(jsonPath("$.fieldErrors", notNullValue()))
-                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'lastName')]", hasSize(greaterThan(0))));
+                .andExpect(
+                        jsonPath(
+                                "$.fieldErrors[?(@.field == 'lastName')]",
+                                hasSize(greaterThan(0))));
     }
 
     // =====================================================================
@@ -136,22 +397,25 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Test
     @Order(3)
     void testStudentCannotCreateUser_returns403() throws Exception {
-        String body = """
+        String body =
+                """
                 {
                   "lastName": "Другов",
                   "firstName": "Другой",
                   "role": "STUDENT",
                   "groupId": %d
                 }
-                """.formatted(seedGroupId);
+                """
+                        .formatted(seedGroupId);
 
-        mockMvc.perform(post("/academic/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId)
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        post("/academic/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body)
+                                .header("X-User-Id", seedStudentId)
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", seedGroupId)
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.status", is(403)));
     }
@@ -163,10 +427,13 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Test
     @Order(4)
     void testAdminCreateAndActivateSemester() throws Exception {
-        int futureYear = java.time.LocalDate.now(clock.withZone(java.time.ZoneId.of("Europe/Moscow")))
-                .getYear() + 1;
+        int futureYear =
+                java.time.LocalDate.now(clock.withZone(java.time.ZoneId.of("Europe/Moscow")))
+                                .getYear()
+                        + 1;
         // Create semester 1
-        String body1 = """
+        String body1 =
+                """
                 {
                   "name": "TestSemester Alpha",
                   "dateFrom": "%d-02-01",
@@ -174,22 +441,28 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                   "semesterType": "SPRING",
                   "academicYear": %d
                 }
-                """.formatted(futureYear, futureYear, futureYear - 1);
+                """
+                        .formatted(futureYear, futureYear, futureYear - 1);
 
-        MvcResult r1 = mockMvc.perform(post("/academic/semesters")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body1)
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
-                .andExpect(status().isCreated())
-                .andReturn();
+        MvcResult r1 =
+                mockMvc.perform(
+                                post("/academic/semesters")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(body1)
+                                        .header("X-User-Id", seedAdminId)
+                                        .header("X-User-Role", "ADMIN")
+                                        .with(signedAdmin())
+                                        .header("X-Group-Id", "")
+                                        .header("X-Is-Headman", "false"))
+                        .andExpect(status().isCreated())
+                        .andReturn();
 
-        Long sem1Id = objectMapper.readTree(r1.getResponse().getContentAsString()).get("id").asLong();
+        Long sem1Id =
+                objectMapper.readTree(r1.getResponse().getContentAsString()).get("id").asLong();
 
         // Create semester 2
-        String body2 = """
+        String body2 =
+                """
                 {
                   "name": "TestSemester Beta",
                   "dateFrom": "%d-09-01",
@@ -197,49 +470,63 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                   "semesterType": "AUTUMN",
                   "academicYear": %d
                 }
-                """.formatted(futureYear, futureYear + 1, futureYear);
+                """
+                        .formatted(futureYear, futureYear + 1, futureYear);
 
-        MvcResult r2 = mockMvc.perform(post("/academic/semesters")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body2)
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
-                .andExpect(status().isCreated())
-                .andReturn();
+        MvcResult r2 =
+                mockMvc.perform(
+                                post("/academic/semesters")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(body2)
+                                        .header("X-User-Id", seedAdminId)
+                                        .header("X-User-Role", "ADMIN")
+                                        .with(signedAdmin())
+                                        .header("X-Group-Id", "")
+                                        .header("X-Is-Headman", "false"))
+                        .andExpect(status().isCreated())
+                        .andReturn();
 
-        Long sem2Id = objectMapper.readTree(r2.getResponse().getContentAsString()).get("id").asLong();
+        Long sem2Id =
+                objectMapper.readTree(r2.getResponse().getContentAsString()).get("id").asLong();
 
         // Future activation saves an intent and preserves the current semester.
-        mockMvc.perform(patch("/academic/semesters/" + sem1Id + "/activate")
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        patch("/academic/semesters/" + sem1Id + "/activate")
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.active", is(false)))
                 .andExpect(jsonPath("$.activationScheduled", is(true)));
 
         // Another future intent also remains inactive until its date arrives.
-        mockMvc.perform(patch("/academic/semesters/" + sem2Id + "/activate")
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        patch("/academic/semesters/" + sem2Id + "/activate")
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.active", is(false)))
                 .andExpect(jsonPath("$.activationScheduled", is(true)));
 
         // Both intentions survive; neither removes the existing active semester.
-        mockMvc.perform(get("/academic/semesters/" + sem1Id)
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        get("/academic/semesters/" + sem1Id)
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.active", is(false)));
-        assertThat(jdbcTemplate.queryForObject("SELECT is_active FROM semesters WHERE id=1", Boolean.class)).isTrue();
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT is_active FROM semesters WHERE id=1", Boolean.class))
+                .isTrue();
     }
 
     // =====================================================================
@@ -255,7 +542,8 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
 
         // BUG-006-7 / plan 58-05: dateFrom must be >= today AND must not overlap
         // any existing semester (V10 EXCLUDE gist). Use a far-future empty window.
-        String createBody = """
+        String createBody =
+                """
                 {
                   "name": "Fall 2035 Test",
                   "dateFrom": "2035-09-01",
@@ -265,30 +553,36 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                 }
                 """;
 
-        MvcResult r = mockMvc.perform(post("/academic/semesters")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(createBody)
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
-                .andExpect(status().isCreated())
-                .andReturn();
+        MvcResult r =
+                mockMvc.perform(
+                                post("/academic/semesters")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(createBody)
+                                        .header("X-User-Id", seedAdminId)
+                                        .header("X-User-Role", "ADMIN")
+                                        .with(signedAdmin())
+                                        .header("X-Group-Id", "")
+                                        .header("X-Is-Headman", "false"))
+                        .andExpect(status().isCreated())
+                        .andReturn();
 
         Long semId = objectMapper.readTree(r.getResponse().getContentAsString()).get("id").asLong();
 
         // Attempt delete with wrong confirmation
-        String deleteBody = """
+        String deleteBody =
+                """
                 { "confirmation": "wrong name" }
                 """;
 
-        mockMvc.perform(delete("/academic/semesters/" + semId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(deleteBody)
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        delete("/academic/semesters/" + semId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(deleteBody)
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status", is(400)));
     }
@@ -300,11 +594,12 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Test
     @Order(6)
     void testStudentGetMe_returnsOwnProfile() throws Exception {
-        mockMvc.perform(get("/academic/users/me")
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId)
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        get("/academic/users/me")
+                                .header("X-User-Id", seedStudentId)
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", seedGroupId)
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.login", is("student")))
                 .andExpect(jsonPath("$.role", is("STUDENT")));
@@ -319,48 +614,56 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Transactional
     void testThresholdResolution_mostSpecificWins() throws Exception {
         // Set global threshold as ADMIN
-        String globalBody = """
+        String globalBody =
+                """
                 { "minPercentage": 50 }
                 """;
-        mockMvc.perform(put("/academic/thresholds/global")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(globalBody)
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        put("/academic/thresholds/global")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(globalBody)
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk());
 
         // Set group threshold as HEADMAN (seed student with headman flag)
-        String groupBody = """
+        String groupBody =
+                """
                 { "minPercentage": 70 }
                 """;
-        mockMvc.perform(put("/academic/thresholds/group")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(groupBody)
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId)
-                        .header("X-Is-Headman", "true"))
+        mockMvc.perform(
+                        put("/academic/thresholds/group")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(groupBody)
+                                .header("X-User-Id", seedStudentId)
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", seedGroupId)
+                                .header("X-Is-Headman", "true"))
                 .andExpect(status().isOk());
 
         // Resolve for group — should return group level (70%)
-        mockMvc.perform(get("/academic/thresholds/resolve")
-                        .param("groupId", seedGroupId.toString())
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId)
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        get("/academic/thresholds/resolve")
+                                .param("groupId", seedGroupId.toString())
+                                .header("X-User-Id", seedStudentId)
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", seedGroupId)
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.level", is("group")))
                 .andExpect(jsonPath("$.minPercentage", is(70)));
 
         // Resolve without groupId — should return global level (50%)
-        mockMvc.perform(get("/academic/thresholds/resolve")
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        get("/academic/thresholds/resolve")
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.level", is("global")))
                 .andExpect(jsonPath("$.minPercentage", is(50)));
@@ -373,13 +676,15 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Test
     @Order(8)
     void testListUsers_returnsPaginatedHateoas() throws Exception {
-        mockMvc.perform(get("/academic/users")
-                        .param("page", "0")
-                        .param("size", "2")
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        get("/academic/users")
+                                .param("page", "0")
+                                .param("size", "2")
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded", notNullValue()))
                 .andExpect(jsonPath("$._links.self.href", notNullValue()))
@@ -387,53 +692,70 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     }
 
     // =====================================================================
-    // Test 9 — USER-04: Revoke headman cascades to deactivate all assistants
+    // Test 9 — D016: standalone removal cannot change the headman or assistants
     // =====================================================================
 
     @Test
     @Order(9)
     @Transactional
-    void testHeadmanRevokeCascadesAssistants() throws Exception {
+    void testStandaloneHeadmanRemovalKeepsHeadmanAndAssistants() throws Exception {
         // The seed 'student' user has is_headman = true (from V2 migration)
         Long headmanId = seedStudentId;
 
         // Create a second student to serve as assistant
-        Long assistantId = jdbcTemplate.queryForObject(
-                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id) " +
-                "VALUES ('assistant_test', 'hash', 'Assistant', 'User', 'student', 'active', false, ?) RETURNING id",
-                Long.class, seedGroupId);
+        Long assistantId =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id) "
+                                + "VALUES ('assistant_test', 'hash', 'Assistant', 'User', 'student', 'active', false, ?) RETURNING id",
+                        Long.class,
+                        seedGroupId);
 
         // Assign the student as an assistant to the headman's group via native SQL
         jdbcTemplate.update(
-                "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by, is_active, assigned_at) " +
-                "VALUES (?, ?, ARRAY['mark_attendance']::varchar(64)[], ?, true, NOW())",
-                seedGroupId, assistantId, headmanId
-        );
+                "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by, is_active, assigned_at) "
+                        + "VALUES (?, ?, ARRAY['mark_attendance']::varchar(64)[], ?, true, NOW())",
+                seedGroupId,
+                assistantId,
+                headmanId);
 
         // Verify assistant exists before revoke
-        Integer countBefore = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM headman_assistants WHERE group_id = ? AND is_active = true",
-                Integer.class, seedGroupId);
+        Integer countBefore =
+                jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM headman_assistants WHERE group_id = ? AND is_active = true",
+                        Integer.class,
+                        seedGroupId);
         assertThat(countBefore).isGreaterThan(0);
 
-        // Revoke headman via PATCH
-        String patchBody = """
+        // Standalone removal is refused before the authority cascade.
+        String patchBody =
+                """
                 { "isHeadman": false }
                 """;
-        mockMvc.perform(patch("/academic/users/" + headmanId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(patchBody)
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
-                .andExpect(status().isOk());
+        mockMvc.perform(
+                        patch("/academic/users/" + headmanId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(patchBody)
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.field", equalTo("isHeadman")));
 
-        // Verify all assistants in that group are now deactivated
-        Integer countAfter = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM headman_assistants WHERE group_id = ? AND is_active = true",
-                Integer.class, seedGroupId);
-        assertThat(countAfter).isEqualTo(0);
+        // The rejected operation leaves all assistants and current headman authority unchanged.
+        Integer countAfter =
+                jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM headman_assistants WHERE group_id = ? AND is_active = true",
+                        Integer.class,
+                        seedGroupId);
+        assertThat(countAfter).isEqualTo(countBefore);
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT is_headman FROM users WHERE id = ?",
+                                Boolean.class,
+                                headmanId))
+                .isTrue();
     }
 
     // =====================================================================
@@ -445,12 +767,14 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     void testHomeworkCompletionToggle() throws Exception {
         // Create a subject first
         // Phase 60-01 V12: subjects.group_id NOT NULL — используем seedGroupId
-        Long subjectId = jdbcTemplate.queryForObject(
-                "WITH subject AS (INSERT INTO subjects (name, type, group_id) "
-                        + "VALUES ('Integration Test Subject', 'lecture', ?) RETURNING id), "
-                        + "types AS (INSERT INTO subject_lesson_types(subject_id,lesson_type) "
-                        + "SELECT id,'lecture' FROM subject RETURNING subject_id) SELECT subject_id FROM types",
-                Long.class, seedGroupId);
+        Long subjectId =
+                jdbcTemplate.queryForObject(
+                        "WITH subject AS (INSERT INTO subjects (name, type, group_id) "
+                                + "VALUES ('Integration Test Subject', 'lecture', ?) RETURNING id), "
+                                + "types AS (INSERT INTO subject_lesson_types(subject_id,lesson_type) "
+                                + "SELECT id,'lecture' FROM subject RETURNING subject_id) SELECT subject_id FROM types",
+                        Long.class,
+                        seedGroupId);
 
         // Deactivate existing active semester to avoid constraint issues
         jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
@@ -460,46 +784,62 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
         // overlap any semester previously created in this test class (@Order 4
         // leaves two 2027 semesters in place; @Order 5 leaves a 2035-2036 one).
         // Use a far-future window that is guaranteed empty.
-        Long semesterId = jdbcTemplate.queryForObject(
-                "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) " +
-                "VALUES ('HW Test Semester', '2040-02-01', '2040-06-30', false, NOW()) RETURNING id",
-                Long.class);
+        Long semesterId =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
+                                + "VALUES ('HW Test Semester', '2040-02-01', '2040-06-30', false, NOW()) RETURNING id",
+                        Long.class);
 
         // Create homework as headman via native SQL (avoid headman permission check).
         // Phase 61-02 V13: lesson_date / lesson_number NOT NULL.
-        Long homeworkId = jdbcTemplate.queryForObject(
-                "INSERT INTO homeworks (group_id, subject_id, semester_id, title, published_by, lesson_date, "
-                        + "lesson_number, binding_id,actor_id,request_key,payload_hash,publication_state,created_at,updated_at) "
-                        + "VALUES (?, ?, ?, 'Test HW', ?, '2040-03-01', 1, 20400301, ?, ?, "
-                        + "decode(repeat('ab',32),'hex'),'ACTIVE',NOW(),NOW()) RETURNING id",
-                Long.class, seedGroupId, subjectId, semesterId, seedStudentId, seedStudentId, java.util.UUID.randomUUID());
+        Long homeworkId =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO homeworks (group_id, subject_id, semester_id, title, published_by, lesson_date, "
+                                + "lesson_number, binding_id,actor_id,request_key,payload_hash,publication_state,created_at,updated_at) "
+                                + "VALUES (?, ?, ?, 'Test HW', ?, '2040-03-01', 1, 20400301, ?, ?, "
+                                + "decode(repeat('ab',32),'hex'),'ACTIVE',NOW(),NOW()) RETURNING id",
+                        Long.class,
+                        seedGroupId,
+                        subjectId,
+                        semesterId,
+                        seedStudentId,
+                        seedStudentId,
+                        java.util.UUID.randomUUID());
 
         // Mark homework as complete (student) — M11 G3: 200→204 (void mutation)
-        mockMvc.perform(post("/academic/homeworks/" + homeworkId + "/complete")
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId)
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        post("/academic/homeworks/" + homeworkId + "/complete")
+                                .header("X-User-Id", seedStudentId)
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", seedGroupId)
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isNoContent());
 
         // Verify it's marked in DB
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM homework_completions WHERE homework_id = ? AND student_id = ?",
-                Integer.class, homeworkId, seedStudentId);
+        Integer count =
+                jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM homework_completions WHERE homework_id = ? AND student_id = ?",
+                        Integer.class,
+                        homeworkId,
+                        seedStudentId);
         assertThat(count).isEqualTo(1);
 
         // Unmark homework
-        mockMvc.perform(delete("/academic/homeworks/" + homeworkId + "/complete")
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId)
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        delete("/academic/homeworks/" + homeworkId + "/complete")
+                                .header("X-User-Id", seedStudentId)
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", seedGroupId)
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isNoContent());
 
         // Verify it's unmarked
-        Integer countAfter = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM homework_completions WHERE homework_id = ? AND student_id = ?",
-                Integer.class, homeworkId, seedStudentId);
+        Integer countAfter =
+                jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM homework_completions WHERE homework_id = ? AND student_id = ?",
+                        Integer.class,
+                        homeworkId,
+                        seedStudentId);
         assertThat(countAfter).isEqualTo(0);
     }
 
@@ -510,11 +850,13 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Test
     @Order(11)
     void testDashboardStats_returnsAllFields() throws Exception {
-        mockMvc.perform(get("/academic/dashboard/stats")
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN").with(signedAdmin())
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        get("/academic/dashboard/stats")
+                                .header("X-User-Id", seedAdminId)
+                                .header("X-User-Role", "ADMIN")
+                                .with(signedAdmin())
+                                .header("X-Group-Id", "")
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalStudents", greaterThanOrEqualTo(0)))
                 .andExpect(jsonPath("$.totalTeachers", greaterThanOrEqualTo(0)))
@@ -530,11 +872,12 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
     @Test
     @Order(12)
     void testDashboardStats_returns403ForStudent() throws Exception {
-        mockMvc.perform(get("/academic/dashboard/stats")
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId)
-                        .header("X-Is-Headman", "false"))
+        mockMvc.perform(
+                        get("/academic/dashboard/stats")
+                                .header("X-User-Id", seedStudentId)
+                                .header("X-User-Role", "STUDENT")
+                                .header("X-Group-Id", seedGroupId)
+                                .header("X-Is-Headman", "false"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.status", is(403)));
     }

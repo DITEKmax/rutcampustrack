@@ -1,0 +1,2 @@
+# Historical architecture prose false positive verified with Gitleaks 8.24.3.
+63647fc9b63175e1e32b0773d57affc637ea1065:docs/validation/cloud-20261011/packet-export-backend-security-review.md:generic-api-key:12

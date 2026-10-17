@@ -1,0 +1,77 @@
+{
+  "artifact_id": 11863808345,
+  "producer": "89746d1dc3d3ac7c23470c3998f9d85ed268859f",
+  "run_id": 38495986019,
+  "event": "pull_request",
+  "actual_checkout": "NOT_PROVED_BY_BROWSER_SAFE_SCHEMA",
+  "archive_sha256": "fc86ce68b52ffddc660390630ffb31c7a71af36e35e9073360fbecc81fa8d2df",
+  "archive_bytes": 3409,
+  "member_names": [
+    "artifacts/safe-results.json",
+    "supervision/observations-headman.safe.json",
+    "supervision/observations-student.safe.json",
+    "supervision/observations-helper.safe.json"
+  ],
+  "results": {
+    "status": "passed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 14,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 3489,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      },
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 61,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 5319,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      },
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 160,
+        "project": "chromium",
+        "status": "passed",
+        "expectedStatus": "passed",
+        "durationMs": 3163,
+        "errorCount": 0,
+        "diagnostics": [],
+        "errorLocations": []
+      }
+    ]
+  },
+  "diagnostic_schema": [
+    {
+      "caseCode": "STUDENT",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HEADMAN",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    },
+    {
+      "caseCode": "HELPER",
+      "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+    }
+  ],
+  "missing_members": [],
+  "source_assertions": "UNCHANGED_ACCEPTED_FIRST3",
+  "raw_logs_XML_HTML_error_context_read": false,
+  "buffer_limit": "POST_BUFFER_CLASSIFIER_NOT_HARD_RSS_BOUND",
+  "acceptance": "FINITE_CASES_ONLY_NO_PARENT_PROMOTION",
+  "qualification": "finite realclientcase statuses only; no wholefamily/product readiness"
+}

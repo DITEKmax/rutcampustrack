@@ -1,0 +1,174 @@
+{
+  "status": "SOURCE_LOCAL_PASS",
+  "updated_utc": "2026-10-14T04:06:25.093390+00:00",
+  "base": "fd864eb028f271537d24d7b6c065b553c56d6440",
+  "branch": "codex/q04-created-dto-name-20261014",
+  "scope": [
+    "tests/e2e/specs/mobile-real-server.spec.ts",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts"
+  ],
+  "source_pins_before_checks": {
+    "tests/e2e/specs/mobile-real-server.spec.ts": "17c87bf3a249cd2af837e67dff95f9c00d9f9a550018f8ddeed49cd3afb17af7",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "14bd3300ddca87ed27b822bc28bb126d01586dc90da829fb94cd21496c4129b7"
+  },
+  "actual_red": {
+    "run": 38507359540,
+    "artifact": 11868418913,
+    "receipt": "docs/validation/cloud-20261011/receipts/current-fd864-admin-lifecycle.safe.json",
+    "case": 451,
+    "reported_frame": 671,
+    "reported_class": "REPORTED_CLASS_TYPE_ERROR",
+    "duration_ms": 3411,
+    "error_count": 1,
+    "raw_body_error_read": false
+  },
+  "confirmed_source_cause": "Fixture passed created.fullName (absent from UserCreatedResponse) into locator; existing GET original is UserResponse with computed getFullName. DTO mismatch in checking code, no established product/UI defect.",
+  "correction": "Boolean nonempty-string assertion on actual original.fullName; group locator reads original.fullName. All real replacement/revoke/negative/noeffect/archive/restore/history assertions retained.",
+  "old_eight_prefix_byte_equal": true,
+  "q03_body_byte_equal": true,
+  "q06_preserved_commit": "3367450387919ea268e2cc3bb0b67c805c4f7481",
+  "planned_checks": "SAMEb78 scoped Prettier apply/idempotency/check +real-mobile TSC, fresh120s/heap512/RSS512MiB/shared15/reserve1/floor4/growth256/cleanup. Existing privacy PASS reused: only exact out-of-range literal, guards/reporter unchanged.",
+  "review": "SAME_Q04_REVIEWER_TARGETED_DTO_RECHECK_PENDING",
+  "runtime_after": "NOT_RUN",
+  "issued_utc": "2026-10-14T04:05:40.057106+00:00",
+  "stop_utc": "2026-10-14T04:07:40.057106+00:00",
+  "guard_sha256": "b78c61293568d9941692e0b92ee34fd0b84db6d532b4a2c9a5ad42ccbf2204a0",
+  "own_RSS_cap": 536870912,
+  "node_heap_MiB": 512,
+  "checks": [
+    {
+      "phase": "FORMAT_APPLY",
+      "seconds": 0.92,
+      "direct_pid": 634334,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 634334,
+          "start_ticks": 20453298
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    {
+      "phase": "FORMAT_IDEMPOTENCY",
+      "seconds": 0.86,
+      "direct_pid": 634345,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 634345,
+          "start_ticks": 20453390
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    {
+      "phase": "FORMAT_CHECK",
+      "seconds": 0.78,
+      "direct_pid": 634356,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 634356,
+          "start_ticks": 20453477
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    },
+    {
+      "phase": "REAL_MOBILE_TSC",
+      "seconds": 2.64,
+      "direct_pid": 634367,
+      "native_exit": 0,
+      "terminal_reason": "NATIVE_TERMINAL",
+      "signal_count": 0,
+      "settled": true,
+      "all_owned_processes_reaped": true,
+      "all_members_including_Z_after": [],
+      "known_owned_identities": [
+        {
+          "pid": 634367,
+          "start_ticks": 20453555
+        }
+      ],
+      "adopted_waitpid_receipts": [],
+      "supervision_error_type": null,
+      "phase_success": true
+    }
+  ],
+  "native_runs": 4,
+  "native_seconds": 5.2,
+  "failure_class": null,
+  "peaks": {
+    "rss": 332443648,
+    "shared": 5881958400
+  },
+  "births": [
+    {
+      "pid": 634334,
+      "start_ticks": 20453298
+    },
+    {
+      "pid": 634345,
+      "start_ticks": 20453390
+    },
+    {
+      "pid": 634356,
+      "start_ticks": 20453477
+    },
+    {
+      "pid": 634367,
+      "start_ticks": 20453555
+    }
+  ],
+  "known_births_absent": true,
+  "dependency_link_absent": true,
+  "private_tmp_absent": true,
+  "source_pins_final": {
+    "tests/e2e/specs/mobile-real-server.spec.ts": "17c87bf3a249cd2af837e67dff95f9c00d9f9a550018f8ddeed49cd3afb17af7",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "14bd3300ddca87ed27b822bc28bb126d01586dc90da829fb94cd21496c4129b7"
+  },
+  "effective_linecount": 984,
+  "privacy_bound": 985,
+  "privacy_control": "Existing PASS reused; only exact out-of-range literal; old91/102/controlguards/reporters unchanged.",
+  "active_hooks": [],
+  "hooks_bypassed": false,
+  "new_case_lines": [
+    14,
+    61,
+    160,
+    230,
+    257,
+    298,
+    316,
+    405,
+    451,
+    826
+  ],
+  "fullName_boolean_assert_line": 521,
+  "corrected_locator_line": 672,
+  "commit": "1ac2ea47a5bbeb90ccf5beeef29fa0ecd007f6e6",
+  "normal_commit_native_exit": 0,
+  "worktree_clean": true
+}

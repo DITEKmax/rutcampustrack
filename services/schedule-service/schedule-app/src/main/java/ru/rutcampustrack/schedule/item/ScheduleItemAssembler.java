@@ -1,53 +1,56 @@
 package ru.rutcampustrack.schedule.item;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemResponse;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 /**
- * HATEOAS assembler that converts ScheduleItem entities to EntityModel<ScheduleItemResponse>
- * with self and collection links.
+ * HATEOAS assembler that converts ScheduleItem entities to EntityModel<ScheduleItemResponse> with
+ * self and collection links.
  */
 @Component
 public class ScheduleItemAssembler {
 
-    /**
-     * Converts a ScheduleItem entity to an EntityModel with HATEOAS links.
-     */
+    /** Converts a ScheduleItem entity to an EntityModel with HATEOAS links. */
     public EntityModel<ScheduleItemResponse> toModel(ScheduleItem item) {
-        ScheduleItemResponse response = new ScheduleItemResponse(
-                item.getId(),
-                item.getAssignmentId(),
-                item.getGroupId(),
-                item.getSubjectId(),
-                item.getSemesterId(),
-                item.getDayOfWeek(),
-                item.getLessonNumber(),
-                item.getStartTime(),
-                item.getEndTime(),
-                item.getWeekType(),
-                item.getRoom(),
-                item.isActive(),
-                item.getCreatedAt(),
-                item.getGeneratedCount(),
-                item.getGeneratedFrom(),
-                item.getGeneratedUntil()
-        );
+        ScheduleItemResponse response =
+                new ScheduleItemResponse(
+                        item.getId(),
+                        item.getAssignmentId(),
+                        item.getGroupId(),
+                        item.getSubjectId(),
+                        item.getSemesterId(),
+                        item.getDayOfWeek(),
+                        item.getLessonNumber(),
+                        item.getStartTime(),
+                        item.getEndTime(),
+                        item.getWeekType(),
+                        item.getRoom(),
+                        item.isActive(),
+                        item.getCreatedAt(),
+                        item.getGeneratedCount(),
+                        item.getGeneratedFrom(),
+                        item.getGeneratedUntil());
 
         return toModel(response);
     }
 
     public EntityModel<ScheduleItemResponse> toModel(ScheduleItemResponse response) {
-        return EntityModel.of(response,
-                linkTo(methodOn(ScheduleItemController.class)
-                        .getScheduleItem(response.getId())).withSelfRel(),
-                linkTo(methodOn(ScheduleItemController.class)
-                        .listScheduleItems(response.getGroupId(), response.getSemesterId(), null, null))
-                        .withRel("collection")
-        );
+        return EntityModel.of(
+                response,
+                linkTo(methodOn(ScheduleItemController.class).getScheduleItem(response.getId()))
+                        .withSelfRel(),
+                linkTo(
+                                methodOn(ScheduleItemController.class)
+                                        .listScheduleItems(
+                                                response.getGroupId(),
+                                                response.getSemesterId(),
+                                                null,
+                                                null))
+                        .withRel("collection"));
     }
 }

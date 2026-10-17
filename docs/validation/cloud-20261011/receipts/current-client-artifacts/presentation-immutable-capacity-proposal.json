@@ -1,0 +1,157 @@
+{
+  "status": "READ_ONLY_PROPOSAL_NO_DEDUP",
+  "count": 15,
+  "allocated_candidate_bytes_sum": 179781632,
+  "candidates": [
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/admin-before-r4-20261009.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/admin-before-r4-20261009.html",
+      "sha256": "f787576ae95ff6e4677f6e22916ebd4e69ccf9436715a901b03ecf2ab715a846",
+      "bytes": 18658858,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 18661376,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/admin-before-r5-20261010.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/admin-before-r5-20261010.html",
+      "sha256": "9156ebf358bb38f31348825c85876a1c0c2b98166e4cd1cc096970026ce17345",
+      "bytes": 19081053,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 19083264,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/admin-final.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/admin-final.html",
+      "sha256": "227d1daa0a03d4295eabae914d62a432f0ccfe9b96a5c7b6f59fe0b4c1473b28",
+      "bytes": 21188964,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 21192704,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/headman-final.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/headman-final.html",
+      "sha256": "eb140046530c1106e1f49969418395c8416b3a703e41f7068b93ecbf3b05629d",
+      "bytes": 18605802,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 18608128,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/student-final.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/student-final.html",
+      "sha256": "277893affdf3a9cf35f21e42b5e4197e36dadb932321d1dd21df27fd0be909f1",
+      "bytes": 29715526,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 29716480,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/student-homework-2026-10-05.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/student-homework-2026-10-05.html",
+      "sha256": "66dcc1ecd7c0781ea09e443bd325a12e17594e8e91834e74d790404a6682a7a0",
+      "bytes": 3916508,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 3919872,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/student-map-profile-2026-10-05.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/student-map-profile-2026-10-05.html",
+      "sha256": "ffd5d18a95858f4053fa9844fb168f3a8891358e2b56e913221b20fe9c4733f0",
+      "bytes": 1983511,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 1986560,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/student-requests-2026-10-05.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/student-requests-2026-10-05.html",
+      "sha256": "bda440be0e28365ad3eec0367229849c5210ef75fee2aef4c40365c5ece65ee3",
+      "bytes": 2645792,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 2646016,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/student-statistics-2026-10-05-r2.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/student-statistics-2026-10-05-r2.html",
+      "sha256": "4693b26a92e9a78e7acb98114e61e8d7fc23969bdd777932a9f267ef00f013b9",
+      "bytes": 2120735,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 2121728,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/student-statistics-2026-10-05.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/student-statistics-2026-10-05.html",
+      "sha256": "4765734a0d299fccb64ce34fdc0d9deba4b3ccd18fddc9f5e0299db239237054",
+      "bytes": 4794941,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 4796416,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/student-today-attendance-2026-10-04-r2.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/student-today-attendance-2026-10-04-r2.html",
+      "sha256": "44a29c018a1bbca44abe39776ebe58ff16b46962e752ff5f2eb8f274f2495ca0",
+      "bytes": 14652705,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 14655488,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/teacher-20261008.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/teacher-20261008.html",
+      "sha256": "c80385e63499bd47eaec8f4e9010561953d3824501e874355323027c531cb9cf",
+      "bytes": 5255175,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 5259264,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/teacher-before-r4-20261009.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/teacher-before-r4-20261009.html",
+      "sha256": "4a218db6f4e618f6eed9065fbf7e15681f97285130dd3c96ab53f05e3660abac",
+      "bytes": 6788228,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 6791168,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/teacher-before-r5-20261010.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/teacher-before-r5-20261010.html",
+      "sha256": "3724abaa7bc4c905ad87333b5b1a900314465c19484ff273a6dac50a80dd0501",
+      "bytes": 8164017,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 8167424,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    },
+    {
+      "new_own_path": "/workspace/rct-worktrees/client-current-artifacts/docs/presentations/teacher-final.html",
+      "immutable_readonly_old_eec3_path": "/workspace/rct-worktrees/client-acceptance/docs/presentations/teacher-final.html",
+      "sha256": "fca83689698f9758cbd88e62691a0c996b9c7dbdf5bc038e5138641e70160551",
+      "bytes": 22175655,
+      "mode": "0o600",
+      "new_owned_allocated_bytes": 22175744,
+      "same_device": true,
+      "qualification": "Frozen presentation exactoldartifact; both paths preserved; root exactgrant and COWfreeze needed before physicaldedup."
+    }
+  ]
+}

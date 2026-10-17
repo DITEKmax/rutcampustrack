@@ -1,0 +1,1033 @@
+{
+  "at": "2026-10-12T01:36:13.141976+00:00",
+  "scope": "fournewownedWT immutablehistoricalassets; everypath/byte/mode preserved, no tracked semanticchanges",
+  "entries": [
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "bytes": 746489,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "bytes": 746489,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "bytes": 746489,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/archive/rutcampustrack-kit/_work/renders/headman-bank-overview-390-dark.png",
+      "sha256": "f7544af55a7152d6705882ad41fe7b236b5b7473b438001d7b2e3990be8e1d7d",
+      "git_blob": "51188ee744505b00f73e0d2e66a8d77b623f6a1e",
+      "bytes": 746489,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "bytes": 531799,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "bytes": 531799,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "bytes": 531799,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/archive/rutcampustrack-kit/_work/renders/part-20-family-20-21.png",
+      "sha256": "8cc20baa681c390224718dae2ae3208076d420769999e3886efc8e240b7fe44c",
+      "git_blob": "92a54ae617d3a4deb77640080b521fa51e4f260a",
+      "bytes": 531799,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "bytes": 1690298,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "bytes": 1690298,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "bytes": 1690298,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/archive/rutcampustrack-kit/_work/renders/part-20-headman-bank-overview.png",
+      "sha256": "d383648fe732c97d40beac73ddcb34e049b25786a1f14d7551398d1ea6ca4ec2",
+      "git_blob": "cf70b0750fa6f3c73dbf53f4741520a97cb55ccd",
+      "bytes": 1690298,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "bytes": 590375,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "bytes": 590375,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "bytes": 590375,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/archive/rutcampustrack-kit/_work/student-mobile-revision-final-board.png",
+      "sha256": "8d69d6677ed97c85fba09c65a6db8eef3956da0de2cef0690f679aaa26e4019d",
+      "git_blob": "2455f91d377257b3e1a5189b09b1b3c8b758a619",
+      "bytes": 590375,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/bread-crumbs.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/bread-crumbs.svg",
+      "sha256": "caacce6c6e4dc8998a0aa81ca156da0575c8bce79db7b466bd182932e274081d",
+      "git_blob": "cc06c90305230b79a71c942cfad01ed42572371a",
+      "bytes": 987617,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/bread-crumbs.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/bread-crumbs.svg",
+      "sha256": "caacce6c6e4dc8998a0aa81ca156da0575c8bce79db7b466bd182932e274081d",
+      "git_blob": "cc06c90305230b79a71c942cfad01ed42572371a",
+      "bytes": 987617,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/bread-crumbs.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/bread-crumbs.svg",
+      "sha256": "caacce6c6e4dc8998a0aa81ca156da0575c8bce79db7b466bd182932e274081d",
+      "git_blob": "cc06c90305230b79a71c942cfad01ed42572371a",
+      "bytes": 987617,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/bread-crumbs.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/bread-crumbs.svg",
+      "sha256": "caacce6c6e4dc8998a0aa81ca156da0575c8bce79db7b466bd182932e274081d",
+      "git_blob": "cc06c90305230b79a71c942cfad01ed42572371a",
+      "bytes": 987617,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/burger-example.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/burger-example.svg",
+      "sha256": "2de66bd0ce22ad38d26c77bd740e4c26b3b844e7cfa191fe8170d84ecfab2efd",
+      "git_blob": "f378af0130a498ee1e3c5353f9e3b7bd1e1d466f",
+      "bytes": 689713,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/burger-example.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/burger-example.svg",
+      "sha256": "2de66bd0ce22ad38d26c77bd740e4c26b3b844e7cfa191fe8170d84ecfab2efd",
+      "git_blob": "f378af0130a498ee1e3c5353f9e3b7bd1e1d466f",
+      "bytes": 689713,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/burger-example.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/burger-example.svg",
+      "sha256": "2de66bd0ce22ad38d26c77bd740e4c26b3b844e7cfa191fe8170d84ecfab2efd",
+      "git_blob": "f378af0130a498ee1e3c5353f9e3b7bd1e1d466f",
+      "bytes": 689713,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/burger-example.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/burger-example.svg",
+      "sha256": "2de66bd0ce22ad38d26c77bd740e4c26b3b844e7cfa191fe8170d84ecfab2efd",
+      "git_blob": "f378af0130a498ee1e3c5353f9e3b7bd1e1d466f",
+      "bytes": 689713,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/buttons.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/buttons.svg",
+      "sha256": "0bdf167a7b1295aab6566d017a6a3273adbf8ceb46f6a9660a6d9c9e1167e18e",
+      "git_blob": "e88e5735b0b9a9db70c9c834de66c862b83ab968",
+      "bytes": 1008938,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/buttons.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/buttons.svg",
+      "sha256": "0bdf167a7b1295aab6566d017a6a3273adbf8ceb46f6a9660a6d9c9e1167e18e",
+      "git_blob": "e88e5735b0b9a9db70c9c834de66c862b83ab968",
+      "bytes": 1008938,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/buttons.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/buttons.svg",
+      "sha256": "0bdf167a7b1295aab6566d017a6a3273adbf8ceb46f6a9660a6d9c9e1167e18e",
+      "git_blob": "e88e5735b0b9a9db70c9c834de66c862b83ab968",
+      "bytes": 1008938,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/buttons.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/buttons.svg",
+      "sha256": "0bdf167a7b1295aab6566d017a6a3273adbf8ceb46f6a9660a6d9c9e1167e18e",
+      "git_blob": "e88e5735b0b9a9db70c9c834de66c862b83ab968",
+      "bytes": 1008938,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/color-tokens.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/color-tokens.svg",
+      "sha256": "3ce6946c691382206eeb8dc6547b4fdc282ec4b13c2d4a78c6b4be62fdeab90e",
+      "git_blob": "4f6e90282a271a807f994566d200f6ff4914336f",
+      "bytes": 2217751,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/color-tokens.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/color-tokens.svg",
+      "sha256": "3ce6946c691382206eeb8dc6547b4fdc282ec4b13c2d4a78c6b4be62fdeab90e",
+      "git_blob": "4f6e90282a271a807f994566d200f6ff4914336f",
+      "bytes": 2217751,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/color-tokens.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/color-tokens.svg",
+      "sha256": "3ce6946c691382206eeb8dc6547b4fdc282ec4b13c2d4a78c6b4be62fdeab90e",
+      "git_blob": "4f6e90282a271a807f994566d200f6ff4914336f",
+      "bytes": 2217751,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/color-tokens.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/color-tokens.svg",
+      "sha256": "3ce6946c691382206eeb8dc6547b4fdc282ec4b13c2d4a78c6b4be62fdeab90e",
+      "git_blob": "4f6e90282a271a807f994566d200f6ff4914336f",
+      "bytes": 2217751,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/filters-block.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/filters-block.svg",
+      "sha256": "9fb42419326bdfce6c86979ec802ae9dea04daa90ba9edb05abc374c07e4d0a2",
+      "git_blob": "bcbc373baf78c4680ec6d9ef1097cd87d786362c",
+      "bytes": 3966081,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/filters-block.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/filters-block.svg",
+      "sha256": "9fb42419326bdfce6c86979ec802ae9dea04daa90ba9edb05abc374c07e4d0a2",
+      "git_blob": "bcbc373baf78c4680ec6d9ef1097cd87d786362c",
+      "bytes": 3966081,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/filters-block.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/filters-block.svg",
+      "sha256": "9fb42419326bdfce6c86979ec802ae9dea04daa90ba9edb05abc374c07e4d0a2",
+      "git_blob": "bcbc373baf78c4680ec6d9ef1097cd87d786362c",
+      "bytes": 3966081,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/filters-block.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/filters-block.svg",
+      "sha256": "9fb42419326bdfce6c86979ec802ae9dea04daa90ba9edb05abc374c07e4d0a2",
+      "git_blob": "bcbc373baf78c4680ec6d9ef1097cd87d786362c",
+      "bytes": 3966081,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/menu.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/menu.svg",
+      "sha256": "3fc91324df1e122da1c545290ba2a6ad193b9b2d5aa3c6608df62f21a3f4ce52",
+      "git_blob": "e87c1adc53b1ffbd365fae95bf1505cd9b1257ee",
+      "bytes": 619331,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/menu.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/menu.svg",
+      "sha256": "3fc91324df1e122da1c545290ba2a6ad193b9b2d5aa3c6608df62f21a3f4ce52",
+      "git_blob": "e87c1adc53b1ffbd365fae95bf1505cd9b1257ee",
+      "bytes": 619331,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/menu.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/menu.svg",
+      "sha256": "3fc91324df1e122da1c545290ba2a6ad193b9b2d5aa3c6608df62f21a3f4ce52",
+      "git_blob": "e87c1adc53b1ffbd365fae95bf1505cd9b1257ee",
+      "bytes": 619331,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/menu.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/menu.svg",
+      "sha256": "3fc91324df1e122da1c545290ba2a6ad193b9b2d5aa3c6608df62f21a3f4ce52",
+      "git_blob": "e87c1adc53b1ffbd365fae95bf1505cd9b1257ee",
+      "bytes": 619331,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/primitives-color.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/primitives-color.svg",
+      "sha256": "abe3853164f4f02ed4ac4f06f5c920fed2d88eac665a192c15df7b14a2334a43",
+      "git_blob": "6310b95b8dac9fbbea41143ce958812cb1505db0",
+      "bytes": 1083426,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/primitives-color.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/primitives-color.svg",
+      "sha256": "abe3853164f4f02ed4ac4f06f5c920fed2d88eac665a192c15df7b14a2334a43",
+      "git_blob": "6310b95b8dac9fbbea41143ce958812cb1505db0",
+      "bytes": 1083426,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/primitives-color.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/primitives-color.svg",
+      "sha256": "abe3853164f4f02ed4ac4f06f5c920fed2d88eac665a192c15df7b14a2334a43",
+      "git_blob": "6310b95b8dac9fbbea41143ce958812cb1505db0",
+      "bytes": 1083426,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/primitives-color.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/primitives-color.svg",
+      "sha256": "abe3853164f4f02ed4ac4f06f5c920fed2d88eac665a192c15df7b14a2334a43",
+      "git_blob": "6310b95b8dac9fbbea41143ce958812cb1505db0",
+      "bytes": 1083426,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/search.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/search.svg",
+      "sha256": "dc65fe52b301133d21e54bcdd9430ede06e3a19b2f00750c69e81edd8c45f2ff",
+      "git_blob": "e9a9cd033a451d6d4b4f7403eb54a248706a4877",
+      "bytes": 687519,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/search.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/search.svg",
+      "sha256": "dc65fe52b301133d21e54bcdd9430ede06e3a19b2f00750c69e81edd8c45f2ff",
+      "git_blob": "e9a9cd033a451d6d4b4f7403eb54a248706a4877",
+      "bytes": 687519,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/search.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/search.svg",
+      "sha256": "dc65fe52b301133d21e54bcdd9430ede06e3a19b2f00750c69e81edd8c45f2ff",
+      "git_blob": "e9a9cd033a451d6d4b4f7403eb54a248706a4877",
+      "bytes": 687519,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/search.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/search.svg",
+      "sha256": "dc65fe52b301133d21e54bcdd9430ede06e3a19b2f00750c69e81edd8c45f2ff",
+      "git_blob": "e9a9cd033a451d6d4b4f7403eb54a248706a4877",
+      "bytes": 687519,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/side menu.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/side menu.svg",
+      "sha256": "82689152ee4657e40ecd13a72588638de748221aa7aeaf2ed13c0d72a35ef0fc",
+      "git_blob": "81ada07b72805f9e870f759ef757a9fd2dede28c",
+      "bytes": 529426,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/side menu.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/side menu.svg",
+      "sha256": "82689152ee4657e40ecd13a72588638de748221aa7aeaf2ed13c0d72a35ef0fc",
+      "git_blob": "81ada07b72805f9e870f759ef757a9fd2dede28c",
+      "bytes": 529426,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/side menu.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/side menu.svg",
+      "sha256": "82689152ee4657e40ecd13a72588638de748221aa7aeaf2ed13c0d72a35ef0fc",
+      "git_blob": "81ada07b72805f9e870f759ef757a9fd2dede28c",
+      "bytes": 529426,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/side menu.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/side menu.svg",
+      "sha256": "82689152ee4657e40ecd13a72588638de748221aa7aeaf2ed13c0d72a35ef0fc",
+      "git_blob": "81ada07b72805f9e870f759ef757a9fd2dede28c",
+      "bytes": 529426,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/tabl-text.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/tabl-text.svg",
+      "sha256": "bc65ad0031e72a1943f88a3960fc7f445f113631569e289d8a74d7f0e6361f41",
+      "git_blob": "84a92d52a1854747a1928e034d0a2a299749354e",
+      "bytes": 2015786,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/tabl-text.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/tabl-text.svg",
+      "sha256": "bc65ad0031e72a1943f88a3960fc7f445f113631569e289d8a74d7f0e6361f41",
+      "git_blob": "84a92d52a1854747a1928e034d0a2a299749354e",
+      "bytes": 2015786,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/tabl-text.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/tabl-text.svg",
+      "sha256": "bc65ad0031e72a1943f88a3960fc7f445f113631569e289d8a74d7f0e6361f41",
+      "git_blob": "84a92d52a1854747a1928e034d0a2a299749354e",
+      "bytes": 2015786,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/tabl-text.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/tabl-text.svg",
+      "sha256": "bc65ad0031e72a1943f88a3960fc7f445f113631569e289d8a74d7f0e6361f41",
+      "git_blob": "84a92d52a1854747a1928e034d0a2a299749354e",
+      "bytes": 2015786,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/text-fields.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/text-fields.svg",
+      "sha256": "c4697e9e8c7f26d5a4826e3ea1e5fa499810a622399057fb4a38bf687b5fe8e4",
+      "git_blob": "a5747224195778a9be5e8ccb3b0ef9b11d33d34f",
+      "bytes": 834571,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/text-fields.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/text-fields.svg",
+      "sha256": "c4697e9e8c7f26d5a4826e3ea1e5fa499810a622399057fb4a38bf687b5fe8e4",
+      "git_blob": "a5747224195778a9be5e8ccb3b0ef9b11d33d34f",
+      "bytes": 834571,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/text-fields.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/text-fields.svg",
+      "sha256": "c4697e9e8c7f26d5a4826e3ea1e5fa499810a622399057fb4a38bf687b5fe8e4",
+      "git_blob": "a5747224195778a9be5e8ccb3b0ef9b11d33d34f",
+      "bytes": 834571,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/text-fields.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/text-fields.svg",
+      "sha256": "c4697e9e8c7f26d5a4826e3ea1e5fa499810a622399057fb4a38bf687b5fe8e4",
+      "git_blob": "a5747224195778a9be5e8ccb3b0ef9b11d33d34f",
+      "bytes": 834571,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/upload.svg",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/design/brand/SVG COMPONENTS/upload.svg",
+      "sha256": "db7868bd8d6d5855a30e134a25ff584a20dbd1f0281740a4c4f62a60fa02327e",
+      "git_blob": "9f0e81d2b07ee0d796c1d0bb7747478dcc614eca",
+      "bytes": 2684582,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/upload.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/design/brand/SVG COMPONENTS/upload.svg",
+      "sha256": "db7868bd8d6d5855a30e134a25ff584a20dbd1f0281740a4c4f62a60fa02327e",
+      "git_blob": "9f0e81d2b07ee0d796c1d0bb7747478dcc614eca",
+      "bytes": 2684582,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/upload.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/design/brand/SVG COMPONENTS/upload.svg",
+      "sha256": "db7868bd8d6d5855a30e134a25ff584a20dbd1f0281740a4c4f62a60fa02327e",
+      "git_blob": "9f0e81d2b07ee0d796c1d0bb7747478dcc614eca",
+      "bytes": 2684582,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/design/brand/SVG COMPONENTS/upload.svg",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/design/brand/SVG COMPONENTS/upload.svg",
+      "sha256": "db7868bd8d6d5855a30e134a25ff584a20dbd1f0281740a4c4f62a60fa02327e",
+      "git_blob": "9f0e81d2b07ee0d796c1d0bb7747478dcc614eca",
+      "bytes": 2684582,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-before-r4-20261009.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/admin-before-r4-20261009.html",
+      "sha256": "f787576ae95ff6e4677f6e22916ebd4e69ccf9436715a901b03ecf2ab715a846",
+      "git_blob": "17a969b31592209c9a533f153d7e29e5b6c20d16",
+      "bytes": 18658858,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-before-r4-20261009.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/admin-before-r4-20261009.html",
+      "sha256": "f787576ae95ff6e4677f6e22916ebd4e69ccf9436715a901b03ecf2ab715a846",
+      "git_blob": "17a969b31592209c9a533f153d7e29e5b6c20d16",
+      "bytes": 18658858,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-before-r4-20261009.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/admin-before-r4-20261009.html",
+      "sha256": "f787576ae95ff6e4677f6e22916ebd4e69ccf9436715a901b03ecf2ab715a846",
+      "git_blob": "17a969b31592209c9a533f153d7e29e5b6c20d16",
+      "bytes": 18658858,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-before-r4-20261009.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/admin-before-r4-20261009.html",
+      "sha256": "f787576ae95ff6e4677f6e22916ebd4e69ccf9436715a901b03ecf2ab715a846",
+      "git_blob": "17a969b31592209c9a533f153d7e29e5b6c20d16",
+      "bytes": 18658858,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-before-r5-20261010.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/admin-before-r5-20261010.html",
+      "sha256": "9156ebf358bb38f31348825c85876a1c0c2b98166e4cd1cc096970026ce17345",
+      "git_blob": "24a1af7375248587e214b9edce0ff2acd678c437",
+      "bytes": 19081053,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-before-r5-20261010.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/admin-before-r5-20261010.html",
+      "sha256": "9156ebf358bb38f31348825c85876a1c0c2b98166e4cd1cc096970026ce17345",
+      "git_blob": "24a1af7375248587e214b9edce0ff2acd678c437",
+      "bytes": 19081053,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-before-r5-20261010.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/admin-before-r5-20261010.html",
+      "sha256": "9156ebf358bb38f31348825c85876a1c0c2b98166e4cd1cc096970026ce17345",
+      "git_blob": "24a1af7375248587e214b9edce0ff2acd678c437",
+      "bytes": 19081053,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-before-r5-20261010.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/admin-before-r5-20261010.html",
+      "sha256": "9156ebf358bb38f31348825c85876a1c0c2b98166e4cd1cc096970026ce17345",
+      "git_blob": "24a1af7375248587e214b9edce0ff2acd678c437",
+      "bytes": 19081053,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-final.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/admin-final.html",
+      "sha256": "227d1daa0a03d4295eabae914d62a432f0ccfe9b96a5c7b6f59fe0b4c1473b28",
+      "git_blob": "dd74a0f7ab78f2d67f1ed79c7f465ce6f552ccae",
+      "bytes": 21188964,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/admin-final.html",
+      "sha256": "227d1daa0a03d4295eabae914d62a432f0ccfe9b96a5c7b6f59fe0b4c1473b28",
+      "git_blob": "dd74a0f7ab78f2d67f1ed79c7f465ce6f552ccae",
+      "bytes": 21188964,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/admin-final.html",
+      "sha256": "227d1daa0a03d4295eabae914d62a432f0ccfe9b96a5c7b6f59fe0b4c1473b28",
+      "git_blob": "dd74a0f7ab78f2d67f1ed79c7f465ce6f552ccae",
+      "bytes": 21188964,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/admin-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/admin-final.html",
+      "sha256": "227d1daa0a03d4295eabae914d62a432f0ccfe9b96a5c7b6f59fe0b4c1473b28",
+      "git_blob": "dd74a0f7ab78f2d67f1ed79c7f465ce6f552ccae",
+      "bytes": 21188964,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/headman-final.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/headman-final.html",
+      "sha256": "eb140046530c1106e1f49969418395c8416b3a703e41f7068b93ecbf3b05629d",
+      "git_blob": "66f9c36f58f015494c591a3aa656d9861025099d",
+      "bytes": 18605802,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/headman-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/headman-final.html",
+      "sha256": "eb140046530c1106e1f49969418395c8416b3a703e41f7068b93ecbf3b05629d",
+      "git_blob": "66f9c36f58f015494c591a3aa656d9861025099d",
+      "bytes": 18605802,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/headman-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/headman-final.html",
+      "sha256": "eb140046530c1106e1f49969418395c8416b3a703e41f7068b93ecbf3b05629d",
+      "git_blob": "66f9c36f58f015494c591a3aa656d9861025099d",
+      "bytes": 18605802,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/headman-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/headman-final.html",
+      "sha256": "eb140046530c1106e1f49969418395c8416b3a703e41f7068b93ecbf3b05629d",
+      "git_blob": "66f9c36f58f015494c591a3aa656d9861025099d",
+      "bytes": 18605802,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/headman-profile-more.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/headman-profile-more.html",
+      "sha256": "f94fa23a94830de41d73efecaff151d294f75891433dcaa8e7214a5b932d0b80",
+      "git_blob": "046b2c167ae602b7bed75f0ae205b506614496ce",
+      "bytes": 661161,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/headman-profile-more.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/headman-profile-more.html",
+      "sha256": "f94fa23a94830de41d73efecaff151d294f75891433dcaa8e7214a5b932d0b80",
+      "git_blob": "046b2c167ae602b7bed75f0ae205b506614496ce",
+      "bytes": 661161,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/headman-profile-more.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/headman-profile-more.html",
+      "sha256": "f94fa23a94830de41d73efecaff151d294f75891433dcaa8e7214a5b932d0b80",
+      "git_blob": "046b2c167ae602b7bed75f0ae205b506614496ce",
+      "bytes": 661161,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/headman-profile-more.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/headman-profile-more.html",
+      "sha256": "f94fa23a94830de41d73efecaff151d294f75891433dcaa8e7214a5b932d0b80",
+      "git_blob": "046b2c167ae602b7bed75f0ae205b506614496ce",
+      "bytes": 661161,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-final.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/student-final.html",
+      "sha256": "277893affdf3a9cf35f21e42b5e4197e36dadb932321d1dd21df27fd0be909f1",
+      "git_blob": "42f8895f950fe813700f02b07884256a5c77a428",
+      "bytes": 29715526,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/student-final.html",
+      "sha256": "277893affdf3a9cf35f21e42b5e4197e36dadb932321d1dd21df27fd0be909f1",
+      "git_blob": "42f8895f950fe813700f02b07884256a5c77a428",
+      "bytes": 29715526,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/student-final.html",
+      "sha256": "277893affdf3a9cf35f21e42b5e4197e36dadb932321d1dd21df27fd0be909f1",
+      "git_blob": "42f8895f950fe813700f02b07884256a5c77a428",
+      "bytes": 29715526,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/student-final.html",
+      "sha256": "277893affdf3a9cf35f21e42b5e4197e36dadb932321d1dd21df27fd0be909f1",
+      "git_blob": "42f8895f950fe813700f02b07884256a5c77a428",
+      "bytes": 29715526,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-homework-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/student-homework-2026-10-05.html",
+      "sha256": "66dcc1ecd7c0781ea09e443bd325a12e17594e8e91834e74d790404a6682a7a0",
+      "git_blob": "8ada5918cf86554fb235204ab832b2dbccd3d6ea",
+      "bytes": 3916508,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-homework-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/student-homework-2026-10-05.html",
+      "sha256": "66dcc1ecd7c0781ea09e443bd325a12e17594e8e91834e74d790404a6682a7a0",
+      "git_blob": "8ada5918cf86554fb235204ab832b2dbccd3d6ea",
+      "bytes": 3916508,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-homework-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/student-homework-2026-10-05.html",
+      "sha256": "66dcc1ecd7c0781ea09e443bd325a12e17594e8e91834e74d790404a6682a7a0",
+      "git_blob": "8ada5918cf86554fb235204ab832b2dbccd3d6ea",
+      "bytes": 3916508,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-homework-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/student-homework-2026-10-05.html",
+      "sha256": "66dcc1ecd7c0781ea09e443bd325a12e17594e8e91834e74d790404a6682a7a0",
+      "git_blob": "8ada5918cf86554fb235204ab832b2dbccd3d6ea",
+      "bytes": 3916508,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-map-profile-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/student-map-profile-2026-10-05.html",
+      "sha256": "ffd5d18a95858f4053fa9844fb168f3a8891358e2b56e913221b20fe9c4733f0",
+      "git_blob": "8a008a694f433b3cdcb8744ee56243cb2b780a48",
+      "bytes": 1983511,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-map-profile-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/student-map-profile-2026-10-05.html",
+      "sha256": "ffd5d18a95858f4053fa9844fb168f3a8891358e2b56e913221b20fe9c4733f0",
+      "git_blob": "8a008a694f433b3cdcb8744ee56243cb2b780a48",
+      "bytes": 1983511,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-map-profile-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/student-map-profile-2026-10-05.html",
+      "sha256": "ffd5d18a95858f4053fa9844fb168f3a8891358e2b56e913221b20fe9c4733f0",
+      "git_blob": "8a008a694f433b3cdcb8744ee56243cb2b780a48",
+      "bytes": 1983511,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-map-profile-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/student-map-profile-2026-10-05.html",
+      "sha256": "ffd5d18a95858f4053fa9844fb168f3a8891358e2b56e913221b20fe9c4733f0",
+      "git_blob": "8a008a694f433b3cdcb8744ee56243cb2b780a48",
+      "bytes": 1983511,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-requests-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/student-requests-2026-10-05.html",
+      "sha256": "bda440be0e28365ad3eec0367229849c5210ef75fee2aef4c40365c5ece65ee3",
+      "git_blob": "3db351d62975a7c70629071b7e5e2de32f51fdff",
+      "bytes": 2645792,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-requests-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/student-requests-2026-10-05.html",
+      "sha256": "bda440be0e28365ad3eec0367229849c5210ef75fee2aef4c40365c5ece65ee3",
+      "git_blob": "3db351d62975a7c70629071b7e5e2de32f51fdff",
+      "bytes": 2645792,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-requests-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/student-requests-2026-10-05.html",
+      "sha256": "bda440be0e28365ad3eec0367229849c5210ef75fee2aef4c40365c5ece65ee3",
+      "git_blob": "3db351d62975a7c70629071b7e5e2de32f51fdff",
+      "bytes": 2645792,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-requests-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/student-requests-2026-10-05.html",
+      "sha256": "bda440be0e28365ad3eec0367229849c5210ef75fee2aef4c40365c5ece65ee3",
+      "git_blob": "3db351d62975a7c70629071b7e5e2de32f51fdff",
+      "bytes": 2645792,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-statistics-2026-10-05-r2.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/student-statistics-2026-10-05-r2.html",
+      "sha256": "4693b26a92e9a78e7acb98114e61e8d7fc23969bdd777932a9f267ef00f013b9",
+      "git_blob": "5ace999f024b9f497f0a39f634d0c80b5e69dd4f",
+      "bytes": 2120735,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-statistics-2026-10-05-r2.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/student-statistics-2026-10-05-r2.html",
+      "sha256": "4693b26a92e9a78e7acb98114e61e8d7fc23969bdd777932a9f267ef00f013b9",
+      "git_blob": "5ace999f024b9f497f0a39f634d0c80b5e69dd4f",
+      "bytes": 2120735,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-statistics-2026-10-05-r2.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/student-statistics-2026-10-05-r2.html",
+      "sha256": "4693b26a92e9a78e7acb98114e61e8d7fc23969bdd777932a9f267ef00f013b9",
+      "git_blob": "5ace999f024b9f497f0a39f634d0c80b5e69dd4f",
+      "bytes": 2120735,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-statistics-2026-10-05-r2.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/student-statistics-2026-10-05-r2.html",
+      "sha256": "4693b26a92e9a78e7acb98114e61e8d7fc23969bdd777932a9f267ef00f013b9",
+      "git_blob": "5ace999f024b9f497f0a39f634d0c80b5e69dd4f",
+      "bytes": 2120735,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-statistics-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/student-statistics-2026-10-05.html",
+      "sha256": "4765734a0d299fccb64ce34fdc0d9deba4b3ccd18fddc9f5e0299db239237054",
+      "git_blob": "553a6395f61f47e6d87816ff4ac984733cc8dbd8",
+      "bytes": 4794941,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-statistics-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/student-statistics-2026-10-05.html",
+      "sha256": "4765734a0d299fccb64ce34fdc0d9deba4b3ccd18fddc9f5e0299db239237054",
+      "git_blob": "553a6395f61f47e6d87816ff4ac984733cc8dbd8",
+      "bytes": 4794941,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-statistics-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/student-statistics-2026-10-05.html",
+      "sha256": "4765734a0d299fccb64ce34fdc0d9deba4b3ccd18fddc9f5e0299db239237054",
+      "git_blob": "553a6395f61f47e6d87816ff4ac984733cc8dbd8",
+      "bytes": 4794941,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-statistics-2026-10-05.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/student-statistics-2026-10-05.html",
+      "sha256": "4765734a0d299fccb64ce34fdc0d9deba4b3ccd18fddc9f5e0299db239237054",
+      "git_blob": "553a6395f61f47e6d87816ff4ac984733cc8dbd8",
+      "bytes": 4794941,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-today-attendance-2026-10-04-r2.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/student-today-attendance-2026-10-04-r2.html",
+      "sha256": "44a29c018a1bbca44abe39776ebe58ff16b46962e752ff5f2eb8f274f2495ca0",
+      "git_blob": "c634de269332543df89fde96780a270753f401c0",
+      "bytes": 14652705,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-today-attendance-2026-10-04-r2.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/student-today-attendance-2026-10-04-r2.html",
+      "sha256": "44a29c018a1bbca44abe39776ebe58ff16b46962e752ff5f2eb8f274f2495ca0",
+      "git_blob": "c634de269332543df89fde96780a270753f401c0",
+      "bytes": 14652705,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-today-attendance-2026-10-04-r2.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/student-today-attendance-2026-10-04-r2.html",
+      "sha256": "44a29c018a1bbca44abe39776ebe58ff16b46962e752ff5f2eb8f274f2495ca0",
+      "git_blob": "c634de269332543df89fde96780a270753f401c0",
+      "bytes": 14652705,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/student-today-attendance-2026-10-04-r2.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/student-today-attendance-2026-10-04-r2.html",
+      "sha256": "44a29c018a1bbca44abe39776ebe58ff16b46962e752ff5f2eb8f274f2495ca0",
+      "git_blob": "c634de269332543df89fde96780a270753f401c0",
+      "bytes": 14652705,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-20261008.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/teacher-20261008.html",
+      "sha256": "c80385e63499bd47eaec8f4e9010561953d3824501e874355323027c531cb9cf",
+      "git_blob": "59dceb2937fe9d0724e6e9707706713366d2e710",
+      "bytes": 5255175,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-20261008.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/teacher-20261008.html",
+      "sha256": "c80385e63499bd47eaec8f4e9010561953d3824501e874355323027c531cb9cf",
+      "git_blob": "59dceb2937fe9d0724e6e9707706713366d2e710",
+      "bytes": 5255175,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-20261008.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/teacher-20261008.html",
+      "sha256": "c80385e63499bd47eaec8f4e9010561953d3824501e874355323027c531cb9cf",
+      "git_blob": "59dceb2937fe9d0724e6e9707706713366d2e710",
+      "bytes": 5255175,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-20261008.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/teacher-20261008.html",
+      "sha256": "c80385e63499bd47eaec8f4e9010561953d3824501e874355323027c531cb9cf",
+      "git_blob": "59dceb2937fe9d0724e6e9707706713366d2e710",
+      "bytes": 5255175,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-before-r4-20261009.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/teacher-before-r4-20261009.html",
+      "sha256": "4a218db6f4e618f6eed9065fbf7e15681f97285130dd3c96ab53f05e3660abac",
+      "git_blob": "f0901b4ab4bef26d3bf0223a2a1c3ad1702c8d15",
+      "bytes": 6788228,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-before-r4-20261009.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/teacher-before-r4-20261009.html",
+      "sha256": "4a218db6f4e618f6eed9065fbf7e15681f97285130dd3c96ab53f05e3660abac",
+      "git_blob": "f0901b4ab4bef26d3bf0223a2a1c3ad1702c8d15",
+      "bytes": 6788228,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-before-r4-20261009.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/teacher-before-r4-20261009.html",
+      "sha256": "4a218db6f4e618f6eed9065fbf7e15681f97285130dd3c96ab53f05e3660abac",
+      "git_blob": "f0901b4ab4bef26d3bf0223a2a1c3ad1702c8d15",
+      "bytes": 6788228,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-before-r4-20261009.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/teacher-before-r4-20261009.html",
+      "sha256": "4a218db6f4e618f6eed9065fbf7e15681f97285130dd3c96ab53f05e3660abac",
+      "git_blob": "f0901b4ab4bef26d3bf0223a2a1c3ad1702c8d15",
+      "bytes": 6788228,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-before-r5-20261010.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/teacher-before-r5-20261010.html",
+      "sha256": "3724abaa7bc4c905ad87333b5b1a900314465c19484ff273a6dac50a80dd0501",
+      "git_blob": "30ed9f543583ea3f0ff33ac66d3dd6d857f06e39",
+      "bytes": 8164017,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-before-r5-20261010.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/teacher-before-r5-20261010.html",
+      "sha256": "3724abaa7bc4c905ad87333b5b1a900314465c19484ff273a6dac50a80dd0501",
+      "git_blob": "30ed9f543583ea3f0ff33ac66d3dd6d857f06e39",
+      "bytes": 8164017,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-before-r5-20261010.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/teacher-before-r5-20261010.html",
+      "sha256": "3724abaa7bc4c905ad87333b5b1a900314465c19484ff273a6dac50a80dd0501",
+      "git_blob": "30ed9f543583ea3f0ff33ac66d3dd6d857f06e39",
+      "bytes": 8164017,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-before-r5-20261010.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/teacher-before-r5-20261010.html",
+      "sha256": "3724abaa7bc4c905ad87333b5b1a900314465c19484ff273a6dac50a80dd0501",
+      "git_blob": "30ed9f543583ea3f0ff33ac66d3dd6d857f06e39",
+      "bytes": 8164017,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-final.html",
+      "copy_path": "/workspace/rct-worktrees/security-fingerprint/docs/presentations/teacher-final.html",
+      "sha256": "fca83689698f9758cbd88e62691a0c996b9c7dbdf5bc038e5138641e70160551",
+      "git_blob": "0d05becd4d87e73b1b3fa3fcfb8f584a00376ca4",
+      "bytes": 22175655,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-contract/docs/presentations/teacher-final.html",
+      "sha256": "fca83689698f9758cbd88e62691a0c996b9c7dbdf5bc038e5138641e70160551",
+      "git_blob": "0d05becd4d87e73b1b3fa3fcfb8f584a00376ca4",
+      "bytes": 22175655,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-domain-bot/docs/presentations/teacher-final.html",
+      "sha256": "fca83689698f9758cbd88e62691a0c996b9c7dbdf5bc038e5138641e70160551",
+      "git_blob": "0d05becd4d87e73b1b3fa3fcfb8f584a00376ca4",
+      "bytes": 22175655,
+      "mode": "0o600"
+    },
+    {
+      "root_path": "/workspace/rutcampustrack/docs/presentations/teacher-final.html",
+      "copy_path": "/workspace/rct-worktrees/np01-config/docs/presentations/teacher-final.html",
+      "sha256": "fca83689698f9758cbd88e62691a0c996b9c7dbdf5bc038e5138641e70160551",
+      "git_blob": "0d05becd4d87e73b1b3fa3fcfb8f584a00376ca4",
+      "bytes": 22175655,
+      "mode": "0o600"
+    }
+  ],
+  "free_before": 5280665600,
+  "planned_reclaim_bytes": 805169332,
+  "freeze": "historicalassets COW before any latermodification"
+}

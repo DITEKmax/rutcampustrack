@@ -1,0 +1,16 @@
+{
+  "reason": "exact safe machine outputs compressed to preserve byte provenance and existing max-file-size hook",
+  "original_files": [
+    {
+      "file": "family-coverage.json",
+      "sha256": "69778ebfd1c7a17a6046eee3817a0e34b99a14d99b9f1b38d22356107f63ad44",
+      "bytes": 1057373
+    },
+    {
+      "file": "known-test-assertion-catalog.json",
+      "sha256": "b1eeee0157b95a41c811738e301d379ea4168206314a9a21feb29663267783c7",
+      "bytes": 1617592
+    }
+  ],
+  "zip_sha256": "b249ba805912be087624054f3c7ba2e6c42ad904fdf12daafed449c4ff1482b3"
+}

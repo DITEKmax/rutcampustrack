@@ -1,6 +1,12 @@
 package ru.rutcampustrack.notification.csp;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import io.micrometer.core.instrument.MeterRegistry;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,31 +22,26 @@ import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 import ru.rutcampustrack.shared.observability.MetricNames;
 import ru.rutcampustrack.shared.testcontainers.ContainerTestBase;
 
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 /**
  * M13 G16 — IT для /csp-report endpoint (через MockMvc).
  *
  * <p>Проверяет что:
+ *
  * <ul>
- *   <li>Endpoint достижим БЕЗ Internal JWT headers (auth excluded).</li>
- *   <li>Legacy {@code application/csp-report} → 204 + counter increment.</li>
- *   <li>Modern {@code application/reports+json} → 204 + counter increment.</li>
- *   <li>Unsupported Content-Type → 415.</li>
- *   <li>Counter реально зарегистрирован в глобальном {@link MeterRegistry}
- *   (значит /actuator/prometheus expose'ит его).</li>
+ *   <li>Endpoint достижим БЕЗ Internal JWT headers (auth excluded).
+ *   <li>Legacy {@code application/csp-report} → 204 + counter increment.
+ *   <li>Modern {@code application/reports+json} → 204 + counter increment.
+ *   <li>Unsupported Content-Type → 415.
+ *   <li>Counter реально зарегистрирован в глобальном {@link MeterRegistry} (значит
+ *       /actuator/prometheus expose'ит его).
  * </ul>
  */
-@SpringBootTest(properties = {
-        "notification.bot-preferences.token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-        "vapid.public-key=BKR2jT5k1Iu93_V8AHx3cpqE",
-        "vapid.private-key=test-priv"
-})
+@SpringBootTest(
+        properties = {
+            "notification.bot-preferences.token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "vapid.public-key=BKR2jT5k1Iu93_V8AHx3cpqE",
+            "vapid.private-key=test-priv"
+        })
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class CspReportIT extends ContainerTestBase {
@@ -48,19 +49,16 @@ class CspReportIT extends ContainerTestBase {
     @DynamicPropertySource
     static void testKeyPath(DynamicPropertyRegistry registry) {
         try {
-            Path keyFile = Path.of(
-                    CspReportIT.class.getResource("/test-public.pem").toURI());
+            Path keyFile = Path.of(CspReportIT.class.getResource("/test-public.pem").toURI());
             registry.add("notification.jwt.public-key-path", keyFile::toString);
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    @Autowired
-    private MockMvc mvc;
+    @Autowired private MockMvc mvc;
 
-    @Autowired
-    private MeterRegistry registry;
+    @Autowired private MeterRegistry registry;
 
     @org.springframework.test.context.bean.override.mockito.MockitoBean
     private PushSubscriptionRepository pushRepo;
@@ -83,7 +81,8 @@ class CspReportIT extends ContainerTestBase {
     @Test
     @DisplayName("Legacy application/csp-report → 204 + counter increments")
     void legacyFormat() throws Exception {
-        String json = """
+        String json =
+                """
                 {
                   "csp-report": {
                     "violated-directive": "script-src 'self'",
@@ -93,16 +92,15 @@ class CspReportIT extends ContainerTestBase {
                 }
                 """;
 
-        mvc.perform(post("/csp-report")
-                        .contentType("application/csp-report")
-                        .content(json))
+        mvc.perform(post("/csp-report").contentType("application/csp-report").content(json))
                 .andExpect(status().isNoContent());
 
         assertThat(totalCspCounter() - counterBefore).isEqualTo(1.0);
-        assertThat(registry.find(MetricNames.CSP_VIOLATIONS)
-                .tag("directive", "script-src")
-                .tag("blocked_uri_host", "evil.example.com")
-                .counter())
+        assertThat(
+                        registry.find(MetricNames.CSP_VIOLATIONS)
+                                .tag("directive", "script-src")
+                                .tag("blocked_uri_host", "evil.example.com")
+                                .counter())
                 .as("counter с нужными тегами зарегистрирован")
                 .isNotNull();
     }
@@ -110,7 +108,8 @@ class CspReportIT extends ContainerTestBase {
     @Test
     @DisplayName("Modern application/reports+json → 204 + counter increments per entry")
     void modernReportsApi() throws Exception {
-        String json = """
+        String json =
+                """
                 [
                   {
                     "type": "csp-violation",
@@ -131,27 +130,25 @@ class CspReportIT extends ContainerTestBase {
                 ]
                 """;
 
-        mvc.perform(post("/csp-report")
-                        .contentType("application/reports+json")
-                        .content(json))
+        mvc.perform(post("/csp-report").contentType("application/reports+json").content(json))
                 .andExpect(status().isNoContent());
 
         assertThat(totalCspCounter() - counterBefore).isEqualTo(2.0);
     }
 
     @Test
-    @DisplayName("application/json (прокси-rewritten) с top-level fields → 204 + counter increments")
+    @DisplayName(
+            "application/json (прокси-rewritten) с top-level fields → 204 + counter increments")
     void plainJsonWithTopLevelFields() throws Exception {
-        String json = """
+        String json =
+                """
                 {
                   "violated-directive": "font-src",
                   "blocked-uri": "https://fonts.example.com/font.woff2"
                 }
                 """;
 
-        mvc.perform(post("/csp-report")
-                        .contentType("application/json")
-                        .content(json))
+        mvc.perform(post("/csp-report").contentType("application/json").content(json))
                 .andExpect(status().isNoContent());
 
         assertThat(totalCspCounter() - counterBefore).isEqualTo(1.0);
@@ -160,9 +157,7 @@ class CspReportIT extends ContainerTestBase {
     @Test
     @DisplayName("Unsupported Content-Type → 415")
     void unsupportedContentType() throws Exception {
-        mvc.perform(post("/csp-report")
-                        .contentType("text/plain")
-                        .content("something"))
+        mvc.perform(post("/csp-report").contentType("text/plain").content("something"))
                 .andExpect(status().isUnsupportedMediaType());
 
         assertThat(totalCspCounter() - counterBefore).isZero();
@@ -173,13 +168,12 @@ class CspReportIT extends ContainerTestBase {
     void noAuthRequired() throws Exception {
         // Без заголовков (filter в DualModeUserContextFilter бы упал бы
         // с 401 на не-excluded path'е — проверяем что exclude работает).
-        String json = """
+        String json =
+                """
                 {"csp-report": {"violated-directive": "default-src", "blocked-uri": "https://x.example.com"}}
                 """;
 
-        mvc.perform(post("/csp-report")
-                        .contentType("application/csp-report")
-                        .content(json))
+        mvc.perform(post("/csp-report").contentType("application/csp-report").content(json))
                 .andExpect(status().isNoContent());
     }
 

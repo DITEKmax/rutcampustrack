@@ -1,0 +1,5 @@
+Original7f NP01 selective plan: CHANGES_REQUESTED_PLAN, NP01-SENS-ORACLE01/P2. Generic phase03 result can arise before injection from producer/ACK/KeyError; it does not uniquely prove unchanged NEW card assertion. Required plan-only correction: immediate exactNEW positive → successfuldel → unique safephase → unchanged NEW invariant, noawait; Java whitelists uniquephase, stillexit==0. Same2temporarypaths/hunks, no permanent source change.
+
+Java ac58/Python98d3 and all5 sourceinputs actualGitEB exact; original ZIP/hash/CRC verified. Selection/TTL300/privacy/minENV/owncleanup source appropriate with separate fresh resource/ownership/cacheddependency grant and actual cleanup proof. No runtime/mutation/WT creation performed.
+
+AlreadycompletedEBgreen ispre-fault only. New actual restored normal7 must chronologically followred/reap/source-restoration; futurelegitimateCI or separatelyapproved same-method normal run, no artificialproductchange/trigger. Original review immutable afterseal; author separatecorrected plan awaits NEW boundedrecheck. All runtime/sensitivity/family/provider acceptance PENDING.

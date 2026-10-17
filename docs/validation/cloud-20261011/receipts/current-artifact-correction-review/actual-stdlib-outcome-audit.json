@@ -1,0 +1,253 @@
+{
+  "source_hashes": {
+    "bounded-child.py": "7a5420cac523e3a93f671a1ae4839acdbfbb263f7083c61cc81653af5e353a0a",
+    "harmless-tree.py": "a879d65c1cee0e15f370f13f92710c6e0efce2e3011db5261b5985863079fc97",
+    "signal-runner.py": "8e0159dd195006e01ab8d4cd0cffec2799f2eb2985a1e4eba6aaef1e6b7f4a95",
+    "controls.py": "d722cb1096505ce7d5ef83cae2614e1545a6de5f61076755af64372e2a41f40c"
+  },
+  "source_current_equals_final_actual_inputs": true,
+  "cases": [
+    {
+      "name": "normal",
+      "native_result": {
+        "direct_pid": 209126,
+        "native_exit": 0,
+        "terminal_reason": "NATIVE_TERMINAL",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 209126,
+            "start_ticks": 3644789
+          },
+          {
+            "pid": 209127,
+            "start_ticks": 3644794
+          }
+        ],
+        "adopted_waitpid_receipts": [
+          {
+            "pid": 209127,
+            "start_ticks": 3644794,
+            "native_exit": 0
+          }
+        ],
+        "supervision_error_type": null,
+        "phase_success": true
+      },
+      "current_identity_checks": [
+        {
+          "recorded": {
+            "pid": 209126,
+            "start_ticks": 3644789
+          },
+          "current": null,
+          "recorded_identity_absent": true
+        },
+        {
+          "recorded": {
+            "pid": 209127,
+            "start_ticks": 3644794
+          },
+          "current": null,
+          "recorded_identity_absent": true
+        }
+      ],
+      "runtime_by_reviewer": "NOT_RUN"
+    },
+    {
+      "name": "deadline",
+      "native_result": {
+        "direct_pid": 209128,
+        "native_exit": -9,
+        "terminal_reason": "BOUNDED_DEADLINE",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 209128,
+            "start_ticks": 3644815
+          },
+          {
+            "pid": 209129,
+            "start_ticks": 3644818
+          }
+        ],
+        "adopted_waitpid_receipts": [
+          {
+            "pid": 209129,
+            "start_ticks": 3644818,
+            "native_exit": -9
+          }
+        ],
+        "supervision_error_type": null,
+        "phase_success": false
+      },
+      "current_identity_checks": [
+        {
+          "recorded": {
+            "pid": 209128,
+            "start_ticks": 3644815
+          },
+          "current": null,
+          "recorded_identity_absent": true
+        },
+        {
+          "recorded": {
+            "pid": 209129,
+            "start_ticks": 3644818
+          },
+          "current": null,
+          "recorded_identity_absent": true
+        }
+      ],
+      "runtime_by_reviewer": "NOT_RUN"
+    },
+    {
+      "name": "status_failure_during_settlement",
+      "native_result": {
+        "direct_pid": 209130,
+        "native_exit": -9,
+        "terminal_reason": "BOUNDED_DEADLINE",
+        "signal_count": 0,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 209130,
+            "start_ticks": 3644888
+          },
+          {
+            "pid": 209131,
+            "start_ticks": 3644892
+          }
+        ],
+        "adopted_waitpid_receipts": [
+          {
+            "pid": 209131,
+            "start_ticks": 3644892,
+            "native_exit": -9
+          }
+        ],
+        "supervision_error_type": "TypeError",
+        "phase_success": false
+      },
+      "current_identity_checks": [
+        {
+          "recorded": {
+            "pid": 209130,
+            "start_ticks": 3644888
+          },
+          "current": null,
+          "recorded_identity_absent": true
+        },
+        {
+          "recorded": {
+            "pid": 209131,
+            "start_ticks": 3644892
+          },
+          "current": null,
+          "recorded_identity_absent": true
+        }
+      ],
+      "runtime_by_reviewer": "NOT_RUN"
+    },
+    {
+      "name": "two_signals_escaped_descendant",
+      "native_result": {
+        "direct_pid": 209133,
+        "native_exit": -9,
+        "terminal_reason": "STOP_REQUEST",
+        "signal_count": 2,
+        "settled": true,
+        "all_owned_processes_reaped": true,
+        "all_members_including_Z_after": [],
+        "known_owned_identities": [
+          {
+            "pid": 209133,
+            "start_ticks": 3644977
+          },
+          {
+            "pid": 209134,
+            "start_ticks": 3644980
+          }
+        ],
+        "adopted_waitpid_receipts": [
+          {
+            "pid": 209134,
+            "start_ticks": 3644980,
+            "native_exit": -9
+          }
+        ],
+        "supervision_error_type": null,
+        "phase_success": false
+      },
+      "current_identity_checks": [
+        {
+          "recorded": {
+            "pid": 209133,
+            "start_ticks": 3644977
+          },
+          "current": null,
+          "recorded_identity_absent": true
+        },
+        {
+          "recorded": {
+            "pid": 209134,
+            "start_ticks": 3644980
+          },
+          "current": null,
+          "recorded_identity_absent": true
+        }
+      ],
+      "runtime_by_reviewer": "NOT_RUN"
+    }
+  ],
+  "old_exact_AST_counterexample": {
+    "exact_AST_old_group_members": [],
+    "actual_unreaped_owned_Z": {
+      "pid": 209125,
+      "state": "Z",
+      "ppid": 209121,
+      "pgrp": 209124,
+      "session": 209124,
+      "start_ticks": 3644769
+    },
+    "false_all_owned_empty": true,
+    "controller_waitpid_native_exit": 0,
+    "all_counter_PIDs_absent_after": true,
+    "old_PPIDs1_untouched": true
+  },
+  "explicit_env_guard": {
+    "native_exit": 0,
+    "explicit_env_None_rejected_before_launch": true,
+    "own_child_before": [],
+    "own_child_after": [],
+    "parent_environment_read": false,
+    "valid_explicit_map_controls": "retained normal/deadline/status_failure/two_signal results; new guard only precedes existing logic"
+  },
+  "standalone_grant": {
+    "native_exit": 2,
+    "runtime_child_started": false
+  },
+  "preserved_initial_failure": {
+    "at": "2026-10-12T05:18:28.067545+00:00",
+    "native_exit": 1,
+    "phase": "own harmless control",
+    "failure": "normal settled assertion; own status callback passed duplicate state argument -> TypeError, then interrupted settlement callback",
+    "product_failure": false,
+    "correction": "Store observations under separate callback key; supervisor catches status-report error without aborting owned-child settlement. Add actual callback-failure settlement control.",
+    "controller_fallback": "finally killed/reaped only its own new direct/adopted children and asserted no PPIDself child before restoring localsubreaper; no oldPID1process mutation",
+    "old_counterexample_completed": true,
+    "source_before_sha256": "7c478bad0bf668f1e70564ea292360b2c98beef394eafe3f9e23faf1b76eeb3d"
+  },
+  "append_only_attempt_count": 31,
+  "raw_synthetic_control_native_exit": 0,
+  "test_quality": "actual owned Z + independent /proc identity oracle, escaped SID, delayed second signal and reporting error with explicit negative phase_success; no app/runtime acceptance",
+  "limits": "actual wraps/unrelated PID ownership not covered; see new pure-source counterexample"
+}

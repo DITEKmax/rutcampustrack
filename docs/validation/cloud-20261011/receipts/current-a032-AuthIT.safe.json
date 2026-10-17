@@ -1,0 +1,53 @@
+{
+  "revision": "a03215a363aee844f42067fcf5243e7d49f85bff",
+  "artifact": 11863013257,
+  "digest": "sha256:eb9d17a871ce3a3a80dcd07b70a55af1b3bee18a67533b0328ee60d690249edc",
+  "metadata": {
+    "checkoutSha": "9f0732ba13baa2626282692bd5b9aeb4f0531c14",
+    "prHeadSha": "a03215a363aee844f42067fcf5243e7d49f85bff",
+    "service": "auth-service",
+    "task": "integrationTest",
+    "job": "java-integration-test",
+    "runId": "38493688140",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "success"
+  },
+  "counts": {
+    "PASSED": 172,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  },
+  "reader": {
+    "direct_pid": 609641,
+    "native_exit": 0,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 609641,
+        "start_ticks": 19450658
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": true
+  },
+  "qualification": "finite auth suite, no OSrestart/wholeP06/wholeP09/client claim",
+  "exact_P09_case": {
+    "xmlOrdinal": 17,
+    "suiteOrdinal": 1,
+    "ordinal": 1,
+    "classname": "ru.rutcampustrack.auth.integration.RealAuthOpenSocketLogoutIT",
+    "method": "realAuthLogoutStopsNewPrivateDeliveryOnSameOpenSocketWhileControlStillReceives",
+    "status": "PASSED",
+    "identity": "SOURCE_METHOD",
+    "source": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/RealAuthOpenSocketLogoutIT.java",
+    "sourceSha256": "0cfaa412a0b29b392036c38f1e4edc3eea4db1ae19381b5d8246e4faa3088e43"
+  }
+}

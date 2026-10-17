@@ -1,0 +1,49 @@
+[
+  {
+    "id": "BR-T01",
+    "severity": "P2",
+    "type": "CRITICAL_TEST_ORACLE",
+    "status": "SOURCE_CONFIRMED_RUNTIME_NOT_RUN",
+    "file": "services/notification-bot/tests/np01_broker_bridge_runner.py",
+    "line": 336,
+    "observation": "Global contains marker can be satisfied by preexisting foreign card in another chat when required new foreign card in own_chat was removed",
+    "counterexample": "Delete only exact new foreign same-chat card; old foreign card preserves same initial marker and current assertion passes",
+    "required": "Capture exact new foreign card tuple and assert that same tuple/text survives reset cleanup and recovery; preserve old-card distinction",
+    "proof": "Harmless independent dictionary counterexample; no production defect or actual runtime failure inferred"
+  },
+  {
+    "id": "BR-G01",
+    "severity": "P2",
+    "type": "CHILD_ENVIRONMENT_BOUNDARY",
+    "status": "SOURCE_CONFIRMED_RUNTIME_NOT_RUN",
+    "file": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "line": 177,
+    "related_file_line": "services/notification-bot/tests/np01_broker_bridge_runner.py:219",
+    "observation": "Java ProcessBuilder default environment and Python dict(os.environ) inherit unrestricted unrelated parent variables/credentials",
+    "required": "Bound both child environments to necessary OS/runtime names and explicit own synthetic NP01 mapping; no complete parent env copying",
+    "proof": "Source control flow only; no actual parent environment or credential values read"
+  },
+  {
+    "id": "BR-G02",
+    "severity": "P2",
+    "type": "OWNED_PROCESS_FAILURE_CLEANUP",
+    "status": "SOURCE_CONFIRMED_RUNTIME_NOT_RUN",
+    "file": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "line": 405,
+    "counterexample": "On180s supervisor timeout, worker killed then supervisor immediately killed before it can reap worker; orphan zombie may remain/onExit wait fail under unreaping PID1",
+    "required": "Stop/wait captured descendants while their supervisor can reap, then terminate/wait supervisor; preserve explicit bounded failure instead of orphaning child",
+    "proof": "Static POSIX/Java failure cleanup flow; no own process or signals executed"
+  },
+  {
+    "id": "BR-R01",
+    "severity": "P2",
+    "type": "REQUIRED_LOOPBACK_BINDING",
+    "status": "SOURCE_MISSING_REQUIRED_RESTRICTION_RUNTIME_NOT_RUN",
+    "file": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "line": 107,
+    "observation": "No explicit loopback host PortBindings for Testcontainers PG/Rabbit management+AMQP/Redis, despite plan all mapped ports ephemeral loopback; localhost getHost is a connection address only",
+    "counterexample": "Standard empty Docker HostIp bindings expose mapped ports on all interfaces; unauthenticated Redis is then outside claimed loopback boundary",
+    "required": "Explicit ephemeral127.0.0.1 host bindings for every exposed test port, or prove an equivalent enforced binding before any launch; actual binding inspection required",
+    "proof": "Source missing restriction; no actual Docker/public exposure observation claimed"
+  }
+]

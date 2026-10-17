@@ -1,0 +1,33 @@
+{
+  "scanner": "official Gitleaks8.24.3, retained checksum provenance",
+  "command": [
+    "/workspace/scratch/rct-validation/security_fingerprint/gitleaks",
+    "git",
+    "--pre-commit",
+    "--staged",
+    "--redact=100",
+    "--no-banner",
+    "--no-color",
+    "--report-format=json",
+    "--report-path=/workspace/scratch/rct-validation/np01_config/staged.private-redacted.json",
+    "--gitleaks-ignore-path=/workspace/rct-worktrees/np01-config",
+    "/workspace/rct-worktrees/np01-config"
+  ],
+  "exit_code": 0,
+  "findings": 0,
+  "scoped_file_checks": {
+    "services/academic-service/academic-app/src/main/resources/application.yml": {
+      "under_1024KB": true,
+      "EOF": true,
+      "trailing_whitespace": true
+    },
+    "services/notification-bot/bot/config.py": {
+      "under_1024KB": true,
+      "EOF": true,
+      "trailing_whitespace": true
+    }
+  },
+  "yaml_parse": "PASS from verification.safe.json",
+  "json_parse": "N/A",
+  "diff_check": 0
+}

@@ -1,0 +1,19 @@
+# Independent CTR01 source recheck
+
+Verdict: **APPROVE_SOURCE** on clean `db9e1a1fcf9bd50db2e6f2e81286c08cc9ff1dfe`, parent `6e2376c39fa733a0e645d5d929f132a6448a953d`.
+
+**CTR01 P2 is closed at source level.** The exact delta is one literal at `services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/studentprojection/EducationalSessionClockIsolationTest.java:64`: the sole group history now begins `2024-01-01` instead of `2026-01-01` and remains open ended. The rest of the test is byte-equivalent, including the exact expired-session `INVALID_SESSION` expectation. No production/history/security guard was changed.
+
+The actual resolver's `currentGroupAt` includes this row at both Moscow teaching dates, 2025-09-15 and 2030-09-15. Its semester membership clip for September 2026 is nonempty; the sole untransferred group is 10 and agrees with the active grant. Thus the positive past-date case no longer hits the unrelated `INCONSISTENT_SOURCE` history guard. The real session clock remains 2026-09-15 for the live cases and 2026-09-17 for expired cases, around refresh expiry 2026-09-16. Actual session expiry still precedes history resolution and uses real `clock.instant()`; returned serverDate still uses educationalClock.
+
+The corrected fixture preserves meaningful wrong-clock source counterexamples. A live real session with future teaching time would incorrectly throw `INVALID_SESSION` if expiry used the teaching clock. An expired real session with past teaching time would incorrectly resolve successfully, now that its synthetic history is valid, and fail the specific expected `INVALID_SESSION` assertion. These are reviewed prepared oracles; Java compilation, consumer execution and actual sensitivity are **NOT_RUN**.
+
+All other tracked source is unchanged from the frozen review. Independently checked: 29 other paths in the combined Clock inventory, all 58 four-service main files mentioning Clock, critical non-enrolled security/retention sources, and all 9 original immutable review receipts including their manifest SHA. The author correction receipt's source hash matches the actual corrected file. Previous receipts were not edited.
+
+The previous accepted source dispositions therefore carry forward: CC01 typed composition/default Clock/fallback/direct constructor and mixed real-time partition; CC02 recursive nested-JAR scanner and six existing actual-function structural controls; CC03 prepared changed-valid-payload/same-key 409 exact code, public/headman durable markRevision immutability and original ack replay. Source approval closes the previous preparation blocker; it does not transform historical or parser evidence into current runtime proof.
+
+This approval unlocks only a root-measured, bounded lease for current typed source compilation, the 11 prepared consumer cases plus typed context controls, relevant wrong-clock sensitivity/restored green, and actual current JAR/ordinary build-graph/classpath isolation. Preserve exact accepted source and record the actual checked revision. The existing ignored external fixture JAR was independently hashed again and equals the historical 049ab artifact: **DO_NOT_LAUNCH**; build a fresh typed artifact.
+
+Application/browser use remains blocked until those actual controls and artifacts are accepted and a separate lease is assigned. Actual finite geo/D005/CC03 backend/browser proof and receipt-omission sensitivity remain NOT_RUN. Ordinary real-Date security-expiry UI, retention/attachments, archive/report-proof and notification scenarios retain their separate admission requirements. Full-client acceptance and product DONE are not granted.
+
+Reviewer wrote only this new scratch directory. No Java, Gradle, Docker, apps, browser, product mutation, product tests, children or root-doc writes. Requested model/effort remains Sol6.1/xhigh; actual metadata UNKNOWN.

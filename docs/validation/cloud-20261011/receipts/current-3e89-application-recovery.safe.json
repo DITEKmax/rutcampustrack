@@ -1,0 +1,104 @@
+{
+  "artifact": 11871851093,
+  "producer": "3e89c61b282233f4bda2db693bde939a83968bc2",
+  "run": 38513146910,
+  "digest": "sha256:6bf820f23f1a268a3d7bd7afc8e4fcf00dc8e0f7a84747d06d3d2b692dcd85d3",
+  "bytes": 1091,
+  "phases": {
+    "admit": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "application-recovery.spec.ts",
+          "line": 328,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 1245,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    },
+    "pending": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "application-recovery.spec.ts",
+          "line": 328,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 601,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    },
+    "seed": {
+      "status": "passed",
+      "runnerErrors": 0,
+      "unsafeArtifact": false,
+      "suppressedStdoutBytes": 0,
+      "suppressedStderrBytes": 0,
+      "results": [
+        {
+          "file": "application-recovery.spec.ts",
+          "line": 328,
+          "project": "chromium",
+          "status": "passed",
+          "expectedStatus": "passed",
+          "durationMs": 29689,
+          "errorCount": 0,
+          "diagnostics": [],
+          "errorLocations": []
+        }
+      ]
+    }
+  },
+  "lifecycle_closed_diagnostics": {},
+  "diagnostic_qualification": "finite untrustedreportedhints, no cause/commit/JVMclock inference from presence alone",
+  "missing_phases": [
+    "attachment"
+  ],
+  "diagnostic_schema": {
+    "admit": [
+      {
+        "caseCode": "APPLICATION_RECOVERY_PHASE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ],
+    "pending": [
+      {
+        "caseCode": "APPLICATION_RECOVERY_PHASE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ],
+    "seed": [
+      {
+        "caseCode": "APPLICATION_RECOVERY_PHASE",
+        "schema": "CANONICAL_CLOSED_CORE_AND_UNTRUSTED_REPORTED_HINTS"
+      }
+    ]
+  },
+  "actualCheckout": "NOT_PROVED_BY_BROWSER_SCHEMA",
+  "raw_logs_HTML_XML_error_context_private_bundle_read": false,
+  "acceptance": "PHASE_RESULTS_ONLY_REQUIRE_SUCCESSFUL_ACTUAL_RESTORE_STEP_AND_ALL_FOUR_PHASES",
+  "reader": {
+    "native_pid": 644854,
+    "exit": 0,
+    "reaped": true,
+    "private_input_removed": true
+  },
+  "finite_verdict": "FAIL_RECOVERY_STEP_AFTER_ADMIT_BEFORE_ATTACHMENT;VERIFY_COMMAND_OR_BOUND_CAUSE_UNKNOWN"
+}

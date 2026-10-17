@@ -1,0 +1,24 @@
+{
+  "verdict": "APPROVE_CURRENT8_STAGE_AND_SOURCE",
+  "blocking_payload_findings": [],
+  "required_next_phase_prerequisites": [
+    {
+      "id": "STAGE-PRE01",
+      "status": "PENDING_REQUIRED_PUBLIC_SERVING_STAGING",
+      "planned_bind_sources": [
+        {
+          "path": "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/frontend/pwa-vue/dist",
+          "exists": false
+        },
+        {
+          "path": "/workspace/scratch/rct-validation/host_runtime_prepare/runtime/frontend/tma-vue/dist",
+          "exists": false
+        }
+      ],
+      "required": "Separate NEW own exact22 hash/byte copies public644/dirs755 or alreadyaccepted owner-serving rule; neverchmod/hardlink600 originals",
+      "classification": "Missing narrow next-phase prerequisite, not JARstage defect or observed HTTP/UID failure"
+    }
+  ],
+  "runtime": "NOT_RUN",
+  "Root_transfer_qualification": "Outer ZIP differs; all27 member bytes exact, no corruption finding"
+}

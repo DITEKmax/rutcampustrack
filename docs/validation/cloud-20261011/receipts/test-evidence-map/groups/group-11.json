@@ -1,0 +1,783 @@
+{
+  "group_id": "ACADEMIC-CACHE-DTO",
+  "criterion": "cache roundtrip/foreign type rejection/actor scope, enums and display values",
+  "related_source_story_ids": [
+    "JS-ADMIN-02",
+    "JS-ADMIN-07",
+    "JS-HEADMAN-13"
+  ],
+  "research_ids": [
+    "L04",
+    "L05",
+    "L08",
+    "P02",
+    "P13",
+    "P14",
+    "P15",
+    "P18"
+  ],
+  "story_link_status": "reviewed related criteria group, not automatic full-story acceptance",
+  "named_tests": [
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/arch/RepositoryNPlusOneGuardTest.java",
+      "class": "ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest",
+      "methods": [],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/golden/DisplayNameGoldenTest.java",
+      "class": "ru.rutcampustrack.academic.golden.DisplayNameGoldenTest",
+      "methods": [
+        {
+          "method": "computesExpectedDisplayName",
+          "line": 52,
+          "assertion_evidence": [
+            {
+              "line": 62,
+              "expression": "assertThat(user.getDisplayName()).isEqualTo(expected);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/golden/DisplayNamePropertyTest.java",
+      "class": "ru.rutcampustrack.academic.golden.DisplayNamePropertyTest",
+      "methods": [
+        {
+          "method": "nameFormatterStable",
+          "line": 35,
+          "assertion_evidence": [
+            {
+              "line": 41,
+              "expression": "assertThat(user.getDisplayName()).isEqualTo(first);"
+            }
+          ]
+        },
+        {
+          "method": "lastNameAlwaysFirst",
+          "line": 45,
+          "assertion_evidence": [
+            {
+              "line": 56,
+              "expression": "assertThat(tokens[0])"
+            },
+            {
+              "line": 58,
+              "expression": ".isEqualTo(last);"
+            },
+            {
+              "line": 59,
+              "expression": "assertThat(tokens[1])"
+            },
+            {
+              "line": 61,
+              "expression": ".isEqualTo(first);"
+            }
+          ]
+        },
+        {
+          "method": "noMiddleNameIfBlank",
+          "line": 64,
+          "assertion_evidence": [
+            {
+              "line": 75,
+              "expression": "assertThat(display)"
+            },
+            {
+              "line": 78,
+              "expression": ".isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [],
+      "level": "unit/network component; exact group limitations apply",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [],
+      "setup_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java",
+      "class": "ru.rutcampustrack.academic.integration.CacheIT",
+      "methods": [
+        {
+          "method": "getGroup_secondCall_servedFromCache",
+          "line": 120,
+          "assertion_evidence": [
+            {
+              "line": 128,
+              "expression": "assertThat(redisTemplate.keys(\"<literal-redacted>\")).isNotEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "getGroupMembers_readsCurrentGrantWithoutSemesterCoupling",
+          "line": 132,
+          "assertion_evidence": [
+            {
+              "line": 138,
+              "expression": "assertThat(stub.getGroupMembers(request).getStudentsList())"
+            },
+            {
+              "line": 146,
+              "expression": "assertThat(stub.getGroupMembers(request).getStudentsList())"
+            },
+            {
+              "line": 147,
+              "expression": ".extracting(student -> student.getUserId()).doesNotContain(STUDENT_ID);"
+            },
+            {
+              "line": 151,
+              "expression": "assertThat(stub.getGroupMembers(request).getStudentsList())"
+            },
+            {
+              "line": 152,
+              "expression": ".extracting(student -> student.getUserId()).doesNotContain(STUDENT_ID);"
+            },
+            {
+              "line": 157,
+              "expression": "assertThat(stub.getGroupMembers(request).getStudentsList())"
+            }
+          ]
+        },
+        {
+          "method": "createStudent_currentRosterIncludesCommittedStudent",
+          "line": 168,
+          "assertion_evidence": [
+            {
+              "line": 175,
+              "expression": "assertThat(stub.getGroupMembers(request).getStudentsList()).isEmpty();"
+            },
+            {
+              "line": 185,
+              "expression": "assertThat(stub.getGroupMembers(request).getStudentsList())"
+            }
+          ]
+        },
+        {
+          "method": "getActiveSemester_secondCall_servedFromCache",
+          "line": 203,
+          "assertion_evidence": [
+            {
+              "line": 210,
+              "expression": "assertThat(redisTemplate.keys(\"<literal-redacted>\")).isNotEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "getCampusGeofence_secondCall_servedFromCache",
+          "line": 217,
+          "assertion_evidence": [
+            {
+              "line": 224,
+              "expression": "assertThat(redisTemplate.keys(\"<literal-redacted>\")).isNotEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "getUserById_secondCall_servedFromCache",
+          "line": 231,
+          "assertion_evidence": [
+            {
+              "line": 238,
+              "expression": "assertThat(redisTemplate.keys(\"<literal-redacted>\")).isNotEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "getActiveSemester_ttlMatchesConfiguredValue",
+          "line": 250,
+          "assertion_evidence": [
+            {
+              "line": 257,
+              "expression": "assertThat(keys).isNotEmpty();"
+            },
+            {
+              "line": 261,
+              "expression": "assertThat(ttl).isBetween(595L, 600L);"
+            }
+          ]
+        },
+        {
+          "method": "activateSemester_invalidatesActiveSemesterCache",
+          "line": 272,
+          "assertion_evidence": [
+            {
+              "line": 285,
+              "expression": "assertThat(redisTemplate.keys(\"<literal-redacted>\")).isNotEmpty();"
+            },
+            {
+              "line": 291,
+              "expression": "assertThat(redisTemplate.keys(\"<literal-redacted>\")).isEmpty();"
+            },
+            {
+              "line": 295,
+              "expression": "assertThat(redisTemplate.keys(\"<literal-redacted>\")).isNotEmpty();"
+            }
+          ]
+        },
+        {
+          "method": "archiveUser_invalidatesUsersCache",
+          "line": 303,
+          "assertion_evidence": [
+            {
+              "line": 317,
+              "expression": "assertThat(redisTemplate.hasKey(userCacheKey)).isTrue();"
+            },
+            {
+              "line": 320,
+              "expression": "assertThat(redisTemplate.hasKey(userCacheKey)).isFalse();"
+            },
+            {
+              "line": 324,
+              "expression": "assertThat(redisTemplate.hasKey(userCacheKey)).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "transferStudent_currentRosterMovesStudentBetweenGroups",
+          "line": 328,
+          "assertion_evidence": [
+            {
+              "line": 344,
+              "expression": "assertThat(stub.getGroupMembers(req1).getStudentsList())"
+            },
+            {
+              "line": 346,
+              "expression": "assertThat(stub.getGroupMembers(req2).getStudentsList())"
+            },
+            {
+              "line": 347,
+              "expression": ".extracting(student -> student.getUserId()).doesNotContain(transferStudentId);"
+            },
+            {
+              "line": 350,
+              "expression": "assertThat(stub.getGroupMembers(req1).getStudentsList())"
+            },
+            {
+              "line": 351,
+              "expression": ".extracting(student -> student.getUserId()).doesNotContain(transferStudentId);"
+            },
+            {
+              "line": 352,
+              "expression": "assertThat(stub.getGroupMembers(req2).getStudentsList())"
+            }
+          ]
+        },
+        {
+          "method": "headmanChange_invalidatesGroupCacheAndCurrentRosterReflectsChange",
+          "line": 367,
+          "assertion_evidence": [
+            {
+              "line": 375,
+              "expression": "assertThat(stub.getGroupMembers(membersReq).getStudentsList())"
+            },
+            {
+              "line": 377,
+              "expression": ".extracting(student -> student.getIsHeadman()).containsExactly(true);"
+            },
+            {
+              "line": 380,
+              "expression": "assertThat(redisTemplate.hasKey(groupKey)).isTrue();"
+            },
+            {
+              "line": 387,
+              "expression": "assertThat(redisTemplate.hasKey(groupKey)).isFalse();"
+            },
+            {
+              "line": 390,
+              "expression": "assertThat(stub.getGroupMembers(membersReq).getStudentsList())"
+            },
+            {
+              "line": 392,
+              "expression": ".extracting(student -> student.getIsHeadman()).containsExactly(false);"
+            },
+            {
+              "line": 393,
+              "expression": "assertThat(redisTemplate.hasKey(groupKey)).isTrue();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicCacheIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicCacheIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EntityMappingIT.java",
+      "class": "ru.rutcampustrack.academic.integration.EntityMappingIT",
+      "methods": [
+        {
+          "method": "contextLoads_allEntitiesValidateAgainstSchema",
+          "line": 59,
+          "assertion_evidence": [
+            {
+              "line": 64,
+              "expression": "assertThat(userRepository).isNotNull();"
+            },
+            {
+              "line": 65,
+              "expression": "assertThat(semesterRepository).isNotNull();"
+            },
+            {
+              "line": 66,
+              "expression": "assertThat(groupRepository).isNotNull();"
+            },
+            {
+              "line": 67,
+              "expression": "assertThat(subjectRepository).isNotNull();"
+            },
+            {
+              "line": 68,
+              "expression": "assertThat(studentGroupHistoryRepository).isNotNull();"
+            }
+          ]
+        },
+        {
+          "method": "findByLogin_seedStudent_returnsPresentWithStudentRole",
+          "line": 80,
+          "assertion_evidence": [
+            {
+              "line": 85,
+              "expression": "assertThat(user).isPresent();"
+            },
+            {
+              "line": 86,
+              "expression": "assertThat(user.get().getLogin()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 87,
+              "expression": "assertThat(user.get().getRole().name()).isEqualTo(\"<literal-redacted>\");"
+            },
+            {
+              "line": 88,
+              "expression": "assertThat(user.get().getStatus().name()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "sqlRestriction_archivedUser_filteredFromStandardQuery_visibleViaBypass",
+          "line": 95,
+          "assertion_evidence": [
+            {
+              "line": 99,
+              "expression": "assertThat(userOpt).isPresent();"
+            },
+            {
+              "line": 107,
+              "expression": "assertThat(filteredResult).isEmpty();"
+            },
+            {
+              "line": 111,
+              "expression": "assertThat(archivedResult).isPresent();"
+            },
+            {
+              "line": 112,
+              "expression": "assertThat(archivedResult.get().getStatus().name()).isEqualTo(\"<literal-redacted>\");"
+            }
+          ]
+        },
+        {
+          "method": "loginSequences_nextStudentLoginSeq_returnsIncrementingValues",
+          "line": 122,
+          "assertion_evidence": [
+            {
+              "line": 128,
+              "expression": "assertThat(seq1).isNotNull().isGreaterThanOrEqualTo(1L);"
+            },
+            {
+              "line": 129,
+              "expression": "assertThat(seq2).isEqualTo(seq1 + 1);"
+            }
+          ]
+        },
+        {
+          "method": "headmanAssistant_persistAndReloadPermissionsArray_roundTripsCorrectly",
+          "line": 136,
+          "assertion_evidence": [
+            {
+              "line": 160,
+              "expression": "assertThat(found).isPresent();"
+            },
+            {
+              "line": 161,
+              "expression": "assertThat(found.get().getPermissions())"
+            }
+          ]
+        },
+        {
+          "method": "attendanceThreshold_threeLevel_mostSpecificWins",
+          "line": 169,
+          "assertion_evidence": [
+            {
+              "line": 210,
+              "expression": "assertThat(subjectLevel).isPresent();"
+            },
+            {
+              "line": 211,
+              "expression": "assertThat(subjectLevel.get().getThresholdPct()).isEqualTo(90);"
+            },
+            {
+              "line": 215,
+              "expression": "assertThat(groupLevel).isPresent();"
+            },
+            {
+              "line": 216,
+              "expression": "assertThat(groupLevel.get().getThresholdPct()).isEqualTo(80);"
+            },
+            {
+              "line": 220,
+              "expression": "assertThat(globalLevel).isPresent();"
+            },
+            {
+              "line": 221,
+              "expression": "assertThat(globalLevel.get().getThresholdPct()).isEqualTo(70);"
+            }
+          ]
+        },
+        {
+          "method": "semester_twoActiveSemesters_throwsDataIntegrityViolation",
+          "line": 228,
+          "assertion_evidence": [
+            {
+              "line": 239,
+              "expression": "assertThatThrownBy(() -> semesterRepository.saveAndFlush(second))"
+            },
+            {
+              "line": 240,
+              "expression": ".isInstanceOf(DataIntegrityViolationException.class);"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": false,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": false,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": false,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RbacCacheIT.java",
+      "class": "ru.rutcampustrack.academic.integration.RbacCacheIT",
+      "methods": [
+        {
+          "method": "isHeadman_secondCall_servedFromRbacCache",
+          "line": 83,
+          "assertion_evidence": [
+            {
+              "line": 93,
+              "expression": "assertThat(first.getIsHeadman()).isTrue();"
+            },
+            {
+              "line": 94,
+              "expression": "assertThat(second.getIsHeadman()).isTrue();"
+            },
+            {
+              "line": 97,
+              "expression": "assertThat(redisTemplate.hasKey(cacheKey)).isTrue();"
+            }
+          ]
+        },
+        {
+          "method": "rbacCache_ttlMatchesConfiguredValue",
+          "line": 103,
+          "assertion_evidence": [
+            {
+              "line": 114,
+              "expression": "assertThat(ttl).isBetween(55L, 60L);"
+            }
+          ]
+        },
+        {
+          "method": "patchUser_headmanRevoke_evictsRbacCache",
+          "line": 122,
+          "assertion_evidence": [
+            {
+              "line": 132,
+              "expression": "assertThat(redisTemplate.hasKey(cacheKey)).isTrue();"
+            },
+            {
+              "line": 139,
+              "expression": "assertThat(redisTemplate.hasKey(cacheKey)).isFalse();"
+            },
+            {
+              "line": 143,
+              "expression": "assertThat(fresh.getIsHeadman()).isFalse();"
+            }
+          ]
+        },
+        {
+          "method": "isHeadman_negativeResult_alsoCached",
+          "line": 153,
+          "assertion_evidence": [
+            {
+              "line": 163,
+              "expression": "assertThat(first.getIsHeadman()).isFalse();"
+            },
+            {
+              "line": 164,
+              "expression": "assertThat(second.getIsHeadman()).isFalse();"
+            },
+            {
+              "line": 169,
+              "expression": "assertThat(redisTemplate.hasKey(cacheKey)).isTrue();"
+            }
+          ]
+        }
+      ],
+      "direct_resource_indicators": {
+        "mockito": false,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": false,
+        "postgresql": false,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "inheritance": [
+        "AbstractAcademicCacheIntegrationTest"
+      ],
+      "level": "integration with real container setup and mocked boundaries",
+      "runtime_status": "NOT_RUN",
+      "inherited_setup_sources": [
+        "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicCacheIntegrationTest.java"
+      ],
+      "setup_resource_indicators": {
+        "mockito": true,
+        "mockmvc": false,
+        "spring_context": true,
+        "testcontainers": true,
+        "postgresql": true,
+        "mongo": false,
+        "rabbit": false,
+        "redis": true,
+        "http": false,
+        "grpc": true,
+        "mock_python": false,
+        "skips_or_assumptions": false
+      },
+      "indicator_limit": "Lexical setup indicators plus explicitly opened inherited test setup; presence of Mongo/Redis/gRPC words alone is not proof of real I/O. Group limits state mocked boundaries.",
+      "required_execution_resources": [
+        "Gradle/JDK21",
+        "root sole heavy lease",
+        "Docker/Testcontainers",
+        "postgresql",
+        "redis"
+      ]
+    }
+  ],
+  "intended_current_checks": [
+    {
+      "command": "./gradlew :services:academic-service:academic-app:test --tests ru.rutcampustrack.academic.arch.RepositoryNPlusOneGuardTest --tests ru.rutcampustrack.academic.golden.DisplayNameGoldenTest --tests ru.rutcampustrack.academic.golden.DisplayNamePropertyTest --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/test/*.xml; selected methods executed; inspect failures/errors/skipped"
+    },
+    {
+      "command": "./gradlew :services:academic-service:academic-app:integrationTest --tests ru.rutcampustrack.academic.integration.CacheIT --tests ru.rutcampustrack.academic.integration.EntityMappingIT --tests ru.rutcampustrack.academic.integration.RbacCacheIT --no-daemon --max-workers=2",
+      "working_directory": "/workspace/rutcampustrack",
+      "intent": "only if distinct uncovered risk/change; root lease required; do not rerun current unchanged author PASS",
+      "check_nonempty_xml": "services/academic-service/academic-app/build/test-results/integrationTest/*.xml; selected methods executed; inspect failures/errors/skipped"
+    }
+  ],
+  "intended_final_checks": {
+    "gradle_tasks": [
+      ":services:academic-service:academic-app:integrationTest",
+      ":services:academic-service:academic-app:test"
+    ],
+    "command_if_java": "./gradlew :services:academic-service:academic-app:integrationTest :services:academic-service:academic-app:test --no-daemon --max-workers=2",
+    "reuse": "deduplicate module tasks across groups; one integrated revision run, no per-group repetition",
+    "required_evidence": "nonzero XML executed methods, zero unexpected skips, failures/errors0; pinned current/final revision/data/resources"
+  },
+  "verification_limits": "RepositoryNPlusOneGuardTest is structural/count guard, not measured subject-list user latency. Turkish/default-locale roundtrip belongs current security author focused tests after integration.",
+  "runtime_status": "NOT_RUN",
+  "baseline_product_revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3"
+}

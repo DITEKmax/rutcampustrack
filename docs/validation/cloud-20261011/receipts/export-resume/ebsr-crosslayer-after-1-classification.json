@@ -1,0 +1,13 @@
+{
+  "phase": "ebsr-crosslayer-after-1",
+  "classification": "RESOURCE_STOP_BEFORE_OBSERVED_TEST_EXECUTION",
+  "native_exit": -15,
+  "task_execution": {
+    ":services:auth-service:auth-app:integrationTest": "NOT_RUN"
+  },
+  "source_unchanged": true,
+  "counts": "NOT_RUN; any copied prior build XML is stale and must not be used as this run evidence",
+  "resource_stop": "disk below parent 4GiB floor",
+  "disk_free_before_bytes": 5092892672,
+  "disk_free_after_bytes": 4125818880
+}

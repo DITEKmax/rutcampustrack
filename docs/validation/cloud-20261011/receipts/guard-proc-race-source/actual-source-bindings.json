@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-12T08:13:48.243090+00:00",
+  "exact_used_original_source": "/workspace/scratch/rct-validation/np01_broker_actual/broker-attempt03/guard-reviewed-f539.py",
+  "exact_used_original_SHA": "f539f126bb5591e89f1a9e1f6ac72fbb91ba0da39fccda02cd773ca515acf706",
+  "safe_actual_provenance_source": "/workspace/scratch/rct-validation/np01_broker_actual/broker-attempt03/guard-error-provenance.safe.json",
+  "safe_actual_provenance_sha256": "af60bc13628a96d1840ff50785ae7181cc122cb23426637efd2b60d588dcc0c0",
+  "historical_actual_errno_frame_path": "UNKNOWN; intentionally not retained by original guard",
+  "pure_counterexample": "selected actual process_table read ESRCH specifically reproduces ProcessLookupError; source hypothesis proven, historical frame not proven"
+}

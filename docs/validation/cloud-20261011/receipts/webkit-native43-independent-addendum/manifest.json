@@ -1,0 +1,31 @@
+{
+  "utc": "2026-10-12T18:43:12.463617+00:00",
+  "outcome": "APPROVE_FINITE_EVIDENCE",
+  "scope": "T005 actual recorded native43 finite availability only",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_metadata": "UNKNOWN",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/native43_evidence_review/REVIEW.md",
+      "relative_path": "REVIEW.md",
+      "size": 4282,
+      "mode": "0o400",
+      "sha256": "a44a43efb7e5accac825d36780d42d113e24eb43edbaed594a377bf5879abac8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/native43_evidence_review/checks.safe.json",
+      "relative_path": "checks.safe.json",
+      "size": 18033,
+      "mode": "0o400",
+      "sha256": "2d0f4238968f9d4d6e0042e67ba77139400afde66ac3b51ab406d01608529eac"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/native43_evidence_review/verify.py",
+      "relative_path": "verify.py",
+      "size": 9608,
+      "mode": "0o400",
+      "sha256": "5edec719223afc4e3324afd63abfc2f428346ec3e18b676e57002840bcf4d0f9"
+    }
+  ],
+  "browser_API_client": "NOT_RUN"
+}

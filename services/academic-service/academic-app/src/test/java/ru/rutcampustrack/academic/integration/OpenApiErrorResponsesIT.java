@@ -1,5 +1,7 @@
 package ru.rutcampustrack.academic.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,19 +9,14 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * M11 G1 acceptance: shared-web {@code GlobalErrorResponsesCustomizer}
- * автоматически добавляет 7 стандартных error responses
- * (400/401/403/404/409/429/500) с content application/problem+json +
- * ссылкой на shared ErrorResponse schema ко всем операциям OpenAPI
- * спеки academic-service.
+ * M11 G1 acceptance: shared-web {@code GlobalErrorResponsesCustomizer} автоматически добавляет 7
+ * стандартных error responses (400/401/403/404/409/429/500) с content application/problem+json +
+ * ссылкой на shared ErrorResponse schema ко всем операциям OpenAPI спеки academic-service.
  */
 class OpenApiErrorResponsesIT extends AbstractAcademicIntegrationTest {
 
-    @Autowired
-    TestRestTemplate restTemplate;
+    @Autowired TestRestTemplate restTemplate;
 
     @Test
     @DisplayName("M11 G1: /api-docs содержит ErrorResponse schema в components.schemas")
@@ -36,14 +33,15 @@ class OpenApiErrorResponsesIT extends AbstractAcademicIntegrationTest {
     }
 
     @Test
-    @DisplayName("M11 G1: /api-docs содержит все 7 стандартных HTTP error statuses для каждой operation")
+    @DisplayName(
+            "M11 G1: /api-docs содержит все 7 стандартных HTTP error statuses для каждой operation")
     void apiDocsContainsAllSevenStandardErrors() {
         ResponseEntity<String> response = restTemplate.getForEntity("/api-docs", String.class);
 
         assertThat(response.getBody()).isNotNull();
         // Кастомайзер добавляет 400/401/403/404/409/429/500 ко всем operations.
         // Проверяем что хотя бы один endpoint содержит все 7 статусов в responses[].
-        for (String status : new String[]{"400", "401", "403", "404", "409", "429", "500"}) {
+        for (String status : new String[] {"400", "401", "403", "404", "409", "429", "500"}) {
             assertThat(response.getBody())
                     .as("OpenAPI spec должен содержать status %s", status)
                     .contains("\"" + status + "\"");

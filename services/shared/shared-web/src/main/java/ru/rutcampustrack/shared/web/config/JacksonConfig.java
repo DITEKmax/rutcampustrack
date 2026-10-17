@@ -12,33 +12,31 @@ import org.springframework.core.annotation.Order;
  * Единая Jackson-конфигурация для всех сервисов (P2-4/8, P2-1/5):
  *
  * <ul>
- *   <li>{@code READ_UNKNOWN_ENUM_VALUES_AS_NULL} — неизвестный enum на входе
- *       не ломает endpoint (постепенная миграция).</li>
- *   <li>{@code FAIL_ON_UNKNOWN_PROPERTIES=false} — будущие поля DTO не ломают
- *       старых клиентов.</li>
- *   <li>{@code WRITE_DATES_AS_TIMESTAMPS=false} — даты всегда как ISO-8601
- *       строки, не миллисекунды.</li>
+ *   <li>{@code READ_UNKNOWN_ENUM_VALUES_AS_NULL} — неизвестный enum на входе не ломает endpoint
+ *       (постепенная миграция).
+ *   <li>{@code FAIL_ON_UNKNOWN_PROPERTIES=false} — будущие поля DTO не ломают старых клиентов.
+ *   <li>{@code WRITE_DATES_AS_TIMESTAMPS=false} — даты всегда как ISO-8601 строки, не миллисекунды.
  * </ul>
  *
- * <p>Требует Spring Boot в classpath сервиса (Jackson2ObjectMapperBuilderCustomizer
- * приходит из spring-boot-autoconfigure). Сам бин — обычный {@code @Bean},
- * подхватывается через component scan на {@code ru.rutcampustrack.shared.web}.
+ * <p>Требует Spring Boot в classpath сервиса (Jackson2ObjectMapperBuilderCustomizer приходит из
+ * spring-boot-autoconfigure). Сам бин — обычный {@code @Bean}, подхватывается через component scan
+ * на {@code ru.rutcampustrack.shared.web}.
  */
 @Configuration
 public class JacksonConfig {
 
     /**
-     * Применяется РАНЬШЕ сервис-локальных customizers (LOWEST_PRECEDENCE = late in chain).
-     * Сервис может переопределить любой flag, подключив свой customizer с меньшим order
-     * (например {@code @Order(LOWEST_PRECEDENCE - 100)}).
+     * Применяется РАНЬШЕ сервис-локальных customizers (LOWEST_PRECEDENCE = late in chain). Сервис
+     * может переопределить любой flag, подключив свой customizer с меньшим order (например
+     * {@code @Order(LOWEST_PRECEDENCE - 100)}).
      */
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
     public Jackson2ObjectMapperBuilderCustomizer sharedJacksonCustomizer() {
-        return builder -> builder
-                .featuresToEnable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
-                .featuresToDisable(
-                        DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                        SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return builder ->
+                builder.featuresToEnable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
+                        .featuresToDisable(
+                                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                                SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 }

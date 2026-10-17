@@ -1,0 +1,146 @@
+{
+  "schema": "P10_ONE_GENUINE_HTTP_ACTUAL01_V1",
+  "utc": "2026-10-13T17:10:18.601013+00:00",
+  "session": 26642,
+  "start_chunk": "ba3913",
+  "final_chunk": "824a90",
+  "grant_sha256": "39bf0aff45bfe27a833627c9d5cc9a44668b8d18a45642ce6dea74a888847093",
+  "terminal": {
+    "direct_pid": 533463,
+    "native_exit": 1,
+    "terminal_reason": "NATIVE_TERMINAL",
+    "signal_count": 0,
+    "settled": true,
+    "all_owned_processes_reaped": true,
+    "all_members_including_Z_after": [],
+    "known_owned_identities": [
+      {
+        "pid": 533463,
+        "start_ticks": 16484950,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 533464,
+        "start_ticks": 16484954,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 533498,
+        "start_ticks": 16485114,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 533800,
+        "start_ticks": 16489511,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 533830,
+        "start_ticks": 16489535,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 534063,
+        "start_ticks": 16493348,
+        "same_birth_absent": true
+      },
+      {
+        "pid": 535370,
+        "start_ticks": 16501458,
+        "same_birth_absent": true
+      }
+    ],
+    "adopted_waitpid_receipts": [],
+    "supervision_error_type": null,
+    "phase_success": false,
+    "container_settled": true,
+    "utc": "2026-10-13T17:07:18.834470+00:00",
+    "peaks": {
+      "memory": 9362780160,
+      "min_workspace_free": 5530824704,
+      "owned_rss": 1943707648,
+      "log_bytes": 7653
+    },
+    "expected_native_exit": 0,
+    "native_phase_pass": false,
+    "qualification": "Compile and selected class XML validation required before PASS"
+  },
+  "recorded_births": [
+    {
+      "pid": 533350,
+      "start_ticks": 16484885,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 533463,
+      "start_ticks": 16484950,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 533464,
+      "start_ticks": 16484954,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 533498,
+      "start_ticks": 16485114,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 533800,
+      "start_ticks": 16489511,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 533830,
+      "start_ticks": 16489535,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 534063,
+      "start_ticks": 16493348,
+      "same_birth_absent": true
+    },
+    {
+      "pid": 535370,
+      "start_ticks": 16501458,
+      "same_birth_absent": true
+    }
+  ],
+  "all8_births_fresh_absent": true,
+  "TMP_absent": true,
+  "authority_absent": true,
+  "container_settled": true,
+  "container_receipt_path": "/tmp/rct-p10-cache-directive-http-20261013-attempt01/containers.safe.json",
+  "container_receipt_sha256": "ee6f282131b28802b4d043502944107436f8eeff103a9a57f42561d8b86e1999",
+  "all18_source_pins_exact": true,
+  "source_supplement_pins_exact": true,
+  "head": "0fc84656948ce40e87a71b967d9caa49b391ccf4",
+  "test_sha256": "2129fdbcb971197a886839c100e3cc336b2ee0ed3902a136d705b19c1c7e1efc",
+  "WT_clean": true,
+  "selected_case_observation": {
+    "schema": "P10_ONE_HTTP_CLOSED_SELECTED_XML_CANONICAL_NAME_V1",
+    "utc": "2026-10-13T17:09:04.270703+00:00",
+    "parseaccepted": true,
+    "case_count": 1,
+    "selected_case_count": 1,
+    "suite_counts": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "known_exception_enum": "OTHER",
+    "first_AuthOtpFlowIT_source_line": 0,
+    "prior_bare_name_only_projection_preserved": "selected0; canonicalJUnit method() qualified separately, no arbitrarynames exported",
+    "no_raw_message_stack_body_unknownname_or_hash_export": true,
+    "method_parenthesized": true,
+    "failure_text_within8192": true
+  },
+  "private_XML_retained_unhashed": true,
+  "original_XML_absent_at_dispatch": true,
+  "native_terminal_before_active_margin": true,
+  "final_metadata_before_active_margin": false,
+  "final_metadata_before_hard_stop": false,
+  "qualification": "One real selected method attempt native1/fresh1FAIL0E0S. Failure type OTHER/frame0, cause UNKNOWN; no product/test correction or rerun. Bare-method-only projection selected0 preserved, separate exact method() known canonical name selected1. Late final metadata explicitly qualified; no new runtime or privatecontent export."
+}

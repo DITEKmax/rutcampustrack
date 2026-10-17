@@ -1,7 +1,5 @@
 package ru.rutcampustrack.attendance.report.teacher;
 
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -12,31 +10,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 
 /**
  * Immutable, renderer-neutral input for teacher attendance exports.
  *
- * <p>Rows and columns identify the exact lesson/student records used to
- * produce this report. Metrics are calculated once by the server for this
- * same context and are only displayed by format renderers.</p>
+ * <p>Rows and columns identify the exact lesson/student records used to produce this report.
+ * Metrics are calculated once by the server for this same context and are only displayed by format
+ * renderers.
  */
-public record TeacherAttendanceExportModel(
-        Context context,
-        List<Column> columns,
-        List<Row> rows
-) {
+public record TeacherAttendanceExportModel(Context context, List<Column> columns, List<Row> rows) {
     public TeacherAttendanceExportModel {
         context = Objects.requireNonNull(context, "context");
         columns = List.copyOf(Objects.requireNonNull(columns, "columns"));
         rows = List.copyOf(Objects.requireNonNull(rows, "rows"));
         if (context.kind() == ReportKind.SUBJECT_JOURNAL
                 && rows.stream().anyMatch(row -> row.metrics().isEmpty())) {
-            throw new IllegalArgumentException("Subject-journal rows require server-supplied metrics");
+            throw new IllegalArgumentException(
+                    "Subject-journal rows require server-supplied metrics");
         }
     }
 
     public enum ReportKind {
         WEEKLY_ATTENDANCE,
+        HEADMAN_SUBJECT_JOURNAL,
         SUBJECT_JOURNAL
     }
 
@@ -51,8 +48,35 @@ public record TeacherAttendanceExportModel(
             LocalDate periodFrom,
             LocalDate periodTo,
             List<String> typeLabels,
-            Instant generatedAt
-    ) {
+            Instant generatedAt,
+            List<LocalDate> selectedWeekStarts) {
+        public Context(
+                ReportKind kind,
+                long semesterId,
+                String semesterLabel,
+                long groupId,
+                String groupLabel,
+                Long subjectId,
+                String subjectLabel,
+                LocalDate periodFrom,
+                LocalDate periodTo,
+                List<String> typeLabels,
+                Instant generatedAt) {
+            this(
+                    kind,
+                    semesterId,
+                    semesterLabel,
+                    groupId,
+                    groupLabel,
+                    subjectId,
+                    subjectLabel,
+                    periodFrom,
+                    periodTo,
+                    typeLabels,
+                    generatedAt,
+                    List.of());
+        }
+
         public Context {
             kind = Objects.requireNonNull(kind, "kind");
             semesterLabel = Objects.requireNonNullElse(semesterLabel, "");
@@ -62,6 +86,8 @@ public record TeacherAttendanceExportModel(
             periodTo = Objects.requireNonNull(periodTo, "periodTo");
             typeLabels = List.copyOf(Objects.requireNonNull(typeLabels, "typeLabels"));
             generatedAt = Objects.requireNonNull(generatedAt, "generatedAt");
+            selectedWeekStarts =
+                    List.copyOf(Objects.requireNonNull(selectedWeekStarts, "selectedWeekStarts"));
         }
     }
 
@@ -74,8 +100,7 @@ public record TeacherAttendanceExportModel(
             String subjectLabel,
             String lessonType,
             String typeLabel,
-            String state
-    ) {
+            String state) {
         public Column {
             date = Objects.requireNonNull(date, "date");
             subjectLabel = Objects.requireNonNullElse(subjectLabel, "");
@@ -89,36 +114,33 @@ public record TeacherAttendanceExportModel(
             long studentId,
             String displayName,
             Map<Long, Cell> cellsByLessonId,
-            Optional<Metrics> metrics
-    ) {
+            Optional<Metrics> metrics) {
         public Row {
             displayName = Objects.requireNonNullElse(displayName, "");
-            cellsByLessonId = Collections.unmodifiableMap(
-                    new LinkedHashMap<>(Objects.requireNonNull(cellsByLessonId, "cellsByLessonId")));
+            cellsByLessonId =
+                    Collections.unmodifiableMap(
+                            new LinkedHashMap<>(
+                                    Objects.requireNonNull(cellsByLessonId, "cellsByLessonId")));
             metrics = Objects.requireNonNull(metrics, "metrics");
         }
     }
 
     /**
-     * A missing key in {@code cellsByLessonId} means there is no cell for that
-     * student/lesson pair. It must not be interpreted as an absent mark.
+     * A missing key in {@code cellsByLessonId} means there is no cell for that student/lesson pair.
+     * It must not be interpreted as an absent mark.
      */
-    public record Cell(
-            String symbol,
-            AttendanceStatus status,
-            boolean recordPresent
-    ) {
+    public record Cell(String symbol, AttendanceStatus status, boolean recordPresent) {
         public Cell {
             symbol = Objects.requireNonNullElse(symbol, "");
         }
     }
 
     /**
-     * Counts, denominator, and percentages are supplied by the server for the
-     * exact lesson selection and student membership in this report context.
-     * Percentages are in the 0..100 range; renderers do not recompute them. When the denominator is zero, they show no data rather than 0%.
-     * Weekly attendance matrices may omit these metrics when their layout does
-     * not contain a summary section.
+     * Counts, denominator, and percentages are supplied by the server for the exact lesson
+     * selection and student membership in this report context. Percentages are in the 0..100 range;
+     * renderers do not recompute them. When the denominator is zero, they show no data rather than
+     * 0%. Weekly attendance matrices may omit these metrics when their layout does not contain a
+     * summary section.
      */
     public record Metrics(
             int presentCount,
@@ -129,11 +151,11 @@ public record TeacherAttendanceExportModel(
             BigDecimal percentPresent,
             BigDecimal percentPresentOrExcused,
             BigDecimal percentExcused,
-            BigDecimal percentAbsent
-    ) {
+            BigDecimal percentAbsent) {
         public Metrics {
             percentPresent = Objects.requireNonNull(percentPresent, "percentPresent");
-            percentPresentOrExcused = Objects.requireNonNull(percentPresentOrExcused, "percentPresentOrExcused");
+            percentPresentOrExcused =
+                    Objects.requireNonNull(percentPresentOrExcused, "percentPresentOrExcused");
             percentExcused = Objects.requireNonNull(percentExcused, "percentExcused");
             percentAbsent = Objects.requireNonNull(percentAbsent, "percentAbsent");
         }

@@ -16,8 +16,14 @@
   line-height: 1.35;
   text-align: center;
 }
-.homework-completion--completed { color: var(--rct-color-text-primary); background: var(--rct-color-success-surface); }
-.homework-completion--readonly { color: var(--rct-color-disabled-text); background: var(--rct-color-disabled-surface); }
+.homework-completion--completed {
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-success-surface);
+}
+.homework-completion--readonly {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+}
 .homework-completion__label {
   min-inline-size: 0;
   max-inline-size: calc(100% - 2 * var(--rct-control-min-touch));
@@ -41,8 +47,26 @@
   user-select: none;
   @mixin rct-focus-ring;
 }
-.homework-completion__handle:active { cursor: grabbing; }
-.homework-completion__handle:disabled { cursor: not-allowed; }
-.homework-completion--completed .homework-completion__handle { background: var(--rct-color-success-text); }
-.homework-completion--readonly .homework-completion__handle { color: var(--rct-color-disabled-text); background: var(--rct-color-surface-float); }
-.homework-completion__handle svg { inline-size: var(--rct-space-4); block-size: var(--rct-space-4); fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.homework-completion__handle:active {
+  cursor: grabbing;
+}
+.homework-completion__handle:disabled {
+  cursor: not-allowed;
+}
+.homework-completion--completed .homework-completion__handle {
+  background: var(--rct-color-success-text);
+}
+.homework-completion--readonly .homework-completion__handle {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-surface-float);
+}
+.homework-completion__handle svg {
+  inline-size: var(--rct-space-4);
+  block-size: var(--rct-space-4);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}

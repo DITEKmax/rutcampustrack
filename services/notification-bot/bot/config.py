@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 from bot.services.mini_app_links import build_mini_app_url
@@ -33,6 +34,11 @@ class Settings(BaseSettings):
     notification_service_url: str = "http://notification-web:9094"
     bot_to_notification_service_token: str = ""
 
+    # Optional directed identity for the protected initial-credential RPCs.
+    # Missing/invalid identity disables that capability, not ordinary bot startup.
+    # The protected client also requires the existing Academic TLS/CA settings.
+    bot_to_academic_service_token: str = Field(default="", repr=False)
+
     # Academic Service gRPC (prod compose enables TLS and provides its CA)
     academic_grpc_tls_enabled: bool = False
     academic_grpc_tls_ca_path: str = ""
@@ -46,6 +52,8 @@ class Settings(BaseSettings):
     # Attendance request attachment gRPC (bot-only shared-secret boundary)
     attendance_grpc_host: str = "attendance-service"
     attendance_grpc_port: int = 19093
+    attendance_grpc_tls_enabled: bool = False
+    attendance_grpc_tls_ca_path: str = ""
 
     # Auth Service HTTP (direct, not through Gateway — per D-06)
     auth_service_host: str = "auth-service"

@@ -70,14 +70,7 @@
 
 ### Матрица: сервис → хранилище
 
-| Сервис | PostgreSQL | MongoDB | Redis | RabbitMQ |
-|--------|-----------|---------|-------|----------|
-| Auth Service | ❌ | ❌ | ✅ (OTP, JWT key) | ❌ |
-| Academic Service | ✅ (academic_db) | ❌ | ✅ (кэш) | Publish: `group.updated`, `semester.archived` |
-| Schedule Service | ✅ (schedule_db) | ❌ | ❌ | Publish: `lesson.started`, `lesson.reminder`, `lesson.closed` |
-| Attendance Service | ❌ | ✅ (attendance_db) | ❌ | Publish: `attendance.marked`, `attendance.session.closed` |
-| Notification Web | ❌ | ✅ (`push_subscriptions`, `reminder_attendance_state`) | ✅ (notification prefs) | Consume: все события |
-| Notification Bot | ❌ | ❌ | ✅ (reminder msgs, notification prefs) | Consume: все события |
+Актуальная карта владельцев, authority и доступа находится в разделе 6. Схема выше и исторические описания Redis refresh/preferences ниже не задают действующий контракт: сессии имеют PostgreSQL authority, настройки уведомлений — MongoDB authority. Auth и Academic используют одну `academic_db`; физического database-per-service разделения между ними нет.
 
 ---
 
@@ -104,7 +97,7 @@
 
 **Стек:** Java Spring Boot
 **Порт:** 9090
-**Хранилище:** Redis
+**Хранилище:** PostgreSQL `academic_db` (durable session/credential authority и задания выгрузок) и Redis (временные OTP/QR/WS tickets и лимиты). Владение общими `users`/grants — в разделе 6.
 **Gradle-модули (M12):** `auth-api-contract` (java-library, DTO + interfaces `AuthApi`/`WsTicketApi`/`InternalIssuerApi`/`InternalWsTicketApi`, без Lombok) + `auth-app` (Spring Boot runtime, controllers `implements` интерфейсы). Contract-first compliant — mapping annotations только в интерфейсах.
 
 **Роль:** выдача и управление токенами. Единственный сервис, знающий секреты подписи JWT.
@@ -193,8 +186,8 @@ refresh:{user_id}:{jti}     → "valid"           TTL: 7 дней
 
 ### 3.3 Academic Service
 
-**Стек:** Java Spring Boot  
-**Порт:** 9091  
+**Стек:** Java Spring Boot
+**Порт:** 9091
 **Хранилище:** PostgreSQL (academic_db) + Redis (кэш)
 
 **Роль:** справочник структуры вуза. Данные меняются редко, читаются часто всеми остальными сервисами.
@@ -250,8 +243,8 @@ campus:geofence               → JSON          TTL: 60 мин
 
 ### 3.4 Schedule Service
 
-**Стек:** Java Spring Boot  
-**Порт:** 9092  
+**Стек:** Java Spring Boot
+**Порт:** 9092
 **Хранилище:** PostgreSQL (schedule_db)
 
 **Роль:** управление расписанием и жизненным циклом пар.
@@ -295,8 +288,8 @@ service ScheduleService {
 
 ### 3.5 Attendance Service
 
-**Стек:** Java Spring Boot  
-**Порт:** 9093  
+**Стек:** Java Spring Boot
+**Порт:** 9093
 **Хранилище:** MongoDB (attendance_db)
 
 **Роль:** приём фактов посещаемости и построение отчётов. Два изолированных домена внутри одного сервиса.
@@ -614,7 +607,7 @@ attendance-service удаляет orphan-attendance-doc'и по этим id'ам
 
 ### 5.1 Telegram Mini App (React + Vite + TypeScript)
 
-**Аудитория:** студенты  
+**Аудитория:** студенты
 **Обоснование React:** Telegram Mini App SDK оптимизирован для React, быстрый старт через Vite, компактный bundle для мобильного контекста.
 
 **Функции:**
@@ -625,7 +618,7 @@ attendance-service удаляет orphan-attendance-doc'и по этим id'ам
 
 ### 5.2 PWA Mobile Client «RutTrack» (React + Vite + TypeScript)
 
-**Аудитория:** студенты, старосты, преподаватели (НЕ админы — они на веб-панели)  
+**Аудитория:** студенты, старосты, преподаватели (НЕ админы — они на веб-панели)
 **Обоснование React:** общий стек с Mini App, переиспользование API-клиента и компонентов, PWA-ready из коробки через Vite PWA plugin.
 
 **Функции:**
@@ -660,7 +653,7 @@ attendance-service удаляет orphan-attendance-doc'и по этим id'ам
 
 ### 5.3 Веб-панель (Angular + TypeScript)
 
-**Аудитория:** администраторы, преподаватели, старосты  
+**Аудитория:** администраторы, преподаватели, старосты
 **Обоснование Angular:** enterprise-фреймворк с встроенным DI, реактивными формами, HTTP-клиентом, роутингом — идеально для сложной админки с множеством форм, таблиц и дашбордов. Material Design 3 через Angular Material.
 
 **Функции:**
@@ -672,7 +665,7 @@ attendance-service удаляет orphan-attendance-doc'и по этим id'ам
 
 ### 5.4 Лендинг (HTML + CSS)
 
-**Аудитория:** внешние посетители  
+**Аудитория:** внешние посетители
 **Обоснование:** статическая страница не требует фреймворка, демонстрирует владение чистым HTML/CSS, SEO-friendly.
 
 **Функции:**
@@ -684,14 +677,26 @@ attendance-service удаляет orphan-attendance-doc'и по этим id'ам
 
 ## 6. Хранилища данных
 
-### Распределение
+### Распределение и authority — актуально на 17.10.2026
 
-| Хранилище | Сервис-владелец | Обоснование |
-|-----------|----------------|-------------|
-| Redis | Auth Service (OTP, JWT key), Academic Service (кэш), Notification Service (preferences, bot message ids) | TTL для эфемерных данных, sub-ms latency |
-| PostgreSQL: academic_db | Academic Service | ACID, сложные JOIN, FK-целостность для справочников |
-| PostgreSQL: schedule_db | Schedule Service | Транзакционные изменения статусов пар |
-| MongoDB: attendance_db | Attendance Service | Write-heavy, гибкая схема excuse, горизонтальное масштабирование |
+| Хранилище | Владелец операций и потребители | Authority и граница доступа |
+| --- | --- | --- |
+| PostgreSQL `academic_db`: `users`, role grants и связанная история | Academic управляет профилями, группами и доменными grants; Auth использует те же строки для credential/session lifecycle и текущей проверки доступа | Это намеренно общая схема. Локальные атомарные изменения credentials/grants/session versions не заменяются Redis-кэшем. Начальный/административно сброшенный пароль имеет отдельный принятый lifecycle показа и очистки; изменённый пользователем пароль хранится как хеш. |
+| PostgreSQL `academic_db`: `auth_sessions` и auth-таблицы | Auth, `JdbcSessionAuthority`/session adapters; Gateway и downstream вызывают admission через защищённый API | Durable authority сессий, refresh rotation и отзыва. Сбой optional Redis cleanup не восстанавливает отозванную сессию. Закрытый ключ подписи остаётся у Auth; downstream проверяет подпись публичным ключом и актуальную admission/policy. |
+| PostgreSQL `academic_db`: `auth_export_jobs`, `auth_outbox` | Auth сохраняет задания, ownership/lease/результат и события в локальной транзакции; Gateway `ExportJobWorker` исполняет разрешённые генерации | ID задания не даёт доступа. Статус/готовый файл проверяют текущего пользователя, исходную сессию, роль и grants; ready-событие — подсказка, состояние в БД — источник истины. Файл хранится в ограниченном `bytea`, без credentials; повторы используют request ID и lease fencing. |
+| PostgreSQL `schedule_db` | Schedule | Уроки, расписание и его протоколы изменения. Внешние участники вызываются через существующие REST/gRPC контракты; удалённый commit не откатывается одной локальной аннотацией. |
+| MongoDB `attendance_db` | Attendance | Отметки, заявки/вложения/история, durable inbox/outbox и участники операций. Связь с профилями идёт по IDs и разрешённым RPC. |
+| MongoDB `notification_db` | Notification Web; Bot получает настройки через предназначенный ему API | Durable `user_notification_preferences`/`telegram_notification_preferences`, история/delivery и push subscriptions. Redis может участвовать в совместимом чтении legacy-настроек, если durable-запись ещё никогда не существовала; он не является новой authority настроек. |
+| Redis | Auth — временные OTP/QR/WS tickets и abuse limits; Academic — scoped cache; Notification/Bot — применимые временные delivery/reminder данные | TTL/single-use/cache; это не authority `auth_sessions` и durable preferences. Read-only monitor ACL не разрешает чтение ключей, запись или изменение конфигурации. |
+| RabbitMQ | Auth/Academic/Schedule/Attendance публикуют через свои outbox/senders; Notification Web/Bot и назначенные consumers обрабатывают свои очереди | Durable effects и dedup принадлежат consumer. Publisher confirm/return не означает consumer success. DOCX-байты не пересылаются как содержимое бизнес-события. Retry/DLQ не дают обещания exactly-once или zero loss. |
+
+Версии SQL и единственный migration pipeline общей `academic_db` принадлежат Academic Flyway; Schedule ведёт свою `schedule_db`. Auth не становится вторым независимым migrator общей схемы. Опубликованные SQL защищает `scripts/check-published-migrations.py`; новые совместимые миграции проходят обычные fresh/upgrade проверки.
+
+Разделение bootstrap/migration/runtime/monitoring PostgreSQL ролей подготавливается конфигурацией stage17: runtime получает только разрешённые application CRUD/sequence права, migrator — DDL, monitor — диагностические права без чтения application rows. Это не свидетельство текущих production effective grants. Новые роли/ownership/secret files для существующего volume требуют отдельного согласованного cutover перед применением конфигурации; init scripts работают только на пустом volume и не обновляют существующий стенд автоматически.
+
+Gateway→Auth admission/internal issuance, Gateway worker→защищённые export endpoints, BFF→сервисы и защищённые service RPC используют свои действующие TLS/caller/target/method ограничения. Request ID, trace context и job/message IDs служат корреляции и не дают прав; токены не сохраняются в job identity, URL, логах или telemetry. Нельзя считать все RPC защищёнными только из-за наличия interceptor: применяется policy конкретного метода.
+
+См. `auth/export/ExportJobService`, `auth/session/jdbc/JdbcSessionAuthority`, `academic/user/UserService`, `notification/preferences/NotificationPreferencesStore`, `shared-security` и [observability runbook](../operations/monitoring/observability.md). Проверенная revision и реальные ограничения stage17 указаны в [CURRENT](../validation/cloud-20261011/CURRENT.md); карта описывает владение, а не подтверждает production deploy.
 
 ### Связь между хранилищами
 

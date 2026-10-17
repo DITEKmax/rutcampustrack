@@ -1,0 +1,94 @@
+{
+  "artifact": "raw-it-academic.zip",
+  "failure_types": {
+    "java.lang.IllegalStateException": 292
+  },
+  "examples": [
+    {
+      "test_class": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+      "test_name": "addTeacherPersistsFullIdentityAndRestKeepsNullEffectiveEnd()",
+      "type": "java.lang.IllegalStateException",
+      "body_length": 653,
+      "frames": [
+        "ru.rutcampustrack.academic.integration.AcademicFixtureResetListener.beforeTestMethod(AcademicFixtureResetListener.java:65)",
+        "org.springframework.test.context.TestContextManager.beforeTestMethod(TestContextManager.java:320)",
+        "org.springframework.test.context.junit.jupiter.SpringExtension.beforeEach(SpringExtension.java:236)",
+        "java.base/java.util.ArrayList.forEach(ArrayList.java:1596)",
+        "java.base/java.util.ArrayList.forEach(ArrayList.java:1596)"
+      ],
+      "causes": [],
+      "numeric_boolean_assertion": [],
+      "xml": "academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.xml",
+      "xml_sha256": "15d4ca6fef3f81a80c83082ea4689874f064cb92d56a06aec8afe8e8885e8edc"
+    },
+    {
+      "test_class": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+      "test_name": "sameTeacherSameTypeOverlapRaceCommitsOneAndReturnsOne409()",
+      "type": "java.lang.IllegalStateException",
+      "body_length": 653,
+      "frames": [
+        "ru.rutcampustrack.academic.integration.AcademicFixtureResetListener.beforeTestMethod(AcademicFixtureResetListener.java:65)",
+        "org.springframework.test.context.TestContextManager.beforeTestMethod(TestContextManager.java:320)",
+        "org.springframework.test.context.junit.jupiter.SpringExtension.beforeEach(SpringExtension.java:236)",
+        "java.base/java.util.ArrayList.forEach(ArrayList.java:1596)",
+        "java.base/java.util.ArrayList.forEach(ArrayList.java:1596)"
+      ],
+      "causes": [],
+      "numeric_boolean_assertion": [],
+      "xml": "academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.xml",
+      "xml_sha256": "15d4ca6fef3f81a80c83082ea4689874f064cb92d56a06aec8afe8e8885e8edc"
+    },
+    {
+      "test_class": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+      "test_name": "assignTeacherAndAddTeacherUseOrderedLocks()",
+      "type": "java.lang.IllegalStateException",
+      "body_length": 653,
+      "frames": [
+        "ru.rutcampustrack.academic.integration.AcademicFixtureResetListener.beforeTestMethod(AcademicFixtureResetListener.java:65)",
+        "org.springframework.test.context.TestContextManager.beforeTestMethod(TestContextManager.java:320)",
+        "org.springframework.test.context.junit.jupiter.SpringExtension.beforeEach(SpringExtension.java:236)",
+        "java.base/java.util.ArrayList.forEach(ArrayList.java:1596)",
+        "java.base/java.util.ArrayList.forEach(ArrayList.java:1596)"
+      ],
+      "causes": [],
+      "numeric_boolean_assertion": [],
+      "xml": "academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.xml",
+      "xml_sha256": "15d4ca6fef3f81a80c83082ea4689874f064cb92d56a06aec8afe8e8885e8edc"
+    },
+    {
+      "test_class": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+      "test_name": "invalidAssignmentDateBoundsAreRejectedWithoutWrite()",
+      "type": "java.lang.IllegalStateException",
+      "body_length": 653,
+      "frames": [
+        "ru.rutcampustrack.academic.integration.AcademicFixtureResetListener.beforeTestMethod(AcademicFixtureResetListener.java:65)",
+        "org.springframework.test.context.TestContextManager.beforeTestMethod(TestContextManager.java:320)",
+        "org.springframework.test.context.junit.jupiter.SpringExtension.beforeEach(SpringExtension.java:236)",
+        "java.base/java.util.ArrayList.forEach(ArrayList.java:1596)",
+        "java.base/java.util.ArrayList.forEach(ArrayList.java:1596)"
+      ],
+      "causes": [],
+      "numeric_boolean_assertion": [],
+      "xml": "academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.xml",
+      "xml_sha256": "15d4ca6fef3f81a80c83082ea4689874f064cb92d56a06aec8afe8e8885e8edc"
+    },
+    {
+      "test_class": "ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT",
+      "test_name": "myAssignmentsRouteExcludesFutureAndExpiredAssignmentsAndRequiresActiveGrant()",
+      "type": "java.lang.IllegalStateException",
+      "body_length": 653,
+      "frames": [
+        "ru.rutcampustrack.academic.integration.AcademicFixtureResetListener.beforeTestMethod(AcademicFixtureResetListener.java:65)",
+        "org.springframework.test.context.TestContextManager.beforeTestMethod(TestContextManager.java:320)",
+        "org.springframework.test.context.junit.jupiter.SpringExtension.beforeEach(SpringExtension.java:236)",
+        "java.base/java.util.ArrayList.forEach(ArrayList.java:1596)",
+        "java.base/java.util.ArrayList.forEach(ArrayList.java:1596)"
+      ],
+      "causes": [],
+      "numeric_boolean_assertion": [],
+      "xml": "academic-service/academic-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.academic.assignment.AssignmentAuthorityIT.xml",
+      "xml_sha256": "15d4ca6fef3f81a80c83082ea4689874f064cb92d56a06aec8afe8e8885e8edc"
+    }
+  ],
+  "all_causes": {}
+}

@@ -1,17 +1,19 @@
 package ru.rutcampustrack.academic.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import ru.rutcampustrack.academic.contract.enums.SubjectType;
-
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import ru.rutcampustrack.academic.assignment.AssignmentLifecycle;
+import ru.rutcampustrack.academic.config.AssignmentLifecycleConverter;
+import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
 /** Immutable effective-dated assignment row from V25. */
 @Entity
@@ -36,7 +38,10 @@ public class Assignment {
     @Column(name = "semester_id", nullable = false, updatable = false)
     private Long semesterId;
 
-    @Column(name = "lesson_type", nullable = false, updatable = false,
+    @Column(
+            name = "lesson_type",
+            nullable = false,
+            updatable = false,
             columnDefinition = "subject_type")
     private SubjectType lessonType;
 
@@ -50,27 +55,37 @@ public class Assignment {
     private OffsetDateTime createdAt;
 
     @Column(name = "lifecycle_state", nullable = false, updatable = false)
-    private String lifecycleState = "ACTIVE";
+    @Convert(converter = AssignmentLifecycleConverter.class)
+    private AssignmentLifecycle lifecycleState = AssignmentLifecycle.ACTIVE;
 
-    public Assignment(Long teacherId,
-                      Long subjectId,
-                      Long groupId,
-                      Long semesterId,
-                      SubjectType lessonType,
-                      LocalDate validFrom,
-                      LocalDate validUntilExclusive) {
-        this(teacherId, subjectId, groupId, semesterId, lessonType,
-                validFrom, validUntilExclusive, "ACTIVE");
+    public Assignment(
+            Long teacherId,
+            Long subjectId,
+            Long groupId,
+            Long semesterId,
+            SubjectType lessonType,
+            LocalDate validFrom,
+            LocalDate validUntilExclusive) {
+        this(
+                teacherId,
+                subjectId,
+                groupId,
+                semesterId,
+                lessonType,
+                validFrom,
+                validUntilExclusive,
+                AssignmentLifecycle.ACTIVE);
     }
 
-    public Assignment(Long teacherId,
-                      Long subjectId,
-                      Long groupId,
-                      Long semesterId,
-                      SubjectType lessonType,
-                      LocalDate validFrom,
-                      LocalDate validUntilExclusive,
-                      String lifecycleState) {
+    public Assignment(
+            Long teacherId,
+            Long subjectId,
+            Long groupId,
+            Long semesterId,
+            SubjectType lessonType,
+            LocalDate validFrom,
+            LocalDate validUntilExclusive,
+            AssignmentLifecycle lifecycleState) {
         this.teacherId = teacherId;
         this.subjectId = subjectId;
         this.groupId = groupId;
@@ -78,7 +93,7 @@ public class Assignment {
         this.lessonType = lessonType;
         this.validFrom = validFrom;
         this.validUntilExclusive = validUntilExclusive;
-        this.lifecycleState = lifecycleState == null ? "ACTIVE" : lifecycleState;
+        this.lifecycleState = java.util.Objects.requireNonNull(lifecycleState, "lifecycleState");
     }
 
     @jakarta.persistence.PrePersist

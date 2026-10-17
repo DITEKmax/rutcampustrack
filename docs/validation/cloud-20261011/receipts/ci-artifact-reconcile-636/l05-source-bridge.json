@@ -1,0 +1,2255 @@
+{
+  "testedHead": "63647fc9b63175e1e32b0773d57affc637ea1065",
+  "actualCImerge": "a004234b5e8dcc3659f6211eaa2c2aa323e6ab83",
+  "reviewedCurrent": "eec3e0a864626160d33ae29da2cf3b0640e30caa",
+  "mergeVsHeadTree": "Native compare ahead_by1, behind_by0, files[]; tested merge full tree identical to head636",
+  "nativeTestSourceSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+  "paths": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "producerSha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+      "currentSha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+      "workingSha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+      "byteIdentical": true
+    },
+    {
+      "path": "scripts/collect-ci-test-outcomes.py",
+      "producerSha256": "6ff797894dc5991ea29ff2a8a876177bfb2043f54ac9b7eedfffd1b7d2363a83",
+      "currentSha256": "6ff797894dc5991ea29ff2a8a876177bfb2043f54ac9b7eedfffd1b7d2363a83",
+      "workingSha256": "6ff797894dc5991ea29ff2a8a876177bfb2043f54ac9b7eedfffd1b7d2363a83",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/AcademicApplication.java",
+      "producerSha256": "4f52f93e313dbcd6fccfb8b0e03211c66437f5816320520acbdcc5cc5a105a67",
+      "currentSha256": "4f52f93e313dbcd6fccfb8b0e03211c66437f5816320520acbdcc5cc5a105a67",
+      "workingSha256": "4f52f93e313dbcd6fccfb8b0e03211c66437f5816320520acbdcc5cc5a105a67",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AcademicAdminAccess.java",
+      "producerSha256": "33f05024b657f05f41c00f443a97ca22d6d50d1d06137f4968c49c1226b3b6a7",
+      "currentSha256": "33f05024b657f05f41c00f443a97ca22d6d50d1d06137f4968c49c1226b3b6a7",
+      "workingSha256": "33f05024b657f05f41c00f443a97ca22d6d50d1d06137f4968c49c1226b3b6a7",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessConfiguration.java",
+      "producerSha256": "1a6b242c25dba1d13438ce59f407024e47ea0a8595359b6ec19d63066955150a",
+      "currentSha256": "1a6b242c25dba1d13438ce59f407024e47ea0a8595359b6ec19d63066955150a",
+      "workingSha256": "1a6b242c25dba1d13438ce59f407024e47ea0a8595359b6ec19d63066955150a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessController.java",
+      "producerSha256": "622d16f35027bc8a06ffc10b7abdbfdc2ba9c21985c512e87f9ac7cce7fb00a9",
+      "currentSha256": "622d16f35027bc8a06ffc10b7abdbfdc2ba9c21985c512e87f9ac7cce7fb00a9",
+      "workingSha256": "622d16f35027bc8a06ffc10b7abdbfdc2ba9c21985c512e87f9ac7cce7fb00a9",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java",
+      "producerSha256": "ac5a39a8914e579d2b02cbe2f7018e763326ed9ad29f57d4a21ad91fbcadda18",
+      "currentSha256": "ac5a39a8914e579d2b02cbe2f7018e763326ed9ad29f57d4a21ad91fbcadda18",
+      "workingSha256": "ac5a39a8914e579d2b02cbe2f7018e763326ed9ad29f57d4a21ad91fbcadda18",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AuthConfirmationErrors.java",
+      "producerSha256": "d961229ba3c4dd40ac812b0dec6635274358ea9268a6fba9a523cb365c627ed5",
+      "currentSha256": "d961229ba3c4dd40ac812b0dec6635274358ea9268a6fba9a523cb365c627ed5",
+      "workingSha256": "d961229ba3c4dd40ac812b0dec6635274358ea9268a6fba9a523cb365c627ed5",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAssembler.java",
+      "producerSha256": "54bba98bd696915428a37d4e66076b54326c2f1c8e6aef9c3e9fd0cc97bc99a7",
+      "currentSha256": "54bba98bd696915428a37d4e66076b54326c2f1c8e6aef9c3e9fd0cc97bc99a7",
+      "workingSha256": "54bba98bd696915428a37d4e66076b54326c2f1c8e6aef9c3e9fd0cc97bc99a7",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentAuthority.java",
+      "producerSha256": "8623f17557f42371034d0e50e7627914dd4ceaecd2fb6bca998420fe76996794",
+      "currentSha256": "8623f17557f42371034d0e50e7627914dd4ceaecd2fb6bca998420fe76996794",
+      "workingSha256": "8623f17557f42371034d0e50e7627914dd4ceaecd2fb6bca998420fe76996794",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentClosureService.java",
+      "producerSha256": "ce022131c244fd336268ab1d29251c78052416e1b4ada616f85e2251f13ac26f",
+      "currentSha256": "ce022131c244fd336268ab1d29251c78052416e1b4ada616f85e2251f13ac26f",
+      "workingSha256": "ce022131c244fd336268ab1d29251c78052416e1b4ada616f85e2251f13ac26f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentController.java",
+      "producerSha256": "9513d6cd2ed8bc8c2fcd0ca0c71a68aa547de117a18b737ec701243c6b5be667",
+      "currentSha256": "9513d6cd2ed8bc8c2fcd0ca0c71a68aa547de117a18b737ec701243c6b5be667",
+      "workingSha256": "9513d6cd2ed8bc8c2fcd0ca0c71a68aa547de117a18b737ec701243c6b5be667",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentReplacementService.java",
+      "producerSha256": "9ba32ed01f543618bf7fa9ecf9a7cf1d6e4c342c31a95941db937432093a193c",
+      "currentSha256": "9ba32ed01f543618bf7fa9ecf9a7cf1d6e4c342c31a95941db937432093a193c",
+      "workingSha256": "9ba32ed01f543618bf7fa9ecf9a7cf1d6e4c342c31a95941db937432093a193c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/AssignmentService.java",
+      "producerSha256": "97caea640ce320ff29c45eb1e2dce57b4511d3879543f273d11942e7ed9e738b",
+      "currentSha256": "97caea640ce320ff29c45eb1e2dce57b4511d3879543f273d11942e7ed9e738b",
+      "workingSha256": "97caea640ce320ff29c45eb1e2dce57b4511d3879543f273d11942e7ed9e738b",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assignment/TeacherAssignmentReadAuthority.java",
+      "producerSha256": "0e8f23132b2718f451018813f05bd1654a0d0a5a295d11d3c8d47bc0b2738906",
+      "currentSha256": "0e8f23132b2718f451018813f05bd1654a0d0a5a295d11d3c8d47bc0b2738906",
+      "workingSha256": "0e8f23132b2718f451018813f05bd1654a0d0a5a295d11d3c8d47bc0b2738906",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantAssembler.java",
+      "producerSha256": "afb451378daf0401bc3c7e14d2978b09c178b2cc02434668b1002e3dc898a4f3",
+      "currentSha256": "afb451378daf0401bc3c7e14d2978b09c178b2cc02434668b1002e3dc898a4f3",
+      "workingSha256": "afb451378daf0401bc3c7e14d2978b09c178b2cc02434668b1002e3dc898a4f3",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantController.java",
+      "producerSha256": "2c9bbe9ff5d4d9c687f7130f0e0641201cdc649f6743ea0e86fc3d82242b3f18",
+      "currentSha256": "2c9bbe9ff5d4d9c687f7130f0e0641201cdc649f6743ea0e86fc3d82242b3f18",
+      "workingSha256": "2c9bbe9ff5d4d9c687f7130f0e0641201cdc649f6743ea0e86fc3d82242b3f18",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantPermissionAuthority.java",
+      "producerSha256": "9bb96fad983eecc330c76d8ff0b679c554ebfc81302a3770e1cc44b3cfcf1b28",
+      "currentSha256": "9bb96fad983eecc330c76d8ff0b679c554ebfc81302a3770e1cc44b3cfcf1b28",
+      "workingSha256": "9bb96fad983eecc330c76d8ff0b679c554ebfc81302a3770e1cc44b3cfcf1b28",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/AssistantService.java",
+      "producerSha256": "1374e6193e22fe5eed0d129d83aca23a1f4be192d3369a2faadf3d38212ecbed",
+      "currentSha256": "1374e6193e22fe5eed0d129d83aca23a1f4be192d3369a2faadf3d38212ecbed",
+      "workingSha256": "1374e6193e22fe5eed0d129d83aca23a1f4be192d3369a2faadf3d38212ecbed",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/audit/AcademicAuditLogContextProvider.java",
+      "producerSha256": "5f93f2db3d8343393da7bc391f58e0eb407f4e56d28512ee2a7896e642d45037",
+      "currentSha256": "5f93f2db3d8343393da7bc391f58e0eb407f4e56d28512ee2a7896e642d45037",
+      "workingSha256": "5f93f2db3d8343393da7bc391f58e0eb407f4e56d28512ee2a7896e642d45037",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/audit/JdbcAuditLogStorage.java",
+      "producerSha256": "18730f382fcf6042c1489e7001f5774debbc304cb3dd11ce4132dba63b3e62cd",
+      "currentSha256": "18730f382fcf6042c1489e7001f5774debbc304cb3dd11ce4132dba63b3e62cd",
+      "workingSha256": "18730f382fcf6042c1489e7001f5774debbc304cb3dd11ce4132dba63b3e62cd",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/CacheConfig.java",
+      "producerSha256": "88439ded80962b230b1a6d6212b185c8ded7a311ffaba89ed7f9fd2fcafc227b",
+      "currentSha256": "88439ded80962b230b1a6d6212b185c8ded7a311ffaba89ed7f9fd2fcafc227b",
+      "workingSha256": "88439ded80962b230b1a6d6212b185c8ded7a311ffaba89ed7f9fd2fcafc227b",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/ClockConfig.java",
+      "producerSha256": "558b977afe3174fc3b83f75922a8460a3215e8097ba46990c2145fdd44984d6c",
+      "currentSha256": "65b30a45ceae379f42b42a7e3d98b53d8d8a836a54910a0d6e4d9a7bbadcb4f7",
+      "workingSha256": "65b30a45ceae379f42b42a7e3d98b53d8d8a836a54910a0d6e4d9a7bbadcb4f7",
+      "byteIdentical": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/EnumConverters.java",
+      "producerSha256": "d6babe83b02f5fb52331d5205fec9634062116882f61ec9cbd0cdb80e10d0708",
+      "currentSha256": "d6babe83b02f5fb52331d5205fec9634062116882f61ec9cbd0cdb80e10d0708",
+      "workingSha256": "d6babe83b02f5fb52331d5205fec9634062116882f61ec9cbd0cdb80e10d0708",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/LowercaseEnumConverter.java",
+      "producerSha256": "d521b52898f5f02df5b938bdae3c2e110fea6fba52cf79825934db0c2ba97cf6",
+      "currentSha256": "d521b52898f5f02df5b938bdae3c2e110fea6fba52cf79825934db0c2ba97cf6",
+      "workingSha256": "d521b52898f5f02df5b938bdae3c2e110fea6fba52cf79825934db0c2ba97cf6",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/ObservabilityConfig.java",
+      "producerSha256": "7aef78a8ab237f5e3c2c1efee5223e53414e608919825d72e6df8ef0428ab616",
+      "currentSha256": "7aef78a8ab237f5e3c2c1efee5223e53414e608919825d72e6df8ef0428ab616",
+      "workingSha256": "7aef78a8ab237f5e3c2c1efee5223e53414e608919825d72e6df8ef0428ab616",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/SubjectTypeUserType.java",
+      "producerSha256": "6864cb53eeb949509f37c10d7a309b085e5fe230fe8a012d54db76908630322d",
+      "currentSha256": "6864cb53eeb949509f37c10d7a309b085e5fe230fe8a012d54db76908630322d",
+      "workingSha256": "6864cb53eeb949509f37c10d7a309b085e5fe230fe8a012d54db76908630322d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/WebConfig.java",
+      "producerSha256": "06e04d55fd2f5ebfcf7d4e5fa522507c6a66a443bd62e1641cc64c1c3bbae477",
+      "currentSha256": "06e04d55fd2f5ebfcf7d4e5fa522507c6a66a443bd62e1641cc64c1c3bbae477",
+      "workingSha256": "06e04d55fd2f5ebfcf7d4e5fa522507c6a66a443bd62e1641cc64c1c3bbae477",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/dashboard/ActivityWindow.java",
+      "producerSha256": "73a447cbc2c96bac3eec45586a7487e078a5665123740072f43bf6992c3a161f",
+      "currentSha256": "73a447cbc2c96bac3eec45586a7487e078a5665123740072f43bf6992c3a161f",
+      "workingSha256": "73a447cbc2c96bac3eec45586a7487e078a5665123740072f43bf6992c3a161f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/dashboard/AttendanceAdminActivityClient.java",
+      "producerSha256": "48d60be39133a01c84151b6cef9c43992eae19216a5b7ab1c65f0fdc2c236940",
+      "currentSha256": "48d60be39133a01c84151b6cef9c43992eae19216a5b7ab1c65f0fdc2c236940",
+      "workingSha256": "48d60be39133a01c84151b6cef9c43992eae19216a5b7ab1c65f0fdc2c236940",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/dashboard/DashboardActivityReadRepository.java",
+      "producerSha256": "d338b11a2010defb9c35a776cae2cf1dfc263fbd7f6f721b67584f560c065398",
+      "currentSha256": "d338b11a2010defb9c35a776cae2cf1dfc263fbd7f6f721b67584f560c065398",
+      "workingSha256": "d338b11a2010defb9c35a776cae2cf1dfc263fbd7f6f721b67584f560c065398",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/dashboard/DashboardActivityService.java",
+      "producerSha256": "1f1fe5791499e7e8202f3336bf41707b28ba10ae3b089fd995d97da59a430182",
+      "currentSha256": "1f1fe5791499e7e8202f3336bf41707b28ba10ae3b089fd995d97da59a430182",
+      "workingSha256": "1f1fe5791499e7e8202f3336bf41707b28ba10ae3b089fd995d97da59a430182",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/dashboard/DashboardController.java",
+      "producerSha256": "889a3cb99fbfa3bbcf54fdaf67453a1ca3e4636be3eb50a210da44060289ccb5",
+      "currentSha256": "889a3cb99fbfa3bbcf54fdaf67453a1ca3e4636be3eb50a210da44060289ccb5",
+      "workingSha256": "889a3cb99fbfa3bbcf54fdaf67453a1ca3e4636be3eb50a210da44060289ccb5",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/dashboard/DashboardService.java",
+      "producerSha256": "44c5d6c947cc3f20a9bcb7fa142a64b500ad0e6b433e05678039480a5ad0717f",
+      "currentSha256": "44c5d6c947cc3f20a9bcb7fa142a64b500ad0e6b433e05678039480a5ad0717f",
+      "workingSha256": "44c5d6c947cc3f20a9bcb7fa142a64b500ad0e6b433e05678039480a5ad0717f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Assignment.java",
+      "producerSha256": "603de66ef3720d0e8eff5652621d004f7d519f5e67b4d628f4fd4e92f655fbb3",
+      "currentSha256": "603de66ef3720d0e8eff5652621d004f7d519f5e67b4d628f4fd4e92f655fbb3",
+      "workingSha256": "603de66ef3720d0e8eff5652621d004f7d519f5e67b4d628f4fd4e92f655fbb3",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/AssignmentReplacementOperation.java",
+      "producerSha256": "141b6ee442c4093e60996327ee402bf13f196138e82a5738aaa948d088f093b9",
+      "currentSha256": "141b6ee442c4093e60996327ee402bf13f196138e82a5738aaa948d088f093b9",
+      "workingSha256": "141b6ee442c4093e60996327ee402bf13f196138e82a5738aaa948d088f093b9",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/AttendanceThreshold.java",
+      "producerSha256": "ffb6625d1a6a03abe0c5148113d731e90a40a2638198d3b072c57bcde494cd65",
+      "currentSha256": "ffb6625d1a6a03abe0c5148113d731e90a40a2638198d3b072c57bcde494cd65",
+      "workingSha256": "ffb6625d1a6a03abe0c5148113d731e90a40a2638198d3b072c57bcde494cd65",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/CampusSetting.java",
+      "producerSha256": "382350f657eba4b13d0453273d97c2626963d324ed7f4487330fbae7dc5734d3",
+      "currentSha256": "382350f657eba4b13d0453273d97c2626963d324ed7f4487330fbae7dc5734d3",
+      "workingSha256": "382350f657eba4b13d0453273d97c2626963d324ed7f4487330fbae7dc5734d3",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Group.java",
+      "producerSha256": "7b1a84cc46f594c45b789b39a15b89bfaef7e45a5f63640d03e134e2c713a9d3",
+      "currentSha256": "7b1a84cc46f594c45b789b39a15b89bfaef7e45a5f63640d03e134e2c713a9d3",
+      "workingSha256": "7b1a84cc46f594c45b789b39a15b89bfaef7e45a5f63640d03e134e2c713a9d3",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/GroupHistoryCoverage.java",
+      "producerSha256": "2f6be0465fbc71701acd1cd18c10983955e8e9db698ad4dfc49535500afec113",
+      "currentSha256": "2f6be0465fbc71701acd1cd18c10983955e8e9db698ad4dfc49535500afec113",
+      "workingSha256": "2f6be0465fbc71701acd1cd18c10983955e8e9db698ad4dfc49535500afec113",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/GroupPromotionCycleRecord.java",
+      "producerSha256": "caaedd761b73d9a5ce8ca7194d7c2e2ddf2629ead7121147b13c7692c3586d62",
+      "currentSha256": "caaedd761b73d9a5ce8ca7194d7c2e2ddf2629ead7121147b13c7692c3586d62",
+      "workingSha256": "caaedd761b73d9a5ce8ca7194d7c2e2ddf2629ead7121147b13c7692c3586d62",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/HeadmanAssistant.java",
+      "producerSha256": "2df9bf008714b22048021788a97bd6d37b6e5763f20cd31d3b3a3ca8cfa3d736",
+      "currentSha256": "2df9bf008714b22048021788a97bd6d37b6e5763f20cd31d3b3a3ca8cfa3d736",
+      "workingSha256": "2df9bf008714b22048021788a97bd6d37b6e5763f20cd31d3b3a3ca8cfa3d736",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Homework.java",
+      "producerSha256": "65c9afdec1345f1bf76a5e21ac803de77e9791c4606e07a6452c8e79fa79468f",
+      "currentSha256": "65c9afdec1345f1bf76a5e21ac803de77e9791c4606e07a6452c8e79fa79468f",
+      "workingSha256": "65c9afdec1345f1bf76a5e21ac803de77e9791c4606e07a6452c8e79fa79468f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/HomeworkBindingArchiveMarker.java",
+      "producerSha256": "942bbb98db05b3453cc9a346daaef101309032bc28a22e2449545c381be4c37d",
+      "currentSha256": "942bbb98db05b3453cc9a346daaef101309032bc28a22e2449545c381be4c37d",
+      "workingSha256": "942bbb98db05b3453cc9a346daaef101309032bc28a22e2449545c381be4c37d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/HomeworkCompletion.java",
+      "producerSha256": "5d55f4dce4a619c86b82f6e2a0697417d01c14cc4274e1e4fd2b4b63c5a0ffe6",
+      "currentSha256": "5d55f4dce4a619c86b82f6e2a0697417d01c14cc4274e1e4fd2b4b63c5a0ffe6",
+      "workingSha256": "5d55f4dce4a619c86b82f6e2a0697417d01c14cc4274e1e4fd2b4b63c5a0ffe6",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/HomeworkWeeklyDigestRun.java",
+      "producerSha256": "ee10b5622619029206a03dac6e05c211bee937dbf2800b3a54b8769f1377d624",
+      "currentSha256": "ee10b5622619029206a03dac6e05c211bee937dbf2800b3a54b8769f1377d624",
+      "workingSha256": "ee10b5622619029206a03dac6e05c211bee937dbf2800b3a54b8769f1377d624",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Semester.java",
+      "producerSha256": "e759b4d2002e427b6fe6b1c183b617d68aed03ef3830c83ae9f7d118ebea82cd",
+      "currentSha256": "e759b4d2002e427b6fe6b1c183b617d68aed03ef3830c83ae9f7d118ebea82cd",
+      "workingSha256": "e759b4d2002e427b6fe6b1c183b617d68aed03ef3830c83ae9f7d118ebea82cd",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/SemesterArchiveOperation.java",
+      "producerSha256": "eed55efae155aec26b6e6336a15c8780e32cc75a41084ed56a1c3a89da50725f",
+      "currentSha256": "eed55efae155aec26b6e6336a15c8780e32cc75a41084ed56a1c3a89da50725f",
+      "workingSha256": "eed55efae155aec26b6e6336a15c8780e32cc75a41084ed56a1c3a89da50725f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/StudentGroupHistory.java",
+      "producerSha256": "7f3403a4ba1a38d054056955f0192523c3643f5fec49a3efb4f7d164d3f72ecd",
+      "currentSha256": "7f3403a4ba1a38d054056955f0192523c3643f5fec49a3efb4f7d164d3f72ecd",
+      "workingSha256": "7f3403a4ba1a38d054056955f0192523c3643f5fec49a3efb4f7d164d3f72ecd",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/Subject.java",
+      "producerSha256": "a61713173f8331674e2c0bb5e4146571ab6bd3cdc18d5b855d96e1043d0600ce",
+      "currentSha256": "a61713173f8331674e2c0bb5e4146571ab6bd3cdc18d5b855d96e1043d0600ce",
+      "workingSha256": "a61713173f8331674e2c0bb5e4146571ab6bd3cdc18d5b855d96e1043d0600ce",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/SubjectLessonType.java",
+      "producerSha256": "6298421f9994c00719f482fa7197db9dd1751e9dde85b2535cb65fccc9dfdf4a",
+      "currentSha256": "6298421f9994c00719f482fa7197db9dd1751e9dde85b2535cb65fccc9dfdf4a",
+      "workingSha256": "6298421f9994c00719f482fa7197db9dd1751e9dde85b2535cb65fccc9dfdf4a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/SubjectLessonTypeId.java",
+      "producerSha256": "c31f4e2069c8ec0e1199c88fcdaa0545e954fea3a12da945b2ad9d3b2dcc93ad",
+      "currentSha256": "c31f4e2069c8ec0e1199c88fcdaa0545e954fea3a12da945b2ad9d3b2dcc93ad",
+      "workingSha256": "c31f4e2069c8ec0e1199c88fcdaa0545e954fea3a12da945b2ad9d3b2dcc93ad",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/TeacherSubjectGroup.java",
+      "producerSha256": "140d64e358e260f74eb825f47926754d5b375fc5f0c1031d343ba502bd26054d",
+      "currentSha256": "140d64e358e260f74eb825f47926754d5b375fc5f0c1031d343ba502bd26054d",
+      "workingSha256": "140d64e358e260f74eb825f47926754d5b375fc5f0c1031d343ba502bd26054d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/User.java",
+      "producerSha256": "a44a8e02f6682182c41e9c142ccd57e142f29faeb1d42d8ef0faaca8268e611e",
+      "currentSha256": "a44a8e02f6682182c41e9c142ccd57e142f29faeb1d42d8ef0faaca8268e611e",
+      "workingSha256": "a44a8e02f6682182c41e9c142ccd57e142f29faeb1d42d8ef0faaca8268e611e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/entity/UserRoleGrant.java",
+      "producerSha256": "6135e0c7a2f119c2b117180d1a6dff16a4ede3642a6a0674bd414416116ac87e",
+      "currentSha256": "6135e0c7a2f119c2b117180d1a6dff16a4ede3642a6a0674bd414416116ac87e",
+      "workingSha256": "6135e0c7a2f119c2b117180d1a6dff16a4ede3642a6a0674bd414416116ac87e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/AcademicEventConsumerProcessedEntity.java",
+      "producerSha256": "2d952f927b380ae451dff45c6e841978b196eaa5adeb8d098058520a3a5825b0",
+      "currentSha256": "2d952f927b380ae451dff45c6e841978b196eaa5adeb8d098058520a3a5825b0",
+      "workingSha256": "2d952f927b380ae451dff45c6e841978b196eaa5adeb8d098058520a3a5825b0",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/AcademicOutboxEntity.java",
+      "producerSha256": "925d2ba261417f2e63f311c1957caee52083d0fb2017c7f218c3256a6634ba39",
+      "currentSha256": "925d2ba261417f2e63f311c1957caee52083d0fb2017c7f218c3256a6634ba39",
+      "workingSha256": "925d2ba261417f2e63f311c1957caee52083d0fb2017c7f218c3256a6634ba39",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/AcademicPersonalNotificationEvent.java",
+      "producerSha256": "bb3d67ab2ae58756cc66e94611621946b9c593c1d7a04a9775e130a7f7c282be",
+      "currentSha256": "bb3d67ab2ae58756cc66e94611621946b9c593c1d7a04a9775e130a7f7c282be",
+      "workingSha256": "bb3d67ab2ae58756cc66e94611621946b9c593c1d7a04a9775e130a7f7c282be",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/AdministrativeNotificationAdminAccessChangedEvent.java",
+      "producerSha256": "783b5e79b3f952766c47571f1ebab7433074361e5910a2bb40d150e9c8eac649",
+      "currentSha256": "783b5e79b3f952766c47571f1ebab7433074361e5910a2bb40d150e9c8eac649",
+      "workingSha256": "783b5e79b3f952766c47571f1ebab7433074361e5910a2bb40d150e9c8eac649",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/AdministrativeNotificationGroupPromotionCompletedEvent.java",
+      "producerSha256": "b8af2a717dd8fb28641e75aeb9ce32cc251f9a528a8c2ca9376aef3a65bc0abd",
+      "currentSha256": "b8af2a717dd8fb28641e75aeb9ce32cc251f9a528a8c2ca9376aef3a65bc0abd",
+      "workingSha256": "b8af2a717dd8fb28641e75aeb9ce32cc251f9a528a8c2ca9376aef3a65bc0abd",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/AdministrativeNotificationSemesterActivatedEvent.java",
+      "producerSha256": "a609ffd9b6a79805698efabc4c4d2315823e269e3e30b500adf634cca56aa145",
+      "currentSha256": "a609ffd9b6a79805698efabc4c4d2315823e269e3e30b500adf634cca56aa145",
+      "workingSha256": "a609ffd9b6a79805698efabc4c4d2315823e269e3e30b500adf634cca56aa145",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/AdministrativeNotificationSemesterOperationCompletedEvent.java",
+      "producerSha256": "a69304ab63dfb2c50b82af14f5aa8125a0c942aae12d819460932a5a4c1e488c",
+      "currentSha256": "a69304ab63dfb2c50b82af14f5aa8125a0c942aae12d819460932a5a4c1e488c",
+      "workingSha256": "a69304ab63dfb2c50b82af14f5aa8125a0c942aae12d819460932a5a4c1e488c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/DashboardInvalidatedEvent.java",
+      "producerSha256": "e60007ef27473bd2d08d50c06bbc8214eadc65ff6055d5c5fc8aabd01d7cb387",
+      "currentSha256": "e60007ef27473bd2d08d50c06bbc8214eadc65ff6055d5c5fc8aabd01d7cb387",
+      "workingSha256": "e60007ef27473bd2d08d50c06bbc8214eadc65ff6055d5c5fc8aabd01d7cb387",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/DomainEvent.java",
+      "producerSha256": "74e14a035c748713a531b565cea95c6af99b086e3636068dbd64489197c5bd9a",
+      "currentSha256": "74e14a035c748713a531b565cea95c6af99b086e3636068dbd64489197c5bd9a",
+      "workingSha256": "74e14a035c748713a531b565cea95c6af99b086e3636068dbd64489197c5bd9a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/DomainEventListener.java",
+      "producerSha256": "f04173f5f75b2b7ab91a6ff5092d35a5f6c4ae58650954641a9c51d353635701",
+      "currentSha256": "f04173f5f75b2b7ab91a6ff5092d35a5f6c4ae58650954641a9c51d353635701",
+      "workingSha256": "f04173f5f75b2b7ab91a6ff5092d35a5f6c4ae58650954641a9c51d353635701",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/GroupArchivedEvent.java",
+      "producerSha256": "bb6775f2b0d45b695f6bb3aad152ec99e4b709fbfe747aaaa433eb0a5d4bb11c",
+      "currentSha256": "bb6775f2b0d45b695f6bb3aad152ec99e4b709fbfe747aaaa433eb0a5d4bb11c",
+      "workingSha256": "bb6775f2b0d45b695f6bb3aad152ec99e4b709fbfe747aaaa433eb0a5d4bb11c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/GroupRenamedEvent.java",
+      "producerSha256": "1d900a36a4a46212ddec2ead4a9f64e1b2c84484794731bf5564ceabfadeadb8",
+      "currentSha256": "1d900a36a4a46212ddec2ead4a9f64e1b2c84484794731bf5564ceabfadeadb8",
+      "workingSha256": "1d900a36a4a46212ddec2ead4a9f64e1b2c84484794731bf5564ceabfadeadb8",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/GroupUpdatedEvent.java",
+      "producerSha256": "b4ebfce9a93bb926b2a159bfe8f4fb3eab45fd1e3bf60e07e5ecd4022f87b22c",
+      "currentSha256": "b4ebfce9a93bb926b2a159bfe8f4fb3eab45fd1e3bf60e07e5ecd4022f87b22c",
+      "workingSha256": "b4ebfce9a93bb926b2a159bfe8f4fb3eab45fd1e3bf60e07e5ecd4022f87b22c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/HomeworkActionRecordedEvent.java",
+      "producerSha256": "5d7660d41b125e8c82c287281cfceaf6f3cfbf9a8f2de965a3b9d011adefe26a",
+      "currentSha256": "5d7660d41b125e8c82c287281cfceaf6f3cfbf9a8f2de965a3b9d011adefe26a",
+      "workingSha256": "5d7660d41b125e8c82c287281cfceaf6f3cfbf9a8f2de965a3b9d011adefe26a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/HomeworkBindingArchivedEventConsumer.java",
+      "producerSha256": "028802fa55c160f1186dae4a750e5304c869178ce268b7a1150e5f9ada285a00",
+      "currentSha256": "028802fa55c160f1186dae4a750e5304c869178ce268b7a1150e5f9ada285a00",
+      "workingSha256": "028802fa55c160f1186dae4a750e5304c869178ce268b7a1150e5f9ada285a00",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/HomeworkDueReminderEvent.java",
+      "producerSha256": "c3fff7acceb85b1a94235bef921eff335a4a654be8a4d9341035202d2e429a32",
+      "currentSha256": "c3fff7acceb85b1a94235bef921eff335a4a654be8a4d9341035202d2e429a32",
+      "workingSha256": "c3fff7acceb85b1a94235bef921eff335a4a654be8a4d9341035202d2e429a32",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/HomeworkNotificationItem.java",
+      "producerSha256": "d491614bdba8cd8eda7432d59bd737a27366c73e8528d4094ee1e86dc1c52245",
+      "currentSha256": "d491614bdba8cd8eda7432d59bd737a27366c73e8528d4094ee1e86dc1c52245",
+      "workingSha256": "d491614bdba8cd8eda7432d59bd737a27366c73e8528d4094ee1e86dc1c52245",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/HomeworkPublishedEvent.java",
+      "producerSha256": "382f411343a2e6f790dd6ab207b9fd734912df92ad22d559e7d9cef08900e623",
+      "currentSha256": "382f411343a2e6f790dd6ab207b9fd734912df92ad22d559e7d9cef08900e623",
+      "workingSha256": "382f411343a2e6f790dd6ab207b9fd734912df92ad22d559e7d9cef08900e623",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/HomeworkUpdatedEvent.java",
+      "producerSha256": "bbcbf58256f46f2e46611e4f164b702bd38e00edfe2c013834f502a36fbde3c0",
+      "currentSha256": "bbcbf58256f46f2e46611e4f164b702bd38e00edfe2c013834f502a36fbde3c0",
+      "workingSha256": "bbcbf58256f46f2e46611e4f164b702bd38e00edfe2c013834f502a36fbde3c0",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/HomeworkWeeklyDigestEvent.java",
+      "producerSha256": "b7965c2d8357802c170eaa615dfff558d1d01242152a1803f4efc7fad3ff1a5c",
+      "currentSha256": "b7965c2d8357802c170eaa615dfff558d1d01242152a1803f4efc7fad3ff1a5c",
+      "workingSha256": "b7965c2d8357802c170eaa615dfff558d1d01242152a1803f4efc7fad3ff1a5c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/HomeworkWithdrawnEvent.java",
+      "producerSha256": "b2cc250d24901c4be6d40d7862acb2293ec1318d964e75984b4da61e4dafbe5a",
+      "currentSha256": "b2cc250d24901c4be6d40d7862acb2293ec1318d964e75984b4da61e4dafbe5a",
+      "workingSha256": "b2cc250d24901c4be6d40d7862acb2293ec1318d964e75984b4da61e4dafbe5a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/LessonTransferEventConsumer.java",
+      "producerSha256": "a094d62a785718f5d56d6e8cedd68d6b67f9d1701b3f0450b186f6436dbbadd7",
+      "currentSha256": "a094d62a785718f5d56d6e8cedd68d6b67f9d1701b3f0450b186f6436dbbadd7",
+      "workingSha256": "a094d62a785718f5d56d6e8cedd68d6b67f9d1701b3f0450b186f6436dbbadd7",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/LessonTransferParticipantAppliedEvent.java",
+      "producerSha256": "582ab00ff102932952ff5f97e1aa99fead5fed44b31202c28fa7613eb752445c",
+      "currentSha256": "582ab00ff102932952ff5f97e1aa99fead5fed44b31202c28fa7613eb752445c",
+      "workingSha256": "582ab00ff102932952ff5f97e1aa99fead5fed44b31202c28fa7613eb752445c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/OutboxConfig.java",
+      "producerSha256": "7d757478ba989c7b0fea7ff7036fa4118ca95d799ccecc8d79dc5cd67349ace7",
+      "currentSha256": "7d757478ba989c7b0fea7ff7036fa4118ca95d799ccecc8d79dc5cd67349ace7",
+      "workingSha256": "7d757478ba989c7b0fea7ff7036fa4118ca95d799ccecc8d79dc5cd67349ace7",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/RabbitConfig.java",
+      "producerSha256": "5d5a4fd3357e20f3be79d1146ba9f2621b51c62cb7d6eedec082f2091512e42d",
+      "currentSha256": "5d5a4fd3357e20f3be79d1146ba9f2621b51c62cb7d6eedec082f2091512e42d",
+      "workingSha256": "5d5a4fd3357e20f3be79d1146ba9f2621b51c62cb7d6eedec082f2091512e42d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/RabbitOutboxEventSender.java",
+      "producerSha256": "4d53dbbd0f406d8bb5a2f314c7124f3931fc1e4053c3566ed84de8fc8a73feae",
+      "currentSha256": "4d53dbbd0f406d8bb5a2f314c7124f3931fc1e4053c3566ed84de8fc8a73feae",
+      "workingSha256": "4d53dbbd0f406d8bb5a2f314c7124f3931fc1e4053c3566ed84de8fc8a73feae",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/SemesterArchiveEffectAcknowledgementEvent.java",
+      "producerSha256": "46d7b95a374e1a06cc0d2d549523f7e2ac57acf4be2ba7ae21135810c58e5953",
+      "currentSha256": "46d7b95a374e1a06cc0d2d549523f7e2ac57acf4be2ba7ae21135810c58e5953",
+      "workingSha256": "46d7b95a374e1a06cc0d2d549523f7e2ac57acf4be2ba7ae21135810c58e5953",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/SemesterArchiveParticipantAcknowledgementConsumer.java",
+      "producerSha256": "f7b906da4c0c6f5b5d3b3cd79fbc47d2b532604fa609146dbb71060cd1b9b170",
+      "currentSha256": "f7b906da4c0c6f5b5d3b3cd79fbc47d2b532604fa609146dbb71060cd1b9b170",
+      "workingSha256": "f7b906da4c0c6f5b5d3b3cd79fbc47d2b532604fa609146dbb71060cd1b9b170",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/SemesterArchiveParticipantCommandEvent.java",
+      "producerSha256": "0920a20f328a4800f1e702311b95ef3b343db3d0b80c59bc8fd9f7da54abb6b5",
+      "currentSha256": "0920a20f328a4800f1e702311b95ef3b343db3d0b80c59bc8fd9f7da54abb6b5",
+      "workingSha256": "0920a20f328a4800f1e702311b95ef3b343db3d0b80c59bc8fd9f7da54abb6b5",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/SemesterArchivedEvent.java",
+      "producerSha256": "487a020229c6518ce1bfe7acf7cb7d692a78010503cb500cd32aca394e15804e",
+      "currentSha256": "487a020229c6518ce1bfe7acf7cb7d692a78010503cb500cd32aca394e15804e",
+      "workingSha256": "487a020229c6518ce1bfe7acf7cb7d692a78010503cb500cd32aca394e15804e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/SubjectDeletedEvent.java",
+      "producerSha256": "8792300b1cc6efdfc9701477623b26402269876405d9ee4d64708bb7f17f393f",
+      "currentSha256": "8792300b1cc6efdfc9701477623b26402269876405d9ee4d64708bb7f17f393f",
+      "workingSha256": "8792300b1cc6efdfc9701477623b26402269876405d9ee4d64708bb7f17f393f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/AccessDeniedException.java",
+      "producerSha256": "7a682a84e75ef8efdc8db5123704c236e66676286ce770e02fdaa8966a4ce6f5",
+      "currentSha256": "7a682a84e75ef8efdc8db5123704c236e66676286ce770e02fdaa8966a4ce6f5",
+      "workingSha256": "7a682a84e75ef8efdc8db5123704c236e66676286ce770e02fdaa8966a4ce6f5",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/AssignmentAdoptionPendingException.java",
+      "producerSha256": "e8307c4a4b1fc8d44f352e5f972522481932307081191442a508703d098dc45f",
+      "currentSha256": "e8307c4a4b1fc8d44f352e5f972522481932307081191442a508703d098dc45f",
+      "workingSha256": "e8307c4a4b1fc8d44f352e5f972522481932307081191442a508703d098dc45f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/AssignmentClosureNotReadyException.java",
+      "producerSha256": "ab2716fb053981a223e9d1021a81622e3feb6bf3fd6f96cc0b9262296c7d49b4",
+      "currentSha256": "ab2716fb053981a223e9d1021a81622e3feb6bf3fd6f96cc0b9262296c7d49b4",
+      "workingSha256": "ab2716fb053981a223e9d1021a81622e3feb6bf3fd6f96cc0b9262296c7d49b4",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/AssignmentClosurePendingException.java",
+      "producerSha256": "a8861f42742f04c82ffe47df72d1f81e6a78fc2f88a9eb291d293427832e8024",
+      "currentSha256": "a8861f42742f04c82ffe47df72d1f81e6a78fc2f88a9eb291d293427832e8024",
+      "workingSha256": "a8861f42742f04c82ffe47df72d1f81e6a78fc2f88a9eb291d293427832e8024",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/AssignmentIdempotencyConflictException.java",
+      "producerSha256": "e05e8d79928c6ef62fddad80f0a09ed62aeeca1479c1b6a0274f6d4d2a4293e0",
+      "currentSha256": "e05e8d79928c6ef62fddad80f0a09ed62aeeca1479c1b6a0274f6d4d2a4293e0",
+      "workingSha256": "e05e8d79928c6ef62fddad80f0a09ed62aeeca1479c1b6a0274f6d4d2a4293e0",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/BadRequestException.java",
+      "producerSha256": "4481ee88740357d26b64f1627ff9acfa043e927c306be85e7556bffc73e14c77",
+      "currentSha256": "4481ee88740357d26b64f1627ff9acfa043e927c306be85e7556bffc73e14c77",
+      "workingSha256": "4481ee88740357d26b64f1627ff9acfa043e927c306be85e7556bffc73e14c77",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/ConflictException.java",
+      "producerSha256": "bf9ec72215abeaaa2be9ddeb177283f0d280e7d9d947b23f72289973d4e4ba9c",
+      "currentSha256": "bf9ec72215abeaaa2be9ddeb177283f0d280e7d9d947b23f72289973d4e4ba9c",
+      "workingSha256": "bf9ec72215abeaaa2be9ddeb177283f0d280e7d9d947b23f72289973d4e4ba9c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/GlobalExceptionHandler.java",
+      "producerSha256": "6413b82e02566111df3868e7c80081ab64e06ac67f1cda26412a9c13481af31a",
+      "currentSha256": "6413b82e02566111df3868e7c80081ab64e06ac67f1cda26412a9c13481af31a",
+      "workingSha256": "6413b82e02566111df3868e7c80081ab64e06ac67f1cda26412a9c13481af31a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/HomeworkPublicationPendingException.java",
+      "producerSha256": "c783566e6fbf3f0179fefdeb42c7c5fd27beae31bd88d9bbd15376a72ab403a7",
+      "currentSha256": "c783566e6fbf3f0179fefdeb42c7c5fd27beae31bd88d9bbd15376a72ab403a7",
+      "workingSha256": "c783566e6fbf3f0179fefdeb42c7c5fd27beae31bd88d9bbd15376a72ab403a7",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/ScheduleServiceUnavailableException.java",
+      "producerSha256": "1341854c7582e848d073fccb799ca123326be05fd110f89ae52806b34e234136",
+      "currentSha256": "1341854c7582e848d073fccb799ca123326be05fd110f89ae52806b34e234136",
+      "workingSha256": "1341854c7582e848d073fccb799ca123326be05fd110f89ae52806b34e234136",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/exception/SemesterDeletionDependencyUnavailableException.java",
+      "producerSha256": "5f3f67d67d44546ce434fc1228bad7dcc31d315a57f5fb4238711fd8eb085f27",
+      "currentSha256": "5f3f67d67d44546ce434fc1228bad7dcc31d315a57f5fb4238711fd8eb085f27",
+      "workingSha256": "5f3f67d67d44546ce434fc1228bad7dcc31d315a57f5fb4238711fd8eb085f27",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupArchivalService.java",
+      "producerSha256": "aea14701aa48bec756b22c544e0e6a63b5237e94ca33e472937f103a6edd7b9e",
+      "currentSha256": "aea14701aa48bec756b22c544e0e6a63b5237e94ca33e472937f103a6edd7b9e",
+      "workingSha256": "aea14701aa48bec756b22c544e0e6a63b5237e94ca33e472937f103a6edd7b9e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupAssembler.java",
+      "producerSha256": "4a3931c10fe4b7d0208a370722b8e811f463407102c1717c947cba644f8d635e",
+      "currentSha256": "4a3931c10fe4b7d0208a370722b8e811f463407102c1717c947cba644f8d635e",
+      "workingSha256": "4a3931c10fe4b7d0208a370722b8e811f463407102c1717c947cba644f8d635e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupCodeRules.java",
+      "producerSha256": "2b60b053a6875a8820a98445517004c536abbe63548a22540edea7bb11fef349",
+      "currentSha256": "2b60b053a6875a8820a98445517004c536abbe63548a22540edea7bb11fef349",
+      "workingSha256": "2b60b053a6875a8820a98445517004c536abbe63548a22540edea7bb11fef349",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupController.java",
+      "producerSha256": "903859cf079c3e1d8dec0358986a4e5f06db4061d80abe03d558ccde1312089a",
+      "currentSha256": "903859cf079c3e1d8dec0358986a4e5f06db4061d80abe03d558ccde1312089a",
+      "workingSha256": "903859cf079c3e1d8dec0358986a4e5f06db4061d80abe03d558ccde1312089a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupHeadmanAssignmentService.java",
+      "producerSha256": "6e6b8660a53a61091e5dee5fa9880ac34505b3097534d26bd5c8733ad536a740",
+      "currentSha256": "6e6b8660a53a61091e5dee5fa9880ac34505b3097534d26bd5c8733ad536a740",
+      "workingSha256": "6e6b8660a53a61091e5dee5fa9880ac34505b3097534d26bd5c8733ad536a740",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupNameParser.java",
+      "producerSha256": "2026472c62b5f96a2e516a81899df0f9b20938c89631ef281c5d27cc8949418f",
+      "currentSha256": "2026472c62b5f96a2e516a81899df0f9b20938c89631ef281c5d27cc8949418f",
+      "workingSha256": "2026472c62b5f96a2e516a81899df0f9b20938c89631ef281c5d27cc8949418f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupOptionsController.java",
+      "producerSha256": "1cde1348fce4adcf1f0898d55505147a6cf23a1aa36d7fdf3e7f081fa12bb898",
+      "currentSha256": "1cde1348fce4adcf1f0898d55505147a6cf23a1aa36d7fdf3e7f081fa12bb898",
+      "workingSha256": "1cde1348fce4adcf1f0898d55505147a6cf23a1aa36d7fdf3e7f081fa12bb898",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupPromotionJob.java",
+      "producerSha256": "0cba3f0ee5e8a97710a7ede7e14d2be6889ede5c3face7c619b13b9eb9571c18",
+      "currentSha256": "0cba3f0ee5e8a97710a7ede7e14d2be6889ede5c3face7c619b13b9eb9571c18",
+      "workingSha256": "0cba3f0ee5e8a97710a7ede7e14d2be6889ede5c3face7c619b13b9eb9571c18",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupPromotionService.java",
+      "producerSha256": "9ea5b8055962e78bb82c629014f9098f9d0d15c064a88b29c4d6f7be8aa03f68",
+      "currentSha256": "9ea5b8055962e78bb82c629014f9098f9d0d15c064a88b29c4d6f7be8aa03f68",
+      "workingSha256": "9ea5b8055962e78bb82c629014f9098f9d0d15c064a88b29c4d6f7be8aa03f68",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupService.java",
+      "producerSha256": "b87b4e7f0b629e9aa9ab49c5268ca7cb5e0cbe7ff7fb276bf2c8973382f5c86a",
+      "currentSha256": "b87b4e7f0b629e9aa9ab49c5268ca7cb5e0cbe7ff7fb276bf2c8973382f5c86a",
+      "workingSha256": "b87b4e7f0b629e9aa9ab49c5268ca7cb5e0cbe7ff7fb276bf2c8973382f5c86a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupSpecifications.java",
+      "producerSha256": "6bb04fe24a0344e37726de247a62722ca301e8120822fdbc0b65aa136e65f172",
+      "currentSha256": "6bb04fe24a0344e37726de247a62722ca301e8120822fdbc0b65aa136e65f172",
+      "workingSha256": "6bb04fe24a0344e37726de247a62722ca301e8120822fdbc0b65aa136e65f172",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/ProgramType.java",
+      "producerSha256": "228c87cf6b783960be6ffec8c7d5d4abb682a33ead21a1929c933b6c6130c98f",
+      "currentSha256": "228c87cf6b783960be6ffec8c7d5d4abb682a33ead21a1929c933b6c6130c98f",
+      "workingSha256": "228c87cf6b783960be6ffec8c7d5d4abb682a33ead21a1929c933b6c6130c98f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/group/UnknownProgramTypeException.java",
+      "producerSha256": "2e3073ff9724cb1fe0a7ec4ad2fad4a3a7c671ad67758dc6a7cfcaf1c2ce7d1f",
+      "currentSha256": "2e3073ff9724cb1fe0a7ec4ad2fad4a3a7c671ad67758dc6a7cfcaf1c2ce7d1f",
+      "workingSha256": "2e3073ff9724cb1fe0a7ec4ad2fad4a3a7c671ad67758dc6a7cfcaf1c2ce7d1f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java",
+      "producerSha256": "233098652924be91f3be8c5888a328d6d1077bf7982f947399aaa4940730b5e1",
+      "currentSha256": "233098652924be91f3be8c5888a328d6d1077bf7982f947399aaa4940730b5e1",
+      "workingSha256": "233098652924be91f3be8c5888a328d6d1077bf7982f947399aaa4940730b5e1",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicReadService.java",
+      "producerSha256": "28cda380679261c2480ec1153971e0245e7f806be55acdb24428aa8e051f73d4",
+      "currentSha256": "28cda380679261c2480ec1153971e0245e7f806be55acdb24428aa8e051f73d4",
+      "workingSha256": "28cda380679261c2480ec1153971e0245e7f806be55acdb24428aa8e051f73d4",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceAuthConfiguration.java",
+      "producerSha256": "9a3cbab741ae3e86cf7a2721a4b7ccdf2ac62ea34f3dbec10546fad478bb6b1a",
+      "currentSha256": "9a3cbab741ae3e86cf7a2721a4b7ccdf2ac62ea34f3dbec10546fad478bb6b1a",
+      "workingSha256": "9a3cbab741ae3e86cf7a2721a4b7ccdf2ac62ea34f3dbec10546fad478bb6b1a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AssignmentCloseServiceIdentityInterceptor.java",
+      "producerSha256": "5f4b990e24a24d374d04df59f41aa8bf86f3971126110400be0e8d299867d39b",
+      "currentSha256": "5f4b990e24a24d374d04df59f41aa8bf86f3971126110400be0e8d299867d39b",
+      "workingSha256": "5f4b990e24a24d374d04df59f41aa8bf86f3971126110400be0e8d299867d39b",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AttendanceSemesterDeletionGrpcClient.java",
+      "producerSha256": "d17ae9f13f307d4c2e8d6ef5014591546e27aacc1e25adfa59ba20abf519c596",
+      "currentSha256": "d17ae9f13f307d4c2e8d6ef5014591546e27aacc1e25adfa59ba20abf519c596",
+      "workingSha256": "d17ae9f13f307d4c2e8d6ef5014591546e27aacc1e25adfa59ba20abf519c596",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AttendanceUserImpactGrpcClient.java",
+      "producerSha256": "e85d889f300a595eba3bac69b24bd2320306713c127d004749aed7ba7316c60b",
+      "currentSha256": "e85d889f300a595eba3bac69b24bd2320306713c127d004749aed7ba7316c60b",
+      "workingSha256": "e85d889f300a595eba3bac69b24bd2320306713c127d004749aed7ba7316c60b",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcAuthInterceptor.java",
+      "producerSha256": "1ad2005dabbbce6e9780a306032e75d5fbdfcc61311c4c9eb3b962eae01d4e82",
+      "currentSha256": "1ad2005dabbbce6e9780a306032e75d5fbdfcc61311c4c9eb3b962eae01d4e82",
+      "workingSha256": "1ad2005dabbbce6e9780a306032e75d5fbdfcc61311c4c9eb3b962eae01d4e82",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcExceptionAdvice.java",
+      "producerSha256": "8dddbecc9ad960af4761c25bf32ba042b1bbcc676f0ce4506525aa5fa9bef36d",
+      "currentSha256": "8dddbecc9ad960af4761c25bf32ba042b1bbcc676f0ce4506525aa5fa9bef36d",
+      "workingSha256": "8dddbecc9ad960af4761c25bf32ba042b1bbcc676f0ce4506525aa5fa9bef36d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcMetricsClientInterceptor.java",
+      "producerSha256": "1e71f4f8b5f37d4ade585ffd70eeaeea35438014e68208207e5f04c6958d1a5d",
+      "currentSha256": "1e71f4f8b5f37d4ade585ffd70eeaeea35438014e68208207e5f04c6958d1a5d",
+      "workingSha256": "1e71f4f8b5f37d4ade585ffd70eeaeea35438014e68208207e5f04c6958d1a5d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/GrpcSecretClientInterceptor.java",
+      "producerSha256": "45b144b9a57f60565196fc48b00feca88922522b90c858bf89ab196bdfad1899",
+      "currentSha256": "45b144b9a57f60565196fc48b00feca88922522b90c858bf89ab196bdfad1899",
+      "workingSha256": "45b144b9a57f60565196fc48b00feca88922522b90c858bf89ab196bdfad1899",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/HeadmanGroupCompositionReadService.java",
+      "producerSha256": "9a2578e00e3cd8e882a788b417787204c7fc82365c43dcc7cbbf7db51cdbdd7c",
+      "currentSha256": "9a2578e00e3cd8e882a788b417787204c7fc82365c43dcc7cbbf7db51cdbdd7c",
+      "workingSha256": "9a2578e00e3cd8e882a788b417787204c7fc82365c43dcc7cbbf7db51cdbdd7c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/HeadmanRateLimitConfig.java",
+      "producerSha256": "d9f63bffdf6617ae3c58dcc2027b99e0f64ac783d761029fba082c2c58e81f90",
+      "currentSha256": "d9f63bffdf6617ae3c58dcc2027b99e0f64ac783d761029fba082c2c58e81f90",
+      "workingSha256": "d9f63bffdf6617ae3c58dcc2027b99e0f64ac783d761029fba082c2c58e81f90",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/HeadmanRateLimitProperties.java",
+      "producerSha256": "04c28b7a0efe1a80ef5aecf208cd250b3151fd286fc329fd4a0a64ad112703c8",
+      "currentSha256": "04c28b7a0efe1a80ef5aecf208cd250b3151fd286fc329fd4a0a64ad112703c8",
+      "workingSha256": "04c28b7a0efe1a80ef5aecf208cd250b3151fd286fc329fd4a0a64ad112703c8",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/HeadmanRateLimiter.java",
+      "producerSha256": "b7fe5458072ff2765eb01d114765929e0c982d6d92b1a12c414bb2154e40862a",
+      "currentSha256": "b7fe5458072ff2765eb01d114765929e0c982d6d92b1a12c414bb2154e40862a",
+      "workingSha256": "b7fe5458072ff2765eb01d114765929e0c982d6d92b1a12c414bb2154e40862a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/HeadmanStatsScopeReadService.java",
+      "producerSha256": "09f2e77f7ff7b6e3c58487f7312c4d5749bbdd3de2d4799039815a2ab7b0d793",
+      "currentSha256": "09f2e77f7ff7b6e3c58487f7312c4d5749bbdd3de2d4799039815a2ab7b0d793",
+      "workingSha256": "09f2e77f7ff7b6e3c58487f7312c4d5749bbdd3de2d4799039815a2ab7b0d793",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/InMemoryHeadmanRateLimiter.java",
+      "producerSha256": "83525d62f8a09737927bc6bd91378bac23d5ed9611f09dbfd7c1f18b4209b56d",
+      "currentSha256": "83525d62f8a09737927bc6bd91378bac23d5ed9611f09dbfd7c1f18b4209b56d",
+      "workingSha256": "83525d62f8a09737927bc6bd91378bac23d5ed9611f09dbfd7c1f18b4209b56d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/NotificationAudienceGrpcService.java",
+      "producerSha256": "a8033f6d98eb4a28fa7bfb796da1cdacb98f617eedf4753dc691cc1ce85aecde",
+      "currentSha256": "a8033f6d98eb4a28fa7bfb796da1cdacb98f617eedf4753dc691cc1ce85aecde",
+      "workingSha256": "a8033f6d98eb4a28fa7bfb796da1cdacb98f617eedf4753dc691cc1ce85aecde",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/NotificationAudienceServiceAdmission.java",
+      "producerSha256": "236d61760850ef6a74fd4154d5bc66a7ddc19423be7e0505dc958a0a51867d01",
+      "currentSha256": "236d61760850ef6a74fd4154d5bc66a7ddc19423be7e0505dc958a0a51867d01",
+      "workingSha256": "236d61760850ef6a74fd4154d5bc66a7ddc19423be7e0505dc958a0a51867d01",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/RedisHeadmanRateLimiter.java",
+      "producerSha256": "b6f6985ed95eec0b64c1b46505d15eaab87da8eea09e57bd590874895dc5cb63",
+      "currentSha256": "b6f6985ed95eec0b64c1b46505d15eaab87da8eea09e57bd590874895dc5cb63",
+      "workingSha256": "b6f6985ed95eec0b64c1b46505d15eaab87da8eea09e57bd590874895dc5cb63",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/ScheduleGrpcClient.java",
+      "producerSha256": "9ad8297620bd21caa428c909ffce75e3bb598914cae8b044b761e8221d53a18a",
+      "currentSha256": "9ad8297620bd21caa428c909ffce75e3bb598914cae8b044b761e8221d53a18a",
+      "workingSha256": "9ad8297620bd21caa428c909ffce75e3bb598914cae8b044b761e8221d53a18a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentity.java",
+      "producerSha256": "4da9e957b5c54175808f4deedf9363333272a5309b019318ed636b14018c0667",
+      "currentSha256": "4da9e957b5c54175808f4deedf9363333272a5309b019318ed636b14018c0667",
+      "workingSha256": "4da9e957b5c54175808f4deedf9363333272a5309b019318ed636b14018c0667",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/StudentHomeworkGrpcIdentityInterceptor.java",
+      "producerSha256": "df77ebde1c598dcf80ccd3404c70392b308216e93a12d6a06885906f3656346b",
+      "currentSha256": "df77ebde1c598dcf80ccd3404c70392b308216e93a12d6a06885906f3656346b",
+      "workingSha256": "df77ebde1c598dcf80ccd3404c70392b308216e93a12d6a06885906f3656346b",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/TeacherAcademicGrpcIdentity.java",
+      "producerSha256": "e93a8e14478294d803ded13dd6aebf0a43568aadba99ebd06426497d660b8234",
+      "currentSha256": "e93a8e14478294d803ded13dd6aebf0a43568aadba99ebd06426497d660b8234",
+      "workingSha256": "e93a8e14478294d803ded13dd6aebf0a43568aadba99ebd06426497d660b8234",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/TeacherAcademicGrpcIdentityInterceptor.java",
+      "producerSha256": "0719a14ef7588a21a4fe58753d7364dfa9179c61fab2482fe928d6c6e34c41d6",
+      "currentSha256": "0719a14ef7588a21a4fe58753d7364dfa9179c61fab2482fe928d6c6e34c41d6",
+      "workingSha256": "0719a14ef7588a21a4fe58753d7364dfa9179c61fab2482fe928d6c6e34c41d6",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/TeacherAcademicReadGrpcService.java",
+      "producerSha256": "85e800f2912e42035b49899ab8cf95b94f2ce89ca9ecc5e0f8ae5fc35efc672d",
+      "currentSha256": "85e800f2912e42035b49899ab8cf95b94f2ce89ca9ecc5e0f8ae5fc35efc672d",
+      "workingSha256": "85e800f2912e42035b49899ab8cf95b94f2ce89ca9ecc5e0f8ae5fc35efc672d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/history/HistoricalMembershipException.java",
+      "producerSha256": "43fb8d87743e1eef68ef126ee07969bc045397741d1f548e30b0145590b7dcbe",
+      "currentSha256": "43fb8d87743e1eef68ef126ee07969bc045397741d1f548e30b0145590b7dcbe",
+      "workingSha256": "43fb8d87743e1eef68ef126ee07969bc045397741d1f548e30b0145590b7dcbe",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/history/HistoricalMembershipService.java",
+      "producerSha256": "6891768377ccfc7c102e328f35017d0549ad40dd7ca74df8e86d8f4b1b3e3fec",
+      "currentSha256": "6891768377ccfc7c102e328f35017d0549ad40dd7ca74df8e86d8f4b1b3e3fec",
+      "workingSha256": "6891768377ccfc7c102e328f35017d0549ad40dd7ca74df8e86d8f4b1b3e3fec",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkAssembler.java",
+      "producerSha256": "c61890a0e4ab3e197a783b00c01825bf9ee35d3b7b7432590eaddba5d6869e6b",
+      "currentSha256": "c61890a0e4ab3e197a783b00c01825bf9ee35d3b7b7432590eaddba5d6869e6b",
+      "workingSha256": "c61890a0e4ab3e197a783b00c01825bf9ee35d3b7b7432590eaddba5d6869e6b",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveCoordinator.java",
+      "producerSha256": "5322119f86e2e303ad7e0ad75b0ed0b63e1b11b2be0d22f63ac6a4211d103eed",
+      "currentSha256": "5322119f86e2e303ad7e0ad75b0ed0b63e1b11b2be0d22f63ac6a4211d103eed",
+      "workingSha256": "5322119f86e2e303ad7e0ad75b0ed0b63e1b11b2be0d22f63ac6a4211d103eed",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkBindingTransferCoordinator.java",
+      "producerSha256": "e14ee320d501dad1d329fe45381580b2f8455cc70a4e038f3bcb2e158f52604c",
+      "currentSha256": "e14ee320d501dad1d329fe45381580b2f8455cc70a4e038f3bcb2e158f52604c",
+      "workingSha256": "e14ee320d501dad1d329fe45381580b2f8455cc70a4e038f3bcb2e158f52604c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkController.java",
+      "producerSha256": "c6d2c64d4696906cc3c5732a96c24ded1b2e12820f2fa2a6b6ce9e8e54925f45",
+      "currentSha256": "c6d2c64d4696906cc3c5732a96c24ded1b2e12820f2fa2a6b6ce9e8e54925f45",
+      "workingSha256": "c6d2c64d4696906cc3c5732a96c24ded1b2e12820f2fa2a6b6ce9e8e54925f45",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkCreateIntent.java",
+      "producerSha256": "9eb613d31170532812cd0a016cec6b5f83151a0b36d6ad26b57239af0c07c7c8",
+      "currentSha256": "9eb613d31170532812cd0a016cec6b5f83151a0b36d6ad26b57239af0c07c7c8",
+      "workingSha256": "9eb613d31170532812cd0a016cec6b5f83151a0b36d6ad26b57239af0c07c7c8",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkEditCoordinator.java",
+      "producerSha256": "4d0381253e59ffacebe448abef38ada3a3a15ace3dde20539bca55fbe6341f94",
+      "currentSha256": "4d0381253e59ffacebe448abef38ada3a3a15ace3dde20539bca55fbe6341f94",
+      "workingSha256": "4d0381253e59ffacebe448abef38ada3a3a15ace3dde20539bca55fbe6341f94",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkEditHistory.java",
+      "producerSha256": "1766514cf3fe82a26cdf1a5f0604f6b7a1a83859ac912a71b0696a67ed537971",
+      "currentSha256": "1766514cf3fe82a26cdf1a5f0604f6b7a1a83859ac912a71b0696a67ed537971",
+      "workingSha256": "1766514cf3fe82a26cdf1a5f0604f6b7a1a83859ac912a71b0696a67ed537971",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkEditOperation.java",
+      "producerSha256": "3b04152b49cbc0af2f7bf16bd933b2faf916d3b5b733b62dfd49b3c654faec77",
+      "currentSha256": "3b04152b49cbc0af2f7bf16bd933b2faf916d3b5b733b62dfd49b3c654faec77",
+      "workingSha256": "3b04152b49cbc0af2f7bf16bd933b2faf916d3b5b733b62dfd49b3c654faec77",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkEditPersistence.java",
+      "producerSha256": "5007098dad8f220cdd86056cf2f7bb99ce8c53f45db023a07be87279a728120a",
+      "currentSha256": "5007098dad8f220cdd86056cf2f7bb99ce8c53f45db023a07be87279a728120a",
+      "workingSha256": "5007098dad8f220cdd86056cf2f7bb99ce8c53f45db023a07be87279a728120a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkEditRecoveryJob.java",
+      "producerSha256": "d15b9cca423b5e895c56f55bb90ef85cfde02d3f19133dd71578f6485d6fe886",
+      "currentSha256": "d15b9cca423b5e895c56f55bb90ef85cfde02d3f19133dd71578f6485d6fe886",
+      "workingSha256": "d15b9cca423b5e895c56f55bb90ef85cfde02d3f19133dd71578f6485d6fe886",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkLifecycle.java",
+      "producerSha256": "2cb4ae28ce7943f8e05d97f8d372ac0c088ac0fa6e80954114ae5af8763aa03f",
+      "currentSha256": "2cb4ae28ce7943f8e05d97f8d372ac0c088ac0fa6e80954114ae5af8763aa03f",
+      "workingSha256": "2cb4ae28ce7943f8e05d97f8d372ac0c088ac0fa6e80954114ae5af8763aa03f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkManagementAuthorization.java",
+      "producerSha256": "35b5e6c2959e107b97a599e0876abb6655a713fed31c66b0a8dec9eacafa6380",
+      "currentSha256": "35b5e6c2959e107b97a599e0876abb6655a713fed31c66b0a8dec9eacafa6380",
+      "workingSha256": "35b5e6c2959e107b97a599e0876abb6655a713fed31c66b0a8dec9eacafa6380",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkNotificationJob.java",
+      "producerSha256": "5778ec0f837bccc9d8b9c8156329513ffabb0f4b614f7573abc9139ffef3bd6d",
+      "currentSha256": "5778ec0f837bccc9d8b9c8156329513ffabb0f4b614f7573abc9139ffef3bd6d",
+      "workingSha256": "5778ec0f837bccc9d8b9c8156329513ffabb0f4b614f7573abc9139ffef3bd6d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkPlacementIdentity.java",
+      "producerSha256": "3a17225a020b6d51dcc803e98bce29eb43bec2089ad24db6ea2dfa8a3e218764",
+      "currentSha256": "3a17225a020b6d51dcc803e98bce29eb43bec2089ad24db6ea2dfa8a3e218764",
+      "workingSha256": "3a17225a020b6d51dcc803e98bce29eb43bec2089ad24db6ea2dfa8a3e218764",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkPublicationPersistence.java",
+      "producerSha256": "73dfcb2d43c1b43920db7f1e34482e778bec8feaa75cc532de8f77080f79a385",
+      "currentSha256": "73dfcb2d43c1b43920db7f1e34482e778bec8feaa75cc532de8f77080f79a385",
+      "workingSha256": "73dfcb2d43c1b43920db7f1e34482e778bec8feaa75cc532de8f77080f79a385",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkScopeValidator.java",
+      "producerSha256": "19283350e5dedb03e58730c3be8510e43b0849975b30b59b975e1a563a935f0a",
+      "currentSha256": "19283350e5dedb03e58730c3be8510e43b0849975b30b59b975e1a563a935f0a",
+      "workingSha256": "19283350e5dedb03e58730c3be8510e43b0849975b30b59b975e1a563a935f0a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkService.java",
+      "producerSha256": "d23d0530a1358a235592af2b8064bb8b3fe1234305b6a04be67f7e913da8b869",
+      "currentSha256": "d23d0530a1358a235592af2b8064bb8b3fe1234305b6a04be67f7e913da8b869",
+      "workingSha256": "d23d0530a1358a235592af2b8064bb8b3fe1234305b6a04be67f7e913da8b869",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/HomeworkStudentService.java",
+      "producerSha256": "fe85b4cff85f6a327cf90ebe8326933260b214e70bdb06b5d4ce31a8a14a499d",
+      "currentSha256": "fe85b4cff85f6a327cf90ebe8326933260b214e70bdb06b5d4ce31a8a14a499d",
+      "workingSha256": "fe85b4cff85f6a327cf90ebe8326933260b214e70bdb06b5d4ce31a8a14a499d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/homework/LessonTransferBatch.java",
+      "producerSha256": "ee2e0981414c73ba5a0b00ab528efcfabf99ea51cc5306864c6a1f90fddd9e08",
+      "currentSha256": "ee2e0981414c73ba5a0b00ab528efcfabf99ea51cc5306864c6a1f90fddd9e08",
+      "workingSha256": "ee2e0981414c73ba5a0b00ab528efcfabf99ea51cc5306864c6a1f90fddd9e08",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/AuthMapDeletionClient.java",
+      "producerSha256": "8da5c5c738560fc71ae1e97ce98989e85028e84fb00bf36a7c34694fb20d2d45",
+      "currentSha256": "8da5c5c738560fc71ae1e97ce98989e85028e84fb00bf36a7c34694fb20d2d45",
+      "workingSha256": "8da5c5c738560fc71ae1e97ce98989e85028e84fb00bf36a7c34694fb20d2d45",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminController.java",
+      "producerSha256": "f88989f424da2618840d80f1d8bef70c6b6ca8f82cca95927de13af124b2da54",
+      "currentSha256": "f88989f424da2618840d80f1d8bef70c6b6ca8f82cca95927de13af124b2da54",
+      "workingSha256": "f88989f424da2618840d80f1d8bef70c6b6ca8f82cca95927de13af124b2da54",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminRepository.java",
+      "producerSha256": "0d047098120b8acbdb6d7b5f5c2cf5924f92794fec7dd54a026a05af56c7e1b4",
+      "currentSha256": "0d047098120b8acbdb6d7b5f5c2cf5924f92794fec7dd54a026a05af56c7e1b4",
+      "workingSha256": "0d047098120b8acbdb6d7b5f5c2cf5924f92794fec7dd54a026a05af56c7e1b4",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapAdminService.java",
+      "producerSha256": "5b039af3995298b8f81fcaa5eaaeaf372347f7fc5bf999814a1259b7fce4bb86",
+      "currentSha256": "5b039af3995298b8f81fcaa5eaaeaf372347f7fc5bf999814a1259b7fce4bb86",
+      "workingSha256": "5b039af3995298b8f81fcaa5eaaeaf372347f7fc5bf999814a1259b7fce4bb86",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapDeletionRepository.java",
+      "producerSha256": "af81644d2fc62a5d7dbda63a1c72dbb8c35ebb4f360259f86c08922b11713120",
+      "currentSha256": "af81644d2fc62a5d7dbda63a1c72dbb8c35ebb4f360259f86c08922b11713120",
+      "workingSha256": "af81644d2fc62a5d7dbda63a1c72dbb8c35ebb4f360259f86c08922b11713120",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapDeletionService.java",
+      "producerSha256": "aaba246b89656570e7b959c1610bfc3d739425d6f63e62a3cb32e76319be2f7a",
+      "currentSha256": "aaba246b89656570e7b959c1610bfc3d739425d6f63e62a3cb32e76319be2f7a",
+      "workingSha256": "aaba246b89656570e7b959c1610bfc3d739425d6f63e62a3cb32e76319be2f7a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapDeletionTransaction.java",
+      "producerSha256": "4c7f0a59fbabfddceade36caefbb32c7c682b30d0b6b055414cf1c1c700c044d",
+      "currentSha256": "4c7f0a59fbabfddceade36caefbb32c7c682b30d0b6b055414cf1c1c700c044d",
+      "workingSha256": "4c7f0a59fbabfddceade36caefbb32c7c682b30d0b6b055414cf1c1c700c044d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormat.java",
+      "producerSha256": "83029c6ed4c4ad7391ef6128486cf1d45c34fc770a398b4f590845502a6bebbb",
+      "currentSha256": "83029c6ed4c4ad7391ef6128486cf1d45c34fc770a398b4f590845502a6bebbb",
+      "workingSha256": "83029c6ed4c4ad7391ef6128486cf1d45c34fc770a398b4f590845502a6bebbb",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapFormatState.java",
+      "producerSha256": "d8e20efa3f4fbd9d5812abf9c749beb5e6b5c121e052a081d9f29e333ab57aca",
+      "currentSha256": "d8e20efa3f4fbd9d5812abf9c749beb5e6b5c121e052a081d9f29e333ab57aca",
+      "workingSha256": "d8e20efa3f4fbd9d5812abf9c749beb5e6b5c121e052a081d9f29e333ab57aca",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapOwnerHmacProvider.java",
+      "producerSha256": "afd4adfc5c52c88eb85a5737deb6580cc5c7234566d7400a7ff69e8c8203dc36",
+      "currentSha256": "afd4adfc5c52c88eb85a5737deb6580cc5c7234566d7400a7ff69e8c8203dc36",
+      "workingSha256": "afd4adfc5c52c88eb85a5737deb6580cc5c7234566d7400a7ff69e8c8203dc36",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadException.java",
+      "producerSha256": "c3b3d44ffa33bf791ca420ee16dfee63e036f0b916ab99b9398f0f9c6f901955",
+      "currentSha256": "c3b3d44ffa33bf791ca420ee16dfee63e036f0b916ab99b9398f0f9c6f901955",
+      "workingSha256": "c3b3d44ffa33bf791ca420ee16dfee63e036f0b916ab99b9398f0f9c6f901955",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadModels.java",
+      "producerSha256": "55afebc88ab0da09d115ede2e6ca868e61b7ecefc27369f3e9df7232efb5ea2d",
+      "currentSha256": "55afebc88ab0da09d115ede2e6ca868e61b7ecefc27369f3e9df7232efb5ea2d",
+      "workingSha256": "55afebc88ab0da09d115ede2e6ca868e61b7ecefc27369f3e9df7232efb5ea2d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadRepository.java",
+      "producerSha256": "579a98b36e589e4c5290cebecd3971efd58f6fc72cd11aa9b604c812186d5550",
+      "currentSha256": "579a98b36e589e4c5290cebecd3971efd58f6fc72cd11aa9b604c812186d5550",
+      "workingSha256": "579a98b36e589e4c5290cebecd3971efd58f6fc72cd11aa9b604c812186d5550",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapReadService.java",
+      "producerSha256": "44b43166cf406e3eef5d5d7f93fe3084698159d8d0996ab23a6679259c8dfd3e",
+      "currentSha256": "44b43166cf406e3eef5d5d7f93fe3084698159d8d0996ab23a6679259c8dfd3e",
+      "workingSha256": "44b43166cf406e3eef5d5d7f93fe3084698159d8d0996ab23a6679259c8dfd3e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapUsageCleanupJob.java",
+      "producerSha256": "547c87e09c5e27d5829a68f77e220e8aeee50af339d64b33fe111047eb78feb3",
+      "currentSha256": "547c87e09c5e27d5829a68f77e220e8aeee50af339d64b33fe111047eb78feb3",
+      "workingSha256": "547c87e09c5e27d5829a68f77e220e8aeee50af339d64b33fe111047eb78feb3",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapUsageConfig.java",
+      "producerSha256": "198d5139e54e71bf2497d605c738b8a48b8f009538b1ebea8598bd1e04639e93",
+      "currentSha256": "198d5139e54e71bf2497d605c738b8a48b8f009538b1ebea8598bd1e04639e93",
+      "workingSha256": "198d5139e54e71bf2497d605c738b8a48b8f009538b1ebea8598bd1e04639e93",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapUsageProperties.java",
+      "producerSha256": "75401d4c63164c21144a5b2ef9afea9d61bce7dca195f3caa3bd3ac788fb7203",
+      "currentSha256": "75401d4c63164c21144a5b2ef9afea9d61bce7dca195f3caa3bd3ac788fb7203",
+      "workingSha256": "75401d4c63164c21144a5b2ef9afea9d61bce7dca195f3caa3bd3ac788fb7203",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapUsageRepository.java",
+      "producerSha256": "414082a45bcbf98f3f9a55f3de020cc9912872cbe910f513bdd9df300b03115b",
+      "currentSha256": "414082a45bcbf98f3f9a55f3de020cc9912872cbe910f513bdd9df300b03115b",
+      "workingSha256": "414082a45bcbf98f3f9a55f3de020cc9912872cbe910f513bdd9df300b03115b",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/CampusMapUsageService.java",
+      "producerSha256": "32c17e74a5b1b2e2255dd18e94e7fa566b8eed885b1a892c6ca45534c6c01bf9",
+      "currentSha256": "32c17e74a5b1b2e2255dd18e94e7fa566b8eed885b1a892c6ca45534c6c01bf9",
+      "workingSha256": "32c17e74a5b1b2e2255dd18e94e7fa566b8eed885b1a892c6ca45534c6c01bf9",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/map/MapDeletionDependencyUnavailableException.java",
+      "producerSha256": "e4e6089f3f9014b1eca6d48de68087fee2698fa92f1f4ae71b9e3f8ed725db4b",
+      "currentSha256": "e4e6089f3f9014b1eca6d48de68087fee2698fa92f1f4ae71b9e3f8ed725db4b",
+      "workingSha256": "e4e6089f3f9014b1eca6d48de68087fee2698fa92f1f4ae71b9e3f8ed725db4b",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/notification/AcademicPersonalNotificationPublisher.java",
+      "producerSha256": "15592129fb72679abdbda0b8836fa5d11947c6cfe7a7708290e08eca336a1483",
+      "currentSha256": "15592129fb72679abdbda0b8836fa5d11947c6cfe7a7708290e08eca336a1483",
+      "workingSha256": "15592129fb72679abdbda0b8836fa5d11947c6cfe7a7708290e08eca336a1483",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/notification/NotificationAudienceResolver.java",
+      "producerSha256": "1c65ff8008483c1710d9f89596a4fba644a0ce602a0d83b8f9c0e940523423ef",
+      "currentSha256": "1c65ff8008483c1710d9f89596a4fba644a0ce602a0d83b8f9c0e940523423ef",
+      "workingSha256": "1c65ff8008483c1710d9f89596a4fba644a0ce602a0d83b8f9c0e940523423ef",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AssignmentReplacementOperationRepository.java",
+      "producerSha256": "9fe4e423f67a2ea732df202d85a64a818ff614da8eec9df5172c6c4a48ee5c70",
+      "currentSha256": "9fe4e423f67a2ea732df202d85a64a818ff614da8eec9df5172c6c4a48ee5c70",
+      "workingSha256": "9fe4e423f67a2ea732df202d85a64a818ff614da8eec9df5172c6c4a48ee5c70",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AssignmentRepository.java",
+      "producerSha256": "40ec50f2ae4d8e14fbfdd14e44e7c04219aedaae4e85123333a6ce5aa7e005a0",
+      "currentSha256": "40ec50f2ae4d8e14fbfdd14e44e7c04219aedaae4e85123333a6ce5aa7e005a0",
+      "workingSha256": "40ec50f2ae4d8e14fbfdd14e44e7c04219aedaae4e85123333a6ce5aa7e005a0",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/AttendanceThresholdRepository.java",
+      "producerSha256": "80c47afd12c9192670734383884d2ec62c465450ae36de4602530108af635213",
+      "currentSha256": "80c47afd12c9192670734383884d2ec62c465450ae36de4602530108af635213",
+      "workingSha256": "80c47afd12c9192670734383884d2ec62c465450ae36de4602530108af635213",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/CampusSettingRepository.java",
+      "producerSha256": "e800d65c4d691e068478b0b7da78a5bbcb1e3503caf07a1e9b98987b40babe7a",
+      "currentSha256": "e800d65c4d691e068478b0b7da78a5bbcb1e3503caf07a1e9b98987b40babe7a",
+      "workingSha256": "e800d65c4d691e068478b0b7da78a5bbcb1e3503caf07a1e9b98987b40babe7a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupHistoryCoverageRepository.java",
+      "producerSha256": "33f3f9253deb79909627f9f99991bdc7636cd4ea259e7f4dfa3594b03e088934",
+      "currentSha256": "33f3f9253deb79909627f9f99991bdc7636cd4ea259e7f4dfa3594b03e088934",
+      "workingSha256": "33f3f9253deb79909627f9f99991bdc7636cd4ea259e7f4dfa3594b03e088934",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupPromotionCycleRecordRepository.java",
+      "producerSha256": "9c43048a9c016b47c17ab80157f20512b2c777af2efd72abde201d6ba1f442b5",
+      "currentSha256": "9c43048a9c016b47c17ab80157f20512b2c777af2efd72abde201d6ba1f442b5",
+      "workingSha256": "9c43048a9c016b47c17ab80157f20512b2c777af2efd72abde201d6ba1f442b5",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupRegistryReadRepository.java",
+      "producerSha256": "0dec81172c24d493acd1d5c215a1f0ed588aa1fbd1b684575ccfd6ea60939a11",
+      "currentSha256": "0dec81172c24d493acd1d5c215a1f0ed588aa1fbd1b684575ccfd6ea60939a11",
+      "workingSha256": "0dec81172c24d493acd1d5c215a1f0ed588aa1fbd1b684575ccfd6ea60939a11",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupRepository.java",
+      "producerSha256": "e21a268235103e5271c8101508ab9b1a1dc97468732b368ad7619435da8ac1f9",
+      "currentSha256": "e21a268235103e5271c8101508ab9b1a1dc97468732b368ad7619435da8ac1f9",
+      "workingSha256": "e21a268235103e5271c8101508ab9b1a1dc97468732b368ad7619435da8ac1f9",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HeadmanAssistantRepository.java",
+      "producerSha256": "6eca2fae29deba31cfa7b39630285dff14ba35ad442895fa444d000d4e443728",
+      "currentSha256": "6eca2fae29deba31cfa7b39630285dff14ba35ad442895fa444d000d4e443728",
+      "workingSha256": "6eca2fae29deba31cfa7b39630285dff14ba35ad442895fa444d000d4e443728",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkBindingArchiveMarkerRepository.java",
+      "producerSha256": "d87d9581a35a919c2e5ab58cb2f98cf4ecd8cecb92a638f5360773c469953c77",
+      "currentSha256": "d87d9581a35a919c2e5ab58cb2f98cf4ecd8cecb92a638f5360773c469953c77",
+      "workingSha256": "d87d9581a35a919c2e5ab58cb2f98cf4ecd8cecb92a638f5360773c469953c77",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkCompletionRepository.java",
+      "producerSha256": "abfde13d154246c3e9d9080ae012d4d18c071b8b0d1e33edeed476f03c822d82",
+      "currentSha256": "abfde13d154246c3e9d9080ae012d4d18c071b8b0d1e33edeed476f03c822d82",
+      "workingSha256": "abfde13d154246c3e9d9080ae012d4d18c071b8b0d1e33edeed476f03c822d82",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkRepository.java",
+      "producerSha256": "f5f69a3f9e2b529c23732c035447c4f0053737a8b7127d69b870154066d2b20d",
+      "currentSha256": "f5f69a3f9e2b529c23732c035447c4f0053737a8b7127d69b870154066d2b20d",
+      "workingSha256": "f5f69a3f9e2b529c23732c035447c4f0053737a8b7127d69b870154066d2b20d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/HomeworkWeeklyDigestRunRepository.java",
+      "producerSha256": "c4027a642a69c5b830bc59da74bb5d2f114610d76199d7b1d01a7a1dc819628c",
+      "currentSha256": "c4027a642a69c5b830bc59da74bb5d2f114610d76199d7b1d01a7a1dc819628c",
+      "workingSha256": "c4027a642a69c5b830bc59da74bb5d2f114610d76199d7b1d01a7a1dc819628c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterArchiveOperationRepository.java",
+      "producerSha256": "3f6ad6d83c952dee43cdb115a79326e4e4aca22a37d9a9d72114edfd0e03f506",
+      "currentSha256": "3f6ad6d83c952dee43cdb115a79326e4e4aca22a37d9a9d72114edfd0e03f506",
+      "workingSha256": "3f6ad6d83c952dee43cdb115a79326e4e4aca22a37d9a9d72114edfd0e03f506",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java",
+      "producerSha256": "41c6ca07ce5f1cd788c1fe476cf685b58c4992144163a997eaceee7476ef7d7c",
+      "currentSha256": "41c6ca07ce5f1cd788c1fe476cf685b58c4992144163a997eaceee7476ef7d7c",
+      "workingSha256": "41c6ca07ce5f1cd788c1fe476cf685b58c4992144163a997eaceee7476ef7d7c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/StudentGroupHistoryRepository.java",
+      "producerSha256": "d336412426e406335650cdee6d66058da88c3a71ff53690a80f221d00054eaa2",
+      "currentSha256": "d336412426e406335650cdee6d66058da88c3a71ff53690a80f221d00054eaa2",
+      "workingSha256": "d336412426e406335650cdee6d66058da88c3a71ff53690a80f221d00054eaa2",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectLessonTypeRepository.java",
+      "producerSha256": "91cd1004600488caefa65bd71f68d09cd7e9e6d5fe15710536b576c9acb94453",
+      "currentSha256": "91cd1004600488caefa65bd71f68d09cd7e9e6d5fe15710536b576c9acb94453",
+      "workingSha256": "91cd1004600488caefa65bd71f68d09cd7e9e6d5fe15710536b576c9acb94453",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/SubjectRepository.java",
+      "producerSha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "currentSha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "workingSha256": "4a93e62949dd621609224294831db2e8b67c1a945947f76baf93612d9692b85f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/TeacherSubjectGroupRepository.java",
+      "producerSha256": "80974a1e196b43c0b1495bde2df9072563018862ebaa868f14d294af3cf0dc49",
+      "currentSha256": "80974a1e196b43c0b1495bde2df9072563018862ebaa868f14d294af3cf0dc49",
+      "workingSha256": "80974a1e196b43c0b1495bde2df9072563018862ebaa868f14d294af3cf0dc49",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRepository.java",
+      "producerSha256": "53a29ffd6292fb20768e54ee8158a1662d1c18170dcfa0dad77400db4c1edb9d",
+      "currentSha256": "53a29ffd6292fb20768e54ee8158a1662d1c18170dcfa0dad77400db4c1edb9d",
+      "workingSha256": "53a29ffd6292fb20768e54ee8158a1662d1c18170dcfa0dad77400db4c1edb9d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRoleGrantReader.java",
+      "producerSha256": "0aee38f25b10ca4198cd922c838873727d911d21f4af3772d6d63e09ec467cec",
+      "currentSha256": "0aee38f25b10ca4198cd922c838873727d911d21f4af3772d6d63e09ec467cec",
+      "workingSha256": "0aee38f25b10ca4198cd922c838873727d911d21f4af3772d6d63e09ec467cec",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRoleGrantRepository.java",
+      "producerSha256": "efdd1ce0fda7f0d2207965acd3ef3a8b01d592b1570eebc4436ae44c4c81e81e",
+      "currentSha256": "efdd1ce0fda7f0d2207965acd3ef3a8b01d592b1570eebc4436ae44c4c81e81e",
+      "workingSha256": "efdd1ce0fda7f0d2207965acd3ef3a8b01d592b1570eebc4436ae44c4c81e81e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/repository/UserRoleGrantWriter.java",
+      "producerSha256": "3d9d0be6f81adebded4cf38db2f9e62bb4ce778bbcd4d4826fc9334ee1b5559f",
+      "currentSha256": "3d9d0be6f81adebded4cf38db2f9e62bb4ce778bbcd4d4826fc9334ee1b5559f",
+      "workingSha256": "3d9d0be6f81adebded4cf38db2f9e62bb4ce778bbcd4d4826fc9334ee1b5559f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/AcademicUserContextFilter.java",
+      "producerSha256": "fca07d7023765862210077224800dfeceefb100d40454c138d7c4d0ba6d2d241",
+      "currentSha256": "fca07d7023765862210077224800dfeceefb100d40454c138d7c4d0ba6d2d241",
+      "workingSha256": "fca07d7023765862210077224800dfeceefb100d40454c138d7c4d0ba6d2d241",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/InternalJwtConfig.java",
+      "producerSha256": "6b4ecf2ac4e8ada44f50dfeabfb5283e9952913c1454aed530c04f271f378f1d",
+      "currentSha256": "6b4ecf2ac4e8ada44f50dfeabfb5283e9952913c1454aed530c04f271f378f1d",
+      "workingSha256": "6b4ecf2ac4e8ada44f50dfeabfb5283e9952913c1454aed530c04f271f378f1d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/RequestContext.java",
+      "producerSha256": "7106255b06ca0f34623bd0cc7bcf2be348f991cae85ef10b0be8caf30aed11dc",
+      "currentSha256": "7106255b06ca0f34623bd0cc7bcf2be348f991cae85ef10b0be8caf30aed11dc",
+      "workingSha256": "7106255b06ca0f34623bd0cc7bcf2be348f991cae85ef10b0be8caf30aed11dc",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/RequireRole.java",
+      "producerSha256": "cde324378d22a49430341edd5f3c43291c111d5c3046e52e74b14e545beaad21",
+      "currentSha256": "cde324378d22a49430341edd5f3c43291c111d5c3046e52e74b14e545beaad21",
+      "workingSha256": "cde324378d22a49430341edd5f3c43291c111d5c3046e52e74b14e545beaad21",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/RoleCheckAspect.java",
+      "producerSha256": "173a7fdce4dad510f6147d68f7edc6a449f6319e6b91683d8ae7e43c901cbc60",
+      "currentSha256": "173a7fdce4dad510f6147d68f7edc6a449f6319e6b91683d8ae7e43c901cbc60",
+      "workingSha256": "173a7fdce4dad510f6147d68f7edc6a449f6319e6b91683d8ae7e43c901cbc60",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/AcademicSemesterArchiveBarrierTransaction.java",
+      "producerSha256": "cd382f8013f5c413b476bd34ff74f8c01dcc5cab887045e2b88a0b4f8c354a67",
+      "currentSha256": "cd382f8013f5c413b476bd34ff74f8c01dcc5cab887045e2b88a0b4f8c354a67",
+      "workingSha256": "cd382f8013f5c413b476bd34ff74f8c01dcc5cab887045e2b88a0b4f8c354a67",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/AcademicSemesterDeletionSnapshotReader.java",
+      "producerSha256": "bcc6f0f8e43b783622ae8c7d529378925bd9d801764ca56056c0070b8c61f49e",
+      "currentSha256": "bcc6f0f8e43b783622ae8c7d529378925bd9d801764ca56056c0070b8c61f49e",
+      "workingSha256": "bcc6f0f8e43b783622ae8c7d529378925bd9d801764ca56056c0070b8c61f49e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/AuthSemesterDeletionClient.java",
+      "producerSha256": "71fc01a06dbedd42515e30e6423c02d0cf6c46815b8576f573e66143e5ac1388",
+      "currentSha256": "71fc01a06dbedd42515e30e6423c02d0cf6c46815b8576f573e66143e5ac1388",
+      "workingSha256": "71fc01a06dbedd42515e30e6423c02d0cf6c46815b8576f573e66143e5ac1388",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterActivationJob.java",
+      "producerSha256": "4bc4f9803ae5528de1196b6f9bbddb32100b74edca5a2fab0312c311f4d855b0",
+      "currentSha256": "4bc4f9803ae5528de1196b6f9bbddb32100b74edca5a2fab0312c311f4d855b0",
+      "workingSha256": "4bc4f9803ae5528de1196b6f9bbddb32100b74edca5a2fab0312c311f4d855b0",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterArchiveCommandTransaction.java",
+      "producerSha256": "fb5ecfab98dd29cdc14729ff1904dc48b6551e0cbbd56ca0f0ba9b0de405ddb0",
+      "currentSha256": "fb5ecfab98dd29cdc14729ff1904dc48b6551e0cbbd56ca0f0ba9b0de405ddb0",
+      "workingSha256": "fb5ecfab98dd29cdc14729ff1904dc48b6551e0cbbd56ca0f0ba9b0de405ddb0",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterArchiveCoordinator.java",
+      "producerSha256": "84b0c13cdd79ff0138ec2824732c00a9ab5e7f688318db448b26c54342d06bc2",
+      "currentSha256": "84b0c13cdd79ff0138ec2824732c00a9ab5e7f688318db448b26c54342d06bc2",
+      "workingSha256": "84b0c13cdd79ff0138ec2824732c00a9ab5e7f688318db448b26c54342d06bc2",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterArchiveOperationController.java",
+      "producerSha256": "f15de5b9e745272c201788b81a3b3b4d8a544f364bd5b9f659591b6a2cd17f52",
+      "currentSha256": "f15de5b9e745272c201788b81a3b3b4d8a544f364bd5b9f659591b6a2cd17f52",
+      "workingSha256": "f15de5b9e745272c201788b81a3b3b4d8a544f364bd5b9f659591b6a2cd17f52",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterArchiveService.java",
+      "producerSha256": "d61bc4f15f3da3c84a4eca48d68b6b6b112742a3c90f495317887c54e42eac10",
+      "currentSha256": "d61bc4f15f3da3c84a4eca48d68b6b6b112742a3c90f495317887c54e42eac10",
+      "workingSha256": "d61bc4f15f3da3c84a4eca48d68b6b6b112742a3c90f495317887c54e42eac10",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterAssembler.java",
+      "producerSha256": "a86c12ab48825b11310a905fd75a98121e523d89dd50d3dea02d8066dbb0ecf3",
+      "currentSha256": "a86c12ab48825b11310a905fd75a98121e523d89dd50d3dea02d8066dbb0ecf3",
+      "workingSha256": "a86c12ab48825b11310a905fd75a98121e523d89dd50d3dea02d8066dbb0ecf3",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterController.java",
+      "producerSha256": "3923d2f56fea39b69949adead5973732e14f4e25b2b34a1e5dfa3ecb0a4e8699",
+      "currentSha256": "3923d2f56fea39b69949adead5973732e14f4e25b2b34a1e5dfa3ecb0a4e8699",
+      "workingSha256": "3923d2f56fea39b69949adead5973732e14f4e25b2b34a1e5dfa3ecb0a4e8699",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterDeletionOperationController.java",
+      "producerSha256": "232f409c66adcf5dffec6e7f10f67e542a20b8a4bfa10236e35b3b39c3d3aa8b",
+      "currentSha256": "232f409c66adcf5dffec6e7f10f67e542a20b8a4bfa10236e35b3b39c3d3aa8b",
+      "workingSha256": "232f409c66adcf5dffec6e7f10f67e542a20b8a4bfa10236e35b3b39c3d3aa8b",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterDeletionPreviewService.java",
+      "producerSha256": "8ff7196bce9a6bf67337a76ba4df9035aa6f74e41398c2a242c2f081c7e591e4",
+      "currentSha256": "8ff7196bce9a6bf67337a76ba4df9035aa6f74e41398c2a242c2f081c7e591e4",
+      "workingSha256": "8ff7196bce9a6bf67337a76ba4df9035aa6f74e41398c2a242c2f081c7e591e4",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterDeletionService.java",
+      "producerSha256": "ecf4102e892f6ed9e4aaa6ea3426d095b0ce7f39ba0c18cba792a93094675e63",
+      "currentSha256": "ecf4102e892f6ed9e4aaa6ea3426d095b0ce7f39ba0c18cba792a93094675e63",
+      "workingSha256": "ecf4102e892f6ed9e4aaa6ea3426d095b0ce7f39ba0c18cba792a93094675e63",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/SemesterService.java",
+      "producerSha256": "09decc675ef4de50650821416e647f8699a19256df67e812712b7f00f30d82fc",
+      "currentSha256": "09decc675ef4de50650821416e647f8699a19256df67e812712b7f00f30d82fc",
+      "workingSha256": "09decc675ef4de50650821416e647f8699a19256df67e812712b7f00f30d82fc",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/semester/StaleSemesterDeletionPreviewException.java",
+      "producerSha256": "79514aca33c88b7c7f316caecc40439a6142fe49c76861c7b7dab66834c01220",
+      "currentSha256": "79514aca33c88b7c7f316caecc40439a6142fe49c76861c7b7dab66834c01220",
+      "workingSha256": "79514aca33c88b7c7f316caecc40439a6142fe49c76861c7b7dab66834c01220",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/JdbcStudentProjectionQueryAdapter.java",
+      "producerSha256": "61e8ac56b2e934d13aecd0844e40606df64384a6089c4f2ef96fc39d9a13d504",
+      "currentSha256": "61e8ac56b2e934d13aecd0844e40606df64384a6089c4f2ef96fc39d9a13d504",
+      "workingSha256": "61e8ac56b2e934d13aecd0844e40606df64384a6089c4f2ef96fc39d9a13d504",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionException.java",
+      "producerSha256": "57fd0a2c1a1336ff3272029a1aef5d305aefd145aafa92ba5a841b0e9e8d7f2f",
+      "currentSha256": "57fd0a2c1a1336ff3272029a1aef5d305aefd145aafa92ba5a841b0e9e8d7f2f",
+      "workingSha256": "57fd0a2c1a1336ff3272029a1aef5d305aefd145aafa92ba5a841b0e9e8d7f2f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionGrpcErrors.java",
+      "producerSha256": "68f243b3d885ee83e75929c2e8265a060631be07ccc068eab1fc8ce0845de777",
+      "currentSha256": "68f243b3d885ee83e75929c2e8265a060631be07ccc068eab1fc8ce0845de777",
+      "workingSha256": "68f243b3d885ee83e75929c2e8265a060631be07ccc068eab1fc8ce0845de777",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionQuery.java",
+      "producerSha256": "0b4364b835a84590d8c52dc2e581d1aa71fb96626084e4ad0a49cdf32c266f35",
+      "currentSha256": "0b4364b835a84590d8c52dc2e581d1aa71fb96626084e4ad0a49cdf32c266f35",
+      "workingSha256": "0b4364b835a84590d8c52dc2e581d1aa71fb96626084e4ad0a49cdf32c266f35",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScope.java",
+      "producerSha256": "e5ba3b339c932d61e759996bbb2192f3817494fd358613c84136330342f45a32",
+      "currentSha256": "e5ba3b339c932d61e759996bbb2192f3817494fd358613c84136330342f45a32",
+      "workingSha256": "e5ba3b339c932d61e759996bbb2192f3817494fd358613c84136330342f45a32",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java",
+      "producerSha256": "1530e2c984fad5a5846bdfa48f42bfa6659ca5408b79038bbaf38fba6c84b08c",
+      "currentSha256": "47211a3bf2b9b94cda4d12d312dec06d3f24e74d1a3ac8e0fcae557883aeec10",
+      "workingSha256": "47211a3bf2b9b94cda4d12d312dec06d3f24e74d1a3ac8e0fcae557883aeec10",
+      "byteIdentical": false
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectAssembler.java",
+      "producerSha256": "48b48354134092baa10f0252d2aeb45b370d1c3395b17a548710b5ff4669f86f",
+      "currentSha256": "48b48354134092baa10f0252d2aeb45b370d1c3395b17a548710b5ff4669f86f",
+      "workingSha256": "48b48354134092baa10f0252d2aeb45b370d1c3395b17a548710b5ff4669f86f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectController.java",
+      "producerSha256": "57a32c410c3f657401d1315c290f08bab20b5b74842985530f11b7785b38a091",
+      "currentSha256": "57a32c410c3f657401d1315c290f08bab20b5b74842985530f11b7785b38a091",
+      "workingSha256": "57a32c410c3f657401d1315c290f08bab20b5b74842985530f11b7785b38a091",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/subject/SubjectService.java",
+      "producerSha256": "47d13fbccfe5d2dd365bb0955865e198824b57e825486a4463d74a309fa7c496",
+      "currentSha256": "47d13fbccfe5d2dd365bb0955865e198824b57e825486a4463d74a309fa7c496",
+      "workingSha256": "47d13fbccfe5d2dd365bb0955865e198824b57e825486a4463d74a309fa7c496",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/threshold/ThresholdAssembler.java",
+      "producerSha256": "bea6b1898e70adfe40c4ba88449aa92041762d604067f852cbbd708760de0d5e",
+      "currentSha256": "bea6b1898e70adfe40c4ba88449aa92041762d604067f852cbbd708760de0d5e",
+      "workingSha256": "bea6b1898e70adfe40c4ba88449aa92041762d604067f852cbbd708760de0d5e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/threshold/ThresholdController.java",
+      "producerSha256": "5cd38f56d2dbd35def99887c25aae629160604521ddcd6d800c0b1c7e32d390b",
+      "currentSha256": "5cd38f56d2dbd35def99887c25aae629160604521ddcd6d800c0b1c7e32d390b",
+      "workingSha256": "5cd38f56d2dbd35def99887c25aae629160604521ddcd6d800c0b1c7e32d390b",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/threshold/ThresholdService.java",
+      "producerSha256": "e8c771a4d1627ff30de340fdc9816916508a89c19acb3da0806879c8825b182f",
+      "currentSha256": "e8c771a4d1627ff30de340fdc9816916508a89c19acb3da0806879c8825b182f",
+      "workingSha256": "e8c771a4d1627ff30de340fdc9816916508a89c19acb3da0806879c8825b182f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/AuthUserArchiveClient.java",
+      "producerSha256": "40a0b9909987e8f6f368cc6a8115d16e4852f891b44af08d46cc8658766e0945",
+      "currentSha256": "40a0b9909987e8f6f368cc6a8115d16e4852f891b44af08d46cc8658766e0945",
+      "workingSha256": "40a0b9909987e8f6f368cc6a8115d16e4852f891b44af08d46cc8658766e0945",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserArchiveRepository.java",
+      "producerSha256": "3b71fe0988e17e3a413294066139cf9da8b8b78952277b40c256156aad993d54",
+      "currentSha256": "3b71fe0988e17e3a413294066139cf9da8b8b78952277b40c256156aad993d54",
+      "workingSha256": "3b71fe0988e17e3a413294066139cf9da8b8b78952277b40c256156aad993d54",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserArchiveService.java",
+      "producerSha256": "572d8f91cdf4da5069859dbcb14ff5ea7ed6c6e1d756b589ab6523b221194b08",
+      "currentSha256": "572d8f91cdf4da5069859dbcb14ff5ea7ed6c6e1d756b589ab6523b221194b08",
+      "workingSha256": "572d8f91cdf4da5069859dbcb14ff5ea7ed6c6e1d756b589ab6523b221194b08",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserAssembler.java",
+      "producerSha256": "22fc694489a55b2a973ddcb983846d5f9d441676ca9263ae6bf841b9c627e4ca",
+      "currentSha256": "22fc694489a55b2a973ddcb983846d5f9d441676ca9263ae6bf841b9c627e4ca",
+      "workingSha256": "22fc694489a55b2a973ddcb983846d5f9d441676ca9263ae6bf841b9c627e4ca",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserController.java",
+      "producerSha256": "fcf5a0a91b6b2328dfbf9ca68d86e73c47009a6e6952d3adf95acedaea550461",
+      "currentSha256": "fcf5a0a91b6b2328dfbf9ca68d86e73c47009a6e6952d3adf95acedaea550461",
+      "workingSha256": "fcf5a0a91b6b2328dfbf9ca68d86e73c47009a6e6952d3adf95acedaea550461",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserService.java",
+      "producerSha256": "b53c51d9e480f68c7ac11bfce02752c7e77168a9dc4dd4c6eafc6f0d1f24863d",
+      "currentSha256": "b53c51d9e480f68c7ac11bfce02752c7e77168a9dc4dd4c6eafc6f0d1f24863d",
+      "workingSha256": "b53c51d9e480f68c7ac11bfce02752c7e77168a9dc4dd4c6eafc6f0d1f24863d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserSpecifications.java",
+      "producerSha256": "97643d47757a2fbc425ea2355794ef83116b78b7828e9d863d3a3590c75fe598",
+      "currentSha256": "97643d47757a2fbc425ea2355794ef83116b78b7828e9d863d3a3590c75fe598",
+      "workingSha256": "97643d47757a2fbc425ea2355794ef83116b78b7828e9d863d3a3590c75fe598",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicCacheIntegrationTest.java",
+      "producerSha256": "1c5977a5b083d34b8b4f5d56cd7b7c799bb5b37bd96363072f86da3454c5fe9c",
+      "currentSha256": "1c5977a5b083d34b8b4f5d56cd7b7c799bb5b37bd96363072f86da3454c5fe9c",
+      "workingSha256": "1c5977a5b083d34b8b4f5d56cd7b7c799bb5b37bd96363072f86da3454c5fe9c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicEventIntegrationTest.java",
+      "producerSha256": "d32cb41482efdf5f035ed01cd0432b25a9a8db263e97b44c76acbf9884b5cbd0",
+      "currentSha256": "d32cb41482efdf5f035ed01cd0432b25a9a8db263e97b44c76acbf9884b5cbd0",
+      "workingSha256": "d32cb41482efdf5f035ed01cd0432b25a9a8db263e97b44c76acbf9884b5cbd0",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAcademicIntegrationTest.java",
+      "producerSha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "currentSha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "workingSha256": "d793976a9f2e4b1333957660c53b86d0901ee80dcd95e7f78e6c9a0628b0fc2c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AbstractAssignmentAuthorityIT.java",
+      "producerSha256": "5428bf84a20ff289b79e9f557efc9da649737e59fbf78b35e10c44173c94e025",
+      "currentSha256": "5428bf84a20ff289b79e9f557efc9da649737e59fbf78b35e10c44173c94e025",
+      "workingSha256": "5428bf84a20ff289b79e9f557efc9da649737e59fbf78b35e10c44173c94e025",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicFixtureResetListener.java",
+      "producerSha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "currentSha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "workingSha256": "30e5d25f75c928e9ef7be85f470983a3b412cbab0f2efd38913ec4d265bc5b68",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "producerSha256": "5fe91e9e2bc1bba88651cb77ba51c1e10cd3e8b3ec6fea5aa084d0b93b67fd65",
+      "currentSha256": "5fe91e9e2bc1bba88651cb77ba51c1e10cd3e8b3ec6fea5aa084d0b93b67fd65",
+      "workingSha256": "5fe91e9e2bc1bba88651cb77ba51c1e10cd3e8b3ec6fea5aa084d0b93b67fd65",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicPerformanceIT.java",
+      "producerSha256": "cc703bf2db3516eba61a49121fac977343fa09f5db91954c7f3bda53a4583052",
+      "currentSha256": "cc703bf2db3516eba61a49121fac977343fa09f5db91954c7f3bda53a4583052",
+      "workingSha256": "cc703bf2db3516eba61a49121fac977343fa09f5db91954c7f3bda53a4583052",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicTestAdminRequest.java",
+      "producerSha256": "0abf409370e3dfd3f20510eaa087c14c53918073a9ed2641e9399cdb954347f5",
+      "currentSha256": "0abf409370e3dfd3f20510eaa087c14c53918073a9ed2641e9399cdb954347f5",
+      "workingSha256": "0abf409370e3dfd3f20510eaa087c14c53918073a9ed2641e9399cdb954347f5",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/ActuatorIT.java",
+      "producerSha256": "beb439db9b6d612d55dc989b4788491c157001033a546a8892950eb1bfbcf167",
+      "currentSha256": "beb439db9b6d612d55dc989b4788491c157001033a546a8892950eb1bfbcf167",
+      "workingSha256": "beb439db9b6d612d55dc989b4788491c157001033a546a8892950eb1bfbcf167",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/CacheIT.java",
+      "producerSha256": "09c9f5f2b18361a456a7f597aa270ba5a2e9cb054f41caa5e5aa2d77c6542e11",
+      "currentSha256": "09c9f5f2b18361a456a7f597aa270ba5a2e9cb054f41caa5e5aa2d77c6542e11",
+      "workingSha256": "09c9f5f2b18361a456a7f597aa270ba5a2e9cb054f41caa5e5aa2d77c6542e11",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EntityMappingIT.java",
+      "producerSha256": "7c2fe6b821c0acde4dc8ae9c8505768335577bafac4a369324f842d53371295c",
+      "currentSha256": "7c2fe6b821c0acde4dc8ae9c8505768335577bafac4a369324f842d53371295c",
+      "workingSha256": "7c2fe6b821c0acde4dc8ae9c8505768335577bafac4a369324f842d53371295c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIT.java",
+      "producerSha256": "cef6b44113d4f5913528aff13df9de26629356e31e79b4afe2d38d80603e2cda",
+      "currentSha256": "cef6b44113d4f5913528aff13df9de26629356e31e79b4afe2d38d80603e2cda",
+      "workingSha256": "cef6b44113d4f5913528aff13df9de26629356e31e79b4afe2d38d80603e2cda",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/GroupRenameEventIT.java",
+      "producerSha256": "6a7e1fc2394942fb3fe65cd061ae87a6483d56c8477af851583799ae9a2c24ce",
+      "currentSha256": "6a7e1fc2394942fb3fe65cd061ae87a6483d56c8477af851583799ae9a2c24ce",
+      "workingSha256": "6a7e1fc2394942fb3fe65cd061ae87a6483d56c8477af851583799ae9a2c24ce",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HeadmanStatsScopeIT.java",
+      "producerSha256": "2f375da1021df03d92d7240f914d2d114ac4499ed2551f97eb70619cbb15637e",
+      "currentSha256": "2f375da1021df03d92d7240f914d2d114ac4499ed2551f97eb70619cbb15637e",
+      "workingSha256": "2f375da1021df03d92d7240f914d2d114ac4499ed2551f97eb70619cbb15637e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HealthDegradationIT.java",
+      "producerSha256": "4316992ea084bd7108f44469ab769fa959357d4fccd4749fd6c9149c969334d1",
+      "currentSha256": "4316992ea084bd7108f44469ab769fa959357d4fccd4749fd6c9149c969334d1",
+      "workingSha256": "4316992ea084bd7108f44469ab769fa959357d4fccd4749fd6c9149c969334d1",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/HistoricalMembershipIT.java",
+      "producerSha256": "84fe05d9f35943d7e01eda545bed09ec04294a68c2181349f1cee70c8bb073bb",
+      "currentSha256": "84fe05d9f35943d7e01eda545bed09ec04294a68c2181349f1cee70c8bb073bb",
+      "workingSha256": "84fe05d9f35943d7e01eda545bed09ec04294a68c2181349f1cee70c8bb073bb",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InitialPasswordBoundaryIT.java",
+      "producerSha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+      "currentSha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+      "workingSha256": "e2511523926b050c5899f4f00bf4358548fa768fbc4472677e4a2e1db22d4638",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InternalJwtTestConfig.java",
+      "producerSha256": "6fe16761986b2da584e9677c4f939a9b4702cace1a27d85b10be14779deeb489",
+      "currentSha256": "6fe16761986b2da584e9677c4f939a9b4702cace1a27d85b10be14779deeb489",
+      "workingSha256": "6fe16761986b2da584e9677c4f939a9b4702cace1a27d85b10be14779deeb489",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiErrorResponsesIT.java",
+      "producerSha256": "e31ce26b203f42ced0d27d2cb626d1247ac090efa4f0cef49a48c2549cefe5d9",
+      "currentSha256": "e31ce26b203f42ced0d27d2cb626d1247ac090efa4f0cef49a48c2549cefe5d9",
+      "workingSha256": "e31ce26b203f42ced0d27d2cb626d1247ac090efa4f0cef49a48c2549cefe5d9",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java",
+      "producerSha256": "452f5950a64d4bdb70c9a86c583b82e1ff6595923bd5fd8a59208be2a92a7f28",
+      "currentSha256": "452f5950a64d4bdb70c9a86c583b82e1ff6595923bd5fd8a59208be2a92a7f28",
+      "workingSha256": "452f5950a64d4bdb70c9a86c583b82e1ff6595923bd5fd8a59208be2a92a7f28",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxBrokerConfirmIT.java",
+      "producerSha256": "07f5fc19f26c21dfb5bb36c3480b4f55d3f5ebe9ef33e52737e0efac05c73369",
+      "currentSha256": "07f5fc19f26c21dfb5bb36c3480b4f55d3f5ebe9ef33e52737e0efac05c73369",
+      "workingSha256": "07f5fc19f26c21dfb5bb36c3480b4f55d3f5ebe9ef33e52737e0efac05c73369",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxCleanupIT.java",
+      "producerSha256": "3c5302e48d53f168a7f4929a5500a909c46779e9f63cac3bb2099700b6c3bc52",
+      "currentSha256": "3c5302e48d53f168a7f4929a5500a909c46779e9f63cac3bb2099700b6c3bc52",
+      "workingSha256": "3c5302e48d53f168a7f4929a5500a909c46779e9f63cac3bb2099700b6c3bc52",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OutboxTestConfig.java",
+      "producerSha256": "1f98f146c2d0d6a99cd580d60a70501127c161af1486c5599ecfd91d5d272b8f",
+      "currentSha256": "1f98f146c2d0d6a99cd580d60a70501127c161af1486c5599ecfd91d5d272b8f",
+      "workingSha256": "1f98f146c2d0d6a99cd580d60a70501127c161af1486c5599ecfd91d5d272b8f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/PaginationCapIT.java",
+      "producerSha256": "775b6ca9d313bf7b37575d9223b13a608e9d46979ee7b8ac2115127d088af0c5",
+      "currentSha256": "775b6ca9d313bf7b37575d9223b13a608e9d46979ee7b8ac2115127d088af0c5",
+      "workingSha256": "775b6ca9d313bf7b37575d9223b13a608e9d46979ee7b8ac2115127d088af0c5",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RbacCacheIT.java",
+      "producerSha256": "0faa4dddb1a3f231cdb1b40162054529b6c4646c9021e70e32954e345b0f5b2f",
+      "currentSha256": "0faa4dddb1a3f231cdb1b40162054529b6c4646c9021e70e32954e345b0f5b2f",
+      "workingSha256": "0faa4dddb1a3f231cdb1b40162054529b6c4646c9021e70e32954e345b0f5b2f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/RestApiIT.java",
+      "producerSha256": "1c7fecc28b65869e7f93196d3074bdaf15ed7215589dc339b29fb7a3e91a4db4",
+      "currentSha256": "1c7fecc28b65869e7f93196d3074bdaf15ed7215589dc339b29fb7a3e91a4db4",
+      "workingSha256": "1c7fecc28b65869e7f93196d3074bdaf15ed7215589dc339b29fb7a3e91a4db4",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/SemesterArchiveStateIT.java",
+      "producerSha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+      "currentSha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+      "workingSha256": "911ff2fddf2e605428e5dedb055e61a93166cfe8b69ce85940ce53c18e8ae72c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java",
+      "producerSha256": "829390d60c6ed9bdd476a8e64de6676f965aca11dff7a2a892afd755dd44475d",
+      "currentSha256": "829390d60c6ed9bdd476a8e64de6676f965aca11dff7a2a892afd755dd44475d",
+      "workingSha256": "829390d60c6ed9bdd476a8e64de6676f965aca11dff7a2a892afd755dd44475d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+      "producerSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "currentSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "workingSha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/build.gradle.kts",
+      "producerSha256": "1d07782717df2ac9a82495805d45606abec1721fc536f9bc3005a22ba34ced8c",
+      "currentSha256": "1d07782717df2ac9a82495805d45606abec1721fc536f9bc3005a22ba34ced8c",
+      "workingSha256": "1d07782717df2ac9a82495805d45606abec1721fc536f9bc3005a22ba34ced8c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/DualModeUserContextFilter.java",
+      "producerSha256": "e95cfb6f4e07b0d86357626fbfc504058e550511e7a59cfd2c74b08e0b681ae9",
+      "currentSha256": "e95cfb6f4e07b0d86357626fbfc504058e550511e7a59cfd2c74b08e0b681ae9",
+      "workingSha256": "e95cfb6f4e07b0d86357626fbfc504058e550511e7a59cfd2c74b08e0b681ae9",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtClaims.java",
+      "producerSha256": "e91d7d1bee834c0bc762dc733b1bb43cfc44b125f10c54060100755c5b7267a4",
+      "currentSha256": "e91d7d1bee834c0bc762dc733b1bb43cfc44b125f10c54060100755c5b7267a4",
+      "workingSha256": "e91d7d1bee834c0bc762dc733b1bb43cfc44b125f10c54060100755c5b7267a4",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtException.java",
+      "producerSha256": "a3b8dec4b89d39bb653dd1e6a5f5461fa1d8b037186474bd2421d22290297fbd",
+      "currentSha256": "a3b8dec4b89d39bb653dd1e6a5f5461fa1d8b037186474bd2421d22290297fbd",
+      "workingSha256": "a3b8dec4b89d39bb653dd1e6a5f5461fa1d8b037186474bd2421d22290297fbd",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtProperties.java",
+      "producerSha256": "3cefcc0e1be4410ed53cfc57352ae46952ecf3ed5b568847c278cb48ca664e80",
+      "currentSha256": "3cefcc0e1be4410ed53cfc57352ae46952ecf3ed5b568847c278cb48ca664e80",
+      "workingSha256": "3cefcc0e1be4410ed53cfc57352ae46952ecf3ed5b568847c278cb48ca664e80",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/InternalJwtValidator.java",
+      "producerSha256": "f77651e3ae4ba71883bdc0fa984ffe03d70c33bf8c5d60f99eb97a84494d9ce3",
+      "currentSha256": "f77651e3ae4ba71883bdc0fa984ffe03d70c33bf8c5d60f99eb97a84494d9ce3",
+      "workingSha256": "f77651e3ae4ba71883bdc0fa984ffe03d70c33bf8c5d60f99eb97a84494d9ce3",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/PublicKeyProvider.java",
+      "producerSha256": "3ca1fa28a99299da5d523ad193c347e21f7e3cf370450586a66dec46da596ab3",
+      "currentSha256": "3ca1fa28a99299da5d523ad193c347e21f7e3cf370450586a66dec46da596ab3",
+      "workingSha256": "3ca1fa28a99299da5d523ad193c347e21f7e3cf370450586a66dec46da596ab3",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminAccessException.java",
+      "producerSha256": "17c8cc8e08d2ebc356736170c7a3d0a205d3ddc3da86b589ba2205899f110d92",
+      "currentSha256": "17c8cc8e08d2ebc356736170c7a3d0a205d3ddc3da86b589ba2205899f110d92",
+      "workingSha256": "17c8cc8e08d2ebc356736170c7a3d0a205d3ddc3da86b589ba2205899f110d92",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminAccessJdbcAuthority.java",
+      "producerSha256": "ddcb5a9cc39b469b25aa1d83732bbb9c3567738b2598b24d7c8d9d0a2bb68ab7",
+      "currentSha256": "ddcb5a9cc39b469b25aa1d83732bbb9c3567738b2598b24d7c8d9d0a2bb68ab7",
+      "workingSha256": "ddcb5a9cc39b469b25aa1d83732bbb9c3567738b2598b24d7c8d9d0a2bb68ab7",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminAccessProfile.java",
+      "producerSha256": "55ab90befd26d96e84c2ad198b4fa0994227c6517193859caebee87dd1a33ee4",
+      "currentSha256": "55ab90befd26d96e84c2ad198b4fa0994227c6517193859caebee87dd1a33ee4",
+      "workingSha256": "55ab90befd26d96e84c2ad198b4fa0994227c6517193859caebee87dd1a33ee4",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java",
+      "producerSha256": "68eb8a7787bf374050c03b13015bfca0cdeeeeaea174b504ce3961e1c394e25a",
+      "currentSha256": "68eb8a7787bf374050c03b13015bfca0cdeeeeaea174b504ce3961e1c394e25a",
+      "workingSha256": "68eb8a7787bf374050c03b13015bfca0cdeeeeaea174b504ce3961e1c394e25a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/DirectedServiceCredential.java",
+      "producerSha256": "645713827dfac15d58871e8c0256abf8e76ceb166a152673128f299738e8346d",
+      "currentSha256": "645713827dfac15d58871e8c0256abf8e76ceb166a152673128f299738e8346d",
+      "workingSha256": "645713827dfac15d58871e8c0256abf8e76ceb166a152673128f299738e8346d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptor.java",
+      "producerSha256": "f8145506c8f0a3e517faf8f6d04461b10721231a7e931f21081a144ddc10e953",
+      "currentSha256": "f8145506c8f0a3e517faf8f6d04461b10721231a7e931f21081a144ddc10e953",
+      "workingSha256": "f8145506c8f0a3e517faf8f6d04461b10721231a7e931f21081a144ddc10e953",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServicePrincipal.java",
+      "producerSha256": "9cc0ada0fdd7650ec2a3858662b1fc127319c339a595a9a858784925fba07643",
+      "currentSha256": "9cc0ada0fdd7650ec2a3858662b1fc127319c339a595a9a858784925fba07643",
+      "workingSha256": "9cc0ada0fdd7650ec2a3858662b1fc127319c339a595a9a858784925fba07643",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentials.java",
+      "producerSha256": "75f8f9dceba3169bb577f1815bffecb7b3490df6257f4b59ea91376ae60ec7fb",
+      "currentSha256": "75f8f9dceba3169bb577f1815bffecb7b3490df6257f4b59ea91376ae60ec7fb",
+      "workingSha256": "75f8f9dceba3169bb577f1815bffecb7b3490df6257f4b59ea91376ae60ec7fb",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenClientInterceptor.java",
+      "producerSha256": "7a308ad6546d9b1771fb4116fbc7ce82b2d07fd7543d83b13fdb1e706d30eebb",
+      "currentSha256": "7a308ad6546d9b1771fb4116fbc7ce82b2d07fd7543d83b13fdb1e706d30eebb",
+      "workingSha256": "7a308ad6546d9b1771fb4116fbc7ce82b2d07fd7543d83b13fdb1e706d30eebb",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/DualModeUserContextFilterTest.java",
+      "producerSha256": "d9cba0de5852ea310d82c90573d6de8b5b5bc838d2a7e996dc245ac2969514d9",
+      "currentSha256": "d9cba0de5852ea310d82c90573d6de8b5b5bc838d2a7e996dc245ac2969514d9",
+      "workingSha256": "d9cba0de5852ea310d82c90573d6de8b5b5bc838d2a7e996dc245ac2969514d9",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtPropertiesTest.java",
+      "producerSha256": "7025c5cf0509566de610df7448b3f902e783b2b397eb7660b69008e6e302e13d",
+      "currentSha256": "7025c5cf0509566de610df7448b3f902e783b2b397eb7660b69008e6e302e13d",
+      "workingSha256": "7025c5cf0509566de610df7448b3f902e783b2b397eb7660b69008e6e302e13d",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/InternalJwtValidatorTest.java",
+      "producerSha256": "01171a1f02feed98faf51b2a6d77bf302990d3cd6f0acf6baae842c7120066d1",
+      "currentSha256": "01171a1f02feed98faf51b2a6d77bf302990d3cd6f0acf6baae842c7120066d1",
+      "workingSha256": "01171a1f02feed98faf51b2a6d77bf302990d3cd6f0acf6baae842c7120066d1",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityServerInterceptorTest.java",
+      "producerSha256": "21fe80098d4c51ea5ccdf4b1c45a5c8fda3b7bf48975328fa854a36a816884d9",
+      "currentSha256": "21fe80098d4c51ea5ccdf4b1c45a5c8fda3b7bf48975328fa854a36a816884d9",
+      "workingSha256": "21fe80098d4c51ea5ccdf4b1c45a5c8fda3b7bf48975328fa854a36a816884d9",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceIdentityTlsTransportTest.java",
+      "producerSha256": "512937d08d9a7a2be74adc971e9458d6558d6c6bba78d580979b361271ae7f73",
+      "currentSha256": "512937d08d9a7a2be74adc971e9458d6558d6c6bba78d580979b361271ae7f73",
+      "workingSha256": "512937d08d9a7a2be74adc971e9458d6558d6c6bba78d580979b361271ae7f73",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/test/java/ru/rutcampustrack/shared/security/grpc/ServiceTokenCallCredentialsTest.java",
+      "producerSha256": "32911123e47c4d82931290bec3289235e1ba1f282244af6b5498b5e334e9bf04",
+      "currentSha256": "32911123e47c4d82931290bec3289235e1ba1f282244af6b5498b5e334e9bf04",
+      "workingSha256": "32911123e47c4d82931290bec3289235e1ba1f282244af6b5498b5e334e9bf04",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-security/src/testFixtures/java/ru/rutcampustrack/shared/security/InternalJwtTestFactory.java",
+      "producerSha256": "da186908cbc27f752195ebbbf8a874004e183f507ef928c78b32d24910cbcf52",
+      "currentSha256": "da186908cbc27f752195ebbbf8a874004e183f507ef928c78b32d24910cbcf52",
+      "workingSha256": "da186908cbc27f752195ebbbf8a874004e183f507ef928c78b32d24910cbcf52",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/build.gradle.kts",
+      "producerSha256": "3b763bce4032f304d1f43fdd226c0bfbe14531f35a2a056578aa348b247e0bd3",
+      "currentSha256": "3b763bce4032f304d1f43fdd226c0bfbe14531f35a2a056578aa348b247e0bd3",
+      "workingSha256": "3b763bce4032f304d1f43fdd226c0bfbe14531f35a2a056578aa348b247e0bd3",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/audit/AdminAction.java",
+      "producerSha256": "3f8fdc14c44c04f551971a13e4589de3576de0b0f35063d168a2856b4d67e9ad",
+      "currentSha256": "3f8fdc14c44c04f551971a13e4589de3576de0b0f35063d168a2856b4d67e9ad",
+      "workingSha256": "3f8fdc14c44c04f551971a13e4589de3576de0b0f35063d168a2856b4d67e9ad",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/audit/AdminActionAspect.java",
+      "producerSha256": "9e7c0d65484894e9222404912ee452b229990505399dc98ea1f92c6bf3db08a3",
+      "currentSha256": "9e7c0d65484894e9222404912ee452b229990505399dc98ea1f92c6bf3db08a3",
+      "workingSha256": "9e7c0d65484894e9222404912ee452b229990505399dc98ea1f92c6bf3db08a3",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/audit/AuditLogContextProvider.java",
+      "producerSha256": "062f50c2c12e3badd9ca434a56a30e0483383fd2570f781424def23c79ca2bc6",
+      "currentSha256": "062f50c2c12e3badd9ca434a56a30e0483383fd2570f781424def23c79ca2bc6",
+      "workingSha256": "062f50c2c12e3badd9ca434a56a30e0483383fd2570f781424def23c79ca2bc6",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/audit/AuditLogEntry.java",
+      "producerSha256": "724c933d2ec5a7b0e42dfa23684145543a085af370e0769a7f5470371a03520f",
+      "currentSha256": "724c933d2ec5a7b0e42dfa23684145543a085af370e0769a7f5470371a03520f",
+      "workingSha256": "724c933d2ec5a7b0e42dfa23684145543a085af370e0769a7f5470371a03520f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/audit/AuditLogStorage.java",
+      "producerSha256": "159610d3c41aee6d6826ebf0215df0fd2dca99849efaf3f558a331430cddf981",
+      "currentSha256": "159610d3c41aee6d6826ebf0215df0fd2dca99849efaf3f558a331430cddf981",
+      "workingSha256": "159610d3c41aee6d6826ebf0215df0fd2dca99849efaf3f558a331430cddf981",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/autoconfigure/PageableDefaultsPostProcessor.java",
+      "producerSha256": "985ca021e138609884c454b56994ccd46e90872c433a1691597f88d1a0331cb2",
+      "currentSha256": "985ca021e138609884c454b56994ccd46e90872c433a1691597f88d1a0331cb2",
+      "workingSha256": "985ca021e138609884c454b56994ccd46e90872c433a1691597f88d1a0331cb2",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/autoconfigure/RequiredSecretsValidator.java",
+      "producerSha256": "1c3466755f8ef17a534dd9775f6c71ad3955587d6320be11acba8dfe40d2865c",
+      "currentSha256": "1c3466755f8ef17a534dd9775f6c71ad3955587d6320be11acba8dfe40d2865c",
+      "workingSha256": "1c3466755f8ef17a534dd9775f6c71ad3955587d6320be11acba8dfe40d2865c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/autoconfigure/SharedWebAutoConfiguration.java",
+      "producerSha256": "e3a4c3b7f555d3d98e5e734d4ed194a37412088dc584db449a3b7880e47df231",
+      "currentSha256": "e3a4c3b7f555d3d98e5e734d4ed194a37412088dc584db449a3b7880e47df231",
+      "workingSha256": "e3a4c3b7f555d3d98e5e734d4ed194a37412088dc584db449a3b7880e47df231",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/config/GlobalErrorResponsesCustomizer.java",
+      "producerSha256": "026542774cd1a95afd3f792433d4f40a4cd24bd2eb9beeba8aa6585c462d5e0c",
+      "currentSha256": "026542774cd1a95afd3f792433d4f40a4cd24bd2eb9beeba8aa6585c462d5e0c",
+      "workingSha256": "026542774cd1a95afd3f792433d4f40a4cd24bd2eb9beeba8aa6585c462d5e0c",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/config/JacksonConfig.java",
+      "producerSha256": "f99a19ff11ad4e5237c8eec28b59a23ecbe1a045cd8bd1d4a3549f5a56f48d1e",
+      "currentSha256": "f99a19ff11ad4e5237c8eec28b59a23ecbe1a045cd8bd1d4a3549f5a56f48d1e",
+      "workingSha256": "f99a19ff11ad4e5237c8eec28b59a23ecbe1a045cd8bd1d4a3549f5a56f48d1e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/config/SharedOpenApiCustomizer.java",
+      "producerSha256": "28c8470fc0076c7715e5831a9f7c24c4c9b3f72d73ff3c9db1c024cf480db516",
+      "currentSha256": "28c8470fc0076c7715e5831a9f7c24c4c9b3f72d73ff3c9db1c024cf480db516",
+      "workingSha256": "28c8470fc0076c7715e5831a9f7c24c4c9b3f72d73ff3c9db1c024cf480db516",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandler.java",
+      "producerSha256": "e2ee6eff43ca09772be21db7fc2e65d314b58f822275ad578905500c1c20d8de",
+      "currentSha256": "e2ee6eff43ca09772be21db7fc2e65d314b58f822275ad578905500c1c20d8de",
+      "workingSha256": "e2ee6eff43ca09772be21db7fc2e65d314b58f822275ad578905500c1c20d8de",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/DateRangeValid.java",
+      "producerSha256": "f4934ea039e5e0eeb4fb9b89f80b37beced4a9e489c571243ae491ea85be5781",
+      "currentSha256": "f4934ea039e5e0eeb4fb9b89f80b37beced4a9e489c571243ae491ea85be5781",
+      "workingSha256": "f4934ea039e5e0eeb4fb9b89f80b37beced4a9e489c571243ae491ea85be5781",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/DateRangeValidator.java",
+      "producerSha256": "8c285262d1013446d7a9def16174cc1592f743ec652e4a040adf951ed0b85c9f",
+      "currentSha256": "8c285262d1013446d7a9def16174cc1592f743ec652e4a040adf951ed0b85c9f",
+      "workingSha256": "8c285262d1013446d7a9def16174cc1592f743ec652e4a040adf951ed0b85c9f",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/StartBeforeEnd.java",
+      "producerSha256": "946cde865d739a9883a9816999e615da3d25df21e51d2d5bfb504f4bc4251d17",
+      "currentSha256": "946cde865d739a9883a9816999e615da3d25df21e51d2d5bfb504f4bc4251d17",
+      "workingSha256": "946cde865d739a9883a9816999e615da3d25df21e51d2d5bfb504f4bc4251d17",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/StartBeforeEndValidator.java",
+      "producerSha256": "ab3a122bdc6395e5ad96ab396572299aaf68fd474ab3124ef347dc3681475d36",
+      "currentSha256": "ab3a122bdc6395e5ad96ab396572299aaf68fd474ab3124ef347dc3681475d36",
+      "workingSha256": "ab3a122bdc6395e5ad96ab396572299aaf68fd474ab3124ef347dc3681475d36",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/ValidFile.java",
+      "producerSha256": "f7ade5fba35f298aee2bcf636bff0d99427cd9e6c45900a63bebf3a866e9cbb4",
+      "currentSha256": "f7ade5fba35f298aee2bcf636bff0d99427cd9e6c45900a63bebf3a866e9cbb4",
+      "workingSha256": "f7ade5fba35f298aee2bcf636bff0d99427cd9e6c45900a63bebf3a866e9cbb4",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/main/java/ru/rutcampustrack/shared/web/validation/ValidFileValidator.java",
+      "producerSha256": "20fff1937649779c2dc4fbddcfa044678d5ae3474913b66e5a409a5a386d5352",
+      "currentSha256": "20fff1937649779c2dc4fbddcfa044678d5ae3474913b66e5a409a5a386d5352",
+      "workingSha256": "20fff1937649779c2dc4fbddcfa044678d5ae3474913b66e5a409a5a386d5352",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/audit/AdminActionAspectTest.java",
+      "producerSha256": "e1139ddb38f482c2fa388ec8d474759a4a42b482846263bfa3a4d85ee46802ad",
+      "currentSha256": "e1139ddb38f482c2fa388ec8d474759a4a42b482846263bfa3a4d85ee46802ad",
+      "workingSha256": "e1139ddb38f482c2fa388ec8d474759a4a42b482846263bfa3a4d85ee46802ad",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/autoconfigure/RequiredSecretsValidatorTest.java",
+      "producerSha256": "67621d2a46f96b957e2c813c49cfeb54c106210620fcc9ebed37f66de7d2f73a",
+      "currentSha256": "67621d2a46f96b957e2c813c49cfeb54c106210620fcc9ebed37f66de7d2f73a",
+      "workingSha256": "67621d2a46f96b957e2c813c49cfeb54c106210620fcc9ebed37f66de7d2f73a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/config/GlobalErrorResponsesCustomizerTest.java",
+      "producerSha256": "139aac56a88b765eb28febb838609d668e6446d9e17c8d57ac0314246c1560fb",
+      "currentSha256": "139aac56a88b765eb28febb838609d668e6446d9e17c8d57ac0314246c1560fb",
+      "workingSha256": "139aac56a88b765eb28febb838609d668e6446d9e17c8d57ac0314246c1560fb",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/config/JacksonConfigTest.java",
+      "producerSha256": "4a3f1804ff84a4f683eafca372c3c15dc5a04b9104a25f4906509c807e7cce10",
+      "currentSha256": "4a3f1804ff84a4f683eafca372c3c15dc5a04b9104a25f4906509c807e7cce10",
+      "workingSha256": "4a3f1804ff84a4f683eafca372c3c15dc5a04b9104a25f4906509c807e7cce10",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/config/SharedOpenApiCustomizerTest.java",
+      "producerSha256": "b2136c625ba5fd5af73f2b7cef05aed1945b92bd5bd322e2bbfc168b29278d40",
+      "currentSha256": "b2136c625ba5fd5af73f2b7cef05aed1945b92bd5bd322e2bbfc168b29278d40",
+      "workingSha256": "b2136c625ba5fd5af73f2b7cef05aed1945b92bd5bd322e2bbfc168b29278d40",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/exception/GlobalExceptionHandlerTest.java",
+      "producerSha256": "5b2e337c88a8cec438ab711c82ea3b7bd437657e5be4f98d872bdd24f47d7370",
+      "currentSha256": "5b2e337c88a8cec438ab711c82ea3b7bd437657e5be4f98d872bdd24f47d7370",
+      "workingSha256": "5b2e337c88a8cec438ab711c82ea3b7bd437657e5be4f98d872bdd24f47d7370",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/validation/DateRangeValidatorTest.java",
+      "producerSha256": "e1290e089264605d998569d012552dcef447694de88c6804c229e52ccada033e",
+      "currentSha256": "e1290e089264605d998569d012552dcef447694de88c6804c229e52ccada033e",
+      "workingSha256": "e1290e089264605d998569d012552dcef447694de88c6804c229e52ccada033e",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/validation/StartBeforeEndValidatorTest.java",
+      "producerSha256": "9878cedc5e33d96503150ba0c41d6788b6f009aa35c5e408caa4c41d734e949a",
+      "currentSha256": "9878cedc5e33d96503150ba0c41d6788b6f009aa35c5e408caa4c41d734e949a",
+      "workingSha256": "9878cedc5e33d96503150ba0c41d6788b6f009aa35c5e408caa4c41d734e949a",
+      "byteIdentical": true
+    },
+    {
+      "path": "services/shared/shared-web/src/test/java/ru/rutcampustrack/shared/web/validation/ValidFileValidatorTest.java",
+      "producerSha256": "e8e6c5c815440204fcce2be789e57050803d6543e37e0617491eaeaf37077b6b",
+      "currentSha256": "e8e6c5c815440204fcce2be789e57050803d6543e37e0617491eaeaf37077b6b",
+      "workingSha256": "e8e6c5c815440204fcce2be789e57050803d6543e37e0617491eaeaf37077b6b",
+      "byteIdentical": true
+    }
+  ],
+  "changedPaths": [
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/ClockConfig.java",
+    "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/studentprojection/StudentProjectionScopeService.java"
+  ],
+  "currentRuntime": "NOT_RERUN; producer636 reused for exact unchanged L05 subject/assignment path. Current global startup/educational-clock changes remain separate validation.",
+  "clockQualification": "ClockConfig adds EducationalTime bean without changing Clock bean; existing SubjectService/Assignment services do not use EducationalTime. StudentProjectionScopeService changed separately. Neither new behavior nor current application startup is proven by this prior CI."
+}

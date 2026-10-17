@@ -1,0 +1,13 @@
+# FIRST3 CI — source-ready handoff
+
+Frozen source: c77de975cd8ac949611cae70cb515a9daa818c6c, base db177beeb9660f5a17d7fadf660e024e28f9f4b9. Integrate the three commits f5a0d60000332f6560856e527e91e3defcff8a54, 8a83e32af1c317cc084486eba8009d2a44081cdb and c77de975cd8ac949611cae70cb515a9daa818c6c in order; Root is the integrator. Exactly four assigned paths are in SOURCE.safe.json. Mechanical commit changes two; workflow and wrapper bytes are unchanged from 8a83. Worktree is clean. No installed executable Git hooks; no bypass.
+
+The existing normal full-service CI lane now prepares the public clock with a scoped umask022 and runs the three original real-client assertions through the private protected fixture/canonical reporter. The original nine auth-smoke cases, triggers, gates and timeouts remain. FIRST3 browser Date is fixed to teachingInstant; timers and backend security clocks remain real. This does not prove general client expiry, recovery or cooldown behavior.
+
+Actual Node06: formatter --check0, TS5.9.3 errors0, Playwright1.59.1 --list0 with exactly Chromium/original lines14,61,142 and unexpected0. Scoped types cover five entry files including the original discovery helper; the corrected absolute testDir helper is separately source-reviewed and used by actual --list. No browser, fixtures, API, login, seed or service was executed. Four known births are absent; TMP/cache removed; Node lease released.
+
+Semantic bridge: YAML parsed tree and all28 run strings are exact. The config/wrapper have strict tree/literal/comment and emitted-byte equality. Observer raw AST/emission bytes differ; actual04 identified14 TS and12 emitted grouping changes plus formatting-only multiLine metadata. Actual05 compares every remaining TS/CJS/ESNext AST field, literal, operator, directive and comment after only those exact contexts; all eight known-bad controls are rejected. Raw-byte inequality and strict02/03 FAIL receipts remain preserved. Narrow independent review approved the exact candidate.
+
+Evidence: node-semantic05/REPORT.safe.json and node-final06/REPORT.safe.json beneath the packet directory. Their SAFE archive hashes are in SOURCE.safe.json. The Node06 collector initially read an incorrect identity key; the initial seal is retained and the final receipt includes all three child births plus supervisor. Native results did not change.
+
+Current-source real CI/browser acceptance is still NOT_RUN. CI execution needs its normal full backend/TLS/synthetic data/browsers under the existing30-minute job. Cloud FIRST3 remains the next runtime priority under a separate coherent-stand/browser grant. This package grants no service/browser launch and makes no claim about historical three FAIL causes.

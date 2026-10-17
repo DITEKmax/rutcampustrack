@@ -7,11 +7,13 @@ export function offlineToday(schedule: StudentSemesterSchedule, date = new Date(
     timeZone: 'Europe/Moscow',
     serverNow: schedule.updatedAt,
     _links: schedule._links,
-    lessons: schedule.lessons.filter((lesson) => lesson.date === today).map((schedule) => ({
-      schedule,
-      attendance: null,
-      request: null,
-      checkinEligibility: { allowed: false, reason: 'DEPENDENCY_UNAVAILABLE', retryAt: null },
-    })),
+    lessons: schedule.lessons
+      .filter((lesson) => lesson.date === today)
+      .map((schedule) => ({
+        schedule,
+        attendance: null,
+        request: null,
+        checkinEligibility: { allowed: false, reason: 'DEPENDENCY_UNAVAILABLE', retryAt: null },
+      })),
   }
 }

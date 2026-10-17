@@ -1,5 +1,9 @@
 package ru.rutcampustrack.auth.session.port;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import ru.rutcampustrack.auth.session.model.AuthMethod;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleGrant;
@@ -7,23 +11,17 @@ import ru.rutcampustrack.auth.session.model.SecurityEvent;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.auth.session.model.SessionState;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-
 /**
- * Atomic session boundary. Each method is one transaction-shaped operation;
- * the domain service must not compose a read and a write to emulate CAS.
+ * Atomic session boundary. Each method is one transaction-shaped operation; the domain service must
+ * not compose a read and a write to emulate CAS.
  */
 public interface SessionStatePort {
 
     /**
-     * Atomically locks the authoritative user row, re-reads the credential
-     * proof (when password auth) and the current roles version/grants, then
-     * inserts the session and LOGIN event. A stale caller snapshot must return
-     * SESSION_STATE_STALE before any insert; a role grant is never resurrected
-     * from the authentication-time hint.
+     * Atomically locks the authoritative user row, re-reads the credential proof (when password
+     * auth) and the current roles version/grants, then inserts the session and LOGIN event. A stale
+     * caller snapshot must return SESSION_STATE_STALE before any insert; a role grant is never
+     * resurrected from the authentication-time hint.
      */
     CreateSessionResult createSession(CreateSessionCommand command);
 
@@ -31,25 +29,26 @@ public interface SessionStatePort {
     SnapshotResult snapshot(SnapshotCommand command);
 
     /**
-     * Locks user then session, checks expected session version and the actual
-     * own selectable grant, and changes the active grant plus ROLE_CHANGED in
-     * one transaction. Selecting the already-active grant is an unchanged
-     * success; stale versions never become last-writer-wins.
+     * Locks user then session, checks expected session version and the actual own selectable grant,
+     * and changes the active grant plus ROLE_CHANGED in one transaction. Selecting the
+     * already-active grant is an unchanged success; stale versions never become last-writer-wins.
      */
     RoleSelectionResult selectRole(SelectRoleCommand command);
 
     /**
-     * Performs strict refresh CAS under the session lock. Current JTI wins and
-     * rotates to replacement with fixed absolute expiry; previous returns
-     * REFRESH_ALREADY_ROTATED and older/unknown returns REFRESH_REJECTED,
-     * without replay grace or benign-loser revocation.
+     * Performs strict refresh CAS under the session lock. Current JTI wins and rotates to
+     * replacement with fixed absolute expiry; previous returns REFRESH_ALREADY_ROTATED and
+     * older/unknown returns REFRESH_REJECTED, without replay grace or benign-loser revocation.
      */
     RefreshResult refresh(RefreshCommand command);
 
     /** Revokes exactly one own session and appends CURRENT_LOGOUT atomically. */
     RevokeResult revokeCurrent(RevokeCurrentCommand command);
 
-    /** Locks user and live actor, fences both versions, then revokes only the owned target with audit. */
+    /**
+     * Locks user and live actor, fences both versions, then revokes only the owned target with
+     * audit.
+     */
     RevokeResult revokeSelected(RevokeSelectedCommand command);
 
     /** Revokes every own session, including current, and appends LOGOUT_ALL atomically. */
@@ -87,17 +86,16 @@ public interface SessionStatePort {
     }
 
     /**
-     * Grants and rolesVersion are the authentication-time snapshot hint. The
-     * implementation must compare them with a fresh authoritative snapshot
-     * while holding the user lock before persisting the supplied state.
+     * Grants and rolesVersion are the authentication-time snapshot hint. The implementation must
+     * compare them with a fresh authoritative snapshot while holding the user lock before
+     * persisting the supplied state.
      */
     record CreateSessionCommand(
             SessionState state,
             long rolesVersion,
             List<RoleGrant> grants,
             CredentialProof credentialProof,
-            SecurityEvent loginEvent
-    ) {
+            SecurityEvent loginEvent) {
         public CreateSessionCommand {
             state = Objects.requireNonNull(state, "state");
             if (rolesVersion <= 0) {
@@ -117,7 +115,8 @@ public interface SessionStatePort {
                 throw new IllegalArgumentException("password create requires credential proof");
             }
             if (state.authMethod() != AuthMethod.PASSWORD && credentialProof != null) {
-                throw new IllegalArgumentException("credential proof is only valid for password auth");
+                throw new IllegalArgumentException(
+                        "credential proof is only valid for password auth");
             }
         }
     }
@@ -135,8 +134,7 @@ public interface SessionStatePort {
             AuthRole role,
             long expectedSessionVersion,
             Instant now,
-            SecurityEvent roleChangedEvent
-    ) {
+            SecurityEvent roleChangedEvent) {
         public SelectRoleCommand {
             requireUserAndSession(userId, sessionId);
             role = Objects.requireNonNull(role, "role");
@@ -148,18 +146,14 @@ public interface SessionStatePort {
             if (roleChangedEvent.type() != SecurityEvent.Type.ROLE_CHANGED
                     || roleChangedEvent.userId() != userId
                     || !sessionId.equals(roleChangedEvent.sessionId())) {
-                throw new IllegalArgumentException("select command requires matching ROLE_CHANGED event");
+                throw new IllegalArgumentException(
+                        "select command requires matching ROLE_CHANGED event");
             }
         }
     }
 
     record RefreshCommand(
-            long userId,
-            UUID sessionId,
-            UUID presentedJti,
-            UUID replacementJti,
-            Instant now
-    ) {
+            long userId, UUID sessionId, UUID presentedJti, UUID replacementJti, Instant now) {
         public RefreshCommand {
             requireUserAndSession(userId, sessionId);
             presentedJti = Objects.requireNonNull(presentedJti, "presentedJti");
@@ -172,17 +166,18 @@ public interface SessionStatePort {
 
         @Override
         public String toString() {
-            return "RefreshCommand[userId=" + userId + ", sessionId=" + sessionId
-                    + ", presentedJti=<redacted>, replacementJti=<redacted>, now=" + now + ']';
+            return "RefreshCommand[userId="
+                    + userId
+                    + ", sessionId="
+                    + sessionId
+                    + ", presentedJti=<redacted>, replacementJti=<redacted>, now="
+                    + now
+                    + ']';
         }
     }
 
     record RevokeCurrentCommand(
-            long userId,
-            UUID sessionId,
-            Instant now,
-            SecurityEvent logoutEvent
-    ) {
+            long userId, UUID sessionId, Instant now, SecurityEvent logoutEvent) {
         public RevokeCurrentCommand {
             requireUserAndSession(userId, sessionId);
             Objects.requireNonNull(now, "now");
@@ -190,7 +185,8 @@ public interface SessionStatePort {
             if (logoutEvent.type() != SecurityEvent.Type.CURRENT_LOGOUT
                     || logoutEvent.userId() != userId
                     || !sessionId.equals(logoutEvent.sessionId())) {
-                throw new IllegalArgumentException("current revoke requires matching CURRENT_LOGOUT event");
+                throw new IllegalArgumentException(
+                        "current revoke requires matching CURRENT_LOGOUT event");
             }
         }
     }
@@ -201,8 +197,7 @@ public interface SessionStatePort {
             UUID targetSessionId,
             long expectedSessionVersion,
             long expectedRolesVersion,
-            Instant now
-    ) {
+            Instant now) {
         public RevokeSelectedCommand {
             requireUserAndSession(userId, actorSessionId);
             Objects.requireNonNull(targetSessionId, "targetSessionId");
@@ -214,11 +209,7 @@ public interface SessionStatePort {
     }
 
     record RevokeAllCommand(
-            long userId,
-            UUID currentSessionId,
-            Instant now,
-            SecurityEvent logoutAllEvent
-    ) {
+            long userId, UUID currentSessionId, Instant now, SecurityEvent logoutAllEvent) {
         public RevokeAllCommand {
             if (userId <= 0) {
                 throw new IllegalArgumentException("userId must be positive");
@@ -300,8 +291,10 @@ public interface SessionStatePort {
         }
 
         public static RefreshResult success(SessionSnapshot snapshot, UUID replacementJti) {
-            return new RefreshResult(Objects.requireNonNull(snapshot, "snapshot"),
-                    Objects.requireNonNull(replacementJti, "replacementJti"), null);
+            return new RefreshResult(
+                    Objects.requireNonNull(snapshot, "snapshot"),
+                    Objects.requireNonNull(replacementJti, "replacementJti"),
+                    null);
         }
 
         public static RefreshResult failure(FailureCode code) {
@@ -324,12 +317,14 @@ public interface SessionStatePort {
         public RevokeResult {
             requireExactlyOne(snapshot, failureCode);
             if (snapshot != null && !snapshot.isRevoked()) {
-                throw new IllegalArgumentException("successful revoke must return revoked snapshot");
+                throw new IllegalArgumentException(
+                        "successful revoke must return revoked snapshot");
             }
         }
 
         public static RevokeResult success(SessionSnapshot snapshot, boolean alreadyRevoked) {
-            return new RevokeResult(Objects.requireNonNull(snapshot, "snapshot"), alreadyRevoked, null);
+            return new RevokeResult(
+                    Objects.requireNonNull(snapshot, "snapshot"), alreadyRevoked, null);
         }
 
         public static RevokeResult failure(FailureCode code) {
@@ -347,13 +342,15 @@ public interface SessionStatePort {
                 throw new IllegalArgumentException("revokedSessionCount must not be negative");
             }
             if ((revokedSessionCount == 0) != (failureCode != null)) {
-                throw new IllegalArgumentException("failure must be explicit and success must revoke at least one session");
+                throw new IllegalArgumentException(
+                        "failure must be explicit and success must revoke at least one session");
             }
         }
 
         public static RevokeAllResult success(int count) {
             if (count <= 0) {
-                throw new IllegalArgumentException("revoke-all success must include current session");
+                throw new IllegalArgumentException(
+                        "revoke-all success must include current session");
             }
             return new RevokeAllResult(count, null);
         }

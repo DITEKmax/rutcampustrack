@@ -1,5 +1,6 @@
 package ru.rutcampustrack.schedule.security;
 
+import java.util.Arrays;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -7,18 +8,17 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 
-import java.util.Arrays;
-
 /**
- * AOP aspect enforcing role-based access control for @RequireRole-annotated methods.
- * Reads the current user's role from RequestContext and throws AccessDeniedException
- * if the role is null (no headers) or not among the allowed values.
+ * AOP aspect enforcing role-based access control for @RequireRole-annotated methods. Reads the
+ * current user's role from RequestContext and throws AccessDeniedException if the role is null (no
+ * headers) or not among the allowed values.
  */
 @Aspect
 @Component
 public class RoleCheckAspect {
 
     private final RequestContext requestContext;
+
     @org.springframework.beans.factory.annotation.Autowired
     private ru.rutcampustrack.schedule.grpc.AcademicAdminPermissionClient adminPermissionClient;
 
@@ -35,10 +35,12 @@ public class RoleCheckAspect {
         }
         return pjp.proceed();
     }
-    @Around("within(@org.springframework.web.bind.annotation.RestController *) && execution(public * *(..))")
+
+    @Around(
+            "within(@org.springframework.web.bind.annotation.RestController *) && execution(public * *(..))")
     public Object checkAdminAuthority(ProceedingJoinPoint pjp) throws Throwable {
-        if(requestContext.getRole()==UserRole.ADMIN) adminPermissionClient.requireFull(requestContext.getInternalToken());
+        if (requestContext.getRole() == UserRole.ADMIN)
+            adminPermissionClient.requireFull(requestContext.getInternalToken());
         return pjp.proceed();
     }
-
 }

@@ -1,11 +1,10 @@
 package ru.rutcampustrack.notification.preferences;
 
+import java.time.Clock;
+import java.time.Instant;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.notification.contract.dto.preferences.NotificationPreferencesDto;
 import ru.rutcampustrack.notification.contract.dto.preferences.UpdateNotificationPreferencesRequest;
-
-import java.time.Clock;
-import java.time.Instant;
 
 @Service
 public class NotificationPreferencesService {
@@ -19,20 +18,25 @@ public class NotificationPreferencesService {
     }
 
     @org.springframework.beans.factory.annotation.Autowired
-    public NotificationPreferencesService(NotificationPreferencesStore store, Clock clock, NotificationPreferencesV2Service v2) {
-        this(store, clock); this.v2 = v2;
+    public NotificationPreferencesService(
+            NotificationPreferencesStore store, Clock clock, NotificationPreferencesV2Service v2) {
+        this(store, clock);
+        this.v2 = v2;
     }
 
     public NotificationPreferencesDto getForUser(long userId) {
         return active(store.user(userId));
     }
 
-    public NotificationPreferencesDto updateForUser(long userId, UpdateNotificationPreferencesRequest request) {
+    public NotificationPreferencesDto updateForUser(
+            long userId, UpdateNotificationPreferencesRequest request) {
         return active(store.patchUser(userId, request, Instant.now(clock)));
     }
 
     public boolean isEnabledForUser(Long userId, String eventType) {
-        if (v2 != null && !"excuse.decided".equals(eventType) && !"late_checkin.decided".equals(eventType)) {
+        if (v2 != null
+                && !"excuse.decided".equals(eventType)
+                && !"late_checkin.decided".equals(eventType)) {
             return isEnabledForUser(userId, eventType, java.util.Map.of());
         }
         String category = categoryForEvent(eventType);
@@ -42,10 +46,14 @@ public class NotificationPreferencesService {
         return isCategoryEnabledForUser(userId, category);
     }
 
-    public boolean isEnabledForUser(Long userId, String eventType, java.util.Map<String, Object> payload) {
+    public boolean isEnabledForUser(
+            Long userId, String eventType, java.util.Map<String, Object> payload) {
         if (v2 == null) return isEnabledForUser(userId, eventType);
-        if (userId == null || userId <= 0) throw new IllegalArgumentException("Classified notification recipient is required");
-        var type = ru.rutcampustrack.notification.history.NotificationCatalog.eventType(eventType, payload);
+        if (userId == null || userId <= 0)
+            throw new IllegalArgumentException("Classified notification recipient is required");
+        var type =
+                ru.rutcampustrack.notification.history.NotificationCatalog.eventType(
+                        eventType, payload);
         return type.isPresent() && v2.appEnabled(userId, type.get().name());
     }
 
@@ -67,11 +75,17 @@ public class NotificationPreferencesService {
             case "lesson.started", "lesson.reminder" -> "reminders";
             case "lesson.blocked", "lesson.cancelled", "lesson.closed" -> "lessons";
             case "lesson.one_off.created", "lesson.one_off.cancelled" -> "schedule";
-            case "homework.published", "homework.updated",
-                 "homework.weekly_digest", "homework.due_reminder" -> "homework";
-            case "excuse.requested", "excuse.decided",
-                 "late_checkin.requested", "late_checkin.decided",
-                 "attendance.marked" -> "tickets";
+            case "homework.published",
+                    "homework.updated",
+                    "homework.weekly_digest",
+                    "homework.due_reminder" ->
+                    "homework";
+            case "excuse.requested",
+                    "excuse.decided",
+                    "late_checkin.requested",
+                    "late_checkin.decided",
+                    "attendance.marked" ->
+                    "tickets";
             case "group.renamed", "group.archived" -> "group";
             default -> null;
         };
@@ -79,7 +93,7 @@ public class NotificationPreferencesService {
 
     private NotificationPreferencesDto active(NotificationPreferencesDto prefs) {
         Instant mute = prefs.mutedUntil();
-        return new NotificationPreferencesDto(prefs.categories(),
-                mute != null && mute.isAfter(Instant.now(clock)) ? mute : null);
+        return new NotificationPreferencesDto(
+                prefs.categories(), mute != null && mute.isAfter(Instant.now(clock)) ? mute : null);
     }
 }

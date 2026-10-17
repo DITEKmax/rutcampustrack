@@ -1,0 +1,47 @@
+{
+  "schema": "FIRST3_SPEC_FRAME_INDEPENDENT_PRIVACY_SOURCE_REVIEW_V1",
+  "disposition": "APPROVE_SOURCE_ONLY",
+  "findings": [],
+  "requested_selected_model": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "native": "NOT_RUN",
+  "source_packet_sha256": "a6c1802c9d42bc182a84c70ec6409285e99d2f72dd15c6591f34d5587f87c023",
+  "semantic_commit": "1fd53710ecb61c8ec85d62c3863ee91d9492041d",
+  "base": "8ac4125263218d6de49bc54931be1b57edc115fe",
+  "code_pins": {
+    "tests/e2e/fixtures/artifact-privacy.ts": "50ce668929c541faf03de696261ad65ceab41241bd90cf74661123a66f43ad53",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "1e62165db1271ba8e32848ab549ffedd0745378694ff20728444bfc8d59d20d9"
+  },
+  "protected_source_pins": {
+    "tests/e2e/fixtures/safe-reporter.ts": "2b6cc3ae15566b50e61428f7c533bedf23651c9206cdef5b6d23a96a7e8cb336",
+    "tests/e2e/specs/mobile-real-server.spec.ts": "a2bf0239a58a4d3e2602d5d3f455ced9f12dddb2b80e8ff6c8592b6fa12d13a7",
+    "tests/e2e/fixtures/first3-observer.ts": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718",
+    "tests/e2e/check-artifact-privacy.mjs": "59fff34c92a07654965d6815b94171081131d5dd2f0fb8608cdc39f62f038d2a",
+    "tests/e2e/playwright.artifact-control.config.ts": "5e7c3d84578c1d83492ac55ed40d0903d50a332702c5acc2e7980b74abc4e2e2",
+    "tests/e2e/tsconfig.real-mobile.json": "5c314fbb420d7dc2db15ae33f1de2e04efeead7cb82014007d0f427d450379b6",
+    "tests/e2e/package.json": "5d8fafbceaa9bcba244856df31c65561b4fbc298be5ab7610e84677f8c616357",
+    "tests/e2e/package-lock.json": "d1b110e5339f0fd13219892a0d2de315e2037fc98602772007243a6c2a1a3e48"
+  },
+  "checks": {
+    "two_paths_clean_stable_exact_pins": true,
+    "original_guard_auto_fixture_core_hints_prefix_byte_exact": true,
+    "control_block_import_whitespace_inverse_exact": true,
+    "own_descriptor_bounded_closed_public_frame_no_raw_output": true,
+    "source_coordinate_bounds411_UTF16": true,
+    "safe_defineProperties_and_idempotence_getter_controls": true,
+    "forged_frame_not_cause_operation_PASS": true,
+    "nonmobile_declaration_fallback_explicit_qualified_compatible": true,
+    "unchanged_reporter_errorLocations_schema_and_consumer_budget": true,
+    "original3PASS3expectedFAIL_interrupt_missing_guard_retained": true,
+    "meaningful_existing_function_old61_new91_Source_counterexample": true
+  },
+  "qualifications": [
+    "Source only; native format/typecheck/control checks pending fresh Root grant",
+    "actual eligible stack/Headman61 witness UNKNOWN until genuine after-run",
+    "non-mobile location becomes declaration fallback; no all-spec precise-frame claim",
+    "reported location untrusted; no cause/operation/PASS promotion",
+    "afterformat/integration producer/source/privacy hash rebind required",
+    "B013frozen/no newframework/Sourcecopies/reviewer native"
+  ],
+  "report_sha256": "99cdf5624fea693113402fe0a2a4668ddc54e5ec8ddfa22cc0cbfd2606a72e9e"
+}

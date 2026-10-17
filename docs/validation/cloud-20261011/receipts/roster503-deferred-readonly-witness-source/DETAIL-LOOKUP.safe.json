@@ -1,0 +1,16 @@
+{
+  "kind": "SOURCE_ONLY_LIST_CREDENTIAL_CORRECTION",
+  "utc": "2026-10-12T23:48:50.160066+00:00",
+  "cause": "UserController.listUsers90\u2013100 passes includeInitialPassword=false; initial helper would failclosed credentialstring gate, notexecuteROSTERGET.",
+  "correctedHelper": "/workspace/scratch/rct-validation/client_real_acceptance/focused3-roster-witness-source/witness-detail-lookup.cjs",
+  "correctedHelperSha256": "23541187a3b90525f90666601ef78759e71229ddd859d6b3cde375ff727c6769",
+  "oldHelperSha256": "2d261bef6a2b547cc047996f36c4c1ab9a24c2365a24f32c9667b224486779f6",
+  "minimalDelta": "Use listUsers onlymetadata/chronology; selectedexistinggetUser70 toAdminModel performs acceptedFULLADMIN initialcredential view inRAM; verify sameid/group/headman beforelogin.",
+  "source": "services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/user/UserController.java",
+  "sourceSha256": "75c0b49ba3d9b462a018f72720c6080c94aabcadc912b07651374108b70db481",
+  "nativeAllVariants": "NOT_RUN",
+  "hostCleanupBlockPreserved": true,
+  "oldHelperAndReadyImmutable": true,
+  "bodyValuesPrintedHashedArchived": false,
+  "futureSourceParserTypeChecks": "NOT_RUN"
+}

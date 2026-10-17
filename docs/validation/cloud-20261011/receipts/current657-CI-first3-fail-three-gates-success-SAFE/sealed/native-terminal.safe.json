@@ -1,0 +1,1015 @@
+{
+  "status": "TERMINAL_SAFE_RECEIPTS",
+  "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "archive_count": 18,
+  "task_count": 24,
+  "tasks": [
+    {
+      "key": [
+        "38329143628",
+        "integrationTest",
+        "academic-service"
+      ],
+      "artifact_id": 11783020586,
+      "name": "safe-coverage-outcomes-academic-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 446,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": {
+        "xmlOrdinal": 28,
+        "suiteOrdinal": 1,
+        "ordinal": 12,
+        "classname": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+        "method": "enumDatabaseAndHttpBoundaryRemainCanonicalUnderTurkishLocale",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+        "sourceSha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d"
+      },
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143628",
+        "test",
+        "academic-service"
+      ],
+      "artifact_id": 11783020586,
+      "name": "safe-coverage-outcomes-academic-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "academic-service",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 465,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143628",
+        "integrationTest",
+        "api-gateway"
+      ],
+      "artifact_id": 11782208696,
+      "name": "safe-coverage-outcomes-api-gateway-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "api-gateway",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 9,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 3,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143628",
+        "test",
+        "api-gateway"
+      ],
+      "artifact_id": 11782208696,
+      "name": "safe-coverage-outcomes-api-gateway-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "api-gateway",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 168,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143628",
+        "integrationTest",
+        "attendance-service"
+      ],
+      "artifact_id": 11781478648,
+      "name": "safe-coverage-outcomes-attendance-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "attendance-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 220,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143628",
+        "test",
+        "attendance-service"
+      ],
+      "artifact_id": 11781478648,
+      "name": "safe-coverage-outcomes-attendance-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "attendance-service",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 315,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143628",
+        "integrationTest",
+        "auth-service"
+      ],
+      "artifact_id": 11781189284,
+      "name": "safe-coverage-outcomes-auth-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "auth-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 169,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143628",
+        "test",
+        "auth-service"
+      ],
+      "artifact_id": 11781189284,
+      "name": "safe-coverage-outcomes-auth-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "auth-service",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 140,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143628",
+        "test",
+        "notification-service"
+      ],
+      "artifact_id": 11781533316,
+      "name": "safe-coverage-outcomes-notification-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "notification-service",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 125,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143628",
+        "integrationTest",
+        "notification-service"
+      ],
+      "artifact_id": 11781533316,
+      "name": "safe-coverage-outcomes-notification-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "notification-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 62,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143628",
+        "integrationTest",
+        "schedule-service"
+      ],
+      "artifact_id": 11782393175,
+      "name": "safe-coverage-outcomes-schedule-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "schedule-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 205,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": {
+        "xmlOrdinal": 23,
+        "suiteOrdinal": 1,
+        "ordinal": 7,
+        "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+        "method": "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+        "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+      },
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143628",
+        "test",
+        "schedule-service"
+      ],
+      "artifact_id": 11782393175,
+      "name": "safe-coverage-outcomes-schedule-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "schedule-service",
+        "task": "test",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 272,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "integrationTest",
+        "academic-service"
+      ],
+      "artifact_id": 11781479176,
+      "name": "safe-integration-outcomes-academic-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 446,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": {
+        "xmlOrdinal": 28,
+        "suiteOrdinal": 1,
+        "ordinal": 12,
+        "classname": "ru.rutcampustrack.academic.integration.AcademicGrpcIT",
+        "method": "enumDatabaseAndHttpBoundaryRemainCanonicalUnderTurkishLocale",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+        "sourceSha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d"
+      },
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "integrationTest",
+        "api-gateway"
+      ],
+      "artifact_id": 11782083776,
+      "name": "safe-integration-outcomes-api-gateway-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "api-gateway",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 9,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 3,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "integrationTest",
+        "attendance-service"
+      ],
+      "artifact_id": 11782278473,
+      "name": "safe-integration-outcomes-attendance-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "attendance-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 220,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "integrationTest",
+        "auth-service"
+      ],
+      "artifact_id": 11782029364,
+      "name": "safe-integration-outcomes-auth-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "auth-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 169,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "integrationTest",
+        "notification-service"
+      ],
+      "artifact_id": 11781904580,
+      "name": "safe-integration-outcomes-notification-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "notification-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 62,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "integrationTest",
+        "schedule-service"
+      ],
+      "artifact_id": 11781653243,
+      "name": "safe-integration-outcomes-schedule-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "schedule-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 205,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": {
+        "xmlOrdinal": 23,
+        "suiteOrdinal": 1,
+        "ordinal": 7,
+        "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+        "method": "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+        "sourceSha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0"
+      },
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "test",
+        "academic-service"
+      ],
+      "artifact_id": 11781303304,
+      "name": "safe-unit-outcomes-academic-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "academic-service",
+        "task": "test",
+        "job": "java-unit-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 465,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "test",
+        "api-gateway"
+      ],
+      "artifact_id": 11781303486,
+      "name": "safe-unit-outcomes-api-gateway-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "api-gateway",
+        "task": "test",
+        "job": "java-unit-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 168,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "test",
+        "attendance-service"
+      ],
+      "artifact_id": 11781482987,
+      "name": "safe-unit-outcomes-attendance-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "attendance-service",
+        "task": "test",
+        "job": "java-unit-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 315,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "test",
+        "auth-service"
+      ],
+      "artifact_id": 11782108786,
+      "name": "safe-unit-outcomes-auth-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "auth-service",
+        "task": "test",
+        "job": "java-unit-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 140,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "test",
+        "notification-service"
+      ],
+      "artifact_id": 11782108821,
+      "name": "safe-unit-outcomes-notification-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "notification-service",
+        "task": "test",
+        "job": "java-unit-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 125,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    },
+    {
+      "key": [
+        "38329143416",
+        "test",
+        "schedule-service"
+      ],
+      "artifact_id": 11782293519,
+      "name": "safe-unit-outcomes-schedule-service-1",
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "schedule-service",
+        "task": "test",
+        "job": "java-unit-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 272,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "target": null,
+      "failed_or_error_cases": []
+    }
+  ],
+  "counts": {
+    "38329143628:integrationTest": {
+      "PASSED": 1111,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 3,
+      "NOT_EXECUTED": 0
+    },
+    "38329143628:test": {
+      "PASSED": 1485,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    },
+    "38329143416:integrationTest": {
+      "PASSED": 1111,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 3,
+      "NOT_EXECUTED": 0
+    },
+    "38329143416:test": {
+      "PASSED": 1485,
+      "FAILED": 0,
+      "ERROR": 0,
+      "SKIPPED": 0,
+      "NOT_EXECUTED": 0
+    }
+  },
+  "skipped_cases": [
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "api-gateway",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    },
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "api-gateway",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 2,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    },
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "api-gateway",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 3,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    },
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "api-gateway",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    },
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "api-gateway",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 2,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    },
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "api-gateway",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 1,
+        "suiteOrdinal": 1,
+        "ordinal": 3,
+        "classname": "ru.rutcampustrack.gateway.ratelimit.CompositeLoginKeyResolverIT",
+        "method": null,
+        "status": "SKIPPED",
+        "identity": "ORDINAL_ONLY",
+        "source": "services/api-gateway/src/test/java/ru/rutcampustrack/gateway/ratelimit/CompositeLoginKeyResolverIT.java",
+        "sourceSha256": "d38f8e5cde1281febd1964bee8ebf9922029c0c56635e7609b1beeb79f554bc8"
+      }
+    }
+  ],
+  "broker_method": [
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-coverage",
+        "runId": "38329143628",
+        "runAttempt": "1",
+        "testStepScope": "unit+integration+report",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 9,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+        "method": "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+        "sourceSha256": "ac58bd3b01a8816a38a0bdc1abbefd3e484389b116e3b2048a42dd82a8105547"
+      }
+    },
+    {
+      "metadata": {
+        "checkoutSha": "885308799dc8c0c6bb5076c7c07b6a1492d08ca6",
+        "prHeadSha": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+        "service": "academic-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38329143416",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "case": {
+        "xmlOrdinal": 9,
+        "suiteOrdinal": 1,
+        "ordinal": 1,
+        "classname": "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT",
+        "method": "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+        "sourceSha256": "ac58bd3b01a8816a38a0bdc1abbefd3e484389b116e3b2048a42dd82a8105547"
+      }
+    }
+  ],
+  "broker_limit": "One method PASS per workflow; no native PTTL/elapsed/phase/cleanup values in SAFE schema. Prior protocol source qualification retained without repeating tests.",
+  "dedup": "Workflow/task/service key unique; two workflow executions are not unique-scenario sum.",
+  "FIRST3": "3_FAILED_RECORDS_NO_OBSERVER_CAUSE_UNKNOWN",
+  "historical96_CAP_cause": "UNKNOWN",
+  "parent_acceptance": "NOT_PROMOTED"
+}

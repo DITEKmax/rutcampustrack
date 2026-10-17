@@ -1,0 +1,12 @@
+{
+  "utc": "2026-10-12T22:38:09.256730+00:00",
+  "workspace_free": 9461792768,
+  "tmp_free": 7509872640,
+  "shared": 4682915840,
+  "predocker_threshold": 9380818650,
+  "future_cohort_absent": true,
+  "future_grant_absent": true,
+  "Node_lease": "ACTIVE_ROOT_HELD_UNTIL_RELEASE",
+  "Docker_ports_data_live_inspection": "NOT_RUN_SOURCE_ONLY_FRESHBEFOREGRANT",
+  "runtime": "NOT_RUN"
+}

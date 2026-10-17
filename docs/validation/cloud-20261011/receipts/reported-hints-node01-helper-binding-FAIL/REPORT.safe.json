@@ -1,0 +1,39 @@
+{
+  "status": "NATIVE_NODE01_FAILED_CAUSAL_PREDICATE_NOT_ACCEPTED",
+  "toolSession": 78037,
+  "toolChunk": "32a99d",
+  "toolNativeExit": 1,
+  "phase": "priority-red",
+  "accepted": false,
+  "completedPhases": 1,
+  "expectedExitAloneNotPass": true,
+  "actualRows": "count5/fail4/parser0; baseline8/sourcecapture old7/directdecoder old6; exactsource-bound historical dirname mismatch",
+  "allOwnedProcessesReaped": true,
+  "allKnownBirthsAbsent": [
+    {
+      "pid": 484825,
+      "start_ticks": 12314743,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    },
+    {
+      "pid": 484828,
+      "start_ticks": 12314821,
+      "pidPresent": false,
+      "sameBirthPresent": false
+    }
+  ],
+  "signalCount": 0,
+  "ownedTempRemoved": true,
+  "sourcePinsUnchanged": true,
+  "source2After": {
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/fixtures/artifact-privacy.ts": "570d66e3a82543fa98960cb9d6a622597857066952d631e6cf9058a90b8e0232",
+    "/workspace/rct-worktrees/client-ci-first3/tests/e2e/fixtures/safe-reporter.ts": "40f8881ecaa963135edf3b7c4b6eec860a903d7861a1c9fdf372aff0b82ad686"
+  },
+  "remaining8Phases": "NOT_RUN",
+  "actualCIcause": "UNKNOWN",
+  "nativeClientAcceptance": false,
+  "lease": "RELEASED",
+  "causeQualification": "Helper model context mismatch, not product/source2 bug or actualCI cause",
+  "next": "Historical/adaptor module dirname canonical W binding in two own scratch helpers; source-only narrow review and fresh grant/newnamespace before rerun"
+}

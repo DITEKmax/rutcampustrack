@@ -1,0 +1,57 @@
+{
+  "author_commit": "ee6f51ba75a4b6a78ffe7563bbe38dbec3207a13",
+  "base": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+  "source_sha256": {
+    "tests/e2e/fixtures/safe-reporter.ts": "04617a73120e234087c0c4663f8793608723267eec6ff6e646ea09b6ec6aca23",
+    "tests/e2e/artifact-controls/privacy.control.spec.ts": "de60e922c82757ec0275b191ed60c2dbfb7c989936dcd69c658dad596d04dc87",
+    "tests/e2e/fixtures/semester-lifecycle.spec.ts": "4b47e22c3490489ee4b2762bc26d693183097f78e553014c2dbcdcda2d772738"
+  },
+  "Root_fourth_path_sha256": "b5712eedd084d676449907ce163d39b21390a011689d5b1384345f955bf910a6",
+  "scope": "firstpropagatedbodyHTTPoperation/allowedstatuspreservedbeforefinally; sameoriginalthrow/allcleanup/status/timeouts; oneexistingpublicSpecssemesterliteral",
+  "source_correction": "Existing control assumed mobile-real-server:989 invalid, but published9f09 file is1006lines. Existing production sanitizer correctlyaccepts989, then oldcontrol expectsfallback61. Metadata control.json exists so newHTTPcontrols hadcompleted; this deterministicoldoracle conflict corrected using specLineCount+1, sameexistingpattern asassignmentSpec control. Trueoutofrange guard preserved; no privacy/productweakening.",
+  "privacy_control_closed": {
+    "state": "PRIVACY_BOUNDARIES_PASSED",
+    "markerAbsent": true,
+    "expectedFailureRetained": true,
+    "successRetained": true,
+    "interruptionPassed": true,
+    "missingGuardRejectedBeforeOperation": true,
+    "browser": "NOT_STARTED"
+  },
+  "verification": "ScopedcachedPrettierwrite/check+selected3pathTypeScript noEmit PASS; finalexistingbrowser-freeprivacychecker fullnormal/interruption/missingguard PASS withmarkerAbsent/expectedFailureRetained/successRetained true; ordinaryhooks/normalcommit+diffcheckPASS. Sourceoldnegative989 corrected toactualEOF+1 afterattempt01; mandatoryprivacyguard notweakened. Realbrowser/backend/cause stillNOT_RUN.",
+  "cleanup": "Sessions79154/28089closed0; allowneddescendantsreaped; bothownTMPanddependencylinksgone; canonicalcache/Rootlinkuntouched; leaseRELEASED",
+  "timing_qualification": {
+    "active_phase_seconds": 89.671,
+    "first_to_last_child_launch_wall_seconds": 232.76,
+    "source": "Recorded b78 directPID start_ticks on sameLinuxboot; os.sysconf SC_CLK_TCK",
+    "first_launch_ticks": 22583536,
+    "last_launch_ticks": 22606812,
+    "ticks_per_second": 100,
+    "full_first_launch_to_final_cleanup_wall_seconds": "UNKNOWN; exact finalmonotonic timestamp not retained",
+    "grant_total120_qualification": "Total120s wall budget NOT_MET: first-to-last childlaunch already232.76s. 89.671s is active/checking phaseelapsed sum only; Source/model/toolgap counts toward wall. Exactfinalcleanupwall UNKNOWN. Perphase<=60/resourcecaps/reap/cleanup proofs unchanged; no rerun justified.",
+    "wall_budget_met": false
+  },
+  "native_active_seconds": 89.671,
+  "independent_review": {
+    "verdict": "APPROVE_SOURCE; no blocking P1/P2 finding in the coherent three author paths plus Root one-literal allowlist change. Actual semester failure cause stays UNKNOWN pending ordinary CI; diagnostics are reported closed source context, not authenticated execution/cause.",
+    "identity": {
+      "author": "ee6f51ba75a4b6a78ffe7563bbe38dbec3207a13",
+      "parent": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2",
+      "sha256": {
+        "safe-reporter.ts": "04617a73120e234087c0c4663f8793608723267eec6ff6e646ea09b6ec6aca23",
+        "privacy.control.spec.ts": "de60e922c82757ec0275b191ed60c2dbfb7c989936dcd69c658dad596d04dc87",
+        "semester-lifecycle.spec.ts": "4b47e22c3490489ee4b2762bc26d693183097f78e553014c2dbcdcda2d772738",
+        "Root artifact-privacy.ts": "b5712eedd084d676449907ce163d39b21390a011689d5b1384345f955bf910a6"
+      },
+      "reviewer": "Independent readonly Sol6.1/high actualUNKNOWN; governing byte identity retained, current state/resources/own outcome refreshed; D013 simplification honored."
+    },
+    "sourceAssessment": "Reporter adds exactly twelve source-specific route/method qualifications (including the bounded semesters-list alias), retaining existing128-char path ceiling, control-character rejection, allowed status set and closed enum/status output. IDs/dates/query values are matched only in RAM and never copied. Unknown method/path/status/nonstring inputs remain UNKNOWN without coercion/getter reads. No URL/body/secret/result-field/schema/framework addition. A forged exact canonical marker still only supplies explicitly untrusted source context; it cannot admit a user, authenticate an operation or turn a failure green.",
+    "firstFailureAndCleanup": "The fixture only imports the helper and adds catch\u2192retainFirstDatasetHttpFailure(info.annotations,error)\u2192throw same error before the original finally. Body assertions, all expected HTTP statuses, polling/timeouts, original-authority restoration and cleanup are unchanged. Helper keeps first existing DATASET_HTTP marker, otherwise appends the first propagated body marker; it honors32 annotation/8 diagnostic caps, never evicts core facts and may release only a reported hint slot. Later cleanup failure is still the actual failing error, recorded separately by the existing sanitizer. Errors swallowed inside poll attempts are not claimed or intercepted; noncanonical errors remain unknown.",
+    "controls": "Expanded existing first control imports the actual helper/factory/parser, not copies. Twelve positive routes/statuses and malformed method/query/control/length/status variants, getter/toString avoidance, marker/ID/path exclusion, same-object body rethrow then cleanup replacement, forged-marker qualification, hint eviction and32/8 boundary cases are meaningful. Current mobile-real-server source has1006 lines by both parser and control counting. EOF+1 therefore remains truly out-of-range; stale989 had become valid. Parser guard and fallback assertions are unchanged, not weakened.",
+    "rootLiteral": "Exact Root diff adds only resolve(__dirname,semester-lifecycle.spec.ts) to existing publicSpecs. The same exact-file/line/column/length/control-character/source-bound parser now accepts that declared public fixture path; no raw stack or dynamic path is serialized. Location remains untrusted reported framing. Parent9f09 necessarily fell back at the declared228 because the file was absent; new literal is not retrospective proof of its failing body operation.",
+    "verificationAndTiming": "Author formatter/TSC/existing browser-free check-artifact-privacy.mjs/hooks/commit source-bound PASS receipts reused: markerAbsent, expectedFailureRetained, successRetained, interruptionPassed and missingGuardRejectedBeforeOperation true, browser NOT_STARTED; owned children reaped/TMP+dependency link gone. Attempt01 retained FAIL from stale989 control43.687s; corrected attempt45.984s. Active89.671s is not total wall: first-to-last launch232.76s exceeds120s TOTAL_WALL; cleanup wall UNKNOWN. No wall-cap PASS or repeat-for-metric claim. This is a historical process qualification, not a Source defect or authorization for new runtime.",
+    "remaining": "Root plans one merged existing privacy-control run because fourth literal changed; author three-path controls do not claim that merged identity. Actual new semester diagnostic/browser remains NOT_RUN. Reviewer ran no Node/native/browser/network/backend/DB/CI/key/credential access, fixed no Source and wrote only this existing outcome key. Other Q04/Q07/Q08/config reviews excluded; B013/B014 untouched."
+  },
+  "actual_semester_cause": "UNKNOWN pendingnewordinaryCI",
+  "Root_merged_controls": "PENDING_BEFORE_NATIVE"
+}

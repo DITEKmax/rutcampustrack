@@ -1,0 +1,1 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2' style='background-image:image-set(url(&apos;#local&apos;) 1x, &apos;https://example.invalid/rct-file-marker.png&apos; 2x)'><style>rect { background-image:image-set(url('#local') 1x, 'https://example.invalid/rct-file-marker.png' 2x) }</style><rect width='2' height='2'/></svg>

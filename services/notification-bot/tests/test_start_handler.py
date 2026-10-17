@@ -1,5 +1,6 @@
-"""Tests for /start command handler."""
+"""Private admission for /start and /credentials; generic RPC never supplies a password."""
 
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -7,180 +8,99 @@ import pytest
 from bot.handlers.start import cmd_credentials, cmd_links, cmd_start
 
 
-def _make_message(user_id: int = 12345) -> MagicMock:
-    message = MagicMock()
-    message.from_user = MagicMock()
-    message.from_user.id = user_id
-    message.answer = AsyncMock()
-    return message
-
-
-def _make_user_response(
-    found: bool = True,
-    display_name: str = "Иван Иванов",
-    login: str = "student00001",
-    initial_password: str = "",
-    group_name: str = "ИБ-21",
-) -> MagicMock:
-    resp = MagicMock()
-    resp.found = found
-    resp.display_name = display_name
-    resp.login = login
-    resp.initial_password = initial_password
-    resp.group_name = group_name
-    return resp
-
-
-@pytest.mark.asyncio
-async def test_start_known_user_first_login():
-    """Known user with initial_password sees credentials."""
-    message = _make_message()
-    academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(
-        return_value=_make_user_response(
-            found=True,
-            display_name="Иван Иванов",
-            login="student00001",
-            initial_password="pass123",
-        )
+def _message(user_id=12345, *, chat_id=12345, chat_type="private", sender=True):
+    return SimpleNamespace(
+        from_user=SimpleNamespace(id=user_id) if sender else None,
+        chat=SimpleNamespace(id=chat_id, type=chat_type),
+        answer=AsyncMock(),
     )
 
-    prefs_client = MagicMock()
-    prefs_client.is_enabled = AsyncMock(return_value=True)
-    await cmd_start(message, academic_client=academic_client, prefs_client=prefs_client)
 
-    message.answer.assert_called_once()
-    text = message.answer.call_args[0][0]
-    assert "Пароль: <code>pass123</code>" in text
-    assert "student00001" in text
-    assert "Иван Иванов" in text
-
-
-@pytest.mark.asyncio
-async def test_start_known_user_password_changed():
-    """Known user with empty initial_password sees login and group name."""
-    message = _make_message()
-    academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(
-        return_value=_make_user_response(
-            found=True,
-            display_name="Мария Петрова",
-            login="student00002",
-            initial_password="",
-            group_name="ИБ-21",
-        )
+def _profile(found=True, *, changed=False):
+    return SimpleNamespace(
+        found=found,
+        user_id=17,
+        display_name="Иван Иванов",
+        login="current_login",
+        initial_password="generic_ignored_marker",
+        password_changed=changed,
+        group_name="ИБ-21",
     )
 
-    prefs_client = MagicMock()
-    prefs_client.is_enabled = AsyncMock(return_value=True)
-    await cmd_start(message, academic_client=academic_client, prefs_client=prefs_client)
 
-    message.answer.assert_called_once()
-    text = message.answer.call_args[0][0]
-    assert "Группа: ИБ-21" in text
-    assert "student00002" in text
-    assert "Мария Петрова" in text
+async def _invoke(handler, message, academic, cards=None):
+    if handler is cmd_start:
+        await handler(message, academic_client=academic, prefs_client=MagicMock(), credential_cards=cards)
+    else:
+        await handler(message, academic_client=academic, credential_cards=cards)
 
 
 @pytest.mark.asyncio
-async def test_start_unknown_user():
-    """Unknown telegram_id shows instruction to contact headman."""
-    message = _make_message()
-    academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(found=False))
-
-    prefs_client = MagicMock()
-    prefs_client.is_enabled = AsyncMock(return_value=True)
-    await cmd_start(message, academic_client=academic_client, prefs_client=prefs_client)
-
-    message.answer.assert_called_once()
-    text = message.answer.call_args[0][0]
-    assert "Ваш Telegram пока не привязан к системе" in text
-    assert "старосте" in text
-
-
-@pytest.mark.asyncio
-async def test_start_grpc_error():
-    """gRPC error shows service unavailable message."""
-    message = _make_message()
-    academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(side_effect=Exception("gRPC connection refused"))
-
-    prefs_client = MagicMock()
-    prefs_client.is_enabled = AsyncMock(return_value=True)
-    await cmd_start(message, academic_client=academic_client, prefs_client=prefs_client)
-
-    message.answer.assert_called_once()
-    text = message.answer.call_args[0][0]
-    assert "Сервис временно недоступен" in text
-
-
-@pytest.mark.asyncio
-async def test_credentials_shows_initial_password_structured():
-    message = _make_message()
-    academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(
-        return_value=_make_user_response(
-            found=True,
-            display_name="Иван Иванов",
-            login="student00001",
-            initial_password="itit123",
-            group_name="ИБ-21",
-        )
+@pytest.mark.parametrize("handler", [cmd_start, cmd_credentials])
+@pytest.mark.parametrize("scope", ["group", "supergroup", "channel", "missing", "negative", "mismatch", "bool"])
+async def test_privacy_guard_precedes_every_profile_or_credential_lookup(handler, scope):
+    message = _message(
+        user_id=-1 if scope == "negative" else True if scope == "bool" else 12345,
+        chat_id=999 if scope == "mismatch" else 12345,
+        chat_type=scope if scope in {"group", "supergroup", "channel"} else "private",
+        sender=scope != "missing",
     )
-
-    await cmd_credentials(message, academic_client=academic_client)
-
-    message.answer.assert_called_once()
-    text = message.answer.call_args[0][0]
-    assert "Данные для входа" in text
-    assert "Имя: Иван Иванов" in text
-    assert "Группа: ИБ-21" in text
-    assert "Логин: <code>student00001</code>" in text
-    assert "Пароль: <code>itit123</code>" in text
+    academic = SimpleNamespace(get_user_by_telegram_id=AsyncMock())
+    cards = SimpleNamespace(deliver=AsyncMock())
+    await _invoke(handler, message, academic, cards)
+    academic.get_user_by_telegram_id.assert_not_awaited()
+    cards.deliver.assert_not_awaited()
+    assert message.answer.await_count == 1
 
 
 @pytest.mark.asyncio
-async def test_credentials_hides_changed_password():
-    message = _make_message()
-    academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(
-        return_value=_make_user_response(
-            found=True,
-            login="student00002",
-            initial_password="",
-            group_name="ИБ-21",
-        )
-    )
-
-    await cmd_credentials(message, academic_client=academic_client)
-
-    text = message.answer.call_args[0][0]
-    assert "Логин: <code>student00002</code>" in text
-    assert "Пароль: уже изменён." in text
-    assert "не хранит текущий пароль" in text
+@pytest.mark.parametrize("handler", [cmd_start, cmd_credentials])
+async def test_unknown_binding_never_requests_credentials(handler):
+    message = _message()
+    academic = SimpleNamespace(get_user_by_telegram_id=AsyncMock(return_value=_profile(False)))
+    cards = SimpleNamespace(deliver=AsyncMock())
+    await _invoke(handler, message, academic, cards)
+    cards.deliver.assert_not_awaited()
+    assert "Аккаунт не найден" in message.answer.await_args.args[0]
 
 
 @pytest.mark.asyncio
-async def test_credentials_unknown_user():
-    message = _make_message()
-    academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(found=False))
-
-    await cmd_credentials(message, academic_client=academic_client)
-
-    text = message.answer.call_args[0][0]
-    assert "Аккаунт не найден" in text
+@pytest.mark.parametrize("handler", [cmd_start, cmd_credentials])
+async def test_private_bound_handler_uses_only_dedicated_card_service(handler):
+    message = _message()
+    academic = SimpleNamespace(get_user_by_telegram_id=AsyncMock(return_value=_profile()))
+    cards = SimpleNamespace(deliver=AsyncMock(return_value=True))
+    await _invoke(handler, message, academic, cards)
+    academic.get_user_by_telegram_id.assert_awaited_once_with(12345)
+    cards.deliver.assert_awaited_once()
+    message.answer.assert_not_awaited()
 
 
 @pytest.mark.asyncio
-async def test_links_button_shows_site_and_pwa_links():
-    message = _make_message()
+@pytest.mark.parametrize("handler", [cmd_start, cmd_credentials])
+async def test_generic_profile_marker_never_rendered_without_capability(handler):
+    message = _message()
+    academic = SimpleNamespace(get_user_by_telegram_id=AsyncMock(return_value=_profile(changed=True)))
+    await _invoke(handler, message, academic)
+    text = message.answer.await_args.args[0]
+    assert bool("generic_ignored_marker" not in text)
+    assert "current_login" in text
 
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("handler", [cmd_start, cmd_credentials])
+async def test_authority_outage_has_safe_reply(handler):
+    message = _message()
+    academic = SimpleNamespace(get_user_by_telegram_id=AsyncMock(side_effect=RuntimeError("synthetic outage")))
+    await _invoke(handler, message, academic)
+    assert "Сервис временно недоступен" in message.answer.await_args.args[0]
+
+
+@pytest.mark.asyncio
+async def test_links_retains_site_and_pwa_links():
+    message = _message()
     await cmd_links(message)
-
-    text = message.answer.call_args[0][0]
-    assert "https://ru.ruttrack.site" in text
-    assert "https://ruttrack.site" in text
+    text = message.answer.await_args.args[0]
     assert "https://ru.ruttrack.site/app" in text
+    assert "https://ruttrack.site/app" in text
     assert "PWA" in text

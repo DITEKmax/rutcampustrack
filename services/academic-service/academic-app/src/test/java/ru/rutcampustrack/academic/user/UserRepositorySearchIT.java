@@ -1,5 +1,8 @@
 package ru.rutcampustrack.academic.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.OffsetDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,23 +16,18 @@ import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.UserRepository;
 
-import java.time.OffsetDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Integration tests for {@link UserSpecifications} against PostgreSQL (Testcontainers).
  *
- * <p>BUG-006 / Plan 58-01. Проверяет case-insensitive LIKE, escape спецсимволов,
- * комбинацию с role-фильтром, null/blank → без ограничений.
+ * <p>BUG-006 / Plan 58-01. Проверяет case-insensitive LIKE, escape спецсимволов, комбинацию с
+ * role-фильтром, null/blank → без ограничений.
  *
  * <p>Каждый тест в @Transactional — откатывается, БД восстанавливается.
  */
 @Transactional
 class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
 
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private UserRepository userRepository;
 
     private Long ivanovId;
     private Long petrovId;
@@ -38,19 +36,42 @@ class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
 
     @BeforeEach
     void seed() {
-        ivanovId = insertUser("search_ivanov", "Иванов", "Иван", "Иванович",
-                UserRole.STUDENT, 111111111L);
-        petrovId = insertUser("search_petrov", "Петров", "Пётр", "Петрович",
-                UserRole.TEACHER, 222222222L);
-        student00001Id = insertUser("student00001_srch", "Сидоров", "Семён", null,
-                UserRole.STUDENT, 123456789L);
+        ivanovId =
+                insertUser(
+                        "search_ivanov",
+                        "Иванов",
+                        "Иван",
+                        "Иванович",
+                        UserRole.STUDENT,
+                        111111111L);
+        petrovId =
+                insertUser(
+                        "search_petrov",
+                        "Петров",
+                        "Пётр",
+                        "Петрович",
+                        UserRole.TEACHER,
+                        222222222L);
+        student00001Id =
+                insertUser(
+                        "student00001_srch",
+                        "Сидоров",
+                        "Семён",
+                        null,
+                        UserRole.STUDENT,
+                        123456789L);
         // Спецсимвол "%" в фамилии — проверка escape
-        percentUserId = insertUser("search_pct", "Про50%", "Пётр", null,
-                UserRole.STUDENT, 999999999L);
+        percentUserId =
+                insertUser("search_pct", "Про50%", "Пётр", null, UserRole.STUDENT, 999999999L);
     }
 
-    private Long insertUser(String login, String lastName, String firstName,
-                            String middleName, UserRole role, Long telegramId) {
+    private Long insertUser(
+            String login,
+            String lastName,
+            String firstName,
+            String middleName,
+            UserRole role,
+            Long telegramId) {
         User u = new User();
         u.setLogin(login);
         u.setPasswordHash("x");
@@ -84,9 +105,7 @@ class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
         Specification<User> spec = UserSpecifications.matchesSearch("STUDENT00001");
         Page<User> page = userRepository.findAll(spec, PageRequest.of(0, 50));
 
-        assertThat(page.getContent())
-                .extracting(User::getId)
-                .contains(student00001Id);
+        assertThat(page.getContent()).extracting(User::getId).contains(student00001Id);
     }
 
     @Test
@@ -94,9 +113,7 @@ class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
         Specification<User> spec = UserSpecifications.matchesSearch("12345");
         Page<User> page = userRepository.findAll(spec, PageRequest.of(0, 50));
 
-        assertThat(page.getContent())
-                .extracting(User::getId)
-                .contains(student00001Id);
+        assertThat(page.getContent()).extracting(User::getId).contains(student00001Id);
     }
 
     @Test
@@ -107,9 +124,9 @@ class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
         assertThat(nullSpec).isNull();
 
         // Specification.where(null) — без ограничений → хотя бы 4 засидированных видны.
-        Page<User> all = userRepository.findAll(
-                Specification.where(empty), PageRequest.of(0, 500));
-        assertThat(all.getContent()).extracting(User::getId)
+        Page<User> all = userRepository.findAll(Specification.where(empty), PageRequest.of(0, 500));
+        assertThat(all.getContent())
+                .extracting(User::getId)
                 .contains(ivanovId, petrovId, student00001Id, percentUserId);
     }
 
@@ -128,9 +145,9 @@ class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void matchesSearch_combinedWithRoleViaAnd() {
-        Specification<User> spec = Specification
-                .where(UserSpecifications.matchesSearch("Пётр"))
-                .and(UserSpecifications.matchesRole(UserRole.STUDENT));
+        Specification<User> spec =
+                Specification.where(UserSpecifications.matchesSearch("Пётр"))
+                        .and(UserSpecifications.matchesRole(UserRole.STUDENT));
         Page<User> page = userRepository.findAll(spec, PageRequest.of(0, 50));
 
         // percentUser — STUDENT + firstName="Пётр" → попадает.

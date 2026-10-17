@@ -1,0 +1,316 @@
+[
+  {
+    "run": "green-cancellation-03-xml",
+    "suites": [
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT",
+        "tests": "2",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "7.389",
+        "timestamp": "2026-10-11T20:43:44",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-cancellation-03-xml/TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml",
+        "sha256": "beef83c030341e66821266e2dd8388adcccaf75a4e6119d5ad19864a5446f5aa",
+        "failure_details": []
+      }
+    ],
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "run": "green-renderer-01-xml",
+    "suites": [
+      {
+        "name": "ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest",
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "2.125",
+        "timestamp": "2026-10-11T20:37:59",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml",
+        "sha256": "43cc85036452828c7a3f79b0a8b21f6893b1d6e2532436b14ee868d90ebc652b",
+        "failure_details": []
+      },
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT",
+        "tests": "2",
+        "failures": "1",
+        "errors": "0",
+        "skipped": "0",
+        "time": "17.182",
+        "timestamp": "2026-10-11T20:38:07",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml",
+        "sha256": "aeadbbb5fa5bb859b533bf950a52af4a46c54413185aa3e1e9d57c17da296a05",
+        "failure_details": [
+          {
+            "case": "[1] deadline=false",
+            "type": "org.opentest4j.AssertionFailedError",
+            "message": "org.opentest4j.AssertionFailedError: [client cancellation/deadline must stop server-side work] \nExpecting value to be true but was false"
+          }
+        ]
+      },
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT",
+        "tests": "2",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "2.084",
+        "timestamp": "2026-10-11T20:38:24",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT.xml",
+        "sha256": "e4f57cddb37bf512a8968876a9bb25040ad3ed4c26fef3d870aa1785e77d86fd",
+        "failure_details": []
+      },
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterTest",
+        "tests": "9",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "0.094",
+        "timestamp": "2026-10-11T20:38:05",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterTest.xml",
+        "sha256": "638c3fde042478a0297fd371e34afb354fca77e4831e9a4d99f079f03980a2c1",
+        "failure_details": []
+      },
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.OfficeDocumentInputValidationTest",
+        "tests": "8",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "0.05",
+        "timestamp": "2026-10-11T20:38:05",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentInputValidationTest.xml",
+        "sha256": "4fef8b70255f7f20116d362919d292080365a113341d9e9bb9fe16f7853f3f98",
+        "failure_details": []
+      },
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest",
+        "tests": "2",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "3.442",
+        "timestamp": "2026-10-11T20:38:02",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.xml",
+        "sha256": "e1219e9aef774e331dc3af4da1b2b45fc8d40fa5e47ce3a51acf79a47cdefc59",
+        "failure_details": []
+      },
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest",
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "0.011",
+        "timestamp": "2026-10-11T20:38:05",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest.xml",
+        "sha256": "9bc869dce3538c4867596188ad1dbb1e44aa8c26003c919e06ce7fdc56e70b3d",
+        "failure_details": []
+      }
+    ],
+    "tests": 30,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "run": "green-renderer-02-xml",
+    "suites": [
+      {
+        "name": "ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest",
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "2.12",
+        "timestamp": "2026-10-11T20:41:30",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml",
+        "sha256": "29dda2ec2cc97a261e8189968a598980bee614c44feedcaad0ad5262f8ed0869",
+        "failure_details": []
+      },
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT",
+        "tests": "2",
+        "failures": "2",
+        "errors": "0",
+        "skipped": "0",
+        "time": "17.224",
+        "timestamp": "2026-10-11T20:41:38",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml",
+        "sha256": "6f428eaa3c70105ded6f416ae1216e7b07c7c5671bb4f2884f1288da4ab0ce6a",
+        "failure_details": [
+          {
+            "case": "[1] deadline=false",
+            "type": "org.opentest4j.AssertionFailedError",
+            "message": "org.opentest4j.AssertionFailedError: \nExpecting value to be true but was false"
+          },
+          {
+            "case": "[2] deadline=true",
+            "type": "org.opentest4j.AssertionFailedError",
+            "message": "org.opentest4j.AssertionFailedError: \nExpecting value to be true but was false"
+          }
+        ]
+      },
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT",
+        "tests": "2",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "2.62",
+        "timestamp": "2026-10-11T20:41:55",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT.xml",
+        "sha256": "52c58c4af8ed337eacee0bc2236ad9ed8992d44a4df2233e55b8914e54059319",
+        "failure_details": []
+      },
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest",
+        "tests": "2",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "3.836",
+        "timestamp": "2026-10-11T20:41:32",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.xml",
+        "sha256": "6c624202b1e5a47b1106632f64f911a1259ce43381855c2ac0558400d4e2450e",
+        "failure_details": []
+      },
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest",
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "0.014",
+        "timestamp": "2026-10-11T20:41:36",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/green-renderer-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerTest.xml",
+        "sha256": "d396a3ff9efb20f991da2fb2fbff8ef659f6ad3b65c1dd2af0e30973c2ecd7ba",
+        "failure_details": []
+      }
+    ],
+    "tests": 13,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "run": "native-baseline-01-xml",
+    "suites": [
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT",
+        "tests": "2",
+        "failures": "1",
+        "errors": "0",
+        "skipped": "0",
+        "time": "4.862",
+        "timestamp": "2026-10-11T20:30:29",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/native-baseline-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.OfficeDocumentConverterNativeIT.xml",
+        "sha256": "8201a21c159135ba717879bdd6a88f71619c3d35de04a081b0fa31066a78ae1f",
+        "failure_details": [
+          {
+            "case": "malformedDocumentFailsWithoutLeavingConversionFiles()",
+            "type": "java.lang.AssertionError",
+            "message": "java.lang.AssertionError: \nExpecting code to raise a throwable."
+          }
+        ]
+      }
+    ],
+    "tests": 2,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "run": "red-cancellation-01-xml",
+    "suites": [
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT",
+        "tests": "2",
+        "failures": "2",
+        "errors": "0",
+        "skipped": "0",
+        "time": "22.538",
+        "timestamp": "2026-10-11T20:32:53",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/red-cancellation-01-xml/TEST-ru.rutcampustrack.documentrenderer.render.DocumentRendererCancellationIT.xml",
+        "sha256": "cc43f9c1c8d739dcc9d01f281a2a251214210ed3edd039986dab071271aec12c",
+        "failure_details": [
+          {
+            "case": "[1] deadline=false",
+            "type": "org.opentest4j.AssertionFailedError",
+            "message": "org.opentest4j.AssertionFailedError: [client cancellation/deadline must stop server-side work] \nExpecting value to be true but was false"
+          },
+          {
+            "case": "[2] deadline=true",
+            "type": "org.opentest4j.AssertionFailedError",
+            "message": "org.opentest4j.AssertionFailedError: [client cancellation/deadline must stop server-side work] \nExpecting value to be true but was false"
+          }
+        ]
+      }
+    ],
+    "tests": 2,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "run": "red-unit-02-xml",
+    "suites": [
+      {
+        "name": "ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest",
+        "tests": "5",
+        "failures": "2",
+        "errors": "0",
+        "skipped": "0",
+        "time": "2.148",
+        "timestamp": "2026-10-11T20:28:52",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/red-unit-02-xml/TEST-ru.rutcampustrack.documentrenderer.grpc.DocumentRendererGrpcServiceImplTest.xml",
+        "sha256": "2c55ddff55cdc03dcb0b7ec28e946a0872d563f0e6bc2e92216a56aafda54c4e",
+        "failure_details": [
+          {
+            "case": "[1] targetFormat=0",
+            "type": "org.opentest4j.AssertionFailedError",
+            "message": "org.opentest4j.AssertionFailedError: \nexpected: INVALID_ARGUMENT\n but was: INTERNAL"
+          },
+          {
+            "case": "[2] targetFormat=999",
+            "type": "org.opentest4j.AssertionFailedError",
+            "message": "org.opentest4j.AssertionFailedError: \nexpected: INVALID_ARGUMENT\n but was: INTERNAL"
+          }
+        ]
+      },
+      {
+        "name": "ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest",
+        "tests": "2",
+        "failures": "2",
+        "errors": "0",
+        "skipped": "0",
+        "time": "3.187",
+        "timestamp": "2026-10-11T20:28:54",
+        "path": "/workspace/scratch/rct-validation/renderer_files_developer/red-unit-02-xml/TEST-ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.xml",
+        "sha256": "0103502794e59db2361f204a45350332a0225f8041d45cef1f9143d0d5ffad9a",
+        "failure_details": [
+          {
+            "case": "interruptionStopsTheOwnedProcessAndItsChild(Path)",
+            "type": "java.lang.AssertionError",
+            "message": "java.lang.AssertionError: \nExpecting all elements of:\n  [33231L, 33249L]\nto satisfy given requirements, but these elements did not:\n\n33231L\nerror: org.opentest4j.AssertionFailedError: [owned helper process 33231 has stopped] \nExpecting value to be false but was true\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.lambda$assertStopped$2(ProcessRunnerLifecycleTest.java:86)\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.assertStopped(ProcessRunnerLifecycleTest.java:84)\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.inter"
+          },
+          {
+            "case": "timeoutStopsTheOwnedProcessAndItsChild(Path)",
+            "type": "java.lang.AssertionError",
+            "message": "java.lang.AssertionError: \nExpecting all elements of:\n  [33268L, 33286L]\nto satisfy given requirements, but these elements did not:\n\n33286L\nerror: org.opentest4j.AssertionFailedError: [owned helper process 33286 has stopped] \nExpecting value to be false but was true\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.lambda$assertStopped$2(ProcessRunnerLifecycleTest.java:86)\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.assertStopped(ProcessRunnerLifecycleTest.java:84)\n\tat ru.rutcampustrack.documentrenderer.render.ProcessRunnerLifecycleTest.timeo"
+          }
+        ]
+      }
+    ],
+    "tests": 7,
+    "failures": 4,
+    "errors": 0,
+    "skipped": 0
+  }
+]

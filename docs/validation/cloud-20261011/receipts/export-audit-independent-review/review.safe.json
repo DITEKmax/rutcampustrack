@@ -1,0 +1,215 @@
+{
+  "timestamp": "2026-10-12T03:28:22.784446+00:00",
+  "disposition": "APPROVE",
+  "findings": [],
+  "scope": "One ExportJobHttpIT correction, exact four author-run qualified native outcomes and lossless source/evidence transfer; no product rewrite or new runtime",
+  "reviewed_author_commit": "1bb527d5acdc704fab1b1df9bdf1ee4db9c474b6",
+  "parent_commit": "f09b70e383b1c29b31960b5da99647f8ae6530bf",
+  "root_revision_context": "2a23969a69fee28bb5adc51ee7d4c0ef6baf6362",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "actual_metadata": "UNKNOWN",
+  "source_identity": {
+    "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+    "sha256": "7116bf1fde7346bbb8dde9ae8d3a6f5bb9e3aa74abedf07e427ba2bfee19dbff",
+    "bytes": 9849
+  },
+  "product_context_source_identity": [
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+      "sha256": "7dc450b6adc59921b370e5088dd5f1df5b7e8c5d82873be0de03d2e63974728b",
+      "bytes": 13822,
+      "frozen_export_and_root2a_byte_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/InternalExportJobController.java",
+      "sha256": "f43b6feafd9acf47920ea6478257415dc73cd91d37bae5d975a8a28d9b38c651",
+      "bytes": 2346,
+      "frozen_export_and_root2a_byte_equal": true
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobController.java",
+      "sha256": "1534c6cb51816ba1301b9e0a1700ec4e0fe00ddac2c5b4366e4325485f3dc354",
+      "bytes": 2266,
+      "frozen_export_and_root2a_byte_equal": true
+    }
+  ],
+  "accepted_sources": [
+    {
+      "path": "docs/product/decisions/2026-10-11-admin-registry-export-columns-and-grants.md",
+      "source_id": "D006",
+      "rule": "Record each registry export fact using actor/time/kind/rowCount safe metadata; retain history and omit file contents/credentials"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/export/ExportJobService.java",
+      "lines": [
+        120,
+        123,
+        137,
+        138,
+        140
+      ],
+      "rule": "Production completion locks job, repeated READY/samelease returns prior result, one current audit insert uses canonical extras.jobId; event row appended in same local operation"
+    },
+    {
+      "path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/ExportJobHttpIT.java",
+      "lines": [
+        61,
+        64,
+        80,
+        85,
+        86,
+        90,
+        99,
+        102
+      ],
+      "rule": "Two completeHTTP commands; one currentjob audit fact; unrelated historical row retained; file/ticket/live revocation assertions unchanged"
+    }
+  ],
+  "quality_assessment": [
+    "The old global count assumed an empty shared audit history. Accepted D006 per-export fact and retained earlier audits require selecting the current job, not deleting history or widening the expected count.",
+    "The historical fixture uses an independent UUID and real existing actor plus safe metadata/time. It is a valid retained audit fact fixture; it does not claim to run an earlier renderer/export transaction.",
+    "The new current count stays exactly1 after two real completionHTTP requests; the historical row ID and different jobId stay exactly1. No >=1 condition, skip, exception swallowing, expectation weakening or audit/history deletion.",
+    "Before counterexample changes only the scoped query back to the original global exact1 query while retaining the accepted history fixture. Actual1→2 failure is the intended assertion, not infrastructure.",
+    "Duplicate sensitivity inserts exactly one additional samejob metadata row via INSERT SELECT with an exact1 insertion guard. Unchanged current exact1 query then fails1→2 at overlay88. This proves sensitivity to duplicate durablefact state, not a separately mutated product duplication path.",
+    "Restored canonical source and compiledclass hash match final1bb; samecase green. All6510 source bytes/modes and other6509 parent Git inputs remain unchanged through the phases.",
+    "Direct AuthHTTP/security/session authority, PostgreSQL and Redis ticket checks are real in this case. Existing RabbitTemplate mock means no actual broker/delivery acceptance.",
+    "Existing file-byte equality, no-store/role denial, ready-state, ticket/redeem and logout-driven denial assertions are preserved and execute in normal/restoredgreen. The existing outbox schema loop validates present event rows; it does not independently assert nonempty event emission or broker effect."
+  ],
+  "actual_native_outcomes": [
+    {
+      "phase": "before-global",
+      "native_session": 74285,
+      "native_exit": 1,
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "native_xml_sha256": "e30d8f0bf9673c3a7e8d26b4cbabf4c2fc46e82806190e6433ef4429fccacb97",
+      "native_xml_bytes": 36163,
+      "redacted_xml_sha256": "979505cf86c38009d91e00e5b1832d1a1fdd78b3fd5ce36dd5ae005e456802a3",
+      "native_and_redacted_metadata_equal": true,
+      "safe_scalars_only": {
+        "expected": 1,
+        "actual": 2,
+        "source_frames": [
+          "ExportJobHttpIT.java:85"
+        ]
+      }
+    },
+    {
+      "phase": "normal-green",
+      "native_session": 82273,
+      "native_exit": 0,
+      "counts": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "native_xml_sha256": "55f33100133608d17c6c684517c6ff6974fa66249b8a1898954b3f529f17d644",
+      "native_xml_bytes": 35563,
+      "redacted_xml_sha256": "82b73ff01522e572520fb652cc1c3231451050cf01e8931cd03bb97912a821a2",
+      "native_and_redacted_metadata_equal": true,
+      "safe_scalars_only": {
+        "current_exact1_and_history_exact1": "Accepted source assertions PASS"
+      }
+    },
+    {
+      "phase": "duplicate-current",
+      "native_session": 56239,
+      "native_exit": 1,
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "native_xml_sha256": "140ec4cfe1bedb797881cde0096060a16194ad133971063fac99001316fe11bc",
+      "native_xml_bytes": 36162,
+      "redacted_xml_sha256": "c3c6ce45427e4461029610bd9fa4e0d7d4b5a86ac7d80fd8c311934c6aa371c8",
+      "native_and_redacted_metadata_equal": true,
+      "safe_scalars_only": {
+        "expected": 1,
+        "actual": 2,
+        "source_frames": [
+          "ExportJobHttpIT.java:88"
+        ]
+      }
+    },
+    {
+      "phase": "restored-green",
+      "native_session": 66807,
+      "native_exit": 0,
+      "counts": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "native_xml_sha256": "f521f0e1090d0d54446df5be6d80a4d5f371547659152b1e64b2d33b845a119d",
+      "native_xml_bytes": 35562,
+      "redacted_xml_sha256": "0d83269d18083d3cd44e295397b8010f62462d69e0ca670122a70c0b3ac0639b",
+      "native_and_redacted_metadata_equal": true,
+      "safe_scalars_only": {
+        "current_exact1_and_history_exact1": "Accepted source assertions PASS"
+      }
+    }
+  ],
+  "root_transfer_verification": {
+    "manifest_sha256": "78f04b69a0289a69711f4d0bff511dba1094d4246e9a0b8748fc1b657b789190",
+    "author_archive_sha256": "1bfbf9ea699d7c6f39f347d54c191878e94cbebaf0085e3f934484c8ac18299e",
+    "root_container_sha256": "3bdad8d9af5c507c9e34af8c44f30bcac6596359eb327d0daaf332d2b54f6f83",
+    "parts": 5,
+    "71members_plus_manifest_exact": true,
+    "readable_inventory_ZIPs": 9,
+    "declared_working_derived_XML_transformations": [
+      {
+        "path": "runtime/before-global/result.redacted.xml",
+        "transformation": "one declared final newline only"
+      },
+      {
+        "path": "runtime/duplicate-current/result.redacted.xml",
+        "transformation": "one declared final newline only"
+      },
+      {
+        "path": "runtime/normal-green/result.redacted.xml",
+        "transformation": "one declared final newline only"
+      },
+      {
+        "path": "runtime/restored-green/result.redacted.xml",
+        "transformation": "one declared final newline only"
+      }
+    ],
+    "qualification": "ZIP-container bytes differ after root repack; all72 decoded memberbytes are author-exact. No raw archive byte-equivalence claim."
+  },
+  "compiled_class_hash_verified": "5c2c1b4ed47328bb610191f785c0d8bb162487ed4778509e870ffcabb061f479",
+  "resource_release_author_receipt": "EXPORT_AUDIT1 released; author reports twelve own containers/four runners/twelve Java PIDs settled; ownership-scoped cleanup and floor respected. No reviewer Docker/process/runtime check.",
+  "remote_CI_provenance": {
+    "run": 38193576638,
+    "producer_head": "25668e10ffcdcda1848c6fda38429dea7e22a793",
+    "actual_checkout": "6a581fdbfd0c858eeefa0747d654d726dc488162",
+    "original_case_failure_source": "ExportJobHttpIT.java:77",
+    "original_numeric_actual": "UNKNOWN; local counterexample2 is not substituted for original CI actual"
+  },
+  "limitations": [
+    "Four selected runs use the original exports V56 producer. They do not establish current integrated wholeAuth/V57 or current remote CI/Coverage/Security success.",
+    "Source approval covers the single test delta. Current Auth integration, full affected gates, native renderer/five-format/client/export paths and broker acceptance remain root obligations.",
+    "No formatter/lint/full suite PASS claim; existing compressed author style retained for separate semantic-freeze formatting workflow.",
+    "Root originals decode exact72 author memberbytes including71 evidence files plus78f04 manifest. Root ZIP container was repacked; four working redactedXML copies add only a declared final newline; no raw-native/redacted/container byte identities conflated."
+  ],
+  "reviewer_actions": {
+    "source_edits": 0,
+    "commits": 0,
+    "children": 0,
+    "Gradle": 0,
+    "Docker": 0,
+    "apps_browser_network_runtime": 0,
+    "raw_private_output_or_bodies_published": false,
+    "prior_seals_modified": false
+  },
+  "independent_check": "verification.safe.json generated from verify-evidence.py; native XML read only for hashes/metadata/typed scalar assertions, never raw stdout/secret bodies",
+  "integration_guidance": "Root may integrate the exact one-test source delta after recording this independent seal; keep historical CI numeric UNKNOWN and V56/currentRoot qualification explicit."
+}

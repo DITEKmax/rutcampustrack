@@ -21,9 +21,8 @@ import ru.rutcampustrack.notification.contract.dto.history.UnreadCountDto;
 /**
  * REST API contract для notification history (M10 / NEW-167).
  *
- * <p>Contract-first: controller implements, маппинги только здесь.
- * userId берётся из JWT-контекста (не параметр) — каждый user видит
- * только собственную историю.
+ * <p>Contract-first: controller implements, маппинги только здесь. userId берётся из JWT-контекста
+ * (не параметр) — каждый user видит только собственную историю.
  */
 @Tag(name = "Notifications", description = "История уведомлений пользователя (M10)")
 @RequestMapping("/notifications")
@@ -31,8 +30,8 @@ public interface NotificationApi {
 
     @Operation(summary = "Пагинированный список уведомлений текущего user'а")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Страница notification_history"),
-            @ApiResponse(responseCode = "401", description = "Неавторизован")
+        @ApiResponse(responseCode = "200", description = "Страница notification_history"),
+        @ApiResponse(responseCode = "401", description = "Неавторизован")
     })
     @GetMapping
     ResponseEntity<PagedModel<EntityModel<NotificationHistoryDto>>> list(
@@ -47,9 +46,9 @@ public interface NotificationApi {
 
     @Operation(summary = "Пометить уведомление прочитанным")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Помечено read"),
-            @ApiResponse(responseCode = "403", description = "Чужое уведомление"),
-            @ApiResponse(responseCode = "404", description = "Не найдено")
+        @ApiResponse(responseCode = "204", description = "Помечено read"),
+        @ApiResponse(responseCode = "403", description = "Чужое уведомление"),
+        @ApiResponse(responseCode = "404", description = "Не найдено")
     })
     @PatchMapping("/{id}/read")
     ResponseEntity<Void> markAsRead(@PathVariable String id);

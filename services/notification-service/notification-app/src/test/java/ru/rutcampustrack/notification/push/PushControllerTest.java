@@ -1,5 +1,11 @@
 package ru.rutcampustrack.notification.push;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.lang.reflect.Method;
+import java.time.Instant;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,21 +22,12 @@ import ru.rutcampustrack.notification.contract.enums.UserRole;
 import ru.rutcampustrack.notification.security.RequestContext;
 import ru.rutcampustrack.notification.security.RequireRole;
 
-import java.lang.reflect.Method;
-import java.time.Instant;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class PushControllerTest {
 
-    @Mock
-    private PushSubscriptionRepository repository;
+    @Mock private PushSubscriptionRepository repository;
 
-    @Mock
-    private RequestContext requestContext;
+    @Mock private RequestContext requestContext;
 
     private static final String TEST_VAPID_KEY = "BKR2jT5k1Iu93_V8AHx3cpqE";
 
@@ -41,10 +38,12 @@ class PushControllerTest {
         controller = new PushController(repository, requestContext, TEST_VAPID_KEY);
     }
 
-    // Test 1: PushController.getVapidPublicKey() returns 200 with EntityModel containing publicKey string
+    // Test 1: PushController.getVapidPublicKey() returns 200 with EntityModel containing publicKey
+    // string
     @Test
     void getVapidPublicKey_returns200WithPublicKey() {
-        ResponseEntity<EntityModel<VapidPublicKeyResponse>> response = controller.getVapidPublicKey();
+        ResponseEntity<EntityModel<VapidPublicKeyResponse>> response =
+                controller.getVapidPublicKey();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -58,10 +57,10 @@ class PushControllerTest {
         when(requestContext.getUserId()).thenReturn(10L);
         when(requestContext.getGroupId()).thenReturn(3L);
 
-        SubscribeRequest request = new SubscribeRequest(
-                "https://push.example.com/sub/abc",
-                new SubscribeRequest.Keys("p256dh-value", "auth-value")
-        );
+        SubscribeRequest request =
+                new SubscribeRequest(
+                        "https://push.example.com/sub/abc",
+                        new SubscribeRequest.Keys("p256dh-value", "auth-value"));
 
         ResponseEntity<Void> response = controller.subscribe(request);
 
@@ -75,14 +74,15 @@ class PushControllerTest {
         when(requestContext.getUserId()).thenReturn(42L);
         when(requestContext.getGroupId()).thenReturn(5L);
 
-        SubscribeRequest request = new SubscribeRequest(
-                "https://push.example.com/sub/xyz",
-                new SubscribeRequest.Keys("p256dh-value", "auth-value")
-        );
+        SubscribeRequest request =
+                new SubscribeRequest(
+                        "https://push.example.com/sub/xyz",
+                        new SubscribeRequest.Keys("p256dh-value", "auth-value"));
 
         controller.subscribe(request);
 
-        ArgumentCaptor<PushSubscriptionDocument> captor = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        ArgumentCaptor<PushSubscriptionDocument> captor =
+                ArgumentCaptor.forClass(PushSubscriptionDocument.class);
         verify(repository).save(captor.capture());
         assertThat(captor.getValue().getUserId()).isEqualTo(42L);
     }
@@ -93,14 +93,15 @@ class PushControllerTest {
         when(requestContext.getUserId()).thenReturn(42L);
         when(requestContext.getGroupId()).thenReturn(7L);
 
-        SubscribeRequest request = new SubscribeRequest(
-                "https://push.example.com/sub/xyz",
-                new SubscribeRequest.Keys("p256dh-value", "auth-value")
-        );
+        SubscribeRequest request =
+                new SubscribeRequest(
+                        "https://push.example.com/sub/xyz",
+                        new SubscribeRequest.Keys("p256dh-value", "auth-value"));
 
         controller.subscribe(request);
 
-        ArgumentCaptor<PushSubscriptionDocument> captor = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        ArgumentCaptor<PushSubscriptionDocument> captor =
+                ArgumentCaptor.forClass(PushSubscriptionDocument.class);
         verify(repository).save(captor.capture());
         assertThat(captor.getValue().getGroupId()).isEqualTo(7L);
     }
@@ -112,29 +113,31 @@ class PushControllerTest {
         when(requestContext.isHeadman()).thenReturn(true);
 
         Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
-        PushSubscriptionDocument existing = PushSubscriptionDocument.builder()
-                .id("existing-id")
-                .userId(42L)
-                .groupId(5L)
-                .endpoint("https://push.example.com/sub/xyz")
-                .p256dh("old-p256dh")
-                .auth("old-auth")
-                .headman(false)
-                .createdAt(createdAt)
-                .lastSeen(Instant.parse("2026-01-02T00:00:00Z"))
-                .build();
+        PushSubscriptionDocument existing =
+                PushSubscriptionDocument.builder()
+                        .id("existing-id")
+                        .userId(42L)
+                        .groupId(5L)
+                        .endpoint("https://push.example.com/sub/xyz")
+                        .p256dh("old-p256dh")
+                        .auth("old-auth")
+                        .headman(false)
+                        .createdAt(createdAt)
+                        .lastSeen(Instant.parse("2026-01-02T00:00:00Z"))
+                        .build();
         when(repository.findByUserIdAndEndpoint(42L, "https://push.example.com/sub/xyz"))
                 .thenReturn(Optional.of(existing));
 
-        SubscribeRequest request = new SubscribeRequest(
-                "https://push.example.com/sub/xyz",
-                new SubscribeRequest.Keys("new-p256dh", "new-auth")
-        );
+        SubscribeRequest request =
+                new SubscribeRequest(
+                        "https://push.example.com/sub/xyz",
+                        new SubscribeRequest.Keys("new-p256dh", "new-auth"));
 
         ResponseEntity<Void> response = controller.subscribe(request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        ArgumentCaptor<PushSubscriptionDocument> captor = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        ArgumentCaptor<PushSubscriptionDocument> captor =
+                ArgumentCaptor.forClass(PushSubscriptionDocument.class);
         verify(repository).save(captor.capture());
         PushSubscriptionDocument saved = captor.getValue();
         assertThat(saved.getId()).isEqualTo("existing-id");
@@ -163,11 +166,18 @@ class PushControllerTest {
 
     @Test
     void allRoleEnrollmentRequiresCoherentSignedContextAndTeacherAdminNeedNoHistoricalGroup() {
-        var signed = new RequestContext(); signed.setUserId(42L); signed.setSelectedRole("TEACHER");
-        signed.setInternalToken("synthetic-admitted-context"); signed.setSessionId(java.util.UUID.randomUUID());
-        signed.setSessionVersion(1); signed.setRolesVersion(1);
+        var signed = new RequestContext();
+        signed.setUserId(42L);
+        signed.setSelectedRole("TEACHER");
+        signed.setInternalToken("synthetic-admitted-context");
+        signed.setSessionId(java.util.UUID.randomUUID());
+        signed.setSessionVersion(1);
+        signed.setRolesVersion(1);
         var actual = new PushController(repository, signed, "synthetic-public-key");
-        var request = new SubscribeRequest("https://push.example.com/synthetic", new SubscribeRequest.Keys("synthetic-key", "synthetic-auth"));
+        var request =
+                new SubscribeRequest(
+                        "https://push.example.com/synthetic",
+                        new SubscribeRequest.Keys("synthetic-key", "synthetic-auth"));
         actual.subscribe(request);
         signed.setSelectedRole("ADMIN");
         actual.unsubscribe(new UnsubscribeRequest(request.endpoint()));
@@ -179,7 +189,8 @@ class PushControllerTest {
         signed.setRolesVersion(0);
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> actual.subscribe(request))
                 .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
-        signed.setRolesVersion(1); signed.setInternalToken(null);
+        signed.setRolesVersion(1);
+        signed.setInternalToken(null);
         org.assertj.core.api.Assertions.assertThatThrownBy(actual::getVapidPublicKey)
                 .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
         verify(repository, times(1)).save(any());
@@ -192,7 +203,8 @@ class PushControllerTest {
         RequireRole annotation = method.getAnnotation(RequireRole.class);
 
         assertThat(annotation).isNotNull();
-        assertThat(annotation.value()).containsExactlyInAnyOrder(UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN);
+        assertThat(annotation.value())
+                .containsExactlyInAnyOrder(UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN);
     }
 
     // Test 7: PushController.subscribe() has @RequireRole(STUDENT)
@@ -202,7 +214,8 @@ class PushControllerTest {
         RequireRole annotation = method.getAnnotation(RequireRole.class);
 
         assertThat(annotation).isNotNull();
-        assertThat(annotation.value()).containsExactlyInAnyOrder(UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN);
+        assertThat(annotation.value())
+                .containsExactlyInAnyOrder(UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN);
     }
 
     // Test 8: PushController.unsubscribe() has @RequireRole(STUDENT)
@@ -212,6 +225,7 @@ class PushControllerTest {
         RequireRole annotation = method.getAnnotation(RequireRole.class);
 
         assertThat(annotation).isNotNull();
-        assertThat(annotation.value()).containsExactlyInAnyOrder(UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN);
+        assertThat(annotation.value())
+                .containsExactlyInAnyOrder(UserRole.STUDENT, UserRole.TEACHER, UserRole.ADMIN);
     }
 }

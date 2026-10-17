@@ -1,0 +1,127 @@
+{
+  "scope": "STATIC_SOURCE_INPUT_ONLY",
+  "source_anchor": "18451c9dacc08625f038313ef2d62e36b3ba6423",
+  "native_api_private_values_read": false,
+  "runtime_cause": "UNKNOWN",
+  "classifier_implementation_or_design": false,
+  "sources": [
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AcademicGrpcClient.java",
+      "bytes": 21990,
+      "sha256": "8c0bf5625683daeed46f107d8b7bfd929b44eba8d5d2cc56656c01dd357c0752",
+      "equals_frozen_anchor": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/ScheduleGrpcClient.java",
+      "bytes": 8771,
+      "sha256": "333aaa9622b4d631122e9c22e51c40fca1293f0cc287798d7acf3adbf82e53cb",
+      "equals_frozen_anchor": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/GlobalExceptionHandler.java",
+      "bytes": 8482,
+      "sha256": "e0ecafcf4c9f4eea93c7d8d4d499e67f273f0b92496392cffa0fad40f226341e",
+      "equals_frozen_anchor": true
+    },
+    {
+      "path": "services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java",
+      "bytes": 26206,
+      "sha256": "695cff405b84f170a97b5f980756ffd8d060b4917ccd40a47aa3e11d1d79c94c",
+      "equals_frozen_anchor": true
+    },
+    {
+      "path": "services/shared/shared-web-api/src/main/java/ru/rutcampustrack/shared/web/api/exception/ErrorResponse.java",
+      "bytes": 7537,
+      "sha256": "7b61e55a6a6efb65cff97a1ff39aff29893cdc512a3cd018d50d29ff2be4c880",
+      "equals_frozen_anchor": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/AcademicServiceUnavailableException.java",
+      "bytes": 222,
+      "sha256": "dc601a3afcd46cc4f50c9bc86bc489c246cbba34a167ef5c896a0cc024a6cd00",
+      "equals_frozen_anchor": true
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/exception/ScheduleServiceUnavailableException.java",
+      "bytes": 222,
+      "sha256": "b073714cda07b47021a62525d361ce15f47f5b95950576098b1bc35a8aac40d3",
+      "equals_frozen_anchor": true
+    }
+  ],
+  "academic": {
+    "getSemesterState_line": 51,
+    "getGroupMembers_lines": [
+      139,
+      156
+    ],
+    "unavailable_message_expression": "\"Academic Service unavailable: \" + Status",
+    "fixed_semester_mismatch": "Mismatched semester state",
+    "fixed_historical_input_error": "groupId, asOfDate and semesterId are required",
+    "not_found": "ResourceNotFoundException Semester/Group -> HTTP404",
+    "message_passthrough": true,
+    "operation_from_prefix_alone": "AMBIGUOUS"
+  },
+  "schedule": {
+    "getLessonById_line": 53,
+    "unavailable_message_expression": "\"Schedule Service unavailable: \" + Status",
+    "fixed_null_snapshot": "Schedule returned no lesson snapshot",
+    "transfer_message_expression": "\"Lesson transfer is \" + state + optional \" (operation \" + operationId + \")\" + \"; retry this request\"",
+    "transfer_contains_dynamic_values": true,
+    "not_found": "ResourceNotFoundException Lesson -> HTTP404",
+    "message_passthrough": true
+  },
+  "attendance_http503": {
+    "handler": "GlobalExceptionHandler.handleServiceUnavailable",
+    "line": 177,
+    "status": 503,
+    "type": "https://api.rutcampustrack.ru/problems/service-unavailable",
+    "title": "Сервис недоступен",
+    "detail_expression": "ex.getMessage()",
+    "code_field": false,
+    "causeGrpcCode_field": false,
+    "grpcCode_field": false,
+    "additional_fields": [
+      "instance",
+      "timestamp",
+      "traceId (if non-null)"
+    ],
+    "null_fields_omitted": [
+      "fieldErrors",
+      "field",
+      "extras"
+    ],
+    "dynamic_grpc_status_can_be_in_detail": true,
+    "content_type": "application/problem+json",
+    "cache_control": "no-store"
+  },
+  "gateway_filter_http503": {
+    "handler": "InternalJwtIssuerFilter.serviceUnavailable",
+    "line": 539,
+    "status": 503,
+    "title": "Service Unavailable",
+    "detail": "Dependency unavailable",
+    "code": "DEPENDENCY_UNAVAILABLE",
+    "type_field": false,
+    "causeGrpcCode_field": false,
+    "grpcCode_field": false,
+    "serialized_fields": [
+      "status",
+      "title",
+      "detail",
+      "code"
+    ],
+    "internal_message_not_serialized": "Auth authority unavailable",
+    "own503_triggers": [
+      "readExpectations throws RuntimeException",
+      "InternalIssuerUnavailableException"
+    ],
+    "downstream_chain_failure": "unwrapped and propagated, not replaced by this own503",
+    "content_type": "application/problem+json",
+    "cache_control": "no-store"
+  },
+  "limits": [
+    "Current public sources only; no response bodies, runtime logs, API calls or transport observation.",
+    "No confirmed runtime cause or product-bug verdict.",
+    "Attendance gRPC concatenation is dynamic; typed causeGrpcCode is absent. Shared Academic prefix does not distinguish RPC."
+  ]
+}

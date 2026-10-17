@@ -1,0 +1,16 @@
+{
+  "scope": "PREOBSERVER_PRIVACY_AND_SAFE_REPORTER_ONLY",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "files": [
+    {
+      "path": "checks.safe.json",
+      "bytes": 1966,
+      "sha256": "2f24d47297de6d9960aa81cfad7f255f23cf1152871eb23c0075cc02e2ff2c7b"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 3583,
+      "sha256": "9c2c3c885f74a167b433dcf5fd08d283a7eb50ad4e9a967db167bea907fc8395"
+    }
+  ]
+}

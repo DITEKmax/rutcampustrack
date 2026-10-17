@@ -1,0 +1,21 @@
+{
+  "scope": "CURRENT_ROSTER503_BOUNDED_CAUSAL_SOURCE_ONLY",
+  "verdict": "EXACT503_BOUNDARY_SOURCE_CANDIDATE_ACTUAL_CAUSE_PENDING",
+  "source_candidate": "GetSemesterState directed Schedule-only receiver versus Attendance legacy caller",
+  "actual_cause": "UNKNOWN",
+  "native_API_execution": false,
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 5638,
+      "sha256": "d2f0a715b8b7bb9eb3e5ac057df8023edb20eb7d3f07285103257f942beed310",
+      "mode": "0o400"
+    },
+    {
+      "path": "source-evidence.safe.json",
+      "bytes": 6591,
+      "sha256": "03abad1016267bce49a078a198447b4507de3a960229e8173c95bb9f694c0089",
+      "mode": "0o400"
+    }
+  ]
+}

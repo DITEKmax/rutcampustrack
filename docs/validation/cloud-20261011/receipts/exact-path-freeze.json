@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-12T06:18:25.822725+00:00",
+  "status": "EXACT_PATH_FREEZE_ESTABLISHED_BY_ROOT",
+  "registry_original": "/workspace/scratch/rct-validation/capacity_premutation_aliases/proposed-path-freeze-COW-registry.json",
+  "registry_sha256": "3b3bfba8affa57cb6b4ed6ec43015bf148b65d61c011e7dba21cfecc1c813a16",
+  "paths": 12153,
+  "whole_branch_freeze": false,
+  "rule": "Every exact registry path remains immutable. Before any edit/build/formatter/chmod, atomically COW that path to an independent same-byte/mode inode, journal it and recheck source identity. No protected/unknown path mutation. Root current docs are independent of its 32 frozen historical assets.",
+  "owners": "Root owns registry/old completed scopes; future active NP and formatter packets must carry this fence. No candidate/reference source writer currently active.",
+  "grant": "DEDUP1 only fresh exact preflight plus approved 10831 rows; no stage/key/JVM/Docker/browser grant."
+}

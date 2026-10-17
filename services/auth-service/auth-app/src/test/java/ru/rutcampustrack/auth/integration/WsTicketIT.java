@@ -1,5 +1,7 @@
 package ru.rutcampustrack.auth.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -14,21 +16,17 @@ import ru.rutcampustrack.auth.dto.ConsumeWsTicketRequest;
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
-import ru.rutcampustrack.auth.dto.WsTicketResponse;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import ru.rutcampustrack.auth.dto.WsTicketResponse;
 
 class WsTicketIT extends AbstractIntegrationTest {
 
     private static final String INTERNAL_SECRET =
             "test-internal-issuer-secret-32-bytes-or-more-for-test-env";
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+    @Autowired private TestRestTemplate restTemplate;
 
-    @Autowired
-    private JdbcTemplate jdbc;
+    @Autowired private JdbcTemplate jdbc;
 
     @Test
     void issueTicket_withValidAccessToken_returnsTicket() {
@@ -36,9 +34,12 @@ class WsTicketIT extends AbstractIntegrationTest {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
-        ResponseEntity<WsTicketResponse> response = restTemplate.exchange(
-                "/auth/ws-ticket", HttpMethod.POST,
-                new HttpEntity<>(null, headers), WsTicketResponse.class);
+        ResponseEntity<WsTicketResponse> response =
+                restTemplate.exchange(
+                        "/auth/ws-ticket",
+                        HttpMethod.POST,
+                        new HttpEntity<>(null, headers),
+                        WsTicketResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -51,21 +52,32 @@ class WsTicketIT extends AbstractIntegrationTest {
         // Spring Security default возвращает 403 Forbidden (вместо 401 Unauthorized)
         // для anon access без AuthenticationEntryPoint — матчит поведение
         // существующих authenticated endpoints (/auth/change-password).
-        ResponseEntity<String> response = restTemplate.exchange(
-                "/auth/ws-ticket", HttpMethod.POST, HttpEntity.EMPTY, String.class);
+        ResponseEntity<String> response =
+                restTemplate.exchange(
+                        "/auth/ws-ticket", HttpMethod.POST, HttpEntity.EMPTY, String.class);
 
-        assertThat(response.getStatusCode())
-                .isIn(HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isIn(HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN);
     }
 
     @Test
     void dashboardAdmissionIsInternalProtectedAndNeverGrantsStudentAuthority() {
-        var identity = consume(issueTicket(loginAndGetAccessToken("student"))).getBody().admissionRequest();
-        ResponseEntity<String> untrusted = restTemplate.exchange("/internal/auth/admit-dashboard-session",
-                HttpMethod.POST, new HttpEntity<>(identity), String.class);
+        var identity =
+                consume(issueTicket(loginAndGetAccessToken("student")))
+                        .getBody()
+                        .admissionRequest();
+        ResponseEntity<String> untrusted =
+                restTemplate.exchange(
+                        "/internal/auth/admit-dashboard-session",
+                        HttpMethod.POST,
+                        new HttpEntity<>(identity),
+                        String.class);
         assertThat(untrusted.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        ResponseEntity<String> student = restTemplate.exchange("/internal/auth/admit-dashboard-session",
-                HttpMethod.POST, internalEntity(identity), String.class);
+        ResponseEntity<String> student =
+                restTemplate.exchange(
+                        "/internal/auth/admit-dashboard-session",
+                        HttpMethod.POST,
+                        internalEntity(identity),
+                        String.class);
         assertThat(student.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(student.getHeaders().getCacheControl()).contains("no-store");
     }
@@ -98,34 +110,48 @@ class WsTicketIT extends AbstractIntegrationTest {
     void consumeTicket_revokedBeforeConsume_isRejectedAndBurned() {
         String accessToken = loginAndGetAccessToken("student");
         String ticket = issueTicket(accessToken);
-        Long userId = jdbc.queryForObject(
-                "SELECT id FROM users WHERE login = ?", Long.class, "student");
-        String originalStatus = jdbc.queryForObject(
-                "SELECT status FROM user_role_grants WHERE user_id = ? AND role = 'student'",
-                String.class, userId);
-        int changed = jdbc.update("""
+        Long userId =
+                jdbc.queryForObject("SELECT id FROM users WHERE login = ?", Long.class, "student");
+        String originalStatus =
+                jdbc.queryForObject(
+                        "SELECT status FROM user_role_grants WHERE user_id = ? AND role = 'student'",
+                        String.class,
+                        userId);
+        int changed =
+                jdbc.update(
+                        """
                 UPDATE user_role_grants
                    SET status = 'suspended', updated_at = CURRENT_TIMESTAMP
                  WHERE user_id = ? AND role = 'student'
-                """, userId);
+                """,
+                        userId);
         assertThat(changed).isEqualTo(1);
 
         try {
-            ResponseEntity<String> rejected = restTemplate.exchange(
-                    "/internal/consume-ws-ticket", HttpMethod.POST,
-                    internalEntity(new ConsumeWsTicketRequest(ticket)), String.class);
+            ResponseEntity<String> rejected =
+                    restTemplate.exchange(
+                            "/internal/consume-ws-ticket",
+                            HttpMethod.POST,
+                            internalEntity(new ConsumeWsTicketRequest(ticket)),
+                            String.class);
             assertThat(rejected.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
-            ResponseEntity<String> secondConsume = restTemplate.exchange(
-                    "/internal/consume-ws-ticket", HttpMethod.POST,
-                    internalEntity(new ConsumeWsTicketRequest(ticket)), String.class);
+            ResponseEntity<String> secondConsume =
+                    restTemplate.exchange(
+                            "/internal/consume-ws-ticket",
+                            HttpMethod.POST,
+                            internalEntity(new ConsumeWsTicketRequest(ticket)),
+                            String.class);
             assertThat(secondConsume.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         } finally {
-            jdbc.update("""
+            jdbc.update(
+                    """
                     UPDATE user_role_grants
                        SET status = ?, updated_at = CURRENT_TIMESTAMP
                      WHERE user_id = ? AND role = 'student'
-                    """, originalStatus, userId);
+                    """,
+                    originalStatus,
+                    userId);
         }
     }
 
@@ -136,9 +162,12 @@ class WsTicketIT extends AbstractIntegrationTest {
         assertThat(identity).isNotNull();
         assertThat(logout(accessToken).getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
-        ResponseEntity<String> response = restTemplate.exchange(
-                "/internal/auth/admit-ws-session", HttpMethod.POST,
-                internalEntity(identity.admissionRequest()), String.class);
+        ResponseEntity<String> response =
+                restTemplate.exchange(
+                        "/internal/auth/admit-ws-session",
+                        HttpMethod.POST,
+                        internalEntity(identity.admissionRequest()),
+                        String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
@@ -153,17 +182,23 @@ class WsTicketIT extends AbstractIntegrationTest {
         assertThat(first.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         // Second consume — 404 (already consumed)
-        ResponseEntity<String> second = restTemplate.exchange(
-                "/internal/consume-ws-ticket", HttpMethod.POST,
-                internalEntity(new ConsumeWsTicketRequest(ticket)), String.class);
+        ResponseEntity<String> second =
+                restTemplate.exchange(
+                        "/internal/consume-ws-ticket",
+                        HttpMethod.POST,
+                        internalEntity(new ConsumeWsTicketRequest(ticket)),
+                        String.class);
         assertThat(second.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
     void consumeTicket_unknownTicket_returns404() {
-        ResponseEntity<String> response = restTemplate.exchange(
-                "/internal/consume-ws-ticket", HttpMethod.POST,
-                internalEntity(new ConsumeWsTicketRequest("nonexistent-uuid")), String.class);
+        ResponseEntity<String> response =
+                restTemplate.exchange(
+                        "/internal/consume-ws-ticket",
+                        HttpMethod.POST,
+                        internalEntity(new ConsumeWsTicketRequest("nonexistent-uuid")),
+                        String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
@@ -172,44 +207,56 @@ class WsTicketIT extends AbstractIntegrationTest {
     void consumeTicket_withoutInternalSecret_returns401() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        ResponseEntity<String> response = restTemplate.exchange(
-                "/internal/consume-ws-ticket", HttpMethod.POST,
-                new HttpEntity<>(new ConsumeWsTicketRequest("some-ticket"), headers), String.class);
+        ResponseEntity<String> response =
+                restTemplate.exchange(
+                        "/internal/consume-ws-ticket",
+                        HttpMethod.POST,
+                        new HttpEntity<>(new ConsumeWsTicketRequest("some-ticket"), headers),
+                        String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     private String loginAndGetAccessToken(String login) {
-        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
-                "/auth/login", new LoginRequest(login, "password"), TokenResponse.class);
+        ResponseEntity<TokenResponse> response =
+                restTemplate.postForEntity(
+                        "/auth/login", new LoginRequest(login, "password"), TokenResponse.class);
         return response.getBody().accessToken();
     }
 
     private String issueTicket(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
-        ResponseEntity<WsTicketResponse> response = restTemplate.exchange(
-                "/auth/ws-ticket", HttpMethod.POST,
-                new HttpEntity<>(null, headers), WsTicketResponse.class);
+        ResponseEntity<WsTicketResponse> response =
+                restTemplate.exchange(
+                        "/auth/ws-ticket",
+                        HttpMethod.POST,
+                        new HttpEntity<>(null, headers),
+                        WsTicketResponse.class);
         return response.getBody().ticket();
     }
 
     private ResponseEntity<ConsumeWsTicketResponse> consume(String ticket) {
         return restTemplate.exchange(
-                "/internal/consume-ws-ticket", HttpMethod.POST,
-                internalEntity(new ConsumeWsTicketRequest(ticket)), ConsumeWsTicketResponse.class);
+                "/internal/consume-ws-ticket",
+                HttpMethod.POST,
+                internalEntity(new ConsumeWsTicketRequest(ticket)),
+                ConsumeWsTicketResponse.class);
     }
 
     private ResponseEntity<Void> admit(WsSessionAdmissionRequest identity) {
-        return restTemplate.exchange("/internal/auth/admit-ws-session", HttpMethod.POST,
-                internalEntity(identity), Void.class);
+        return restTemplate.exchange(
+                "/internal/auth/admit-ws-session",
+                HttpMethod.POST,
+                internalEntity(identity),
+                Void.class);
     }
 
     private ResponseEntity<Void> logout(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
-        return restTemplate.exchange("/auth/logout", HttpMethod.POST,
-                new HttpEntity<>(null, headers), Void.class);
+        return restTemplate.exchange(
+                "/auth/logout", HttpMethod.POST, new HttpEntity<>(null, headers), Void.class);
     }
 
     private <T> HttpEntity<T> internalEntity(T body) {

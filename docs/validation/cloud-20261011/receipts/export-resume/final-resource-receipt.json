@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-12T00:57:24.683215+00:00",
+  "lease": "EXPORTS3",
+  "status": "RELEASED",
+  "active_jvms": [],
+  "remaining_testcontainers": [],
+  "java_zombies": [
+    11771,
+    33249,
+    33286,
+    149519,
+    149559,
+    163814
+  ],
+  "disk_available_bytes": 6473097216,
+  "cleanup": "Standard own disposable Testcontainers cleanup completed; no explicit/global deletion",
+  "source": "tracked clean, untracked node_modules symlink preserved"
+}

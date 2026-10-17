@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-12T07:00:52.198222+00:00",
+  "status": "PASS",
+  "exact_directory_set": 813,
+  "exact_file_set": 21668,
+  "counterexample_extra_directory_rejected": true,
+  "counterexample_omitted_file_rejected": true,
+  "no_temp_or_symlink_extras": true
+}

@@ -13,6 +13,8 @@
     "source"
   ],
   "properties": {
+    "traceparent": {"$ref": "_common.json#/$defs/traceparent"},
+    "request_id": {"$ref": "_common.json#/$defs/requestId"},
     "event_type": {
       "const": "lesson.deleted"
     },

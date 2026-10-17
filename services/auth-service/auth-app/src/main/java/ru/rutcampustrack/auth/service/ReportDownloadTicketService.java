@@ -3,23 +3,6 @@ package ru.rutcampustrack.auth.service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import ru.rutcampustrack.auth.config.InternalIssuerProperties;
-import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
-import ru.rutcampustrack.auth.dto.IssueReportDownloadTicketRequest;
-import ru.rutcampustrack.auth.dto.ReportDownloadKind;
-import ru.rutcampustrack.auth.dto.ReportDownloadTicketRedemptionResponse;
-import ru.rutcampustrack.auth.dto.ReportDownloadTicketResponse;
-import ru.rutcampustrack.auth.exception.InvalidReportDownloadTicketRequestException;
-import ru.rutcampustrack.auth.grpc.AcademicAssistantPermissionClient;
-import ru.rutcampustrack.auth.security.SessionPrincipal;
-import ru.rutcampustrack.auth.session.AuthSessionException;
-import ru.rutcampustrack.auth.session.SessionAdmissionException;
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleGrant;
-import ru.rutcampustrack.auth.session.model.SessionSnapshot;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,8 +15,29 @@ import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Objects;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import ru.rutcampustrack.auth.config.InternalIssuerProperties;
+import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
+import ru.rutcampustrack.auth.dto.IssueReportDownloadTicketRequest;
+import ru.rutcampustrack.auth.dto.ReportDownloadKind;
+import ru.rutcampustrack.auth.dto.ReportDownloadTicketRedemptionResponse;
+import ru.rutcampustrack.auth.dto.ReportDownloadTicketResponse;
+import ru.rutcampustrack.auth.exception.InvalidReportDownloadTicketRequestException;
+import ru.rutcampustrack.auth.export.RegistryExportAdmission;
+import ru.rutcampustrack.auth.grpc.AcademicAssistantPermissionClient;
+import ru.rutcampustrack.auth.security.SessionPrincipal;
+import ru.rutcampustrack.auth.session.SessionAdmissionException;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.RoleGrant;
+import ru.rutcampustrack.auth.session.model.SessionSnapshot;
+import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 
-/** Issues reusable 60-second report capabilities and remints current signed authority on every redemption. */
+/**
+ * Issues reusable 60-second report capabilities and remints current signed authority on every
+ * redemption.
+ */
 @Service
 public final class ReportDownloadTicketService {
 
@@ -50,6 +54,8 @@ public final class ReportDownloadTicketService {
     private final InternalIssuerProperties issuerProperties;
     private final ObjectMapper objectMapper;
     private final AcademicAssistantPermissionClient academicAssistantPermissionClient;
+    private final AdminAccessJdbcAuthority admins;
+    private final ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc teachers;
     private final Clock clock;
     private final SecureRandom secureRandom;
 
@@ -60,10 +66,19 @@ public final class ReportDownloadTicketService {
             JwtService jwtService,
             InternalIssuerProperties issuerProperties,
             ObjectMapper objectMapper,
-            AcademicAssistantPermissionClient academicAssistantPermissionClient
-    ) {
-        this(ticketStore, authService, jwtService, issuerProperties, objectMapper,
-                Clock.systemUTC(), new SecureRandom(), academicAssistantPermissionClient);
+            AcademicAssistantPermissionClient academicAssistantPermissionClient,
+            JdbcTemplate jdbc) {
+        this(
+                ticketStore,
+                authService,
+                jwtService,
+                issuerProperties,
+                objectMapper,
+                Clock.systemUTC(),
+                new SecureRandom(),
+                academicAssistantPermissionClient,
+                new AdminAccessJdbcAuthority(jdbc),
+                new ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc(jdbc));
     }
 
     ReportDownloadTicketService(
@@ -74,27 +89,74 @@ public final class ReportDownloadTicketService {
             ObjectMapper objectMapper,
             Clock clock,
             SecureRandom secureRandom,
-            AcademicAssistantPermissionClient academicAssistantPermissionClient
-    ) {
+            AcademicAssistantPermissionClient academicAssistantPermissionClient,
+            AdminAccessJdbcAuthority admins) {
+        this(
+                ticketStore,
+                authService,
+                jwtService,
+                issuerProperties,
+                objectMapper,
+                clock,
+                secureRandom,
+                academicAssistantPermissionClient,
+                admins,
+                null);
+    }
+
+    ReportDownloadTicketService(
+            ReportDownloadTicketStore ticketStore,
+            AuthService authService,
+            JwtService jwtService,
+            InternalIssuerProperties issuerProperties,
+            ObjectMapper objectMapper,
+            Clock clock,
+            SecureRandom secureRandom,
+            AcademicAssistantPermissionClient academicAssistantPermissionClient,
+            AdminAccessJdbcAuthority admins,
+            ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc teachers) {
+        this.teachers = teachers;
         this.ticketStore = Objects.requireNonNull(ticketStore, "ticketStore");
         this.authService = Objects.requireNonNull(authService, "authService");
         this.jwtService = Objects.requireNonNull(jwtService, "jwtService");
         this.issuerProperties = Objects.requireNonNull(issuerProperties, "issuerProperties");
-        this.academicAssistantPermissionClient = Objects.requireNonNull(
-                academicAssistantPermissionClient, "academicAssistantPermissionClient");
-        this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper").copy()
-                .registerModule(new JavaTimeModule())
-                .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+        this.academicAssistantPermissionClient =
+                Objects.requireNonNull(
+                        academicAssistantPermissionClient, "academicAssistantPermissionClient");
+        this.admins = Objects.requireNonNull(admins, "admins");
+        this.objectMapper =
+                Objects.requireNonNull(objectMapper, "objectMapper")
+                        .copy()
+                        .registerModule(new JavaTimeModule())
+                        .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                        .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
         this.clock = Objects.requireNonNull(clock, "clock");
         this.secureRandom = Objects.requireNonNull(secureRandom, "secureRandom");
     }
 
     public ReportDownloadTicketResponse issue(
+            SessionPrincipal principal, IssueReportDownloadTicketRequest report) {
+        return issueReadyJob(principal, report, null);
+    }
+
+    public ReportDownloadTicketResponse issueReadyJob(
             SessionPrincipal principal,
-            IssueReportDownloadTicketRequest report
-    ) {
+            IssueReportDownloadTicketRequest report,
+            java.util.UUID exportJobId) {
+        return issueReadyJob(principal, report, exportJobId, null);
+    }
+
+    public ReportDownloadTicketResponse issueReadyJob(
+            SessionPrincipal principal,
+            IssueReportDownloadTicketRequest report,
+            java.util.UUID exportJobId,
+            Instant jobExpiresAt) {
         Objects.requireNonNull(principal, "principal");
+        if (report != null
+                && report.kind() == ReportDownloadKind.ADMIN_GROUP_ATTENDANCE
+                && exportJobId == null) {
+            throw new InvalidReportDownloadTicketRequestException();
+        }
         if (report == null || !report.isParametersConsistent()) {
             throw new InvalidReportDownloadTicketRequestException();
         }
@@ -103,6 +165,7 @@ public final class ReportDownloadTicketService {
         if (principal.isBootstrap() || selectedRole == null || !selectedRole.isSelectable()) {
             throw new SessionAdmissionException(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE);
         }
+        RegistryExportAdmission.requireCurrent(admins, principal, report.kind());
         if (report.kind() == ReportDownloadKind.HEADMAN_STATS_TREND) {
             requireCurrentViewStats(snapshot, selectedRole);
         }
@@ -110,23 +173,42 @@ public final class ReportDownloadTicketService {
             requireCurrentHeadman(selectedRole);
         }
 
+        requireTeacherJob(principal, report, exportJobId);
         String sessionDigest = digest(principal.userId() + ":" + principal.sessionId());
-        if (!storeCall(() -> ticketStore.allowIssue(sessionDigest,
-                MAX_ISSUES_PER_SESSION, TICKET_TTL))) {
+        if (!storeCall(
+                () -> ticketStore.allowIssue(sessionDigest, MAX_ISSUES_PER_SESSION, TICKET_TTL))) {
             throw new ReportDownloadTicketRateLimitException();
         }
 
-        Instant expiresAt = clock.instant().plus(TICKET_TTL);
-        StoredReportDownloadTicket stored = new StoredReportDownloadTicket(
-                StoredReportDownloadTicket.CURRENT_SCHEMA_VERSION,
-                snapshot.userId(), snapshot.sessionId(), snapshot.sessionVersion(), snapshot.rolesVersion(),
-                selectedRole.role(), selectedRole.status(), selectedRole.groupId(),
-                selectedRole.role() == AuthRole.HEADMAN, selectedRole.isReadOnly(), report, expiresAt);
+        Instant now = clock.instant();
+        Instant defaultExpiry = now.plus(TICKET_TTL);
+        Instant expiresAt =
+                jobExpiresAt != null && jobExpiresAt.isBefore(defaultExpiry)
+                        ? jobExpiresAt
+                        : defaultExpiry;
+        if (!now.isBefore(expiresAt))
+            throw new SessionAdmissionException(SessionAdmissionException.Code.INVALID_SESSION);
+        Duration storeTtl = Duration.between(now, expiresAt);
+        StoredReportDownloadTicket stored =
+                new StoredReportDownloadTicket(
+                        StoredReportDownloadTicket.CURRENT_SCHEMA_VERSION,
+                        snapshot.userId(),
+                        snapshot.sessionId(),
+                        snapshot.sessionVersion(),
+                        snapshot.rolesVersion(),
+                        selectedRole.role(),
+                        selectedRole.status(),
+                        selectedRole.groupId(),
+                        selectedRole.role() == AuthRole.HEADMAN,
+                        selectedRole.isReadOnly(),
+                        report,
+                        expiresAt,
+                        exportJobId);
         String payload = serialize(stored);
         for (int attempt = 0; attempt < TOKEN_COLLISION_ATTEMPTS; attempt++) {
             String ticket = randomTicket();
             String ticketDigest = digest(ticket);
-            if (storeCall(() -> ticketStore.putIfAbsent(ticketDigest, payload, TICKET_TTL))) {
+            if (storeCall(() -> ticketStore.putIfAbsent(ticketDigest, payload, storeTtl))) {
                 return new ReportDownloadTicketResponse(
                         "/api/report-download/" + ticket, expiresAt, report.suggestedFilename());
             }
@@ -135,33 +217,43 @@ public final class ReportDownloadTicketService {
     }
 
     private static void requireCurrentHeadman(RoleGrant selectedRole) {
-        if (selectedRole == null || selectedRole.role() != AuthRole.HEADMAN || !selectedRole.isSelectable()
-                || selectedRole.groupId() == null || selectedRole.groupId() <= 0) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+        if (selectedRole == null
+                || selectedRole.role() != AuthRole.HEADMAN
+                || !selectedRole.isSelectable()
+                || selectedRole.groupId() == null
+                || selectedRole.groupId() <= 0) {
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
         }
     }
 
     private void requireCurrentViewStats(SessionSnapshot snapshot, RoleGrant selectedRole) {
         Long groupId = selectedRole.groupId();
         if (groupId == null || groupId <= 0) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
         }
         Instant issuedAt = clock.instant().truncatedTo(ChronoUnit.SECONDS);
-        long verificationTtlSeconds = Math.min(TICKET_TTL.toSeconds(), issuerProperties.getTokenTtlSeconds());
+        long verificationTtlSeconds =
+                Math.min(TICKET_TTL.toSeconds(), issuerProperties.getTokenTtlSeconds());
         Instant configuredExpiry = issuedAt.plusSeconds(verificationTtlSeconds);
         Instant sessionExpiry = snapshot.refreshExpiresAt().truncatedTo(ChronoUnit.SECONDS);
-        Instant tokenExpiry = configuredExpiry.isBefore(sessionExpiry) ? configuredExpiry : sessionExpiry;
+        Instant tokenExpiry =
+                configuredExpiry.isBefore(sessionExpiry) ? configuredExpiry : sessionExpiry;
         if (!issuedAt.isBefore(tokenExpiry)) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
         }
         String signedIdentity;
         try {
             signedIdentity = jwtService.generateInternalToken(snapshot, issuedAt, tokenExpiry);
         } catch (RuntimeException exception) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         if (!academicAssistantPermissionClient.hasViewStatsPermission(signedIdentity, groupId)) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
         }
     }
 
@@ -180,25 +272,31 @@ public final class ReportDownloadTicketService {
             return Optional.empty();
         }
 
-        // AuthService.admit performs the same selected-identity and version checks used by live auth routes.
+        // AuthService.admit performs the same selected-identity and version checks used by live
+        // auth routes.
         SessionSnapshot snapshot = authService.admit(stored.principal());
+        RegistryExportAdmission.requireCurrent(admins, stored.principal(), stored.report().kind());
         if (stored.report().kind() == ReportDownloadKind.HEADMAN_GROUP_COMPOSITION) {
             requireCurrentHeadman(snapshot.activeRole());
         }
+        requireTeacherJob(stored.principal(), stored.report(), stored.exportJobId());
         Instant freshNow = clock.instant();
         if (!freshNow.isBefore(stored.expiresAt())) {
             return Optional.empty();
         }
-        if (!storeCall(() -> ticketStore.allowRedemption(ticketDigest,
-                MAX_REDEMPTIONS_PER_TICKET, TICKET_TTL))) {
+        if (!storeCall(
+                () ->
+                        ticketStore.allowRedemption(
+                                ticketDigest, MAX_REDEMPTIONS_PER_TICKET, TICKET_TTL))) {
             throw new ReportDownloadTicketRateLimitException();
         }
 
         Instant issuedAt = freshNow.truncatedTo(ChronoUnit.SECONDS);
         Instant ticketExpiry = stored.expiresAt().truncatedTo(ChronoUnit.SECONDS);
         Instant sessionExpiry = snapshot.refreshExpiresAt().truncatedTo(ChronoUnit.SECONDS);
-        Instant configuredExpiry = freshNow.plusSeconds(issuerProperties.getTokenTtlSeconds())
-                .truncatedTo(ChronoUnit.SECONDS);
+        Instant configuredExpiry =
+                freshNow.plusSeconds(issuerProperties.getTokenTtlSeconds())
+                        .truncatedTo(ChronoUnit.SECONDS);
         Instant internalExpiry = min(ticketExpiry, sessionExpiry, configuredExpiry);
         if (!issuedAt.isBefore(internalExpiry) || !freshNow.isBefore(internalExpiry)) {
             return Optional.empty();
@@ -207,33 +305,131 @@ public final class ReportDownloadTicketService {
         String reportBindingHash = stored.report().bindingHash();
         String internalToken;
         try {
-            internalToken = jwtService.generateInternalReportDownloadToken(
-                    snapshot, issuedAt, internalExpiry, reportBindingHash, stored.expiresAt());
+            internalToken =
+                    jwtService.generateInternalReportDownloadToken(
+                            snapshot,
+                            issuedAt,
+                            internalExpiry,
+                            reportBindingHash,
+                            stored.expiresAt());
         } catch (RuntimeException exception) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
         AuthAdmissionResponse admission = admission(snapshot, internalToken, internalExpiry);
-        return Optional.of(new ReportDownloadTicketRedemptionResponse(
-                admission, stored.expiresAt(), reportBindingHash, stored.report()));
+        return Optional.of(
+                new ReportDownloadTicketRedemptionResponse(
+                        admission,
+                        stored.expiresAt(),
+                        reportBindingHash,
+                        stored.report(),
+                        stored.exportJobId()));
+    }
+
+    /** Remints report authority for a durable queue job without retaining bearer credentials. */
+    public ReportDownloadTicketRedemptionResponse authorizeJob(
+            SessionPrincipal principal,
+            IssueReportDownloadTicketRequest report,
+            Instant expiresAt) {
+        if (report == null || !report.isParametersConsistent())
+            throw new InvalidReportDownloadTicketRequestException();
+        SessionSnapshot snapshot = authService.admit(principal);
+        RoleGrant role = snapshot.activeRole();
+        if (principal.isBootstrap() || role == null || !role.isSelectable()) {
+            throw new SessionAdmissionException(SessionAdmissionException.Code.ROLE_NOT_SELECTABLE);
+        }
+        RegistryExportAdmission.requireCurrent(admins, principal, report.kind());
+        switch (report.kind()) {
+            case TEACHER_JOURNAL, TEACHER_STATS -> {
+                if (role.role() != AuthRole.TEACHER)
+                    throw new SessionAdmissionException(
+                            SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+                teacherAuthority().requireSelection(principal, report);
+            }
+            case HEADMAN_GROUP_COMPOSITION -> requireCurrentHeadman(role);
+            case HEADMAN_WEEKLY_CURRENT,
+                    HEADMAN_WEEKLY_SELECTED,
+                    HEADMAN_STATS,
+                    HEADMAN_STATS_TREND,
+                    HEADMAN_SUBJECT_JOURNAL -> {
+                if (role.role() != AuthRole.HEADMAN && role.role() != AuthRole.STUDENT)
+                    throw new SessionAdmissionException(
+                            SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+                requireCurrentViewStats(snapshot, role);
+            }
+            case ADMIN_USERS, ADMIN_GROUPS, ADMIN_GROUP_ATTENDANCE -> {
+                if (role.role() != AuthRole.ADMIN)
+                    throw new SessionAdmissionException(
+                            SessionAdmissionException.Code.REPORT_PERMISSION_DENIED);
+            }
+        }
+        Instant now = clock.instant();
+        Instant issuedAt = now.truncatedTo(ChronoUnit.SECONDS);
+        Instant capabilityExpiry =
+                expiresAt.isBefore(now.plus(TICKET_TTL)) ? expiresAt : now.plus(TICKET_TTL);
+        Instant expiry =
+                min(
+                                capabilityExpiry,
+                                snapshot.refreshExpiresAt(),
+                                now.plusSeconds(issuerProperties.getTokenTtlSeconds()))
+                        .truncatedTo(ChronoUnit.SECONDS);
+        if (!now.isBefore(expiry))
+            throw new SessionAdmissionException(SessionAdmissionException.Code.INVALID_SESSION);
+        String hash = report.bindingHash();
+        String token =
+                jwtService.generateInternalReportDownloadToken(
+                        snapshot, issuedAt, expiry, hash, capabilityExpiry);
+        return new ReportDownloadTicketRedemptionResponse(
+                admission(snapshot, token, expiry), capabilityExpiry, hash, report);
+    }
+
+    private ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc teacherAuthority() {
+        if (teachers == null)
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+        return teachers;
+    }
+
+    private void requireTeacherJob(
+            SessionPrincipal principal,
+            IssueReportDownloadTicketRequest report,
+            java.util.UUID id) {
+        if (ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc.teacher(report))
+            teacherAuthority().requireReadyJob(principal, report, id);
+    }
+
+    public ru.rutcampustrack.shared.security.teacher.TeacherReportScope captureTeacherScope(
+            SessionPrincipal principal, IssueReportDownloadTicketRequest report, String hash) {
+        return ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc.teacher(report)
+                ? teacherAuthority().capture(principal, report, hash)
+                : null;
+    }
+
+    public void requireReadyTeacher(StoredReportDownloadTicket identity) {
+        if (ru.rutcampustrack.auth.export.TeacherReportAuthorityJdbc.teacher(identity.report()))
+            teacherAuthority().requireReady(identity);
     }
 
     private String serialize(StoredReportDownloadTicket stored) {
         try {
             return objectMapper.writeValueAsString(stored);
         } catch (Exception exception) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
     }
 
     private StoredReportDownloadTicket deserialize(String payload) {
         try {
-            StoredReportDownloadTicket stored = objectMapper.readValue(payload, StoredReportDownloadTicket.class);
+            StoredReportDownloadTicket stored =
+                    objectMapper.readValue(payload, StoredReportDownloadTicket.class);
             if (stored == null || !stored.report().isParametersConsistent()) {
                 throw new IllegalArgumentException("Stored ticket is invalid");
             }
             return stored;
         } catch (Exception exception) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
     }
 
@@ -243,7 +439,8 @@ public final class ReportDownloadTicketService {
         } catch (ReportDownloadTicketRateLimitException exception) {
             throw exception;
         } catch (RuntimeException exception) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, exception);
         }
     }
 
@@ -254,10 +451,7 @@ public final class ReportDownloadTicketService {
     }
 
     private static AuthAdmissionResponse admission(
-            SessionSnapshot snapshot,
-            String internalToken,
-            Instant expiresAt
-    ) {
+            SessionSnapshot snapshot, String internalToken, Instant expiresAt) {
         RoleGrant selectedRole = snapshot.activeRole();
         return new AuthAdmissionResponse(
                 internalToken,
@@ -280,8 +474,10 @@ public final class ReportDownloadTicketService {
 
     private static String digest(String value) {
         try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                    .digest(value.getBytes(StandardCharsets.UTF_8)));
+            return HexFormat.of()
+                    .formatHex(
+                            MessageDigest.getInstance("SHA-256")
+                                    .digest(value.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException impossible) {
             throw new IllegalStateException("SHA-256 is unavailable", impossible);
         }

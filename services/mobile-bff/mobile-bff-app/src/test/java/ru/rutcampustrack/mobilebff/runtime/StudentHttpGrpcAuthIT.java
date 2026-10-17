@@ -1,5 +1,14 @@
 package ru.rutcampustrack.mobilebff.runtime;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Server;
@@ -11,6 +20,18 @@ import io.grpc.ServerInterceptors;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.HexFormat;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +52,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
+import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceGrpc;
@@ -43,7 +65,6 @@ import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.CheckinPairStateRepository;
-import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.attendance.student.StudentAttendanceSnapshotService;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels;
@@ -57,32 +78,9 @@ import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
 import ru.rutcampustrack.shared.security.PublicKeyProvider;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.time.ZoneOffset;
-import java.util.HexFormat;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 @SpringBootTest(
         classes = MobileBffApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-)
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class StudentHttpGrpcAuthIT {
 
     private static final long STUDENT_ID = 100L;
@@ -92,28 +90,27 @@ class StudentHttpGrpcAuthIT {
     private static final String TOKEN_HEADER = "X-Internal-Token";
     private static final UUID SESSION_ID = UUID.fromString("88888888-8888-4888-8888-888888888888");
     private static final InternalJwtTestFactory JWT = new InternalJwtTestFactory();
-    private static final StudentCheckinReceiptRepository RECEIPTS = mock(StudentCheckinReceiptRepository.class);
+    private static final StudentCheckinReceiptRepository RECEIPTS =
+            mock(StudentCheckinReceiptRepository.class);
     private static final AtomicInteger GRPC_CALLS = new AtomicInteger();
     private static Server grpcServer;
 
     @DynamicPropertySource
     static void runtimeProperties(DynamicPropertyRegistry registry) {
         startGrpcServer();
-        registry.add("grpc.client.attendance-service.address",
+        registry.add(
+                "grpc.client.attendance-service.address",
                 () -> "static://127.0.0.1:" + grpcServer.getPort());
         registry.add("grpc.client.attendance-service.negotiation-type", () -> "plaintext");
         registry.add("grpc.server.port", () -> 0);
         registry.add("rutcampustrack.security.internal-jwt.clock-skew-seconds", () -> "0");
     }
 
-    @LocalServerPort
-    private int httpPort;
+    @LocalServerPort private int httpPort;
 
-    @Autowired
-    private TestRestTemplate http;
+    @Autowired private TestRestTemplate http;
 
-    @MockitoBean
-    private PublicKeyProvider bffPublicKeyProvider;
+    @MockitoBean private PublicKeyProvider bffPublicKeyProvider;
 
     @BeforeEach
     void setUp() {
@@ -138,7 +135,8 @@ class StudentHttpGrpcAuthIT {
         var response = http.exchange(url(), HttpMethod.POST, request(headers), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("\"outcome\":\"PRESENT\"")
+        assertThat(response.getBody())
+                .contains("\"outcome\":\"PRESENT\"")
                 .contains("\"lessonId\":\"77\"")
                 .contains("\"source\":\"STUDENT_GEO\"");
         assertThat(GRPC_CALLS).hasValue(1);
@@ -151,8 +149,10 @@ class StudentHttpGrpcAuthIT {
         var response = http.exchange(url(), HttpMethod.POST, request(headers(token)), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
-        assertThat(response.getBody()).contains("\"code\":\"INVALID_SESSION\"")
+        assertThat(response.getHeaders().getContentType())
+                .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response.getBody())
+                .contains("\"code\":\"INVALID_SESSION\"")
                 .doesNotContain("signature", "issuer", "audience", "expired");
         assertThat(GRPC_CALLS).hasValue(0);
     }
@@ -160,18 +160,24 @@ class StudentHttpGrpcAuthIT {
     @ParameterizedTest(name = "attendance gRPC rejects {0} JWT")
     @MethodSource("invalidTokens")
     void invalidSignedJwtIsRejectedAgainAtGrpcBoundary(String caseName, String token) {
-        var channel = ManagedChannelBuilder.forAddress("127.0.0.1", grpcServer.getPort())
-                .usePlaintext().build();
+        var channel =
+                ManagedChannelBuilder.forAddress("127.0.0.1", grpcServer.getPort())
+                        .usePlaintext()
+                        .build();
         try {
             Metadata metadata = new Metadata();
-            metadata.put(Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER), token);
-            var stub = AttendanceStudentGrpcServiceGrpc.newBlockingStub(channel)
-                    .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata));
+            metadata.put(
+                    Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER), token);
+            var stub =
+                    AttendanceStudentGrpcServiceGrpc.newBlockingStub(channel)
+                            .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata));
 
             assertThatThrownBy(() -> stub.checkin(command()))
-                    .isInstanceOfSatisfying(StatusRuntimeException.class,
-                            error -> assertThat(error.getStatus().getCode())
-                                    .isEqualTo(Status.Code.UNAUTHENTICATED));
+                    .isInstanceOfSatisfying(
+                            StatusRuntimeException.class,
+                            error ->
+                                    assertThat(error.getStatus().getCode())
+                                            .isEqualTo(Status.Code.UNAUTHENTICATED));
         } finally {
             channel.shutdownNow();
         }
@@ -192,15 +198,16 @@ class StudentHttpGrpcAuthIT {
 
     @Test
     void readOnlyStudentJwtIsRejectedBeforeCheckinGrpc() {
-        HttpHeaders headers = headers(validToken(STUDENT_ID, "STUDENT", "EXPELLED", GROUP_ID, true));
+        HttpHeaders headers =
+                headers(validToken(STUDENT_ID, "STUDENT", "EXPELLED", GROUP_ID, true));
         var response = http.exchange(url(), HttpMethod.POST, request(headers), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(response.getHeaders().getCacheControl()).contains("no-store");
         assertThat(response.getBody()).contains("\"code\":\"ROLE_READ_ONLY\"");
         assertThat(GRPC_CALLS).hasValue(0);
-        verify(RECEIPTS, never()).findByStudentIdAndLessonIdAndIdempotencyKey(
-                STUDENT_ID, LESSON_ID, KEY);
+        verify(RECEIPTS, never())
+                .findByStudentIdAndLessonIdAndIdempotencyKey(STUDENT_ID, LESSON_ID, KEY);
     }
 
     @Test
@@ -209,7 +216,8 @@ class StudentHttpGrpcAuthIT {
         var response = http.exchange(url(), HttpMethod.POST, request(headers), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response.getHeaders().getContentType())
+                .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(response.getBody())
                 .contains("\"status\":403")
                 .contains("\"code\":\"WRONG_ROLE\"")
@@ -222,12 +230,16 @@ class StudentHttpGrpcAuthIT {
     void activeStudentCanCheckinThroughMatrixDecoratedRoute() {
         HttpHeaders headers = headers(validToken(STUDENT_ID, "STUDENT", "ACTIVE", GROUP_ID, false));
         String path = "/api/v1/student;v=1/lessons/77;v=2/checkin;v=3";
-        var response = http.exchange(
-                "http://127.0.0.1:" + httpPort + path, HttpMethod.POST,
-                request(headers), String.class);
+        var response =
+                http.exchange(
+                        "http://127.0.0.1:" + httpPort + path,
+                        HttpMethod.POST,
+                        request(headers),
+                        String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("\"outcome\":\"PRESENT\"")
+        assertThat(response.getBody())
+                .contains("\"outcome\":\"PRESENT\"")
                 .contains("\"lessonId\":\"77\"")
                 .contains("\"source\":\"STUDENT_GEO\"");
         assertThat(GRPC_CALLS).hasValue(1);
@@ -238,20 +250,25 @@ class StudentHttpGrpcAuthIT {
     @MethodSource("readOnlyCheckinMutationInputs")
     void readOnlyCheckinMutationIsRejectedBeforeMvcValidation(
             String caseName, String path, String idempotencyKey, String body) {
-        HttpHeaders headers = headers(validToken(STUDENT_ID, "STUDENT", "EXPELLED", GROUP_ID, true));
+        HttpHeaders headers =
+                headers(validToken(STUDENT_ID, "STUDENT", "EXPELLED", GROUP_ID, true));
         if (idempotencyKey == null) {
             headers.remove("Idempotency-Key");
         } else {
             headers.set("Idempotency-Key", idempotencyKey);
         }
 
-        var response = http.exchange(
-                "http://127.0.0.1:" + httpPort + path, HttpMethod.POST,
-                new HttpEntity<>(body, headers), String.class);
+        var response =
+                http.exchange(
+                        "http://127.0.0.1:" + httpPort + path,
+                        HttpMethod.POST,
+                        new HttpEntity<>(body, headers),
+                        String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(response.getHeaders().getCacheControl()).contains("no-store");
-        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response.getHeaders().getContentType())
+                .isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(response.getBody())
                 .contains("\"status\":403")
                 .contains("\"code\":\"ROLE_READ_ONLY\"")
@@ -263,30 +280,67 @@ class StudentHttpGrpcAuthIT {
 
     private static Stream<Arguments> readOnlyCheckinMutationInputs() {
         return Stream.of(
-                Arguments.of("malformed path", "/api/v1/student/lessons/not-a-number/checkin", KEY,
+                Arguments.of(
+                        "malformed path",
+                        "/api/v1/student/lessons/not-a-number/checkin",
+                        KEY,
                         "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
-                Arguments.of("overflow path", "/api/v1/student/lessons/9223372036854775808/checkin", KEY,
+                Arguments.of(
+                        "overflow path",
+                        "/api/v1/student/lessons/9223372036854775808/checkin",
+                        KEY,
                         "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
-                Arguments.of("missing idempotency header", "/api/v1/student/lessons/77/checkin", null,
+                Arguments.of(
+                        "missing idempotency header",
+                        "/api/v1/student/lessons/77/checkin",
+                        null,
                         "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
-                Arguments.of("invalid idempotency header", "/api/v1/student/lessons/77/checkin", "short-key",
+                Arguments.of(
+                        "invalid idempotency header",
+                        "/api/v1/student/lessons/77/checkin",
+                        "short-key",
                         "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
-                Arguments.of("malformed body", "/api/v1/student/lessons/77/checkin", KEY, "{\"geo\":"),
-                Arguments.of("bean-invalid body", "/api/v1/student/lessons/77/checkin", KEY,
+                Arguments.of(
+                        "malformed body", "/api/v1/student/lessons/77/checkin", KEY, "{\"geo\":"),
+                Arguments.of(
+                        "bean-invalid body",
+                        "/api/v1/student/lessons/77/checkin",
+                        KEY,
                         "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":null,\"longitude\":37.61}}"),
-                Arguments.of("matrix on student prefix", "/api/v1/student;v=1/lessons/77/checkin", KEY,
+                Arguments.of(
+                        "matrix on student prefix",
+                        "/api/v1/student;v=1/lessons/77/checkin",
+                        KEY,
                         "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
-                Arguments.of("matrix on lesson variable", "/api/v1/student/lessons/77;v=2/checkin", KEY,
+                Arguments.of(
+                        "matrix on lesson variable",
+                        "/api/v1/student/lessons/77;v=2/checkin",
+                        KEY,
                         "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
-                Arguments.of("matrix on check-in suffix", "/api/v1/student/lessons/77/checkin;v=3", KEY,
+                Arguments.of(
+                        "matrix on check-in suffix",
+                        "/api/v1/student/lessons/77/checkin;v=3",
+                        KEY,
                         "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
-                Arguments.of("matrix prefix with malformed body", "/api/v1/student;v=1/lessons/77/checkin", KEY,
+                Arguments.of(
+                        "matrix prefix with malformed body",
+                        "/api/v1/student;v=1/lessons/77/checkin",
+                        KEY,
                         "{\"geo\":"),
-                Arguments.of("matrix suffix with bean-invalid body", "/api/v1/student/lessons/77/checkin;v=3", KEY,
+                Arguments.of(
+                        "matrix suffix with bean-invalid body",
+                        "/api/v1/student/lessons/77/checkin;v=3",
+                        KEY,
                         "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":null,\"longitude\":37.61}}"),
-                Arguments.of("matrix variable with missing idempotency header", "/api/v1/student/lessons/77;v=2/checkin", null,
+                Arguments.of(
+                        "matrix variable with missing idempotency header",
+                        "/api/v1/student/lessons/77;v=2/checkin",
+                        null,
                         "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
-                Arguments.of("matrix suffix with invalid idempotency header", "/api/v1/student/lessons/77/checkin;v=3", "short-key",
+                Arguments.of(
+                        "matrix suffix with invalid idempotency header",
+                        "/api/v1/student/lessons/77/checkin;v=3",
+                        "short-key",
                         "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"));
     }
 
@@ -305,48 +359,111 @@ class StudentHttpGrpcAuthIT {
                 Arguments.of("invalid signature", invalidSignatureToken()),
                 Arguments.of("expired", expiredToken()),
                 Arguments.of("wrong issuer", wrongIssuerToken()),
-                Arguments.of("wrong audience", wrongAudienceToken())
-        );
+                Arguments.of("wrong audience", wrongAudienceToken()));
     }
 
     private static Stream<Arguments> invalidStudentScopes() {
         return Stream.of(
-                Arguments.of("wrong role", validToken(STUDENT_ID, "ADMIN", "ACTIVE", GROUP_ID, false), "WRONG_ROLE"),
-                Arguments.of("missing group", validToken(STUDENT_ID, "STUDENT", "ACTIVE", null, false), "OUT_OF_SCOPE")
-        );
+                Arguments.of(
+                        "wrong role",
+                        validToken(STUDENT_ID, "ADMIN", "ACTIVE", GROUP_ID, false),
+                        "WRONG_ROLE"),
+                Arguments.of(
+                        "missing group",
+                        validToken(STUDENT_ID, "STUDENT", "ACTIVE", null, false),
+                        "OUT_OF_SCOPE"));
     }
 
-    private static String validToken(long userId, String role, String status,
-                                     Long groupId, boolean readOnly) {
-        return JWT.validToken(userId, SESSION_ID, 1L, 1L, role, status, groupId,
-                "HEADMAN".equals(role), readOnly);
+    private static String validToken(
+            long userId, String role, String status, Long groupId, boolean readOnly) {
+        return JWT.validToken(
+                userId,
+                SESSION_ID,
+                1L,
+                1L,
+                role,
+                status,
+                groupId,
+                "HEADMAN".equals(role),
+                readOnly);
     }
 
     private static String invalidSignatureToken() {
         InternalJwtTestFactory wrongSigner = new InternalJwtTestFactory();
-        return JWT.buildToken(STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", GROUP_ID,
-                false, false, now().minusSeconds(1), now().plusSeconds(60),
-                InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE, "internal",
+        return JWT.buildToken(
+                STUDENT_ID,
+                SESSION_ID,
+                1L,
+                1L,
+                "STUDENT",
+                "ACTIVE",
+                GROUP_ID,
+                false,
+                false,
+                now().minusSeconds(1),
+                now().plusSeconds(60),
+                InternalJwtTestFactory.ISSUER,
+                InternalJwtTestFactory.AUDIENCE,
+                "internal",
                 wrongSigner.keyPair());
     }
 
     private static String expiredToken() {
         Instant now = now();
-        return JWT.buildToken(STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", GROUP_ID,
-                false, false, now.minusSeconds(600), now.minusSeconds(300),
-                InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE, "internal", JWT.keyPair());
+        return JWT.buildToken(
+                STUDENT_ID,
+                SESSION_ID,
+                1L,
+                1L,
+                "STUDENT",
+                "ACTIVE",
+                GROUP_ID,
+                false,
+                false,
+                now.minusSeconds(600),
+                now.minusSeconds(300),
+                InternalJwtTestFactory.ISSUER,
+                InternalJwtTestFactory.AUDIENCE,
+                "internal",
+                JWT.keyPair());
     }
 
     private static String wrongIssuerToken() {
-        return JWT.buildToken(STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", GROUP_ID,
-                false, false, now().minusSeconds(1), now().plusSeconds(60),
-                "evil-issuer", InternalJwtTestFactory.AUDIENCE, "internal", JWT.keyPair());
+        return JWT.buildToken(
+                STUDENT_ID,
+                SESSION_ID,
+                1L,
+                1L,
+                "STUDENT",
+                "ACTIVE",
+                GROUP_ID,
+                false,
+                false,
+                now().minusSeconds(1),
+                now().plusSeconds(60),
+                "evil-issuer",
+                InternalJwtTestFactory.AUDIENCE,
+                "internal",
+                JWT.keyPair());
     }
 
     private static String wrongAudienceToken() {
-        return JWT.buildToken(STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", GROUP_ID,
-                false, false, now().minusSeconds(1), now().plusSeconds(60),
-                InternalJwtTestFactory.ISSUER, "other-audience", "internal", JWT.keyPair());
+        return JWT.buildToken(
+                STUDENT_ID,
+                SESSION_ID,
+                1L,
+                1L,
+                "STUDENT",
+                "ACTIVE",
+                GROUP_ID,
+                false,
+                false,
+                now().minusSeconds(1),
+                now().plusSeconds(60),
+                InternalJwtTestFactory.ISSUER,
+                "other-audience",
+                "internal",
+                JWT.keyPair());
     }
 
     private static Instant now() {
@@ -366,9 +483,11 @@ class StudentHttpGrpcAuthIT {
     }
 
     private static HttpEntity<String> request(HttpHeaders headers) {
-        return new HttpEntity<>("""
+        return new HttpEntity<>(
+                """
                 {"geo":{"kind":"COORDINATES","latitude":55.75,"longitude":37.61}}
-                """, headers);
+                """,
+                headers);
     }
 
     private static StudentCheckinCommand command() {
@@ -384,72 +503,89 @@ class StudentHttpGrpcAuthIT {
         try {
             PublicKeyProvider serverKeyProvider = mock(PublicKeyProvider.class);
             when(serverKeyProvider.getPublicKey()).thenReturn(JWT.publicKey());
-            InternalJwtProperties properties = new InternalJwtProperties(
-                    "http://unused", 60, 0, false,
-                    InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE, TOKEN_HEADER);
-            InternalJwtValidator validator = new InternalJwtValidator(serverKeyProvider, properties);
+            InternalJwtProperties properties =
+                    new InternalJwtProperties(
+                            "http://unused",
+                            60,
+                            0,
+                            false,
+                            InternalJwtTestFactory.ISSUER,
+                            InternalJwtTestFactory.AUDIENCE,
+                            TOKEN_HEADER);
+            InternalJwtValidator validator =
+                    new InternalJwtValidator(serverKeyProvider, properties);
 
-            StudentCheckinReceiptDocument receipt = StudentCheckinReceiptDocument.builder()
-                    .id("receipt-1")
-                    .studentId(STUDENT_ID)
-                    .lessonId(LESSON_ID)
-                    .idempotencyKey(KEY)
-                    .payloadHash(payloadHash())
-                    .outcome(StudentCheckinModels.Outcome.PRESENT.name())
-                    .attendanceStatus("PRESENT")
-                    .attendanceSource("STUDENT_GEO")
-                    .markedAt(Instant.parse("2026-09-06T07:00:00Z"))
-                    .serverNow(Instant.parse("2026-09-06T07:00:00Z"))
-                    .createdAt(Instant.parse("2026-09-06T07:00:00Z"))
-                    .build();
+            StudentCheckinReceiptDocument receipt =
+                    StudentCheckinReceiptDocument.builder()
+                            .id("receipt-1")
+                            .studentId(STUDENT_ID)
+                            .lessonId(LESSON_ID)
+                            .idempotencyKey(KEY)
+                            .payloadHash(payloadHash())
+                            .outcome(StudentCheckinModels.Outcome.PRESENT.name())
+                            .attendanceStatus("PRESENT")
+                            .attendanceSource("STUDENT_GEO")
+                            .markedAt(Instant.parse("2026-09-06T07:00:00Z"))
+                            .serverNow(Instant.parse("2026-09-06T07:00:00Z"))
+                            .createdAt(Instant.parse("2026-09-06T07:00:00Z"))
+                            .build();
             when(RECEIPTS.findByStudentIdAndLessonIdAndIdempotencyKey(STUDENT_ID, LESSON_ID, KEY))
                     .thenReturn(Optional.of(receipt));
 
-            StudentCheckinService checkins = new StudentCheckinService(
-                    mock(AttendanceRepository.class),
-                    mock(CheckinPairStateRepository.class),
-                    RECEIPTS,
-                    mock(LateCheckinRepository.class),
-                    mock(ExcuseRepository.class),
-                    mock(PairWriteCoordinator.class),
-                    mock(GeofenceService.class),
-                    mock(AttendanceEventPublisher.class),
-                    mock(LateCheckinEventPublisher.class),
-                    mock(BusinessMetrics.class),
-                    mock(org.springframework.transaction.support.TransactionTemplate.class),
-                    Clock.fixed(Instant.parse("2026-09-06T07:00:00Z"), ZoneOffset.UTC));
-            AttendanceStudentGrpcServiceImpl service = new AttendanceStudentGrpcServiceImpl(
-                    checkins,
-                    mock(StudentAttendanceSnapshotService.class),
-                    mock(ScheduleGrpcClient.class),
-                    mock(AcademicGrpcClient.class),
-                    mock(SemesterCacheService.class));
-            ServerInterceptor counter = new ServerInterceptor() {
-                @Override
-                public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
-                        ServerCall<ReqT, RespT> call,
-                        Metadata metadata,
-                        ServerCallHandler<ReqT, RespT> next
-                ) {
-                    GRPC_CALLS.incrementAndGet();
-                    return next.startCall(call, metadata);
-                }
-            };
-            grpcServer = ServerBuilder.forPort(0)
-                    .addService(ServerInterceptors.intercept(
-                            service, counter, new StudentGrpcIdentityInterceptor(validator)))
-                    .build()
-                    .start();
+            StudentCheckinService checkins =
+                    new StudentCheckinService(
+                            mock(AttendanceRepository.class),
+                            mock(CheckinPairStateRepository.class),
+                            RECEIPTS,
+                            mock(LateCheckinRepository.class),
+                            mock(ExcuseRepository.class),
+                            mock(PairWriteCoordinator.class),
+                            mock(GeofenceService.class),
+                            mock(AttendanceEventPublisher.class),
+                            mock(LateCheckinEventPublisher.class),
+                            mock(BusinessMetrics.class),
+                            mock(org.springframework.transaction.support.TransactionTemplate.class),
+                            Clock.fixed(Instant.parse("2026-09-06T07:00:00Z"), ZoneOffset.UTC));
+            AttendanceStudentGrpcServiceImpl service =
+                    new AttendanceStudentGrpcServiceImpl(
+                            checkins,
+                            mock(StudentAttendanceSnapshotService.class),
+                            mock(ScheduleGrpcClient.class),
+                            mock(AcademicGrpcClient.class),
+                            mock(SemesterCacheService.class));
+            ServerInterceptor counter =
+                    new ServerInterceptor() {
+                        @Override
+                        public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
+                                ServerCall<ReqT, RespT> call,
+                                Metadata metadata,
+                                ServerCallHandler<ReqT, RespT> next) {
+                            GRPC_CALLS.incrementAndGet();
+                            return next.startCall(call, metadata);
+                        }
+                    };
+            grpcServer =
+                    ServerBuilder.forPort(0)
+                            .addService(
+                                    ServerInterceptors.intercept(
+                                            service,
+                                            counter,
+                                            new StudentGrpcIdentityInterceptor(validator)))
+                            .build()
+                            .start();
         } catch (Exception error) {
             throw new ExceptionInInitializerError(error);
         }
     }
 
     private static String payloadHash() throws Exception {
-        String canonical = LESSON_ID + "\n"
-                + new StudentCheckinModels.Coordinates(55.75, 37.61).canonicalValue();
-        byte[] digest = MessageDigest.getInstance("SHA-256")
-                .digest(canonical.getBytes(StandardCharsets.UTF_8));
+        String canonical =
+                LESSON_ID
+                        + "\n"
+                        + new StudentCheckinModels.Coordinates(55.75, 37.61).canonicalValue();
+        byte[] digest =
+                MessageDigest.getInstance("SHA-256")
+                        .digest(canonical.getBytes(StandardCharsets.UTF_8));
         return HexFormat.of().formatHex(digest);
     }
 }

@@ -1,0 +1,51 @@
+{
+  "utc": "2026-10-12T14:26:45.221889+00:00",
+  "verdict": "APPROVE_SOURCE",
+  "aggregate_source_manifests": [
+    "3b02e82b61409f7118bf434afcd888f5ae556504067913527d673d673d421537",
+    "9ce528ac02bf076952f99fdcf2df2580518833c18abf57ab0672a1822cea1c4d"
+  ],
+  "closed_findings": [
+    "RESTART-COHORT-ANCESTOR",
+    "AD0B_MODULETYPE_FILE_CONTEXT"
+  ],
+  "source_only": true,
+  "runtime": false,
+  "entries": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 239,
+      "sha256": "60c7c557b1a8dd84be832b0f19a9117e8ee5af220c377d2abb1b7631686f4287"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 7358,
+      "sha256": "669cc060d6a9a69628522372b1ffc8c4f6e5cbea98ee095c382f57d55e29d765"
+    },
+    {
+      "path": "attempts.ndjson",
+      "bytes": 406,
+      "sha256": "c55e1939025199738fa77e3dd0da911b48fadee0ecebcd997989e4f28cc46480"
+    },
+    {
+      "path": "check.py",
+      "bytes": 12065,
+      "sha256": "377cb2f8a5aec133124616f92b9375ed0ea1e402f7ee5d22565fe2de5a23b13e"
+    },
+    {
+      "path": "checks.safe.json",
+      "bytes": 7869,
+      "sha256": "3f07e3787bb21ac595a1fdabed18e4f52326a6e416b5a533a530e2f79d7d366c"
+    },
+    {
+      "path": "input-ledger.json",
+      "bytes": 1384,
+      "sha256": "3412790a910fa8cdf9668f5c3fcbe28bd2216d3e5c1db332ee1c3560f7dce8e4"
+    },
+    {
+      "path": "prior-seals-current.safe.json",
+      "bytes": 2351,
+      "sha256": "14b14c8f4f9aeae0f902d4e2972244936a3b42c344726d36be73fa9100c6b527"
+    }
+  ]
+}

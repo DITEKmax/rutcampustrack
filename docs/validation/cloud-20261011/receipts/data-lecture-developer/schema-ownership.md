@@ -1,0 +1,15 @@
+# L08 observed production shared-schema ownership
+Frozen sourcee093; original schema ownership read, selected runtime PASS existing-1 (four selected L07/L08 cases, three L08). This is actual coupling, not database-per-service.
+
+| Object/columns | Schema pipeline and writes | Consumers/invariants |
+|---|---|---|
+| users identity/account/legacy grants fields; password_hash, initial_password, password_changed, roles_version | Academic Flyway V1 baseline and V24rolesversion; Academic admin user lifecycle/profile/grant writers; Auth credential mutations for hash/flags/initialclear | Auth JdbcSessionAuthority locks user first; version/hash rechecks; owneraccepted initialplaintext exception is display-only, notgeneralcredential export |
+| user_role_grants role/status/group_id; users.roles_version | Academic V24 constraints + AFTER insert/update/delete roles-version trigger; Academic canonical grant writer | Auth selected-role/session snapshots and current admission; held userwriterlock produces whollynewtuple, no mixed old/newauthority |
+| auth_sessions session owner/version/selected grant/refresh/revoked/expiry | Academic V24 schema; Auth JdbcSessionAuthority transaction writer | live session admission/refresh/revoke/passwordchange; ownrows and expectedversions, user→session lockorder |
+| account_security_events actor/session/type/safe detail | Academic V24 schema; Auth authority localtx append | credential/session rollback must also rollback event; no credential values in command/error evidence |
+| password_reset_tokens tokenhash/expiry/used | Academic V1 schema; Auth transaction insert/supersede/consume | latestticket/single-use +credential/session/event/outbox rollback |
+| auth_outbox event type/payload/status | Academic V42 schema; Auth PasswordChangedOutbox using same JdbcTemplate/transaction | password/reset intent same localtx, publisher acceptance separate deliverypackage; nofilecontents/credentials in receipts |
+
+Production Academicapplication.yml flywayenabled/classpathdbmigration; Authapplication.yml flywaydisabled and points same academic_db. Auth src/test/resources/db/migration/V1/V2 are isolated testfixtures, not production pipeline. JdbcSessionAuthorityIT itself intentionally loads original Academic migration directory (locates V24), fresh disposablePG; reads newestavailable migrationchain, so V1..V24 comment is historical wording rather than a version cap. Existing export author owns further accepted shared-schema migration additions; this scope creates none.
+
+Meaningful existing selected oracles: snapshotWaitsForHeldGrantWriterLockAndReturnsWhollyNewTuple; injectedFailureAfterPasswordEventRollsBackCredentialFlagsSessionsAndEvent; injectedFailureAfterPasswordSessionRevokeRollsBackCredentialAndSessions. SECURITY2 already executes SessionAuthFlowIT.passwordChangeCommitsClearRevokesBearerAndReplacesCredential; do not duplicate that clearinitialpassword userflow. Other proposed L08methods are separate heldwriter/localfailure risks unless newer exactreceipts show sufficient existingPASS. No new schema/DBsplit/Saga/2PC change.

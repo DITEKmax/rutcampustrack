@@ -1,0 +1,136 @@
+{
+  "at": "2026-10-12T00:43:00.513760+00:00",
+  "phase": "ebsr-crosslayer-after-2",
+  "head": "b45da01a335c4ae44c40c268ac224b2a3d2dba39",
+  "wipHash": "dcbb452a806d114e0e90cb6db0e2636781a2e2b93f9ada5ae101c15ba6748fed",
+  "command": [
+    "python3",
+    "/workspace/rct-cloud-setup/run-gradle.py",
+    ":services:auth-service:auth-app:integrationTest",
+    "--tests",
+    "ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT",
+    "--rerun",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "-Dorg.gradle.jvmargs=-Xmx768m"
+  ],
+  "lease": "EXPORTS3",
+  "status": "FAIL",
+  "sourceManifest": "ebsr-crosslayer-after-2-source-manifest.json",
+  "sourceManifestSHA256": "217744ddb94ba09a139ed3894245f28e633f4ea913f9feeb381e9de8002e0ea9",
+  "testFixtureControls": {},
+  "diskFreeBeforeBytes": 6489858048,
+  "diskFreeAfterBytes": 5384523776,
+  "exitCode": 1,
+  "finished": "2026-10-12T00:43:56.294409+00:00",
+  "logSHA256": "18e9b9f9307e09408e4b6e44901d2700d2ed1eccc68ac58b5895bac2dcda0976",
+  "sourceFilesUnchangedDuringRun": true,
+  "taskExecution": {
+    ":services:auth-service:auth-app:integrationTest": "> Task :services:auth-service:auth-app:integrationTest"
+  },
+  "suites": {
+    ":services:auth-service:auth-app:integrationTest": [
+      {
+        "suite": "ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT",
+        "tests": 18,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0,
+        "xmlSHA256": "9093ac1bb6fcfcd7b2ec87464a01112feb9373735422e0955a3b8c01b9feddea",
+        "cases": [
+          {
+            "name": "freshAuthClaimPassesRealGatewayWorkerAndCommitsReadyBytes()",
+            "outcome": "FAIL",
+            "failureType": "org.opentest4j.AssertionFailedError"
+          },
+          {
+            "name": "[1] wire=8",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "[2] wire=\"8\"",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "[3] wire=null",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "[4] wire=\"UNKNOWN\"",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "[5] wire=[]",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "[6] wire={}",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "[7] wire=true",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "legacySixtySecondAuthorityWorksWhileTamperedChangedExpiredAndLongCapabilitiesNeverDispatch()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "limitedLegacyIssuanceUsesCorrespondingCurrentViewGrantAndRevocation()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "unavailableLiveRegistryAuthorityCannotIssueACapability()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "limitedWithoutViewGrantsCannotIssueEitherRegistryCapability()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "expiryBetweenRealAdmissionAndContentReadIsNotFoundWithoutBytes()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "configuredAuthMapperPreservesAllCanonicalStringCodesAndRejectsMalformedRequiredKinds()",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "[1] user=teacher",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "[2] user=student",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "[1] wire=8",
+            "outcome": "PASS",
+            "failureType": null
+          },
+          {
+            "name": "[2] wire=\"8\"",
+            "outcome": "PASS",
+            "failureType": null
+          }
+        ]
+      }
+    ]
+  }
+}

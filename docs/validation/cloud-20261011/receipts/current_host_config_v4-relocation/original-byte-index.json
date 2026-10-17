@@ -1,0 +1,82 @@
+{
+  "source": "/workspace/scratch/rct-validation/current_host_config_v4/relocation",
+  "manifest": "manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.json",
+      "original_sha256": "6e07a9d5b480ca653844a587c217a6676d071ae55b6d599d5f65d165f5e99c45",
+      "original_bytes": 1147,
+      "working_sha256": "6e07a9d5b480ca653844a587c217a6676d071ae55b6d599d5f65d165f5e99c45",
+      "working_bytes": 1147,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "copy-verified.safe.json",
+      "original_sha256": "1fdb108579e899dbee8f171ba2455a90074dedada4a726d03612a284c76e1996",
+      "original_bytes": 264,
+      "working_sha256": "1fdb108579e899dbee8f171ba2455a90074dedada4a726d03612a284c76e1996",
+      "working_bytes": 264,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "launch.safe.json",
+      "original_sha256": "1d355056fa2b9fd89b4c98a0ec2309422a5b30686cbf5c971e214e2ff51e5411",
+      "original_bytes": 199,
+      "working_sha256": "1d355056fa2b9fd89b4c98a0ec2309422a5b30686cbf5c971e214e2ff51e5411",
+      "working_bytes": 199,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "preflight.safe.json",
+      "original_sha256": "cc0884a8d56e3b70d4b411ed3c6932797dd8d450d367d4336dbbbad19f54b399",
+      "original_bytes": 1841,
+      "working_sha256": "cc0884a8d56e3b70d4b411ed3c6932797dd8d450d367d4336dbbbad19f54b399",
+      "working_bytes": 1841,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "relocate.py",
+      "original_sha256": "9a93c28b2aca35156bbfbe628111c0d48aa1fa5445c07168095c6bfbcdfb09e4",
+      "original_bytes": 8163,
+      "working_sha256": "cc95df6f73ed3b33e85edd05ca5eded4d3895fae7c326fa14efb02bcc1f79adf",
+      "working_bytes": 2943,
+      "transformation": "byte equal; lossless zipped original view",
+      "working_path": "relocate.py.readable.zip"
+    },
+    {
+      "path": "relocation-terminal.safe.json",
+      "original_sha256": "6e07a9d5b480ca653844a587c217a6676d071ae55b6d599d5f65d165f5e99c45",
+      "original_bytes": 1147,
+      "working_sha256": "6e07a9d5b480ca653844a587c217a6676d071ae55b6d599d5f65d165f5e99c45",
+      "working_bytes": 1147,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "retirement-journal.safe.json",
+      "original_sha256": "35e146b9a5afb1f57a34fd76d1515d81c3263bbd752015b7eb2fb4deecc89d99",
+      "original_bytes": 319,
+      "working_sha256": "35e146b9a5afb1f57a34fd76d1515d81c3263bbd752015b7eb2fb4deecc89d99",
+      "working_bytes": 319,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-registry.safe.json",
+      "original_sha256": "c8611b6365c0a817a310bedacb086a4a1d6f000b5dffa966eaf1093cceee288e",
+      "original_bytes": 295195,
+      "working_sha256": "c6313dcd3e81b38738a2546d162368b28e231ac83638bb9a71e42407765b1f48",
+      "working_bytes": 29148,
+      "transformation": "byte equal; lossless zipped original view",
+      "working_path": "source-registry.safe.json.readable.zip"
+    },
+    {
+      "path": "manifest.json",
+      "original_sha256": "4def604cc8ac50da77cb7cc7d0d9e53bb8a82e49b09c31d2488c057416955be5",
+      "original_bytes": 2361,
+      "working_sha256": "4def604cc8ac50da77cb7cc7d0d9e53bb8a82e49b09c31d2488c057416955be5",
+      "working_bytes": 2361,
+      "transformation": "external original manifest byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip",
+  "manifest_external": true
+}

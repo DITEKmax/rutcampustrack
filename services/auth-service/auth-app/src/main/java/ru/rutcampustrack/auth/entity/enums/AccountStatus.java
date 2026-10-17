@@ -1,3 +1,8 @@
 package ru.rutcampustrack.auth.entity.enums;
 
-public enum AccountStatus { ACTIVE, EXPELLED, SUSPENDED, ARCHIVED }
+public enum AccountStatus {
+    ACTIVE,
+    EXPELLED,
+    SUSPENDED,
+    ARCHIVED
+}

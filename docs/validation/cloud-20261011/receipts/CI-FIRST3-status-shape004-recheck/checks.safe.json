@@ -1,0 +1,27 @@
+{
+  "kind": "INDEPENDENT_STATUS_SHAPE004_TARGETED_SOURCE_RECHECK",
+  "verdict": "APPROVE_SOURCE_ONLY",
+  "finding": "CI-F3-STATUS-SHAPE-004",
+  "status": "CLOSED_SOURCE",
+  "requested_selected": "gpt-6.1-sol/high",
+  "actual_model_effort": "UNKNOWN",
+  "ready_sha256": "4827fd3967b1f11951ef9c93b2ed78c813fecb8913084cec15444f6c4fb39491",
+  "source_sha256": "74ff02435f49e5c334a5f569a6eed5bb4562677fed2841199ceaf0b2a6699066",
+  "helper_sha256": "536f477ada60fbd61b33f34a97d91bbd0726441530324780ed87c87b8d0547c4",
+  "checks": {
+    "exact_two_line_plus_comment_reversal": true,
+    "old_source_helper_READY_seals_preserved": true,
+    "five_old_accepted_malformed_new_denied": 5,
+    "known_subset_positives": 2,
+    "whitelisted_RAM_only_source_override_same_module_resolution": true,
+    "strengthened_lateSTOP_rejection": true,
+    "planned_control_count": 29
+  },
+  "native_controls_RED_GREEN_types_browser": "NOT_RUN",
+  "qualifications": [
+    "RAM transcription of exact source regex+delimiter test; not actual JS execution",
+    "Only code-description-cause=null subset, braces/delimiter ambiguity/non-nullcause remain UNKNOWN",
+    "Existing privacy/async and postbuffer8KiB qualifications retained",
+    "Actual roster503 cause UNKNOWN"
+  ]
+}

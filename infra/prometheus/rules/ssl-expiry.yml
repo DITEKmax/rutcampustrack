@@ -20,8 +20,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "TLS-cert {{ $labels.instance }} истекает через {{ $value | printf \"%.1f\" }} дней"
-          description: "Сертификат для {{ $labels.instance }} истекает через {{ $value | printf \"%.1f\" }} дней. Let's Encrypt должен auto-renew (certbot loop sleep 12h), nginx auto-reload каждые 5 мин подхватит. Если cert не обновляется — см. docs/runbooks/cert-renewal.md."
+          summary: 'TLS-cert {{ $labels.instance }} истекает через {{ $value | printf "%.1f" }} дней'
+          description: 'Сертификат для {{ $labels.instance }} истекает через {{ $value | printf "%.1f" }} дней. Let''s Encrypt должен auto-renew (certbot loop sleep 12h), nginx auto-reload каждые 5 мин подхватит. Если cert не обновляется — см. docs/operations/runbooks/cert-renewal.md.'
 
       # CRITICAL — < 7 дней. Если auto-renew всё ещё не сработал, надо
       # руками разбираться. ACME challenge может быть сломан (DNS,
@@ -34,8 +34,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "URGENT: cert {{ $labels.instance }} истекает через {{ $value | printf \"%.1f\" }} дней"
-          description: "Auto-renew не сработал за 23+ дня. Manual intervention срочно: `docker exec rct-certbot certbot renew --force-renewal`. Если ACME challenge fail — проверь nginx /.well-known/acme-challenge/ + firewall :80."
+          summary: 'URGENT: cert {{ $labels.instance }} истекает через {{ $value | printf "%.1f" }} дней'
+          description: 'Auto-renew не сработал за 23+ дня. Manual intervention срочно: `docker exec rct-certbot certbot renew --force-renewal`. Если ACME challenge fail — проверь nginx /.well-known/acme-challenge/ + firewall :80.'
 
       # Probe failure — не можем dotter cert info вообще. Cert может быть
       # уже expired либо HTTPS endpoint down.

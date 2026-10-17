@@ -1,0 +1,53 @@
+{
+  "schema": "RCT_ENUM_TEST_ONLY_SOURCE_STAGE_SAFE_V1",
+  "state": "TEST_SOURCE_READY_PRODUCTION_ORIGINAL_NATIVE_NOT_RUN",
+  "HEAD": "4c3745f2febdd4b9bcdd39a4e5f1fc9b3199fab1",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "bytes": 247,
+      "sha256": "11d21066d0fff06c330d137176d9749a0a33e87adb755468302fa99948027eb7"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 745,
+      "sha256": "9893f7479b5043746bfd35a77bdcf5336c8550a30e6d9e6cdb7e3d6fd8522fa9"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 3501,
+      "sha256": "ad85c3e5abf40b6fa7b54aab0e430d2895f060f6833a8f219cdd947eff84e15f"
+    },
+    {
+      "path": "before-edit.safe.json",
+      "bytes": 1354,
+      "sha256": "cda419a3965c12f6d13900db4905674b600e072ae34f30908d1281eab0d41c39"
+    },
+    {
+      "path": "before-tracked-source-inventory.safe.json",
+      "bytes": 3137063,
+      "sha256": "a2fcd6dd1fb2c9b270e04cd53fe2a3f3194e091557bcd0e7a4f5373479cd1bfb"
+    },
+    {
+      "path": "final-stage.safe.json",
+      "bytes": 438,
+      "sha256": "80930938f52b21ce17c944264cae1a57d8366e2594ace04f71981ecddaf0e92e"
+    },
+    {
+      "path": "preflight.safe.json",
+      "bytes": 471,
+      "sha256": "959aa1eae73fb630d68cc525d1bd339b215bdedec6b5ba1ea1dedbe88663238c"
+    },
+    {
+      "path": "test-only-ready.safe.json",
+      "bytes": 1000,
+      "sha256": "b1bb6a64d34f456912214d336baa51d346a8e23b84b74c94f2021907d0a53965"
+    },
+    {
+      "path": "test-only.public.diff",
+      "bytes": 7619,
+      "sha256": "c56f50b7409b5df9557ce3480709cbc4c1031ddcd18b42a702cb8acd8e72145d"
+    }
+  ],
+  "self_manifest": "Inner member, exact bytes bound by outer seal"
+}

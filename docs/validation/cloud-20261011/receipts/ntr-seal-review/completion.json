@@ -1,0 +1,33 @@
+{
+  "completed_utc": "2026-10-12T00:30:13.661747+00:00",
+  "reviewer": "ntr_seal_review",
+  "status": "COMPLETE_SCOPED_INDEPENDENT_REVIEW",
+  "verdict": "APPROVE",
+  "reviewed_commit": "d674ea1ff1d26bf40f2585e0a3438c1896e60a1b",
+  "parent": "fa02ce439dfb989fc28eaddcbf1a8840d16bf9ff",
+  "review_sha256": "57f2d59ec8a09e59782b38ddbf60afa7a6cf7a00f9b8af5609ba2af330991a4a",
+  "findings_sha256": "f65bd5dd69207a17e74caaaab12786bbd61d91689bd5585dfeeac410ccbe9f2e",
+  "audit_command": "python3 /workspace/scratch/rct-validation/ntr_seal_review/audit.py",
+  "audit_native_exit": 0,
+  "all_292_green_prelaunch_current_git_hashes_equal": true,
+  "source_originals_preserved": true,
+  "whole_project_DONE": false,
+  "NP01": "P2 GAP remains",
+  "runtime_replay": "NOT_RUN",
+  "source_writes": 0,
+  "children": 0,
+  "prior_partial_completion": "Not fabricated; this completion applies only to ntr_seal_review",
+  "own_helper_attempts": [
+    {
+      "attempt": 1,
+      "native_exit": 1,
+      "reason": "Own audit literal control-comment mismatch before source bridge audit; no product/runtime execution"
+    },
+    {
+      "attempt": 2,
+      "native_exit": 0,
+      "reason": "Exact original comment used; complete independent static/hash/XML/archive audit PASS"
+    }
+  ],
+  "next": "Root bounded integration; NP01 implementation/verification remains separate"
+}

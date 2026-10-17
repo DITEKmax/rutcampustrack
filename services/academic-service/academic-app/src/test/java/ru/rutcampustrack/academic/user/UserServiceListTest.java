@@ -1,5 +1,14 @@
 package ru.rutcampustrack.academic.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,19 +31,11 @@ import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 /**
  * Unit tests for {@link UserService#listUsers(String, UserRole, AccountStatus, Pageable)}.
  *
- * <p>BUG-006 / Plan 58-01 Task 2. Моки вокруг UserRepository — проверяем, что сервис
- * собирает Specification и делегирует вызов repository.findAll(spec, pageable).
+ * <p>BUG-006 / Plan 58-01 Task 2. Моки вокруг UserRepository — проверяем, что сервис собирает
+ * Specification и делегирует вызов repository.findAll(spec, pageable).
  */
 @ExtendWith(MockitoExtension.class)
 class UserServiceListTest {
@@ -46,16 +47,24 @@ class UserServiceListTest {
     @Mock UserAssembler userAssembler;
     @Mock ApplicationEventPublisher eventPublisher;
 
-    @InjectMocks
-    UserService service;
+    @InjectMocks UserService service;
 
     Pageable pageable;
 
     @BeforeEach
     void setUp() {
-        service = new UserService(userRepository, headmanAssistantRepository,
-                studentGroupHistoryRepository, requestContext, userAssembler,
-                null, eventPublisher);
+        service =
+                new UserService(
+                        userRepository,
+                        headmanAssistantRepository,
+                        studentGroupHistoryRepository,
+                        requestContext,
+                        userAssembler,
+                        null,
+                        eventPublisher,
+                        org.mockito.Mockito.mock(
+                                org.springframework.security.crypto.password.PasswordEncoder
+                                        .class));
         pageable = PageRequest.of(0, 20);
     }
 
@@ -66,12 +75,13 @@ class UserServiceListTest {
         when(userRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(expected);
 
-        Page<User> result = service.listUsers("иван", UserRole.STUDENT,
-                AccountStatus.ACTIVE, pageable);
+        Page<User> result =
+                service.listUsers("иван", UserRole.STUDENT, AccountStatus.ACTIVE, pageable);
 
         assertThat(result).isSameAs(expected);
 
-        ArgumentCaptor<Specification<User>> specCaptor = ArgumentCaptor.forClass(Specification.class);
+        ArgumentCaptor<Specification<User>> specCaptor =
+                ArgumentCaptor.forClass(Specification.class);
         verify(userRepository).findAll(specCaptor.capture(), any(Pageable.class));
         // Specification.where(matchesSearch(...)).and(matchesRole(...)).and(matchesStatus(...))
         // всегда non-null как root wrapper даже если inner — null.
@@ -117,19 +127,21 @@ class UserServiceListTest {
 
     @Test
     void roleStatusFilterRejectsStatusFromAnotherRole() {
-        assertThatThrownBy(() -> service.listUsers(
-                null, "STUDENT", null, "DISMISSED", pageable))
+        assertThatThrownBy(() -> service.listUsers(null, "STUDENT", null, "DISMISSED", pageable))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("не применим");
     }
 
     @Test
     void archivedRoleStatusRemainsFilterableAsReadOnlyHistory() {
-        when(userRepository.findAll(any(Specification.class), any(Pageable.class)))
+        when(userRepository.findAdminRegistryIncludingArchived(
+                        isNull(), eq("teacher"), eq("archived"), isNull(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of()));
 
         service.listUsers(null, "TEACHER", null, "ARCHIVED", pageable);
 
-        verify(userRepository).findAll(any(Specification.class), any(Pageable.class));
+        verify(userRepository)
+                .findAdminRegistryIncludingArchived(
+                        isNull(), eq("teacher"), eq("archived"), isNull(), any(Pageable.class));
     }
 }

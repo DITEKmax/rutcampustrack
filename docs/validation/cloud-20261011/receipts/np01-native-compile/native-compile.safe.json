@@ -1,0 +1,238 @@
+{
+  "id": "NP01_COMPILE_NATIVE_01",
+  "producer_base": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+  "run_id": "np01-compile-20261012-1559",
+  "native_session": 63188,
+  "direct_child_start_utc_from_proc_birth": "2026-10-12T15:59:32.460000+00:00",
+  "terminal_utc": "2026-10-12T16:01:29.029037+00:00",
+  "native_exit": 0,
+  "settled": true,
+  "all_owned_processes_reaped": true,
+  "peak_owned_rss_bytes": 1418756096,
+  "commands": [
+    "bash",
+    "gradlew",
+    ":services:auth-service:auth-app:jar",
+    ":services:academic-service:academic-app:compileJava",
+    ":services:academic-service:academic-app:compileTestJava",
+    "--offline",
+    "--no-daemon",
+    "--no-parallel",
+    "--max-workers=1",
+    "--no-build-cache",
+    "--console=plain",
+    "-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m"
+  ],
+  "native_tasks": [
+    {
+      "task": ":services:shared:shared-web-api:compileJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:auth-service:auth-api-contract:compileJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:auth-service:auth-api-contract:processResources",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:shared:shared-events:processResources",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:shared:shared-logback:processResources",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-observability:processResources",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-outbox:processResources",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:shared:shared-security:processResources",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:shared:shared-web:processResources",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-web-api:processResources",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:auth-service:auth-app:extractIncludeProto",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:auth-service:auth-app:extractProto",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:auth-service:auth-app:generateProto",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-events:compileJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-logback:compileJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-observability:compileJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-outbox:compileJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-security:compileJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-web:compileJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:auth-service:auth-app:compileJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":generateGitProperties",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:auth-service:auth-app:processResources",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:auth-service:auth-app:classes",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:auth-service:auth-app:jar",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:academic-service:academic-api-contract:compileJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:academic-service:academic-api-contract:processResources",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:academic-service:academic-app:extractIncludeProto",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:academic-service:academic-app:extractProto",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:academic-service:academic-app:generateProto",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:academic-service:academic-app:compileJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:academic-service:academic-app:processResources",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:academic-service:academic-app:classes",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-observability:processTestFixturesResources",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:shared:shared-security:processTestFixturesResources",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:shared:shared-test-containers:processResources",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:shared:shared-test-containers:processTestFixturesResources",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:academic-service:academic-app:extractIncludeTestProto",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:academic-service:academic-app:extractTestProto",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:academic-service:academic-app:generateTestProto",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:shared:shared-observability:compileTestFixturesJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-security:compileTestFixturesJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:shared:shared-test-containers:compileJava",
+      "status": "NO-SOURCE"
+    },
+    {
+      "task": ":services:shared:shared-test-containers:compileTestFixturesJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    },
+    {
+      "task": ":services:academic-service:academic-app:compileTestJava",
+      "status": "EXECUTED_OR_AGGREGATE"
+    }
+  ],
+  "build_success_marker": "BUILD SUCCESSFUL in 1m 55s",
+  "actionable_tasks_marker": "30 actionable tasks: 30 executed",
+  "required_tasks_actually_executed": true,
+  "actual_artifacts": [
+    {
+      "path": "services/auth-service/auth-app/build/libs/auth-app-0.1.0-plain.jar",
+      "sha256": "2f37b9b82e6b2993395f4d7ae3680495a71ee4890e2ab03466048dae91da238c",
+      "bytes": 3144982,
+      "mtime_utc": "2026-10-12T16:00:55.376578+00:00",
+      "contains_actual_AuthOutboxPublisherJob": true
+    },
+    {
+      "path": "services/academic-service/academic-app/build/classes/java/test/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.class",
+      "sha256": "ec889b58577188c9be1482eea3e44d514af2ef5dfd551bcd1e06d970de3f6a04",
+      "bytes": 64304,
+      "mtime_utc": "2026-10-12T16:01:24.565129+00:00"
+    }
+  ],
+  "private_raw_log": {
+    "path": "/workspace/scratch/rct-validation/np01_broker_sensitivity_caller_correction/np01-compile-20261012-1559/native.raw.private.log",
+    "mode": "0600",
+    "bytes": 9599,
+    "sha256": "a435989848ed6a2275bd7c5d091473eaafc488a0d31afcda452d9fc800b0a215",
+    "body_archived": false
+  },
+  "grant_sha256": "416a5561c400fae545db222a22ed84470e2ec1bcd6104eca69412f49a1e91c50",
+  "grant_body_archived": false,
+  "nonce_record_consumed_and_removed": true,
+  "native_fault_integration_or_normal7": "NOT_RUN",
+  "original5volumes_nativeMongo_key": "NOT_MUTATED_BY_THIS_STAGE",
+  "source_and_barrier_receipts": [
+    "post-compile-source-capacity.safe.json",
+    "post-compile-container-barrier.safe.json"
+  ]
+}

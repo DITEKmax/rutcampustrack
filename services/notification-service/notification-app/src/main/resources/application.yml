@@ -83,7 +83,7 @@ vapid:
 rutcampustrack.push.cleanup:
   retention-days: 90
   # Воскресенье 03:00 UTC. @SchedulerLock защищает от параллельных запусков.
-  cron: "0 0 3 * * SUN"
+  cron: '0 0 3 * * SUN'
 
 management:
   endpoints:
@@ -107,6 +107,11 @@ management:
       enabled: true
   # M04 QA2 (NEW-58/59) — distributed tracing OTel → Tempo.
   tracing:
+    baggage:
+      remote-fields: requestId
+      tag-fields: requestId
+      correlation:
+        fields: requestId
     sampling:
       probability: 1.0
   otlp:

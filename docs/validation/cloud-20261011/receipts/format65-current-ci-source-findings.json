@@ -1,0 +1,23 @@
+{
+  "time": "2026-10-12T10:41:37.257130+00:00",
+  "scope": "CURRENT65-CI-EARLY",
+  "outcome": "CONFIRMED_SOURCE_GATE_DEFECTS",
+  "findings": [
+    {
+      "id": "FMT-RUFF-VERSION-01",
+      "cause": "currentCI unpinnedRuff0.17.0 vsformatter0.11.13 onebrokerPythonfileformatdiff",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "run": 38236931589,
+      "job": 114769785871
+    },
+    {
+      "id": "FMT-BOOTSTRAP-ORACLE-01",
+      "cause": "Existing bootstrap sourcecheck exactsinglelineassert sensitive tosemantics-preservingwrap",
+      "revision": "65e0baeff26ac5673420bfc55e51a75085636423",
+      "run": 38236931576,
+      "job": 114769785698,
+      "case": "keeps the sole bootstrap snapshot recovery call behind the narrow guard"
+    }
+  ],
+  "next": "sameformatter author compatiblecorrections+independentreview, no gateweakening"
+}

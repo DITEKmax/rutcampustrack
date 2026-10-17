@@ -1,0 +1,21 @@
+{
+  "time": "2026-10-12T10:38:26.554457+00:00",
+  "scope": "FORMAT-PUSH-REMOTE",
+  "outcome": "VERIFIED_LOCAL_REMOTE_PR_EQUAL",
+  "head": "65e0baeff26ac5673420bfc55e51a75085636423",
+  "push_session": 55233,
+  "native_exit": 0,
+  "pr": "https://github.com/DITEKmax/rutcampustrack/pull/2",
+  "draft": true,
+  "base": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "current_runs": {
+    "Coverage": 38236931576,
+    "Security": 38236931590,
+    "CI": 38236931589,
+    "OpenAPI": 38236931530
+  },
+  "actual_checkout_reported": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+  "Security": "SUCCESS",
+  "OpenAPI": "SUCCESS",
+  "CI_Coverage": "NONTERMINAL; nativeGateway32s compile/testPASS reported"
+}

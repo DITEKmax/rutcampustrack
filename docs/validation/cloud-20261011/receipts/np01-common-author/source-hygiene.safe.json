@@ -1,0 +1,36 @@
+{
+  "Gitleaks": "official8.24.3 owned three commit source range",
+  "source_commit": "9757742e9c6baf75760c6cb5174fbdd0fd491a0c",
+  "findings": 0,
+  "scoped_file_checks": [
+    {
+      "path": "proto/academic.proto",
+      "under_1024KB": true,
+      "EOF": true,
+      "no_trailing_whitespace": true
+    },
+    {
+      "path": "event-schemas/password.changed.json",
+      "under_1024KB": true,
+      "EOF": true,
+      "no_trailing_whitespace": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/main/resources/db/migration/V57__bot_credential_message_lifecycle.sql",
+      "under_1024KB": true,
+      "EOF": true,
+      "no_trailing_whitespace": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/migration/BotCredentialLifecycleMigrationIT.java",
+      "under_1024KB": true,
+      "EOF": true,
+      "no_trailing_whitespace": true
+    }
+  ],
+  "JSON_parser": "PASS",
+  "YAML_parser": "N/A",
+  "actual_precommit_hooks": "NOT_INSTALLED in new WT; no automaticsixhook claim",
+  "Java_formatter": "NOT_RUN; lease required; only new retained IT formatting scope",
+  "historical_migrations": "excluded fromformatting with all56hashes exact"
+}

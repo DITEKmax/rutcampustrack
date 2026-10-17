@@ -1,0 +1,61 @@
+{
+  "schema": "RCT_D002_CALLBACK_CONST_NODE02_SEAL",
+  "files": [
+    {
+      "path": "REPORT.safe.json",
+      "sha256": "59065e60e3af4654a57f826a3c35aae1d3ed98ec5dcd46620f63f927dace9230",
+      "bytes": 2625
+    },
+    {
+      "path": "SOURCE-CHECKS.safe.json",
+      "sha256": "8c3cd976175f160596982932b835b29de6e3a1792e60f4da2f75b72c7a8eff42",
+      "bytes": 332
+    },
+    {
+      "path": "list-launch.safe.json",
+      "sha256": "4ef9acd1c255d49d11b1d8ea36d979a23ec4f88d806eadebed62c055589abff9",
+      "bytes": 731
+    },
+    {
+      "path": "list-process.safe.json",
+      "sha256": "727c8999252f7b1817e79491d87c528e365379848c6456a22db8fd69dafb17ca",
+      "bytes": 147
+    },
+    {
+      "path": "list-terminal.safe.json",
+      "sha256": "ee00568e7800fc86538ac61127b1257b7a1b1bd928e9ce8e3ce353a3ba0c7c3a",
+      "bytes": 565
+    },
+    {
+      "path": "list.safe.json",
+      "sha256": "760a3609072007a4f6b8eb1b66202b627e480256369f54d7caa7bd1e7d757f32",
+      "bytes": 248
+    },
+    {
+      "path": "supervisor.safe.json",
+      "sha256": "f02f19750966c12f320115e50fe9a9dc9294571549947a668060afd7f72277c3",
+      "bytes": 133
+    },
+    {
+      "path": "types-launch.safe.json",
+      "sha256": "0f03042d4de63ade1f5a1a77ac045bdf76cc335208d72bc6ce8a1a04e90550d2",
+      "bytes": 433
+    },
+    {
+      "path": "types-process.safe.json",
+      "sha256": "6b73a5c3107ec8d6917cd529a51ec44fa03644fd03c041979aaf965f2cbe39ed",
+      "bytes": 147
+    },
+    {
+      "path": "types-terminal.safe.json",
+      "sha256": "93288b6264954e9f347f58bcaf413fe2a5d672481380f1e02e73242b2495bd94",
+      "bytes": 565
+    },
+    {
+      "path": "types.safe.json",
+      "sha256": "49297d54022181c738ac77a50630c2261697805dd5dd3d319adca59b38d3bd09",
+      "bytes": 154
+    }
+  ],
+  "report_sha256": "59065e60e3af4654a57f826a3c35aae1d3ed98ec5dcd46620f63f927dace9230"
+}

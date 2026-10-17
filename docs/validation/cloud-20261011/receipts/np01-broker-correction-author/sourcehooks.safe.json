@@ -1,0 +1,21 @@
+{
+  "utc": "2026-10-12T05:00:56.525704+00:00",
+  "native_exit": 0,
+  "elapsed_seconds": 0.978,
+  "scope": [
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java",
+    "services/notification-bot/tests/np01_broker_bridge_runner.py"
+  ],
+  "command": "uv --offline tool run --from pre-commit==4.6.2 pre-commit run --files EXACT_TWO",
+  "outcomes": [
+    "Gitleaks secret detection................................................Passed",
+    "check yaml...........................................(no files to check)Skipped",
+    "check json...........................................(no files to check)Skipped",
+    "check for added large files..............................................Passed",
+    "fix end of files.........................................................Passed",
+    "trim trailing whitespace.................................................Passed"
+  ],
+  "raw_log": "sourcehooks.raw.private.log mode600 excluded from transfer",
+  "source_only": true,
+  "broker_jvm_docker_network": "NOT_RUN"
+}

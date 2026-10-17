@@ -1,0 +1,1462 @@
+{
+  "schema": 1,
+  "review_kind": "independent completeness; not runtime acceptance",
+  "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "initial_inventory": {
+    "stories": 147,
+    "research_families": 30,
+    "client_families": 41,
+    "total_overlapping_families": 218
+  },
+  "required_boundary_rows": [
+    {
+      "id": "BOUNDARY-01",
+      "check_group": "G1",
+      "priority": 1,
+      "source_ids": [
+        "JS-SYSTEM-02",
+        "JS-SYSTEM-14",
+        "JS-ADMIN-26",
+        "AU-10"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:148",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:325"
+      ],
+      "source_fragment": "Активная роль живёт на сервере; Admin по умолчанию не выбирается никогда.",
+      "actor_grants": "One synthetic account with active STUDENT, HEADMAN, TEACHER, ADMIN grants; explicitly selected role",
+      "client": "PWA/TMA + real Auth/server",
+      "prestate": "No selected role then authenticated session; two tabs",
+      "action": "Login default; choose HEADMAN/ADMIN; reload; attempt another-role command before switch",
+      "expected_observable": "Canonical profile/grants/active semester returned; selected role persists; role command allowed only after authoritative selection",
+      "forbidden_or_invariant": "No scalar-role fixture substitutes for live grant; ADMIN never implicit default; no operation under unrelated selected role",
+      "minimal_sufficient_actual_check": "Existing real auth smoke plus one multi-role Vue flow; direct wrong-selected-role request denied with no DB/outbox effect",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-02",
+      "check_group": "G1",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-02",
+        "JS-SYSTEM-04",
+        "AU-05",
+        "RESEARCH-P06"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:148",
+        "docs/product/decisions/2026-10-08-limited-administrators.md:9",
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:38"
+      ],
+      "source_fragment": "Отзыв прав действует на последующие запросы открытой сессии.",
+      "actor_grants": "Selected active role; committed revoke/status/password reset; other account role remains active",
+      "client": "Gateway/Auth/domain + PWA/TMA",
+      "prestate": "Retain old valid bearer/refresh and open browser",
+      "action": "Commit revoke then next mutation/refresh; temporarily unavailable authority; restart Auth",
+      "expected_observable": "Revoked authority denied; unaffected role retains its distinct rights; outage fails closed; restart keeps durable revoke",
+      "forbidden_or_invariant": "No stale permission, implicit FULL fallback or role resurrection",
+      "minimal_sufficient_actual_check": "JdbcSessionAuthorityIT/InternalSessionAdmissionIT on real PostgreSQL plus one browser revoke/foreground check; capture denial and unchanged protected state",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-03",
+      "check_group": "G1",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-02",
+        "AC-09",
+        "AU-10"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:156"
+      ],
+      "source_fragment": "Роли в терминальных статусах ... данные только для чтения.",
+      "actor_grants": "Account with terminal STUDENT and active TEACHER; no archived-account restoration",
+      "client": "Auth + domain + Vue role switcher",
+      "prestate": "Historical own student data and current teacher assignment",
+      "action": "Select terminal role; read permitted history; submit ordinary mutation; switch active teacher",
+      "expected_observable": "Terminal role read-only where admitted; teacher role works independently",
+      "forbidden_or_invariant": "Terminal role cannot write; terminal role not confused with archived account or suspended status",
+      "minimal_sufficient_actual_check": "One real role-selection/read/mutation HTTP flow with role status matrix limited to accepted distinctions, then Vue read-only controls",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-04",
+      "check_group": "G1",
+      "priority": 1,
+      "source_ids": [
+        "JS-SYSTEM-03",
+        "JS-SYSTEM-13",
+        "AU-11",
+        "AU-12"
+      ],
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:853",
+        "docs/architecture/reference-rutcampustrack-design/backend-requests.md:101"
+      ],
+      "source_fragment": "OTP действует 120 секунд, одноразовый, максимум 3 попытки за 5 минут; явное назначение.",
+      "actor_grants": "Anonymous login/reset; authorized dangerous-action owner",
+      "client": "Actual public Auth + synthetic trusted bot boundary",
+      "prestate": "Synthetic OTP challenges for login/password_reset/dangerous_action; fixed clock",
+      "action": "Consume once; repeat; wrong purpose/identity; exact TTL and attempt budget boundaries",
+      "expected_observable": "Typed expiry/rate/purpose denial; TTL/attempt metadata; one authorized effect",
+      "forbidden_or_invariant": "Wrong-purpose code cannot grant session or delete data; no secret/error echo, no double consume",
+      "minimal_sufficient_actual_check": "Existing OTP HTTP/Redis tests using production consume and actual DB/session assertions; exact boundary clock; one concurrent consume race",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-05",
+      "check_group": "G1",
+      "priority": 1,
+      "source_ids": [
+        "JS-SYSTEM-13",
+        "AU-01"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-10-02-qr-login-backend-now.md:5",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:181"
+      ],
+      "source_fragment": "Срок действия, одноразовость, изоляция назначений и актуальные ограничения аккаунта обязательны.",
+      "actor_grants": "Anonymous issuer + currently admitted confirming account",
+      "client": "QR server routes; scan UI excluded separately",
+      "prestate": "Two synthetic issuers/challenges; authorized decider; no real phone/provider",
+      "action": "Issue/status; approve/reject; expired proof; concurrent exchange; actor revoke before exchange; exact accepted retry",
+      "expected_observable": "Only correct issuer exchanges one approved LOGIN request; accepted exact replay stays stable; revoked access denied",
+      "forbidden_or_invariant": "Cross challenge/purpose/issuer/session substitution, replay extra session, leakage or partial issue prohibited",
+      "minimal_sufficient_actual_check": "QrLoginFlowIT on actual HTTP/PostgreSQL/Redis; preserve security-filter/advice dispatch; no mobile QR UI demand",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-06",
+      "check_group": "G1",
+      "priority": 1,
+      "source_ids": [
+        "D003",
+        "JS-SYSTEM-02",
+        "CLIENT-FE-TMA-02"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-10-11-tma-init-data-reuse.md:5"
+      ],
+      "source_fragment": "Каждое обращение проверяет актуальный аккаунт, Telegram-привязку и права.",
+      "actor_grants": "Signed synthetic Telegram identity with current binding/account/grants",
+      "client": "Auth /api/auth/tma + real TMA transport and synthetic host",
+      "prestate": "Fixed clock; valid signed proof; current live binding",
+      "action": "Reuse within 86400 s; absent/non-numeric/overflow/future/expired auth_date; duplicate/tampered values; unbind/revoke then repeat",
+      "expected_observable": "Valid reuse admitted after fresh authority; malformed/expired/tampered proof denied without session issue",
+      "forbidden_or_invariant": "No reusable proof overrides status/binding/grants; no raw initData in artifacts; no same-session idempotence invented",
+      "minimal_sufficient_actual_check": "Existing TmaIT + focused signed malformed-data tests at current correction revision; current Vue TMA browser valid/tampered/reopen path",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-07",
+      "check_group": "G1",
+      "priority": 1,
+      "source_ids": [
+        "JS-SYSTEM-01",
+        "JS-SYSTEM-04",
+        "JS-HEADMAN-23",
+        "JS-ADMIN-20",
+        "R-01",
+        "R-19"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:78",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:262",
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:50"
+      ],
+      "source_fragment": "После смены пароля ... копирование снимается; значение не попадает в выгрузку.",
+      "actor_grants": "Own account change; current HEADMAN own group; FULL or LIMITED USER_CREDENTIALS_MANAGE+USERS_VIEW; USERS_VIEW-only negative",
+      "client": "Auth/academic credential boundary + Vue",
+      "prestate": "Synthetic initial/headman_reset/admin_reset credentials; changed password; active ADMIN target",
+      "action": "Wrong-old then correct password change; authorized copy/reset/link; read via USERS_VIEW; export all applicable formats",
+      "expected_observable": "Password hash verifies; changed plaintext unavailable; generated origin preserved; copy/reset audited; all sessions revoked",
+      "forbidden_or_invariant": "Changed password never returned/stored plaintext; no credentials in list/export/log/trace; LIMITED cannot target active ADMIN",
+      "minimal_sufficient_actual_check": "Existing password/session and AdminAccessAuthorityIT assertions + actual credential projection/copy endpoint and safe export content checks; synthetic markers only",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-08",
+      "check_group": "G1",
+      "priority": 1,
+      "source_ids": [
+        "RESEARCH-P07",
+        "RESEARCH-P21",
+        "RESEARCH-L03",
+        "RESEARCH-P11",
+        "RESEARCH-P17"
+      ],
+      "source_refs": [
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:44",
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:178",
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:221"
+      ],
+      "source_fragment": "Проверяй ... поддельных/невалидных credentials ... rejected values ... protected RPC policy.",
+      "actor_grants": "Anonymous/public caller; signed user; trusted service identity for exact protected RPC policy",
+      "client": "Gateway/direct Auth reachability; internal protected gRPC",
+      "prestate": "Synthetic JWT/keypair/invalid sensitive marker; no real secrets",
+      "action": "Bad algorithm/issuer/audience/purpose/claims; wrong caller→target→method/TLS; malformed/oversized chunked login; invalid sensitive DTO",
+      "expected_observable": "Typed safe 4xx/413/fail-closed; no credential rejected value/stack/SQL echo; only policy RPC authorization asserted",
+      "forbidden_or_invariant": "Consumer private signing key, blanket all-RPC protection claim or unit-only HTTP advice claim prohibited",
+      "minimal_sufficient_actual_check": "Existing InternalJwtValidator tests + protected RPC actual boundary; direct actual filter/advice check for secret marker and chunked 413; do not resurrect ruled-out QR echo hypothesis",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-09",
+      "check_group": "G2",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-26",
+        "JS-ADMIN-19",
+        "DEC-limited-admin",
+        "AC-11"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-10-08-limited-administrators.md:9",
+        "services/shared/shared-security/src/main/java/ru/rutcampustrack/shared/security/admin/AdminPermission.java:6"
+      ],
+      "source_fragment": "FULL управляет административными назначениями; LIMITED не получает это право.",
+      "actor_grants": "FULL; LIMITED with each canonical relevant capability and dependency; no grant",
+      "client": "Admin API and actual Vue",
+      "prestate": "12-code catalog; USERS_VIEW-only; each mutation representative; active ADMIN target",
+      "action": "Invalid/duplicate/unknown/null grant code or missing dependency; self escalation via dedicated/generic routes; allowed capability operation then revoke",
+      "expected_observable": "Canonical catalog returned; each relevant grant guards operation; invalid grants rejected; active ADMIN target protected",
+      "forbidden_or_invariant": "No full-only ADMIN_ACCESS_MANAGE in LIMITED; no scalar-role/generic/status/replay bypass",
+      "minimal_sufficient_actual_check": "AdminAccessAuthorityIT/AdminPermissionRpcIT on real DB; one actual Vue LIMITED flow. Cover codes by protected action once, not all permission subsets",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-10",
+      "check_group": "G2",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-02",
+        "JS-ADMIN-04",
+        "JS-ADMIN-19",
+        "AC-47"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-10-08-limited-administrators.md:15"
+      ],
+      "source_fragment": "Хотя бы один действующий полный администратор ... включая конкурирующие запросы.",
+      "actor_grants": "Two current FULL admins, LIMITED attacker; mixed-role targets",
+      "client": "Actual Admin DB/HTTP authority",
+      "prestate": "Two full admins and sessions; operation paused at global lock",
+      "action": "Concurrent downgrade/revoke/archive; downgrade waiting actor before command resumes",
+      "expected_observable": "One FULL always remains; stale waiting actor denied; unrelated role persists",
+      "forbidden_or_invariant": "No last-FULL loss, partial grants/session update or old admission race",
+      "minimal_sufficient_actual_check": "Existing AdminAccessAuthorityIT concurrent revocation and actor downgrade while waiting for the global lock + atomic PostgreSQL before/after counts",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-11",
+      "check_group": "G2",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-01",
+        "JS-ADMIN-19",
+        "JS-SYSTEM-01",
+        "AU-08",
+        "JS-HEADMAN-35"
+      ],
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:167",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:692"
+      ],
+      "source_fragment": "Один аккаунт ... при одном логине; логин из данных человека.",
+      "actor_grants": "FULL or LIMITED USERS_MANAGE+USERS_VIEW; FULL for ADMIN grants",
+      "client": "Actual user creation API + Vue",
+      "prestate": "Two same-name synthetic people, existing multi-role account; group pre created",
+      "action": "Create singular users; duplicate identity/collision; add second role without replacing other-role fields",
+      "expected_observable": "Unique stable role-independent login after save; one account per identity; required role-specific data validated",
+      "forbidden_or_invariant": "No mass-create requirement, role prefix restoration, login rename on added role or data clobber; HEADMAN cannot create students; explicitly unconfirmed student editing gives no admin grant",
+      "minimal_sufficient_actual_check": "Actual API create/add-role/read back with existing user validation/concurrency tests; no new tests for simple UI wiring",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-12",
+      "check_group": "G2",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-04",
+        "AU-05"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-10-02-user-restore-without-rights.md:5"
+      ],
+      "source_fragment": "Восстановление ... не реактивирует роли ... членство ... сессии.",
+      "actor_grants": "FULL or LIMITED USERS_ARCHIVE+USERS_VIEW; protected target rules",
+      "client": "Actual archive/restore API + PostgreSQL + Vue",
+      "prestate": "Target user headman/helper/mixed teacher/student; historical marks/tickets/login",
+      "action": "Preview; archive with required intent; retry; restore; old bearer; explicit fresh role assignment",
+      "expected_observable": "History and occupied login retained; restore no grants/membership/headman/helpers/session; only explicit reassignment restores access",
+      "forbidden_or_invariant": "No soft restore resurrection or history deletion; protected ADMIN/last-full safeguards remain",
+      "minimal_sufficient_actual_check": "UserArchiveLifecycleIT/AdminAccessAuthorityIT + one API/browser archive/reload/restore read back; inspect exact grants/history IDs",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-13",
+      "check_group": "G2",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-03",
+        "JS-HEADMAN-03",
+        "JS-SYSTEM-07"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-09-20-retrospective-attendance.md:19",
+        "docs/product/decisions/2026-09-25-notification-history-membership.md:5"
+      ],
+      "source_fragment": "joined_at <= дата < left_at; в день перевода студент относится к новой группе.",
+      "actor_grants": "Admin USERS_MANAGE+USERS_VIEW; own student/headman reader",
+      "client": "Academic membership + Attendance + notifications",
+      "prestate": "Initial mid-semester group; historical lessons already closed; transfer date D",
+      "action": "Create initial member; transfer at D; retrospective attendance/event replay; add late member after close",
+      "expected_observable": "Initial interval starts semester; date D new group; historic roster used; backfill creates missing ABSENT without replacing explicit marks",
+      "forbidden_or_invariant": "No guessed unknown history, current-group historical substitution, duplicate mark/event or old notification deletion",
+      "minimal_sufficient_actual_check": "Real PostgreSQL/Mongo historical-roster/late-member tests + one coordinated dated transfer read back; mocked source authority is insufficient for cross-service membership",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-14",
+      "check_group": "G2",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-06",
+        "JS-ADMIN-07",
+        "JS-ADMIN-15",
+        "AC-35"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:286"
+      ],
+      "source_fragment": "Старосту нельзя снять явно ... помощники предыдущего автоматически деактивируются.",
+      "actor_grants": "FULL/LIMITED GROUPS_MANAGE+GROUPS_VIEW; candidate own-group student; old/new headman/helpers",
+      "client": "Group assignment API/PostgreSQL + Vue",
+      "prestate": "Draft group; old headman with helpers; replacement candidates",
+      "action": "Assign/replace concurrently; foreign candidate; natural departure; explicit remove attempt",
+      "expected_observable": "One headman; helper revoke atomic; preview counts; draft reason/count accurate after departure",
+      "forbidden_or_invariant": "No two headmen, surviving old helper authority, explicit unsupported removal or ADMIN substitute marks",
+      "minimal_sufficient_actual_check": "GroupHeadmanAssignmentIT + archive/helper race + real admin group operation; verify authority after mutation",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-15",
+      "check_group": "G2",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-16",
+        "JS-ADMIN-17",
+        "AC-36"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-09-27-group-promotion-cycle.md:11",
+        "docs/product/decisions/2026-10-09-archived-semester-date-extension.md:11"
+      ],
+      "source_fragment": "Каждую группу только один раз за завершившийся весенний цикл ...18 августа по Москве.",
+      "actor_grants": "Admin GROUPS_MANAGE+GROUPS_VIEW; accepted scheduler",
+      "client": "Actual PostgreSQL cycle + scheduler fixed clock",
+      "prestate": "Completed spring; new group after spring end; final-course group; prior cycle receipt",
+      "action": "Manual/single/mass/auto race; pre-end denial; before/on 18 August; restart after missed trigger; archived date expansion",
+      "expected_observable": "Once per original cycle; graduate group archives/history kept; newly-created groups excluded; catchup same cycle",
+      "forbidden_or_invariant": "No double course increment or cycle reset by extension; no guessed schedule dependencies",
+      "minimal_sufficient_actual_check": "GroupPromotionCycleIT + controlled scheduler clock; one actual preview/action/read back covers variants using same guard",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-16",
+      "check_group": "G3",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-09",
+        "AC-39",
+        "RESEARCH-L02"
+      ],
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:217",
+        "docs/product/decisions/2026-09-29-semester-archive-write-lock.md:5"
+      ],
+      "source_fragment": "Активных семестров либо один, либо ноль ... restore не активирует.",
+      "actor_grants": "Admin SEMESTERS_MANAGE+SEMESTERS_VIEW; student own group",
+      "client": "Academic DB + genuine Attendance cache + BFF",
+      "prestate": "A active and warm genuine cache; eligible B; no overlapping periods",
+      "action": "Concurrent switch/archive; archive last active; restore; delayed event with healthy authoritative RPC",
+      "expected_observable": "Zero/one active durable; no automatic replacement; current B projection/command correct or typed dependency refusal; cache converges",
+      "forbidden_or_invariant": "No mocked cache closes staleness; no stale semester chooses wrong options/writes",
+      "minimal_sufficient_actual_check": "SemesterArchiveStateIT plus SemesterCacheConvergenceIT or actual stand cache warm→event delay→switch→projection; two instances only if accepted scale-out scope",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-17",
+      "check_group": "G3",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-10",
+        "JS-HEADMAN-01",
+        "JS-HEADMAN-08",
+        "JS-HEADMAN-16",
+        "X-04"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-09-29-semester-archive-write-lock.md:3"
+      ],
+      "source_fragment": "Всем ролям ... включая фоновые операции; администратор не имеет обхода.",
+      "actor_grants": "Every relevant writer: headman/helper/FULL/LIMITED/scheduler; ordinary read roles",
+      "client": "Schedule/Attendance/Homework/request commands and participant RPC",
+      "prestate": "Stable archived semester and in-transition barrier; then restore inactive",
+      "action": "One mutation per distinct writer path; background close/generate/archive; exact repeat after archive; restore then permitted mutation",
+      "expected_observable": "Archived barrier preserves entities/history/outbox; typed refusal; restore removes barrier with ordinary auth",
+      "forbidden_or_invariant": "No ADMIN/background/legacy/idempotent shortcut writes; local transaction alone not remote participant barrier",
+      "minimal_sufficient_actual_check": "Existing SemesterArchiveStateIT/HomeworkBindingArchiveIT plus actual cross-service writable-semester refusals; map paths to shared guard without all role×operation combinations",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-18",
+      "check_group": "G3",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-08",
+        "JS-ADMIN-10",
+        "JS-ADMIN-16",
+        "JS-ADMIN-17"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-10-09-archived-semester-date-extension.md:5"
+      ],
+      "source_fragment": "Новый диапазон полностью содержит прежний; ... ID и даты сохраняются.",
+      "actor_grants": "Admin SEMESTERS_MANAGE+SEMESTERS_VIEW",
+      "client": "Actual Semester API/PostgreSQL",
+      "prestate": "Stable expired archive with structured classification and promotion cycle; another semester; transition operation",
+      "action": "Containing expansion; shrink/overlap/transition rejection; old legacy classification explicit fill; restore separately",
+      "expected_observable": "History IDs/date/type/year and original spring cycle end stable; expanded archive inactive; restore inactive",
+      "forbidden_or_invariant": "No shrink, overlap, implicit type inference/activation, barrier bypass or promotion reset",
+      "minimal_sufficient_actual_check": "Existing semester extension DB tests + one real HTTP read back; keep exact history snapshots",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-19",
+      "check_group": "G3",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-10",
+        "JS-ADMIN-18",
+        "JS-HEADMAN-36",
+        "MAP-05",
+        "AU-14",
+        "X-03",
+        "X-05"
+      ],
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:221",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:556",
+        "docs/product/decisions/2026-10-02-map-scheme-final-delete.md:5"
+      ],
+      "source_fragment": "Удаление финальное и полное ... пароль(+OTP для предмета) ... объём последствий.",
+      "actor_grants": "Admin owning-domain MANAGE+VIEW+DATA_DELETE; HEADMAN own subject with password+dangerous_action OTP; current identity",
+      "client": "Real cascade APIs + actual DB/files/outbox",
+      "prestate": "Owned/foreign filled entities; preview; synthetic intent proof; one participant outage",
+      "action": "Delete each distinct coordinator domain; wrong/stale/cross-operation proof; interruption; same key resume; changed payload key; tombstone replay",
+      "expected_observable": "Counts accurate; intended target descendants removed; protected foreign/users/groups preserved as specified; durable operation recovers same result",
+      "forbidden_or_invariant": "No success before participant completion; no generic operation/status bypass, collateral shared blob deletion or repeated OTP effect",
+      "minimal_sufficient_actual_check": "Existing semester/subject/campus-map coordinator DB/file tests + one actual interrupted durable cascade per distinct coordinator; synthetic only, not production deletion",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-20",
+      "check_group": "G4",
+      "priority": 1,
+      "source_ids": [
+        "JS-HEADMAN-08",
+        "JS-HEADMAN-39",
+        "JS-SYSTEM-05",
+        "SC-02",
+        "SC-10"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-09-20-retrospective-attendance.md:5",
+        "docs/product/decisions/2026-10-04-canonical-lesson-times.md:7"
+      ],
+      "source_fragment": "Первое расписание с начала семестра ... единые 8 слотов ... чётность считает сервер.",
+      "actor_grants": "HEADMAN current group; canonical assignment",
+      "client": "Real recurring API/PostgreSQL + Vue builder",
+      "prestate": "Mid-semester first template; assignment valid window; Monday/week/year boundary; controlled Moscow clock",
+      "action": "Create odd/even/both slot; replay/different payload; canonical catalog mapping; historical retro dates",
+      "expected_observable": "Dates include past semester within assignment; times match 8 catalog; server parity metadata coherent; no duplicate lessons",
+      "forbidden_or_invariant": "No UTC/day drift, client parity copy or arbitrary custom time; accepted old idempotent receipt preserved",
+      "minimal_sufficient_actual_check": "RecurringScheduleItemIT + clock/catalog tests + actual builder create→server read back; one finite boundary set for week/assignment/cutoff",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-21",
+      "check_group": "G4",
+      "priority": 1,
+      "source_ids": [
+        "JS-HEADMAN-40",
+        "JS-HEADMAN-41",
+        "SC-07",
+        "SC-14"
+      ],
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:525",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:531",
+        "docs/architecture/reference-rutcampustrack-design/backend-requests.md:201"
+      ],
+      "source_fragment": "История сохраняется; возвращённый слот продолжает серию; свободный слот проверяет сервер.",
+      "actor_grants": "HEADMAN of the current group; helper only where the source admits the exact capability; foreign and revoked actors as negatives",
+      "client": "Real Schedule API/PostgreSQL and Vue builder",
+      "prestate": "Existing series with historical marks, future occurrences, a slot gap and a competing one-off lesson",
+      "action": "Deactivate and add the same subject/type IDs again; race two one-off creations; try a foreign subject and reuse a cancelled slot",
+      "expected_observable": "Historical IDs stay stable; the series continues across an allowed gap; one slot winner or a typed conflict",
+      "forbidden_or_invariant": "No historical regeneration, merge by display title, double booking or inferred helper escalation",
+      "minimal_sufficient_actual_check": "RecurringScheduleItemIT and OneOffLessonControllerIT with real DB races, followed by one builder/one-off UI readback",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-22",
+      "check_group": "G4",
+      "priority": 1,
+      "source_ids": [
+        "JS-HEADMAN-12",
+        "JS-HEADMAN-38",
+        "AC-07",
+        "AC-49"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:376",
+        "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md:7",
+        "docs/product/decisions/2026-10-06-teacher-removal-without-replacement.md:6"
+      ],
+      "source_fragment": "Смена не переписывает прошлое; снятие без замены сохраняет будущие пары без преподавателя.",
+      "actor_grants": "HEADMAN of the current group; current and former TEACHER; concurrent schedule generator",
+      "client": "Real Academic/Schedule APIs and PostgreSQL",
+      "prestate": "Past and future lessons, several teachers for a type, bounded assignment dates",
+      "action": "Replace from date D; close without replacement; resume a pending operation with the same key after 503; race the generator; assign a new teacher",
+      "expected_observable": "Future unperformed lessons move or lose their teacher; original lesson IDs and past teacher history remain; an active new teacher can read full group attendance",
+      "forbidden_or_invariant": "No cancellation used to remove a teacher, successful response during partial closure, duplicate assignment, historical rewrite or fresh retry key",
+      "minimal_sufficient_actual_check": "Existing assignment replacement/authority integration tests plus one real cross-service closure or replacement with interrupted replay",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-23",
+      "check_group": "G4",
+      "priority": 1,
+      "source_ids": [
+        "JS-HEADMAN-09",
+        "JS-HEADMAN-42",
+        "JS-SYSTEM-08",
+        "R-07"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:164",
+        "docs/product/decisions/2026-09-28-restored-lesson-teacher.md:2"
+      ],
+      "source_fragment": "Отметки недействительны, но не удаляются; восстановленная пара пуста; будущая пара получает действующего преподавателя.",
+      "actor_grants": "HEADMAN or current CANCEL_LESSONS helper of the same group",
+      "client": "Real Schedule/Attendance/Homework APIs and Vue",
+      "prestate": "Marks and linked homework; a future cancelled lesson whose teacher assignment changed",
+      "action": "Preview and cancel one lesson with a reason; duplicate/reorder lifecycle events; restore; race closing with cancellation",
+      "expected_observable": "Cancelled column, reason and history remain; metrics exclude it; linked homework archives; restoration starts empty and uses the current teacher for a future lesson",
+      "forbidden_or_invariant": "No resurrected marks, deleted history, reintroduced mass cancellation or automatic homework restoration",
+      "minimal_sufficient_actual_check": "Existing lifecycle/consumer DB checks plus actual cancel → journal → restore; compare historical IDs and current empty marks",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-24",
+      "check_group": "G4",
+      "priority": 1,
+      "source_ids": [
+        "JS-HEADMAN-21",
+        "SC-01",
+        "JS-SYSTEM-15",
+        "R-25"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:335"
+      ],
+      "source_fragment": "Переносится только будущая пара; обе записи остаются в истории; связанное ДЗ переезжает.",
+      "actor_grants": "HEADMAN of the current group with an eligible future lesson; foreign/revoked actor negatives",
+      "client": "Real Schedule/Academic/Attendance APIs, DB and Vue",
+      "prestate": "Future lesson with bound and unbound homework, student completion, a free target slot and a pending participant",
+      "action": "Transfer; retry the same key after timeout; change payload under the same key; try occupied or past targets; resume a partial failure",
+      "expected_observable": "Both lesson generations retain their history link; bound homework moves while active; unbound homework stays; completion remains; schedule version changes",
+      "forbidden_or_invariant": "No past transfer, cancel/create substitute, missing or duplicate target, success during partial work or mutation through a pending snapshot",
+      "minimal_sufficient_actual_check": "LessonTransferWriterIT and HomeworkBindingTransferIT plus an actual interrupted command/resume with final DB and version readback",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-25",
+      "check_group": "G4",
+      "priority": 2,
+      "source_ids": [
+        "JS-HEADMAN-22",
+        "JS-SYSTEM-15",
+        "SC-08",
+        "SC-11",
+        "RESEARCH-P16"
+      ],
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:515",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:899"
+      ],
+      "source_fragment": "Разовая правка аудитории не требует отмены пары; версия расписания меняется.",
+      "actor_grants": "HEADMAN of the current group; scoped STUDENT/TEACHER readers",
+      "client": "Real Schedule API, BFF and PWA",
+      "prestate": "Warm weekly response and ETag; one lesson eligible for an auditorium edit",
+      "action": "Change the auditorium; issue conditional GET before/after; cover version changes for distinct lifecycle implementations",
+      "expected_observable": "The lesson keeps its ID; the change is recorded; 200 → 304 → a new ETag/version; response cache stays scoped",
+      "forbidden_or_invariant": "No stale week after mutation, cancellation as an edit substitute, foreign-scope 304 or new unsourced time policy",
+      "minimal_sufficient_actual_check": "Existing schedule version/lifecycle tests plus real BFF conditional HTTP and refresh of an already loaded Vue week",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-26",
+      "check_group": "G5",
+      "priority": 1,
+      "source_ids": [
+        "JS-STUDENT-01",
+        "JS-HEADMAN-03",
+        "JS-SYSTEM-07",
+        "OWNER-ATTENDANCE-WINDOW"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:532"
+      ],
+      "source_fragment": "Окно −5/+5 минут; после хвоста пустые ячейки становятся ABSENT.",
+      "actor_grants": "Own active STUDENT; HEADMAN or MARK_ATTENDANCE helper; actual dated roster",
+      "client": "Real Attendance API/Mongo and scheduler with JVM in UTC",
+      "prestate": "Fixed Europe/Moscow clock at start−5 and end+5; blank and explicit marks; membership boundary",
+      "action": "Check in and close at the exact accepted boundaries and just outside; duplicate close and reorder cancellation",
+      "expected_observable": "Admission follows the inclusive source boundary; blanks become ABSENT after the tail; historical roster members get one mark; explicit marks remain",
+      "forbidden_or_invariant": "No early absence, UTC cutoff, future manual marking or direct EXCUSED mark bypassing the ticket",
+      "minimal_sufficient_actual_check": "Existing marking/close/roster Mongo integration checks with a controlled clock plus one current-lesson client result",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-27",
+      "check_group": "G5",
+      "priority": 1,
+      "source_ids": [
+        "JS-STUDENT-02",
+        "JS-HEADMAN-05",
+        "AT-26",
+        "NT-01",
+        "R-02"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:93",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:538"
+      ],
+      "source_fragment": "Автоматический запрос не лимитирован и не истекает; подтверждение может заменить ручное ABSENT.",
+      "actor_grants": "Own STUDENT; current HEADMAN or MANAGE_EXCUSES helper",
+      "client": "Real geolocation API, Mongo/outbox, headman queue and PWA/TMA",
+      "prestate": "Failed/far/denied geolocation inside the window; manual ABSENT; exhausted manual quota",
+      "action": "Create an automatic request and retry; confirm days later; exercise the accepted rejected-request path; interrupt after saving",
+      "expected_observable": "One active request keeps its automatic origin; no manual budget or expiry applies; confirmation sets PRESENT; event persists",
+      "forbidden_or_invariant": "No separate client request creation, automatic quota, duplicate active request/outbox or stale ABSENT winning over confirmation",
+      "minimal_sufficient_actual_check": "StudentRequestDomainIT and current geo-check-in integration tests plus real browser geolocation and headman approval; delivery fault is covered in G8",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-28",
+      "check_group": "G5",
+      "priority": 1,
+      "source_ids": [
+        "JS-STUDENT-06",
+        "JS-HEADMAN-24",
+        "AT-11",
+        "R-02"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:99",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:566"
+      ],
+      "source_fragment": "Пять пар за семестр; расход при подаче, включая новую подачу после отказа; увеличение N аудируется.",
+      "actor_grants": "Own STUDENT; current HEADMAN for quota increase; MANAGE_EXCUSES helper for its accepted decision scope",
+      "client": "Real request API/Mongo and PWA",
+      "prestate": "Five eligible past ABSENT lessons; distinct automatic/manual origins; remaining budget and an active request",
+      "action": "Submit and retry; race the fifth charge; decline/cancel/resubmit; increase N; try an ineligible manual request",
+      "expected_observable": "One charge per submission; decline/cancel gives no refund; a new submission charges again; remaining count is visible; increase is audited",
+      "forbidden_or_invariant": "No obsolete shared quota of three, double charge, free sixth attempt or automatic-request charge",
+      "minimal_sufficient_actual_check": "StudentRequestDomainIT quota/concurrency/exact-replay checks plus student counter and headman increase UI readback",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-29",
+      "check_group": "G5",
+      "priority": 1,
+      "source_ids": [
+        "JS-STUDENT-12",
+        "JS-HEADMAN-02",
+        "SC-16",
+        "R-11"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:187",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:561"
+      ],
+      "source_fragment": "Блокировка перекрывает пути 1–4; остаётся тикет EXCUSED.",
+      "actor_grants": "Own STUDENT; current HEADMAN using the accepted blockage authority",
+      "client": "Real Schedule/Attendance APIs and Vue",
+      "prestate": "Separate states for a blocked lesson, existing pending request and exhausted quota",
+      "action": "Try geolocation, manual petition and EXCUSED ticket; unblock and read eligibility again",
+      "expected_observable": "Blocked check-in/petition is denied; EXCUSED ticket remains allowed; one blockage signal/reason and distinct eligibility states",
+      "forbidden_or_invariant": "No conflation of pending/quota/blockage, parallel obsolete flags or denial implemented only in UI",
+      "minimal_sufficient_actual_check": "Existing request/marking checks plus actual shared blocked-lesson commands and an explanatory disabled UI state",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-30",
+      "check_group": "G5",
+      "priority": 1,
+      "source_ids": [
+        "JS-STUDENT-23",
+        "JS-STUDENT-26",
+        "JS-HEADMAN-43",
+        "JS-HEADMAN-44",
+        "AT-33",
+        "AT-50"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:107",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:553",
+        "docs/architecture/reference-rutcampustrack-design/backend-requests.md:281"
+      ],
+      "source_fragment": "Тикет неделимый; терминальное решение необратимо; PRESENT не заменяется.",
+      "actor_grants": "Owner STUDENT; current HEADMAN or MANAGE_EXCUSES helper; TEACHER read-only negative",
+      "client": "Real request API/Mongo and Vue",
+      "prestate": "Multi-lesson excuse with gaps and one PRESENT; coverage in another month; pending and decided tickets",
+      "action": "Preview, change a mark, approve/repeat, try changing the terminal decision, race cancellation with decision, filter archives by coverage overlap",
+      "expected_observable": "One terminal decision; PRESENT remains; effect counts are revalidated; one durable event; rejection reason; cancellation releases pending covered lessons",
+      "forbidden_or_invariant": "No partial ticket decision, edited terminal outcome, foreign cancellation, two terminal effects or filtering solely by submission month",
+      "minimal_sufficient_actual_check": "StudentRequestDomainIT real mark writer and cancel/decision races plus queue approve/cancel in the browser",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-31",
+      "check_group": "G5",
+      "priority": 1,
+      "source_ids": [
+        "JS-TEACHER-03",
+        "JS-TEACHER-04",
+        "JS-TEACHER-12",
+        "AT-39",
+        "X-10"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-09-23-teacher-replacement-and-group-attendance.md:9",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:210",
+        "docs/architecture/reference-rutcampustrack-design/backend-requests.md:284"
+      ],
+      "source_fragment": "Активный преподаватель читает всю группу; его тикет ограничен своими предметами без раскрытия количества чужих.",
+      "actor_grants": "Current active TEACHER assignment; former/foreign teacher negatives; no marking grant",
+      "client": "Real teacher API/gRPC, Vue journal and attachments",
+      "prestate": "Group lessons before assignment; a ticket covering own and foreign subjects",
+      "action": "Read full group attendance history; open a scoped ticket and attachment bytes; try foreign group and mark/decision/credential writes",
+      "expected_observable": "Historical group attendance is visible; ticket projection and bytes follow the accepted subject scope; prohibited writes are denied",
+      "forbidden_or_invariant": "Broader attendance read grants no credentials, foreign-subject ticket counts or MANAGE; former own-lessons-only oracle is obsolete",
+      "minimal_sufficient_actual_check": "Existing teacher attendance and StudentRequestDomainIT historical ticket/byte checks plus actual teacher journal and forbidden HTTP requests",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-32",
+      "check_group": "G5",
+      "priority": 1,
+      "source_ids": [
+        "JS-STUDENT-04",
+        "JS-HEADMAN-01",
+        "AC-31",
+        "RESEARCH-L04"
+      ],
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:140",
+        "docs/architecture/reference-rutcampustrack-design/backend-requests.md:157"
+      ],
+      "source_fragment": "Свободное посещение отменено; текущие операции не создают новый отменённый тип или отметку.",
+      "actor_grants": "Own STUDENT using current request types; HEADMAN/MARK_ATTENDANCE; a legacy caller",
+      "client": "Current request/mark APIs and retired legacy create route",
+      "prestate": "Clean synthetic current data and a separate historical legacy row",
+      "action": "Read type catalog; submit retired free_attendance or unknown type/status; call legacy create; read historical mapping",
+      "expected_observable": "No new retired type/status persists; typed 4xx or legacy 410; historical data follows its explicit compatibility mapping",
+      "forbidden_or_invariant": "EXCLUDED JS-STUDENT-04 cannot remove this negative boundary; direct legacy ExcuseServiceApproveIT is not a current public API oracle",
+      "minimal_sufficient_actual_check": "One real current create/mark denial and legacy 410 with unchanged DB; reuse relevant historical mapping checks and preserve wire codes",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-33",
+      "check_group": "G6",
+      "priority": 1,
+      "source_ids": [
+        "JS-STUDENT-14",
+        "JS-STUDENT-17",
+        "JS-STUDENT-18",
+        "JS-STUDENT-19",
+        "JS-HEADMAN-18",
+        "JS-SYSTEM-16",
+        "R-04",
+        "R-28"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:128",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:446",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:724"
+      ],
+      "source_fragment": "Четыре количества и четыре метрики; знаменатель по действительным парам, с учётом отмен и переносов.",
+      "actor_grants": "Own STUDENT; HEADMAN/VIEW_STATS helper; current TEACHER; ADMIN counters checked separately",
+      "client": "Real Attendance model/report APIs and Vue",
+      "prestate": "Golden data: PRESENT/ABSENT/EXCUSED, cancelled/future/one-off/transferred lessons, membership boundary and no eligible lessons",
+      "action": "Read statistics, journal, rank and trend after marking/cancellation/replay; request own and forbidden foreign ranking detail",
+      "expected_observable": "Consistent denominators and rounding; zero/no-data semantics; aligned grids; only actual types; permitted group names without foreign detail",
+      "forbidden_or_invariant": "No double count of transfer generations, future hidden as zero, nonexistent type shown as zero, foreign ranking detail or diverging report math",
+      "minimal_sufficient_actual_check": "Existing metric golden tests plus real Mongo projection and one mutation/replay; compare API and file against the same data",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-34",
+      "check_group": "G6",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-11",
+        "JS-ADMIN-22",
+        "AC-38",
+        "X-07",
+        "X-09"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-09-23-admin-active-dashboard-counts.md:5",
+        "docs/product/decisions/2026-10-08-admin-activity-action-time.md:5"
+      ],
+      "source_fragment": "Активность по времени действия; сравнение с тем же временем вчера по Москве; all-time без дельты; unknown не равен нулю.",
+      "actor_grants": "FULL or LIMITED with DASHBOARD_VIEW",
+      "client": "Real administrative aggregate APIs and Vue",
+      "prestate": "Mixed active roles, draft/archived groups, an old lesson marked today, retrying map intent, Moscow midnight/Monday boundaries",
+      "action": "Read today/all-time metrics; repeat/remove a mark; make one source unavailable; use a zero denominator",
+      "expected_observable": "Counts reflect active roles; activity uses action time; yesterday aligns to the same Moscow half-open period; all-time has no delta; absent source/history is explicit",
+      "forbidden_or_invariant": "No retry double activity, erased action history on removal, UTC bucket labelled Moscow or unavailable data reported as zero",
+      "minimal_sufficient_actual_check": "Existing aggregate checks plus an actual cross-service golden read and bounded source outage; one Vue overview",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-35",
+      "check_group": "G6",
+      "priority": 2,
+      "source_ids": [
+        "JS-HEADMAN-30",
+        "JS-TEACHER-13",
+        "AC-37",
+        "R-16",
+        "R-17",
+        "R-18",
+        "R-21",
+        "R-23",
+        "R-24"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:233",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:250",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:278",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:305"
+      ],
+      "source_fragment": "Фильтрация → сортировка → страница; total после фильтрации; ID завершает сортировку; каталог не ограничен страницей.",
+      "actor_grants": "Scoped reader with the relevant FULL/LIMITED view grant; HEADMAN/VIEW_STATS; current TEACHER",
+      "client": "Real registry/statistics/request list APIs and Vue",
+      "prestate": "Equal sort values across pages, multivalued role/status and a nonexistent filter value",
+      "action": "Combine search, filters, sort, page and count; malformed sort/enum; reload/back/reset URL state; export the filtered list",
+      "expected_observable": "Stable results/count; OR within a multivalue and AND between filters; complete descriptor catalog; sourced list exceptions retained",
+      "forbidden_or_invariant": "No filtering/sorting after pagination, page-derived catalog, drift/duplicate pages, malformed-query 5xx or URL-based foreign scope",
+      "minimal_sufficient_actual_check": "GroupRegistryIT plus protected HTTP list; add another registry only for distinct query code; actual Vue filter/back/export",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-36",
+      "check_group": "G7",
+      "priority": 1,
+      "source_ids": [
+        "JS-HEADMAN-16",
+        "JS-HEADMAN-17",
+        "AC-29",
+        "SC-06"
+      ],
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:586",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:595"
+      ],
+      "source_fragment": "Редактировать может любой с правом публикации; следующая подходящая пара определяется по ID.",
+      "actor_grants": "HEADMAN or STUDENT helper with only MANAGE_HOMEWORK in the same group; revoked/foreign negatives",
+      "client": "Real Homework API and protected Schedule RPC, plus Vue",
+      "prestate": "Subject/type owned by the group; next eligible lesson beyond two weeks; homework authored by A and completed by a student",
+      "action": "Helper B resolves the next lesson, publishes and edits date/binding; read history/completion; revoke and retry; check archive barrier",
+      "expected_observable": "Authorized non-author succeeds; the next eligible lesson is correct; publisher/history/completion remain; later revoked calls fail",
+      "forbidden_or_invariant": "No mocked assistant admission hiding RPC failure, author-only restriction, foreign IDs or unsourced DELETE permission expansion",
+      "minimal_sufficient_actual_check": "Existing homework lifecycle integration tests plus an actual helper API → Schedule RPC → publish/edit; proposed focused regression names require a stable test packet",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-37",
+      "check_group": "G7",
+      "priority": 1,
+      "source_ids": [
+        "JS-HEADMAN-28",
+        "JS-HEADMAN-29",
+        "JS-SYSTEM-08",
+        "AC-27"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-10-02-unbound-homework-archive.md:5",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:619"
+      ],
+      "source_fragment": "DATE архивируется в 00:00 следующего дня по Москве; архив только для чтения.",
+      "actor_grants": "HEADMAN/MANAGE_HOMEWORK; own STUDENT completion; lifecycle scheduler",
+      "client": "Real Homework API/PostgreSQL and lifecycle events",
+      "prestate": "Bound lesson end/cancel/transfer; unbound DATE homework; Moscow midnight while UTC has another date",
+      "action": "Read/edit just before and at cutoff; duplicate/reorder close/cancel/transfer events; restart archive job",
+      "expected_observable": "Archive at the accepted cutoff; history and completion remain; unbound homework does not transfer; archive remains read-only",
+      "forbidden_or_invariant": "No UTC cutoff, archive caused by transfer, retry write into archive or physical history removal",
+      "minimal_sufficient_actual_check": "HomeworkBindingArchiveIT/TransferIT and current DATE checks with fixed clock, then real API read before/after cutoff",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-38",
+      "check_group": "G7",
+      "priority": 1,
+      "source_ids": [
+        "JS-STUDENT-20",
+        "JS-STUDENT-21",
+        "JS-STUDENT-WEB-04",
+        "AC-24",
+        "AC-52"
+      ],
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:777",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:941"
+      ],
+      "source_fragment": "Выполненное остаётся после редактирования; оптимистический toggle откатывается при ошибке; focus сохраняется.",
+      "actor_grants": "Own STUDENT; another student as a foreign completion negative",
+      "client": "Real Homework API/PostgreSQL and Vue",
+      "prestate": "Several lesson and DATE homeworks, existing completion, day/week/month views",
+      "action": "Toggle, reload, race edit with toggle, inject server failure, navigate periods and try foreign owner IDs",
+      "expected_observable": "Own completion persists; edit preserves it; deterministic undone/lesson ordering; failed optimistic change rolls back and focus remains",
+      "forbidden_or_invariant": "No foreign completion write, stale callback under another user, missing done item or displayed success after failure",
+      "minimal_sufficient_actual_check": "Existing completion concurrency and student Homework HTTP/gRPC tests plus browser toggle/reload/error",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-39",
+      "check_group": "G7",
+      "priority": 2,
+      "source_ids": [
+        "JS-STUDENT-22",
+        "JS-HEADMAN-16",
+        "R-08"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:171",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:788"
+      ],
+      "source_fragment": "Основная ссылка сохраняется без серверной нормализации; клиент открывает её во внешнем контексте.",
+      "actor_grants": "HEADMAN/MANAGE_HOMEWORK publisher; STUDENT reader",
+      "client": "Real Homework API and Vue renderer",
+      "prestate": "Synthetic links with HTML/control characters, missing scheme and unsafe schemes",
+      "action": "Save/read text and primary link; render and open external content",
+      "expected_observable": "Source value remains; rendering escapes executable content; client link policy prevents script/relative navigation and exposes external context",
+      "forbidden_or_invariant": "No SQL/XSS execution, client-relative URL construction, sensitive URL in artifacts or invented strict server link normalization",
+      "minimal_sufficient_actual_check": "Existing link/render checks plus real browser unsafe-marker check and server value readback",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-40",
+      "check_group": "G8",
+      "priority": 1,
+      "source_ids": [
+        "JS-SYSTEM-09",
+        "JS-SYSTEM-10",
+        "NT-01",
+        "RESEARCH-L01",
+        "RESEARCH-P12"
+      ],
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:915",
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:149"
+      ],
+      "source_fragment": "Outbox и повторы сохраняют доставку; успешный return sender не равен подтверждению брокера.",
+      "actor_grants": "Accepted event producer and currently authorized recipients",
+      "client": "Real producer DB/outbox → Rabbit → consumer DB",
+      "prestate": "Production fanout exchange and durable binding/queue; synthetic event_id; fault before acknowledgement",
+      "action": "Broker timeout/nack/disconnect, local rollback, recovery, redelivery and consumer restart after durable effect",
+      "expected_observable": "Unacknowledged outbox stays PENDING; original event identity is delivered after recovery; durable effect occurs once; rollback leaves no event",
+      "forbidden_or_invariant": "No SENT after merely returning from send, dedup before effect, lost audience or exactly-once external-provider promise",
+      "minimal_sufficient_actual_check": "Actual broker-fault check plus relevant OutboxAtomicityIT/EventConsumerIT durable effects; a healthy no-throw wiring check is insufficient",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-41",
+      "check_group": "G8",
+      "priority": 1,
+      "source_ids": [
+        "JS-SYSTEM-09",
+        "JS-STUDENT-WEB-06",
+        "NT-01"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-09-25-notification-history-membership.md:5"
+      ],
+      "source_fragment": "История принадлежит получателю; сведения новой группы доступны с даты вступления.",
+      "actor_grants": "STUDENT before/after transfer; current headman/helpers; former recipients as negatives",
+      "client": "Real event consumer/history DB and Vue inbox",
+      "prestate": "Events before/after transfer; old personal notification history; headman changes between deliveries",
+      "action": "Deliver group lesson/homework events, replay, transfer/read history and refresh current audience on retry",
+      "expected_observable": "Old personal history remains; no group history before joining; one event per recipient; current headman/helper audience",
+      "forbidden_or_invariant": "No current-group historical leak, former headman private delivery, duplicate recipient or dropped accepted group event",
+      "minimal_sufficient_actual_check": "Existing notification history/recipient/delivery Mongo/Rabbit checks plus actual inbox event → read → target navigation",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-42",
+      "check_group": "G8",
+      "priority": 1,
+      "source_ids": [
+        "JS-SYSTEM-11",
+        "DEC-durable-prefs",
+        "RESEARCH-P13"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-10-02-durable-notification-preferences.md:5",
+        "docs/product/decisions/2026-10-02-notification-preferences-authority.md:5"
+      ],
+      "source_fragment": "Unknown preferences откладывают доставку; durable settings не перезаписываются кешем или binding facet.",
+      "actor_grants": "Exact user owner; trusted bot with live account/Telegram binding; revoked-binding negative",
+      "client": "Notification Mongo, private bot boundary, queue and provider adapter",
+      "prestate": "Muted/disabled preference, genuinely new user, legacy Redis facet, competing updates and pending event",
+      "action": "Restart Redis; lose/recover authority; race preference updates; unbind/rebind Telegram; retry delivery task",
+      "expected_observable": "Durable preference stays; unknown authority retains retryable work; disabled suppresses delivery; binding facet does not migrate account ownership",
+      "forbidden_or_invariant": "No treating unknown as enabled/drop, lost update, old-binding delivery or exactly-once provider claim",
+      "minimal_sufficient_actual_check": "Existing durable preference/claim Mongo/Rabbit tests plus bot adapter fault check; actual provider receipt remains separate if unavailable",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-43",
+      "check_group": "G8",
+      "priority": 1,
+      "source_ids": [
+        "JS-SYSTEM-09",
+        "RESEARCH-P09"
+      ],
+      "source_refs": [
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:223"
+      ],
+      "source_fragment": "Открытый WS после revoke не получает новую private delivery; ticket одноразовый, TTL 30 секунд.",
+      "actor_grants": "Currently admitted session and recipient; revoked/foreign user negatives",
+      "client": "Real Auth Redis ticket and notification WebSocket",
+      "prestate": "Single-use 30-second ticket, open socket and event before/after revocation",
+      "action": "Race ticket consumption; expire or logout before consume; revoke an open socket then publish private event",
+      "expected_observable": "One ticket winner; late consume denied; no new private delivery after revocation",
+      "forbidden_or_invariant": "No authorize-once socket leak or cross-user binding; reading Lua is not an executed check",
+      "minimal_sufficient_actual_check": "Existing ticket integration plus actual socket with two users/revoke/event; HTTP denial alone does not cover socket lifecycle",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-44",
+      "check_group": "G9",
+      "priority": 1,
+      "source_ids": [
+        "JS-STUDENT-27",
+        "JS-STUDENT-WEB-07",
+        "AT-15",
+        "AT-37",
+        "R-09"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:177",
+        "docs/architecture/reference-rutcampustrack-design/backend-requests.md:283"
+      ],
+      "source_fragment": "Год с загрузки независимо от судьбы тикета; после истечения отображается состояние удаления.",
+      "actor_grants": "Owner STUDENT; HEADMAN/MANAGE_EXCUSES; scoped TEACHER; foreign negative",
+      "client": "Real upload/download API, Mongo Binary and Vue",
+      "prestate": "Allowed/oversized/wrong-type files, Cyrillic name, ticket cancellation/decision and exact one-year clock",
+      "action": "Upload/retry/remove before submission; fetch allowed bytes; try traversal name/foreign ID; run expiry cleanup and read detail",
+      "expected_observable": "Server limits; exact bytes/hash/MIME/disposition and no-store; expiry has explicit state; ticket outcome does not delete attachments early",
+      "forbidden_or_invariant": "No path escape, foreign bytes, dangling URL, unnoticed partial upload or forbidden teacher download",
+      "minimal_sufficient_actual_check": "StudentRequestDomainIT teacher/retention checks plus actual HTTP bytes and browser upload/error/detail; controlled year boundary",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-45",
+      "check_group": "G9",
+      "priority": 1,
+      "source_ids": [
+        "JS-ADMIN-23",
+        "JS-ADMIN-24",
+        "JS-ADMIN-25",
+        "JS-STUDENT-24",
+        "JS-TEACHER-11",
+        "MAP-02",
+        "MAP-04",
+        "R-30",
+        "D004"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:484",
+        "docs/architecture/reference-rutcampustrack-design/backend-requests.md:324",
+        "docs/product/decisions/2026-10-11-map-legend-deferred.md:7"
+      ],
+      "source_fragment": "PNG и SVG независимы; замена сохраняет старую версию; SVG очищается; D004 исключает только легенду.",
+      "actor_grants": "ADMIN with CAMPUS_MAP_MANAGE; admitted map reader; denied mutation negative",
+      "client": "Real map storage/API and Vue browser SVG rendering",
+      "prestate": "Shared blob referenced by two floors, PNG-only/SVG-only state, open old version and synthetic dangerous SVG",
+      "action": "Upload with size/MIME/script/external-resource cases; replace partially; reopen/download; fail storage/delete and retry intent",
+      "expected_observable": "Sanitized SVG; independent PNG/SVG availability reason; each opening resolves current version; old link stays usable; only owned versions deleted",
+      "forbidden_or_invariant": "No script/external-resource execution, lost old map before publish, collateral shared-blob deletion or whole-map exclusion under D004",
+      "minimal_sufficient_actual_check": "Existing CampusMap service checks plus actual storage HTTP/browser marker; real file deletion failure/retry; legend alone excluded",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-46",
+      "check_group": "G9",
+      "priority": 1,
+      "source_ids": [
+        "JS-HEADMAN-19",
+        "JS-HEADMAN-32",
+        "JS-TEACHER-07",
+        "JS-ADMIN-13",
+        "X-01",
+        "R-03",
+        "R-23"
+      ],
+      "source_refs": [
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:115",
+        "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md:304",
+        "docs/product/decisions/2026-09-24-assistant-report-export.md:5",
+        "docs/product/decisions/2026-10-01-group-roster-export.md:5"
+      ],
+      "source_fragment": "Пять табличных форматов; графики PNG/HTML; те же фильтры и порядок; VIEW_STATS не даёт список группы.",
+      "actor_grants": "HEADMAN own group; VIEW_STATS helper for statistics only; current TEACHER; relevant ADMIN list-view grant; revoked/foreign negatives",
+      "client": "Real async renderer/export API/storage and Vue download",
+      "prestate": "Golden filtered/sorted rows for each distinct accepted model/template; queued export job",
+      "action": "Generate, fail/retry, await ready and download; exercise five table formats and two graph formats through their distinct renderer code; revoke before fetch; foreign job",
+      "expected_observable": "Readable actual files preserve filters, full filtered row set/order and context; xlsx is tabular; async status/delivery is correct; roster has exact accepted fields",
+      "forbidden_or_invariant": "No password/Telegram/reset links, VIEW_STATS roster access, foreign download, pending job shown as success or mocked renderer acceptance",
+      "minimal_sufficient_actual_check": "Reuse unchanged applicable format evidence; execute actual format roundtrip/content for changed paths; inspect each distinct template oracle once and one real browser download",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-47",
+      "check_group": "G10",
+      "priority": 1,
+      "source_ids": [
+        "D002",
+        "CLIENT-FE-OFFLINE-01",
+        "CLIENT-FE-OFFLINE-03",
+        "CLIENT-FE-OFFLINE-04"
+      ],
+      "source_refs": [
+        "docs/product/decisions/2026-10-11-pwa-offline-read-only-session.md:5",
+        "docs/implementation/release-surface-matrix.md:14"
+      ],
+      "source_fragment": "D002: последний проверенный STUDENT читает offline расписание/ДЗ; reconnect требует актуальной online admission.",
+      "actor_grants": "Last verified STUDENT PWA; second user for isolation; TMA online admission",
+      "client": "Production PWA with service workers allowed and real IndexedDB/server; current TMA",
+      "prestate": "Warm actual cache and activated worker; server session expires or revokes while offline",
+      "action": "Reload offline; read schedule/homework; try write/attachment/role switch; reconnect; explicit logout; user A → B with late callback; TMA offline",
+      "expected_observable": "Cached own schedule/homework hydrates read-only even with possible expiry; fresh authority precedes online action; logout clears private state; TMA cannot hydrate PWA offline state",
+      "forbidden_or_invariant": "No offline writes/new attachments, offline-statistics requirement, previous-user data, stale callback or revoked online mutation",
+      "minimal_sufficient_actual_check": "Dedicated production-browser offline reload with actual backend; serviceWorkers=block, disconnecting an already loaded page or node VM mocks do not cover this boundary",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-48",
+      "check_group": "G10",
+      "priority": 2,
+      "source_ids": [
+        "JS-STUDENT-09",
+        "JS-STUDENT-11",
+        "JS-SYSTEM-12",
+        "CLIENT-FE-PWA-01"
+      ],
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:837",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:841",
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:929"
+      ],
+      "source_fragment": "Установка standalone, обновление PWA и Web Push; инструкция для iOS.",
+      "actor_grants": "PWA STUDENT; denied permission/unsupported browser; synthetic provider boundary only where permitted",
+      "client": "Actual production install/update/push browser; iOS/Safari when available",
+      "prestate": "Manifest/worker active; signed-in synthetic user; no production subscription",
+      "action": "Show install instruction/availability, launch standalone, update worker, open background notification target, opt out and logout",
+      "expected_observable": "Supported platform behavior and clear unsupported state; a private notification target requires current online admission",
+      "forbidden_or_invariant": "No iOS/Safari/provider PASS inferred from Chromium or synthetic host; no invented unavailable-platform execution",
+      "minimal_sufficient_actual_check": "Existing manifest/worker checks plus browser update; real platform/provider evidence has explicit UNKNOWN/BLOCKED if unavailable",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-49",
+      "check_group": "G10",
+      "priority": 1,
+      "source_ids": [
+        "JS-HEADMAN-20",
+        "JS-TEACHER-08",
+        "CLIENT-FE-TMA-01",
+        "CLIENT-FE-ADMIN-07"
+      ],
+      "source_refs": [
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:40",
+        "docs/validation/cloud-20261011/receipts/frontend-inventory/finite-runtime-packet.md:18"
+      ],
+      "source_fragment": "Актуальные клиентские пути работают с настоящим сервером и текущими grants.",
+      "actor_grants": "STUDENT, selected HEADMAN, five helper capabilities, current TEACHER, FULL/LIMITED ADMIN",
+      "client": "Current Vue /app/ and /mini-app/ with real server transport",
+      "prestate": "Current Moscow semester and synthetic domain data; fixture mode false; own/foreign groups",
+      "action": "One actual operation per relevant role and distinct grant boundary; accepted error/empty/retry/reload states; TMA student/headman with real signed synthetic proof",
+      "expected_observable": "UI actions cause real server/DB results; honest errors; current grants; shared features and TMA adapter behave consistently",
+      "forbidden_or_invariant": "No legacy Angular selector carryover, fixture transport, spring-2026 seed for current lesson or mocked UI-only acceptance",
+      "minimal_sufficient_actual_check": "The finite frontend 11-flow packet is an initial slice; add only a specifically uncovered accepted path; record revision, grants and data IDs with current Vue selectors",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-50",
+      "check_group": "G11",
+      "priority": 1,
+      "source_ids": [
+        "RESEARCH-L04",
+        "RESEARCH-P18",
+        "AC-31"
+      ],
+      "source_refs": [
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:65",
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:178",
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:232"
+      ],
+      "source_fragment": "Enum/DB/wire mappings устойчивы; неизвестный код не даёт доступ; исторические данные совместимы.",
+      "actor_grants": "Relevant role boundaries and synthetic historical persisted codes",
+      "client": "Java/API/proto/TS/DB plus real disposable Flyway targets",
+      "prestate": "Known/null/unknown/legacy codes; Turkish locale versus ROOT; synthetic old schema",
+      "action": "Map and roundtrip; validate unknown/transition values; check stable mappings under a meaningful controlled mutation; clean and historical DB upgrade",
+      "expected_observable": "Stable wire/DB meaning; typed unknown refusal; no locale-dependent authority; history and indices remain compatible",
+      "forbidden_or_invariant": "No ordinal/mass numeric migration, accepted constraint bypass, historical checksum repair or grant from unknown code",
+      "minimal_sufficient_actual_check": "Relevant enum critical tests with red-before/mutation sensitivity plus Flyway clean/upgrade and actual affected HTTP/DB mapping",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-51",
+      "check_group": "G11",
+      "priority": 1,
+      "source_ids": [
+        "RESEARCH-P19",
+        "RESEARCH-P20",
+        "X-05"
+      ],
+      "source_refs": [
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:236",
+        "docs/product/decisions/2026-10-02-offsite-backup-deferred-to-deploy.md:5"
+      ],
+      "source_fragment": "Disposable recovery восстанавливает DB и файлы; probe не доказывает пользовательскую маршрутизацию.",
+      "actor_grants": "Admitted synthetic actor and assigned runtime operator",
+      "client": "Isolated PostgreSQL/Mongo/files/Redis/Rabbit and restored applications",
+      "prestate": "Known schema/sequences/indices/files and pending accepted transfer/outbox; writers quiesced",
+      "action": "Capture, verify checksum, restore into fresh targets, replay pending command and exercise bounded dependency outage/recovery",
+      "expected_observable": "Exact data/history/sequences/indices/files; pending operation completes once; real user route shows typed outage then recovery",
+      "forbidden_or_invariant": "No dry-run called restoration, live file copy without quiescence, foreign resource changes or invented off-site provider/RPO/RTO",
+      "minimal_sufficient_actual_check": "Existing disposable recovery checks and application capture/verify with an actual restored admitted flow; one fault per distinct failure policy",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    },
+    {
+      "id": "BOUNDARY-52",
+      "check_group": "G11",
+      "priority": 2,
+      "source_ids": [
+        "TASK-FORMATTING",
+        "TASK-REMOTE-GATES"
+      ],
+      "source_refs": [
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:54",
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:283",
+        "docs/validation/cloud-20261011/TASK-CONTRACT.md:303"
+      ],
+      "source_fragment": "Авторские исходники читаемы; final local SHA = remote = PR head; CI/Coverage/Security текущей revision успешны.",
+      "actor_grants": "Assigned formatter and root integrator; authorized branch and draft PR only",
+      "client": "Tracked author languages and remote Actions readback",
+      "prestate": "Frozen author inventory excludes generated/vendor/machine outputs and protects byte-exact historical migrations; final semantic revision stable",
+      "action": "Run reproducible formatter/lint/parser/type/build checks; inspect semantic diff; push draft and read actual remote/workflow checkout SHAs",
+      "expected_observable": "Readable reproducible author sources; documented exact-file exceptions; current CI/Coverage/Security nonempty success; local = remote = PR head; main remains unmerged",
+      "forbidden_or_invariant": "No Flyway checksum change, blind exclusion of tracked landing author sources, artificial product edit for paths-ignore or old receipt used for final SHA",
+      "minimal_sufficient_actual_check": "Mandatory final gates once, sufficient affected-language checks, root remote SHA/workflow receipts and independent critical-test review",
+      "status": "UNKNOWN",
+      "revision": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "evidence": [],
+      "scope": "required accepted boundary; not a new feature"
+    }
+  ],
+  "acceptedness_caveats": [
+    {
+      "id": "JS-STUDENT-16/AT-17",
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:753",
+        "docs/architecture/reference-rutcampustrack-design/backend-requests.md:257"
+      ],
+      "disposition": "owner idea explicitly not confirmed mandatory; retain source proposal, do not autonomously implement or force question solely from derived accepted label",
+      "later_acceptance_search": "No matching acceptance found in dated product decisions, BACKEND-STAGE, BACKEND-CLOSURE, CURRENT or current Attendance/BFF sources."
+    },
+    {
+      "id": "JS-HEADMAN-35 student editing",
+      "source_refs": [
+        "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md:692"
+      ],
+      "disposition": "Explicit unconfirmed clause cannot grant HEADMAN admin user management; accepted creation remains administrative."
+    }
+  ],
+  "coverage_rule": "Family PASS requires every applicable significant boundary to have accepted actual evidence or explicit sourced supersession/exclusion. Rows overlap; no feature denominator is inferred. Newly changed critical tests need red-before/equivalent mutation sensitivity. Source-only/existing-test references never runtime PASS.",
+  "source_fragment_policy": "Concise semantic paraphrases of independently opened linked fragments, not literal quotations. Findings quote decisive originals.",
+  "execution_status": "NOT_RUN: all proposed executable boundary rows remain UNKNOWN; existing and proposed test names are execution candidates only.",
+  "minimal_check_policy": "One sufficient actual check per distinct invariant and implementation boundary; add real transport/browser/lifecycle evidence where mocks cannot exercise it. No exhaustive Cartesian product."
+}

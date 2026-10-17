@@ -1,0 +1,18 @@
+# Goal
+Reconcile current published636 actual CI JUnit artifacts with finite accepted source/case oracles and propose only sufficient verified-case rows for root, especially L05/DLRV-DEP01 subject-list paging.
+# Context/evidence
+Restore FULL /workspace/rutcampustrack/docs/validation/cloud-20261011/{TASK-CONTRACT,CURRENT,decisions,questions,resources}.md and root AGENTS/RULES/relevant skills before actions. Contract SHA8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5; allQ1–9 resolved, D009 only final docs byte-equivalence. Baseline3908, root eec3, published636. Requested gpt-6.1-sol/high (reviewer xhigh), fork none, actual UNKNOWN. Root sole shared docs/integrator.
+# Constraints
+READ-ONLY all tracked sources/other author receipts/worktrees, sole write own scratch. LIGHT only, no children/Gradle/Java/Docker/browser/mutations/config/source edits or push. Disk2.6GiB below4GiB floor. Safe receipts with exact original hashes/immutable transfer manifest; no credentials/keys/full request bodies/raw stdio/properties/temporary signed URLs. Full native check/runtime claims only actual observed; mocks/source/skip/stale revisions stay qualified.
+# Do not
+No production/deploy/main/real bot/private18514/Figma/secret readings or dumps/external messages/global cleanup/schedulers/newproductrules.
+# Relevant scope
+Own /workspace/scratch/rct-validation/ci_artifact_reconcile. Existing receipts matrix-evidence/finite-evidence/ci-generator-recheck/data-lecture; scenarios.csv/verified-cases and remaining-execution-queue read-only. Current CI38184430139 SUCCESS/Cov38184430134 SUCCESS, actualPRmerge c3d12f3313a95f25162a1503be624f3b0617f8c0, Security38184430147FAIL (known docs fingerprint, not your fix).
+# Required behavior
+Native GitHub connector download_workflow_artifact available through tools/ALL_TOOLS; investigate reusable fileRef without printing signed URLs/base64/secrets, distinguish Sediment vs FileService references and use proper tool; gh blobredirect403 known avoid raw CLI errors. Twelve current safe artifacts IDs: integrationapi11719530075, integrationschedule11719500562, unitapi11719450597, integrationauth11719430751, integrationattendance11719167418, integrationacademic11719102777, unitauth11718972638, unitattendance11718823099, unitacademic11718792984, unitnotification11718743176, integrationnotification11718708644, unitschedule11718619123. Prior artifact metadata exists root receipts if needed. Download immutable ZIPs (~1–20KB), verify safe member paths, parse suite/testcase declared totals/skips/actual outcomes and concrete source assertions at636/current eec to bound source equivalence. Check required PAGE method really ran not skipped; inspect real DB/HTTP versus mocks. Source changes636→eec relevant teachingclock need explicit qualification. Do not promote whole parent family from finite method PASS. Exact provenance workflowevent/head/actualmerge/artifact IDs and hashes per bounded proposed case.
+# Existing patterns
+Existing integrated collector redacts application stdout/properties; generated/root execution mapping reused. Root matrix sole writer.
+# Acceptance criteria
+Original archives preserved, safe exact per-case results/strong source-oracle rationale/disposition/limits, source identity bridge, transfer manifest and final compact result. Required method absent/skipped stays UNKNOWN. Transport blocker report concrete and continue source independent parsing.
+# Verification
+No reruns solelyhistory; native metadata/artifacts are actual receipts for636 only. Inspect no blanket-skips/empty tests and actual domain observable assertions, propose changed/remaining cases separately.

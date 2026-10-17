@@ -1,0 +1,76 @@
+{
+  "producer": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "run_id": 38329143416,
+  "job_id": 115074642202,
+  "artifact_id": 11781264632,
+  "sha256": "7c1889419caf6a4cdb78742a00068f3508783d03310cb0f38cc6174f5aafb1ea",
+  "bytes": 424,
+  "results": {
+    "status": "failed",
+    "runnerErrors": 0,
+    "unsafeArtifact": false,
+    "suppressedStdoutBytes": 0,
+    "suppressedStderrBytes": 0,
+    "results": [
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 14,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 81,
+        "errorCount": 1,
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 14
+          }
+        ]
+      },
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 61,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 61,
+        "errorCount": 1,
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 61
+          }
+        ]
+      },
+      {
+        "file": "mobile-real-server.spec.ts",
+        "line": 142,
+        "project": "chromium",
+        "status": "failed",
+        "expectedStatus": "passed",
+        "durationMs": 72,
+        "errorCount": 1,
+        "errorLocations": [
+          {
+            "file": "mobile-real-server.spec.ts",
+            "line": 142
+          }
+        ]
+      }
+    ]
+  },
+  "missing_observation_members": [
+    "supervision/observations-headman.safe.json",
+    "supervision/observations-helper.safe.json",
+    "supervision/observations-student.safe.json"
+  ],
+  "native_failure_cause": "UNKNOWN",
+  "observer_BEGIN_END": "NOT_CAPTURED",
+  "actual_503_facts": "NOT_CAPTURED",
+  "body_assertions_reached": "NOT_PROVED",
+  "diagnostic_needed": "Only minimal closed pre-observer exception category and first source-known frame, if separately authorized.",
+  "current_product_defect": "NOT_ESTABLISHED",
+  "historical_R2_503_defect": "UNCHANGED_OPEN",
+  "actual_browser_checkout": "NOT_PROVED_BY_SAFE_SCHEMA",
+  "no_raw_logs_HTML_XML_body_read": true
+}

@@ -1,0 +1,26 @@
+{
+  "time": "2026-10-11T21:22:35.102296+00:00",
+  "files": [
+    {
+      "file": "plan.md",
+      "sha256": "1d7acf90a943ab7eabf58f040102b7c373323b1f39f9c4861f9ce6e0cd54330f",
+      "bytes": 7124
+    },
+    {
+      "file": "source-ledger.json",
+      "sha256": "9365d6bd593d07f993dc8cd4f72241cc2d32f242e737b6280b97f946d67c60a0",
+      "bytes": 2926
+    },
+    {
+      "file": "scenarios.csv",
+      "sha256": "09d3f990e0f1bad92da17e9245e7e91077d69563c2391a3caf2f90efb4aeaf94",
+      "bytes": 1087
+    },
+    {
+      "file": "CURRENT.md",
+      "sha256": "f5cf5bd9d1d696080f431bb302a3691260373b9aa975040424596f11f3c7c4a9",
+      "bytes": 1617
+    }
+  ],
+  "status": "source-only bounded partial transfer; runtime claims unchanged"
+}

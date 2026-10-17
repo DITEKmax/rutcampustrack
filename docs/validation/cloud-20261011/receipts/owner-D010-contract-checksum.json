@@ -1,0 +1,13 @@
+{
+  "utc": "2026-10-12T09:23:14.193880+00:00",
+  "prior_contract_sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+  "current_contract_sha256": "e7cbc981e7d1f621f4a6390c0d88f2cbeb5ccfce347a9d324a30389685d2778e",
+  "prior_exact_archive": "docs/validation/cloud-20261011/receipts/TASK-CONTRACT-before-D010.md.zip",
+  "canonical_decision": "docs/product/decisions/2026-10-12-angular-frontend-untouched.md",
+  "canonical_sha256": "3f1825b02a699cdee24575f6319151e58287e2844b652362ff91bdf4e0c68a82",
+  "unchanged_original_input": true,
+  "Angular_author_roots": [
+    "frontends/web-panel"
+  ],
+  "root_angular_changes": 0
+}

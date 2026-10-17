@@ -1,0 +1,98 @@
+{
+  "format_version": 1,
+  "scope": "finite evidence proposal only; root sole shared writer",
+  "root_revision": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+  "TASK_CONTRACT_sha256": "c9336b4770425eb1f9c80f3a793c005191b673c97467dc819510ad446ce94d5c",
+  "archive": {
+    "name": "immutable-original-proposals.zip",
+    "bytes": 46189,
+    "sha256": "8a709bec63cb088e5547b809919bd38b2dbef840115ac012623c3da21d2d1298"
+  },
+  "files": [
+    {
+      "name": "CURRENT.md",
+      "bytes": 954,
+      "sha256": "a41de046c44096a1264f93320c161cddda32b1eeed2742a71743e073b17df9b8",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "reconciliation.md",
+      "bytes": 13390,
+      "sha256": "efbb5a1d426a2d9378eeae8687b30cb245bad6bcba2be1fe42bc3907e588f8a8",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "proposed-verified-cases.csv",
+      "bytes": 62750,
+      "sha256": "a8b83229d1e37628f65038d7070599fb43a46f21796ad9cb03c267220a577858",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "parent-oracles.json",
+      "bytes": 37596,
+      "sha256": "1b968260b28426f97842ce5afaa47e806c3c1ba04f0adca3972b519d3885118f",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "patch-equivalence.json",
+      "bytes": 4353,
+      "sha256": "be85d9375fe0ee0babed09f8537209d2cf096058867ddce5caa2f1a74cc91181",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "source-equivalence.json",
+      "bytes": 39884,
+      "sha256": "5e8ae225939aeba53543c523b321d49bd900cb6908a43eb04bae1c4e92015c80",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "existing-case-dependencies.json",
+      "bytes": 16764,
+      "sha256": "bc4f88f1f939d85119303145f7f512025dd60d210f12bab75e6cd1cec40cb7e2",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "selected-safe-outcomes.json",
+      "bytes": 30211,
+      "sha256": "077cd9e7b1101beffe5894ce7da3a86158ce181600d495a9d9087c46d14117e6",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "source-oracles.json",
+      "bytes": 6845,
+      "sha256": "54a013b4d266e47c171297a591ad41d14750db78e4c751ecc8e02bd78ab985f4",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "input-integrity.json",
+      "bytes": 1213,
+      "sha256": "5fc3507817591d390b6a98de323bd9f3fd6e480c0acfa2d2d0ccab59ed3fb6ee",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "research-delta.json",
+      "bytes": 5009,
+      "sha256": "42e1bf1f02ba4570a694c0fff26fdcf0746e5ea8845e334baee91027ea0b161a",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "validation.json",
+      "bytes": 1093,
+      "sha256": "f4f63f1911ff4bd7d0347ce2c4ff9c5f72f56e4ef5ee412cb644b00b479d6c10",
+      "safe_to_transfer": true
+    },
+    {
+      "name": "attempts.ndjson",
+      "bytes": 457,
+      "sha256": "fc4f2a40b0865f15352859cb0d9f8eda705dd22f8f8b3cef3eb40c0287fa8cc6",
+      "safe_to_transfer": true
+    }
+  ],
+  "do_not_transfer": [
+    "build_proposals.py is local reproducible scratch builder; no need for root import",
+    "No raw logs/XML/request bodies/properties/stdout/failure text or credential values"
+  ],
+  "transfer_rule": "Preserve archive/member bytes exactly; root may normalize working copies only with original index retained",
+  "whole_family_or_boundary_promotions": 0,
+  "runtime_repeated": false
+}

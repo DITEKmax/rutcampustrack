@@ -1,0 +1,72 @@
+{
+  "producer": "138b5d03c882ccb2baa8cbbee712883f50cd167c",
+  "public_sources": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 16222,
+      "sha256": "7124c96250c6740c1efc312fa9ef03d464fa2f3e25a375afad00971bb27e4cce",
+      "current_Root_equals_producer": true
+    },
+    {
+      "path": "tests/e2e/first3-specs/mobile-first3.spec.ts",
+      "bytes": 899,
+      "sha256": "6b1d4f6c9c1d911ebedc93b17d5089c8bf94b6ff249f880fca835e62bfe270c3",
+      "current_Root_equals_producer": true
+    },
+    {
+      "path": "tests/e2e/fixtures/first3-observer.ts",
+      "bytes": 36133,
+      "sha256": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718",
+      "current_Root_equals_producer": true
+    },
+    {
+      "path": "tests/e2e/playwright.first3.config.ts",
+      "bytes": 2137,
+      "sha256": "8ea669255385a66c4a4eb3e5303ff6f4a89d9ed2b0582e5944b09a4745eb9cde",
+      "current_Root_equals_producer": true
+    },
+    {
+      "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIT.java",
+      "bytes": 40058,
+      "sha256": "dd0c466926911d99879fcdb59dd94641ca810bb714992d8fda7bc470b409010d",
+      "current_Root_equals_producer": true
+    },
+    {
+      "path": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+      "bytes": 112166,
+      "sha256": "b40de8a6bda5bdee47206c8d34a436dba8ae3012b9e5cb531b41a1e3553daaa0",
+      "current_Root_equals_producer": true
+    }
+  ],
+  "governing": [
+    {
+      "path": "TASK-CONTRACT.md",
+      "bytes": 90897,
+      "sha256": "44172878e580f00712d9e13a796cfd181a3b2456c034422318fc2433e98ff78c"
+    },
+    {
+      "path": "CURRENT.md",
+      "bytes": 21089,
+      "sha256": "eb87dfefd3bab89fbb2012b19df835525a8936314bcd1a40ca5d57bf205dad9f"
+    },
+    {
+      "path": "decisions.md",
+      "bytes": 27053,
+      "sha256": "9e76a2d29856ed1baa51c25ed4a66c09b2d0f0bcec286aead4cb1632de143a7a"
+    },
+    {
+      "path": "questions.md",
+      "bytes": 11028,
+      "sha256": "edf6526f0266abc95a8bf6cc36e04a964f503ca33b1f03a48acb8ab046fdb324"
+    },
+    {
+      "path": "resources.md",
+      "bytes": 30012,
+      "sha256": "d5403ff1be16dbb5f56afa3f3e20db46a7eeb6d4476f775f38e6c44a94daa0e8"
+    }
+  ],
+  "original75ee_FULLprefix_bridge": true,
+  "D012_FULL_suffix_read": true,
+  "current_FIRST3_execution": "NOT_RUN_CI_JOBS0",
+  "native_local": "NOT_RUN"
+}

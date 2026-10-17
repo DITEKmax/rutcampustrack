@@ -1,10 +1,12 @@
-export type PasswordResetProof = {
-  challengeId: string
-  code: string
-} | {
-  resetTicket: string
-  expiresAt: string
-}
+export type PasswordResetProof =
+  | {
+      challengeId: string
+      code: string
+    }
+  | {
+      resetTicket: string
+      expiresAt: string
+    }
 
 export function isPasswordResetEntryPath(pathname: string, baseUrl = '/'): boolean {
   const basePath = passwordRecoveryLoginPath(baseUrl).replace(/\/+$/, '')
@@ -34,23 +36,27 @@ export function consumePasswordResetFragment(
   const codes = params.getAll('code')
   const tickets = params.getAll('resetTicket')
   const expiries = params.getAll('expiresAt')
-  const adminProof = keys.length === 2
-    && keys.every((key) => key === 'resetTicket' || key === 'expiresAt')
-    && tickets.length === 1 && /^[A-Za-z0-9_-]{43}$/.test(tickets[0] ?? '')
-    && expiries.length === 1
-    && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(expiries[0] ?? '')
-    && Number.isFinite(Date.parse(expiries[0] ?? ''))
-    && new Date(expiries[0]!).toISOString().slice(0, 19) === expiries[0]!.slice(0, 19)
-    ? { resetTicket: tickets[0]!, expiresAt: expiries[0]! }
-    : null
-  const proof = adminProof ?? (keys.length === 2
-    && keys.every((key) => key === 'challengeId' || key === 'code')
-    && challengeIds.length === 1
-    && codes.length === 1
-    && challengeIds[0]?.trim().length
-    && codes[0]?.trim().length
-    ? { challengeId: challengeIds[0], code: codes[0] }
-    : null)
+  const adminProof =
+    keys.length === 2 &&
+    keys.every((key) => key === 'resetTicket' || key === 'expiresAt') &&
+    tickets.length === 1 &&
+    /^[A-Za-z0-9_-]{43}$/.test(tickets[0] ?? '') &&
+    expiries.length === 1 &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(expiries[0] ?? '') &&
+    Number.isFinite(Date.parse(expiries[0] ?? '')) &&
+    new Date(expiries[0]!).toISOString().slice(0, 19) === expiries[0]!.slice(0, 19)
+      ? { resetTicket: tickets[0]!, expiresAt: expiries[0]! }
+      : null
+  const proof =
+    adminProof ??
+    (keys.length === 2 &&
+    keys.every((key) => key === 'challengeId' || key === 'code') &&
+    challengeIds.length === 1 &&
+    codes.length === 1 &&
+    challengeIds[0]?.trim().length &&
+    codes[0]?.trim().length
+      ? { challengeId: challengeIds[0], code: codes[0] }
+      : null)
 
   replaceUrl()
   return proof

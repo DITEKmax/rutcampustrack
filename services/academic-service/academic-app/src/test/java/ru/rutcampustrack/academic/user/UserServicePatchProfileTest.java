@@ -1,5 +1,15 @@
 package ru.rutcampustrack.academic.user;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,17 +35,6 @@ import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
 import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
 import ru.rutcampustrack.academic.security.RequestContext;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
-
 @ExtendWith(MockitoExtension.class)
 class UserServicePatchProfileTest {
 
@@ -55,13 +54,14 @@ class UserServicePatchProfileTest {
     @Mock private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
     @Mock private ru.rutcampustrack.academic.admin.AdminAccessService adminAccessService;
 
-    @InjectMocks
-    private UserService service;
+    @InjectMocks private UserService service;
 
     @org.junit.jupiter.api.BeforeEach
     void injectFieldDependencies() {
-        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccess", adminAccess);
-        org.springframework.test.util.ReflectionTestUtils.setField(service, "adminAccessService", adminAccessService);
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                service, "adminAccess", adminAccess);
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                service, "adminAccessService", adminAccessService);
     }
 
     @Test
@@ -90,8 +90,11 @@ class UserServicePatchProfileTest {
         when(roleGrantReader.findByUserId(42L)).thenReturn(List.of(teacherGrant()));
 
         assertThatThrownBy(() -> service.patchUser(42L, request(null, null, null, "  ")))
-                .isInstanceOfSatisfying(BadRequestException.class, error ->
-                        org.assertj.core.api.Assertions.assertThat(error.getField()).isEqualTo("employeeNumber"));
+                .isInstanceOfSatisfying(
+                        BadRequestException.class,
+                        error ->
+                                org.assertj.core.api.Assertions.assertThat(error.getField())
+                                        .isEqualTo("employeeNumber"));
 
         verify(userRepository, never()).save(any());
         verify(userRepository, never()).existsByEmployeeNumber(anyString());
@@ -125,8 +128,11 @@ class UserServicePatchProfileTest {
         when(userRepository.existsByEmployeeNumber("EMP-002")).thenReturn(true);
 
         assertThatThrownBy(() -> service.patchUser(42L, request(null, null, null, "EMP-002")))
-                .isInstanceOfSatisfying(ConflictException.class, error ->
-                        org.assertj.core.api.Assertions.assertThat(error.getField()).isEqualTo("employeeNumber"));
+                .isInstanceOfSatisfying(
+                        ConflictException.class,
+                        error ->
+                                org.assertj.core.api.Assertions.assertThat(error.getField())
+                                        .isEqualTo("employeeNumber"));
 
         verify(userRepository, never()).save(any());
     }
@@ -137,8 +143,11 @@ class UserServicePatchProfileTest {
         when(userRepository.findByIdForUpdate(42L)).thenReturn(Optional.of(user));
 
         assertThatThrownBy(() -> service.patchUser(42L, request("  ", null, null, null)))
-                .isInstanceOfSatisfying(BadRequestException.class, error ->
-                        org.assertj.core.api.Assertions.assertThat(error.getField()).isEqualTo("lastName"));
+                .isInstanceOfSatisfying(
+                        BadRequestException.class,
+                        error ->
+                                org.assertj.core.api.Assertions.assertThat(error.getField())
+                                        .isEqualTo("lastName"));
 
         verify(userRepository, never()).save(any());
     }
@@ -149,12 +158,22 @@ class UserServicePatchProfileTest {
         return mock(User.class);
     }
 
-    private static PatchUserRequest request(String lastName, String firstName, String middleName, String employeeNumber) {
-        return new PatchUserRequest(lastName, firstName, middleName, null, null, employeeNumber, null, null);
+    private static PatchUserRequest request(
+            String lastName, String firstName, String middleName, String employeeNumber) {
+        return new PatchUserRequest(
+                lastName, firstName, middleName, null, null, employeeNumber, null, null);
     }
 
     private static RoleGrantViewResponse teacherGrant() {
-        return new RoleGrantViewResponse("TEACHER", "ACTIVE", null, null,
-                true, false, List.of("ACTIVE", "DISMISSED", "SUSPENDED"), true, null);
+        return new RoleGrantViewResponse(
+                "TEACHER",
+                "ACTIVE",
+                null,
+                null,
+                true,
+                false,
+                List.of("ACTIVE", "DISMISSED", "SUSPENDED"),
+                true,
+                null);
     }
 }

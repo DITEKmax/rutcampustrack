@@ -1,18 +1,17 @@
 package ru.rutcampustrack.academic.config;
 
-import org.junit.jupiter.api.Test;
-import org.postgresql.util.PGobject;
-import ru.rutcampustrack.academic.contract.enums.SubjectType;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Types;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Types;
+import org.junit.jupiter.api.Test;
+import org.postgresql.util.PGobject;
+import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
 /** Unit coverage for the explicit typed PostgreSQL enum binding. */
 class SubjectTypeUserTypeTest {

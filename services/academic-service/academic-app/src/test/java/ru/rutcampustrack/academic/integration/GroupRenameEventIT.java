@@ -1,7 +1,12 @@
 package ru.rutcampustrack.academic.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,39 +24,27 @@ import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
- * 58-07 / BUG-006-6: интеграционный тест — PUT /groups с изменением name
- * публикует event {@code group.renamed} в RabbitMQ через
- * ApplicationEventPublisher → DomainEventListener (AFTER_COMMIT).
+ * 58-07 / BUG-006-6: интеграционный тест — PUT /groups с изменением name публикует event {@code
+ * group.renamed} в RabbitMQ через ApplicationEventPublisher → DomainEventListener (AFTER_COMMIT).
  *
- * Параллельно также публикуется {@code group.updated} (для инвалидации кэшей).
- * Тест проверяет что оба события попадают в fanout exchange.
+ * <p>Параллельно также публикуется {@code group.updated} (для инвалидации кэшей). Тест проверяет
+ * что оба события попадают в fanout exchange.
  */
 class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
 
     private static final String EXCHANGE = "rut-uit.events";
     private static final int RECEIVE_TIMEOUT_MS = 5000;
 
-    @MockitoBean
-    private RequestContext requestContext;
+    @MockitoBean private RequestContext requestContext;
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+    @Autowired private RabbitTemplate rabbitTemplate;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @Autowired
-    private GroupService groupService;
+    @Autowired private GroupService groupService;
 
-    @Autowired
-    private GroupRepository groupRepository;
+    @Autowired private GroupRepository groupRepository;
 
     private Group group;
 
@@ -88,7 +81,8 @@ class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
         groupService.updateGroup(group.getId(), new UpdateGroupRequest(newName, true, 4));
         flushOutbox();
 
-        // Должно прийти минимум 2 события: group.renamed + group.updated (порядок не гарантируется).
+        // Должно прийти минимум 2 события: group.renamed + group.updated (порядок не
+        // гарантируется).
         Set<String> receivedTypes = new HashSet<>();
         long deadline = System.currentTimeMillis() + RECEIVE_TIMEOUT_MS;
         while (receivedTypes.size() < 2 && System.currentTimeMillis() < deadline) {

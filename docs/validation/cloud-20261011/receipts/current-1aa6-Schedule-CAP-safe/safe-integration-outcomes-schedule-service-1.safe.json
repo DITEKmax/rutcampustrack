@@ -1,0 +1,47 @@
+{
+  "artifact_id": 11850370233,
+  "name": "safe-integration-outcomes-schedule-service-1",
+  "archive_bytes": 10779,
+  "archive_sha256": "c2b92512341c6a65de08a33165a8091149d5bcfbfe4aff16d2f957363d38d153",
+  "producer": "1aa6c6451dba5cd39decfdce80a615e26bb65f77",
+  "results": [
+    {
+      "metadata": {
+        "checkoutSha": "c13da959f25559a709608c8dea6c9ac4cab8b60d",
+        "prHeadSha": "1aa6c6451dba5cd39decfdce80a615e26bb65f77",
+        "service": "schedule-service",
+        "task": "integrationTest",
+        "job": "java-integration-test",
+        "runId": "38467301679",
+        "runAttempt": "1",
+        "event": "pull_request",
+        "testStepOutcome": "success"
+      },
+      "collection": "RESULTS",
+      "counts": {
+        "PASSED": 205,
+        "FAILED": 0,
+        "ERROR": 0,
+        "SKIPPED": 0,
+        "NOT_EXECUTED": 0
+      },
+      "xml_case_summary_consistent": true,
+      "declared_consistent": true,
+      "target": {
+        "xmlOrdinal": 23,
+        "suiteOrdinal": 1,
+        "ordinal": 7,
+        "classname": "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT",
+        "method": "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert",
+        "status": "PASSED",
+        "identity": "SOURCE_METHOD",
+        "source": "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/integration/RecurringScheduleItemIT.java",
+        "sourceSha256": "1ca4ea6f8c02b9d32f329c7af879d68f1f7cf45184e9955fc9379789900907e9"
+      },
+      "failed_or_error_cases": [],
+      "source_acceptance": "NOT_PROMOTED",
+      "historical96_CAP_cause": "UNKNOWN"
+    }
+  ],
+  "raw_XML_logs_read": false
+}

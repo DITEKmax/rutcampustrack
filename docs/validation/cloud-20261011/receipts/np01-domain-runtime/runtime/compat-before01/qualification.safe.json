@@ -1,0 +1,9 @@
+{
+  "phase": "compat-before01",
+  "qualified": true,
+  "failure_type": "AssertionError",
+  "no_attributeerror": true,
+  "sourcecopy_unchanged": true,
+  "expected_protected_reads": 0,
+  "actual_protected_reads": 1
+}

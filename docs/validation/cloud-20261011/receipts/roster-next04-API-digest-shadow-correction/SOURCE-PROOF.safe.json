@@ -1,0 +1,22 @@
+{
+  "sourceOnly": true,
+  "nativeNodeApiBrowser": false,
+  "callerSHA256": "6b0bacd1ef831d897da567e2fe46b429e67275d7cbe829b56c3bd253933c9a19",
+  "oldCallerSHA256": "d0b965cc06ee42f5af1ae7a89ba8991fa5afae8f7c8f949e146d494d34b0f239",
+  "narrowChange": "ONLYtwo loop variable/hash-reference renames, plus new own BASE namespace. Exact inverse recreates oldd0b9 source.",
+  "inverseByteExact": true,
+  "allSixR2GuardFunctionsExact": true,
+  "statusObserveExact": true,
+  "oldTypeErrorNewCallPass": true,
+  "sourceControlQualification": "Actual selected old/new Python AST function and exact two module-level loops, publicfakePath/hash in RAM. Source control only; no module execution/privategrant/Node/HTTP/API/browser/service effects.",
+  "remainingReviewerFindings": "None beyond DIGEST_SHADOW, perci731 finite delta review; finalrecheck pending",
+  "readySHA256": "31171f9462e810b754bed82bfc1c998daad8e6779f51dc64b4c28e66274e4526",
+  "nativePlanSHA256": "f7b3dbdea8e992e16948e5fe92bb1f8f25db99afb0d4916be41057c21d87062a",
+  "callerCommand": [
+    "python",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/api-next04-correction/run-api-witness.py",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r2/api-next04-correction/private/root-api-grant-NEW.json"
+  ],
+  "API_RUNTIME": "NOT_RUN",
+  "actual503cause": "UNKNOWN"
+}

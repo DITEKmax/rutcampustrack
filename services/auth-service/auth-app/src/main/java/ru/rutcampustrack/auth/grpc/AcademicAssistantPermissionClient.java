@@ -3,13 +3,12 @@ package ru.rutcampustrack.auth.grpc;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
+import java.util.concurrent.TimeUnit;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.AssistantPermissionCheckRequest;
 import ru.rutcampustrack.auth.session.SessionAdmissionException;
-
-import java.util.concurrent.TimeUnit;
 
 /** Reads the actor's current VIEW_STATS authority from Academic using signed Auth identity. */
 @Component
@@ -24,20 +23,23 @@ public final class AcademicAssistantPermissionClient {
 
     public boolean hasViewStatsPermission(String internalToken, long groupId) {
         if (internalToken == null || internalToken.isBlank() || groupId <= 0) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE);
         }
         Metadata metadata = new Metadata();
         metadata.put(INTERNAL_TOKEN, internalToken);
         try {
             return stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata))
                     .withDeadlineAfter(3, TimeUnit.SECONDS)
-                    .checkAssistantPermission(AssistantPermissionCheckRequest.newBuilder()
-                            .setGroupId(groupId)
-                            .setPermission(VIEW_STATS)
-                            .build())
+                    .checkAssistantPermission(
+                            AssistantPermissionCheckRequest.newBuilder()
+                                    .setGroupId(groupId)
+                                    .setPermission(VIEW_STATS)
+                                    .build())
                     .getAllowed();
         } catch (StatusRuntimeException error) {
-            throw new SessionAdmissionException(SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, error);
+            throw new SessionAdmissionException(
+                    SessionAdmissionException.Code.AUTHORITY_UNAVAILABLE, error);
         }
     }
 }

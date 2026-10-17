@@ -1,0 +1,668 @@
+{
+  "format": "rutcampustrack-cloud-skills-v1",
+  "created_utc": "2026-10-11T20:10:02.432582+00:00",
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "scope": "project skills and applicable supporting tool skills for the accepted Cloud task",
+  "previous_archive": {
+    "name": "rutcampustrack-validation-handoff-20261011-v5.zip",
+    "sha256": "13ff3aaeb2aa15e051f057387f321b1b47536d135b3ca01721bb627cb55c12e6"
+  },
+  "skills": [
+    {
+      "name": "rct-source-resolution",
+      "group": "project",
+      "skill_path": "project/rct-source-resolution/SKILL.md",
+      "files": 1,
+      "sha256": "3860dcd425467637b850e25ee3c47054e82eef9416509ba163f0a47ac021af7d",
+      "previous_handoff": "included_exact_copy",
+      "cloud_availability": "not_confirmed"
+    },
+    {
+      "name": "rct-verification",
+      "group": "project",
+      "skill_path": "project/rct-verification/SKILL.md",
+      "files": 1,
+      "sha256": "0e6fcff4a21736a932bc2afb7740b9171df89d95599bc349d688bc8f3ab810aa",
+      "previous_handoff": "included_exact_copy",
+      "cloud_availability": "not_confirmed"
+    },
+    {
+      "name": "rutcampustrack-design",
+      "group": "project",
+      "skill_path": "project/rutcampustrack-design/SKILL.md",
+      "files": 1,
+      "sha256": "ade844d0da8923709e07f01c7ca26f4a50f5223b100903fb1341cafef62416a5",
+      "previous_handoff": "not_included",
+      "cloud_availability": "not_confirmed"
+    },
+    {
+      "name": "figma-design-to-code",
+      "group": "tools",
+      "skill_path": "tools/figma-design-to-code/SKILL.md",
+      "files": 1,
+      "sha256": "a6e852421e4db72260b2ca641929b1f84684e5b067aead081e35111f5b5feee4",
+      "previous_handoff": "not_included",
+      "cloud_availability": "not_confirmed"
+    },
+    {
+      "name": "figma-use",
+      "group": "tools",
+      "skill_path": "tools/figma-use/SKILL.md",
+      "files": 21,
+      "sha256": "ac385b80a05c850b5abc6bcae7c56625c4576318510545453a568aa5f21b8a95",
+      "previous_handoff": "not_included",
+      "cloud_availability": "not_confirmed"
+    },
+    {
+      "name": "pdf",
+      "group": "tools",
+      "skill_path": "tools/pdf/SKILL.md",
+      "files": 4,
+      "sha256": "5e14b4b8f944dc5e678ee703dfacf583010431d64d5d829902c5b2541f736c89",
+      "previous_handoff": "not_included",
+      "cloud_availability": "not_confirmed"
+    },
+    {
+      "name": "documents",
+      "group": "tools",
+      "skill_path": "tools/documents/SKILL.md",
+      "files": 80,
+      "sha256": "e3e5486c9e9f8c59ec89dd9de997bb76a4b65db7960d72437df2f5ed26a4df7f",
+      "previous_handoff": "not_included",
+      "cloud_availability": "not_confirmed"
+    },
+    {
+      "name": "cloud-environment-runtime",
+      "group": "tools",
+      "skill_path": "tools/cloud-environment-runtime/SKILL.md",
+      "files": 5,
+      "sha256": "c23513e361a6f9dbe1c28e5c41de635f355469b4ec1740ae1cd2de1d38a91bd3",
+      "previous_handoff": "not_included",
+      "cloud_availability": "observed_in_owner_screenshot"
+    }
+  ],
+  "files": [
+    {
+      "path": "project/rct-source-resolution/SKILL.md",
+      "bytes": 1557,
+      "sha256": "3860dcd425467637b850e25ee3c47054e82eef9416509ba163f0a47ac021af7d"
+    },
+    {
+      "path": "project/rct-verification/SKILL.md",
+      "bytes": 1733,
+      "sha256": "0e6fcff4a21736a932bc2afb7740b9171df89d95599bc349d688bc8f3ab810aa"
+    },
+    {
+      "path": "project/rutcampustrack-design/SKILL.md",
+      "bytes": 2847,
+      "sha256": "ade844d0da8923709e07f01c7ca26f4a50f5223b100903fb1341cafef62416a5"
+    },
+    {
+      "path": "tools/figma-design-to-code/SKILL.md",
+      "bytes": 4066,
+      "sha256": "a6e852421e4db72260b2ca641929b1f84684e5b067aead081e35111f5b5feee4"
+    },
+    {
+      "path": "tools/figma-use/references/api-reference.md",
+      "bytes": 16438,
+      "sha256": "8b4ce4c3066ccd22d3fd50fd2188dcfc4751a42164336a974662a77f88b7245e"
+    },
+    {
+      "path": "tools/figma-use/references/common-patterns.md",
+      "bytes": 14410,
+      "sha256": "0a7baa19a250964ddb8dd4716f9b70fc894c6e265947684486f3d2b4ff47eb2d"
+    },
+    {
+      "path": "tools/figma-use/references/component-patterns.md",
+      "bytes": 24086,
+      "sha256": "e7c826c718e94356ded58c3be99264d114a2ccfc54851624075c4c1a3e1f04fc"
+    },
+    {
+      "path": "tools/figma-use/references/effect-style-patterns.md",
+      "bytes": 3215,
+      "sha256": "36340c4d5f9462ff797f907d2e6b822f8a9239831b82319270fe5f0cf298a15e"
+    },
+    {
+      "path": "tools/figma-use/references/gotchas.md",
+      "bytes": 53722,
+      "sha256": "0e6b0031e957768b3e1eb8fec549e2397a0f643ef349387c93d2e813968398b3"
+    },
+    {
+      "path": "tools/figma-use/references/plugin-api-patterns.md",
+      "bytes": 16288,
+      "sha256": "4755ada5d8e80e339945e26c3fabfd32ebd31df370c3fcae89dd03c64f6becf2"
+    },
+    {
+      "path": "tools/figma-use/references/plugin-api-standalone.d.ts",
+      "bytes": 397440,
+      "sha256": "88988a41c31d1f7180c50dce8aa295599ab42d05083e2aac7d3ab2f890aff3cd"
+    },
+    {
+      "path": "tools/figma-use/references/plugin-api-standalone.index.md",
+      "bytes": 33600,
+      "sha256": "8dda6b014891d16fa99b41baf3d9e5c223116d3753d678ab63494d1ffcbac882"
+    },
+    {
+      "path": "tools/figma-use/references/text-style-patterns.md",
+      "bytes": 6947,
+      "sha256": "2f0ff8d78938e8a3a6b9a1aaa9b47d8ab895bf3c38624b2361abeaf86548e5d5"
+    },
+    {
+      "path": "tools/figma-use/references/validation-and-recovery.md",
+      "bytes": 3973,
+      "sha256": "95fa6b77b4382c1350fd76aa65ec13f8353e91241cdc5dd6e520c2fd68a85049"
+    },
+    {
+      "path": "tools/figma-use/references/variable-patterns.md",
+      "bytes": 14652,
+      "sha256": "cab86c964d75e6e5a3ab80a59275de137828e92e989873852c9775a22a5584e3"
+    },
+    {
+      "path": "tools/figma-use/references/working-with-design-systems/wwds-components--creating.md",
+      "bytes": 2199,
+      "sha256": "f383ea109e48c335c5855a8c7be15402e0ba72d5313c34cde6cebf550a6443ff"
+    },
+    {
+      "path": "tools/figma-use/references/working-with-design-systems/wwds-components--using.md",
+      "bytes": 2420,
+      "sha256": "ffaf10a09ca7f773aa5a3f08397fdc18dc35f7c2ee9c1db1d917927056bc39f6"
+    },
+    {
+      "path": "tools/figma-use/references/working-with-design-systems/wwds-components.md",
+      "bytes": 4402,
+      "sha256": "fe8d988d5ed545410a9536f57b8f7fc6c2acea62e46ee97cb7afca8bebf149fd"
+    },
+    {
+      "path": "tools/figma-use/references/working-with-design-systems/wwds-effect-styles.md",
+      "bytes": 3268,
+      "sha256": "d0b9b409fda5e22a9095420c606224a2c9b166abbeda6e8b284a820b6d9d7907"
+    },
+    {
+      "path": "tools/figma-use/references/working-with-design-systems/wwds-text-styles.md",
+      "bytes": 5144,
+      "sha256": "0e3a259a2f2c3280bedac02e40b3a901d08e8c4cde45a90b4ca367da5c3ee40e"
+    },
+    {
+      "path": "tools/figma-use/references/working-with-design-systems/wwds-variables--creating.md",
+      "bytes": 1559,
+      "sha256": "3a2f9796aac9d419705ca02b9fab29a46282f0921c4c0a01704cec7e43d8ccf2"
+    },
+    {
+      "path": "tools/figma-use/references/working-with-design-systems/wwds-variables--using.md",
+      "bytes": 1908,
+      "sha256": "3a328d9f2a176a4086ee7c3e14ca83ee730f4d44b5c1b2276247481fdab6a5e7"
+    },
+    {
+      "path": "tools/figma-use/references/working-with-design-systems/wwds-variables.md",
+      "bytes": 5183,
+      "sha256": "51e2e13658a80ebd1683890cba656b48caf1da670b53b7945dd3cad6b2796958"
+    },
+    {
+      "path": "tools/figma-use/references/working-with-design-systems/wwds.md",
+      "bytes": 5220,
+      "sha256": "e514da78a7eed6a55c95d6b52a600bd38252bb28ad1dde689a7c72f30c99a9f8"
+    },
+    {
+      "path": "tools/figma-use/SKILL.md",
+      "bytes": 33848,
+      "sha256": "ac385b80a05c850b5abc6bcae7c56625c4576318510545453a568aa5f21b8a95"
+    },
+    {
+      "path": "tools/pdf/agents/openai.yaml",
+      "bytes": 302,
+      "sha256": "5819dd168e544e3293d1501174130c56e139eb37c7d176884d8c6de4b9354f56"
+    },
+    {
+      "path": "tools/pdf/assets/file-document.png",
+      "bytes": 1550,
+      "sha256": "bbb3c29874cb3bc706eef9ba4436c7ef8ef33462a173c4c3d4deeec774e4da79"
+    },
+    {
+      "path": "tools/pdf/container_tools/mark_artifact_operation_started.mjs",
+      "bytes": 735,
+      "sha256": "968d66a7b491c7728f2ab009dcb54ac0025d6f474de6f3734f66b8809f6c18a8"
+    },
+    {
+      "path": "tools/pdf/SKILL.md",
+      "bytes": 7978,
+      "sha256": "5e14b4b8f944dc5e678ee703dfacf583010431d64d5d829902c5b2541f736c89"
+    },
+    {
+      "path": "tools/documents/agents/openai.yaml",
+      "bytes": 321,
+      "sha256": "8fc41ecccfae0d0310060235a43f9c4aea6e6c2aa05cec737a59599968ec22c4"
+    },
+    {
+      "path": "tools/documents/assets/file-document.png",
+      "bytes": 10876,
+      "sha256": "faec8ad51ed2c8db6bb7ba51aa4be1d5d88b80974f7f3c167d56781fbb8d3218"
+    },
+    {
+      "path": "tools/documents/container_tools/mark_artifact_operation_started.mjs",
+      "bytes": 736,
+      "sha256": "703516891e879553004822815dfb454f3277ab22bc031bcc217dd9a4c8825793"
+    },
+    {
+      "path": "tools/documents/examples/end_to_end_smoke_test.md",
+      "bytes": 962,
+      "sha256": "2abd9bdec48f2dcb905bf950423e021b61ca8169f56bcff58b4b3131663aec50"
+    },
+    {
+      "path": "tools/documents/LICENSE.txt",
+      "bytes": 1437,
+      "sha256": "d31e7017b70c25daf83b7b01804816ddad6bd984b724e03d52b20b9a81746bd1"
+    },
+    {
+      "path": "tools/documents/manifest.txt",
+      "bytes": 2144,
+      "sha256": "3357b7233af9bc79d448737b6c6c48d991cfab13b8ab48d9dd03817461ee76e4"
+    },
+    {
+      "path": "tools/documents/ooxml/comments.md",
+      "bytes": 1916,
+      "sha256": "aa8004a76499c36a4046041eaff8966fd3ec43fab3a48e1b158e95534ec61557"
+    },
+    {
+      "path": "tools/documents/ooxml/hyperlinks_and_fields.md",
+      "bytes": 2574,
+      "sha256": "88b8615aabd48727086208d981958dc1d74a4432b81060707d97c3ded9d7764c"
+    },
+    {
+      "path": "tools/documents/ooxml/rels_and_content_types.md",
+      "bytes": 1418,
+      "sha256": "d64fe64dc3daa56f4c90baa9098f94f6fcf52e5d4ce041ab548392e06c9691c2"
+    },
+    {
+      "path": "tools/documents/ooxml/tracked_changes.md",
+      "bytes": 1694,
+      "sha256": "9293157ade79498db26fdb79b3d7835896f4f87ebb73c28eddc6a5e48aae47f3"
+    },
+    {
+      "path": "tools/documents/references/template-elicitation.md",
+      "bytes": 1491,
+      "sha256": "ceb9dc18ab22e26cc03eaf7fe62381f5be34a836dd0766b6caa99a099cb3683c"
+    },
+    {
+      "path": "tools/documents/render_docx.py",
+      "bytes": 20248,
+      "sha256": "8b48b8f05f30cc6c7b5a7bd8e18e7ea93a61aec1ea601026a3358b2105f0903a"
+    },
+    {
+      "path": "tools/documents/scripts/a11y_audit.py",
+      "bytes": 13207,
+      "sha256": "a832e288503704a24ae4e7d9bde4444dee01c835c651f746f19167c4ef4632bf"
+    },
+    {
+      "path": "tools/documents/scripts/accept_tracked_changes.py",
+      "bytes": 5727,
+      "sha256": "7842a79bc73941a50318bfb4178fd9c01cec8984a4f10565a08f485282799f06"
+    },
+    {
+      "path": "tools/documents/scripts/add_tracked_replacements.py",
+      "bytes": 6051,
+      "sha256": "2c66d170f70335dbfab691e6d76c73e49dd14b753ead0728a55dbf228c510ba5"
+    },
+    {
+      "path": "tools/documents/scripts/apply_template_styles.py",
+      "bytes": 4180,
+      "sha256": "47dbba6245fc1f9b5237cb975981ce5c42bb96d513a030ba93c3ad80497ecde9"
+    },
+    {
+      "path": "tools/documents/scripts/captions_and_crossrefs.py",
+      "bytes": 9983,
+      "sha256": "2d8db89e3f18b7287877c61b9851d083163d3888c8e8d57b52708c1e63db6d03"
+    },
+    {
+      "path": "tools/documents/scripts/comments_add.py",
+      "bytes": 8904,
+      "sha256": "78fbfc023c644466fd0eb9cdf2ac55983bb6aed1c070e8e7a9126b1a6233efe0"
+    },
+    {
+      "path": "tools/documents/scripts/comments_apply_patch.py",
+      "bytes": 5082,
+      "sha256": "0c82868fd104f121a830e0394cbf6d6a288e84d8aafddb334ae1298de178edc2"
+    },
+    {
+      "path": "tools/documents/scripts/comments_extract.py",
+      "bytes": 5589,
+      "sha256": "9eedfdb515111b77cc04bc30030bae13de907ff2202b838cc9ba37a9b1060c09"
+    },
+    {
+      "path": "tools/documents/scripts/comments_strip.py",
+      "bytes": 5007,
+      "sha256": "b3b27cd86527248a54b3794e7e907b244ea4a2e0e9efa726485aa0b296b906ab"
+    },
+    {
+      "path": "tools/documents/scripts/content_controls.py",
+      "bytes": 11851,
+      "sha256": "783b38cdbc36864c757c20ec3473d033ead50f2db78b1741405481d070d7c56c"
+    },
+    {
+      "path": "tools/documents/scripts/docx_ooxml_patch.py",
+      "bytes": 22752,
+      "sha256": "39a998f10e786d892854246accff85c86548fd58ed1429e94eb98a984023f7bb"
+    },
+    {
+      "path": "tools/documents/scripts/docx_table_to_csv.py",
+      "bytes": 2178,
+      "sha256": "fa993cce50372ae2f647387547d5037c9eca66f0bd6d7f94bc0b2ef481c0d55e"
+    },
+    {
+      "path": "tools/documents/scripts/fields_materialize.py",
+      "bytes": 10804,
+      "sha256": "d8d0cfe5b0f637e5324bd4ac7d5f384953167acdc247987f491a7d00b4d51889"
+    },
+    {
+      "path": "tools/documents/scripts/fields_report.py",
+      "bytes": 5867,
+      "sha256": "807537b56e333c613eac74c4cf288c88908bec5a450d7018c612afd5ef879af7"
+    },
+    {
+      "path": "tools/documents/scripts/flatten_ref_fields.py",
+      "bytes": 4872,
+      "sha256": "01e1089664f005e9aa4590dccc4156addc49c9668a8fbb404bde04fe5678cb39"
+    },
+    {
+      "path": "tools/documents/scripts/footnotes_report.py",
+      "bytes": 3004,
+      "sha256": "3318c8d535beeee94db3496d80e42a03aeb6522e20f4a4776771f7be677919cb"
+    },
+    {
+      "path": "tools/documents/scripts/google_docs_title_sanitize.py",
+      "bytes": 10376,
+      "sha256": "c8dafcef80220593411103ea3caefaa221e0ec7970bf31237f6ffbe762b0d4bf"
+    },
+    {
+      "path": "tools/documents/scripts/heading_audit.py",
+      "bytes": 3330,
+      "sha256": "6c95509da0932cf870ead927a5d9f8d0170cdf31d2f6718d64a3641b8f3931dc"
+    },
+    {
+      "path": "tools/documents/scripts/images_audit.py",
+      "bytes": 6010,
+      "sha256": "57443a088015fa7a3f28b1f2785d0839cd78b6c6f6dd08eee9601bd7b840bb2c"
+    },
+    {
+      "path": "tools/documents/scripts/insert_note.py",
+      "bytes": 9269,
+      "sha256": "9584b502051317923e183b3f45fb78cbb855e1a8e944948976ea854e18f4e5ed"
+    },
+    {
+      "path": "tools/documents/scripts/insert_ref_fields.py",
+      "bytes": 7353,
+      "sha256": "4b20bbc5c297d7f607db6428e6ad00580c5411c949dfe52fb13710d7301c917c"
+    },
+    {
+      "path": "tools/documents/scripts/insert_toc.py",
+      "bytes": 5242,
+      "sha256": "b069ad3a0c1824742e31c84f417f08b9abba7aff236494544f9a22055ed68943"
+    },
+    {
+      "path": "tools/documents/scripts/internal_nav.py",
+      "bytes": 12335,
+      "sha256": "53e1695c08f1abb81b4cd07c97c7e27019214f7dda0e37ca84697bce4cc01292"
+    },
+    {
+      "path": "tools/documents/scripts/make_fixtures.py",
+      "bytes": 8928,
+      "sha256": "c11118357e78084345544c2c232c7d0fc785e766c7c7fcc481f59abf4154968c"
+    },
+    {
+      "path": "tools/documents/scripts/merge_docx_append.py",
+      "bytes": 3952,
+      "sha256": "0fac13945db9cf61b9cfaa708862dd7ee37fb02d72ae1e8b4745c38ba636d414"
+    },
+    {
+      "path": "tools/documents/scripts/privacy_scrub.py",
+      "bytes": 5851,
+      "sha256": "ae8d9bc7ef52cc91370a17070f4ee12b400fa7baf2af0ee403099d7762d072a4"
+    },
+    {
+      "path": "tools/documents/scripts/redact_docx.py",
+      "bytes": 9823,
+      "sha256": "cd02f988732823adb6c1524398bf499cf7d93236871262bbab0074b95b7f4310"
+    },
+    {
+      "path": "tools/documents/scripts/render_and_diff.py",
+      "bytes": 4989,
+      "sha256": "7b2d613289047a54e8d747520f079c276ab899bd99f76556d5c2827bef2ddb67"
+    },
+    {
+      "path": "tools/documents/scripts/section_audit.py",
+      "bytes": 2792,
+      "sha256": "c718d416f0d7512ceadc07f76fefd42d633f443dda3412b0722470ce0302d482"
+    },
+    {
+      "path": "tools/documents/scripts/set_protection.py",
+      "bytes": 5141,
+      "sha256": "3a9fa60ee0fe11ba40a97b84ea1b3a10c8595173aedb35f5b95e18911a91bf14"
+    },
+    {
+      "path": "tools/documents/scripts/style_lint.py",
+      "bytes": 5586,
+      "sha256": "52e485a8fb96dda954a7f7e88ce3a59714ee1a4c945a41e7dff0d1d77ee5da4d"
+    },
+    {
+      "path": "tools/documents/scripts/style_normalize.py",
+      "bytes": 5848,
+      "sha256": "9e293590db1e6b71d932dc3b811d9f8b6d1a4351dc07f8d1ccccd868dcddafe0"
+    },
+    {
+      "path": "tools/documents/scripts/table_geometry.py",
+      "bytes": 10066,
+      "sha256": "c792883c6785663588e80900b73f1bbf696a5e48dd2d56718af3bfbfa2d2b42e"
+    },
+    {
+      "path": "tools/documents/scripts/watermark_add.py",
+      "bytes": 5492,
+      "sha256": "44f7556f7e6a57ab6ac78f7b9ff35b78e6fa10f2b0c94cf4dc12e5b135330542"
+    },
+    {
+      "path": "tools/documents/scripts/watermark_audit_remove.py",
+      "bytes": 4813,
+      "sha256": "ed2b0eb4d58970e8f215656f130240c6bd561fdd4fd1b4887366d7ec055ce156"
+    },
+    {
+      "path": "tools/documents/scripts/xlsx_to_docx_table.py",
+      "bytes": 5843,
+      "sha256": "181c3bc9fd8789aab352df984da5ef0cccc4d664a967f51dccaab79815e3c9f2"
+    },
+    {
+      "path": "tools/documents/SKILL.md",
+      "bytes": 42118,
+      "sha256": "e3e5486c9e9f8c59ec89dd9de997bb76a4b65db7960d72437df2f5ed26a4df7f"
+    },
+    {
+      "path": "tools/documents/tasks/accessibility_a11y.md",
+      "bytes": 2019,
+      "sha256": "951dca7ba7e520792776a636c22e512a9a3c53699c6da80c5c3e47b0690c1374"
+    },
+    {
+      "path": "tools/documents/tasks/captions_crossrefs.md",
+      "bytes": 3900,
+      "sha256": "20a50a2663b2d020d8a7e1bd3a31ae60a45ba41e40b437c9ada4e958987c421f"
+    },
+    {
+      "path": "tools/documents/tasks/clean_tracked_changes.md",
+      "bytes": 1713,
+      "sha256": "6bd628bce5a571b73b59993a474bae039a7ea2e63e85f1292996688e1e2fa446"
+    },
+    {
+      "path": "tools/documents/tasks/comments_manage.md",
+      "bytes": 3002,
+      "sha256": "2ec577fca8ef24d2ee3df9bbd3268eda9ca54a84169499c2fbb293d08a3bbbe0"
+    },
+    {
+      "path": "tools/documents/tasks/compare_diff.md",
+      "bytes": 1204,
+      "sha256": "e06551fbfadd651aa761ba497c04c98449150ddd61ae1221f0ec6f9947fe30a9"
+    },
+    {
+      "path": "tools/documents/tasks/create_edit.md",
+      "bytes": 1787,
+      "sha256": "a842b20c8709f8bc19526de246e9f8722b4304d30c7a3d9fb7b111fdd6f8ec65"
+    },
+    {
+      "path": "tools/documents/tasks/equations.md",
+      "bytes": 4674,
+      "sha256": "add25da4ccc4a796db1dd4e793e0b45c68c355d531495df9b42539d2076db947"
+    },
+    {
+      "path": "tools/documents/tasks/fields_update.md",
+      "bytes": 2429,
+      "sha256": "1ea14774b8e39b37884187e98059e0829e6bc9e0db502b26d4aea38ab68a4148"
+    },
+    {
+      "path": "tools/documents/tasks/fixtures_edge_cases.md",
+      "bytes": 1749,
+      "sha256": "41718f5b067990ca5e32f4065bb24ec152b3e9ec110fad6e81e81cc08af48cef"
+    },
+    {
+      "path": "tools/documents/tasks/footnotes_endnotes.md",
+      "bytes": 1902,
+      "sha256": "6e8bd0a290fc5261e85c2dfcfcde483c685a0cacd00b24950f1fadad8b7b7072"
+    },
+    {
+      "path": "tools/documents/tasks/forms_content_controls.md",
+      "bytes": 2103,
+      "sha256": "d09c066658b0fd8cda6fc51413d57f37dfc12d6828799f52a6137cba20568ec7"
+    },
+    {
+      "path": "tools/documents/tasks/headings_numbering.md",
+      "bytes": 1902,
+      "sha256": "36bbf196fecac25e2e8c1239356fa2af6994a8939048eb7b59f14d2c5bc1999c"
+    },
+    {
+      "path": "tools/documents/tasks/images_figures.md",
+      "bytes": 1418,
+      "sha256": "482e14799b7021a9c191b320c60e492ab58f6f36a16187586c7f5bff38c85b45"
+    },
+    {
+      "path": "tools/documents/tasks/multi_doc_merge.md",
+      "bytes": 1537,
+      "sha256": "9706902b4f91fd8e9af87297a8a66e2767c512a357511ca3ae9bcc56f1a4cd35"
+    },
+    {
+      "path": "tools/documents/tasks/navigation_internal_links.md",
+      "bytes": 2152,
+      "sha256": "33ee4fa5c4e051a0216728a43f92d4de8319169080834b008c48a837bc5acdbd"
+    },
+    {
+      "path": "tools/documents/tasks/privacy_scrub_metadata.md",
+      "bytes": 864,
+      "sha256": "6a1360d873bcade5dd2989f5406ea1c415dbcb52da25cc6c3580da3126880b93"
+    },
+    {
+      "path": "tools/documents/tasks/protection_restrict_editing.md",
+      "bytes": 1232,
+      "sha256": "97024dcc16af3b3666a2d1fc7ae8199f18d881ea62cdb367bd4d37ad0e9e8f53"
+    },
+    {
+      "path": "tools/documents/tasks/read_review.md",
+      "bytes": 2586,
+      "sha256": "ed1bce5450e03011225dbd2974f307cd5dec6fa48bde0a071e4907fd06f6bb16"
+    },
+    {
+      "path": "tools/documents/tasks/redaction_anonymization.md",
+      "bytes": 2421,
+      "sha256": "df3b89d5bacc8405e73f4ec16056a78dc655c6d181086a1b37464038cae2bd02"
+    },
+    {
+      "path": "tools/documents/tasks/sections_layout.md",
+      "bytes": 2282,
+      "sha256": "3b36b7f96ee095c66d4e3d24681b0b9cd1b6b82b1b3b5491aeb748545c89f5cf"
+    },
+    {
+      "path": "tools/documents/tasks/style_lint_normalize.md",
+      "bytes": 2647,
+      "sha256": "993bb9c5129dc6ccb63d28b95f4e3bc5f716eee9fd6a6c75c106031ed42b12e8"
+    },
+    {
+      "path": "tools/documents/tasks/tables_spreadsheets.md",
+      "bytes": 1153,
+      "sha256": "eeb08bc4d64db98679a5648a041f7786dca160f35c0909a10b7963e1af3f88db"
+    },
+    {
+      "path": "tools/documents/tasks/templates_style_packs.md",
+      "bytes": 1302,
+      "sha256": "a75db63fcdfd135bab27b164fe7747adda75c63501e6300d7eb5d56b9fc6a580"
+    },
+    {
+      "path": "tools/documents/tasks/toc_workflow.md",
+      "bytes": 2012,
+      "sha256": "ae2c36431d7ba8f7be1fad51c5af79831f4e38441060ca5fb0058247a54e9ab9"
+    },
+    {
+      "path": "tools/documents/tasks/verify_render.md",
+      "bytes": 2483,
+      "sha256": "e94db9fefda34eefb65ea527467d8307eb0e834dca2705b04d027a426ebc9d9b"
+    },
+    {
+      "path": "tools/documents/tasks/watermarks_background.md",
+      "bytes": 1366,
+      "sha256": "9f87e23d4b5e54edb1560367e231bb3c0a6ef88193c600af8842d8537dcb9757"
+    },
+    {
+      "path": "tools/documents/template-create.md",
+      "bytes": 5177,
+      "sha256": "f02df8f6fa8f764de7a9b0ed4dcd38ae3560df364edd259b127bf53c3f496dd3"
+    },
+    {
+      "path": "tools/documents/template-distill.md",
+      "bytes": 4375,
+      "sha256": "dd01e59b5ffc7fb28f43fd4bd0eeb02a7d0e881f7d24780d195e6b3f6fc1f658"
+    },
+    {
+      "path": "tools/documents/troubleshooting/libreoffice_headless.md",
+      "bytes": 1667,
+      "sha256": "929b2b124ce2e65b3de17565a8aad2ff9d569f38ae648ec7ca0e3bed87041ae8"
+    },
+    {
+      "path": "tools/documents/troubleshooting/run_splitting.md",
+      "bytes": 836,
+      "sha256": "37df942902847797e8060308121d3db10273f71fd9dac748e0157e3c29624b85"
+    },
+    {
+      "path": "tools/documents/writing_quality.md",
+      "bytes": 19371,
+      "sha256": "f3b37e02e3a2b4890f036ae9f279c2f3ce673b9b2c2d0dd893b998b028261129"
+    },
+    {
+      "path": "tools/cloud-environment-runtime/references/docker.md",
+      "bytes": 6363,
+      "sha256": "ed06da8a5917325f2aea394884e1deb9dd085a74d6ecc4f289d2e90b2f6366d9"
+    },
+    {
+      "path": "tools/cloud-environment-runtime/references/networking.md",
+      "bytes": 1688,
+      "sha256": "0e897330ac66015b44f0dc16f57d48279c7782a4e79ac6309f6c3b96ce833a8f"
+    },
+    {
+      "path": "tools/cloud-environment-runtime/references/vpn.md",
+      "bytes": 8927,
+      "sha256": "e0be7532df91927959616f24304b9c3448f982dce04a3b511badfc7837e66613"
+    },
+    {
+      "path": "tools/cloud-environment-runtime/scripts/ensure-socat.sh",
+      "bytes": 2962,
+      "sha256": "5d978e9230c4363dc84e2169e0385efaff2f1b5259da8fb15ed57924fdcd13f0"
+    },
+    {
+      "path": "tools/cloud-environment-runtime/SKILL.md",
+      "bytes": 3985,
+      "sha256": "c23513e361a6f9dbe1c28e5c41de635f355469b4ec1740ae1cd2de1d38a91bd3"
+    },
+    {
+      "path": "README-cloud-skills.md",
+      "bytes": 7639,
+      "sha256": "d70cb7924999b11de65163f06ff47ebd96a02522b61e866c6ed21586b8b7eaca"
+    },
+    {
+      "path": "message-to-cloud.txt",
+      "bytes": 2159,
+      "sha256": "a399710b5b30393f8032951b391c122e22a030223882e5181c00148b2e16b51c"
+    }
+  ],
+  "not_an_installation": true,
+  "cloud_receipt": "NOT_CONFIRMED"
+}

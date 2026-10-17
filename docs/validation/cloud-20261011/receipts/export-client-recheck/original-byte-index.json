@@ -1,0 +1,63 @@
+{
+  "source": "/workspace/scratch/rct-validation/export_client_review/ecr-recheck",
+  "manifest": "immutable-review-manifest.json",
+  "files": [
+    {
+      "path": "CURRENT.md",
+      "original_sha256": "fe63095e6fa7fa87b79a8fba4d8af60f4508a9593cdd3a11eb5bd78001e154fd",
+      "original_bytes": 937,
+      "working_sha256": "fe63095e6fa7fa87b79a8fba4d8af60f4508a9593cdd3a11eb5bd78001e154fd",
+      "working_bytes": 937,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "REPORT.md",
+      "original_sha256": "77030905c41eeb23237cf1ea9e64427281aa3fd6b4b64faf4dafe5f0652c162d",
+      "original_bytes": 9963,
+      "working_sha256": "77030905c41eeb23237cf1ea9e64427281aa3fd6b4b64faf4dafe5f0652c162d",
+      "working_bytes": 9963,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "author-evidence-verification.json",
+      "original_sha256": "145da72da7126ec6cf077e316757b92041dc10553e3c40b9e77bf9ebcae76d5d",
+      "original_bytes": 32972,
+      "working_sha256": "145da72da7126ec6cf077e316757b92041dc10553e3c40b9e77bf9ebcae76d5d",
+      "working_bytes": 32972,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "finding-statuses.json",
+      "original_sha256": "90d40cc4111b5c48e826e89dc08c5d93e507ecfbd491823559952d8d32b359f9",
+      "original_bytes": 2292,
+      "working_sha256": "90d40cc4111b5c48e826e89dc08c5d93e507ecfbd491823559952d8d32b359f9",
+      "working_bytes": 2292,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-equivalence.json",
+      "original_sha256": "be3976333d6aed55cb02691c4d43cdf5fcfa60f89d9c7dc9a30d7d862528d97c",
+      "original_bytes": 6196,
+      "working_sha256": "be3976333d6aed55cb02691c4d43cdf5fcfa60f89d9c7dc9a30d7d862528d97c",
+      "working_bytes": 6196,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "source-ledger.json",
+      "original_sha256": "a20489d664e58be8130b7aaa5a51d1930db0e3b1c09faddb65cc342ab1b12d27",
+      "original_bytes": 8914,
+      "working_sha256": "a20489d664e58be8130b7aaa5a51d1930db0e3b1c09faddb65cc342ab1b12d27",
+      "working_bytes": 8914,
+      "transformation": "byte equal"
+    },
+    {
+      "path": "immutable-review-manifest.json",
+      "original_sha256": "52f3c8a6ec1e9d77a1aa8b0d8aa888c8d164cc13c96f4e6325db0206a658aef9",
+      "original_bytes": 2026,
+      "working_sha256": "52f3c8a6ec1e9d77a1aa8b0d8aa888c8d164cc13c96f4e6325db0206a658aef9",
+      "working_bytes": 2026,
+      "transformation": "byte equal"
+    }
+  ],
+  "immutable_originals": "immutable-original-receipts.zip"
+}

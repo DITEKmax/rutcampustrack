@@ -1,0 +1,175 @@
+{
+  "at": "2026-10-12T05:23:03.921553+00:00",
+  "original_seals": [
+    {
+      "manifest": "/workspace/scratch/rct-validation/current_client_artifacts/manifest.json",
+      "sha256": "840492d38bfd204fe37c9bb46e89d3a3fdbc7957ad31ad1e9ca6ca058523ea7f",
+      "safe_files": 24,
+      "all_exact": true
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/manifest.json",
+      "sha256": "fac7de9671ce6338b0e28ddd8745918bb04cd2816cd708861685e2d4f3f521cf",
+      "safe_files": 29,
+      "all_exact": true
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/renderer-addendum-manifest.json",
+      "sha256": "8159e470b37267bb2e2142e5e772eb0b925e83b50f82a68cfb0842ba28389287",
+      "safe_files": 6,
+      "all_exact": true
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_runtime_prepare/guard-corrections/manifest.json",
+      "sha256": "04e6355b92c0cd24a6c6b574bde5099de2a26a4b7d87caaf08c9c8c71f4044ba",
+      "safe_files": 13,
+      "all_exact": true
+    },
+    {
+      "manifest": "/workspace/scratch/rct-validation/host_capacity_plan/manifest.json",
+      "sha256": "be3853df8f62a968c9e0e0171f70e4fa0b4435bcddce5b2b6e93b8c30f756a6b",
+      "safe_files": 36,
+      "all_exact": true
+    }
+  ],
+  "all_original_safe_files_exact": true,
+  "safe_files_checked": 108,
+  "tracked_source_count": 7350,
+  "tracked_source_SHA_bytes_modes_exact": true,
+  "installed_dependency_entry_count": 8272,
+  "installed_dependency_SHA_bytes_modes_symlinks_pathset_exact": true,
+  "current8_and_old8_JARs": [
+    {
+      "producer": "CURRENT908",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "sha256": "15b1b8935250536056dfe38d88469537410b2503fc37cef62361bc3ad238db95",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "CURRENT908",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "sha256": "c31747249c74bdb696a8333e477b902fc34bbc05d319b46d8c124ac466fb948a",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "CURRENT908",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "sha256": "924d5fa92b2dd986162a8450a278fdac5cd154428d24eb8be99782d392ccfb03",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "CURRENT908",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "sha256": "638de7bccf79118e1a4d53f3f861bc9db0ba078d7d0e4230376df74bfe78ba7f",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "CURRENT908",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "sha256": "4987dda725df335f10916f34bc90ddc24869d6fe769a476043490a7add0043ea",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "CURRENT908",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "sha256": "e938ddc30c86e094edc1f4e554eb1b6699a685eadaed8922144f68590b570a39",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "CURRENT908",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "sha256": "585c4599c90fdca9f96dc90c1e751db1e204250fa2cd1b3b361efc67f7d6899c",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "CURRENT908",
+      "path": "/workspace/rct-worktrees/client-current-artifacts/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "sha256": "c7accee419af4c8f537f6416211069fa6054735d62eb6b695bcff25407f97712",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "OLD eec3",
+      "path": "/workspace/rct-worktrees/client-acceptance/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "sha256": "ba514dcb98d623e3f926debf1a3306532d7c13a090367972bfeabc0c77b05635",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "OLD eec3",
+      "path": "/workspace/rct-worktrees/client-acceptance/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "sha256": "b70e18c4e1004f49301a1813f13e46a56c4f13fed442a7a6569734f781a61520",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "OLD eec3",
+      "path": "/workspace/rct-worktrees/client-acceptance/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+      "sha256": "62442b2b58d12c94d177df5a4fc5b417d01d058e20e52c6fb2850d727b964d6d",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "OLD eec3",
+      "path": "/workspace/rct-worktrees/client-acceptance/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+      "sha256": "fbdcf1af4690f9efc547fa48e2d27af46e4ad3184143b6ef6195fc4e9ef015da",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "OLD eec3",
+      "path": "/workspace/rct-worktrees/client-acceptance/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+      "sha256": "52c96cf5349d33e0dfee09f81208e969e693bb3e7ff48762513d16c6e88dc78e",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "OLD eec3",
+      "path": "/workspace/rct-worktrees/client-acceptance/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "sha256": "2e40d87f5716e148ed58416de73407d38ed8b7c43387f63d4fe4815820082929",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "OLD eec3",
+      "path": "/workspace/rct-worktrees/client-acceptance/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+      "sha256": "12d6aa434927bf3091d16ce06178e5d42191856f63da38bfe6259b5e204df8d1",
+      "mode": "0o600",
+      "exact": true
+    },
+    {
+      "producer": "OLD eec3",
+      "path": "/workspace/rct-worktrees/client-acceptance/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "sha256": "b01fe685f628d0d0e3cc4e6758f32ed2f81ce16bac8cb3f63b8b14b687a527a0",
+      "mode": "0o600",
+      "exact": true
+    }
+  ],
+  "production_Vue_file_count": 22,
+  "production_Vue_SHA_bytes_modes_exact": true,
+  "old_processes_observed_only": [
+    {
+      "pid": 201385,
+      "state": "Z",
+      "ppid": 1,
+      "pgrp": 201350,
+      "start_ticks": 3269929
+    },
+    {
+      "pid": 201430,
+      "state": "Z",
+      "ppid": 1,
+      "pgrp": 201403,
+      "start_ticks": 3273261
+    }
+  ],
+  "old_process_mutations": false,
+  "product_or_original_file_mutations": false
+}

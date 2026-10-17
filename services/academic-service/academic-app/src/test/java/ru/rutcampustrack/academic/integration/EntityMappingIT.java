@@ -1,5 +1,9 @@
 package ru.rutcampustrack.academic.integration;
 
+import static org.assertj.core.api.Assertions.*;
+
+import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -9,52 +13,34 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.entity.*;
 import ru.rutcampustrack.academic.repository.*;
 
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.*;
-
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class EntityMappingIT extends AbstractAcademicIntegrationTest {
 
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private SemesterRepository semesterRepository;
+    @Autowired private SemesterRepository semesterRepository;
 
-    @Autowired
-    private GroupRepository groupRepository;
+    @Autowired private GroupRepository groupRepository;
 
-    @Autowired
-    private SubjectRepository subjectRepository;
+    @Autowired private SubjectRepository subjectRepository;
 
-    @Autowired
-    private StudentGroupHistoryRepository studentGroupHistoryRepository;
+    @Autowired private StudentGroupHistoryRepository studentGroupHistoryRepository;
 
-    @Autowired
-    private TeacherSubjectGroupRepository teacherSubjectGroupRepository;
+    @Autowired private TeacherSubjectGroupRepository teacherSubjectGroupRepository;
 
-    @Autowired
-    private HeadmanAssistantRepository headmanAssistantRepository;
+    @Autowired private HeadmanAssistantRepository headmanAssistantRepository;
 
-    @Autowired
-    private AttendanceThresholdRepository attendanceThresholdRepository;
+    @Autowired private AttendanceThresholdRepository attendanceThresholdRepository;
 
-    @Autowired
-    private HomeworkRepository homeworkRepository;
+    @Autowired private HomeworkRepository homeworkRepository;
 
-    @Autowired
-    private HomeworkCompletionRepository homeworkCompletionRepository;
+    @Autowired private HomeworkCompletionRepository homeworkCompletionRepository;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
     /**
-     * Test 1 — Schema validation: Application context loads without Hibernate schema
-     * validation errors, proving all 11 entities match Flyway V1+V2+V3 schema.
+     * Test 1 — Schema validation: Application context loads without Hibernate schema validation
+     * errors, proving all 11 entities match Flyway V1+V2+V3 schema.
      */
     @Test
     @Order(1)
@@ -74,8 +60,8 @@ class EntityMappingIT extends AbstractAcademicIntegrationTest {
     }
 
     /**
-     * Test 2 — V2 seed data: UserRepository.findByLogin("student") returns a user
-     * with role STUDENT, proving V2 seed data is intact and enum converter works.
+     * Test 2 — V2 seed data: UserRepository.findByLogin("student") returns a user with role
+     * STUDENT, proving V2 seed data is intact and enum converter works.
      */
     @Test
     @Order(2)
@@ -89,8 +75,8 @@ class EntityMappingIT extends AbstractAcademicIntegrationTest {
     }
 
     /**
-     * Test 3 — @SQLRestriction: Archive a user via native query, then findById returns
-     * empty, then findByIdIncludingArchived returns the user (D-01, D-02).
+     * Test 3 — @SQLRestriction: Archive a user via native query, then findById returns empty, then
+     * findByIdIncludingArchived returns the user (D-01, D-02).
      */
     @Test
     @Order(3)
@@ -116,8 +102,8 @@ class EntityMappingIT extends AbstractAcademicIntegrationTest {
     }
 
     /**
-     * Test 4 — Login sequences: nextStudentLoginSeq returns incrementing values from V3
-     * PostgreSQL sequences (D-03/D-04).
+     * Test 4 — Login sequences: nextStudentLoginSeq returns incrementing values from V3 PostgreSQL
+     * sequences (D-03/D-04).
      */
     @Test
     @Order(4)
@@ -130,8 +116,8 @@ class EntityMappingIT extends AbstractAcademicIntegrationTest {
     }
 
     /**
-     * Test 5 — HeadmanAssistant array: Save with permissions, reload, verify array
-     * contents persist correctly as PostgreSQL VARCHAR(64)[] (D-06).
+     * Test 5 — HeadmanAssistant array: Save with permissions, reload, verify array contents persist
+     * correctly as PostgreSQL VARCHAR(64)[] (D-06).
      */
     @Test
     @Order(5)
@@ -139,84 +125,91 @@ class EntityMappingIT extends AbstractAcademicIntegrationTest {
     @Rollback
     void headmanAssistant_persistAndReloadPermissionsArray_roundTripsCorrectly() {
         // Get seed data references
-        Long studentId = jdbcTemplate.queryForObject(
-            "SELECT id FROM users WHERE login = 'student'", Long.class);
-        Long adminId = jdbcTemplate.queryForObject(
-            "SELECT id FROM users WHERE login = 'admin'", Long.class);
-        Long groupId = jdbcTemplate.queryForObject(
-            "SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
+        Long studentId =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM users WHERE login = 'student'", Long.class);
+        Long adminId =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        Long groupId =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
 
         // Insert HeadmanAssistant via native query to avoid @SQLRestriction issues
         // (student is active, so we can also use repository but native ensures isolation)
         jdbcTemplate.update(
-            "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by, is_active, assigned_at) " +
-            "VALUES (?, ?, ARRAY['mark_attendance','manage_excuses']::varchar(64)[], ?, true, NOW())",
-            groupId, studentId, adminId
-        );
+                "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by, is_active, assigned_at) "
+                        + "VALUES (?, ?, ARRAY['mark_attendance','manage_excuses']::varchar(64)[], ?, true, NOW())",
+                groupId,
+                studentId,
+                adminId);
 
-        Optional<HeadmanAssistant> found = headmanAssistantRepository
-            .findByGroupIdAndStudentId(groupId, studentId);
+        Optional<HeadmanAssistant> found =
+                headmanAssistantRepository.findByGroupIdAndStudentId(groupId, studentId);
 
         assertThat(found).isPresent();
         assertThat(found.get().getPermissions())
-            .containsExactlyInAnyOrder("mark_attendance", "manage_excuses");
+                .containsExactlyInAnyOrder("mark_attendance", "manage_excuses");
     }
 
     /**
-     * Test 6 — Threshold resolution: 3-level most-specific-wins (THRSH-04).
-     * global (null,null) = 70%, group (groupId,null) = 80%, subject (groupId,subjectId) = 90%.
+     * Test 6 — Threshold resolution: 3-level most-specific-wins (THRSH-04). global (null,null) =
+     * 70%, group (groupId,null) = 80%, subject (groupId,subjectId) = 90%.
      */
     @Test
     @Order(6)
     @Transactional
     @Rollback
     void attendanceThreshold_threeLevel_mostSpecificWins() {
-        Long adminId = jdbcTemplate.queryForObject(
-            "SELECT id FROM users WHERE login = 'admin'", Long.class);
-        Long groupId = jdbcTemplate.queryForObject(
-            "SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
+        Long adminId =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        Long groupId =
+                jdbcTemplate.queryForObject(
+                        "SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
 
         // Create a subject for this test
         // Phase 60-01 V12: subjects.group_id NOT NULL
-        Long subjectId = jdbcTemplate.queryForObject(
-            "INSERT INTO subjects (name, type, group_id) VALUES ('Test Subject', 'lecture', ?) RETURNING id",
-            Long.class, groupId
-        );
+        Long subjectId =
+                jdbcTemplate.queryForObject(
+                        "INSERT INTO subjects (name, type, group_id) VALUES ('Test Subject', 'lecture', ?) RETURNING id",
+                        Long.class,
+                        groupId);
 
         // Global threshold (null, null) = 70%
         jdbcTemplate.update(
-            "INSERT INTO attendance_thresholds (group_id, subject_id, threshold_pct, set_by, created_at) " +
-            "VALUES (NULL, NULL, 70, ?, NOW())",
-            adminId
-        );
+                "INSERT INTO attendance_thresholds (group_id, subject_id, threshold_pct, set_by, created_at) "
+                        + "VALUES (NULL, NULL, 70, ?, NOW())",
+                adminId);
 
         // Group threshold (groupId, null) = 80%
         jdbcTemplate.update(
-            "INSERT INTO attendance_thresholds (group_id, subject_id, threshold_pct, set_by, created_at) " +
-            "VALUES (?, NULL, 80, ?, NOW())",
-            groupId, adminId
-        );
+                "INSERT INTO attendance_thresholds (group_id, subject_id, threshold_pct, set_by, created_at) "
+                        + "VALUES (?, NULL, 80, ?, NOW())",
+                groupId,
+                adminId);
 
         // Subject threshold (groupId, subjectId) = 90%
         jdbcTemplate.update(
-            "INSERT INTO attendance_thresholds (group_id, subject_id, threshold_pct, set_by, created_at) " +
-            "VALUES (?, ?, 90, ?, NOW())",
-            groupId, subjectId, adminId
-        );
+                "INSERT INTO attendance_thresholds (group_id, subject_id, threshold_pct, set_by, created_at) "
+                        + "VALUES (?, ?, 90, ?, NOW())",
+                groupId,
+                subjectId,
+                adminId);
 
         // Verify most-specific-wins resolution
         Optional<AttendanceThreshold> subjectLevel =
-            attendanceThresholdRepository.findByGroupIdAndSubjectId(groupId, subjectId);
+                attendanceThresholdRepository.findByGroupIdAndSubjectId(groupId, subjectId);
         assertThat(subjectLevel).isPresent();
         assertThat(subjectLevel.get().getThresholdPct()).isEqualTo(90);
 
         Optional<AttendanceThreshold> groupLevel =
-            attendanceThresholdRepository.findByGroupIdAndSubjectIdIsNull(groupId);
+                attendanceThresholdRepository.findByGroupIdAndSubjectIdIsNull(groupId);
         assertThat(groupLevel).isPresent();
         assertThat(groupLevel.get().getThresholdPct()).isEqualTo(80);
 
         Optional<AttendanceThreshold> globalLevel =
-            attendanceThresholdRepository.findByGroupIdIsNullAndSubjectIdIsNull();
+                attendanceThresholdRepository.findByGroupIdIsNullAndSubjectIdIsNull();
         assertThat(globalLevel).isPresent();
         assertThat(globalLevel.get().getThresholdPct()).isEqualTo(70);
     }
@@ -237,6 +230,6 @@ class EntityMappingIT extends AbstractAcademicIntegrationTest {
         second.setActive(true);
 
         assertThatThrownBy(() -> semesterRepository.saveAndFlush(second))
-            .isInstanceOf(DataIntegrityViolationException.class);
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 }

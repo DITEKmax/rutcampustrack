@@ -1,0 +1,253 @@
+{
+  "created_utc": "2026-10-12T00:25:08.571768+00:00",
+  "head": "0af9cae59dae04b9409a331dcf8a4ddbe89aa206",
+  "contract_sha256": "8cbd27d431815647886b2f39592905d3f1d4cb985643e5d9fa3f3f669b4df4a5",
+  "run": "ebsr-runtime-before-3",
+  "original_result": "/workspace/scratch/rct-validation/export_developer/ebsr-runtime-before-3-result.json",
+  "original_result_sha256": "3c074e8fd64f0d579b8d580f7a8df715673e77b8610482de44eec6a2cd97bd3b",
+  "original_xml": "/workspace/scratch/rct-validation/export_developer/ebsr-runtime-before-3-xml/services_auth-service_auth-app_integrationTest/TEST-ru.rutcampustrack.auth.integration.ExportCrossLayerBoundaryIT.xml",
+  "original_xml_sha256": "8e85691f60991ba74334e40342d3145fdd4a31e19cc72e40a7fc8331e25ae9ae",
+  "counts": {
+    "tests": 18,
+    "failures": 12,
+    "errors": 0,
+    "skipped": 0
+  },
+  "meaningful_failures": 11,
+  "fixture_failures": 1,
+  "cases": [
+    {
+      "index": 1,
+      "name": "freshAuthClaimPassesRealGatewayWorkerAndCommitsReadyBytes()",
+      "outcome": "FAIL",
+      "classification": "ACCEPTED_RULE_VIOLATION",
+      "method": "freshAuthClaimPassesRealGatewayWorkerAndCommitsReadyBytes",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "test_line": 115,
+      "safe_expected_actual": [
+        "ready",
+        "error"
+      ],
+      "finding": "EBSR01",
+      "cause": "Fresh job worker authority uses durable ten-minute expiry; unchanged Gateway verifier caps report capability at sixty seconds; three failed attempts terminate error without backend generation"
+    },
+    {
+      "index": 2,
+      "name": "[1] wire=8",
+      "outcome": "FAIL",
+      "classification": "ACCEPTED_RULE_VIOLATION",
+      "method": "actualGatewayKindDecoderRejectsNoncanonicalRequiredKinds",
+      "failure_type": "java.lang.AssertionError",
+      "test_line": 268,
+      "safe_expected_actual": [],
+      "finding": "EBSR03",
+      "cause": "Actual Auth HTTP or real Gateway decoder accepts noncanonical ordinal/numeric string/null",
+      "expected": "400 with no durable job for Auth; RuntimeException for Gateway",
+      "actual": "Decoder completed without required exception"
+    },
+    {
+      "index": 3,
+      "name": "[2] wire=\"8\"",
+      "outcome": "FAIL",
+      "classification": "ACCEPTED_RULE_VIOLATION",
+      "method": "actualGatewayKindDecoderRejectsNoncanonicalRequiredKinds",
+      "failure_type": "java.lang.AssertionError",
+      "test_line": 268,
+      "safe_expected_actual": [],
+      "finding": "EBSR03",
+      "cause": "Actual Auth HTTP or real Gateway decoder accepts noncanonical ordinal/numeric string/null",
+      "expected": "400 with no durable job for Auth; RuntimeException for Gateway",
+      "actual": "Decoder completed without required exception"
+    },
+    {
+      "index": 4,
+      "name": "[3] wire=null",
+      "outcome": "FAIL",
+      "classification": "ACCEPTED_RULE_VIOLATION",
+      "method": "actualGatewayKindDecoderRejectsNoncanonicalRequiredKinds",
+      "failure_type": "java.lang.AssertionError",
+      "test_line": 268,
+      "safe_expected_actual": [],
+      "finding": "EBSR03",
+      "cause": "Actual Auth HTTP or real Gateway decoder accepts noncanonical ordinal/numeric string/null",
+      "expected": "400 with no durable job for Auth; RuntimeException for Gateway",
+      "actual": "Decoder completed without required exception"
+    },
+    {
+      "index": 5,
+      "name": "[4] wire=\"UNKNOWN\"",
+      "outcome": "PASS",
+      "classification": "POSITIVE_OR_MALFORMED_CONTROL_PASS",
+      "method": "[4] wire=\"UNKNOWN\"",
+      "failure_type": null,
+      "test_line": null
+    },
+    {
+      "index": 6,
+      "name": "[5] wire=[]",
+      "outcome": "PASS",
+      "classification": "POSITIVE_OR_MALFORMED_CONTROL_PASS",
+      "method": "[5] wire=[]",
+      "failure_type": null,
+      "test_line": null
+    },
+    {
+      "index": 7,
+      "name": "[6] wire={}",
+      "outcome": "PASS",
+      "classification": "POSITIVE_OR_MALFORMED_CONTROL_PASS",
+      "method": "[6] wire={}",
+      "failure_type": null,
+      "test_line": null
+    },
+    {
+      "index": 8,
+      "name": "[7] wire=true",
+      "outcome": "PASS",
+      "classification": "POSITIVE_OR_MALFORMED_CONTROL_PASS",
+      "method": "[7] wire=true",
+      "failure_type": null,
+      "test_line": null
+    },
+    {
+      "index": 9,
+      "name": "legacySixtySecondAuthorityWorksWhileTamperedChangedExpiredAndLongCapabilitiesNeverDispatch()",
+      "outcome": "PASS",
+      "classification": "POSITIVE_OR_MALFORMED_CONTROL_PASS",
+      "method": "legacySixtySecondAuthorityWorksWhileTamperedChangedExpiredAndLongCapabilitiesNeverDispatch()",
+      "failure_type": null,
+      "test_line": null
+    },
+    {
+      "index": 10,
+      "name": "limitedLegacyIssuanceUsesCorrespondingCurrentViewGrantAndRevocation()",
+      "outcome": "FAIL",
+      "classification": "ACCEPTED_RULE_VIOLATION",
+      "method": "limitedLegacyIssuanceUsesCorrespondingCurrentViewGrantAndRevocation",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "test_line": 196,
+      "safe_expected_actual": [
+        "403 FORBIDDEN",
+        "200 OK"
+      ],
+      "finding": "EBSR04",
+      "cause": "Legacy initiation omits current selected ADMIN/respective view-grant/profile availability checks before writing capability"
+    },
+    {
+      "index": 11,
+      "name": "unavailableLiveRegistryAuthorityCannotIssueACapability()",
+      "outcome": "FAIL",
+      "classification": "ACCEPTED_RULE_VIOLATION",
+      "method": "unavailableLiveRegistryAuthorityCannotIssueACapability",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "test_line": 214,
+      "safe_expected_actual": [
+        "503 SERVICE_UNAVAILABLE",
+        "200 OK"
+      ],
+      "finding": "EBSR04",
+      "cause": "Legacy initiation omits current selected ADMIN/respective view-grant/profile availability checks before writing capability"
+    },
+    {
+      "index": 12,
+      "name": "limitedWithoutViewGrantsCannotIssueEitherRegistryCapability()",
+      "outcome": "FAIL",
+      "classification": "FIXTURE_INTEGRITY_FAILURE_ORACLE_NOT_EXECUTED",
+      "method": "limitedWithoutViewGrantsCannotIssueEitherRegistryCapability",
+      "failure_type": "org.springframework.dao.DataIntegrityViolationException",
+      "test_line": 219,
+      "safe_expected_actual": [],
+      "finding": "EBSR04",
+      "cause": "LIMITED requires at least one accepted grant; empty permissions violates admin_access_state before login/HTTP",
+      "correction": "Use existing DASHBOARD_VIEW as unrelated valid LIMITED grant; preserve denial assertions"
+    },
+    {
+      "index": 13,
+      "name": "expiryBetweenRealAdmissionAndContentReadIsNotFoundWithoutBytes()",
+      "outcome": "FAIL",
+      "classification": "ACCEPTED_RULE_VIOLATION",
+      "method": "expiryBetweenRealAdmissionAndContentReadIsNotFoundWithoutBytes",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "test_line": 177,
+      "safe_expected_actual": [
+        "404 NOT_FOUND",
+        "500 INTERNAL_SERVER_ERROR"
+      ],
+      "finding": "EBSR02",
+      "cause": "Real admission then deterministic expiry leaves zero content SELECT rows; queryForObject throws EmptyResultDataAccessException and HTTP returns 500 instead of 404"
+    },
+    {
+      "index": 14,
+      "name": "configuredAuthMapperPreservesAllCanonicalStringCodesAndRejectsMalformedRequiredKinds()",
+      "outcome": "PASS",
+      "classification": "POSITIVE_OR_MALFORMED_CONTROL_PASS",
+      "method": "configuredAuthMapperPreservesAllCanonicalStringCodesAndRejectsMalformedRequiredKinds()",
+      "failure_type": null,
+      "test_line": null
+    },
+    {
+      "index": 15,
+      "name": "[1] user=teacher",
+      "outcome": "FAIL",
+      "classification": "ACCEPTED_RULE_VIOLATION",
+      "method": "legacyRegistryIssuanceRequiresSelectedAdminBeforeCapabilityStorage",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "test_line": 187,
+      "safe_expected_actual": [
+        "403 FORBIDDEN",
+        "200 OK"
+      ],
+      "finding": "EBSR04",
+      "cause": "Legacy initiation omits current selected ADMIN/respective view-grant/profile availability checks before writing capability"
+    },
+    {
+      "index": 16,
+      "name": "[2] user=student",
+      "outcome": "FAIL",
+      "classification": "ACCEPTED_RULE_VIOLATION",
+      "method": "legacyRegistryIssuanceRequiresSelectedAdminBeforeCapabilityStorage",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "test_line": 187,
+      "safe_expected_actual": [
+        "403 FORBIDDEN",
+        "200 OK"
+      ],
+      "finding": "EBSR04",
+      "cause": "Legacy initiation omits current selected ADMIN/respective view-grant/profile availability checks before writing capability"
+    },
+    {
+      "index": 17,
+      "name": "[1] wire=8",
+      "outcome": "FAIL",
+      "classification": "ACCEPTED_RULE_VIOLATION",
+      "method": "actualAuthKindBoundaryRejectsOrdinalAndNumericString",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "test_line": 233,
+      "safe_expected_actual": [
+        "400 BAD_REQUEST",
+        "202 ACCEPTED"
+      ],
+      "finding": "EBSR03",
+      "cause": "Actual Auth HTTP or real Gateway decoder accepts noncanonical ordinal/numeric string/null",
+      "expected": "400 with no durable job for Auth; RuntimeException for Gateway"
+    },
+    {
+      "index": 18,
+      "name": "[2] wire=\"8\"",
+      "outcome": "FAIL",
+      "classification": "ACCEPTED_RULE_VIOLATION",
+      "method": "actualAuthKindBoundaryRejectsOrdinalAndNumericString",
+      "failure_type": "org.opentest4j.AssertionFailedError",
+      "test_line": 233,
+      "safe_expected_actual": [
+        "400 BAD_REQUEST",
+        "202 ACCEPTED"
+      ],
+      "finding": "EBSR03",
+      "cause": "Actual Auth HTTP or real Gateway decoder accepts noncanonical ordinal/numeric string/null",
+      "expected": "400 with no durable job for Auth; RuntimeException for Gateway"
+    }
+  ],
+  "runtime_started": false,
+  "source_bridge": "restored-source-bridge.json"
+}

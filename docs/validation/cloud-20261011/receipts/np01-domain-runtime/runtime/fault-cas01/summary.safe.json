@@ -1,0 +1,36 @@
+{
+  "lease": "DOMAIN1",
+  "phase": "fault-cas01",
+  "source_revision": "aa713963941f10b32b00f1ca9cb7b7c369dd8947",
+  "native_exit": 1,
+  "disk_aborted": false,
+  "seconds": 36.537,
+  "counts": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases": [
+    {
+      "class": "ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT",
+      "case": "invalidationCannotLoseStableRenderReceiptAndStaleCleanupCasCannotSettle()",
+      "status": "FAIL",
+      "failure_type": "java.lang.AssertionError"
+    }
+  ],
+  "xml": [
+    {
+      "name": "test-results-TEST-ru.rutcampustrack.academic.botcredentials.BotCredentialLifecycleIT.xml",
+      "bytes": 13405,
+      "sha256": "47dd4c59d5457c00fa2e2b26e9dc2340be29bf091faee2a54af6af264a2b0198"
+    }
+  ],
+  "all_source_inputs_unchanged": true,
+  "changed_paths": [],
+  "private_marker_match_files": 0,
+  "raw_artifacts_private": true,
+  "terminal_sha256": "7cb4cf2e8be389090c66927e86a9d353546238c1bc3385b618b599968d517406",
+  "free_bytes": 9003442176,
+  "utc": "2026-10-12T03:12:31Z"
+}

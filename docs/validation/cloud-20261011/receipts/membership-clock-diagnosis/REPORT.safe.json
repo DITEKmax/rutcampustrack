@@ -1,0 +1,142 @@
+{
+  "id": "MOBILE-CLOCK-MEMBERSHIP-READONLY-01",
+  "utc": "2026-10-12T13:48:25.981658+00:00",
+  "status": "SPECIFIC_HOUR_MEMBERSHIP_HYPOTHESIS_DISPROVED_BY_SOURCE_ACTUAL_FAILURE_CAUSE_UNKNOWN",
+  "root_revision": "eb0e02aaf6c7cfb3b80db2d3a3c81b8a2dd79553",
+  "product_source_producer": "17d25ddea37b1d7f6788fddb33ef0faa52287837",
+  "requested_model": "gpt-6.1-sol/high",
+  "actual_model": "UNKNOWN",
+  "scope": "Read-only bounded source diagnosis; NEW scratch receipt only. No Root/own frozen source, UI/harness/DB change; no Node/JVM/test/browser/API probe/server.",
+  "inputs_qualification": {
+    "teaching_instant": "2026-10-12T06:00:00Z (09:00 Europe/Moscow), reported Root runtime input",
+    "user_creation_security_time": "2026-10-12 around13:20Z, Root-reported, not freshly read from DB; individual persisted createdAt valuesUNKNOWN",
+    "same_moscow_date": true,
+    "fixture_lesson": "MobileDataset uses date=today, lessonNumber1; canonical lesson1 08:30-09:50 Moscow, not start09:00. Teaching09:00 is inside lesson; actual created lesson snapshot not fetched here."
+  },
+  "findings": [
+    {
+      "id": "CLOCK-H1",
+      "verdict": "DISPROVED_SOURCE_FOR_THIS_INITIAL_ENROLLMENT",
+      "fragment": "UserService#createUser history.setJoinedAt(enrollment.semester().getDateFrom()); history.setCreatedAt(now), now=OffsetDateTime.now().",
+      "meaning": "Initialmembership effective date is semester start, not real user creation instant. Group coverage likewise starts activeSemester.dateFrom. Accepted2026-09-20 decision explicitly requires this behavior."
+    },
+    {
+      "id": "CLOCK-H2",
+      "verdict": "DISPROVED_SOURCE",
+      "fragment": "HistoricalMembershipService#readManagedRoster activeRows filters !row.getJoinedAt().isAfter(asOfDate), then leftAt==null || asOfDate.isBefore(leftAt). StudentGroupHistory joinedAt/leftAt are LocalDate; createdAt is OffsetDateTime metadata.",
+      "meaning": "Same-day06Zvs13:20Z cannot alone remove newlycreatedstudent. Eligibility has no hour/createdAt predicate; real source omissions/inconsistenthistory fail with explicitprecondition rather than inventedemptyroster."
+    },
+    {
+      "id": "CLOCK-H3",
+      "verdict": "DISPROVED_SOURCE_FOR_DATED_ATTENDANCE_ROSTER",
+      "fragment": "ReportService#membersForLesson parses lesson.getDate(), passes lesson.groupId/date/semesterId to AcademicGrpcClient#getGroupMembers; validates matching date/semester echo. Academic getGroupMembers dated branch invokes historical read.",
+      "meaning": "Roster comes from lesson DATE, not earlier lesson-start Instant versus later creation. UserRepository includingArchivedByIds has only id predicate, no createdAt cutoff."
+    },
+    {
+      "id": "CLOCK-H4",
+      "verdict": "NO_CREATED_AT_CUTOFF_IN_ACTUAL_HOMEWORK_READ",
+      "fragment": "StudentQueryService#homework uses EducationalTime clock: from=clamp(Moscowtoday) bydefault; to=activeSemester.dateTo; explicitfrom/to acceptedwithinsemester. AcademicGrpcServiceImpl#getHomeworksForWeek validates own signedstudent/group, reads ACTIVE publication/group/semester/lessonDateBetween.",
+      "meaning": "Fixture creates DATE homework for tomorrow and activeSemester covers tomorrow; same-day creation hour does not hide this assignment. Live session/grants remain independent required authority, not inferred PASS from source."
+    },
+    {
+      "id": "CLOCK-H5",
+      "verdict": "PER_SCOPE_CLOCKS_PRESERVED_NO_GLOBAL_CLOCK_CHANGE",
+      "fragment": "ClockInitializer registers only primary EducationalTime; ordinary Clock/security remain real. StudentProjectionScopeService.authorize uses session.isLiveAt(clock.instant()); membership clips LocalDate interval. ReportService buildLessonAttendance uses ordinary clock.instant for editability, separate from roster selection.",
+      "meaning": "Do not backdate security/usercreatedAt or globally replace Clock. Real13:20Z and teaching06Z both occur after canonical firstlesson08:30Moscow start, so hasStarted alone is not a false-future explanation. Other write/state fences need nativebooleans; no clockpolicy defect asserted."
+    },
+    {
+      "id": "CLOCK-H6",
+      "verdict": "TARGETED_ALTERNATIVE_OBSERVATION_ONLY",
+      "fragment": "HeadmanJournalScreen picker for exactlabel Был:name is rendered only when entry.status===EMPTY; nonemptyrow shows currentmark/clearlabel. normalizeEntry maps nullstatus toEMPTY and knownstatus to uppercase; editable=reportEditable && entry.editable!==false.",
+      "meaning": "A missing exact Был locator does not prove absentstudent: targetrow couldexist with saved/automaticnonempty status, reportfailed, lessonnotselected, role/UI context mismatch. Native rowstatus/targetPresent/editable and safe locator count distinguish these. No evidence of which occurred in firstthreefailures."
+    }
+  ],
+  "next_cohort_minimum_get_diagnostic": {
+    "authorization": "Separate futureRoot client/API grant only, same actor/token from actual UI/login and live selectedrole. No new public/grpc bypass/trustheaders, no direct DB reads/writes, no securityclock change. Parse response in memory only, no response bodies/traces/screenshots/comments/names/credentials in receipt.",
+    "requests": [
+      {
+        "id": "SESSION",
+        "method": "GET",
+        "route": "/api/auth/session",
+        "actor": "each failing actual UIactor atfailurepoint",
+        "safe_fields": [
+          "http_status",
+          "user_matches_dataset:boolean",
+          "active_role_is_expected:boolean",
+          "required_role_selectable:boolean"
+        ],
+        "purpose": "Distinguish session/role/admission context before private data."
+      },
+      {
+        "id": "HOMEWORK_EXPLICIT",
+        "method": "GET",
+        "route": "/api/v1/student/homework?from={dataset.today}&to={dataset.tomorrow}",
+        "actor": "student signedSTUDENT",
+        "safe_fields": [
+          "http_status",
+          "items_is_array:boolean",
+          "item_count:integer",
+          "target_homework_present:boolean",
+          "target_title_matches_fixture:boolean",
+          "semester_matches_fixture:boolean",
+          "range_contains_target_date:boolean"
+        ],
+        "purpose": "Distinguish actualAPI visibility from UI marker/selector/display; no completion write."
+      },
+      {
+        "id": "HOMEWORK_DEFAULT",
+        "method": "GET",
+        "route": "/api/v1/student/homework",
+        "actor": "same student",
+        "safe_fields": [
+          "http_status",
+          "target_homework_present:boolean",
+          "range_contains_target_date:boolean",
+          "server_now_moscow_date_matches_fixture:boolean"
+        ],
+        "purpose": "Only if defaultquery UI omittedtarget or explicit/default differ; not duplicate mandatory when actualUI response alreadycaptured safely."
+      },
+      {
+        "id": "LESSON_LIST",
+        "method": "GET",
+        "route": "/api/schedule/groups/{dataset.group.id}/lessons?dateFrom={selectedDate}&dateTo={selectedDate}&page=0&size=100&status=PLANNED&status=ACTIVE&status=CLOSED&status=CANCELLED&status=TRANSFERRED",
+        "actor": "headman orcapablehelper, actualselecteddate",
+        "safe_fields": [
+          "http_status",
+          "selected_date_equals_fixture_today:boolean",
+          "fixture_lesson_present:boolean",
+          "lesson_group_matches:boolean",
+          "lesson_subject_matches:boolean",
+          "lesson_date_matches:boolean",
+          "known_lesson_status:allowlisted_enum",
+          "transfer_pending:boolean"
+        ],
+        "purpose": "ExactUIroute from HeadmanJournalApi#listLessons; no guessing normalized lessonselected."
+      },
+      {
+        "id": "LESSON_ROSTER",
+        "method": "GET",
+        "route": "/api/attendance/reports/lesson/{dataset.lesson.physicalLessonId}",
+        "actor": "same headman/helper",
+        "safe_fields": [
+          "http_status",
+          "entries_is_array:boolean",
+          "entry_count:integer",
+          "target_student_present:boolean",
+          "target_assistant_present:boolean",
+          "target_display_name_equals_fixture:boolean",
+          "report_editable:boolean",
+          "target_row_editable:boolean",
+          "target_status:EMPTY/PRESENT/ABSENT/EXCUSED/CANCELLED/UNSUPPORTED",
+          "blocked_reason_present:boolean",
+          "lesson_semester_group_date_matches_fixture:boolean"
+        ],
+        "purpose": "Existing roster route and DTO fields; do not echo freeform blockedreason, name, attachments/ticket/comment."
+      }
+    ],
+    "optional_dom_booleans": "After actualAPI diagnostics only, read expected exactbutton count/visible/enabled and targetrow count with private on-memory fixture names. No pageHTML/accessibilitytree/screenshot dump. No expectedUI/harness rewrite merely to bypass locator."
+  },
+  "actual_conclusion": "The specific earlierlesson/laterusercreation membership hypothesis is disproved for currentsourceinitialenrollment/date-basedroster. Allthree actualbrowser failure causes remainUNKNOWN; noDEFECT, sourcefix, fixtureclockmove, cohortmutation or serverPASS claimed.",
+  "limits": "Sourcebound reasoning only; persisted user/history/grants/lesson/carddata and native statuses not read. Current compiled-JAR908 versus Root17d equivalence remains parentruntime provenance, not compilation/probe repeated here. Later teachingdate on differentcalendar day must preserve scopeclockauthority and be diagnosed separately.",
+  "preservation": "RootD010Angularuntouched; frozenformatter9a77/NP01plan7f014 seals retained; ownsourceprocessnone."
+}

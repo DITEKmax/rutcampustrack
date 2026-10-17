@@ -1,0 +1,18 @@
+{
+  "time": "2026-10-12T11:36:48.759088+00:00",
+  "scope": "FORMAT-EXACT111-NATIVE-RESOURCE-GRANT",
+  "outcome": "AUTHORIZED_NARROW_OWN_WRITER_AND_READONLY_CHECKS",
+  "writer": "ci_academic_heap",
+  "worktree": "/workspace/rct-worktrees/ci-academic-heap",
+  "revision": "3b9fdae8e6aef7f3222309561fc29c4a45c4d180",
+  "write": "ESLint fix exact111allowlistedownVuefiles only; expectedsourcehash/metadata guards",
+  "read_only_checks": "combined680/strictlint;2serialVue types",
+  "node_writer_heap_mib": 512,
+  "node_type_heap_mib": 1024,
+  "type_deadline_seconds": 300,
+  "cache_cap_mib": 128,
+  "broader680write": "REJECTED_UNEXECUTED_NOT_AUTHORIZED",
+  "resource_basis": "Docker9cleanup allcontainers/PIDs absent; fresh free9571008512/shared4553359360; nohostJVM",
+  "constraints": "4GiBfloor/15GiBsharedstop/1GiBreserve; no Root/Angular/nonVuewritesorJVM/Docker",
+  "next": "nativewrite+meaninghash/fixedpoint/lint/types; sourcefreeze/freshindependentreview"
+}

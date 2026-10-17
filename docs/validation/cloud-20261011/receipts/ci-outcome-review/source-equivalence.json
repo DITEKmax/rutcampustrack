@@ -1,0 +1,88 @@
+{
+  "recorded_at": "2026-10-11T22:30:31.742065+00:00",
+  "author_commit": "b6114f4084f757d04d166ab995b57b4f4697042f",
+  "frozen_parent": "2f5f6e327f346c0656eb8ce63901c55bb65cce1f",
+  "root_head": "e5870376fe9ed974ba04c4c16fa534b38cc32f6b",
+  "clean": true,
+  "inventory": [
+    "M\t.github/workflows/ci.yml",
+    "A\tscripts/collect-ci-test-outcomes.py",
+    "A\ttests/harness/test_ci_test_outcomes.py"
+  ],
+  "files": [
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/.github/workflows/ci.yml",
+      "relative_path": ".github/workflows/ci.yml",
+      "sha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+      "bytes": 14123,
+      "committed_byte_equal": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/scripts/collect-ci-test-outcomes.py",
+      "relative_path": "scripts/collect-ci-test-outcomes.py",
+      "sha256": "b74573b9e062efddbcb5f1298a941e12d8803e003687cf8aaf7ba834f2f7f522",
+      "bytes": 11816,
+      "committed_byte_equal": true
+    },
+    {
+      "path": "/workspace/rct-worktrees/ci-evidence/tests/harness/test_ci_test_outcomes.py",
+      "relative_path": "tests/harness/test_ci_test_outcomes.py",
+      "sha256": "f4bbd6730146403cbc804517d4ad4c95e67b3a2d932955801285e0af9baa1934",
+      "bytes": 10170,
+      "committed_byte_equal": true
+    }
+  ],
+  "prelaunch_control_source_hashes": "UNKNOWN_NOT_CAPTURED; author explicitly clarified, post-hoc current hashes are not measured prelaunch hashes",
+  "workflow_preservation": {
+    "original_sha256": "527fec0db5f3325e897de6524e646719aa5b4d87ff2117b798687ebc1e8ec11c",
+    "new_sha256": "1e77338f19df0d7551a39ed278745b7a14efe6433c700e159ac9b622765531c7",
+    "only_added_blocks_and_ids_removed_byte_equal": true,
+    "model_equal": true,
+    "added_always_steps": [
+      "Collect safe unit outcomes",
+      "Upload safe unit outcomes",
+      "Collect safe integration outcomes",
+      "Upload safe integration outcomes"
+    ],
+    "original_test_commands": [
+      "./gradlew ${{ matrix.service.path }}:test --no-daemon",
+      "./gradlew ${{ matrix.service.path }}:integrationTest --no-daemon"
+    ],
+    "triggers_permissions_matrices_existing_steps_and_failure_uploads": "UNCHANGED; exact original full-model/text equality",
+    "other_workflows": [
+      {
+        "path": ".github/workflows/coverage.yml",
+        "sha256": "8b51280581b5f319237c8681a1bba5c4f74ab90aae13c11d377f95fddf09399d",
+        "parent_byte_equal": true
+      },
+      {
+        "path": ".github/workflows/deploy.yml",
+        "sha256": "a641be163a0b46e5268c667bf4c9abfa36affe7ad3de7917bfd37ec95bd10a07",
+        "parent_byte_equal": true
+      },
+      {
+        "path": ".github/workflows/openapi-drift.yml",
+        "sha256": "dc68ba82a595e64d8445344f19e295a6f9686b9c276cd9dfe3c3ce13e5fc93ad",
+        "parent_byte_equal": true
+      },
+      {
+        "path": ".github/workflows/security.yml",
+        "sha256": "ee9f284b6c77904920ef2b5c68daaac66ea9c50df96bb20bdfe660ccea4f8742",
+        "parent_byte_equal": true
+      }
+    ]
+  },
+  "DLRV_DEP_01": {
+    "path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/subject/SubjectListDataIT.java",
+    "sha256": "33a92858e46796645b55edb640c07fb803cbc479ad5abf9bbe4550688cfdd821",
+    "author_source_hash_matches": true,
+    "root_current_source_byte_equal": true,
+    "method_presence": "legalPageSizesPreserveExactOwnRowsTypesAssignmentsAndTotals present under @Test, independently parsed",
+    "execution_status": "UNKNOWN; static source identity is not an executed current PASS"
+  },
+  "provenance_clarification": {
+    "path": "/workspace/scratch/rct-validation/ci_evidence_developer/launch-provenance-clarification.json",
+    "sha256": "149362cd8fbac2a154595c3e79e78a6695cfb1a6a537e88ceccd9c8581679825",
+    "now_current_hashes_match_author_post_hoc": true
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "utc": "2026-10-13T05:05:20.436948+00:00",
+  "verdict": "APPROVE_SOURCE_NARROW_CHANGED_COMMAND_MANIFEST_AND_RESULT_SCOPE",
+  "reviewer": "root-independent-of-implementation",
+  "base": "23482bb599540d4f35ead68cae6d988e25d8b80f",
+  "pins": {
+    "run-green-owned.py": "c5afaa7d6fd4bb6fe98a609d19694e66f9819a560df5beb9afdbf8d51e7d563a",
+    "logged-green-child.py": "7cd5a5befea7efbb68ce426530851e0c8221203f56dcda56ce0eed6480bfaf66",
+    "green-plan.safe.json": "9a5deb1b716ecc08efddce71e5d6b952773e505d9bc0463047fc134172a1e87b",
+    "formatted-source13-manifest.safe.json": "f8cf8c4be77550d86de02f4687c508742e84b05171600c62bccc61149c1641a9"
+  },
+  "checks": [
+    "5parent AST functions exact format reviewer-approved caller",
+    "3child admission primitives AST exact",
+    "fresh private grant/live parent birth/source manifest before logs/Gradle preserved",
+    "4 compile tasks BOTH modules before correct task-local4class filters",
+    "same bounded offline max1/noDBDocker existingrealNettyloopback",
+    "13source+2protected pins actual match formattedcommit"
+  ],
+  "qualification": "Source approval only; native0 needs fresh positive XML4classes/noF-E-S, preexisting baseline REDXML not newGREEN witness; no semantic fullreview repeated"
+}

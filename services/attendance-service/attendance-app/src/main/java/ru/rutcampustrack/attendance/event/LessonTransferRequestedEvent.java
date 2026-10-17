@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-/** Strict v1 recurring / v2 one-off transfer parser. Bindings are validated but owned by Academic. */
+/**
+ * Strict v1 recurring / v2 one-off transfer parser. Bindings are validated but owned by Academic.
+ */
 public record LessonTransferRequestedEvent(
         int eventVersion,
         String operationId,
@@ -26,8 +28,9 @@ public record LessonTransferRequestedEvent(
         int batchCount) {
 
     private static final Pattern SHA256 = Pattern.compile("[0-9a-fA-F]{64}");
-    private static final Pattern UUID_TEXT = Pattern.compile(
-            "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+    private static final Pattern UUID_TEXT =
+            Pattern.compile(
+                    "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
 
     public static LessonTransferRequestedEvent parse(Map<String, Object> envelope) {
         if (envelope == null
@@ -69,17 +72,22 @@ public record LessonTransferRequestedEvent(
                     || !source.subjectId().equals(target.subjectId())
                     || !source.assignedTeacherId().equals(target.assignedTeacherId())
                     || !source.lessonType().equals(target.lessonType())
-                    || positive(payload.get("source_lesson_id"), "source_lesson_id") != source.lessonId()
-                    || positive(payload.get("target_lesson_id"), "target_lesson_id") != target.lessonId()
-                    || positive(sourceObject.get("occurrence_id"), "source.occurrence_id") != occurrenceId
-                    || positive(targetObject.get("occurrence_id"), "target.occurrence_id") != occurrenceId
+                    || positive(payload.get("source_lesson_id"), "source_lesson_id")
+                            != source.lessonId()
+                    || positive(payload.get("target_lesson_id"), "target_lesson_id")
+                            != target.lessonId()
+                    || positive(sourceObject.get("occurrence_id"), "source.occurrence_id")
+                            != occurrenceId
+                    || positive(targetObject.get("occurrence_id"), "target.occurrence_id")
+                            != occurrenceId
                     || positive(sourceObject.get("group_id"), "source.group_id") != groupId
                     || positive(targetObject.get("group_id"), "target.group_id") != groupId
                     || positive(sourceObject.get("semester_id"), "source.semester_id") != semesterId
                     || positive(targetObject.get("semester_id"), "target.semester_id") != semesterId
                     || transferRevision != source.occurrenceRevision() + 1
                     || target.occurrenceRevision() != transferRevision
-                    || target.generation() != source.generation() + 1 || target.lessonRevision() != 1) {
+                    || target.generation() != source.generation() + 1
+                    || target.lessonRevision() != 1) {
                 throw invalid("v2 lesson transfer has inconsistent physical snapshots or scope");
             }
         }
@@ -92,14 +100,26 @@ public record LessonTransferRequestedEvent(
         if (bindings.isEmpty() && (batchIndex != 0 || batchCount != 1)) {
             throw invalid("an empty bindings batch must be the only batch");
         }
-        return new LessonTransferRequestedEvent((int) version, operationId, requestKey, actorId, groupId,
-                semesterId, occurrenceId, payloadHash, transferRevision,
-                source, target, batchIndex, batchCount);
+        return new LessonTransferRequestedEvent(
+                (int) version,
+                operationId,
+                requestKey,
+                actorId,
+                groupId,
+                semesterId,
+                occurrenceId,
+                payloadHash,
+                transferRevision,
+                source,
+                target,
+                batchIndex,
+                batchCount);
     }
 
     public boolean sameOperationIdentity(LessonTransferRequestedEvent other) {
         return other != null
-                && eventVersion == other.eventVersion && operationId.equals(other.operationId)
+                && eventVersion == other.eventVersion
+                && operationId.equals(other.operationId)
                 && requestKey.equals(other.requestKey)
                 && actorId == other.actorId
                 && groupId == other.groupId
@@ -135,27 +155,36 @@ public record LessonTransferRequestedEvent(
         String lessonType = null;
         if (version == 1) {
             scheduleItemId = positive(object.get("schedule_item_id"), field + ".schedule_item_id");
-            if (object.get("one_off_lesson_id") != null) throw invalid("v1 requires a recurring origin only");
+            if (object.get("one_off_lesson_id") != null)
+                throw invalid("v1 requires a recurring origin only");
         } else {
             if (!object.containsKey("schedule_item_id") || object.get("schedule_item_id") != null) {
                 throw invalid("v2 requires explicit null schedule_item_id");
             }
-            oneOffLessonId = positive(object.get("one_off_lesson_id"), field + ".one_off_lesson_id");
+            oneOffLessonId =
+                    positive(object.get("one_off_lesson_id"), field + ".one_off_lesson_id");
             assignmentId = positive(object.get("assignment_id"), field + ".assignment_id");
             subjectId = positive(object.get("subject_id"), field + ".subject_id");
             teacherId = positive(object.get("assigned_teacher_id"), field + ".assigned_teacher_id");
             lessonType = string(object.get("lesson_type"), field + ".lesson_type");
             if (!List.of("lecture", "practice", "lab").contains(lessonType)
-                    || !"planned".equals(object.get("status")) || !end.isAfter(start)
+                    || !"planned".equals(object.get("status"))
+                    || !end.isAfter(start)
                     || positiveInt(object.get("lesson_number"), field + ".lesson_number") > 8
-                    || integer(object.get("day_of_week"), field + ".day_of_week") != date.getDayOfWeek().getValue()
+                    || integer(object.get("day_of_week"), field + ".day_of_week")
+                            != date.getDayOfWeek().getValue()
                     || !"all".equals(object.get("week_type_snapshot"))) {
                 throw invalid("v2 one-off snapshot has invalid type, status or immutable slot");
             }
         }
         return new Snapshot(
                 positive(object.get("lesson_id"), field + ".lesson_id"),
-                scheduleItemId, oneOffLessonId, assignmentId, subjectId, teacherId, lessonType,
+                scheduleItemId,
+                oneOffLessonId,
+                assignmentId,
+                subjectId,
+                teacherId,
+                lessonType,
                 positive(object.get("generation"), field + ".generation"),
                 positive(object.get("lesson_revision"), field + ".lesson_revision"),
                 positive(object.get("occurrence_revision"), field + ".occurrence_revision"),
@@ -207,7 +236,10 @@ public record LessonTransferRequestedEvent(
     }
 
     private static long integer(Object value, String field) {
-        if (value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long) {
+        if (value instanceof Byte
+                || value instanceof Short
+                || value instanceof Integer
+                || value instanceof Long) {
             return ((Number) value).longValue();
         }
         if (value instanceof BigInteger big && big.bitLength() < 64) {
@@ -234,12 +266,14 @@ public record LessonTransferRequestedEvent(
 
     private static String hash(Object value, String field) {
         String parsed = string(value, field);
-        if (!SHA256.matcher(parsed).matches()) throw invalid(field + " must be a SHA-256 hex string");
+        if (!SHA256.matcher(parsed).matches())
+            throw invalid(field + " must be a SHA-256 hex string");
         return parsed.toLowerCase(java.util.Locale.ROOT);
     }
 
     private static String string(Object value, String field) {
-        if (!(value instanceof String parsed) || parsed.isBlank()) throw invalid(field + " must be a string");
+        if (!(value instanceof String parsed) || parsed.isBlank())
+            throw invalid(field + " must be a string");
         return parsed;
     }
 
@@ -256,8 +290,20 @@ public record LessonTransferRequestedEvent(
         return new IllegalArgumentException(message);
     }
 
-    public record Snapshot(long lessonId, Long scheduleItemId, Long oneOffLessonId, Long assignmentId,
-                           Long subjectId, Long assignedTeacherId, String lessonType, long generation,
-                           long lessonRevision, long occurrenceRevision, LocalDate date,
-                           int lessonNumber, LocalTime startTime, LocalTime endTime, String room) {}
+    public record Snapshot(
+            long lessonId,
+            Long scheduleItemId,
+            Long oneOffLessonId,
+            Long assignmentId,
+            Long subjectId,
+            Long assignedTeacherId,
+            String lessonType,
+            long generation,
+            long lessonRevision,
+            long occurrenceRevision,
+            LocalDate date,
+            int lessonNumber,
+            LocalTime startTime,
+            LocalTime endTime,
+            String room) {}
 }

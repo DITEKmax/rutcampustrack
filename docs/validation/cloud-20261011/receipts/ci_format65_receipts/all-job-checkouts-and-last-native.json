@@ -1,0 +1,352 @@
+{
+  "job_checkouts": [
+    {
+      "workflow": "CI",
+      "job_id": 114769785670,
+      "name": "ShellCheck scripts",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785819,
+      "name": "Grafana dashboards structure",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785862,
+      "name": "Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785863,
+      "name": "Java unit — schedule-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785867,
+      "name": "Java unit — notification-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785871,
+      "name": "Python Lint & Test",
+      "conclusion": "failure",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785877,
+      "name": "Java unit — api-gateway",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785929,
+      "name": "Java IT — attendance-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785931,
+      "name": "Java IT — auth-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785950,
+      "name": "Java unit — academic-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785951,
+      "name": "Playwright E2E auth flow",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785955,
+      "name": "Java unit — attendance-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785970,
+      "name": "Java unit — auth-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785975,
+      "name": "Java IT — schedule-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769785976,
+      "name": "Mobile Vue workspace",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769786076,
+      "name": "Java IT — api-gateway",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769786169,
+      "name": "Java IT — academic-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "CI",
+      "job_id": 114769786196,
+      "name": "Java IT — notification-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Coverage",
+      "job_id": 114769785571,
+      "name": "Python coverage — notification-bot",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Coverage",
+      "job_id": 114769785675,
+      "name": "Java coverage — academic-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Coverage",
+      "job_id": 114769785685,
+      "name": "Java coverage — auth-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Coverage",
+      "job_id": 114769785688,
+      "name": "Java coverage — schedule-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Coverage",
+      "job_id": 114769785698,
+      "name": "Mobile Vue coverage — PWA, TMA, mobile-core",
+      "conclusion": "failure",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Coverage",
+      "job_id": 114769785825,
+      "name": "Java coverage — notification-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Coverage",
+      "job_id": 114769785909,
+      "name": "Java coverage — attendance-service",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Coverage",
+      "job_id": 114769786016,
+      "name": "Java coverage — api-gateway",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Coverage",
+      "job_id": 114775089101,
+      "name": "Diff coverage report",
+      "conclusion": "skipped",
+      "checkoutSha": null,
+      "qualification": "not executed"
+    },
+    {
+      "workflow": "Security",
+      "job_id": 114769785271,
+      "name": "Trivy (filesystem)",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Security",
+      "job_id": 114769785538,
+      "name": "Trivy (config — Dockerfile + compose)",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Security",
+      "job_id": 114769785566,
+      "name": "Gitleaks (secrets)",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    },
+    {
+      "workflow": "Security",
+      "job_id": 114769787000,
+      "name": "Trivy (built images)",
+      "conclusion": "skipped",
+      "checkoutSha": null,
+      "qualification": "not executed"
+    },
+    {
+      "workflow": "OpenAPI",
+      "job_id": 114769785228,
+      "name": "OpenAPI ↔ generated types drift",
+      "conclusion": "success",
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26"
+    }
+  ],
+  "last_six_native": [
+    {
+      "job_id": 114769785863,
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "native": [
+        "> Task :services:shared:shared-web-api:compileJava",
+        "> Task :services:schedule-service:schedule-api-contract:compileJava",
+        "> Task :services:shared:shared-events:compileJava",
+        "> Task :services:shared:shared-logback:compileJava",
+        "> Task :services:shared:shared-observability:compileJava",
+        "> Task :services:shared:shared-outbox:compileJava",
+        "> Task :services:shared:shared-security:compileJava",
+        "> Task :services:shared:shared-web:compileJava",
+        "> Task :services:schedule-service:schedule-app:compileJava",
+        "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE",
+        "> Task :services:schedule-service:schedule-app:compileTestJava",
+        "> Task :services:schedule-service:schedule-app:test",
+        "BUILD SUCCESSFUL in 1m 16s"
+      ]
+    },
+    {
+      "job_id": 114769785867,
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "native": [
+        "> Task :services:shared:shared-web-api:compileJava",
+        "> Task :services:auth-service:auth-api-contract:compileJava",
+        "> Task :services:notification-service:notification-api-contract:compileJava",
+        "> Task :services:shared:shared-events:compileJava",
+        "> Task :services:shared:shared-logback:compileJava",
+        "> Task :services:shared:shared-observability:compileJava",
+        "> Task :services:shared:shared-outbox:compileJava",
+        "> Task :services:shared:shared-security:compileJava",
+        "> Task :services:shared:shared-web:compileJava",
+        "> Task :services:notification-service:notification-app:compileJava",
+        "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE",
+        "> Task :services:notification-service:notification-app:compileTestJava",
+        "> Task :services:notification-service:notification-app:test",
+        "BUILD SUCCESSFUL in 1m 12s"
+      ]
+    },
+    {
+      "job_id": 114769785950,
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "native": [
+        "> Task :services:shared:shared-web-api:compileJava",
+        "> Task :services:academic-service:academic-api-contract:compileJava",
+        "> Task :services:shared:shared-events:compileJava",
+        "> Task :services:shared:shared-logback:compileJava",
+        "> Task :services:shared:shared-observability:compileJava",
+        "> Task :services:shared:shared-outbox:compileJava",
+        "> Task :services:shared:shared-security:compileJava",
+        "> Task :services:shared:shared-web:compileJava",
+        "> Task :services:academic-service:academic-app:compileJava",
+        "> Task :services:auth-service:auth-api-contract:compileJava",
+        "> Task :services:auth-service:auth-app:compileJava",
+        "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE",
+        "> Task :services:academic-service:academic-app:compileTestJava",
+        "> Task :services:academic-service:academic-app:test",
+        "BUILD SUCCESSFUL in 1m 39s"
+      ]
+    },
+    {
+      "job_id": 114769785955,
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "native": [
+        "> Task :services:shared:shared-web-api:compileJava",
+        "> Task :services:attendance-service:attendance-api-contract:compileJava",
+        "> Task :services:shared:shared-events:compileJava",
+        "> Task :services:shared:shared-logback:compileJava",
+        "> Task :services:shared:shared-observability:compileJava",
+        "> Task :services:shared:shared-outbox:compileJava",
+        "> Task :services:shared:shared-security:compileJava",
+        "> Task :services:shared:shared-web:compileJava",
+        "> Task :services:attendance-service:attendance-app:compileJava",
+        "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE",
+        "> Task :services:attendance-service:attendance-app:compileTestJava",
+        "> Task :services:attendance-service:attendance-app:test",
+        "BUILD SUCCESSFUL in 1m 29s"
+      ]
+    },
+    {
+      "job_id": 114769785970,
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "native": [
+        "> Task :services:shared:shared-web-api:compileJava",
+        "> Task :services:auth-service:auth-api-contract:compileJava",
+        "> Task :services:shared:shared-logback:compileJava",
+        "> Task :services:shared:shared-observability:compileJava",
+        "> Task :services:shared:shared-web:compileJava",
+        "> Task :services:api-gateway:compileJava",
+        "> Task :services:shared:shared-events:compileJava",
+        "> Task :services:shared:shared-outbox:compileJava",
+        "> Task :services:shared:shared-security:compileJava",
+        "> Task :services:auth-service:auth-app:compileJava",
+        "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE",
+        "> Task :services:auth-service:auth-app:compileTestJava",
+        "> Task :services:auth-service:auth-app:test",
+        "BUILD SUCCESSFUL in 1m 16s"
+      ]
+    },
+    {
+      "job_id": 114769786169,
+      "checkoutSha": "96bb98ffd6d36fa1e2a76cc8528fbc16492ebf26",
+      "native": [
+        "> Task :services:shared:shared-web-api:compileJava",
+        "> Task :services:academic-service:academic-api-contract:compileJava",
+        "> Task :services:shared:shared-events:compileJava",
+        "> Task :services:shared:shared-logback:compileJava",
+        "> Task :services:shared:shared-observability:compileJava",
+        "> Task :services:shared:shared-outbox:compileJava",
+        "> Task :services:shared:shared-security:compileJava",
+        "> Task :services:shared:shared-web:compileJava",
+        "> Task :services:academic-service:academic-app:compileJava",
+        "> Task :services:auth-service:auth-api-contract:compileJava",
+        "> Task :services:auth-service:auth-app:compileJava",
+        "> Task :services:shared:shared-test-containers:compileJava NO-SOURCE",
+        "> Task :services:academic-service:academic-app:compileTestJava",
+        "> Task :services:academic-service:academic-app:integrationTest",
+        "BUILD SUCCESSFUL in 12m 50s"
+      ]
+    }
+  ]
+}

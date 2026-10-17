@@ -1,0 +1,75 @@
+{
+  "baseline": "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+  "commit": "b75c67e10eafcac63253b81887bfc9d3cfbd8d8e",
+  "files": [
+    {
+      "status": "M",
+      "path": "services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/grpc/DocumentRendererGrpcServiceImpl.java",
+      "sha256": "a4a5694929f00e3dbd46f001313bfc75996d0b33c94ac08e33007481e7993186",
+      "kind": "product"
+    },
+    {
+      "status": "A",
+      "path": "services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/InvalidDocumentException.java",
+      "sha256": "8c0acdf3ed8feb568f4d21370b52dcf0f70492c1f97ef73fdb421cb8e247718d",
+      "kind": "product"
+    },
+    {
+      "status": "M",
+      "path": "services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverter.java",
+      "sha256": "fec83613e9ceec752a7082997662daec3566bc558c19f140203d8ff377e51455",
+      "kind": "product"
+    },
+    {
+      "status": "M",
+      "path": "services/document-renderer-service/document-renderer-app/src/main/java/ru/rutcampustrack/documentrenderer/render/ProcessRunner.java",
+      "sha256": "b2c01956d5fd3dc00c64ac5d42efcdc3a1c693b9702ec504ca3b2e2a7c4f7da8",
+      "kind": "product"
+    },
+    {
+      "status": "M",
+      "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/grpc/DocumentRendererGrpcServiceImplTest.java",
+      "sha256": "395676cc4a394bd847c6aae4db742a2a4ceef7527e267d05ec6bd94495fa8386",
+      "kind": "tests/helpers"
+    },
+    {
+      "status": "A",
+      "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/DocumentRendererCancellationIT.java",
+      "sha256": "a10e903f5e2500fe5fe5edf242228e567aeaf1c28e738a7c44ba15081c9d5e60",
+      "kind": "tests/helpers"
+    },
+    {
+      "status": "A",
+      "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterNativeIT.java",
+      "sha256": "ccca8c6f8ef858b2107b597a225b4c43cb6195e38ede29f407990e3cb255f32d",
+      "kind": "tests/helpers"
+    },
+    {
+      "status": "M",
+      "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentConverterTest.java",
+      "sha256": "602bd0c76c2b9b24ca0ff556d60400be20d9b7ad3a0d79ee3a11cb9d711edaf8",
+      "kind": "tests/helpers"
+    },
+    {
+      "status": "A",
+      "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/OfficeDocumentInputValidationTest.java",
+      "sha256": "b4731eb05f347269d3482f5c2255d40b866b3ac4b292a7d440307d1c1ffe29c7",
+      "kind": "tests/helpers"
+    },
+    {
+      "status": "A",
+      "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/ProcessRunnerLifecycleTest.java",
+      "sha256": "f54abbec1edb3a04f4950c7460a41fbecfcecbff5cfcbb0813469d209cdd4939",
+      "kind": "tests/helpers"
+    },
+    {
+      "status": "A",
+      "path": "services/document-renderer-service/document-renderer-app/src/test/java/ru/rutcampustrack/documentrenderer/render/RendererDocxFixture.java",
+      "sha256": "fd6a1f1fa746c2e53930ff10b67f562efc641a39e1ca478fab32e7ea79daf1c3",
+      "kind": "tests/helpers"
+    }
+  ],
+  "created": 6,
+  "modified": 5,
+  "deleted": 0
+}

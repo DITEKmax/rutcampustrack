@@ -1,5 +1,7 @@
 package ru.rutcampustrack.attendance.arch;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
+
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
@@ -11,20 +13,20 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
-
 /**
- * M02 Группа 9 / NEW-28 — attendance-service copy.
- * См. {@code ru.rutcampustrack.schedule.arch.ScheduledMustHaveSchedulerLockTest}.
+ * M02 Группа 9 / NEW-28 — attendance-service copy. См. {@code
+ * ru.rutcampustrack.schedule.arch.ScheduledMustHaveSchedulerLockTest}.
  */
-@AnalyzeClasses(packages = "ru.rutcampustrack.attendance",
+@AnalyzeClasses(
+        packages = "ru.rutcampustrack.attendance",
         importOptions = {ImportOption.DoNotIncludeTests.class})
 class ScheduledMustHaveSchedulerLockTest {
 
     @ArchTest
     static final ArchRule scheduledMethodsMustHaveLockOrExplicitWaiver =
             methods()
-                    .that().areAnnotatedWith(Scheduled.class)
+                    .that()
+                    .areAnnotatedWith(Scheduled.class)
                     .should(haveSchedulerLockOrSingleInstanceWaiver())
                     .allowEmptyShould(true)
                     .because(
@@ -38,26 +40,29 @@ class ScheduledMustHaveSchedulerLockTest {
             public void check(JavaMethod method, ConditionEvents events) {
                 if (method.isAnnotatedWith(SchedulerLock.class)) return;
                 if (hasSingleInstanceSuppression(method)) return;
-                events.add(SimpleConditionEvent.violated(
-                        method,
-                        "Метод " + method.getFullName()
-                                + " помечен @Scheduled без @SchedulerLock и без "
-                                + "@SuppressWarnings(\"SingleInstance\")"));
+                events.add(
+                        SimpleConditionEvent.violated(
+                                method,
+                                "Метод "
+                                        + method.getFullName()
+                                        + " помечен @Scheduled без @SchedulerLock и без "
+                                        + "@SuppressWarnings(\"SingleInstance\")"));
             }
         };
     }
 
     static boolean hasSingleInstanceSuppression(JavaMethod method) {
         return method.tryGetAnnotationOfType(SuppressWarnings.class.getName())
-                .map(a -> {
-                    Object value = a.get("value").orElse(null);
-                    if (value instanceof String[] arr) {
-                        for (String v : arr) {
-                            if ("SingleInstance".equals(v)) return true;
-                        }
-                    }
-                    return value instanceof String s && "SingleInstance".equals(s);
-                })
+                .map(
+                        a -> {
+                            Object value = a.get("value").orElse(null);
+                            if (value instanceof String[] arr) {
+                                for (String v : arr) {
+                                    if ("SingleInstance".equals(v)) return true;
+                                }
+                            }
+                            return value instanceof String s && "SingleInstance".equals(s);
+                        })
                 .orElse(false);
     }
 }

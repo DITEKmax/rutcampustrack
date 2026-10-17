@@ -1,5 +1,8 @@
 package ru.rutcampustrack.auth.controller;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.CacheControl;
@@ -26,10 +29,6 @@ import ru.rutcampustrack.auth.session.model.RoleGrant;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 @RestController
 public final class AuthSessionController implements AuthSessionApi {
@@ -60,13 +59,16 @@ public final class AuthSessionController implements AuthSessionApi {
     public ResponseEntity<SelectActiveRoleResponse> selectActiveRole(
             SelectActiveRoleRequest request, Authentication authentication) {
         SessionPrincipal principal = principal(authentication);
-        SessionStatePort.RoleSelectionResult result = authService.selectRole(
-                principal, request, null, null);
+        SessionStatePort.RoleSelectionResult result =
+                authService.selectRole(principal, request, null, null);
         SessionSnapshot snapshot = result.snapshot();
         ru.rutcampustrack.auth.dto.TokenResponse selected = authService.selectedAccess(result);
-        return noStore(ResponseEntity.ok(new SelectActiveRoleResponse(
-                selected.accessToken(), selected.expiresIn(),
-                toCurrent(snapshot))));
+        return noStore(
+                ResponseEntity.ok(
+                        new SelectActiveRoleResponse(
+                                selected.accessToken(),
+                                selected.expiresIn(),
+                                toCurrent(snapshot))));
     }
 
     @Override
@@ -74,14 +76,25 @@ public final class AuthSessionController implements AuthSessionApi {
             String cursor, Integer limit, Authentication authentication) {
         SessionPrincipal principal = principal(authentication);
         authService.admit(principal);
-        AuthSessionQueryPort.SessionPage page = queryPort.findLiveSessions(
-                principal.userId(), principal.sessionId(), cursor, limit == null ? 0 : limit);
-        List<AuthSessionSummary> items = page.items().stream()
-                .map(item -> new AuthSessionSummary(
-                        item.sessionId().toString(), item.authMethod(), item.clientLabel(),
-                        item.locationLabel(), item.createdAt(), item.lastSeenAt(),
-                        item.sessionId().equals(principal.sessionId())))
-                .toList();
+        AuthSessionQueryPort.SessionPage page =
+                queryPort.findLiveSessions(
+                        principal.userId(),
+                        principal.sessionId(),
+                        cursor,
+                        limit == null ? 0 : limit);
+        List<AuthSessionSummary> items =
+                page.items().stream()
+                        .map(
+                                item ->
+                                        new AuthSessionSummary(
+                                                item.sessionId().toString(),
+                                                item.authMethod(),
+                                                item.clientLabel(),
+                                                item.locationLabel(),
+                                                item.createdAt(),
+                                                item.lastSeenAt(),
+                                                item.sessionId().equals(principal.sessionId())))
+                        .toList();
         return noStore(ResponseEntity.ok(new AuthSessionsPage(items, page.nextCursor())));
     }
 
@@ -98,11 +111,15 @@ public final class AuthSessionController implements AuthSessionApi {
 
     @Override
     public ResponseEntity<Void> logout(String refreshCookie, Authentication authentication) {
-        SessionPrincipal current = authentication != null
-                && authentication.getPrincipal() instanceof SessionPrincipal sessionPrincipal
-                ? sessionPrincipal : null;
+        SessionPrincipal current =
+                authentication != null
+                                && authentication.getPrincipal()
+                                        instanceof SessionPrincipal sessionPrincipal
+                        ? sessionPrincipal
+                        : null;
         if (refreshCookie != null && !refreshCookie.isBlank()) {
-            SessionStatePort.RevokeResult result = authService.logoutRefreshCookie(refreshCookie, current);
+            SessionStatePort.RevokeResult result =
+                    authService.logoutRefreshCookie(refreshCookie, current);
             if (result != null && result.snapshot() != null) {
                 invalidateWsTicketsBestEffort(result.snapshot().userId());
             }
@@ -123,20 +140,28 @@ public final class AuthSessionController implements AuthSessionApi {
 
     @Override
     public ResponseEntity<AccountHistoryPage> accountHistory(
-        String cursor, Integer limit, Authentication authentication) {
+            String cursor, Integer limit, Authentication authentication) {
         SessionPrincipal principal = principal(authentication);
         if (principal.isBootstrap()) {
             throw new ru.rutcampustrack.auth.session.AuthSessionException(
-                    ru.rutcampustrack.auth.session.AuthSessionException.Code.BOOTSTRAP_SCOPE_DENIED);
+                    ru.rutcampustrack.auth.session.AuthSessionException.Code
+                            .BOOTSTRAP_SCOPE_DENIED);
         }
         authService.admit(principal);
-        AuthSessionQueryPort.HistoryPage page = queryPort.findHistory(
-                principal.userId(), cursor, limit == null ? 0 : limit);
-        List<AccountHistoryEvent> items = page.items().stream()
-                .map(item -> new AccountHistoryEvent(
-                        Long.toString(item.id()), item.type(), item.occurredAt(), item.authMethod(),
-                        item.clientLabel(), item.locationLabel()))
-                .toList();
+        AuthSessionQueryPort.HistoryPage page =
+                queryPort.findHistory(principal.userId(), cursor, limit == null ? 0 : limit);
+        List<AccountHistoryEvent> items =
+                page.items().stream()
+                        .map(
+                                item ->
+                                        new AccountHistoryEvent(
+                                                Long.toString(item.id()),
+                                                item.type(),
+                                                item.occurredAt(),
+                                                item.authMethod(),
+                                                item.clientLabel(),
+                                                item.locationLabel()))
+                        .toList();
         return noStore(ResponseEntity.ok(new AccountHistoryPage(items, page.nextCursor())));
     }
 
@@ -156,39 +181,60 @@ public final class AuthSessionController implements AuthSessionApi {
         } catch (RuntimeException exception) {
             // Redis is an optional after-commit signal; never turn a durable
             // logout/password change into a failed HTTP response.
-            log.warn("Optional WebSocket ticket cleanup failed after committed auth-session change: {}",
+            log.warn(
+                    "Optional WebSocket ticket cleanup failed after committed auth-session change: {}",
                     exception.getClass().getSimpleName());
         }
     }
 
     private CurrentSessionResponse toCurrent(SessionSnapshot snapshot) {
-        AuthSessionQueryPort.UserIdentity identity = queryPort.findUserIdentity(snapshot.userId())
-                .orElseThrow(() -> new ru.rutcampustrack.auth.session.AuthSessionException(
-                        ru.rutcampustrack.auth.session.AuthSessionException.Code.AUTHORITY_UNAVAILABLE));
-        String groupLabel = snapshot.activeRole() == null || snapshot.activeRole().groupId() == null
-                ? null : identity.groupLabels().get(snapshot.activeRole().groupId());
-        List<RoleGrantResponse> roles = snapshot.roles().stream()
-                .map(grant -> toRole(grant, identity))
-                .toList();
+        AuthSessionQueryPort.UserIdentity identity =
+                queryPort
+                        .findUserIdentity(snapshot.userId())
+                        .orElseThrow(
+                                () ->
+                                        new ru.rutcampustrack.auth.session.AuthSessionException(
+                                                ru.rutcampustrack.auth.session.AuthSessionException
+                                                        .Code.AUTHORITY_UNAVAILABLE));
+        String groupLabel =
+                snapshot.activeRole() == null || snapshot.activeRole().groupId() == null
+                        ? null
+                        : identity.groupLabels().get(snapshot.activeRole().groupId());
+        List<RoleGrantResponse> roles =
+                snapshot.roles().stream().map(grant -> toRole(grant, identity)).toList();
         return new CurrentSessionResponse(
-                snapshot.sessionId().toString(), Long.toString(snapshot.userId()), identity.displayName(),
-                groupLabel, Long.toString(snapshot.sessionVersion()), Long.toString(snapshot.rolesVersion()),
-                snapshot.activeRole() == null ? null : snapshot.activeRole().role().name(), roles,
-                snapshot.isReadOnly(), new PasswordPolicyResponse(
-                        PasswordPolicy.MIN_CODE_POINTS, PasswordPolicy.MAX_UTF8_BYTES,
-                        true, List.of("P", "S"), "NONE"));
+                snapshot.sessionId().toString(),
+                Long.toString(snapshot.userId()),
+                identity.displayName(),
+                groupLabel,
+                Long.toString(snapshot.sessionVersion()),
+                Long.toString(snapshot.rolesVersion()),
+                snapshot.activeRole() == null ? null : snapshot.activeRole().role().name(),
+                roles,
+                snapshot.isReadOnly(),
+                new PasswordPolicyResponse(
+                        PasswordPolicy.MIN_CODE_POINTS,
+                        PasswordPolicy.MAX_UTF8_BYTES,
+                        true,
+                        List.of("P", "S"),
+                        "NONE"));
     }
 
-    private static RoleGrantResponse toRole(RoleGrant grant, AuthSessionQueryPort.UserIdentity identity) {
+    private static RoleGrantResponse toRole(
+            RoleGrant grant, AuthSessionQueryPort.UserIdentity identity) {
         return new RoleGrantResponse(
-                Long.toString(grant.grantId()), grant.role().name(), grant.status().name(),
+                Long.toString(grant.grantId()),
+                grant.role().name(),
+                grant.status().name(),
                 grant.groupId() == null ? null : Long.toString(grant.groupId()),
                 grant.groupId() == null ? null : identity.groupLabels().get(grant.groupId()),
-                grant.isSelectable(), grant.isReadOnly());
+                grant.isSelectable(),
+                grant.isReadOnly());
     }
 
     private static SessionPrincipal principal(Authentication authentication) {
-        if (authentication == null || !(authentication.getPrincipal() instanceof SessionPrincipal principal)) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof SessionPrincipal principal)) {
             throw new ru.rutcampustrack.auth.session.AuthSessionException(
                     ru.rutcampustrack.auth.session.AuthSessionException.Code.INVALID_SESSION);
         }

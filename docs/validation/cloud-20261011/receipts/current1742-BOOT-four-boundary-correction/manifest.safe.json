@@ -1,0 +1,53 @@
+{
+  "state": "FOUR_P2_CORRECTION_AND_CONCRETE_FIXED_DISPATCH_SOURCE_READY_FOR_RECHECK",
+  "author": "ci731_reconcile",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "high",
+  "actual_metadata": "UNKNOWN",
+  "original_manifest_sha256": "d0d42f5e33d4e939073e43482d58dd551bda8922a26816ba0eb1d563eb2804e6",
+  "four_directed_groups": "PASS",
+  "SDK_native_private_files": false,
+  "grant": "FRESH_ROOT_REQUIRED_FALSE_TEMPLATE",
+  "entries": [
+    {
+      "path": "README.md",
+      "bytes": 3559,
+      "sha256": "023235ef950be7f0a62956fffb591b462a723cab0ead0c8a1f999bbed29e76b3"
+    },
+    {
+      "path": "SOURCE.safe.json",
+      "bytes": 1290,
+      "sha256": "1517c2c5f246824c09ec5f7345ae85a7d1df6beb046db9f754f72c5c3b461fca"
+    },
+    {
+      "path": "check-four.py",
+      "bytes": 7752,
+      "sha256": "c815da20994e54990997cbfb0b96a3b2873161b53b4c3974bc11f3dfda058a1c"
+    },
+    {
+      "path": "dispatch-fixed.py",
+      "bytes": 7791,
+      "sha256": "7fba14a14cf2ee3e49c21ca11339615ee8d61acf6f2dddbe6c9b3bd3fc039ede"
+    },
+    {
+      "path": "four-controls.safe.json",
+      "bytes": 593,
+      "sha256": "6add44a79c5abc0e5a410f7754bd7232cf71e2a5391635df9dbc891b8d86dec1"
+    },
+    {
+      "path": "grant.template.safe.json",
+      "bytes": 1482,
+      "sha256": "72e362c7965e8a80ccaaefcc0076e5c1ce9885f610e19662b0c0598ef35a4263"
+    },
+    {
+      "path": "private-bridge.py",
+      "bytes": 17599,
+      "sha256": "6f763b5e42675fbdc5137f102e41429a29fa10ba2096b9f8015cb801562b6ab1"
+    },
+    {
+      "path": "source.delta.patch",
+      "bytes": 6319,
+      "sha256": "ee6dbb09108d976d572747dd36cf7856124568e221935910c54800da2eec396a"
+    }
+  ]
+}

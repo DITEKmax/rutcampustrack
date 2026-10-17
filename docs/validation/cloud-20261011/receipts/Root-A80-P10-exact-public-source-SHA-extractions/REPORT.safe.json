@@ -1,0 +1,212 @@
+{
+  "utc": "2026-10-13T10:51:35.439310+00:00",
+  "scanner_original_native_exit": 1,
+  "finding_count": 20,
+  "public_java_sources_verified": true,
+  "exact_original_reports": [
+    {
+      "path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-critical-Source-independent-APPROVE/REPORT.safe.json",
+      "sha256": "0537a736112ceb6d5c2c55b5256a45534652eb8d203895d51217cb6de6d89b9b",
+      "archive_entry": "0/REPORT.safe.json"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/REPORT.safe.json",
+      "sha256": "9616383cbe24afe2ae2520fa49c1ace6bd77dbb8bfdfcaacbb7463a2e306b3d2",
+      "archive_entry": "1/REPORT.safe.json"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/P10-password-HTTP-readonly-gap-plan/REPORT.safe.json",
+      "sha256": "c324d216bf939e9456198de89cdaabdf4cac13d188211ea361d9f47d194cca65",
+      "archive_entry": "2/REPORT.safe.json"
+    },
+    {
+      "path": "docs/validation/cloud-20261011/receipts/Root-FIRST3-P10-source-parent-joins/REPORT.safe.json",
+      "sha256": "aafb63bc030f99dd3b3c879b9f982ffe75efe3fb3d2709bcad9b2e4892622da0",
+      "archive_entry": "3/REPORT.safe.json"
+    }
+  ],
+  "source_proofs": [
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/REPORT.safe.json",
+      "line": 21,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+      "public_source_sha256": "12782449226348a9f3e154c6c862e91538d5d1016367a0c2dd86babe61afd832",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/REPORT.safe.json",
+      "line": 22,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "public_source_sha256": "a2865bfef3dc00c1208476677e82dea0b30e75679e454b1ab226a53a3dbc7e33",
+      "verified_revision": "425b40dd43dbc729ed923a586c6a280891a435cf",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/REPORT.safe.json",
+      "line": 24,
+      "rule_id": "generic-api-key",
+      "source_path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InitialPasswordBoundaryIT.java",
+      "public_source_sha256": "790c3f01dfe4b5f4b6b38b9e68e0893cb31a8d4a5afacc3d8b982656f42930b4",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/REPORT.safe.json",
+      "line": 26,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "public_source_sha256": "b5406ca280b77b16f16e33d1e0e91b74dbe048086028cdc8959ed167e8b2903e",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/REPORT.safe.json",
+      "line": 29,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java",
+      "public_source_sha256": "c3749e4e80f67db3810fa841143ad482e5dc7c66dc35f8367c0bd1687c01f44a",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/REPORT.safe.json",
+      "line": 31,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+      "public_source_sha256": "e336adeeb457255065e274814651718c18f88830b558082bbdf6da39c6cc9b9a",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-one-test-Source-review-pending/REPORT.safe.json",
+      "line": 32,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+      "public_source_sha256": "249b9a76d519ab977fd2e8d11f2e3d304f4bfa1d4652de98e5139795b3d0d93b",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/Root-FIRST3-P10-source-parent-joins/REPORT.safe.json",
+      "line": 7,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "public_source_sha256": "271de110d7fb420314cdee82732bcfa08e872339b41353a7f355dc14411bcddd",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-critical-Source-independent-APPROVE/REPORT.safe.json",
+      "line": 74,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java",
+      "public_source_sha256": "c3749e4e80f67db3810fa841143ad482e5dc7c66dc35f8367c0bd1687c01f44a",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-critical-Source-independent-APPROVE/REPORT.safe.json",
+      "line": 76,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+      "public_source_sha256": "e336adeeb457255065e274814651718c18f88830b558082bbdf6da39c6cc9b9a",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-critical-Source-independent-APPROVE/REPORT.safe.json",
+      "line": 77,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+      "public_source_sha256": "249b9a76d519ab977fd2e8d11f2e3d304f4bfa1d4652de98e5139795b3d0d93b",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-critical-Source-independent-APPROVE/REPORT.safe.json",
+      "line": 79,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/event/PasswordChangedOutbox.java",
+      "public_source_sha256": "963168074a787b62a0e7f032305c7ab868b3f8681f13c87198755134f3f199af",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-Unicode-HTTP-critical-Source-independent-APPROVE/REPORT.safe.json",
+      "line": 81,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/controller/PasswordResetController.java",
+      "public_source_sha256": "481b02756dcc43b18b0675bf7ccb89835967ab236199b395aef182fe3c68d993",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-password-HTTP-readonly-gap-plan/REPORT.safe.json",
+      "line": 233,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SessionAuthFlowIT.java",
+      "public_source_sha256": "12782449226348a9f3e154c6c862e91538d5d1016367a0c2dd86babe61afd832",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-password-HTTP-readonly-gap-plan/REPORT.safe.json",
+      "line": 234,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java",
+      "public_source_sha256": "271de110d7fb420314cdee82732bcfa08e872339b41353a7f355dc14411bcddd",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-password-HTTP-readonly-gap-plan/REPORT.safe.json",
+      "line": 236,
+      "rule_id": "generic-api-key",
+      "source_path": "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/InitialPasswordBoundaryIT.java",
+      "public_source_sha256": "790c3f01dfe4b5f4b6b38b9e68e0893cb31a8d4a5afacc3d8b982656f42930b4",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-password-HTTP-readonly-gap-plan/REPORT.safe.json",
+      "line": 238,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/session/PasswordPolicyTest.java",
+      "public_source_sha256": "b5406ca280b77b16f16e33d1e0e91b74dbe048086028cdc8959ed167e8b2903e",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-password-HTTP-readonly-gap-plan/REPORT.safe.json",
+      "line": 241,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/session/PasswordPolicy.java",
+      "public_source_sha256": "c3749e4e80f67db3810fa841143ad482e5dc7c66dc35f8367c0bd1687c01f44a",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-password-HTTP-readonly-gap-plan/REPORT.safe.json",
+      "line": 243,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/AuthService.java",
+      "public_source_sha256": "e336adeeb457255065e274814651718c18f88830b558082bbdf6da39c6cc9b9a",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    },
+    {
+      "report_path": "docs/validation/cloud-20261011/receipts/P10-password-HTTP-readonly-gap-plan/REPORT.safe.json",
+      "line": 244,
+      "rule_id": "generic-api-key",
+      "source_path": "services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/PasswordResetService.java",
+      "public_source_sha256": "249b9a76d519ab977fd2e8d11f2e3d304f4bfa1d4652de98e5139795b3d0d93b",
+      "verified_revision": "HEAD",
+      "qualification": "ExactknownpublicGitJava sourceSHA, not credential"
+    }
+  ],
+  "policy_rules_allowlists_changed": false,
+  "qualification": "Preserveoriginalfullreports as exactSourceevidenceZIP; originalstandalonecopies unchanged/untrackedunstaged. No credentialsfound/read/exported, securityrules staymandatory."
+}

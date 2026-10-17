@@ -1,0 +1,60 @@
+{
+  "status": "SOURCE_READY_NATIVE_NOT_RUN",
+  "requestedModel": "gpt-6.1-sol",
+  "requestedEffort": "xhigh",
+  "actualModelEffort": "UNKNOWN",
+  "rootHead": "6576bd1f0d0181f90ebb40f6293de1a05f60625e",
+  "findings": [
+    "ROSTER-WITNESS-CLASSIFIER-001",
+    "ROSTER-WITNESS-ADMISSION-CLEANUP-002",
+    "ROSTER-WITNESS-COMPLETE-LOOKUP-003"
+  ],
+  "originalSha256": "23541187a3b90525f90666601ef78759e71229ddd859d6b3cde375ff727c6769",
+  "files": {
+    "before-witness.cjs": "23541187a3b90525f90666601ef78759e71229ddd859d6b3cde375ff727c6769",
+    "witness-detail-lookup.cjs": "bf115103115a8cbb5379398f53903b62cc3523078557e9c2fff291c62fc84b9c",
+    "controls.cjs": "c533faac243b9af7b1742a6fca3901a1bbe80042e030fa1cb24709e3fdb01398"
+  },
+  "readOnlySourcePins": {
+    "/workspace/rutcampustrack/tests/e2e/fixtures/first3-observer.ts": "0a8f9d5d437223a8d71c8b917a39e6ca5548ba209775539caaee35a20548d718",
+    "/workspace/rutcampustrack/frontends/node_modules/typescript/lib/typescript.js": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675",
+    "/workspace/rutcampustrack/tests/e2e/node_modules/playwright/package.json": "f5c873af32da3a56849a77a73eb4e6acf9629d58564ba420077feea88800225c"
+  },
+  "controlArgv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r1/controls.cjs"
+  ],
+  "nativeArgv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "--max-old-space-size=512",
+    "/workspace/scratch/rct-validation/client_real_acceptance/roster-witness-correction-r1/witness-detail-lookup.cjs",
+    "/tmp/rct-roster-witness-FRESH/witness.safe.json"
+  ],
+  "controlEnvironment": {
+    "RCT_WITNESS_CONTROL_RECEIPT": "NEW_PRIVATE_SUPERVISION/controls.safe.json"
+  },
+  "runtimeBudget": {
+    "activeSeconds": 60,
+    "cleanupSeconds": 30,
+    "nodeManagedHeapMiB": 512,
+    "rssSampledSoftMiB": 1024,
+    "tmpSampledSoftMiB": 32,
+    "requestTimeoutMs": 3000,
+    "maxRedirects": 0,
+    "maxRetries": 0
+  },
+  "runtimePrerequisites": [
+    "fresh Root grant",
+    "current coherent live16/directPPID and immutable four readiness/artifact/source/mapping digests",
+    "current source19/known FULL admin admitted source/readiness",
+    "private fresh output/no-follow/resource/clock-last external b78 caller",
+    "no concurrent domain writer; original run interval and date unchanged"
+  ],
+  "cleanupQualification": "Each provisional context owns one login session and cookie. Role selection retains SID; the final matching cookie/bearer logout revokes that session and its captured role tokens. Closed confirmation requires observed204/cookie removal plus context disposal; unowned noop204 remains unconfirmed.",
+  "chronologyQualification": "SOURCE_QUALIFIED_FIRST_WORKER_CHRONOLOGY; no savedUI-ID equality claim.",
+  "memoryQualification": "8KiB classifier retained validation and Content-Length precheck; response.body allocation/API context retention not a hard preallocation limit. RSS/TMP monitoring soft sampled.",
+  "actual503cause": "UNKNOWN",
+  "clientAcceptance": false,
+  "nativeState": "NOT_RUN"
+}

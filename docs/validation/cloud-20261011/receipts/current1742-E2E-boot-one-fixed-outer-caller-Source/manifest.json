@@ -1,0 +1,52 @@
+{
+  "state": "SOURCE_ONLY_NEW_FIXED_OUTER_FLOW",
+  "utc": "2026-10-13T12:10:48.818259+00:00",
+  "r2_manifest_sha256": "c303f7f53358bd2d6e3e56237efe6546ce29cfce25c2f1f76a4b27513a7f9a04",
+  "r2_review_sha256": "afab73a598f6281c43969c7fd7e98103776c25a793f0361c81910280213f280f",
+  "files": [
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source/CURRENT.md",
+      "relative": "CURRENT.md",
+      "bytes": 256,
+      "sha256": "59d0e8cf41ee8b53b62dce8386288cb6a5845a239840cc819f7f95e76aaaccb5"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source/HANDOFF.md",
+      "relative": "HANDOFF.md",
+      "bytes": 5288,
+      "sha256": "6521c47ac1ff2e01115ff4d6e1e8005355567a1b408300c8b14af85d12d591d8"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source/READY.safe.json",
+      "relative": "READY.safe.json",
+      "bytes": 871,
+      "sha256": "8545c19668f3aa27261972873ae4283e32fbc2bdf09c2a4eaa20f54cd6391ec3"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source/caller-controls.safe.json",
+      "relative": "caller-controls.safe.json",
+      "bytes": 2722,
+      "sha256": "66f533a4f7dd0b1f66c793bde3e259c7542efa800f0dd44749126c4d6c52a5cb"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source/check-caller-ram.py",
+      "relative": "check-caller-ram.py",
+      "bytes": 9852,
+      "sha256": "cf9cf28dee0ffbd39d48ce5b942797b89f7ef83294768eec1abc652b0687422e"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source/grant.template.safe.json",
+      "relative": "grant.template.safe.json",
+      "bytes": 1600,
+      "sha256": "33b8a5a2fcbbacd51f9fd16ce490eb440f2cc06ae8d388cbc764f7bf2aba228b"
+    },
+    {
+      "path": "/workspace/scratch/rct-validation/current1742_e2e_boot_outer_caller_source/read-existing-boot.py",
+      "relative": "read-existing-boot.py",
+      "bytes": 15866,
+      "sha256": "0a1c9dd666189d8f3ff7fd8afc865dec35cccdf47691af0c137c703605cf8c5d"
+    }
+  ],
+  "private_inputs_included": false,
+  "actual_native": "NOT_RUN"
+}

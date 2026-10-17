@@ -36,44 +36,81 @@ describe('HeadmanJournalApi', () => {
         paths.push(String(input))
         return jsonResponse({
           _embedded: {
-            lessonResponseList: [{
-              id: 42,
-              groupId: 7,
-              subjectId: 9,
-              date: '2026-09-21',
-              status: 'CANCELLED',
-              current: true,
-              lessonNumber: 2,
-              startTime: '10:00:00',
-              endTime: '11:30:00',
-              room: 'А-101',
-            }],
+            lessonResponseList: [
+              {
+                id: 42,
+                groupId: 7,
+                subjectId: 9,
+                date: '2026-09-21',
+                status: 'CANCELLED',
+                current: true,
+                lessonNumber: 2,
+                startTime: '10:00:00',
+                endTime: '11:30:00',
+                room: 'А-101',
+              },
+            ],
           },
           page: { totalPages: 1 },
         })
       },
     })
 
-    await expect(api.listLessons(7, '2026-09-21', '2026-09-21')).resolves.toEqual([{
-      id: 42,
-      groupId: 7,
-      subjectId: 9,
-      date: '2026-09-21',
-      status: 'CANCELLED',
-      lessonNumber: 2,
-      startTime: '10:00:00',
-      endTime: '11:30:00',
-      room: 'А-101',
-      lessonType: null,
-      occurrenceRevision: null,
-      current: true,
-      transferOperationId: null,
-      transferState: null,
-    }])
-    expect(paths).toEqual([
-      '/api/schedule/groups/7/lessons?dateFrom=2026-09-21&dateTo=2026-09-21&page=0&size=100'
-        + '&status=PLANNED&status=ACTIVE&status=CLOSED&status=CANCELLED&status=TRANSFERRED',
+    await expect(api.listLessons(7, '2026-09-21', '2026-09-21')).resolves.toEqual([
+      {
+        id: 42,
+        groupId: 7,
+        subjectId: 9,
+        date: '2026-09-21',
+        status: 'CANCELLED',
+        lessonNumber: 2,
+        startTime: '10:00:00',
+        endTime: '11:30:00',
+        room: 'А-101',
+        lessonType: null,
+        occurrenceRevision: null,
+        current: true,
+        transferOperationId: null,
+        transferState: null,
+      },
     ])
+    expect(paths).toEqual([
+      '/api/schedule/groups/7/lessons?dateFrom=2026-09-21&dateTo=2026-09-21&page=0&size=100' +
+        '&status=PLANNED&status=ACTIVE&status=CLOSED&status=CANCELLED&status=TRANSFERRED',
+    ])
+  })
+
+  it('changes only the existing headman blockage resource and requires its exact ACK', async () => {
+    const calls: Array<{ path: string; method: string | undefined }> = []
+    let malformed = false
+    const api = new HeadmanJournalApi({
+      accessToken: () => 'synthetic-token',
+      fetcher: async (input, init) => {
+        calls.push({ path: String(input), method: init?.method })
+        return jsonResponse({
+          id: 42,
+          groupId: 7,
+          date: '2026-09-21',
+          status: 'ACTIVE',
+          current: true,
+          ...(malformed ? {} : { blockedByHeadman: init?.method === 'POST' }),
+        })
+      },
+    })
+    await expect(api.setHeadmanBlock(42, true)).resolves.toMatchObject({
+      id: 42,
+      blockedByHeadman: true,
+    })
+    await expect(api.setHeadmanBlock(42, false)).resolves.toMatchObject({
+      id: 42,
+      blockedByHeadman: false,
+    })
+    expect(calls).toEqual([
+      { path: '/api/schedule/lessons/42/blockage', method: 'POST' },
+      { path: '/api/schedule/lessons/42/blockage', method: 'DELETE' },
+    ])
+    malformed = true
+    await expect(api.setHeadmanBlock(42, true)).rejects.toThrow('Сервер не подтвердил')
   })
 
   it('sends the frozen transfer payload and follows the scoped operation status', async () => {
@@ -147,31 +184,36 @@ describe('HeadmanJournalApi', () => {
   it('retains occurrence revision and a resumable transfer operation from the latest lesson list', async () => {
     const api = new HeadmanJournalApi({
       accessToken: () => 'token',
-      fetcher: async () => jsonResponse({
-        _embedded: {
-          lessonResponseList: [{
-            id: 42,
-            groupId: 7,
-            date: '2026-09-30',
-            status: 'TRANSFERRED',
-            lessonNumber: 2,
-            occurrenceRevision: 17,
-            current: true,
-            transferOperationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
-            transferState: 'PENDING',
-          }],
-        },
-        page: { totalPages: 1 },
-      }),
+      fetcher: async () =>
+        jsonResponse({
+          _embedded: {
+            lessonResponseList: [
+              {
+                id: 42,
+                groupId: 7,
+                date: '2026-09-30',
+                status: 'TRANSFERRED',
+                lessonNumber: 2,
+                occurrenceRevision: 17,
+                current: true,
+                transferOperationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+                transferState: 'PENDING',
+              },
+            ],
+          },
+          page: { totalPages: 1 },
+        }),
     })
 
-    await expect(api.listLessons(7, '2026-09-30', '2026-09-30')).resolves.toMatchObject([{
-      id: 42,
-      status: 'TRANSFERRED',
-      occurrenceRevision: '17',
-      transferOperationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
-      transferState: 'PENDING',
-    }])
+    await expect(api.listLessons(7, '2026-09-30', '2026-09-30')).resolves.toMatchObject([
+      {
+        id: 42,
+        status: 'TRANSFERRED',
+        occurrenceRevision: '17',
+        transferOperationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+        transferState: 'PENDING',
+      },
+    ])
   })
 
   it('preserves the same request key and payload when an uncertain transfer is retried', async () => {
@@ -232,17 +274,20 @@ describe('HeadmanJournalApi', () => {
           body: String(init.body),
         })
         if (requests.length === 1) return new Response(null, { status: 401 })
-        return jsonResponseWithStatus({
-          operationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
-          state: 'PENDING',
-          occurrenceId: '73',
-          sourceLessonId: '42',
-          targetLessonId: '91',
-          targetDate: '2026-10-02',
-          revision: '18',
-          retryable: true,
-          errorCode: null,
-        }, 202)
+        return jsonResponseWithStatus(
+          {
+            operationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+            state: 'PENDING',
+            occurrenceId: '73',
+            sourceLessonId: '42',
+            targetLessonId: '91',
+            targetDate: '2026-10-02',
+            revision: '18',
+            retryable: true,
+            errorCode: null,
+          },
+          202,
+        )
       },
     })
     const request = createHeadmanLessonTransferRequest(
@@ -255,24 +300,31 @@ describe('HeadmanJournalApi', () => {
     await expect(api.transferLesson(42, request)).resolves.toMatchObject({ state: 'PENDING' })
 
     expect(refreshed).toBe(true)
-    expect(requests.map((item) => item.authorization)).toEqual(['Bearer old-token', 'Bearer new-token'])
+    expect(requests.map((item) => item.authorization)).toEqual([
+      'Bearer old-token',
+      'Bearer new-token',
+    ])
     expect(requests[0]?.body).toBe(requests[1]?.body)
   })
 
   it('surfaces a transfer conflict body without treating it as accepted', async () => {
     const api = new HeadmanJournalApi({
       accessToken: () => 'token',
-      fetcher: async () => jsonResponseWithStatus({
-        operationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
-        state: 'ERROR',
-        occurrenceId: '73',
-        sourceLessonId: '42',
-        targetLessonId: '91',
-        targetDate: '2026-10-02',
-        revision: '17',
-        retryable: false,
-        errorCode: 'SOURCE_STATE_CONFLICT',
-      }, 409),
+      fetcher: async () =>
+        jsonResponseWithStatus(
+          {
+            operationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+            state: 'ERROR',
+            occurrenceId: '73',
+            sourceLessonId: '42',
+            targetLessonId: '91',
+            targetDate: '2026-10-02',
+            revision: '17',
+            retryable: false,
+            errorCode: 'SOURCE_STATE_CONFLICT',
+          },
+          409,
+        ),
     })
     const request = createHeadmanLessonTransferRequest(
       '2026-10-02',
@@ -284,23 +336,33 @@ describe('HeadmanJournalApi', () => {
     await expect(api.transferLesson(42, request)).rejects.toMatchObject({
       response: { status: 409 },
       problem: { errorCode: 'SOURCE_STATE_CONFLICT' },
-    } satisfies { response: Pick<HeadmanJournalApiError['response'], 'status'>; problem: { errorCode: string } })
+    } satisfies {
+      response: Pick<HeadmanJournalApiError['response'], 'status'>
+      problem: { errorCode: string }
+    })
   })
 
   it('keeps unmarked and cancelled states distinct and refuses legacy FREE_ATTENDANCE normalization', async () => {
     const api = new HeadmanJournalApi({
       accessToken: () => 'token',
-      fetcher: async () => jsonResponse({
-        lessonId: 42,
-        groupId: 7,
-        subjectId: 9,
-        lessonDate: '2026-09-21',
-        entries: [
-          { userId: 3, displayName: 'Яна', status: null, symbol: null, editable: true },
-          { userId: 2, displayName: 'Борис', status: 'cancelled', symbol: null, editable: false },
-          { userId: 1, displayName: 'Алиса', status: 'FREE_ATTENDANCE', symbol: 'у', editable: true },
-        ],
-      }),
+      fetcher: async () =>
+        jsonResponse({
+          lessonId: 42,
+          groupId: 7,
+          subjectId: 9,
+          lessonDate: '2026-09-21',
+          entries: [
+            { userId: 3, displayName: 'Яна', status: null, symbol: null, editable: true },
+            { userId: 2, displayName: 'Борис', status: 'cancelled', symbol: null, editable: false },
+            {
+              userId: 1,
+              displayName: 'Алиса',
+              status: 'FREE_ATTENDANCE',
+              symbol: 'у',
+              editable: true,
+            },
+          ],
+        }),
     })
 
     const report = await api.getLessonAttendance(42)
@@ -314,30 +376,44 @@ describe('HeadmanJournalApi', () => {
   it('rejects a late transfer response after the session owner changes', async () => {
     let generation = 0
     let release: ((response: Response) => void) | undefined
-    const api = createGenerationBoundHeadmanJournalApi({
-      currentGeneration: () => generation,
-      accessTokenFor: () => 'token',
-      refreshFor: async () => undefined,
-    }, async () => new Promise<Response>((resolve) => { release = resolve }))
+    const api = createGenerationBoundHeadmanJournalApi(
+      {
+        currentGeneration: () => generation,
+        accessTokenFor: () => 'token',
+        refreshFor: async () => undefined,
+      },
+      async () =>
+        new Promise<Response>((resolve) => {
+          release = resolve
+        }),
+    )
 
-    const pending = api.transferLesson(42, createHeadmanLessonTransferRequest(
-      '2026-10-02',
-      3,
-      '17',
-      '2507aed5-9905-4b02-a91f-bf98799e18b6',
-    ))
+    const pending = api.transferLesson(
+      42,
+      createHeadmanLessonTransferRequest(
+        '2026-10-02',
+        3,
+        '17',
+        '2507aed5-9905-4b02-a91f-bf98799e18b6',
+      ),
+    )
     generation = 1
-    release?.(jsonResponseWithStatus({
-      operationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
-      state: 'COMPLETED',
-      occurrenceId: '73',
-      sourceLessonId: '42',
-      targetLessonId: '91',
-      targetDate: '2026-10-02',
-      revision: '18',
-      retryable: false,
-      errorCode: null,
-    }, 200))
+    release?.(
+      jsonResponseWithStatus(
+        {
+          operationId: '8f065bb4-06b4-4b55-a6a2-326910090acf',
+          state: 'COMPLETED',
+          occurrenceId: '73',
+          sourceLessonId: '42',
+          targetLessonId: '91',
+          targetDate: '2026-10-02',
+          revision: '18',
+          retryable: false,
+          errorCode: null,
+        },
+        200,
+      ),
+    )
 
     await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
   })
@@ -350,7 +426,12 @@ describe('HeadmanJournalApi', () => {
         requests.push({ path: String(input), init })
         if (init.method === 'DELETE') return new Response(null, { status: 204 })
         return jsonResponse({
-          content: { status: 'PRESENT', lessonId: 42, userId: 3, timestamp: '2026-09-21T10:00:00Z' },
+          content: {
+            status: 'PRESENT',
+            lessonId: 42,
+            userId: 3,
+            timestamp: '2026-09-21T10:00:00Z',
+          },
         })
       },
     })
@@ -367,30 +448,36 @@ describe('HeadmanJournalApi', () => {
     expect(JSON.parse(String(jsonRequest.init.body))).toEqual({ status: 'PRESENT' })
 
     const file = new File(['proof'], 'proof.pdf', { type: 'application/pdf' })
-    await expect(api.mark(42, 3, {
-      status: 'EXCUSED',
-      excuseType: 'ILLNESS',
-      comment: 'Комментарий',
-      file,
-    })).resolves.toMatchObject({ status: 'PRESENT' })
+    await expect(
+      api.mark(42, 3, {
+        status: 'EXCUSED',
+        excuseType: 'ILLNESS',
+        comment: 'Комментарий',
+        file,
+      }),
+    ).resolves.toMatchObject({ status: 'PRESENT' })
     const multipartRequest = requests[1]!
     expect(multipartRequest.init.body).toBeInstanceOf(FormData)
     const form = multipartRequest.init.body as FormData
     const requestPart = form.get('request')
     expect(requestPart).toBeInstanceOf(Blob)
-    await expect((requestPart as Blob).text()).resolves.toBe(JSON.stringify({
-      status: 'EXCUSED',
-      excuseType: 'ILLNESS',
-      comment: 'Комментарий',
-    }))
+    await expect((requestPart as Blob).text()).resolves.toBe(
+      JSON.stringify({
+        status: 'EXCUSED',
+        excuseType: 'ILLNESS',
+        comment: 'Комментарий',
+      }),
+    )
     expect(form.get('file')).toBeInstanceOf(File)
 
     await expect(api.clear(42, 3)).resolves.toBeUndefined()
     expect(requests[2]?.init.method).toBe('DELETE')
-    expect(() => api.mark(42, 3, {
-      status: 'EXCUSED',
-      excuseType: 'FREE_ATTENDANCE' as never,
-    })).toThrow('excuseType')
+    expect(() =>
+      api.mark(42, 3, {
+        status: 'EXCUSED',
+        excuseType: 'FREE_ATTENDANCE' as never,
+      }),
+    ).toThrow('excuseType')
   })
 
   it('downloads an authorized student attachment through the frozen lesson path', async () => {
@@ -399,7 +486,10 @@ describe('HeadmanJournalApi', () => {
       accessToken: () => 'token',
       fetcher: async (input) => {
         paths.push(String(input))
-        return new Response('file-body', { status: 200, headers: { 'Content-Type': 'application/pdf' } })
+        return new Response('file-body', {
+          status: 200,
+          headers: { 'Content-Type': 'application/pdf' },
+        })
       },
     })
 
@@ -420,20 +510,48 @@ describe('HeadmanJournalApi', () => {
             semesterName: 'Осень 2026',
             semesterDateFrom: '2026-09-01',
             semesterDateTo: '2027-01-31',
-            weeks: [{
-              weekOfSemester: 1,
-              isoWeek: 36,
-              label: 'Н1',
-              weekStart: '2026-08-31',
-              weekEnd: '2026-09-06',
-              current: true,
-            }],
+            weeks: [
+              {
+                weekOfSemester: 1,
+                isoWeek: 36,
+                label: 'Н1',
+                weekStart: '2026-08-31',
+                weekEnd: '2026-09-06',
+                current: true,
+              },
+            ],
             formats: [
-              { code: 'docx', label: 'Word (.docx)', contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', extension: 'docx' },
-              { code: 'pdf', label: 'PDF (.pdf)', contentType: 'application/pdf', extension: 'pdf' },
-              { code: 'png', label: 'PNG, архив страниц (.zip)', contentType: 'application/zip', extension: 'zip' },
-              { code: 'html', label: 'HTML (.html)', contentType: 'text/html; charset=UTF-8', extension: 'html' },
-              { code: 'xlsx', label: 'Excel (.xlsx)', contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', extension: 'xlsx' },
+              {
+                code: 'docx',
+                label: 'Word (.docx)',
+                contentType:
+                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                extension: 'docx',
+              },
+              {
+                code: 'pdf',
+                label: 'PDF (.pdf)',
+                contentType: 'application/pdf',
+                extension: 'pdf',
+              },
+              {
+                code: 'png',
+                label: 'PNG, архив страниц (.zip)',
+                contentType: 'application/zip',
+                extension: 'zip',
+              },
+              {
+                code: 'html',
+                label: 'HTML (.html)',
+                contentType: 'text/html; charset=UTF-8',
+                extension: 'html',
+              },
+              {
+                code: 'xlsx',
+                label: 'Excel (.xlsx)',
+                contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                extension: 'xlsx',
+              },
             ],
           },
         })
@@ -445,7 +563,11 @@ describe('HeadmanJournalApi', () => {
     expect(paths).toEqual(['/api/attendance/reports/headman-weekly/weeks'])
     expect(options.weeks[0]).toMatchObject({ weekStart: '2026-08-31', label: 'Н1', current: true })
     expect(options.formats.map((format) => [format.code, format.extension])).toEqual([
-      ['docx', 'docx'], ['pdf', 'pdf'], ['png', 'zip'], ['html', 'html'], ['xlsx', 'xlsx'],
+      ['docx', 'docx'],
+      ['pdf', 'pdf'],
+      ['png', 'zip'],
+      ['html', 'html'],
+      ['xlsx', 'xlsx'],
     ])
   })
 
@@ -466,14 +588,20 @@ describe('HeadmanJournalApi', () => {
     })
 
     const downloaded = await api.downloadWeeklyExport(['2026-04-27'], {
-      code: 'png', label: 'PNG, архив страниц (.zip)', contentType: 'application/zip', extension: 'zip',
+      code: 'png',
+      label: 'PNG, архив страниц (.zip)',
+      contentType: 'application/zip',
+      extension: 'zip',
     })
 
     expect(requests).toHaveLength(1)
     expect(requests[0]?.path).toBe('/api/attendance/reports/headman-weekly/export')
     expect(requests[0]?.init.method).toBe('POST')
     expect(new Headers(requests[0]?.init.headers).get('Accept')).toBe('*/*')
-    expect(JSON.parse(String(requests[0]?.init.body))).toEqual({ weekStarts: ['2026-04-27'], format: 'png' })
+    expect(JSON.parse(String(requests[0]?.init.body))).toEqual({
+      weekStarts: ['2026-04-27'],
+      format: 'png',
+    })
     expect(downloaded.filename).toBe('UVPV511_27.04.2026_png.zip')
     expect(downloaded.blob.type).toBe('application/zip')
     await expect(downloaded.blob.text()).resolves.toBe('png-zip')

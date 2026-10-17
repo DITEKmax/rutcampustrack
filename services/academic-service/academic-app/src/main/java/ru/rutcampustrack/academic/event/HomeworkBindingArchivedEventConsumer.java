@@ -5,9 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.context.ApplicationEventPublisher;
+import java.math.BigDecimal;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,16 +24,6 @@ import ru.rutcampustrack.academic.homework.HomeworkBindingTransferCoordinator;
 import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 import ru.rutcampustrack.shared.events.EventIdempotent;
-
-import java.math.BigDecimal;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HexFormat;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.UUID;
 
 /** Consumes Schedule's terminal homework-binding archive event. */
 @Component
@@ -60,9 +58,9 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
     }
 
     /**
-     * The exact effect receipt is this consumer's transactional idempotency claim;
-     * APPLIED replays emit a fresh acknowledgement envelope; source event id,
-     * payload hash, and result remain stable.
+     * The exact effect receipt is this consumer's transactional idempotency claim; APPLIED replays
+     * emit a fresh acknowledgement envelope; source event id, payload hash, and result remain
+     * stable.
      */
     @RabbitListener(queues = RabbitConfig.HOMEWORK_ARCHIVE_EVENTS_QUEUE)
     @EventIdempotent(consumer = CONSUMER_ID)
@@ -80,14 +78,21 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
 
         ArchiveCommand command = parseTargetEvent(envelope);
         if (command.occurrenceId() == 0) {
-            Boolean incompatible = jdbc.queryForObject("""
+            Boolean incompatible =
+                    jdbc.queryForObject(
+                            """
                     SELECT EXISTS (SELECT 1 FROM homeworks h WHERE h.binding_id = ? AND h.binding_mode <> 'DATE'
                         AND NOT EXISTS (SELECT 1 FROM homework_edit_operations e WHERE e.binding_id = h.binding_id
                             AND e.homework_id = h.id AND e.semester_id = h.semester_id
                             AND e.state <> 'CANCELLED' AND e.expected_binding_revision < ?
                             AND e.desired_snapshot ->> 'bindingMode' = 'DATE'))
-                    """, Boolean.class, command.bindingId(), command.bindingRevision());
-            if (Boolean.TRUE.equals(incompatible)) throw new IllegalArgumentException("DATE terminal event conflicts with linked homework identity");
+                    """,
+                            Boolean.class,
+                            command.bindingId(),
+                            command.bindingRevision());
+            if (Boolean.TRUE.equals(incompatible))
+                throw new IllegalArgumentException(
+                        "DATE terminal event conflicts with linked homework identity");
         }
         byte[] payloadHash = semanticPayloadHash(envelope.get("payload"));
         EffectReceipt receipt = claimReceipt(command, payloadHash);
@@ -97,45 +102,76 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
         }
 
         boolean[] trackedNoContentCancellation = {false};
-        withTraceContext(envelope, () -> {
-            if (command.homeworkId() == null) {
-                trackedNoContentCancellation[0] = archiveBarrier.trackPendingArchivedBinding(
-                        command.semesterId(), command.bindingId(),
-                        command.actorId(), command.requestKey(), command.occurrenceId(),
-                        command.bindingRevision(), command.sourceEventId(), payloadHash);
-            }
-            archiveCoordinator.archiveCancelledBinding(
-                    command.bindingId(), command.actorId(), command.requestKey(), command.homeworkId(),
-                    command.semesterId(), command.sourceEventId(),
-                    command.occurrenceId() == 0 ? null : command.occurrenceId(),
-                    command.lessonId() == 0 ? null : command.lessonId(), command.bindingRevision());
-            if (trackedNoContentCancellation[0]) {
-                transferCoordinator.cancelPendingUnpublished(command.bindingId(), command.actorId(),
-                        command.requestKey(), command.semesterId());
-            }
-        });
+        withTraceContext(
+                envelope,
+                () -> {
+                    if (command.homeworkId() == null) {
+                        trackedNoContentCancellation[0] =
+                                archiveBarrier.trackPendingArchivedBinding(
+                                        command.semesterId(),
+                                        command.bindingId(),
+                                        command.actorId(),
+                                        command.requestKey(),
+                                        command.occurrenceId(),
+                                        command.bindingRevision(),
+                                        command.sourceEventId(),
+                                        payloadHash);
+                    }
+                    archiveCoordinator.archiveCancelledBinding(
+                            command.bindingId(),
+                            command.actorId(),
+                            command.requestKey(),
+                            command.homeworkId(),
+                            command.semesterId(),
+                            command.sourceEventId(),
+                            command.occurrenceId() == 0 ? null : command.occurrenceId(),
+                            command.lessonId() == 0 ? null : command.lessonId(),
+                            command.bindingRevision());
+                    if (trackedNoContentCancellation[0]) {
+                        transferCoordinator.cancelPendingUnpublished(
+                                command.bindingId(),
+                                command.actorId(),
+                                command.requestKey(),
+                                command.semesterId());
+                    }
+                });
 
-        int updated = jdbc.update("""
+        int updated =
+                jdbc.update(
+                        """
                 UPDATE academic_semester_archive_effect_receipts
                    SET state = 'APPLIED', applied_at = now()
                  WHERE source_event_id = ? AND event_type = ? AND semester_id = ?
                    AND binding_id = ? AND payload_hash = ? AND state = 'PENDING'
-                """, command.sourceEventId(), EVENT_TYPE, command.semesterId(),
-                command.bindingId(), payloadHash);
+                """,
+                        command.sourceEventId(),
+                        EVENT_TYPE,
+                        command.semesterId(),
+                        command.bindingId(),
+                        payloadHash);
         if (updated != 1) {
-            throw new IllegalStateException("Academic archive effect receipt changed during application");
+            throw new IllegalStateException(
+                    "Academic archive effect receipt changed during application");
         }
         if (trackedNoContentCancellation[0]) {
-            archiveBarrier.completeTrackedNoContentEffect(command.semesterId(), command.bindingId(),
-                    command.actorId(), command.requestKey(), command.sourceEventId());
+            archiveBarrier.completeTrackedNoContentEffect(
+                    command.semesterId(),
+                    command.bindingId(),
+                    command.actorId(),
+                    command.requestKey(),
+                    command.sourceEventId());
         }
         publishAcknowledgement(command, payloadHash, receipt.acknowledgementEventId());
     }
 
-    private void publishAcknowledgement(ArchiveCommand command, byte[] payloadHash,
-                                        UUID acknowledgementEventId) {
-        eventPublisher.publishEvent(new SemesterArchiveEffectAcknowledgementEvent(
-                command.sourceEventId(), command.semesterId(), payloadHash, acknowledgementEventId));
+    private void publishAcknowledgement(
+            ArchiveCommand command, byte[] payloadHash, UUID acknowledgementEventId) {
+        eventPublisher.publishEvent(
+                new SemesterArchiveEffectAcknowledgementEvent(
+                        command.sourceEventId(),
+                        command.semesterId(),
+                        payloadHash,
+                        acknowledgementEventId));
     }
 
     private static ArchiveCommand parseTargetEvent(Map<String, Object> envelope) {
@@ -144,7 +180,8 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
         }
         if (positiveLong(envelope.get("event_version"), "event_version")
                 != SUPPORTED_EVENT_VERSION) {
-            throw new IllegalArgumentException("homework.binding.archived has an unsupported version");
+            throw new IllegalArgumentException(
+                    "homework.binding.archived has an unsupported version");
         }
         UUID sourceEventId = uuid(envelope.get("event_id"), "event_id");
 
@@ -156,19 +193,29 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
         long actorId = positiveLong(payload.get("actor_id"), "actor_id");
         UUID requestKey = uuid(payload.get("request_key"), "request_key");
         Object rawOccurrence = payload.get("occurrence_id"), rawLesson = payload.get("lesson_id");
-        if ((rawOccurrence == null) != (rawLesson == null)) throw new IllegalArgumentException("homework archive placement tuple is incomplete");
-        long occurrenceId = rawOccurrence == null ? 0 : positiveLong(rawOccurrence, "occurrence_id");
+        if ((rawOccurrence == null) != (rawLesson == null))
+            throw new IllegalArgumentException("homework archive placement tuple is incomplete");
+        long occurrenceId =
+                rawOccurrence == null ? 0 : positiveLong(rawOccurrence, "occurrence_id");
         long lessonId = rawLesson == null ? 0 : positiveLong(rawLesson, "lesson_id");
         Object rawHomeworkId = payload.get("homework_id");
-        Long homeworkId = rawHomeworkId == null
-                ? null : positiveLong(rawHomeworkId, "homework_id");
+        Long homeworkId = rawHomeworkId == null ? null : positiveLong(rawHomeworkId, "homework_id");
         long bindingRevision = positiveLong(payload.get("binding_revision"), "binding_revision");
         long semesterId = positiveLong(payload.get("semester_id"), "semester_id");
         if (bindingRevision < 2) {
-            throw new IllegalArgumentException("homework.binding.archived has an invalid binding_revision");
+            throw new IllegalArgumentException(
+                    "homework.binding.archived has an invalid binding_revision");
         }
-        return new ArchiveCommand(bindingId, actorId, requestKey,
-                occurrenceId, lessonId, homeworkId, bindingRevision, semesterId, sourceEventId);
+        return new ArchiveCommand(
+                bindingId,
+                actorId,
+                requestKey,
+                occurrenceId,
+                lessonId,
+                homeworkId,
+                bindingRevision,
+                semesterId,
+                sourceEventId);
     }
 
     private static long positiveLong(Object raw, String field) {
@@ -179,7 +226,8 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
         try {
             value = new BigDecimal(number.toString()).longValueExact();
         } catch (NumberFormatException | ArithmeticException invalid) {
-            throw new IllegalArgumentException("homework.binding.archived has invalid " + field, invalid);
+            throw new IllegalArgumentException(
+                    "homework.binding.archived has invalid " + field, invalid);
         }
         if (value <= 0) {
             throw new IllegalArgumentException("homework.binding.archived has invalid " + field);
@@ -194,52 +242,74 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
         try {
             return UUID.fromString(value);
         } catch (IllegalArgumentException invalid) {
-            throw new IllegalArgumentException("homework.binding.archived has invalid " + field, invalid);
+            throw new IllegalArgumentException(
+                    "homework.binding.archived has invalid " + field, invalid);
         }
     }
 
-    private record ArchiveCommand(long bindingId, long actorId, UUID requestKey,
-                                  long occurrenceId, long lessonId, Long homeworkId,
-                                  long bindingRevision, long semesterId, UUID sourceEventId) {
-    }
+    private record ArchiveCommand(
+            long bindingId,
+            long actorId,
+            UUID requestKey,
+            long occurrenceId,
+            long lessonId,
+            Long homeworkId,
+            long bindingRevision,
+            long semesterId,
+            UUID sourceEventId) {}
 
     private EffectReceipt claimReceipt(ArchiveCommand command, byte[] payloadHash) {
         UUID acknowledgementEventId = UUID.randomUUID();
-        jdbc.update("""
+        jdbc.update(
+                """
                 INSERT INTO academic_semester_archive_effect_receipts
                     (source_event_id, event_type, semester_id, binding_id, payload_hash,
                      acknowledgement_event_id)
                 VALUES (?, ?, ?, ?, ?, ?)
                 ON CONFLICT (source_event_id) DO NOTHING
-                """, command.sourceEventId(), EVENT_TYPE, command.semesterId(),
-                command.bindingId(), payloadHash, acknowledgementEventId);
-        Map<String, Object> receipt = jdbc.queryForMap("""
+                """,
+                command.sourceEventId(),
+                EVENT_TYPE,
+                command.semesterId(),
+                command.bindingId(),
+                payloadHash,
+                acknowledgementEventId);
+        Map<String, Object> receipt =
+                jdbc.queryForMap(
+                        """
                 SELECT event_type, semester_id, binding_id, payload_hash, state,
                        acknowledgement_event_id
                   FROM academic_semester_archive_effect_receipts
                  WHERE source_event_id = ? FOR UPDATE
-                """, command.sourceEventId());
+                """,
+                        command.sourceEventId());
         if (!EVENT_TYPE.equals(receipt.get("event_type"))
                 || ((Number) receipt.get("semester_id")).longValue() != command.semesterId()
                 || ((Number) receipt.get("binding_id")).longValue() != command.bindingId()
                 || !Arrays.equals((byte[]) receipt.get("payload_hash"), payloadHash)) {
-            throw new IllegalArgumentException("Schedule archive event id was reused with a different effect identity");
+            throw new IllegalArgumentException(
+                    "Schedule archive event id was reused with a different effect identity");
         }
-        return new EffectReceipt("APPLIED".equals(receipt.get("state")),
+        return new EffectReceipt(
+                "APPLIED".equals(receipt.get("state")),
                 (UUID) receipt.get("acknowledgement_event_id"));
     }
 
     private byte[] semanticPayloadHash(Object rawPayload) {
         JsonNode payload = objectMapper.valueToTree(rawPayload);
         try {
-            byte[] canonical = objectMapper.writer().without(SerializationFeature.INDENT_OUTPUT)
-                    .writeValueAsBytes(sortObjectKeys(payload));
+            byte[] canonical =
+                    objectMapper
+                            .writer()
+                            .without(SerializationFeature.INDENT_OUTPUT)
+                            .writeValueAsBytes(sortObjectKeys(payload));
             return MessageDigest.getInstance("SHA-256").digest(canonical);
         } catch (Exception failure) {
             if (failure instanceof NoSuchAlgorithmException) {
                 throw new IllegalStateException("SHA-256 is not available", failure);
             }
-            throw new IllegalArgumentException("Could not canonicalize Schedule archive effect payload", failure);
+            throw new IllegalArgumentException(
+                    "Could not canonicalize Schedule archive effect payload", failure);
         }
     }
 
@@ -261,5 +331,5 @@ public class HomeworkBindingArchivedEventConsumer extends AbstractEventConsumer 
         return value.deepCopy();
     }
 
-    private record EffectReceipt(boolean applied, UUID acknowledgementEventId) { }
+    private record EffectReceipt(boolean applied, UUID acknowledgementEventId) {}
 }

@@ -1,0 +1,27 @@
+{
+  "artifact": 11882153696,
+  "run": 38541704229,
+  "digest": "sha256:04824eb248c90fc9d9f837110acb97a0eac65a5523b358250e020664b1e99028",
+  "bytes": 293,
+  "checkout": {
+    "checkout_sha": "558049cbc660046bb067f573c8213d502a8af997",
+    "tree_sha": "e6a46fede37a826bd8e5a93f00a8c569a022b264",
+    "producer_head_sha": "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2"
+  },
+  "merge_parent_and_tree_join": "PENDING_OFFICIAL_GIT_METADATA",
+  "private_logs_or_bodies_read": false,
+  "official_git_join": {
+    "parents": [
+      "3908fad9624f97aec8891fc79338ceb6b0616bf3",
+      "9f09e1fe647dc73b65a57ba7793f1e9bfcb878a2"
+    ],
+    "tree_sha": "e6a46fede37a826bd8e5a93f00a8c569a022b264",
+    "result": "PASS"
+  },
+  "native_reader": {
+    "exit": 0,
+    "settled": true,
+    "reaped": true,
+    "private_reference_removed": true
+  }
+}

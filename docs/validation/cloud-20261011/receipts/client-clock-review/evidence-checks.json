@@ -1,0 +1,34 @@
+{
+  "revision": "049ab4e3b9629177decad650e4846fd36638f78c",
+  "completedAt": "2026-10-11T21:32:28.381820+00:00",
+  "reviewerControls": [
+    {
+      "kind": "Actual Python inspector structural ZIP counterexample",
+      "result": "FAIL_TO_REJECT_NESTED_FIXTURE",
+      "evidence": "jar-sensitivity.json"
+    },
+    {
+      "kind": "58-file Clock boundary source audit",
+      "result": "CC01_SECURITY_RETENTION_CONTAMINATION",
+      "evidence": [
+        "clock-audit.md",
+        "clock-consumer-inventory.json",
+        "clock-consumers.txt",
+        "security-time-search.txt"
+      ]
+    },
+    {
+      "kind": "Real source ack/receipt comparison at fixed Clock",
+      "result": "CC03_REPLAY_FALSE_POSITIVE",
+      "evidence": "findings.md"
+    },
+    {
+      "kind": "Actual external compiled jar readback only",
+      "result": "PASS",
+      "evidence": "external-jar-readback.json"
+    }
+  ],
+  "authorRuntimeReceipts": "clock1-terminal.json external compile/contextcontrols0; taskgraphDRY_RUN0; no service runtime",
+  "productionRuntime": "NOT_RUN",
+  "sourceLedger": "opened-sources.json"
+}

@@ -2,7 +2,6 @@ package ru.rutcampustrack.mobilebff.contract.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -10,8 +9,7 @@ public final class StudentMapModels {
 
     private static final long MAX_ASSET_BYTES = 10L * 1024L * 1024L;
 
-    private StudentMapModels() {
-    }
+    private StudentMapModels() {}
 
     public enum Format {
         png,
@@ -25,15 +23,19 @@ public final class StudentMapModels {
         failed
     }
 
-    @Schema(name = "StudentMapManifest", requiredProperties = {
-            "schemaVersion", "validationPolicyVersion", "revision", "buildings"
-    })
+    @Schema(
+            name = "StudentMapManifest",
+            requiredProperties = {
+                "schemaVersion",
+                "validationPolicyVersion",
+                "revision",
+                "buildings"
+            })
     public record ManifestResponse(
             int schemaVersion,
             int validationPolicyVersion,
             String revision,
-            List<Building> buildings
-    ) {
+            List<Building> buildings) {
         public ManifestResponse {
             if (schemaVersion <= 0 || validationPolicyVersion <= 0) {
                 throw new IllegalArgumentException("map schema versions must be positive");
@@ -43,12 +45,10 @@ public final class StudentMapModels {
         }
     }
 
-    @Schema(name = "StudentMapBuilding", requiredProperties = {"id", "label", "floors"})
-    public record Building(
-            String id,
-            String label,
-            List<Floor> floors
-    ) {
+    @Schema(
+            name = "StudentMapBuilding",
+            requiredProperties = {"id", "label", "floors"})
+    public record Building(String id, String label, List<Floor> floors) {
         public Building {
             requirePositiveDecimal(id, "id");
             Objects.requireNonNull(label, "label");
@@ -56,29 +56,26 @@ public final class StudentMapModels {
         }
     }
 
-    @Schema(name = "StudentMapFloor", requiredProperties = {"id", "label", "plan"})
-    public record Floor(
-            String id,
-            String label,
-            @Schema(nullable = true) Plan plan
-    ) {
+    @Schema(
+            name = "StudentMapFloor",
+            requiredProperties = {"id", "label", "plan"})
+    public record Floor(String id, String label, @Schema(nullable = true) Plan plan) {
         public Floor {
             requirePositiveDecimal(id, "id");
             Objects.requireNonNull(label, "label");
         }
     }
 
-    @Schema(name = "StudentMapPlan", requiredProperties = {
-            "buildingId", "floorId", "version", "label", "png", "svg"
-    })
+    @Schema(
+            name = "StudentMapPlan",
+            requiredProperties = {"buildingId", "floorId", "version", "label", "png", "svg"})
     public record Plan(
             String buildingId,
             String floorId,
             String version,
             String label,
             FormatSlot png,
-            FormatSlot svg
-    ) {
+            FormatSlot svg) {
         public Plan {
             requirePositiveDecimal(buildingId, "buildingId");
             requirePositiveDecimal(floorId, "floorId");
@@ -95,9 +92,9 @@ public final class StudentMapModels {
         }
     }
 
-    @Schema(name = "StudentMapFormatSlot", requiredProperties = {
-            "format", "state", "contentType", "id", "bytes", "sha256"
-    })
+    @Schema(
+            name = "StudentMapFormatSlot",
+            requiredProperties = {"format", "state", "contentType", "id", "bytes", "sha256"})
     public record FormatSlot(
             Format format,
             FormatState state,
@@ -107,8 +104,8 @@ public final class StudentMapModels {
             @Schema(nullable = true) String sha256,
             @Schema(nullable = true) @JsonInclude(JsonInclude.Include.NON_NULL) Integer width,
             @Schema(nullable = true) @JsonInclude(JsonInclude.Include.NON_NULL) Integer height,
-            @Schema(nullable = true) @JsonInclude(JsonInclude.Include.NON_NULL) List<Double> viewBox
-    ) {
+            @Schema(nullable = true) @JsonInclude(JsonInclude.Include.NON_NULL)
+                    List<Double> viewBox) {
         public FormatSlot {
             Objects.requireNonNull(format, "format");
             Objects.requireNonNull(state, "state");
@@ -122,14 +119,17 @@ public final class StudentMapModels {
             }
             if (state == FormatState.ready) {
                 if (id == null || sha256 == null || bytes <= 0) {
-                    throw new IllegalArgumentException("ready format requires id, sha256 and positive bytes");
+                    throw new IllegalArgumentException(
+                            "ready format requires id, sha256 and positive bytes");
                 }
                 requirePositiveDecimal(id, "id");
                 if (!sha256.matches("[0-9a-f]{64}")) {
-                    throw new IllegalArgumentException("ready format requires a lowercase SHA-256 value");
+                    throw new IllegalArgumentException(
+                            "ready format requires a lowercase SHA-256 value");
                 }
             } else if (id != null || sha256 != null || bytes != 0) {
-                throw new IllegalArgumentException("non-ready format requires null id, null sha256 and zero bytes");
+                throw new IllegalArgumentException(
+                        "non-ready format requires null id, null sha256 and zero bytes");
             }
             if (width != null && width <= 0 || height != null && height <= 0) {
                 throw new IllegalArgumentException("map dimensions must be positive");
@@ -143,9 +143,10 @@ public final class StudentMapModels {
         }
     }
 
-    @Schema(name = "StudentMapPlanResponse", requiredProperties = {"plan"})
-    public record PlanResponse(@Schema(nullable = true) Plan plan) {
-    }
+    @Schema(
+            name = "StudentMapPlanResponse",
+            requiredProperties = {"plan"})
+    public record PlanResponse(@Schema(nullable = true) Plan plan) {}
 
     private static void requirePositiveDecimal(String value, String name) {
         Objects.requireNonNull(value, name);
@@ -154,4 +155,3 @@ public final class StudentMapModels {
         }
     }
 }
-

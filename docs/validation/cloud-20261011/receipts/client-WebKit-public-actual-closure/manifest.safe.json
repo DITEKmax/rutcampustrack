@@ -1,0 +1,36 @@
+{
+  "schema": "RCT_WEBKIT_ACTUAL_CLOSURE_MANIFEST_V1",
+  "files": [
+    {
+      "path": "HANDOFF.md",
+      "bytes": 1382,
+      "sha256": "1772e1308a13eb9ca75eafc6944801a826471cbad1edce39a71ad4655a087cae"
+    },
+    {
+      "path": "REPORT.safe.json",
+      "bytes": 3151,
+      "sha256": "4c4eeed8e161c46cc3e21eb767c54d8be43b93852d26927daa713a04771923b6"
+    },
+    {
+      "path": "launch.safe.json",
+      "bytes": 976,
+      "sha256": "712e896f3d92d96cea6fbdde65307eb5dd9b8e138b34ecb09ae5cdd41cf218ca"
+    },
+    {
+      "path": "probe.safe.json",
+      "bytes": 1100,
+      "sha256": "5a9064c3005c2215005d696752a53861bac8e6425fd05fcd6ed7fa5c13e07e53"
+    },
+    {
+      "path": "process.safe.json",
+      "bytes": 147,
+      "sha256": "a77f391a655b5ae61e5dfafacc931694424ecdd3792bc80281dc7587a1c3e284"
+    },
+    {
+      "path": "terminal.safe.json",
+      "bytes": 1075,
+      "sha256": "c89b265fdd38031da80480d28ab2c21f8c184ba22919a02bd7cf4cc293c98c4e"
+    }
+  ],
+  "raw_private_or_binary_inputs_included": false
+}

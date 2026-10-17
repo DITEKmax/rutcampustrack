@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "checkoutSha": "7c5b34ef1f9df6b692de9433bd6cfd362704ccc7",
+    "prHeadSha": "ced755a0f6e6817ef6f477aeb4f6a964ecfd1810",
+    "service": "academic-service",
+    "task": "test",
+    "job": "java-unit-test",
+    "runId": "38212208080",
+    "runAttempt": "1",
+    "event": "pull_request",
+    "testStepOutcome": "failure"
+  },
+  "collection": "NO_RESULTS",
+  "acceptance": "NOT_ASSESSED",
+  "xml": [],
+  "cases": [],
+  "summary": {
+    "PASSED": 0,
+    "FAILED": 0,
+    "ERROR": 0,
+    "SKIPPED": 0,
+    "NOT_EXECUTED": 0
+  }
+}

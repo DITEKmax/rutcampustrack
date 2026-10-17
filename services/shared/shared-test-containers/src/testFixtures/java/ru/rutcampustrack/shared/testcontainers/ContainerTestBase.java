@@ -12,35 +12,33 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * Базовый класс для integration-тестов сервисов (NEW-158, P2-8/2).
  *
- * <p>Поднимает четыре контейнера с {@code reuse=true} — повторный прогон
- * в пределах одной сессии разработчика не перезапускает инфру. Для включения
- * reuse нужен файл {@code ~/.testcontainers.properties} со строкой
- * {@code testcontainers.reuse.enable=true}.
+ * <p>Поднимает четыре контейнера с {@code reuse=true} — повторный прогон в пределах одной сессии
+ * разработчика не перезапускает инфру. Для включения reuse нужен файл {@code
+ * ~/.testcontainers.properties} со строкой {@code testcontainers.reuse.enable=true}.
  *
- * <p>Контейнеры стартуют при первом обращении (static-инициализация) —
- * тест не получит контекст без живой инфры.
+ * <p>Контейнеры стартуют при первом обращении (static-инициализация) — тест не получит контекст без
+ * живой инфры.
  *
  * <p>Пробрасывает в Spring-контекст:
+ *
  * <ul>
- *   <li>{@code spring.datasource.url/username/password} — PostgreSQL.</li>
- *   <li>{@code spring.data.mongodb.uri} — MongoDB.</li>
- *   <li>{@code spring.data.redis.host/port} — Redis.</li>
- *   <li>{@code spring.rabbitmq.host/port/username/password} — RabbitMQ.</li>
+ *   <li>{@code spring.datasource.url/username/password} — PostgreSQL.
+ *   <li>{@code spring.data.mongodb.uri} — MongoDB.
+ *   <li>{@code spring.data.redis.host/port} — Redis.
+ *   <li>{@code spring.rabbitmq.host/port/username/password} — RabbitMQ.
  * </ul>
  *
- * <p>Сервис-потребитель подключает модуль через
- * {@code testImplementation(testFixtures(project(":services:shared:shared-test-containers")))}
- * и расширяет этот класс.
+ * <p>Сервис-потребитель подключает модуль через {@code
+ * testImplementation(testFixtures(project(":services:shared:shared-test-containers")))} и расширяет
+ * этот класс.
  */
 @Testcontainers
 public abstract class ContainerTestBase {
 
     private static final DockerImageName POSTGRES_IMAGE =
             DockerImageName.parse("postgres:16-alpine");
-    private static final DockerImageName MONGO_IMAGE =
-            DockerImageName.parse("mongo:7");
-    private static final DockerImageName REDIS_IMAGE =
-            DockerImageName.parse("redis:7-alpine");
+    private static final DockerImageName MONGO_IMAGE = DockerImageName.parse("mongo:7");
+    private static final DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:7-alpine");
     private static final DockerImageName RABBITMQ_IMAGE =
             DockerImageName.parse("rabbitmq:3.13-management-alpine");
 
@@ -52,17 +50,13 @@ public abstract class ContainerTestBase {
                     .withReuse(true);
 
     protected static final MongoDBContainer MONGO =
-            new MongoDBContainer(MONGO_IMAGE)
-                    .withReuse(true);
+            new MongoDBContainer(MONGO_IMAGE).withReuse(true);
 
     protected static final GenericContainer<?> REDIS =
-            new GenericContainer<>(REDIS_IMAGE)
-                    .withExposedPorts(6379)
-                    .withReuse(true);
+            new GenericContainer<>(REDIS_IMAGE).withExposedPorts(6379).withReuse(true);
 
     protected static final RabbitMQContainer RABBITMQ =
-            new RabbitMQContainer(RABBITMQ_IMAGE)
-                    .withReuse(true);
+            new RabbitMQContainer(RABBITMQ_IMAGE).withReuse(true);
 
     static {
         POSTGRES.start();

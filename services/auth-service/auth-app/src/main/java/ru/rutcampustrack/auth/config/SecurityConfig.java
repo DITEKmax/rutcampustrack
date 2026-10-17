@@ -24,10 +24,11 @@ public class SecurityConfig {
     private final SessionStatePort sessionStatePort;
     private final CredentialSessionTransactionPort credentialSessionTransactionPort;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                          InternalIssuerSecretFilter internalIssuerSecretFilter,
-                          SessionStatePort sessionStatePort,
-                          CredentialSessionTransactionPort credentialSessionTransactionPort) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            InternalIssuerSecretFilter internalIssuerSecretFilter,
+            SessionStatePort sessionStatePort,
+            CredentialSessionTransactionPort credentialSessionTransactionPort) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.internalIssuerSecretFilter = internalIssuerSecretFilter;
         this.sessionStatePort = sessionStatePort;
@@ -36,30 +37,37 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(csrf -> csrf.disable())
+        return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST,"/auth/qr/challenges","/auth/qr/status","/auth/qr/exchange").permitAll()
-                        .requestMatchers(
-                                "/auth/login",
-                                "/auth/refresh",
-                                "/auth/logout",
-                                "/auth/tma",
-                                "/auth/public-key",
-                                "/auth/otp/**",
-                                "/auth/password-reset/**",
-                                "/internal/**",
-                                "/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/actuator/health",
-                                "/actuator/prometheus"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(internalIssuerSecretFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests(
+                        auth ->
+                                auth.requestMatchers(
+                                                HttpMethod.POST,
+                                                "/auth/qr/challenges",
+                                                "/auth/qr/status",
+                                                "/auth/qr/exchange")
+                                        .permitAll()
+                                        .requestMatchers(
+                                                "/auth/login",
+                                                "/auth/refresh",
+                                                "/auth/logout",
+                                                "/auth/tma",
+                                                "/auth/public-key",
+                                                "/auth/otp/**",
+                                                "/auth/password-reset/**",
+                                                "/internal/**",
+                                                "/api-docs/**",
+                                                "/swagger-ui/**",
+                                                "/swagger-ui.html",
+                                                "/actuator/health",
+                                                "/actuator/prometheus")
+                                        .permitAll()
+                                        .anyRequest()
+                                        .authenticated())
+                .addFilterBefore(
+                        internalIssuerSecretFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(
+                        jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

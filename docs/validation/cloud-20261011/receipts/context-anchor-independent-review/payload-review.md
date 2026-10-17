@@ -1,0 +1,23 @@
+APPROVE_SOURCE — browser_webkit_payload_context_correction
+
+Независимая узкая проверка исправления execution-context root/tmp ownership. Blocking findings:0. Это source approval для последующего отдельного Root download/public-headers grant, не фактический download/header/ABI/browser PASS. Author host_runtime_prepare; reviewer selected gpt-6.1-sol/high, actual UNKNOWN. Runtime-модули/author controls reviewer не импортировал и не выполнял; source fixes отсутствуют.
+
+Input manifest SHA256 58986163c28a691e7fd5aeb982feb9bb98f777ad3f99b0e4310cf637d8960334; safeZIP SHA256 2cf71b98de3e5fb0d06cf7454135b63c9ceba52b570285aaf9820fe90360cae7,31950B/23members. Все22file hashes/bytes/modes +manifest ZIPmember/CRC/paths проверены независимо без extraction. download-headers.py SHA256 911e8e423a0d1dcc143c0f050f17439d181cfab3366d9c3e4fe5ec2427cfd38f.
+
+Критичные source fragments:
+
+- download-headers.py23–25,67,151: actor UID/GID1000 exact, main gate первый до argument/private grant чтения, class gate до namespace metadata. Нет getuid0 permission, anyUID/default-view fallback/chown/setuid или privileged action.
+- namespace-anchors.safe.json: только / и /tmp uid/gid65534→0; device/inode/mode и path order исходных anchors exact. / остаётся dev27/inode1310721/mode0755; /tmp dev33/inode1/mode01777; новый child own0700.
+- download-headers.py73–95: lstat directory+exact identity, O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC parent-relative open, fstat identity, fresh check before relative mkdir и после; сравнение UID/GID/dev/inode/mode не удалено. Namespace full AST совпадает с1204 кроме первого actor call; non-directory/symlink/FD-swap fail-before-write прежние.
+- download-headers.py44–63,153–174: headers-only True, extraction/browser False; exact82a+4ee+b78/11/6284816B/16MiB/192MiB/freshUTC≤600/window gates сохранены. NEW grant содержит actor1000/1000, NEW driver manifest, actual self membership/helpers и exact context-review path/hash. Original1204+all14files активно сверяются до Namespace/curl. Старый private grant parent/base manifest не подходит новому OWN и не содержит новых required fields.
+- download-headers.py175–249 unchanged: fresh floors/shared reserve, exact public tool/package table, declared noncredential proxy, serial exact11 HTTPS/no redirects, b78 birth/reap/deadline guard, payload hash/size/mode/nlink, header-only parsing, scope/collision/link checks и safe finite receipts сохранены.
+
+Независимая проверка реального delta.patch против actual original/new files прошла. sha/regular/resources/resource_stop/network_env exact AST. public-headers.py, approved-packages.safe.json и public-tool-identity.safe.json byte exact original1204. No extractor/maintainer scripts/new URL/runtime library code добавлен. Header controls author46 +context22 +actor5 =73 в sealed receipts прочитаны, source cases оценены; reviewer их не reexecuted. Они используют mocks, actual runtime не следует из их native0.
+
+Native metadata distinction: source package native-context-metadata.safe.json содержит AUTHOR approved-context lstat+O_DIRECTORY|O_NOFOLLOW fstat equality (actor1000, root/tmp0). dual-context.safe.json согласован с этим и oldanchors: default-view65534 отличается только владельцем, dev/inode/mode unchanged. Reviewer независимо проверил consistency этих originals, но approved-context native call не повторял. Earlier actual-attempt01 native1/pre-namespace/curl0/allocated0 receipt сохранён; PID/birth UNKNOWN до launch receipt честно retained.
+
+Negative source counterexamples: masked65534 против NEW expected0 не равен; чужой UID/GID, иной dev/inode/mode, non-dir/symlink и FD mismatch остаются fail-closed; wrong actor первым statement main/class отвергается до grant/mkdir. Независимые literal identity comparisons покрывают10 anchor-field mutations. Проверки — SOURCE logic, не реальное создание alias/directory/child.
+
+Preserved independently:1204/14files, actualattempt01 bcdce661/3files, original restart3b02/15files, ancestorv2 9ce5/16files и independent ea745/7entries. Private grants/ENV/proxy/key/data/raw body не читались и не хешировались.
+
+Effective command только NEW download-headers.py из launch-schema.safe.json, NEW correction seal589861 и THIS independent review; old1204 command/grant не использовать. Root отдельно выдаёт fresh600 headers-only grant с новой отсутствующей namespace, текущими ресурсами и released lease. Сейчас native download/extraction/ABI/GLES/x264/browser NOT_RUN; sameUID/sole-writer/pathname child qualification сохранена. Этот review не меняет scope extraction/grant и не отменяет later native loader, launcher review или browser grants.

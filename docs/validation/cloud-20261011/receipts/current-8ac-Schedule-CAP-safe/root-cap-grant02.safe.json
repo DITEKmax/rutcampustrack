@@ -1,0 +1,10 @@
+{
+  "authorized_by_root": true,
+  "scope": "CURRENT8AC_CAP_ONE_CLOSED_SAFE_ARTIFACT_READER",
+  "issued": "2026-10-13T19:36:21.352702+00:00",
+  "stop": "2026-10-13T19:38:21.352702+00:00",
+  "namespace": "/workspace/scratch/rct-validation/ci_8ac_closed_read",
+  "artifact": 11841044522,
+  "official_sdk_host_bound": true,
+  "limits": "unchanged45/5/5/30;32MiBcompressed+decompressed/512MiBRSS/256MiBgrowth/4GiBfloor/15GiBshared1reserve"
+}

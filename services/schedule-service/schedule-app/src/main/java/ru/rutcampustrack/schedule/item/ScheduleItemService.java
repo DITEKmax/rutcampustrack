@@ -1,14 +1,16 @@
 package ru.rutcampustrack.schedule.item;
 
+import java.time.Clock;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
-import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
-import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemLifecyclePreviewResponse;
+import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemResponse;
+import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
@@ -20,12 +22,9 @@ import ru.rutcampustrack.schedule.lesson.LessonGenerationService;
 import ru.rutcampustrack.schedule.recurring.RecurringScheduleItemCoordinator;
 import ru.rutcampustrack.schedule.security.RequestContext;
 
-import java.time.Clock;
-import java.util.UUID;
-
 /**
- * Template access and lifecycle gates. Recurring creation delegates to a
- * non-transactional authority coordinator and its separate local writer.
+ * Template access and lifecycle gates. Recurring creation delegates to a non-transactional
+ * authority coordinator and its separate local writer.
  */
 @Service
 public class ScheduleItemService {
@@ -33,19 +32,23 @@ public class ScheduleItemService {
     private final ScheduleItemRepository scheduleItemRepository;
     private final AcademicGrpcClient academicGrpcClient;
     private final RequestContext requestContext;
+
     @SuppressWarnings("unused")
     private final LessonGenerationService lessonGenerationService;
+
     @SuppressWarnings("unused")
     private final Clock clock;
+
     private final RecurringScheduleItemCoordinator recurringCoordinator;
 
     @Autowired
-    public ScheduleItemService(ScheduleItemRepository scheduleItemRepository,
-                               AcademicGrpcClient academicGrpcClient,
-                               RequestContext requestContext,
-                               LessonGenerationService lessonGenerationService,
-                               Clock clock,
-                               RecurringScheduleItemCoordinator recurringCoordinator) {
+    public ScheduleItemService(
+            ScheduleItemRepository scheduleItemRepository,
+            AcademicGrpcClient academicGrpcClient,
+            RequestContext requestContext,
+            LessonGenerationService lessonGenerationService,
+            Clock clock,
+            RecurringScheduleItemCoordinator recurringCoordinator) {
         this.scheduleItemRepository = scheduleItemRepository;
         this.academicGrpcClient = academicGrpcClient;
         this.requestContext = requestContext;
@@ -55,13 +58,19 @@ public class ScheduleItemService {
     }
 
     /** Compatibility constructor for narrow pre-recurring security fixtures. */
-    public ScheduleItemService(ScheduleItemRepository scheduleItemRepository,
-                               AcademicGrpcClient academicGrpcClient,
-                               RequestContext requestContext,
-                               LessonGenerationService lessonGenerationService,
-                               Clock clock) {
-        this(scheduleItemRepository, academicGrpcClient, requestContext,
-                lessonGenerationService, clock, null);
+    public ScheduleItemService(
+            ScheduleItemRepository scheduleItemRepository,
+            AcademicGrpcClient academicGrpcClient,
+            RequestContext requestContext,
+            LessonGenerationService lessonGenerationService,
+            Clock clock) {
+        this(
+                scheduleItemRepository,
+                academicGrpcClient,
+                requestContext,
+                lessonGenerationService,
+                clock,
+                null);
     }
 
     private void requireHeadmanForGroup(Long targetGroupId) {
@@ -101,8 +110,10 @@ public class ScheduleItemService {
 
     @Transactional(readOnly = true)
     public ScheduleItem getScheduleItem(Long id) {
-        ScheduleItem item = scheduleItemRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", id));
+        ScheduleItem item =
+                scheduleItemRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", id));
         requireGroupReadAccess(item.getGroupId());
         return item;
     }
@@ -110,37 +121,48 @@ public class ScheduleItemService {
     @Transactional(readOnly = true)
     public Page<ScheduleItem> listScheduleItems(Long groupId, Long semesterId, Pageable pageable) {
         requireGroupReadAccess(groupId);
-        return scheduleItemRepository.findByGroupIdAndSemesterIdAndIsActiveTrue(groupId, semesterId, pageable);
+        return scheduleItemRepository.findByGroupIdAndSemesterIdAndIsActiveTrue(
+                groupId, semesterId, pageable);
     }
 
-    public ScheduleItemResponse updateScheduleItem(Long id, UpdateScheduleItemRequest request, UUID key) {
+    public ScheduleItemResponse updateScheduleItem(
+            Long id, UpdateScheduleItemRequest request, UUID key) {
         return recurringCoordinator.update(id, request, key);
     }
 
-    public void deleteScheduleItem(Long id, UUID key, String revision) { recurringCoordinator.delete(id, key, revision); }
+    public void deleteScheduleItem(Long id, UUID key, String revision) {
+        recurringCoordinator.delete(id, key, revision);
+    }
 
-    public ScheduleItemLifecyclePreviewResponse previewScheduleItem(Long id, UpdateScheduleItemRequest request, boolean delete) {
+    public ScheduleItemLifecyclePreviewResponse previewScheduleItem(
+            Long id, UpdateScheduleItemRequest request, boolean delete) {
         return recurringCoordinator.preview(id, request, delete);
     }
 
-    public ScheduleItemResponse createReplayResponse(UUID key) { return recurringCoordinator.createReplayResponse(key); }
+    public ScheduleItemResponse createReplayResponse(UUID key) {
+        return recurringCoordinator.createReplayResponse(key);
+    }
 
     /**
      * Legacy direct entrypoint requires the canonical replay and preview contract. Resource and
-     * authorization checks happen first so a caller cannot use the gate to
-     * probe a foreign/nonexistent template.
+     * authorization checks happen first so a caller cannot use the gate to probe a
+     * foreign/nonexistent template.
      */
     public ScheduleItem updateScheduleItem(Long id, UpdateScheduleItemRequest request) {
-        ScheduleItem existing = scheduleItemRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", id));
+        ScheduleItem existing =
+                scheduleItemRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", id));
         requireHeadmanForGroup(existing.getGroupId());
         throw new RecurringLifecycleNotReadyException("updateScheduleItem");
     }
 
     /** See {@link #updateScheduleItem(Long, UpdateScheduleItemRequest)}. */
     public void deleteScheduleItem(Long id) {
-        ScheduleItem existing = scheduleItemRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", id));
+        ScheduleItem existing =
+                scheduleItemRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", id));
         requireHeadmanForGroup(existing.getGroupId());
         throw new RecurringLifecycleNotReadyException("deleteScheduleItem");
     }

@@ -3253,26 +3253,60 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
       requireValue(value > 0, 'Owned restart deadline exhausted');
       return value;
     };
+    const recordRestartFailure = (current: Row) => {
+      if (
+        !(current.running && current.health === 'healthy') &&
+        diagnostic.firstRestartFailure === null &&
+        (service === 'attendance-service' || service === 'schedule-service')
+      ) {
+        diagnostic.firstRestartFailure = {
+          phase: cleaning ? 'CLEANUP' : 'MAIN',
+          service: service === 'attendance-service' ? 'ATTENDANCE' : 'SCHEDULE',
+          cause:
+            current.running === false
+              ? 'NOT_RUNNING'
+              : current.running === true && current.health === 'starting'
+                ? 'HEALTH_STARTING'
+                : current.running === true && current.health === 'unhealthy'
+                  ? 'HEALTH_UNHEALTHY'
+                  : 'HEALTH_UNKNOWN',
+        };
+      }
+    };
     identity(service, Math.min(5000, remaining()));
-    docker(
-      [
-        ...compose,
-        'up',
-        '-d',
-        '--no-build',
-        '--no-recreate',
-        '--no-deps',
-        '--pull',
-        'never',
-        '--wait',
-        '--wait-timeout',
-        '40',
-        service,
-      ],
-      undefined,
-      {},
-      remaining(),
-    );
+    try {
+      docker(
+        [
+          ...compose,
+          'up',
+          '-d',
+          '--no-build',
+          '--no-recreate',
+          '--no-deps',
+          '--pull',
+          'never',
+          '--wait',
+          '--wait-timeout',
+          '40',
+          service,
+        ],
+        undefined,
+        {},
+        remaining(),
+      );
+    } catch (error) {
+      // A failed Compose wait must not bypass the existing finite health witness.
+      // Keep both the original command failure and its native classifier intact.
+      const originalNativeFailure = nativeFailure;
+      try {
+        recordRestartFailure(identity(service, Math.min(5000, remaining())));
+      } catch {
+        // No readable snapshot within the original deadline: leave the witness unknown.
+      } finally {
+        nativeFailure = originalNativeFailure;
+      }
+      throw error;
+    }
     let current = identity(service, Math.min(5000, remaining()));
     while (current.running && current.health === 'starting') {
       const left = Math.floor(restartEnd - performance.now());
@@ -3282,24 +3316,7 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
       if (afterDelay <= 0) break;
       current = identity(service, Math.min(5000, afterDelay));
     }
-    if (
-      !(current.running && current.health === 'healthy') &&
-      diagnostic.firstRestartFailure === null &&
-      (service === 'attendance-service' || service === 'schedule-service')
-    ) {
-      diagnostic.firstRestartFailure = {
-        phase: cleaning ? 'CLEANUP' : 'MAIN',
-        service: service === 'attendance-service' ? 'ATTENDANCE' : 'SCHEDULE',
-        cause:
-          current.running === false
-            ? 'NOT_RUNNING'
-            : current.running === true && current.health === 'starting'
-              ? 'HEALTH_STARTING'
-              : current.running === true && current.health === 'unhealthy'
-                ? 'HEALTH_UNHEALTHY'
-                : 'HEALTH_UNKNOWN',
-      };
-    }
+    recordRestartFailure(current);
     requireValue(
       current.running && current.health === 'healthy',
       'Same owned service must recover',
@@ -4054,9 +4071,13 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       {},
       5000,
     );
+    requireValue(
+      identity('attendance-service').running === true,
+      'Same owned Attendance must run during the controlled dependency outage',
+    );
     await captureDelayedRetry();
-    // Retain the original same-container healthy restart check and all cleanup bookkeeping.
-    await restart('attendance-service');
+    // Aggregate health includes the intentionally unavailable Schedule gRPC channel.
+    // Keep that outage through final DLQ; require full health after Schedule returns.
     await expect
       .poll(
         async () => {
@@ -4095,6 +4116,8 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       .toBe(true);
     await stranded();
     await restart('schedule-service');
+    // Preserve the original same-container full-health barrier and stopped bookkeeping.
+    await restart('attendance-service');
     diagnostic.phase = 'PENDING_ARCHIVE';
     budget(10000, { archive: true }, true);
     for (const service of ['schedule-service', 'attendance-service']) {

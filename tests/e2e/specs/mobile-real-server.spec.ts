@@ -5545,6 +5545,25 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
           .selectOption('docx');
         return sheet;
       };
+      const openSchedule = async () => {
+        await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+        await expect(page.locator('.headman-more')).toBeVisible();
+        const [schedule] = await Promise.all([
+          page.waitForResponse(
+            (r) =>
+              new URL(r.url()).pathname === '/api/schedule/items' && r.request().method() === 'GET',
+          ),
+          page.getByRole('button', { name: 'Конструктор расписания', exact: true }).click(),
+        ]);
+        expect(schedule.status()).toBe(200);
+        const screen = page.locator('.headman-schedule');
+        await expect(
+          screen.getByRole('heading', { name: 'Конструктор расписания', exact: true }),
+        ).toBeVisible();
+        await expect(screen).toHaveAttribute('data-constructor-view', 'list');
+        await expect(screen).toHaveAttribute('aria-busy', 'false');
+        await expect(page.locator('.headman-journal')).toHaveCount(0);
+      };
       try {
         const sheet = await open();
         const accepted = page.waitForResponse(
@@ -5575,11 +5594,7 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
           .toBe(true);
         await sheet.getByRole('button', { name: 'Закрыть настройки', exact: true }).click();
         await expect(page.locator('.headman-journal')).toHaveAttribute('aria-busy', 'false');
-        const schedule = page.waitForResponse(
-          (r) => new URL(r.url()).pathname.includes('/schedule') && r.request().method() === 'GET',
-        );
-        await page.getByRole('button', { name: 'Расписание', exact: true }).click();
-        expect((await schedule).status()).toBe(200);
+        await openSchedule();
         holdFirstHandoff = false;
         releaseFirstHandoff();
         const restored = page.waitForResponse(
@@ -5613,7 +5628,7 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
         await expect.poll(() => droppedJobId.length > 0).toBe(true);
         await expect(retrySheet.getByRole('alert')).toBeVisible();
         await retrySheet.getByRole('button', { name: 'Закрыть настройки', exact: true }).click();
-        await page.getByRole('button', { name: 'Расписание', exact: true }).click();
+        await openSchedule();
         await page.context().setOffline(true);
         await page.context().setOffline(false);
         const replay = page.waitForResponse(

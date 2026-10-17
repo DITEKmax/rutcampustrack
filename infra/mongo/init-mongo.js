@@ -40,10 +40,10 @@ db.createUser({
 // The same secret file is supplied as env_file to the pinned scratch exporter,
 // which supports MONGODB_PASSWORD but has no password-file flag or shell.
 // A new monitor credential is URL-safe to avoid URI/env-file interpretation.
-const monitorLines = require('fs')
-  .readFileSync('/run/secrets/mongo-monitor-env', 'utf8')
-  .split(/\r?\n/)
-  .filter((line) => line.startsWith('MONGODB_PASSWORD='))
+// Keep statements complete: Bitnami feeds this script to mongosh on stdin.
+const monitorEnv = require('fs').readFileSync('/run/secrets/mongo-monitor-env', 'utf8')
+const monitorRows = monitorEnv.split(/\r?\n/)
+const monitorLines = monitorRows.filter((line) => line.startsWith('MONGODB_PASSWORD='))
 if (monitorLines.length !== 1) {
   throw new Error('Monitoring secret file must define MONGODB_PASSWORD exactly once')
 }

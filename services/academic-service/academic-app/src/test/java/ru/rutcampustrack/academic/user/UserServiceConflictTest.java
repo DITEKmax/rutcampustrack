@@ -52,6 +52,10 @@ class UserServiceConflictTest {
     @Mock private SemesterRepository semesterRepository;
     @Mock private GroupHistoryCoverageRepository coverageRepository;
 
+    @org.mockito.Spy
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder =
+            new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+
     @InjectMocks private UserService service;
 
     @Mock private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
@@ -144,6 +148,19 @@ class UserServiceConflictTest {
 
         service.createUser(req);
 
-        verify(userRepository).save(any());
+        org.mockito.ArgumentCaptor<ru.rutcampustrack.academic.entity.User> saved =
+                org.mockito.ArgumentCaptor.forClass(ru.rutcampustrack.academic.entity.User.class);
+        verify(userRepository).save(saved.capture());
+        var user = saved.getValue();
+        assertThat(user.isPasswordChanged()).isFalse();
+        assertThat(user.getInitialPassword() != null && user.getInitialPassword().length() == 12)
+                .as("administratively visible initial credential is retained")
+                .isTrue();
+        assertThat(passwordEncoder.matches(user.getInitialPassword(), user.getPasswordHash()))
+                .as("persisted hash verifies the issued credential")
+                .isTrue();
+        assertThat(user.getPasswordHash().startsWith("$2a$10$"))
+                .as("Auth-compatible BCrypt cost and version")
+                .isTrue();
     }
 }

@@ -467,8 +467,15 @@ public class JwtService {
         if (publicKey == null) {
             throw new IllegalStateException("JWT public key is not initialized");
         }
-        return Jwts.parser()
-                .verifyWith(publicKey)
+        var signatures = Jwts.parser().verifyWith(publicKey).sig();
+        // JJWT 0.12.6 rebuilds its nonempty registry after each mutation; retain RS256 throughout.
+        for (var algorithm : Jwts.SIG.get().values()) {
+            if (!Jwts.SIG.RS256.getId().equals(algorithm.getId())) {
+                signatures.remove(algorithm);
+            }
+        }
+        return signatures
+                .and()
                 .requireIssuer(JWT_ISSUER)
                 .requireAudience(audience)
                 .require(TOKEN_USE_CLAIM, purpose)

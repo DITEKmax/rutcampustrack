@@ -22,7 +22,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.lang.Nullable;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,7 +73,7 @@ public class UserService {
     private static final int PASSWORD_LENGTH = 12;
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
     private final SecureRandom secureRandom = new SecureRandom();
 
     private final UserRepository userRepository;
@@ -112,7 +111,8 @@ public class UserService {
             GroupHistoryCoverageRepository coverageRepository,
             UserRoleGrantWriter roleGrantWriter,
             UserRoleGrantReader roleGrantReader,
-            GroupHeadmanAssignmentService headmanAssignmentService) {
+            GroupHeadmanAssignmentService headmanAssignmentService,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.headmanAssistantRepository = headmanAssistantRepository;
         this.studentGroupHistoryRepository = studentGroupHistoryRepository;
@@ -126,6 +126,7 @@ public class UserService {
         this.roleGrantWriter = roleGrantWriter;
         this.roleGrantReader = roleGrantReader;
         this.headmanAssignmentService = headmanAssignmentService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /** Compatibility constructor for source-era unit tests that do not mutate membership. */
@@ -136,7 +137,8 @@ public class UserService {
             RequestContext requestContext,
             UserAssembler userAssembler,
             @Nullable CacheManager cacheManager,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            PasswordEncoder passwordEncoder) {
         this(
                 userRepository,
                 headmanAssistantRepository,
@@ -150,7 +152,8 @@ public class UserService {
                 null,
                 null,
                 null,
-                null);
+                null,
+                passwordEncoder);
     }
 
     @Transactional
@@ -401,7 +404,8 @@ public class UserService {
                 if (status == RoleGrantStatus.ACTIVE) {
                     if (grantGroupId == null) {
                         throw new BadRequestException(
-                                "Активная STUDENT роль требует группу; используй перевод с историей");
+                                "Активная STUDENT роль требует группу; используй перевод с"
+                                        + " историей");
                     }
                     Long telegramId =
                             request.telegramId() != null
@@ -1247,7 +1251,8 @@ public class UserService {
                         .orElseThrow(
                                 () ->
                                         HistoricalMembershipException.precondition(
-                                                "Student enrollment requires managed group history coverage"));
+                                                "Student enrollment requires managed group history"
+                                                        + " coverage"));
         requireCoveredGroup(group, semester.getDateFrom());
         if (coverage.getCoverageFrom().isAfter(semester.getDateFrom())) {
             throw HistoricalMembershipException.precondition(

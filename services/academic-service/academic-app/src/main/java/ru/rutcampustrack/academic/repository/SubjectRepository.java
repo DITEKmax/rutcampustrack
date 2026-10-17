@@ -35,7 +35,7 @@ public interface SubjectRepository extends JpaRepository<Subject, Long> {
                 from Assignment assignment
                 where assignment.teacherId = :teacherId
                   and assignment.semesterId = :semesterId
-                  and assignment.lifecycleState = 'ACTIVE'
+                  and assignment.lifecycleState = ru.rutcampustrack.academic.assignment.AssignmentLifecycle.ACTIVE
                   and not exists (
                       select operation.operationId
                       from AssignmentReplacementOperation operation

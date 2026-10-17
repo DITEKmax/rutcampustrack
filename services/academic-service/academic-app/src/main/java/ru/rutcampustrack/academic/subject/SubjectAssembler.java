@@ -5,9 +5,13 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
+import ru.rutcampustrack.academic.assignment.AssignmentLifecycle;
 import ru.rutcampustrack.academic.contract.dto.subject.AssignmentSummaryResponse;
 import ru.rutcampustrack.academic.contract.dto.subject.SubjectResponse;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
@@ -39,18 +43,42 @@ public class SubjectAssembler
                         .withSelfRel());
     }
 
+    public Page<SubjectResponse> toResponsePage(Page<Subject> page) {
+        if (page.isEmpty()) return page.map(subject -> toResponse(subject, List.of(), List.of()));
+        List<Long> ids = page.stream().map(Subject::getId).toList();
+        Map<Long, List<SubjectLessonType>> types =
+                lessonTypeRepository.findBySubjectIdIn(ids).stream()
+                        .collect(Collectors.groupingBy(SubjectLessonType::getSubjectId));
+        Map<Long, List<Assignment>> assignments =
+                assignmentRepository.findPublishedActiveBySubjectIdIn(ids).stream()
+                        .collect(Collectors.groupingBy(Assignment::getSubjectId));
+        return page.map(
+                subject ->
+                        toResponse(
+                                subject,
+                                types.getOrDefault(subject.getId(), List.of()),
+                                assignments.getOrDefault(subject.getId(), List.of())));
+    }
+
     public SubjectResponse toResponse(Subject subject) {
+        return toResponse(
+                subject,
+                lessonTypeRepository.findBySubjectId(subject.getId()),
+                assignmentRepository.findPublishedActiveBySubjectIdAndGroupId(
+                        subject.getId(), subject.getGroupId()));
+    }
+
+    private SubjectResponse toResponse(
+            Subject subject, List<SubjectLessonType> lessonTypes, List<Assignment> candidates) {
         List<SubjectType> types =
-                lessonTypeRepository.findBySubjectId(subject.getId()).stream()
+                lessonTypes.stream()
                         .map(SubjectLessonType::getLessonType)
                         .sorted(Comparator.comparing(SubjectType::name))
                         .toList();
         List<Assignment> assignments =
-                assignmentRepository
-                        .findPublishedActiveBySubjectIdAndGroupId(
-                                subject.getId(), subject.getGroupId())
-                        .stream()
-                        .filter(a -> "ACTIVE".equals(a.getLifecycleState()))
+                candidates.stream()
+                        .filter(a -> a.getLifecycleState() == AssignmentLifecycle.ACTIVE)
+                        .filter(a -> subject.getGroupId().equals(a.getGroupId()))
                         .sorted(
                                 Comparator.comparing(Assignment::getSemesterId)
                                         .thenComparing(a -> a.getLessonType().name())

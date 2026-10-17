@@ -11,6 +11,8 @@ public interface SubjectLessonTypeRepository
 
     List<SubjectLessonType> findBySubjectId(Long subjectId);
 
+    List<SubjectLessonType> findBySubjectIdIn(List<Long> subjectIds);
+
     boolean existsBySubjectIdAndLessonType(Long subjectId, SubjectType lessonType);
 
     long countBySubjectId(Long subjectId);

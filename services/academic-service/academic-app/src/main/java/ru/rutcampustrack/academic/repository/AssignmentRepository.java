@@ -40,6 +40,22 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
     List<Assignment> findPublishedActiveBySubjectIdAndGroupId(
             @Param("subjectId") Long subjectId, @Param("groupId") Long groupId);
 
+    @Query(
+            value =
+                    """
+                    SELECT a.* FROM assignments a
+                     WHERE a.subject_id IN (:subjectIds)
+                       AND a.lifecycle_state = 'ACTIVE'
+                       AND NOT EXISTS (
+                            SELECT 1 FROM assignment_replacement_operations operation
+                             WHERE operation.target_assignment_id = a.id
+                               AND operation.operation_kind = 'ADOPT_UNASSIGNED'
+                               AND operation.state IN ('PREPARED', 'APPLIED')
+                       )
+                    """,
+            nativeQuery = true)
+    List<Assignment> findPublishedActiveBySubjectIdIn(@Param("subjectIds") List<Long> subjectIds);
+
     List<Assignment> findBySubjectIdAndLessonType(Long subjectId, SubjectType lessonType);
 
     List<Assignment> findBySemesterIdOrderByIdAsc(Long semesterId);

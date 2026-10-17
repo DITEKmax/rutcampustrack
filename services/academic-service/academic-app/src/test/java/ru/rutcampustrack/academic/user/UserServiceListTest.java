@@ -61,7 +61,10 @@ class UserServiceListTest {
                         requestContext,
                         userAssembler,
                         null,
-                        eventPublisher);
+                        eventPublisher,
+                        org.mockito.Mockito.mock(
+                                org.springframework.security.crypto.password.PasswordEncoder
+                                        .class));
         pageable = PageRequest.of(0, 20);
     }
 

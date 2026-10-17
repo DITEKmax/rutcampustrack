@@ -129,7 +129,7 @@ public class TeacherAssignmentReadAuthority {
             ru.rutcampustrack.academic.entity.Semester semester,
             SubjectType type,
             LocalDate date) {
-        return "ACTIVE".equals(assignment.getLifecycleState())
+        return assignment.getLifecycleState() == AssignmentLifecycle.ACTIVE
                 && Objects.equals(group, assignment.getGroupId())
                 && Objects.equals(subject, assignment.getSubjectId())
                 && Objects.equals(semester.getId(), assignment.getSemesterId())

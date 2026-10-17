@@ -407,3 +407,32 @@ For an EXCUSE ticket covering lessons of several subjects, keep the same ticket 
 Supersedes Q026 unresolved mixed-ticket deletion policy. Implement only through the reviewed subject-scoped durable deletion protocol with current authority, password and purpose-specific bot proof. Prove exact remaining coverage/history and replay/concurrency behavior with real data; Source readiness is not acceptance. No production deletion, deploy, main merge or Angular/new-web work.
 
 Canonical: docs/product/decisions/2026-10-15-subject-deletion-semester-and-mixed-excuse.md. TASK-CONTRACT previous SHA256 a9b56b2c5f1e18c418f41423d83fbf32c019f3f8b5208b293b5b9f96e60c0d81; current fa70b41b3bc6e152923e9901334119b157ed590b2f26eed4250a4e924d749c30.
+
+
+## D031 — 17.10.2026: новый этап A01–A04/M01–M05, явный GO
+
+Получено 2026-10-17 21:49 MSK (2026-10-17T18:49:58.701511+00:00). Активный полный контракт TASK-CONTRACT-20261017.md,57651bytes,SHA256614aef1b93ef103f1a9050a622ecf5a54881e80fb4a559044b4a1b8828ae052a byte-exactmatches original. StartingHEAD/remotePR2head753173688d633ca07991f4dd73bdcd2698f45d96; trackedWIPnone, existinguntracked preserved in startingcheckpoint attempts. Продолжить тотже workspace/назначеннуюветку/draftPR2; новый этап отдельно от прежнего WAITING_ENV. B013/14/15FROZEN и прежняя nativeownerприёмка сохранены. Требуются девять пакетов/условныеC01–03, включая actual18weekDOCX/broker/DLQ/boundedautoRetry/Grafana; alert-bot DEFERRED_LOCAL, Cloudtestreceiver required. Повтор старой общей кампании/production/main/newweb/Angular/reset/force запрещён. Ordinary checks/commits/push/designatedPRupdate заранее разрешены. Полный реестр328пунктов не нужен длястарта. Rootsole sharedDocs/integration/contracts; childrenSol6.1/high/forknone; actualUNKNOWN.
+
+
+## D032/D033/D034 — 17.10.2026: ответы нового этапа Q028–Q030
+
+Received UTC 2026-10-17T18:59:09.922619+00:00. D032/Q028 exact: «Староста — отчёт журнала». M04 reproduces actualHeadmanWeeklyDOCX 18weeks; currentJavaXMLZIP directHTTP isnotRabbitpath, originalcauseUNKNOWN; genuinebroker/DLQ separateactualconsumerpath required, do notinventWordbroker.
+
+D033/Q029 exact: «рассчитай сам исходя из продакшен практик и моей предметной области и моей задачи я не особо понимаю что это и мб у разного сть разные границы и надо отдельно простраивать выступи как инжинер проектировщик продумай и скажи что ты предлагаешь и исплементируй (но адекватное и исходя из требований быстродействия и постоянной работы)». Root isauthorised todesign+explain+implement appropriate per-operation SLO/slow/alert thresholds using currentnorms/actualmeasurements/continuousoperation; no needrepeatownerapproval ofthoseboundedengineeringchoices. Notauthority fornewbusinessrules/deploy.
+
+D034/Q030 exact: «кст хороший вопрос, я мб на claudflare подниму скрипт какой-то который раз в сколько то будет отправлять запрос чтобы проверить состояние. пока запиши в беклог что при дплое надо настроить и протестировать». Onlyoffhostwhole-machineprobe actualconfiguration+test explicitlydeferred todeploybacklog/DEFERRED_LOCAL; prepareboundedproposal/runbook/sourceconfig whereuseful, noCloudhostdeathPASS. Separatefuturealertbot DEFERRED_LOCAL unchanged; on-hostapp/dependencysignals/receiver/DLQ/report stillrequired. Supersedesactivecontractmissingexternalprobe-as-Cloudblocker ONLYthisspecificownertransferredcriterion. B013/14/15FROZEN unchanged.
+
+
+## T015 — 17.10.2026: delegated SLO/correlation/recovery engineering design
+
+2026-10-17T19:04:56.326977+00:00: D033 engineeringtargets: interactiveavailability99.9%/30d, read+loginp95≤2s/writep95≤3s; normal18weekDOCXp95≤30s toverify/refinewithactualmeasurements; dueasyncfinaleffect≤60sobjective99.5%/30d. Excludeexpectedvalidation/authz4xx/cancellation, countterminalonce notattempts; lowtraffic/missing/noData/terminalerrors distinguished. Promretention≥35d withsize+headroom, logs/traces14d bounded. These areproposedandimplementedengineeringobjectives, notobservedproductionSLA. Existingbusiness100%sampling/quiet22–08MSK respected accordingseverity. PublicGatewaymints canonicalUUID X-Request-Id beforestandardobservation; sharedoptionaltraceparent/request_id persistbeforeoutbox, nofaketraceparentfromlegacyUUID/noarbitrarybaggagecredentials. Sharedstandardtraceprivacyfilter removesrawURLquery/capabilitypath/credentials/exceptionmessage+stack/statusdescription whilekeepingerrorcode/type/IDs. Publisherboundedpolicy8attempts with5→300sexponentialbackoff andretainedFAILED+reason/alert; durableattemptduefieldifneedednewmigration, notinmemory. ConsumertransientDLQmax1automaticredrivecycleafter30s thenexisting3attempts;poisonretained/nohotloop. Actualordering/idempotency/ACK+confirm/return needrealproofbeforePASS. Technicalchoices withinactivecontract, no newbusinessrule/deployauthority.
+
+
+## T016 — narrow publication recovery correction, 17.10.2026
+
+2026-10-17T19:20:25.587749+00:00: Supersedes ONLY T015 proposed global publisher8-attempt/FAILED/due-storage policy. Current globalFIFO/PENDING has no aggregate ordering key; imposing terminalskip/due-selection would change ordering beyond this task. Retain durablePENDING/globalFIFO without speculative schemas/migrations. Bounded recovery applies to actual synchronous WORD request and transient consumer redrive; publisher confirms/returns and finite attempt-time/batch/lease remain required. Original report is synchronous HEADMAN weekly HTTP, not a durable WORD job. Source review R1–R3 corrections stay assigned reports author.
+
+
+## D035 — 17.10.2026: durable background reports and responsive PWA/TMA
+
+2026-10-17T19:21:47.113147+00:00: Owner full addendum saved TASK-ADDENDUM-ASYNC-20261017.md; SHA256 553ca473736b0b360ea4994c645996a78376f72546531c78d1d9ac2d528408e9. Supplements M04/M01–M03 (still9packages), preserves all WIP/branch/PR2. Required actual18week HEADMAN durableacceptance→navigateaway/reconnect→status/result; boundedqueue/retry/crashrecovery/currentauthority/retention; compatible oldsyncAPI. Reuse existing auth_export_jobs/ExportJobService/BFFworker and UI mechanisms before introducinganything. New owner load input300–400 simultaneouscheckins +~200active +notifications +3–7reports, VPSnotselected; notmeasuredcapacity. Sufficient priorresults retained. Authauthor assigned exportbackend, reports retainsrender/consumer/outbox, frontendauthor next afterdesignskillread.

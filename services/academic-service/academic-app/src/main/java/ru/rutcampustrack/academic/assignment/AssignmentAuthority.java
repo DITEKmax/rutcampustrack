@@ -240,7 +240,7 @@ public class AssignmentAuthority {
                                 lessonType,
                                 validFrom,
                                 validUntilExclusive,
-                                "PREPARED"));
+                                AssignmentLifecycle.PREPARED));
         if (independentAdmission)
             Objects.requireNonNull(closureService, "Assignment adoption coordinator")
                     .prepareAdoption(assignment);

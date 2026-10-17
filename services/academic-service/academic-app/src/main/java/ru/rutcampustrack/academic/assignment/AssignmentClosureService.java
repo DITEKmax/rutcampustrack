@@ -38,7 +38,8 @@ import ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt;
 @Service
 public class AssignmentClosureService {
     private static final Logger log = LoggerFactory.getLogger(AssignmentClosureService.class);
-    private static final List<String> OPEN = List.of("PREPARED", "APPLIED");
+    private static final List<AssignmentOperationState> OPEN =
+            List.of(AssignmentOperationState.PREPARED, AssignmentOperationState.APPLIED);
     private final AssignmentRepository assignments;
     private final AssignmentReplacementOperationRepository operations;
     private final SemesterRepository semesters;
@@ -84,7 +85,8 @@ public class AssignmentClosureService {
                             AssignmentReplacementOperation existing =
                                     acceptedClosure(actor, requestKey, id, hash);
                             if (existing != null) {
-                                if (!"CLOSE_UNASSIGN".equals(existing.getOperationKind())
+                                if (existing.getOperationKind()
+                                                != AssignmentOperationKind.CLOSE_UNASSIGN
                                         || !MessageDigest.isEqual(
                                                 hash, existing.getPayloadHash())) {
                                     throw new ru.rutcampustrack.academic.exception
@@ -98,7 +100,8 @@ public class AssignmentClosureService {
                             requireTuple(source, subjectId, teacherId);
                             existing = acceptedClosure(actor, requestKey, id, hash);
                             if (existing != null) {
-                                if (!"CLOSE_UNASSIGN".equals(existing.getOperationKind())
+                                if (existing.getOperationKind()
+                                                != AssignmentOperationKind.CLOSE_UNASSIGN
                                         || !MessageDigest.isEqual(
                                                 hash, existing.getPayloadHash())) {
                                     throw new ru.rutcampustrack.academic.exception
@@ -111,7 +114,7 @@ public class AssignmentClosureService {
                                         "validUntilExclusive",
                                         "Дата снятия не может быть в прошлом");
                             }
-                            if (!"ACTIVE".equals(source.getLifecycleState()))
+                            if (source.getLifecycleState() != AssignmentLifecycle.ACTIVE)
                                 throw new ConflictException("Назначение уже закрыто");
                             requireNoOpenTuple(
                                     source.getGroupId(),
@@ -150,7 +153,7 @@ public class AssignmentClosureService {
                                             null,
                                             cap,
                                             end,
-                                            "CLOSE_UNASSIGN",
+                                            AssignmentOperationKind.CLOSE_UNASSIGN,
                                             cutoff));
                         });
         try {
@@ -169,12 +172,12 @@ public class AssignmentClosureService {
         List<AssignmentReplacementOperation> candidates =
                 own == null
                         ? operations.findBySourceAssignmentIdAndRequestKeyAndOperationKind(
-                                source, key, "CLOSE_UNASSIGN")
+                                source, key, AssignmentOperationKind.CLOSE_UNASSIGN)
                         : List.of(own);
         if (candidates.size() > 1) throw new ConflictException("Ключ снятия неоднозначен");
         if (candidates.isEmpty()) return null;
         AssignmentReplacementOperation existing = candidates.get(0);
-        if (!"CLOSE_UNASSIGN".equals(existing.getOperationKind())
+        if (existing.getOperationKind() != AssignmentOperationKind.CLOSE_UNASSIGN
                 || !Objects.equals(source, existing.getSourceAssignmentId())
                 || !MessageDigest.isEqual(hash, existing.getPayloadHash())) {
             throw new ru.rutcampustrack.academic.exception.AssignmentIdempotencyConflictException();
@@ -250,7 +253,7 @@ public class AssignmentClosureService {
                         target.getId(),
                         target.getValidFrom(),
                         end,
-                        "ADOPT_UNASSIGNED",
+                        AssignmentOperationKind.ADOPT_UNASSIGNED,
                         target.getValidFrom()));
         // No request context or managed target is needed after the admission commits.
         Long subjectId = target.getSubjectId();
@@ -278,12 +281,13 @@ public class AssignmentClosureService {
         requireTuple(target, null, null);
         AssignmentReplacementOperation operation =
                 operations
-                        .findByTargetAssignmentIdAndOperationKind(targetId, "ADOPT_UNASSIGNED")
+                        .findByTargetAssignmentIdAndOperationKind(
+                                targetId, AssignmentOperationKind.ADOPT_UNASSIGNED)
                         .orElseThrow(
                                 () ->
                                         new ResourceNotFoundException(
                                                 "AssignmentOperation", "target", targetId));
-        if (!"ADOPT_UNASSIGNED".equals(operation.getOperationKind())
+        if (operation.getOperationKind() != AssignmentOperationKind.ADOPT_UNASSIGNED
                 || !Objects.equals(targetId, operation.getTargetAssignmentId())
                 || operationId != null && !Objects.equals(operationId, operation.getOperationId()))
             throw new AccessDeniedException("Чужая операция назначения");
@@ -447,8 +451,8 @@ public class AssignmentClosureService {
 
     private void resumeOutsideTransaction(UUID operationId) {
         AssignmentReplacementOperation operation = readOperation(operationId);
-        if ("COMMITTED".equals(operation.getState())) return;
-        if ("PREPARED".equals(operation.getState())) {
+        if (operation.getState() == AssignmentOperationState.COMMITTED) return;
+        if (operation.getState() == AssignmentOperationState.PREPARED) {
             AssignmentCloseReceipt receipt =
                     schedule.installAssignmentLifecycle(
                             operationId,
@@ -456,12 +460,12 @@ public class AssignmentClosureService {
                             operation.getTargetAssignmentId(),
                             operation.getEffectiveFrom(),
                             operation.getPayloadHash(),
-                            operation.getOperationKind());
+                            operation.getOperationKind().getCode());
             requireReceipt(operation, receipt, "APPLIED");
             transaction.executeWithoutResult(tx -> applyAcademic(operationId, receipt));
             operation = readOperation(operationId);
         }
-        if ("APPLIED".equals(operation.getState())) {
+        if (operation.getState() == AssignmentOperationState.APPLIED) {
             AssignmentCloseReceipt receipt =
                     schedule.commitAssignmentClose(operationId, operation.getPayloadHash());
             requireReceipt(operation, receipt, "COMMITTED");
@@ -469,7 +473,7 @@ public class AssignmentClosureService {
                     tx -> {
                         AssignmentReplacementOperation locked =
                                 operations.findByIdForUpdate(operationId).orElseThrow();
-                        if ("APPLIED".equals(locked.getState())) {
+                        if (locked.getState() == AssignmentOperationState.APPLIED) {
                             locked.markCommitted(
                                     receipt.getState(),
                                     receipt.getMovedCount(),
@@ -491,7 +495,7 @@ public class AssignmentClosureService {
         Assignment assignment = assignments.findByIdForUpdate(assignmentId).orElseThrow();
         AssignmentReplacementOperation operation =
                 operations.findByIdForUpdate(operationId).orElseThrow();
-        if (!"PREPARED".equals(operation.getState())) return;
+        if (operation.getState() != AssignmentOperationState.PREPARED) return;
         requireReceipt(operation, receipt, "APPLIED");
         operation.markApplied(receipt.getState(), 0, 0);
         operations.saveAndFlush(operation);
@@ -499,7 +503,7 @@ public class AssignmentClosureService {
                 "SELECT set_config('rutcampustrack.assignment_replacement_operation_id', ?, true)",
                 String.class,
                 operationId.toString());
-        if ("CLOSE_UNASSIGN".equals(operation.getOperationKind())) {
+        if (operation.getOperationKind() == AssignmentOperationKind.CLOSE_UNASSIGN) {
             if (!operation.getRequestedCutoff().isAfter(assignment.getValidFrom())) {
                 jdbc.update(
                         "UPDATE assignments SET lifecycle_state = 'CLOSED' WHERE id = ?",

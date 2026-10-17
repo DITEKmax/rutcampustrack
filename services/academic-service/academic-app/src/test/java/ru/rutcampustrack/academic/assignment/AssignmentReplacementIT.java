@@ -130,7 +130,7 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                                                 null,
                                                 from,
                                                 end,
-                                                "CLOSE_UNASSIGN",
+                                                AssignmentOperationKind.CLOSE_UNASSIGN,
                                                 originalDate)));
         mockMvc.perform(
                         headman(
@@ -145,7 +145,7 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                                         .param("validUntilExclusive", originalDate.toString())))
                 .andExpect(status().isNoContent());
         assertThat(lifecycleOperations.findById(operation).orElseThrow().getState())
-                .isEqualTo("COMMITTED");
+                .isEqualTo(AssignmentOperationState.COMMITTED);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 "SELECT COUNT(*) FROM assignment_replacement_operations WHERE actor_id=? AND request_key=?",
@@ -239,7 +239,7 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
                 .andExpect(status().isOk());
         assertThat(assignmentCount(subject)).isEqualTo(1);
         assertThat(lifecycleOperations.findById(operation).orElseThrow().getState())
-                .isEqualTo("COMMITTED");
+                .isEqualTo(AssignmentOperationState.COMMITTED);
         JsonNode complete =
                 objectMapper.readTree(
                         mockMvc.perform(
@@ -467,7 +467,7 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
         assertThat(after.getActorId()).isEqualTo(fixture.headmanId());
         assertThat(after.getRequestKey()).isEqualTo(key);
         assertThat(after.getPayloadHash()).isEqualTo((byte[]) original.get("payload_hash"));
-        assertThat(after.getState()).isEqualTo("COMMITTED");
+        assertThat(after.getState()).isEqualTo(AssignmentOperationState.COMMITTED);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 "SELECT COUNT(*) FROM assignment_replacement_operations WHERE source_assignment_id=? AND operation_kind='CLOSE_UNASSIGN'",

@@ -1,6 +1,7 @@
 package ru.rutcampustrack.academic.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -9,6 +10,10 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import ru.rutcampustrack.academic.assignment.AssignmentOperationKind;
+import ru.rutcampustrack.academic.assignment.AssignmentOperationState;
+import ru.rutcampustrack.academic.config.AssignmentOperationKindConverter;
+import ru.rutcampustrack.academic.config.AssignmentOperationStateConverter;
 
 /** Durable cross-service state for one teacher replacement request. */
 @Entity
@@ -37,7 +42,8 @@ public class AssignmentReplacementOperation {
     private Long targetAssignmentId;
 
     @Column(name = "operation_kind", nullable = false, updatable = false)
-    private String operationKind = "REPLACE";
+    @Convert(converter = AssignmentOperationKindConverter.class)
+    private AssignmentOperationKind operationKind = AssignmentOperationKind.REPLACE;
 
     @Column(name = "requested_cutoff", updatable = false)
     private LocalDate requestedCutoff;
@@ -52,7 +58,8 @@ public class AssignmentReplacementOperation {
     private LocalDate targetValidUntil;
 
     @Column(name = "state", nullable = false)
-    private String state;
+    @Convert(converter = AssignmentOperationStateConverter.class)
+    private AssignmentOperationState state;
 
     @Column(name = "schedule_receipt_state")
     private String scheduleReceiptState;
@@ -79,7 +86,7 @@ public class AssignmentReplacementOperation {
             LocalDate effectiveFrom,
             LocalDate sourceValidUntil,
             LocalDate targetValidUntil,
-            String state) {
+            AssignmentOperationState state) {
         this.operationId = operationId;
         this.actorId = actorId;
         this.requestKey = requestKey;
@@ -89,13 +96,13 @@ public class AssignmentReplacementOperation {
         this.effectiveFrom = effectiveFrom;
         this.sourceValidUntil = sourceValidUntil;
         this.targetValidUntil = targetValidUntil;
-        this.state = state;
+        this.state = java.util.Objects.requireNonNull(state, "state");
         this.scheduleMovedCount = 0;
         this.scheduleSkippedCount = 0;
     }
 
     public void markApplied(String receiptState, long moved, long skipped) {
-        this.state = "APPLIED";
+        this.state = AssignmentOperationState.APPLIED;
         this.scheduleReceiptState = receiptState;
         this.scheduleMovedCount = moved;
         this.scheduleSkippedCount = skipped;
@@ -110,10 +117,14 @@ public class AssignmentReplacementOperation {
             Long targetId,
             LocalDate effectiveFrom,
             LocalDate originalEnd,
-            String kind,
+            AssignmentOperationKind kind,
             LocalDate requestedCutoff) {
-        if (!("CLOSE_UNASSIGN".equals(kind) && sourceId != null && targetId == null)
-                && !("ADOPT_UNASSIGNED".equals(kind) && sourceId == null && targetId != null)) {
+        if (!(kind == AssignmentOperationKind.CLOSE_UNASSIGN
+                        && sourceId != null
+                        && targetId == null)
+                && !(kind == AssignmentOperationKind.ADOPT_UNASSIGNED
+                        && sourceId == null
+                        && targetId != null)) {
             throw new IllegalArgumentException("Invalid assignment lifecycle discriminator");
         }
         AssignmentReplacementOperation operation =
@@ -127,14 +138,14 @@ public class AssignmentReplacementOperation {
                         effectiveFrom,
                         originalEnd,
                         originalEnd,
-                        "PREPARED");
+                        AssignmentOperationState.PREPARED);
         operation.operationKind = kind;
         operation.requestedCutoff = requestedCutoff;
         return operation;
     }
 
     public void markCommitted(String receiptState, long moved, long skipped) {
-        this.state = "COMMITTED";
+        this.state = AssignmentOperationState.COMMITTED;
         this.scheduleReceiptState = receiptState;
         this.scheduleMovedCount = moved;
         this.scheduleSkippedCount = skipped;

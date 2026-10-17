@@ -1,6 +1,7 @@
 package ru.rutcampustrack.academic.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,6 +11,8 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import ru.rutcampustrack.academic.assignment.AssignmentLifecycle;
+import ru.rutcampustrack.academic.config.AssignmentLifecycleConverter;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
 /** Immutable effective-dated assignment row from V25. */
@@ -52,7 +55,8 @@ public class Assignment {
     private OffsetDateTime createdAt;
 
     @Column(name = "lifecycle_state", nullable = false, updatable = false)
-    private String lifecycleState = "ACTIVE";
+    @Convert(converter = AssignmentLifecycleConverter.class)
+    private AssignmentLifecycle lifecycleState = AssignmentLifecycle.ACTIVE;
 
     public Assignment(
             Long teacherId,
@@ -70,7 +74,7 @@ public class Assignment {
                 lessonType,
                 validFrom,
                 validUntilExclusive,
-                "ACTIVE");
+                AssignmentLifecycle.ACTIVE);
     }
 
     public Assignment(
@@ -81,7 +85,7 @@ public class Assignment {
             SubjectType lessonType,
             LocalDate validFrom,
             LocalDate validUntilExclusive,
-            String lifecycleState) {
+            AssignmentLifecycle lifecycleState) {
         this.teacherId = teacherId;
         this.subjectId = subjectId;
         this.groupId = groupId;
@@ -89,7 +93,7 @@ public class Assignment {
         this.lessonType = lessonType;
         this.validFrom = validFrom;
         this.validUntilExclusive = validUntilExclusive;
-        this.lifecycleState = lifecycleState == null ? "ACTIVE" : lifecycleState;
+        this.lifecycleState = java.util.Objects.requireNonNull(lifecycleState, "lifecycleState");
     }
 
     @jakarta.persistence.PrePersist

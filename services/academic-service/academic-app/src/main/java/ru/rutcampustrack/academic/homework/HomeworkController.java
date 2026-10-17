@@ -54,13 +54,15 @@ public class HomeworkController implements HomeworkApi {
             PagedResourcesAssembler<HomeworkResponse> assembler) {
         Page<Homework> page =
                 homeworkService.listHomeworks(groupId, semesterId, pageable, archived);
-        // For student context, annotate completion status per homework
+        java.util.Set<Long> completed =
+                homeworkService.completedHomeworkIds(page.stream().map(Homework::getId).toList());
+        // Fetch completion only for this page and the current actor.
         Page<HomeworkResponse> responsePage =
                 page.map(
                         hw -> {
                             EntityModel<HomeworkResponse> model =
                                     homeworkAssembler.toModel(
-                                            hw, homeworkService.isCompleted(hw.getId()), archived);
+                                            hw, completed.contains(hw.getId()), archived);
                             HomeworkResponse response = model.getContent();
                             if (archived) response.add(model.getLinks());
                             return response;

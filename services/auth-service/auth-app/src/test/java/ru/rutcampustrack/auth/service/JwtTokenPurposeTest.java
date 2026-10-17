@@ -9,6 +9,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -307,6 +309,48 @@ class JwtTokenPurposeTest {
                         ISSUER,
                         AUDIENCE,
                         otherKeyPair.getPrivate()));
+    }
+
+    @Test
+    void parsersRejectOtherValidRsaAlgorithmsOutsideTheRs256Profile() {
+        for (var algorithm : List.of(Jwts.SIG.RS384, Jwts.SIG.RS512, Jwts.SIG.PS256)) {
+            for (String purpose : List.of("access", "refresh")) {
+                String token =
+                        Jwts.builder()
+                                .subject(String.valueOf(USER_ID))
+                                .issuer(ISSUER)
+                                .audience()
+                                .add(AUDIENCE)
+                                .and()
+                                .claim(JwtService.TOKEN_USE_CLAIM, purpose)
+                                .claim("role", "STUDENT")
+                                .id(UUID.randomUUID().toString())
+                                .issuedAt(new Date())
+                                .expiration(future())
+                                .signWith(keyPair.getPrivate(), algorithm)
+                                .compact();
+
+                // The signature and claims are valid; refusal must be the algorithm profile.
+                assertThat(
+                                Jwts.parser()
+                                        .verifyWith(keyPair.getPublic())
+                                        .build()
+                                        .parseSignedClaims(token)
+                                        .getPayload()
+                                        .getSubject())
+                        .isEqualTo(String.valueOf(USER_ID));
+                assertThatThrownBy(
+                                () -> {
+                                    if (purpose.equals("access")) {
+                                        jwtService.parseAccessToken(token);
+                                    } else {
+                                        jwtService.parseRefreshToken(token);
+                                    }
+                                })
+                        .isInstanceOf(SignatureException.class)
+                        .hasCauseInstanceOf(UnsupportedJwtException.class);
+            }
+        }
     }
 
     @Test

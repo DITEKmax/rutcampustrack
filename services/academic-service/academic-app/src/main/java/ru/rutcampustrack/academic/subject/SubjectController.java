@@ -23,8 +23,7 @@ import ru.rutcampustrack.academic.security.RequireRole;
 
 @RestController
 public class SubjectController implements SubjectApi {
-    @org.springframework.beans.factory.annotation.Autowired
-    private ru.rutcampustrack.academic.assignment.AssignmentClosureService closureService;
+    private final ru.rutcampustrack.academic.assignment.AssignmentClosureService closureService;
 
     private final SubjectService subjectService;
     private final SubjectAssembler subjectAssembler;
@@ -33,10 +32,12 @@ public class SubjectController implements SubjectApi {
     public SubjectController(
             SubjectService subjectService,
             SubjectAssembler subjectAssembler,
-            AssignmentAssembler assignmentAssembler) {
+            AssignmentAssembler assignmentAssembler,
+            ru.rutcampustrack.academic.assignment.AssignmentClosureService closureService) {
         this.subjectService = subjectService;
         this.subjectAssembler = subjectAssembler;
         this.assignmentAssembler = assignmentAssembler;
+        this.closureService = closureService;
     }
 
     @Override
@@ -60,7 +61,7 @@ public class SubjectController implements SubjectApi {
     public ResponseEntity<PagedModel<EntityModel<SubjectResponse>>> listSubjects(
             Pageable pageable, PagedResourcesAssembler<SubjectResponse> assembler) {
         Page<SubjectResponse> responsePage =
-                subjectService.listSubjects(pageable).map(subjectAssembler::toResponse);
+                subjectAssembler.toResponsePage(subjectService.listSubjects(pageable));
         return ResponseEntity.ok(assembler.toModel(responsePage, EntityModel::of));
     }
 

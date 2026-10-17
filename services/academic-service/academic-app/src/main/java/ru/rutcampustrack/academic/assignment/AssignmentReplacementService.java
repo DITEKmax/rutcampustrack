@@ -42,7 +42,8 @@ import ru.rutcampustrack.schedule.grpc.AssignmentCloseReceipt;
 @Service
 public class AssignmentReplacementService {
 
-    private static final Collection<String> OPEN_STATES = List.of("PREPARED", "APPLIED");
+    private static final Collection<AssignmentOperationState> OPEN_STATES =
+            List.of(AssignmentOperationState.PREPARED, AssignmentOperationState.APPLIED);
 
     private final AssignmentRepository assignmentRepository;
     private final AssignmentReplacementOperationRepository operationRepository;
@@ -99,10 +100,10 @@ public class AssignmentReplacementService {
             throw new ConflictException("Не удалось подготовить замену назначения");
         }
 
-        if ("COMMITTED".equals(operation.getState())) {
+        if (operation.getState() == AssignmentOperationState.COMMITTED) {
             return status(operation.getOperationId());
         }
-        if ("PREPARED".equals(operation.getState())) {
+        if (operation.getState() == AssignmentOperationState.PREPARED) {
             AssignmentCloseReceipt receipt =
                     scheduleGrpcClient.installAssignmentCloseCap(
                             operation.getOperationId(),
@@ -115,7 +116,7 @@ public class AssignmentReplacementService {
             transaction.executeWithoutResult(tx -> activateAcademic(operationId, receipt));
             operation = operationRepository.findById(operationId).orElseThrow();
         }
-        if ("APPLIED".equals(operation.getState())) {
+        if (operation.getState() == AssignmentOperationState.APPLIED) {
             UUID operationId = operation.getOperationId();
             AssignmentCloseReceipt receipt =
                     scheduleGrpcClient.commitAssignmentClose(operationId, payloadHash);
@@ -141,7 +142,7 @@ public class AssignmentReplacementService {
         AssignmentReplacementOperation existing =
                 operationRepository.findByActorIdAndRequestKey(actorId, requestKey).orElse(null);
         if (existing != null) {
-            if (!"REPLACE".equals(existing.getOperationKind())
+            if (existing.getOperationKind() != AssignmentOperationKind.REPLACE
                     || !MessageDigest.isEqual(existing.getPayloadHash(), payloadHash)) {
                 throw new ConflictException("Idempotency-Key уже использован для другой замены");
             }
@@ -171,7 +172,7 @@ public class AssignmentReplacementService {
         // second target assignment so the loser replays the same operation.
         existing = operationRepository.findByActorIdAndRequestKey(actorId, requestKey).orElse(null);
         if (existing != null) {
-            if (!"REPLACE".equals(existing.getOperationKind())
+            if (existing.getOperationKind() != AssignmentOperationKind.REPLACE
                     || !MessageDigest.isEqual(existing.getPayloadHash(), payloadHash)) {
                 throw new ConflictException("Idempotency-Key уже использован для другой замены");
             }
@@ -185,7 +186,7 @@ public class AssignmentReplacementService {
                                         new ResourceNotFoundException(
                                                 "Assignment", "id", sourceAssignmentId));
         assertOwnGroup(source.getGroupId());
-        if (!"ACTIVE".equals(source.getLifecycleState())) {
+        if (source.getLifecycleState() != AssignmentLifecycle.ACTIVE) {
             throw new ConflictException("Исходное назначение уже закрывается или закрыто");
         }
         SubjectType lessonType = source.getLessonType();
@@ -262,7 +263,7 @@ public class AssignmentReplacementService {
                                 lessonType,
                                 effectiveFrom,
                                 targetEnd,
-                                "PREPARED"));
+                                AssignmentLifecycle.PREPARED));
         AssignmentReplacementOperation operation =
                 new AssignmentReplacementOperation(
                         UUID.randomUUID(),
@@ -274,7 +275,7 @@ public class AssignmentReplacementService {
                         effectiveFrom,
                         effectiveFrom,
                         targetEnd,
-                        "PREPARED");
+                        AssignmentOperationState.PREPARED);
         return operationRepository.saveAndFlush(operation);
     }
 
@@ -331,21 +332,31 @@ public class AssignmentReplacementService {
                                                 "AssignmentReplacementOperation",
                                                 "id",
                                                 operationId));
-        if ("COMMITTED".equals(operation.getState())) return;
+        if (operation.getState() == AssignmentOperationState.COMMITTED) return;
         Assignment source = lockedAssignments.get(operation.getSourceAssignmentId());
         Assignment target = lockedAssignments.get(operation.getTargetAssignmentId());
-        if ("APPLIED".equals(operation.getState())) {
+        if (operation.getState() == AssignmentOperationState.APPLIED) {
             requireReceipt(operation, receipt, "APPLIED");
             assertReplacementTuple(
-                    operation, source, target, semester, operation.getEffectiveFrom(), "ACTIVE");
+                    operation,
+                    source,
+                    target,
+                    semester,
+                    operation.getEffectiveFrom(),
+                    AssignmentLifecycle.ACTIVE);
             return;
         }
-        if (!"PREPARED".equals(operation.getState())) {
+        if (operation.getState() != AssignmentOperationState.PREPARED) {
             throw new ConflictException("Замена находится в неожиданном состоянии Academic");
         }
         requireReceipt(operation, receipt, "APPLIED");
         assertReplacementTuple(
-                operation, source, target, semester, operation.getTargetValidUntil(), "PREPARED");
+                operation,
+                source,
+                target,
+                semester,
+                operation.getTargetValidUntil(),
+                AssignmentLifecycle.PREPARED);
         operation.markApplied(
                 receipt.getState(), receipt.getMovedCount(), receipt.getSkippedCount());
         operationRepository.saveAndFlush(operation);
@@ -419,8 +430,8 @@ public class AssignmentReplacementService {
                                                 "AssignmentReplacementOperation",
                                                 "id",
                                                 operationId));
-        if ("COMMITTED".equals(operation.getState())) return;
-        if (!"APPLIED".equals(operation.getState())) {
+        if (operation.getState() == AssignmentOperationState.COMMITTED) return;
+        if (operation.getState() != AssignmentOperationState.APPLIED) {
             throw new ConflictException("Замена ещё не подтверждена в Academic");
         }
         requireReceipt(operation, receipt, "COMMITTED");
@@ -430,7 +441,7 @@ public class AssignmentReplacementService {
                 lockedAssignments.get(operation.getTargetAssignmentId()),
                 semester,
                 operation.getEffectiveFrom(),
-                "ACTIVE");
+                AssignmentLifecycle.ACTIVE);
         operation.markCommitted(
                 receipt.getState(), receipt.getMovedCount(), receipt.getSkippedCount());
         operationRepository.save(operation);
@@ -442,10 +453,10 @@ public class AssignmentReplacementService {
             Assignment target,
             Semester semester,
             LocalDate expectedSourceEnd,
-            String expectedTargetState) {
+            AssignmentLifecycle expectedTargetState) {
         LocalDate sourceEnd = AssignmentAuthority.effectiveEnd(source, semester);
-        if (!"ACTIVE".equals(source.getLifecycleState())
-                || !expectedTargetState.equals(target.getLifecycleState())
+        if (source.getLifecycleState() != AssignmentLifecycle.ACTIVE
+                || expectedTargetState != target.getLifecycleState()
                 || !source.getGroupId().equals(target.getGroupId())
                 || !source.getSubjectId().equals(target.getSubjectId())
                 || !source.getSemesterId().equals(target.getSemesterId())
@@ -469,7 +480,7 @@ public class AssignmentReplacementService {
                                                             "AssignmentReplacementOperation",
                                                             "id",
                                                             operationId));
-                    if (!"REPLACE".equals(operation.getOperationKind())) {
+                    if (operation.getOperationKind() != AssignmentOperationKind.REPLACE) {
                         throw new ResourceNotFoundException(
                                 "AssignmentReplacementOperation", "id", operationId);
                     }
@@ -511,7 +522,7 @@ public class AssignmentReplacementService {
                             operation.getEffectiveFrom(),
                             operation.getSourceValidUntil(),
                             operation.getTargetValidUntil(),
-                            operation.getState(),
+                            operation.getState().getCode(),
                             operation.getScheduleReceiptState(),
                             operation.getScheduleMovedCount(),
                             operation.getScheduleSkippedCount());

@@ -690,7 +690,8 @@ SELECT jsonb_build_object(
                         null,
                         grants,
                         new ru.rutcampustrack.academic.repository.UserRoleGrantReader(jdbc),
-                        headmen);
+                        headmen,
+                        new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder());
         org.springframework.test.util.ReflectionTestUtils.setField(
                 result, "adminAccess", new AcademicAdminAccess(authority, context, jdbc));
         org.springframework.test.util.ReflectionTestUtils.setField(

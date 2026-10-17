@@ -905,6 +905,16 @@ public class HomeworkService {
         return new PageImpl<>(page, pageable, list.size());
     }
 
+    /** One scoped completion lookup for the IDs on the current response page. */
+    @Transactional(readOnly = true)
+    public java.util.Set<Long> completedHomeworkIds(List<Long> homeworkIds) {
+        if (homeworkIds.isEmpty()) return java.util.Set.of();
+        Long studentId = requestContext.getUserId();
+        return completionRepository.findByHomeworkIdInAndStudentId(homeworkIds, studentId).stream()
+                .map(ru.rutcampustrack.academic.entity.HomeworkCompletion::getHomeworkId)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+    }
+
     /** Check if a specific homework is completed by the current student. */
     @Transactional(readOnly = true)
     public boolean isCompleted(Long homeworkId) {

@@ -55,6 +55,10 @@ class UserServiceTelegramRequiredTest {
     @Mock private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
     @Mock private ru.rutcampustrack.academic.admin.AdminAccessService adminAccessService;
 
+    @org.mockito.Spy
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder =
+            new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+
     @InjectMocks private UserService service;
 
     @org.junit.jupiter.api.BeforeEach

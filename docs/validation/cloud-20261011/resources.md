@@ -1,9 +1,17 @@
-# Владельцы и ресурсы — завершены; B013 WAITING_ENV
+# Stage17 current ownership/resources
 
-Обновлено 2026-10-17T02:32:55.056939+00:00. Root selectedSol6.1/ULTRA; childrenSol6.1/high/forknone; actualmetadataUNKNOWN. Runtimecapacity7inclRoot. Root soleGit/integrator/shared task docs/contracts/pins. Tested Sourcef8a17ef400690e7b87a98fa6e300bb8fdf1936b0; draftPR2/mainunmerged. Final checkpoint documentation-only; exact final SHA resolves from GitHEAD/remote/PR readback, distinct from CI producer.
+Root soleGit-integrator/sharedDocs; selectedSol6.1ULTRA/actualUNKNOWN. ChildrenSol6.1high/forknone; capacity7 inclRoot. All detached own sparse worktrees base753173688d633ca07991f4dd73bdcd2698f45d96. No newbranch/PR/reset/prune; olddata/WIP/stoppedstand preserved.
 
-Active product/checking authors, reviewers, native readers, Root sessions and heavy runtime: NONE. c94 sole current observer COMPLETED/FROZEN after bothCI23/23SUCCESS, exact3othergatesSUCCESS, applicablecleanupSUCCESS/all6readersreaped/globalSafePointTRUE. c95/c96 authors and independentc97review COMPLETED/FROZEN; exact2 diagnostic test files integratedf8,43+17controls/format/parser/types/inversesPASS, c97APPROVE/no blockingfindings. Previous accepted authors/worktrees preserved; exact scopes/outcomes remain in central receipts/history, no new write lease.
+| Owner | Worktree | Solewriter boundary / current state |
+| --- | --- | --- |
+| s17_academic | /tmp/rct-stage17-academic | Academic A01/A02/A04, related tests, C01testonly;36files source/unit approved; no activeprocess |
+| s17_auth | /tmp/rct-stage17-auth | Auth DTO/JWT + C02guard;14files frozen,31tests PASS; lease RELEASED; no CI writes |
+| s17_propagation | /tmp/rct-stage17-propagation | Sharedobservability/logback/events, Gateway/BFF context/builds,3admissionmeterclasses; owns Gateway application-prod.yml; session98397 actualchecks RUNNING |
+| s17_reports | /tmp/rct-stage17-reports | Report/retry/DLQ/4senders/sharedoutbox;19files beforefindings; sameauthor R1–R3 corrections; no runtimelease yet |
+| s17_infra | /tmp/rct-stage17-infra | Monitoring/nginx/compose/exporters/harness + ci.yml solewriter from reviewedb1917ad baseline, preserveauthprivacy/C02; nativecohort ended; sourceCI pending |
+| s17_review_auth | read-only | Auth narrow correctedparser independent recheck; Academic review complete; /tmp/rct-stage17-review-{auth,academic}.json |
+| s17_review_reports | read-only | Reports initial3findings complete; available changed-risk recheck /tmp/rct-stage17-review-reports.json |
 
-Root completes only this documentation publication, normal branch push/readback and PR update. Thereafter WAITING_ENV solely mandatoryB013 rights-denial sensitivity; no retry/equivalent/model/agent/launcher/CI bypass. B014/B015 alsoFROZEN. Native4device/provider checks transferredowner D015/D021, OWNER_MANUAL_PENDING/notCloudPASS.
+Nativeleases: max2 measured independent compiles; current only propagation uses /tmp/rct-stage17-gradle-home, ownprojectcache,1GiBdaemon+1GiBtests,maxworkers2,≤3GiBRSS. Auth /tmp/rct-stage17-auth-gradle-home released; reports next after source/dependencycomposition. No localDocker/DB/broker/pull lease. CPU5/RAM16GiB, filesystemfloor4GiB on workspace andtmp; workspaceonly~6MBheadroom, tmp~7.35GB. NativeProm+AM+receiver fullyreaped. Preserve proxy/CA; networkadditional needed for Java daemon/loopback. ExistingB013/B014/B015 FROZEN, no equivalenttries.
 
-Preserve existing worktrees/foreignWIP/26olduntrackedreceipts, STOPPEDstand/5volumes/nativeMongo data+key and ignoredbackups. Unchanged4GiBdiskfloor; full9.38GBstand doesnotfit, no localheavy/Gradle/Docker/browser/server/restart/prune/reset/install/floorlowering. ExactpublicGoarchivecopies retained under /tmp/rct-public-tool-archive-20261016 (wazero/x-text/2x-sys/x-crypto/filetype); metadata/SHA/restore refs central. No production/mainpush/merge/Ready/deploy/Angular/newweb/secrets/daemon.
+2026-10-17T19:23:26.521516+00:00: Reports secondcompile/unit lease GRANTED afterAuthreaped; userhome/tmp/rct-stage17-auth-gradle-home, ownprojectcache/tmp/rct-stage17-reports-project-cache,768MiBGradle/1GiBtest/max1worker≤2.5GiBRSS/512MiBextra; M01existing≤3GiB concurrent. Exact5frozenM01shared-events API files copiedtoReportsbyRoot forcompile only, excludedReportauthorship. NoDB/Docker/nativebroker. Sixth detachedclientWT /tmp/rct-stage17-client base753, soleVuewriter s17_client_async; designskill required, noheavyclientlease. Authnewasyncbackend ownsGatewayExportJobWorker+test/AuthExportJobService+IT only; noM01fileoverlap.

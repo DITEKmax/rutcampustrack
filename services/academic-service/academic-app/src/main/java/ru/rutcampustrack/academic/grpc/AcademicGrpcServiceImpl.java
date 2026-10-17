@@ -23,6 +23,9 @@ import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.rutcampustrack.academic.assignment.AssignmentLifecycle;
+import ru.rutcampustrack.academic.assignment.AssignmentOperationKind;
+import ru.rutcampustrack.academic.assignment.AssignmentOperationState;
 import ru.rutcampustrack.academic.assistant.AssistantPermissionAuthority;
 import ru.rutcampustrack.academic.botcredentials.BotCredentialsService;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
@@ -599,7 +602,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                         .findByTeacherIdAndSemesterId(
                                 request.getTeacherId(), request.getSemesterId())
                         .stream()
-                        .filter(a -> "ACTIVE".equals(a.getLifecycleState()))
+                        .filter(a -> a.getLifecycleState() == AssignmentLifecycle.ACTIVE)
                         .filter(a -> !a.getValidFrom().isAfter(today))
                         .filter(
                                 a ->
@@ -682,7 +685,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         }
         Map<Long, Assignment> byId =
                 assignmentRepository.findAllById(ids).stream()
-                        .filter(a -> "ACTIVE".equals(a.getLifecycleState()))
+                        .filter(a -> a.getLifecycleState() == AssignmentLifecycle.ACTIVE)
                         .collect(
                                 Collectors.toMap(
                                         Assignment::getId,
@@ -771,16 +774,16 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         }
         var operation = replacementOperationRepository.findById(operationId).orElse(null);
         if (operation == null
-                || (!"PREPARED".equals(operation.getState())
-                        && !"APPLIED".equals(operation.getState())
-                        && !"COMMITTED".equals(operation.getState()))) {
+                || (operation.getState() != AssignmentOperationState.PREPARED
+                        && operation.getState() != AssignmentOperationState.APPLIED
+                        && operation.getState() != AssignmentOperationState.COMMITTED)) {
             responseObserver.onError(
                     Status.NOT_FOUND
                             .withDescription("assignment replacement operation not found")
                             .asRuntimeException());
             return;
         }
-        if (!"REPLACE".equals(operation.getOperationKind())) {
+        if (operation.getOperationKind() != AssignmentOperationKind.REPLACE) {
             respondPreparedLifecycle(request, operation, responseObserver);
             return;
         }
@@ -815,7 +818,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                         .setLessonType(source.getLessonType().name().toLowerCase(Locale.ROOT))
                         .setEffectiveFrom(operation.getEffectiveFrom().toString())
                         .setSourceValidUntilExclusive(
-                                "PREPARED".equals(operation.getState())
+                                operation.getState() == AssignmentOperationState.PREPARED
                                         ? operation.getTargetValidUntil().toString()
                                         : source.getValidUntilExclusive() == null
                                                 ? ""
@@ -825,8 +828,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                                         ? ""
                                         : operation.getTargetValidUntil().toString())
                         .setSourceValidFrom(source.getValidFrom().toString())
-                        .setTargetLifecycleState(target.getLifecycleState())
-                        .setState(operation.getState())
+                        .setTargetLifecycleState(target.getLifecycleState().getCode())
+                        .setState(operation.getState().getCode())
                         .setPayloadHash(ByteString.copyFrom(operation.getPayloadHash()))
                         .setOperationKind("REPLACE")
                         .build());
@@ -837,8 +840,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             PreparedAssignmentCloseRequest request,
             ru.rutcampustrack.academic.entity.AssignmentReplacementOperation operation,
             StreamObserver<PreparedAssignmentCloseResponse> observer) {
-        boolean close = "CLOSE_UNASSIGN".equals(operation.getOperationKind());
-        if ((!close && !"ADOPT_UNASSIGNED".equals(operation.getOperationKind()))
+        boolean close = operation.getOperationKind() == AssignmentOperationKind.CLOSE_UNASSIGN;
+        if ((!close && operation.getOperationKind() != AssignmentOperationKind.ADOPT_UNASSIGNED)
                 || close != request.hasSourceAssignmentId()
                 || close && request.getSourceAssignmentId() != operation.getSourceAssignmentId()) {
             observer.onError(
@@ -860,7 +863,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         PreparedAssignmentCloseResponse.Builder response =
                 PreparedAssignmentCloseResponse.newBuilder()
                         .setOperationId(operation.getOperationId().toString())
-                        .setOperationKind(operation.getOperationKind())
+                        .setOperationKind(operation.getOperationKind().getCode())
                         .setSubjectId(assignment.getSubjectId())
                         .setGroupId(assignment.getGroupId())
                         .setSemesterId(assignment.getSemesterId())
@@ -870,8 +873,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                         .setSourceValidFrom(assignment.getValidFrom().toString())
                         .setSourceValidUntilExclusive(operation.getSourceValidUntil().toString())
                         .setTargetValidUntilExclusive(operation.getTargetValidUntil().toString())
-                        .setTargetLifecycleState(assignment.getLifecycleState())
-                        .setState(operation.getState())
+                        .setTargetLifecycleState(assignment.getLifecycleState().getCode())
+                        .setState(operation.getState().getCode())
                         .setPayloadHash(ByteString.copyFrom(operation.getPayloadHash()));
         if (close)
             response.setSourceAssignmentId(assignmentId)

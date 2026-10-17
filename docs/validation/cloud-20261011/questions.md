@@ -202,3 +202,19 @@ PENDING_OWNER 2026-10-15T19:30:06.114053+00:00. Canonical JS-SYSTEM-16:894–899
 2026-10-15T20:08:47.288627+00:00: Q025/Q026 still PENDING_OWNER; re-presented the same two product forks while owner replied Q027. No new scope/question IDs or inferred consent; only full-subject-delete archived/mixed-ticket branches depend.
 
 2026-10-15T21:25:11.147945+00:00: Q025 ANSWERED / D029: semester-local new subject/lesson IDs; no cross-semester subject identity or inferred archive purge. Q026 ANSWERED / D030: preserve mixed ticket, remove only deleted subject lessons with history. Exact answers and retained constraints: docs/product/decisions/2026-10-15-subject-deletion-semester-and-mixed-excuse.md. Dependent implementation is now unblocked at the product-policy level; Source contract/schema planning and real acceptance remain.
+
+
+## Q028 — новый этап: точка входа 18-недельного WORD
+
+PENDING_OWNER. Текущие разобранные Headman/Teacher DOCX идут синхронно HTTP→Java XML/ZIP renderer, без Rabbit/job. Это не причина исторического сбоя. Уточнить роль/кнопку, где запросили WORD: староста/журнал, преподаватель/статистика, администратор/группы либо точный другой путь. Зависит выбор исходного воспроизведения/пользовательского ожидания; существующие 18week fixture, безопасное boundedrecovery и genuineRabbitDLQ проверки продолжаются. Автоматический retry/poisonisolation уже приняты, повторно не спрашиваются.
+
+## Q029 — новый этап: числовые цели полезных операций
+
+PENDING_OWNER. Existingrunbook задаёт businesssampling100% и quiet22–08MSK; полезные eligible/good/error/slow/SLO не заданы. Предложение для согласования: allowed validoperations без неожиданного5xx/terminalfailure ≥99.9% за30days; interactive p95≤2s, длительные отчёты отдельно по фактическому измерению; expectedvalidation/authz4xx не servicefailure. Альтернатива: на этом этапе принять честные технические alerts, формальныеSLO согласовать послеbaseline. Зависимы только нормативныеSLO/пороги, telemetry/formulafixtures/ошибки/DLQ/recovery/панели идутнезависимо. Учебныецифры не выдавать за ужеaccepted.
+
+## Q030 — новый этап: независимый probe потери host
+
+PENDING_OWNER/ENV. В текущей схеме Blackbox на тойже машине; полногоhostloss такойнаблюдатель не доказывает. Нужен выделенный внешний syntheticprobe/endpoint либо явное решение владельца о переносе только внешнегоhostprobe в локальную приёмку. Это отдельно от ужеDEFERRED_LOCALalertbot, не исключать автоматически. Зависит только полноценный offhosthostloss detection; существующий мониторингсервисов, alerts→testreceiver и все9source/runtime пакеты продолжаются. Не запрашивать реальныеtokens/chat/secrets.
+
+
+2026-10-17T18:59:09.922619+00:00: Q028ANSWERED/D032 headmanjournal; Q029ANSWERED/D033 engineeringSLOdesign delegatedRoot; Q030ANSWERED/D034 externalhostprobe deploymentbacklog/DEFERRED_LOCAL, notCloudPASS. No pendingownerquestions frominitialnewstage.

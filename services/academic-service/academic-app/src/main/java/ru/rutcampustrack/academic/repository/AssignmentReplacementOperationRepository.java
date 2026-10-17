@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.rutcampustrack.academic.entity.AssignmentReplacementOperation;
+import ru.rutcampustrack.academic.assignment.AssignmentOperationKind;
+import ru.rutcampustrack.academic.assignment.AssignmentOperationState;
 
 public interface AssignmentReplacementOperationRepository
         extends JpaRepository<AssignmentReplacementOperation, UUID> {
@@ -21,14 +23,16 @@ public interface AssignmentReplacementOperationRepository
 
     java.util.List<AssignmentReplacementOperation>
             findBySourceAssignmentIdAndRequestKeyAndOperationKind(
-                    Long sourceAssignmentId, UUID requestKey, String operationKind);
+                    Long sourceAssignmentId,
+                    UUID requestKey,
+                    AssignmentOperationKind operationKind);
 
     Optional<AssignmentReplacementOperation> findFirstBySourceAssignmentIdAndStateIn(
-            Long sourceAssignmentId, java.util.Collection<String> states);
+            Long sourceAssignmentId, java.util.Collection<AssignmentOperationState> states);
 
     Optional<AssignmentReplacementOperation> findFirstByTargetAssignmentIdAndStateIn(
-            Long targetAssignmentId, java.util.Collection<String> states);
+            Long targetAssignmentId, java.util.Collection<AssignmentOperationState> states);
 
     Optional<AssignmentReplacementOperation> findByTargetAssignmentIdAndOperationKind(
-            Long targetAssignmentId, String operationKind);
+            Long targetAssignmentId, AssignmentOperationKind operationKind);
 }

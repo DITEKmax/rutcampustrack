@@ -12,10 +12,19 @@ import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.auth.dto.AuthAdmissionRequest;
 import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
 import ru.rutcampustrack.auth.dto.AuthSessionSummary;
+import ru.rutcampustrack.auth.dto.ConsumeWsTicketRequest;
 import ru.rutcampustrack.auth.dto.CurrentSessionResponse;
+import ru.rutcampustrack.auth.dto.InternalIssueResponse;
+import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.PasswordPolicyResponse;
+import ru.rutcampustrack.auth.dto.RedeemReportDownloadTicketRequest;
+import ru.rutcampustrack.auth.dto.RefreshRequest;
+import ru.rutcampustrack.auth.dto.ReportDownloadTicketResponse;
 import ru.rutcampustrack.auth.dto.RoleGrantResponse;
 import ru.rutcampustrack.auth.dto.SelectActiveRoleResponse;
+import ru.rutcampustrack.auth.dto.TmaAuthRequest;
+import ru.rutcampustrack.auth.dto.TokenResponse;
+import ru.rutcampustrack.auth.dto.WsTicketResponse;
 
 class AuthTokenDtoRedactionTest {
 
@@ -26,6 +35,42 @@ class AuthTokenDtoRedactionTest {
             new ObjectMapper()
                     .registerModule(new JavaTimeModule())
                     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+    @Test
+    void credentialAndCapabilityRepresentationsAreRedactedButJsonStillRoundTrips()
+            throws Exception {
+        String secret = "synthetic-credential-do-not-log";
+        Instant expiresAt = Instant.parse("2026-01-02T03:04:05Z");
+        List<SecretWire> values =
+                List.of(
+                        new SecretWire(new LoginRequest("student", secret), "password", secret),
+                        new SecretWire(new RefreshRequest(secret), "refreshToken", secret),
+                        new SecretWire(new TmaAuthRequest(secret), "initData", secret),
+                        new SecretWire(new WsTicketResponse(secret, expiresAt), "ticket", secret),
+                        new SecretWire(new ConsumeWsTicketRequest(secret), "ticket", secret),
+                        new SecretWire(
+                                new RedeemReportDownloadTicketRequest(secret), "ticket", secret),
+                        new SecretWire(
+                                new InternalIssueResponse(secret, expiresAt), "token", secret),
+                        new SecretWire(
+                                new ReportDownloadTicketResponse(
+                                        "/download/" + secret, expiresAt, "report.docx"),
+                                "downloadPath",
+                                "/download/" + secret),
+                        new SecretWire(
+                                new TokenResponse(secret, secret, 900), "refreshToken", secret));
+        for (SecretWire value : values) {
+            // Boolean assertions keep the synthetic credential out of failure diagnostics too.
+            assertThat(value.dto().toString().contains(secret)).isFalse();
+            assertThat(value.dto().toString()).contains("<redacted>");
+            byte[] json = MAPPER.writeValueAsBytes(value.dto());
+            assertThat(MAPPER.readTree(json).get(value.property()).asText().equals(value.secret()))
+                    .isTrue();
+            assertThat(MAPPER.readValue(json, value.dto().getClass()).equals(value.dto())).isTrue();
+        }
+    }
+
+    private record SecretWire(Object dto, String property, String secret) {}
 
     @Test
     void authAdmissionRequestRedactsTokenButKeepsJsonWire() throws Exception {

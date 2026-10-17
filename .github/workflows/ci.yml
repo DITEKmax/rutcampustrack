@@ -246,16 +246,8 @@ jobs:
         id: java-tests
         run: ./gradlew ${{ matrix.service.path }}:test --no-daemon ${{ matrix.service.name == 'schedule-service' && '--no-build-cache' || '' }}
 
-      - name: Upload unit test reports
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-test-reports-${{ matrix.service.name }}
-          path: |
-            services/**/build/reports/tests/test/
-            services/**/build/test-results/test/
-          retention-days: 7
-
+      # Raw JUnit XML/HTML can contain credentials in failure messages and captured output.
+      # Publish source-linked identities and outcomes through the existing safe collector.
       - name: Collect safe unit outcomes
         if: always()
         env:
@@ -1654,16 +1646,7 @@ jobs:
         # Refresh resolution metadata for this lane; keep the same task and gates.
         run: ./gradlew ${{ matrix.service.path }}:integrationTest --no-daemon ${{ matrix.service.name == 'auth-service' && '--refresh-dependencies' || '' }} ${{ matrix.service.name == 'schedule-service' && '--no-build-cache' || '' }}
 
-      - name: Upload integration test reports
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: integration-test-reports-${{ matrix.service.name }}
-          path: |
-            services/**/build/reports/integrationTest/
-            services/**/build/test-results/integrationTest/
-          retention-days: 7
-
+      # Keep failure diagnosis in the safe outcome artifact; never upload raw XML/HTML.
       - name: Collect safe integration outcomes
         if: always()
         env:
@@ -2599,6 +2582,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Preserve published Flyway migration history
+        run: python3 scripts/check-published-migrations.py --fetch-published
 
       - uses: actions/setup-java@v4
         with:

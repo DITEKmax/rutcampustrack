@@ -672,3 +672,18 @@ The reviewed correction uses publication-local CorrelationData with the stable m
 ## S17-CHECK-MONITOR-EXIT-01 — CI pipe hid monitoring failures
 
 2026-10-17, P1 verification. On8ae9b530 job117499100184 reported SUCCESS while safe artifact12114671210/digestf6c1846b contained empty exporters.json and pipeline.json. Actual Python tracebacks: Mongo CLI ping readiness at check_exporters276, and background Gradle failure at check_pipeline1086/740. Default bash -e plus Python|tee returned tee success; the manifest therefore incorrectly recorded success. Same Infra author corrects pipefail and preserves bounded primary diagnostics; Mongo cause under diagnosis. Actual delivery.json firing/resolved/dedup/inhibition PASS74.78s remains separate. No full monitoring acceptance. Exact actuals/action in attempts scope `stage17-monitoring-CI-pipe-masked-FAIL`.
+
+
+## S17-M03-PANELS-01 — retained selectors and actual producer names
+
+2026-10-17, P2, M03. On executable09330cb3, business report panels33/34 ignore dashboard environment/job/instance scope. APM66/68 request `process_files_max`, `jvm_threads_live`, `jvm_threads_peak` while pinnedMicrometer1.15.12 exports base-unit suffixes `_files`/`_threads`. These are bounded source counterexamples, not a claim that a production incident occurred. Reviewed corrections preserve math/units/UIDs and add the existing canonical scope plus actual metric names. BFF also enables its missing local Tomcat MBean registry according to Boot3.5.16; no remote JMX. **SOURCE_FIXED_REVIEWED_RUNTIME_PENDING**. Exact six-file before/after hashes, official source fragments, formula controls and independent PANEL-R1/R2 recheck are in attempts under stage17-seven-reviewed-sources-root-integration. New live queries must still PASS ordinaryCI.
+
+## S17-CHECK-STUDY-WINDOW-01 — ordinary fresh seed misses previous study day
+
+2026-10-17, P2 verification. Actual e283 lifecycle clock producer is2026-10-18T06:00Z/Sunday09MSK. Fresh ordinary semester starts17Oct, while assignment fixture requires previousFriday16Oct. Six-line freshseed correction includes that study day, preserving real-wall cutoff, existingsemester read-only policy, async18/R1, assertions/clock/budgets. OldSunday/Monday counterexamples RED→newGREEN,32date/preservation controls, TypeScript/format and independentreview PASS. Historical generic requireValue exception does not uniquely identify its original condition. **SOURCE_FIXED_REVIEWED_RUNTIME_PENDING**; actual lifecycle after still required.
+
+## S17-CHECK-ASYNC-FORMAT-01 — exact label includes option text
+
+2026-10-17, P2 verification. Actual093 async browser reaches format selection and fails at spec5542 after15506ms; no accepted/downloaded report or operation deltas yet. ActualVue label wraps its span plus populated select; pinnedPlaywright recursively includes option labels, so exact short label cannot match. One-line fixture correction selects the same dialog native combobox through the existing weekly-format wrapper, retaining visible/enabled checks, docx, full18weeks/API/assertions/timers. TypeScript/format and independent one-line review PASS. Actual exception/disabled state remains UNKNOWN. **SOURCE_FIXED_REVIEWED_RUNTIME_PENDING**; next ordinaryCI must finish actual durable job/navigation/recovery/download path.
+
+2026-10-17 — S17-CHECK-MONITOR-EXIT-01 **FIXED_REVIEWED_GENUINE_TRUTHFUL_FAILURE** on e283 and093. Actual safe monitoring manifests retain exporterFAIL and jobFAIL while pipeline/delivery PASS independently; pipefail and receipt validation no longer hide failure. Artifacts12114439186 and12115816256/source bindings in attempts. This closes the false-green checker defect, not M02–M05 or the remaining Mongo/exporter criterion.

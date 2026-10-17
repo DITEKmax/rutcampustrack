@@ -314,7 +314,13 @@ export class MobileDataset {
     }
     if (!this.semester) {
       const month = Number(this.today.slice(5, 7));
-      const teachingYesterday = shifted(this.today, -1);
+      let teachingYesterday = shifted(this.today, -1);
+      if (this.minimumWeeklyReportWeeks === 0) {
+        // Assignment history needs the prior study day, including Sunday/Monday starts.
+        while ([0, 6].includes(new Date(`${teachingYesterday}T12:00:00Z`).getUTCDay())) {
+          teachingYesterday = shifted(teachingYesterday, -1);
+        }
+      }
       const realYesterday = shifted(moscowDate(), -1);
       this.semester = await this.admin.call(
         'POST',

@@ -1,4 +1,7 @@
 server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
   port: ${MOBILE_BFF_PORT:9080}
 
 spring:

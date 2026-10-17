@@ -1897,7 +1897,7 @@ jobs:
                   'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java', 'bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42',
                   'services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java', '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'),
               'academic-service': ('ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT', 'unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation',
-                  'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java', '317409764e7692bfd7148e0b57c02157ac3f9727aab05b45aa6737e88e7169d8',
+                  'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java', 'cc29ce79202bd7d5b8b3ee56509af944f2403467805b8883c96e4c7d6b35c776',
                   'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java', '53741f8dc927a2198a518d90789f0cc94a4ed566888049acd0c4b5f03be9d148'),
           }
           package, method, source, digest, production, production_digest = boundary_targets[service]

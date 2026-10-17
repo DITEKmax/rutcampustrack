@@ -514,7 +514,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (report,format,outcome,instance) (rate(attendance_report_duration_seconds_count[5m]))",
+          "expr": "sum by (report,format,outcome,instance) (rate(attendance_report_duration_seconds_count{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
           "refId": "A",
           "legendFormat": "{{service}} {{instance}} {{report}} {{format}} {{outcome}}"
         }
@@ -543,7 +543,7 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95,sum by(report,format,instance,le)(rate(attendance_report_duration_seconds_bucket[5m])))",
+          "expr": "histogram_quantile(0.95,sum by(report,format,instance,le)(rate(attendance_report_duration_seconds_bucket{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
           "refId": "A",
           "legendFormat": "{{service}} {{instance}} {{report}} {{format}} {{outcome}}"
         }

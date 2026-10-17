@@ -5539,7 +5539,10 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
         for (const box of await boxes.all()) await box.uncheck();
         for (let index = (await boxes.count()) - 18; index < (await boxes.count()); index++)
           await boxes.nth(index).check();
-        await sheet.getByLabel('Формат файла', { exact: true }).selectOption('docx');
+        await sheet
+          .locator('.headman-journal__weekly-format')
+          .getByRole('combobox')
+          .selectOption('docx');
         return sheet;
       };
       try {

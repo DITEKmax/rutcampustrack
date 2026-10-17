@@ -92,7 +92,35 @@ def e2e_scrape_config():
     source = yaml.safe_load((ROOT / "infra/prometheus/prometheus.yml").read_text())
     production = yaml.safe_load((ROOT / "docker-compose.prod.yml").read_text())["services"]["prometheus"]
     jobs = []
-    allow = "process_start_time_seconds|http_server_requests_seconds_count|auth_login_total|attendance_report_duration_seconds_count|rct_export_jobs_(accepted|terminal)_total|rct_export_jobs_duration_seconds_bucket"
+    # Only retained-panel families;16k retained series and5s cadence keep the
+    # existing192MiB Prometheus/512MiB whole-TSDB guard, without a second stand.
+    families = [
+        "process_(start_time|uptime)_seconds",
+        "process_files_(open_files|max_files)",
+        "process_cpu_usage",
+        "system_(cpu_(usage|count)|load_average_1m)",
+        "jvm_memory_(used|committed|max)_bytes",
+        "jvm_classes_(loaded_classes|unloaded_classes_total)",
+        "jvm_threads_(daemon_threads|live_threads|peak_threads)",
+        "jvm_buffer_(memory_used|total_capacity)_bytes",
+        "jvm_gc_(memory_(allocated|promoted)_bytes_total|pause_seconds_(count|sum))",
+        "logback_events_total",
+        "hikaricp_connections(_(active|idle|pending))?",
+        "tomcat_(global_(error_total|sent_bytes_total|received_bytes_total)|sessions_active_current_sessions|threads_(current_threads|busy_threads))",
+        "http_server_requests_seconds_(count|sum)",
+        "grpc_client_duration_seconds_(bucket|sum|count)",
+        "auth_login_total",
+        "otp_verify_total",
+        "attendance_checkin_total",
+        "notification_active_ws_sessions",
+        "internal_jwt_fallback_total",
+        "outbox_(lag_seconds|published_total|failed_total)",
+        "attendance_report_duration_seconds_(count|sum|bucket)",
+        "rct_export_jobs_(accepted|terminal|retries)_total",
+        "rct_export_jobs_duration_seconds_bucket",
+        "rct_export_jobs_(snapshot_timestamp_seconds|queue|due|waiting|oldest_(nonterminal|running|due)_age_seconds)",
+    ]
+    allow = "|".join(families)
     for name, port in expected.items():
         job = copy.deepcopy(next(j for j in source["scrape_configs"] if j["job_name"] == name))
         assert job["metrics_path"] == "/actuator/prometheus"
@@ -100,20 +128,263 @@ def e2e_scrape_config():
             {"targets": [name + ":" + str(port)], "labels": {"environment": "production", "service": name}}
         ]
         job.update(
-            scrape_interval="1s",
-            scrape_timeout="1s",
+            scrape_interval="5s",
+            scrape_timeout="5s",
             honor_labels=True,
-            sample_limit=2000,
+            sample_limit=3000,
             body_size_limit="8MB",
             metric_relabel_configs=[{"source_labels": ["__name__"], "regex": allow, "action": "keep"}],
         )
         job["static_configs"][0]["labels"]["environment"] = "synthetic"
         jobs.append(job)
     return (
-        {"global": {"scrape_interval": "1s", "scrape_timeout": "1s"}, "scrape_configs": jobs},
+        {
+            "global": {"scrape_interval": "5s", "scrape_timeout": "5s", "evaluation_interval": "5s"},
+            "scrape_configs": jobs,
+        },
         production["image"],
         expected,
     )
+
+
+def e2e_panel_rules(expected):
+    """Reuse actual record expressions; only the validation environment changes."""
+    groups = []
+    short = {"rct_sli:http_eligible_rate5m", "rct_sli:http_error_ratio5m", "rct_sli:report_p95_seconds5m"}
+    for filename in ["expected-targets.yml", "service-objectives.yml", "telemetry-pipeline.yml"]:
+        source = yaml.safe_load((ROOT / "infra/prometheus/rules" / filename).read_text())
+        for group in source["groups"]:
+            rules = []
+            for original in group["rules"]:
+                if "record" not in original:
+                    continue
+                if original["record"] == "rct_expected_target":
+                    if original["labels"]["job"] not in expected:
+                        continue
+                elif original["record"] not in short and group["name"] not in {
+                    "http-slo-window-rollup",
+                    "http-slo-long-window",
+                    "export-slo-window-rollup",
+                    "export-slo-long-window",
+                }:
+                    continue
+                rule = copy.deepcopy(original)
+                rule["expr"] = rule["expr"].replace('environment="production"', 'environment="synthetic"')
+                if rule.get("labels", {}).get("environment") == "production":
+                    rule["labels"]["environment"] = "synthetic"
+                rules.append(rule)
+            if rules:
+                groups.append(dict(group, rules=rules))
+    return {"groups": groups}
+
+
+def e2e_live_panel_queries(query, expected, safe):
+    """Fixed retained panels against actual apps; no substitute telemetry."""
+    deadline = time.monotonic() + 45
+    checks = []
+
+    def values(expression):
+        assert time.monotonic() < deadline, "live panel query deadline"
+        return query(expression)
+
+    def probe(
+        filename,
+        panel_id,
+        job,
+        *,
+        pool="",
+        heap=".*",
+        nonheap=".*",
+        absent=None,
+        counter=None,
+        counter_operator="rate",
+        coverage=False,
+    ):
+        panel = next(
+            p
+            for p in json.loads((ROOT / "infra/grafana/provisioning/dashboards" / filename).read_text())["panels"]
+            if p["id"] == panel_id
+        )
+        for index, target in enumerate(panel["targets"]):
+            safe["panel_probe"] = {"dashboard": filename, "panel": panel_id, "job": job, "target": index}
+            expression = target["expr"]
+            for name, replacement in [
+                ("${memory_pool_heap:regex}", heap),
+                ("${memory_pool_nonheap:regex}", nonheap),
+                ("$application", job),
+                ("$hikaricp", pool),
+                ("$instance", re.escape(job + ":" + str(expected[job]))),
+                ("$environment", "synthetic"),
+                ("$job", re.escape(job)),
+                ("$interval", "5m"),
+            ]:
+                expression = expression.replace(name, json.dumps(replacement)[1:-1])
+            assert "$" not in expression
+            rows = values(expression)
+            numbers = [float(row["value"][1]) for row in rows]
+            target_absent = absent.get(index) if isinstance(absent, dict) else absent
+            if target_absent is not None:
+                assert not rows or all(math.isnan(value) for value in numbers), (
+                    "no-event panel must not invent healthy zero"
+                )
+                state = target_absent
+            elif coverage:
+                assert all(math.isfinite(value) and 0 <= value < 2590200 for value in numbers)
+                state = "INSUFFICIENT_30D_COVERAGE"
+            else:
+                assert rows and all(math.isfinite(value) or math.isnan(value) for value in numbers), (
+                    "expected panel family/selector unavailable"
+                )
+                finite = [value for value in numbers if math.isfinite(value)]
+                if any(math.isnan(value) for value in numbers):
+                    assert counter is not None, "unexpected nonfinite panel value"
+                    assert counter_operator in {"rate", "irate"}
+                    rates = values(counter_operator + "(" + counter + '{job="' + job + '"}[5m])')
+                    for row, value in zip(rows, numbers, strict=True):
+                        if not math.isnan(value):
+                            continue
+                        matches = [
+                            float(rate["value"][1])
+                            for rate in rates
+                            if all(
+                                rate["metric"].get(key) == val
+                                for key, val in row["metric"].items()
+                                if key != "__name__"
+                            )
+                        ]
+                        assert matches and all(rate == 0 for rate in matches), "NaN requires observed idle denominator"
+                assert finite or counter is not None, "expected operation has no finite panel value"
+                state = (
+                    "IDLE_NO_RECENT_SAMPLE"
+                    if not finite
+                    else "FINITE_WITH_IDLE_SERIES"
+                    if len(finite) < len(numbers)
+                    else "FINITE"
+                )
+            checks.append(
+                dict(
+                    safe["panel_probe"],
+                    state=state,
+                    samples=len(rows),
+                    minimum=min(value for value in numbers if math.isfinite(value))
+                    if state.startswith("FINITE")
+                    else None,
+                    maximum=max(value for value in numbers if math.isfinite(value))
+                    if state.startswith("FINITE")
+                    else None,
+                )
+            )
+
+    for job in expected:
+        memory = values('jvm_memory_used_bytes{job="' + job + '"}')
+        ids = {
+            area: sorted({r["metric"]["id"] for r in memory if r["metric"].get("area") == area})
+            for area in ["heap", "nonheap"]
+        }
+        assert all(ids.values()), "both actual JVM memory areas required"
+        pools = {area: "|".join(re.escape(name) for name in names) for area, names in ids.items()}
+        for panel in [52, 58, 60, 66, 56, 95, 96, 85, 88, 50, 80, 82, 83, 68, 78, 6, 10, 14, 16, 20]:
+            probe("springboot-apm.json", panel, job, heap=pools["heap"], nonheap=pools["nonheap"])
+        pause = values('jvm_gc_pause_seconds_count{job="' + job + '"}')
+        # Micrometer1.15.12 creates pause timers on notifications, not at bind.
+        # The eager allocated/promoted counters were checked by panel78 above.
+        for panel, suffix in [(74, "count"), (76, "sum")]:
+            samples = values("count_over_time(jvm_gc_pause_seconds_" + suffix + '{job="' + job + '"}[5m])')
+            assert bool(samples) == bool(pause), "incomplete GC pause timer family"
+            mature = any(float(row["value"][1]) >= 2 for row in samples)
+            probe(
+                "springboot-apm.json",
+                panel,
+                job,
+                absent="NO_GC_PAUSE_OBSERVED" if not pause else None if mature else "INSUFFICIENT_GC_SAMPLES",
+            )
+        http = values('http_server_requests_seconds_count{job="' + job + '",uri!~".*actuator.*"}')
+        for panel in [4, 2]:
+            probe(
+                "springboot-apm.json",
+                panel,
+                job,
+                absent="NO_NON_ACTUATOR_HTTP_SAMPLE" if not http else None,
+                counter="http_server_requests_seconds_count" if panel == 2 else None,
+                counter_operator="irate" if panel == 2 else "rate",
+            )
+        for panel in [21, 22, 6]:
+            probe(
+                "business-kpis.json",
+                panel,
+                job,
+                absent="NO_NON_ACTUATOR_HTTP_SAMPLE" if panel == 22 and not http else None,
+            )
+        probe("business-kpis.json", 20, job, absent="NO_EXPECTED_TARGET_MISSING")
+        eligible = values(
+            'sum(rate(http_server_requests_seconds_count{job="'
+            + job
+            + '",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*"}[5m]))'
+        )
+        has_traffic = eligible and float(eligible[0]["value"][1]) > 0
+        probe(
+            "business-kpis.json",
+            23,
+            job,
+            absent=None if has_traffic else "NO_ELIGIBLE_HTTP_TRAFFIC",
+            counter="http_server_requests_seconds_count",
+        )
+        if job != "api-gateway":
+            for panel in [28, 24, 26, 30]:
+                probe("springboot-apm.json", panel, job)
+        if job in {"auth-service", "academic-service", "schedule-service"}:
+            pools = values('hikaricp_connections{job="' + job + '"}')
+            assert 1 <= len(pools) <= 4
+            for row in pools:
+                pool = row["metric"]["pool"]
+                assert 0 < len(pool) <= 128
+                for panel in [44, 36]:
+                    probe("springboot-apm.json", panel, job, pool=pool)
+        if job in {"academic-service", "schedule-service", "attendance-service"}:
+            count = values('grpc_client_duration_seconds_count{job="' + job + '"}')
+            assert count and sum(float(r["value"][1]) for r in count) > 0
+            recent = values('sum(rate(grpc_client_duration_seconds_count{job="' + job + '"}[5m]))')
+            assert len(recent) == 1 and math.isfinite(float(recent[0]["value"][1]))
+            for panel in [1, 2, 3]:
+                probe(
+                    "grpc-latency.json",
+                    panel,
+                    job,
+                    absent="NO_RECENT_RPC" if float(recent[0]["value"][1]) == 0 else None,
+                    counter="grpc_client_duration_seconds_count",
+                )
+            errors = values('grpc_client_duration_seconds_count{job="' + job + '",status!="OK"}')
+            probe("grpc-latency.json", 4, job, absent=None if errors else "NO_NON_OK_RPC_SAMPLE")
+            probe("grpc-latency.json", 5, job)
+    for job, panel, family in [
+        ("attendance-service", 1, "attendance_checkin_total"),
+        ("notification-web", 4, "notification_active_ws_sessions"),
+        *[(job, 5, "outbox_lag_seconds") for job in ["auth-service", "academic-service", "schedule-service"]],
+        *[(job, 8, "internal_jwt_fallback_total") for job in expected],
+    ]:
+        # No event producer is synthesized merely to make an idle panel nonempty.
+        present = values('{__name__=~"' + family + '",job="' + job + '"}')
+        probe("business-kpis.json", panel, job, absent=None if present else "NO_PRODUCER_SAMPLE_YET")
+    no_event = {
+        index: "NO_PRODUCER_SAMPLE_YET"
+        for index, family in enumerate(["auth_login_total", "otp_verify_total"])
+        if not values(family + '{job="auth-service"}')
+    }
+    probe("business-kpis.json", 2, "auth-service", absent=no_event)
+    for panel in [50, 51, 52]:
+        probe("business-kpis.json", panel, "auth-service")
+    for panel in [33, 34, 43]:
+        probe(
+            "business-kpis.json",
+            panel,
+            "attendance-service",
+            counter="attendance_report_duration_seconds_count" if panel in {34, 43} else None,
+        )
+    probe("business-kpis.json", 41, "auth-service", coverage=True)
+    for panel in [40, 53]:
+        probe("business-kpis.json", panel, "auth-service", absent="INSUFFICIENT_30D_COVERAGE")
+    safe["live_panel_queries"] = checks
+    safe.pop("panel_probe", None)
 
 
 def e2e_async_browser():
@@ -158,8 +429,13 @@ def e2e_async_browser():
         data = private / "data"
         data.mkdir()
         cfg = private / "prometheus.yml"
+        panel_rules = private / "panel-rules.yml"
+        panel_rules.write_text(yaml.safe_dump(e2e_panel_rules(expected), sort_keys=False))
+        config["rule_files"] = ["/etc/prometheus/panel-rules.yml"]
         cfg.write_text(yaml.safe_dump(config, sort_keys=False))
         safe["scrape_config_sha256"] = hashlib.sha256(cfg.read_bytes()).hexdigest()
+        safe["panel_rules_sha256"] = hashlib.sha256(panel_rules.read_bytes()).hexdigest()
+        safe["resources"].update(scrape_interval_seconds=5, sample_limit_per_target=3000, retained_series_guard=16000)
         browser = None
         attempted = False
         address = None
@@ -291,6 +567,8 @@ def e2e_async_browser():
                 "--volume",
                 str(cfg) + ":/etc/prometheus/prometheus.yml:ro",
                 "--volume",
+                str(panel_rules) + ":/etc/prometheus/panel-rules.yml:ro",
+                "--volume",
                 str(data) + ":/prometheus",
                 image,
                 "--config.file=/etc/prometheus/prometheus.yml",
@@ -352,6 +630,9 @@ def e2e_async_browser():
                 delta = number(expression) - baseline[key]
                 safe["metric_deltas"][key] = {"expected": 2, "actual": delta}
                 assert math.isclose(delta, 2, abs_tol=1e-9)
+            safe["phase"] = "LIVE_PANEL_QUERIES"
+            wait(lambda: bool(query('rct_sli:report_p95_seconds5m{job="attendance-service",format="docx"}')), 30)
+            e2e_live_panel_queries(query, expected, safe)
             retained = api(
                 "/api/v1/series?" + urllib.parse.urlencode({"match[]": '{job=~"' + "|".join(expected) + '"}'})
             )["data"]

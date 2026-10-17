@@ -28,6 +28,34 @@ ROOT = Path(__file__).resolve().parents[3]
 _STATE = {"phase": "PRECHECK_OR_CONFIG", "cleanup": "NOT_STARTED"}
 
 
+def mongo_monitor_witness(probe):
+    """Closed projection only; shell authentication happens before --eval."""
+    witness = {
+        "probe_exit": probe.returncode if -128 <= probe.returncode <= 255 else None,
+        "authenticated": False,
+        "diagnostic_ok": False,
+        "category": "UNKNOWN",
+        "observed_code": None,
+    }
+    if probe.returncode == 0:
+        try:
+            data = json.loads(probe.stdout)
+        except (ValueError, TypeError):
+            return witness
+        if not isinstance(data, dict) or set(data) != {"authenticated", "diagnostic_ok", "observed_code"}:
+            return witness
+        if type(data["authenticated"]) is not bool or type(data["diagnostic_ok"]) is not bool:
+            return witness
+        if data["observed_code"] is not None and data["observed_code"] not in {13, 18}:
+            return witness
+        witness.update(data)
+        witness["category"] = "READY" if data["authenticated"] and data["diagnostic_ok"] else "DIAGNOSTIC_DENIED"
+    elif "MongoServerError: Authentication failed." in probe.stderr:
+        # A named CLI category is not an observed numeric Mongo code18.
+        witness["category"] = "AUTHENTICATION_FAILED"
+    return witness
+
+
 async def rabbit_metrics_contract(docker):
     """Actual AMQP acknowledgement states and production plugin→Prometheus scrape."""
     import aio_pika
@@ -430,6 +458,44 @@ def main():
                 mongo_cli
                 + ['db.getSiblingDB("attendance_db").credential_fixture.insertOne({value:"synthetic-private-marker"})'],
             )
+
+            def mongo_monitor_ready():
+                probe = execute(
+                    "mongo-attendance",
+                    [
+                        "mongosh",
+                        "--quiet",
+                        "--username",
+                        "rct_monitor",
+                        "--password",
+                        "synthetic-mongo-monitor-only-0123456789abcdef",
+                        "--authenticationDatabase",
+                        "admin",
+                        "--eval",
+                        (
+                            "let authenticated=false,diagnostic_ok=false,observed_code=null;"
+                            "try {const users=db.runCommand({connectionStatus:1}).authInfo.authenticatedUsers;"
+                            'authenticated=users.length===1&&users[0].user==="rct_monitor"&&users[0].db==="admin";'
+                            "const status=db.adminCommand({serverStatus:1});diagnostic_ok=status.ok===1;"
+                            "if(status.code===13||status.code===18)observed_code=status.code;"
+                            "}catch(e){if(e.code===13||e.code===18)observed_code=e.code;}"
+                            "print(JSON.stringify({authenticated,diagnostic_ok,observed_code}));"
+                        ),
+                    ],
+                    check=False,
+                )
+                witness = mongo_monitor_witness(probe)
+                _STATE["mongo_monitor"] = witness
+                if witness["category"] == "AUTHENTICATION_FAILED":
+                    return False
+                assert witness["category"] == "READY", "monitor authentication/diagnostic capability failed"
+                return True
+
+            # Root ping can precede completion of custom monitor-user initialization.
+            # Only an authentication-not-ready observation retries; wrong-role/unknown fails.
+            _STATE["phase"] = "MONGO_MONITOR_AUTH_READINESS"
+            wait(mongo_monitor_ready)
+            _STATE["phase"] = "MONGO_APPLICATION_READ_DENIAL"
             denied = execute(
                 "mongo-attendance",
                 [
@@ -446,7 +512,12 @@ def main():
                 ],
                 check=False,
             )
-            assert denied.returncode != 0 and ("not authorized" in denied.stderr or "not authorized" in denied.stdout)
+            _STATE["mongo_monitor"]["app_read_probe_exit"] = (
+                denied.returncode if -128 <= denied.returncode <= 255 else None
+            )
+            unauthorized = "not authorized" in denied.stderr or "not authorized" in denied.stdout
+            _STATE["mongo_monitor"]["app_read_category"] = "UNAUTHORIZED" if unauthorized else "UNKNOWN"
+            assert denied.returncode != 0 and unauthorized
             _STATE["phase"] = "MONGO_EXPORTER_READINESS"
             wait(lambda: 'mongodb_up{cluster_role="mongod"} 1' in metrics("mongodb-exporter").splitlines())
             _STATE["phase"] = "REDIS_ROLE_AND_EXPORTER"
@@ -513,6 +584,7 @@ def main():
                 ],
                 "elapsed_seconds": round(time.monotonic() - started, 2),
                 "actual_rabbit_plugin": rabbit_result,
+                "mongo_monitor": _STATE["mongo_monitor"],
             }
         finally:
             primary = sys.exc_info()[0]
@@ -561,6 +633,7 @@ if __name__ == "__main__":
                     "exception_class": exception if exception in allowed else "OtherError",
                     "returncode": code if type(code) is int and -128 <= code <= 255 else None,
                     "probe_returncode": _STATE.get("probe_returncode"),
+                    "mongo_monitor": _STATE.get("mongo_monitor"),
                 }
             )
         )

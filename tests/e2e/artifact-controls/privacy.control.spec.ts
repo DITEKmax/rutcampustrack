@@ -11,6 +11,8 @@ import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
 import { rosterEditBlockFacts, validateFacts } from '../fixtures/first3-observer';
 import {
   classifySafeFailure,
+  retainHeadmanCleanupFailure,
+  type HeadmanCleanupCause,
   datasetHttpFailure,
   safeFailureAnnotation,
   safeFailureDiagnostics,
@@ -107,6 +109,94 @@ test('successful sensitive step metadata and worker output are not emitted', asy
   expect(closedTransferState('COMPLETED')).toBe('COMPLETED');
   expect(closedTransferState(marker)).toBe('OTHER');
   expect(closedTransferState({ state: marker })).toBe('OTHER');
+  const cleanupCauses = [
+    'HEADMAN_CLEANUP_SHORTCUT_SUBJECT_READ',
+    'HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_IDENTITY',
+    'HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_CLOSE',
+    'HEADMAN_CLEANUP_SHORTCUT_CATALOG_READ',
+    'HEADMAN_CLEANUP_SHORTCUT_CATALOG_SCOPE',
+    'HEADMAN_CLEANUP_PENDING_REQUEST_CANCEL',
+    'HEADMAN_CLEANUP_FUTURE_LESSON_RESTORE',
+    'HEADMAN_CLEANUP_CONTRAST_LESSON_CANCEL',
+  ] as const;
+  for (const cause of cleanupCauses) {
+    for (const status of [0, 200, 204, 401, 403, 409, 503, 'OTHER']) {
+      const annotations: TestInfo['annotations'] = [];
+      retainHeadmanCleanupFailure(annotations, cause, status);
+      expect(safeFailureDiagnostics(annotations)).toEqual([
+        { stage: 'HEADMAN_CLEANUP', cause, httpStatus: status },
+      ]);
+    }
+  }
+  const cleanupAnnotations: TestInfo['annotations'] = [];
+  for (const cause of cleanupCauses) retainHeadmanCleanupFailure(cleanupAnnotations, cause, 503);
+  expect(cleanupAnnotations.length).toBe(4);
+  expect(safeFailureDiagnostics([...cleanupAnnotations, ...cleanupAnnotations])).toHaveLength(4);
+  const hostileStatus = Object.defineProperty({}, 'toString', {
+    get() {
+      throw new Error(marker);
+    },
+  });
+  const hostileAnnotations: TestInfo['annotations'] = [];
+  retainHeadmanCleanupFailure(hostileAnnotations, cleanupCauses[0], hostileStatus);
+  expect(safeFailureDiagnostics(hostileAnnotations)).toEqual([
+    { stage: 'HEADMAN_CLEANUP', cause: cleanupCauses[0], httpStatus: 'OTHER' },
+  ]);
+  for (const description of [
+    `HEADMAN_CLEANUP_${marker}:503`,
+    `${cleanupCauses[0]}:${marker}`,
+    `${cleanupCauses[0]}:503\n${marker}`,
+    `${cleanupCauses[0]}:503\n`,
+    `${cleanupCauses[0]}:201`,
+    `${cleanupCauses[0]}:418`,
+    `${cleanupCauses[0]}:503:${marker}`,
+    marker.repeat(100),
+  ]) {
+    const diagnostics = safeFailureDiagnostics([{ type: safeFailureAnnotation, description }]);
+    expect(diagnostics.every((item) => item.stage !== 'HEADMAN_CLEANUP')).toBe(true);
+    expect(JSON.stringify(diagnostics)).not.toContain(marker);
+  }
+  const cleanupGetter = Object.defineProperty({ type: safeFailureAnnotation }, 'description', {
+    get() {
+      throw new Error(marker);
+    },
+  });
+  expect(safeFailureDiagnostics([cleanupGetter])).toEqual([
+    { stage: 'UNKNOWN', cause: 'UNKNOWN', httpStatus: 0 },
+  ]);
+  expect(
+    safeFailureDiagnostics(
+      new Proxy([], {
+        getOwnPropertyDescriptor() {
+          throw new Error(marker);
+        },
+      }),
+    ),
+  ).toEqual([]);
+  // The existing result serializer must retain finite witnesses and omit hostile extras.
+  info.annotations.push(
+    ...cleanupAnnotations.map((annotation) => ({ ...annotation, secret: marker })),
+  );
+  info.annotations.push(cleanupGetter, {
+    type: safeFailureAnnotation,
+    description: `${cleanupCauses[0]}:${marker}`,
+  });
+  const invalidCause: TestInfo['annotations'] = [];
+  retainHeadmanCleanupFailure(invalidCause, marker as HeadmanCleanupCause, 503);
+  expect(invalidCause).toEqual([]);
+  const annotationLimit = Array.from({ length: 32 }, () => ({
+    type: 'other',
+    description: marker,
+  }));
+  retainHeadmanCleanupFailure(annotationLimit, cleanupCauses[0], 503);
+  expect(annotationLimit).toHaveLength(32);
+  // Existing generic and transfer contracts keep their original status domains.
+  expect(
+    safeFailureDiagnostics([
+      { type: safeFailureAnnotation, description: 'DATASET_USER_ARCHIVE_HTTP:204' },
+    ]),
+  ).toEqual([{ stage: 'UNKNOWN', cause: 'UNKNOWN', httpStatus: 0 }]);
+  expect(closedTransferHttpStatus(204)).toBe('OTHER');
   // Exercise the real reporter output boundary with a closed record as well.
   info.annotations.push(...transferAnnotation(transferFacts));
 

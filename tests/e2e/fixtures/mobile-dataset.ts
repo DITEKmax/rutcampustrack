@@ -172,19 +172,146 @@ export class MobileDataset {
     };
   }
 
+  /** Only the untouched V2 seed in this explicit disposable CI lane may be expanded. */
+  private async prepareWeeklyReportSeed(semesters: Model[], page: Model): Promise<Model> {
+    const url = process.env.E2E_BASE_URL;
+    if (
+      this.minimumWeeklyReportWeeks !== 18 ||
+      process.env.RCT_E2E_ASYNC_REPORT !== 'true' ||
+      process.env.RCT_E2E_REMAINING5 !== 'true' ||
+      process.env.RCT_E2E_SYNTHETIC_SEED !== 'true' ||
+      process.env.CI !== 'true' ||
+      process.env.GITHUB_ACTIONS !== 'true' ||
+      process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
+      !['https://localhost:8443', 'https://127.0.0.1:8443', 'https://[::1]:8443'].includes(
+        url ?? '',
+      )
+    )
+      throw new Error('Weekly report seed preparation requires the disposable async CI lane');
+    const isFreshSeed = (row: Model) =>
+      (row.id === 1 || row.id === '1') &&
+      row.name === 'Spring 2026' &&
+      row.dateFrom === '2026-02-01' &&
+      row.dateTo === '2026-06-30' &&
+      row.semesterType === null &&
+      row.academicYear === null &&
+      row.active === true &&
+      row.archived === false &&
+      row.transition === 'NONE' &&
+      row.releasePending === false &&
+      row.activationScheduled === false &&
+      (row.stateVersion === 0 || row.stateVersion === '0');
+    if (
+      semesters.length !== 1 ||
+      page?.totalElements !== 1 ||
+      page?.number !== 0 ||
+      !isFreshSeed(semesters[0]) ||
+      !isFreshSeed(await this.admin.call('GET', '/api/academic/semesters/1'))
+    )
+      throw new Error('Weekly report preparation requires the unchanged single V2 semester seed');
+
+    // Mirror the existing semester lifecycle's real participant barrier, without importing its spec.
+    const transition = async (action: 'ARCHIVE' | 'RESTORE') => {
+      const operation = await this.admin.call(
+        'POST',
+        `/api/academic/semesters/1/${action === 'ARCHIVE' ? 'archive' : 'restore'}`,
+        undefined,
+        [200, 202, 503],
+        { 'Idempotency-Key': randomUUID() },
+      );
+      expect(
+        typeof operation.operationId === 'string' &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(
+            operation.operationId,
+          ) &&
+          String(operation.semesterId) === '1' &&
+          operation.action === action &&
+          /^[1-9][0-9]{0,18}$/.test(String(operation.stateVersion)),
+        'Weekly report seed command retains its own operation identity',
+      ).toBe(true);
+      await expect
+        .poll(
+          async () => {
+            const status = await this.admin.call('GET', '/api/academic/semesters/1/archive/status');
+            const current = status.operation;
+            expect(
+              String(status.semesterId) === '1' &&
+                current?.operationId === operation.operationId &&
+                String(current.semesterId) === '1' &&
+                current.action === action &&
+                String(current.stateVersion) === String(operation.stateVersion) &&
+                String(current.stateVersion) === String(status.stateVersion) &&
+                (current.operationState !== 'ERROR' || current.retryable === true),
+              'Weekly report seed participant operation identity remains stable',
+            ).toBe(true);
+            const participant = action === 'ARCHIVE' ? 'READY' : 'RELEASED';
+            return (
+              current.operationState === 'COMPLETED' &&
+              ['academic', 'schedule', 'attendance'].every(
+                (name) => current[name] === participant,
+              ) &&
+              status.active === false &&
+              status.archived === (action === 'ARCHIVE') &&
+              status.transition === 'NONE' &&
+              status.releasePending === false &&
+              status.writeBlocked === (action === 'ARCHIVE')
+            );
+          },
+          { timeout: 30000, message: 'Weekly report seed real participant barrier completes' },
+        )
+        .toBe(true);
+    };
+    await transition('ARCHIVE');
+    const dateTo = shifted(this.today, 30);
+    const expanded = await this.admin.call('PUT', '/api/academic/semesters/1', {
+      name: 'Spring 2026',
+      dateFrom: '2026-02-01',
+      dateTo,
+      semesterType: 'SPRING',
+      academicYear: 2025,
+    });
+    const hasExpandedIdentity = (row: Model) =>
+      String(row.id) === '1' &&
+      row.dateFrom === '2026-02-01' &&
+      row.dateTo === dateTo &&
+      row.semesterType === 'SPRING' &&
+      row.academicYear === 2025 &&
+      row.transition === 'NONE' &&
+      row.releasePending === false;
+    expect(
+      hasExpandedIdentity(expanded) && expanded.archived === true && expanded.active === false,
+      'Weekly report seed expansion preserves its original history and settled archive',
+    ).toBe(true);
+    await transition('RESTORE');
+    const activated = await this.admin.call('PATCH', '/api/academic/semesters/1/activate');
+    expect(
+      hasExpandedIdentity(activated) &&
+        activated.active === true &&
+        activated.archived === false &&
+        activated.activationScheduled === false,
+      'Weekly report seed is current only after restore participants release it',
+    ).toBe(true);
+    return activated;
+  }
+
   async initialize() {
     const currentMonday = shifted(
       this.today,
       -((new Date(`${this.today}T12:00:00Z`).getUTCDay() + 6) % 7),
     );
     const reportStart = shifted(currentMonday, -17 * 7);
-    const semesters = items(
-      await this.admin.call('GET', '/api/academic/semesters?size=100'),
-      'semesterResponseList',
-    );
+    const semesterResponse = await this.admin.call('GET', '/api/academic/semesters?size=100');
+    const semesters = items(semesterResponse, 'semesterResponseList');
     this.semester = semesters.find(
       (row) => row.active && row.dateFrom <= this.today && row.dateTo >= this.tomorrow,
     )!;
+    if (
+      !this.semester &&
+      this.minimumWeeklyReportWeeks === 18 &&
+      semesters.some((row) => row.dateFrom <= shifted(this.today, 30) && row.dateTo >= reportStart)
+    ) {
+      this.semester = await this.prepareWeeklyReportSeed(semesters, semesterResponse.page);
+    }
     if (!this.semester) {
       const month = Number(this.today.slice(5, 7));
       const teachingYesterday = shifted(this.today, -1);

@@ -3315,6 +3315,689 @@ jobs:
           mkdir -m 700 -- "$RCT_REMAINING5_RUN/artifacts"
           npx playwright test --config playwright.real-mobile.config.ts --project=chromium --grep '(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account|D002 TMA stays online-only beside a warm PWA snapshot)$'
 
+      - name: Record closed Homework503 dependency hints after remaining5 failure
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.remaining5.outcome == 'failure' }}
+        timeout-minutes: 1
+        env:
+          RCT_HTTP500_DIAGNOSTIC_STAGE: HOMEWORK_CREATE503
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+        run: &closed-http500-diagnostic |
+          python3 - <<'PY_HTTP500_DIAGNOSTIC'
+          import hashlib, json, os, re, selectors, stat, subprocess, time
+          from pathlib import Path
+
+          STAGES = {
+              'HOMEWORK_CREATE503': ('RCT_REMAINING5_RUN', 'rct-remaining5-', ('artifacts',),
+                                     'mobile-real-server.spec.ts', 'DATASET_HOMEWORK_CREATE_HTTP',
+                                     'academic-service', 'ACADEMIC_HOMEWORK_CREATE', '', ''),
+              'STUDENT_STATS503': ('RCT_LESSON_LIFECYCLE_RUN', 'rct-lesson-lifecycle-',
+                                   ('artifacts',), 'mobile-schedule-lifecycle.spec.ts', 'STUDENT_STATS_HTTP503',
+                                   'attendance-service', 'ATTENDANCE_STUDENT_PROJECTION',
+                                   'ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceImpl.getStudentAttendanceProjection',
+                                   'AttendanceStudentGrpcServiceImpl.java'),
+              'REPORT500': ('RCT_SEMESTER_RECONCILIATION_RUN', 'rct-semester-reconciliation-',
+                            ('artifacts',), 'semester-lifecycle.spec.ts', 'DATASET_ATTENDANCE_REPORT_HTTP',
+                            'attendance-service', 'ATTENDANCE_LESSON_REPORT',
+                            'ru.rutcampustrack.attendance.report.ReportController.getLessonAttendance',
+                            'ReportController.java'),
+              'LESSON_CREATE500': ('RCT_ASSIGNMENT_LIFECYCLE_RUN', 'rct-assignment-lifecycle-',
+                                  ('artifacts', 'prepare'), 'assignment-lifecycle.spec.ts',
+                                  'DATASET_LESSON_CREATE_HTTP', 'schedule-service', 'SCHEDULE_ONEOFF_LESSON_CREATE',
+                                  'ru.rutcampustrack.schedule.oneoff.OneOffLessonController.createOneOffLesson',
+                                  'OneOffLessonController.java'),
+          }
+          CLASSES = {
+              'io.grpc.StatusRuntimeException': 'GRPC_STATUS',
+              'io.grpc.StatusException': 'GRPC_STATUS',
+              'org.postgresql.util.PSQLException': 'POSTGRESQL',
+              'javax.net.ssl.SSLHandshakeException': 'TLS_HANDSHAKE',
+              'java.net.ConnectException': 'CONNECT',
+              'java.lang.IllegalStateException': 'ILLEGAL_STATE',
+              'java.lang.IllegalArgumentException': 'ILLEGAL_ARGUMENT',
+              'java.lang.NullPointerException': 'NULL_POINTER',
+              'org.springframework.dao.DataIntegrityViolationException': 'DATA_INTEGRITY',
+              'org.springframework.http.converter.HttpMessageNotWritableException': 'HTTP_SERIALIZATION',
+              'org.springframework.web.server.ResponseStatusException': 'HTTP_STATUS',
+              'reactor.netty.http.client.PrematureCloseException': 'UPSTREAM_CLOSED',
+          }
+          HTTP500_STAGES = {'ATTENDANCE_LESSON_REPORT', 'SCHEDULE_ONEOFF_LESSON_CREATE'}
+          ORIGINS = {'attendance-service': 'ATTENDANCE_MVC', 'schedule-service': 'SCHEDULE_MVC',
+                     'api-gateway': 'GATEWAY_WEBFLUX'}
+          GATEWAY_LOGGER = 'org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler'
+          AMBIGUITY_REASONS = {
+              'MULTIPLE_CONTROLLER_FRAMES', 'UNQUALIFIED_SUPPRESSION', 'MULTIPLE_CONTROLLER_RECORDS',
+              'MULTIPLE_FALLBACK_RECORDS', 'CROSS_ORIGIN_CANDIDATES', 'MISSING_EXCEPTION_STACK',
+              'INVALID_EXCEPTION_STACK', 'STACK_LIMIT', 'LOG_LIMIT', 'MALFORMED_LOG_RECORD',
+              'UNMAPPED_EXCEPTION_CLASS', 'EVIDENCE_LIMIT', 'NO_ELIGIBLE_ERROR_RECORD',
+          }
+          OWN_FRAME_SOURCES = {
+              'ATTENDANCE_REPORT_SERVICE': ('attendance-service', 'ru.rutcampustrack.attendance.report.ReportService',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java',
+                  '8ba6b4eea45e27b10d31b9daa010898cac4db68daaa4bfc46c08e71010f730d1', 1812),
+              'ATTENDANCE_READ_PORT': ('attendance-service', 'ru.rutcampustrack.attendance.checkin.AttendanceReadPortImpl',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/checkin/AttendanceReadPortImpl.java',
+                  'eac7f0c10408548f82bf2043e601cf84f796ce2369994a1698a9f3f54b1322f6', 128),
+              'HEADMAN_APPROVED_TICKET_RESOLVER': ('attendance-service', 'ru.rutcampustrack.attendance.report.HeadmanApprovedTicketResolver',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanApprovedTicketResolver.java',
+                  '7ccf99773d14f56d7ec70a54ca869033c04bcb2b58adbb674cb0e818696847f7', 96),
+              'ATTENDANCE_REPORT_CONTROLLER': ('attendance-service', 'ru.rutcampustrack.attendance.report.ReportController',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportController.java',
+                  '9253480728210dbb49474a4fa14b6318cf2c9f2e85fba28c99d1fe68f281c4c4', 303),
+              'SCHEDULE_ONEOFF_SERVICE': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonService',
+                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java',
+                  '01cef7d1734a2c850a89b37a164dc5f2fc55ac5ba2771a48ec98c42c53448c46', 75),
+              'SCHEDULE_ONEOFF_COORDINATOR': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonCoordinator',
+                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonCoordinator.java',
+                  'ce21e00634da8326fd8386be27f0bc89e5f8e1d610ecfa3bcf0717223c648205', 181),
+              'SCHEDULE_ONEOFF_WRITER': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonWriter',
+                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonWriter.java',
+                  '4f3bf7ba2033ae7b03e162544a1f8a4788b44eb49fba8b73695baa050defab79', 856),
+              'SCHEDULE_SEMESTER_ARCHIVE_WRITE_FENCE': ('schedule-service', 'ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence',
+                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveWriteFence.java',
+                  '38ec1cb6f70cd2af052648ac645491ee3166db9549adcde77199735d1628b597', 265),
+              'SCHEDULE_ONEOFF_CONTROLLER': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonController',
+                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java',
+                  '31dbb34318391172689f937046e4aed7e63b239e45be371fa9b04271d6b53417', 59),
+              'INTERNAL_JWT_ISSUER_FILTER': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter',
+                  'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java',
+                  '695cff405b84f170a97b5f980756ffd8d060b4917ccd40a47aa3e11d1d79c94c', 608),
+              'INTERNAL_JWT_ISSUER_CLIENT': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerClient',
+                  'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java',
+                  '1e7a444198c7c585bb835fde12d79c59ef4ff8ac9bc73d115ec67083f5dfc42f', 474),
+          }
+          PROJECTION_KINDS = {
+              'INVALID_OCCURRENCE', 'DUPLICATE_OCCURRENCE', 'UNSUPPORTED_ATTENDANCE_STATUS',
+              'INVALID_ROSTER', 'INVALID_METRICS', 'ACADEMIC_DEPENDENCY', 'SCHEDULE_DEPENDENCY', 'UNKNOWN',
+          } | {'RPC_' + code for code in (
+              'OK', 'CANCELLED', 'UNKNOWN', 'INVALID_ARGUMENT', 'DEADLINE_EXCEEDED', 'NOT_FOUND',
+              'ALREADY_EXISTS', 'PERMISSION_DENIED', 'RESOURCE_EXHAUSTED', 'FAILED_PRECONDITION',
+              'ABORTED', 'OUT_OF_RANGE', 'UNIMPLEMENTED', 'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS', 'UNAUTHENTICATED')}
+          PROJECTION_STAGES = {'ACADEMIC_SCOPE', 'ACADEMIC_MEMBERS', 'SCHEDULE_LESSONS',
+                               'CURRENT_GROUP_SCOPE', 'GROUP_CATALOGUE', 'GROUP_SERIES', 'OWN_MARKS',
+                               'LESSON_SNAPSHOT', 'RANK', 'UNKNOWN'}
+          STATS_SOURCES = {
+              'tests/e2e/specs/mobile-schedule-lifecycle.spec.ts':
+                  '99692ef9eda26d27b0cf98b117669940886c598615a1fd59becff6ed42c9f3a9',
+              'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java':
+                  'f5a49c00d8cb1724830876994ac5d93a14b36375dc8180db3163537f2190b3f0',
+          }
+          LIMIT = 8388608
+
+          def decode(raw):
+              def pairs(items):
+                  result = {}
+                  for key, value in items:
+                      if key in result:
+                          raise ValueError('Duplicate closed field')
+                      result[key] = value
+                  return result
+              return json.loads(raw, object_pairs_hook=pairs,
+                                parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
+
+          def output(state, stage, category='UNKNOWN', chain=None, own_frame=None,
+                     origin='UNKNOWN', class_chain=None):
+              value = {'state': state, 'exceptionCategory': category, 'sourceStage': stage}
+              if stage in HTTP500_STAGES:
+                  value.update(reportedExceptionChain=[] if chain is None else chain,
+                               reportedOwnFrame=own_frame, reportedOrigin=origin,
+                               reportedExceptionClassChain=[] if class_chain is None else class_chain,
+                               reportedAmbiguityEvidence=[])
+              return value
+
+          def verify_http_sources(config):
+              for service, _, source, digest, lines in OWN_FRAME_SOURCES.values():
+                  if service not in {config[5], 'api-gateway'}:
+                      continue
+                  path = Path(source)
+                  info = path.lstat()
+                  if not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 262144:
+                      raise ValueError('Reported frame source unavailable')
+                  raw = path.read_bytes()
+                  if hashlib.sha256(raw).hexdigest() != digest or len(raw.splitlines()) != lines:
+                      raise ValueError('Reported frame source changed')
+
+          def reported_own_frame(stack, config, captured_service=None):
+              matches = []
+              for symbol, (service, clazz, source, _, line_bound) in OWN_FRAME_SOURCES.items():
+                  if service != (config[5] if captured_service is None else captured_service):
+                      continue
+                  pattern = (r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
+                             + re.escape(clazz) + r'\.[A-Za-z_$<>][A-Za-z0-9_$<>]*\('
+                             + re.escape(Path(source).name) + r':([1-9][0-9]{0,5})\)[ \t]*$')
+                  for match in re.finditer(pattern, stack):
+                      line = int(match[1])
+                      if line <= line_bound:
+                          matches.append((match.start(), {'symbol': symbol, 'line': line}))
+              return min(matches, key=lambda item: item[0])[1] if matches else None
+
+          def is_student_stats_failure(value):
+              keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
+                      'errorCount', 'diagnostics', 'errorLocations'}
+              expected = {('mobile-attendance-requests.spec.ts', 9), ('mobile-lesson-lifecycle.spec.ts', 20),
+                          ('mobile-schedule-lifecycle.spec.ts', 390), ('mobile-schedule-lifecycle.spec.ts', 1833)}
+              seen, target = set(), None
+              for row in value['results']:
+                  if type(row) is not dict or set(row) != keys:
+                      return False
+                  identity = (row['file'], row['line'])
+                  if (type(row['file']) is not str or type(row['line']) is not int
+                          or identity not in expected or identity in seen or row['project'] != 'chromium'
+                          or row['status'] not in {'passed', 'failed', 'timedOut', 'skipped', 'interrupted'}
+                          or row['expectedStatus'] != 'passed' or type(row['errorCount']) is not int
+                          or not 0 <= row['errorCount'] <= 8 or type(row['durationMs']) not in (int, float)
+                          or not 0 <= row['durationMs'] <= 1800000
+                          or type(row['diagnostics']) is not list or len(row['diagnostics']) > 8
+                          or not all(type(item) is dict and set(item) == {'stage', 'cause', 'httpStatus'}
+                                     and type(item['stage']) is str and type(item['cause']) is str
+                                     and type(item['httpStatus']) is int for item in row['diagnostics'])
+                          or type(row['errorLocations']) is not list
+                          or len(row['errorLocations']) > row['errorCount']
+                          or not all(type(frame) is dict and set(frame) == {'file', 'line'}
+                                     and type(frame['file']) is str and type(frame['line']) is int
+                                     and 0 < frame['line'] < 1000000 for frame in row['errorLocations'])):
+                      return False
+                  seen.add(identity)
+                  if identity == ('mobile-schedule-lifecycle.spec.ts', 390):
+                      target = row
+              return (seen == expected and target['status'] == 'failed' and target['errorCount'] == 1
+                      and target['errorLocations'] == [{'file': 'mobile-schedule-lifecycle.spec.ts', 'line': 1363}])
+
+          def is_homework_failure(value):
+              keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs', 'errorCount', 'diagnostics', 'errorLocations'}
+              for row in value['results']:
+                  if (type(row) is not dict or set(row) != keys or row['file'] != 'mobile-real-server.spec.ts'
+                          or row['project'] != 'chromium' or row['expectedStatus'] != 'passed'
+                          or row['status'] not in {'passed', 'failed', 'timedOut', 'skipped', 'interrupted'}
+                          or type(row['line']) is not int or not 0 < row['line'] < 1000000
+                          or type(row['errorCount']) is not int or not 0 <= row['errorCount'] <= 8
+                          or type(row['durationMs']) not in (int, float) or not 0 <= row['durationMs'] <= 1800000
+                          or type(row['errorLocations']) is not list or len(row['errorLocations']) > 8
+                          or not all(type(f) is dict and set(f) == {'file', 'line'} and type(f['file']) is str and f['file'] in {'mobile-real-server.spec.ts', 'mobile-dataset.ts'} and type(f['line']) is int and 0 < f['line'] < 1000000 for f in row['errorLocations'])
+                          or type(row['diagnostics']) is not list or len(row['diagnostics']) > 8
+                          or not all(type(d) is dict and set(d) == {'stage', 'cause', 'httpStatus'} and type(d['stage']) is str and re.fullmatch(r'[A-Z_]{1,64}', d['stage']) and type(d['cause']) is str and re.fullmatch(r'[A-Z_]{1,64}', d['cause']) and type(d['httpStatus']) is int and 0 <= d['httpStatus'] <= 599 for d in row['diagnostics'])):
+                      return False
+              return any(row['status'] == 'failed' and {'stage': 'DATASET_HTTP', 'cause': 'DATASET_HOMEWORK_CREATE_HTTP', 'httpStatus': 503} in row['diagnostics'] for row in value['results'])
+
+          def verify_homework_sources():
+              base = Path('services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic')
+              handler = (base / 'exception/GlobalExceptionHandler.java').read_text()
+              client = (base / 'grpc/ScheduleGrpcClient.java').read_text()
+              if ('log.warn("schedule-service недоступен: {}", ex.getMessage());' not in handler
+                      or any(text not in client for text in ('Нельзя вызвать binding API без подписанного аутентифицированного пользователя', 'Нельзя вызвать binding API без directed Academic service identity', '" в schedule-service: " + error.getStatus()'))):
+                  raise ValueError('Homework warning source changed')
+              advice = Path('services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/GrpcExceptionAdvice.java').read_text()
+              if 'log.error("gRPC internal error", e);' not in advice:
+                  raise ValueError('Schedule failure logger source changed')
+
+          def classify_homework(payloads, config):
+              hints = set()
+              messages = {'Нельзя вызвать binding API без подписанного аутентифицированного пользователя': ('MISSING_ACTOR', 'ACADEMIC_BINDING_IDENTITY'), 'Нельзя вызвать binding API без directed Academic service identity': ('MISSING_DIRECTED_IDENTITY', 'ACADEMIC_BINDING_IDENTITY')}
+              actions = {'зарезервировать привязку домашней работы': 'ACADEMIC_BINDING_RESERVE', 'создать ДЗ на календарный день': 'ACADEMIC_DATE_BINDING_RESERVE'}
+              sites = {'ru.rutcampustrack.academic.grpc.ScheduleGrpcClient': 'ACADEMIC_SCHEDULE_CLIENT', 'ru.rutcampustrack.academic.homework.HomeworkService': 'ACADEMIC_HOMEWORK', 'ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceImpl': 'SCHEDULE_GRPC', 'ru.rutcampustrack.schedule.homework.HomeworkBindingService': 'SCHEDULE_BINDING', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerClient': 'GATEWAY_ISSUER', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter': 'GATEWAY_ISSUER_FILTER'}
+              statuses = {'OK', 'CANCELLED', 'UNKNOWN', 'INVALID_ARGUMENT', 'DEADLINE_EXCEEDED', 'NOT_FOUND', 'ALREADY_EXISTS', 'PERMISSION_DENIED', 'RESOURCE_EXHAUSTED', 'FAILED_PRECONDITION', 'ABORTED', 'OUT_OF_RANGE', 'UNIMPLEMENTED', 'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS', 'UNAUTHENTICATED'}
+              for service, payload in payloads.items():
+                  if len(payload) > LIMIT or len(payload.splitlines()) > 200:
+                      return output('UNAVAILABLE_LOG_LIMIT', config[6])
+                  for line in payload.splitlines():
+                      if len(line) > 131072:
+                          return output('UNAVAILABLE_LOG_LIMIT', config[6])
+                      try:
+                          record = decode(line)
+                          if type(record) is not dict:
+                              raise ValueError()
+                      except (ValueError, TypeError):
+                          return output('UNAVAILABLE_LOG_FORMAT', config[6])
+                      logger, message = record.get('logger'), record.get('msg')
+                      if type(message) is not str:
+                          continue
+                      if service == 'academic-service' and logger == 'ru.rutcampustrack.academic.exception.GlobalExceptionHandler' and record.get('level') == 'WARN' and message.startswith('schedule-service недоступен: '):
+                          text = message.removeprefix('schedule-service недоступен: ')
+                          if text in messages:
+                              cause, site = messages[text]
+                              hints.add((service, cause, 'NONE', site))
+                          for action, site in actions.items():
+                              match = re.fullmatch(re.escape('Не удалось ' + action + ' в schedule-service: ') + r'Status\{code=([A-Z_]+), description=[\s\S]*, cause=[\s\S]*\}', text)
+                              if match and match[1] in statuses:
+                                  hints.add((service, 'GRPC_STATUS', match[1], site))
+                      expected = (logger == GATEWAY_LOGGER and bool(re.match(r'^\[[A-Za-z0-9-]{1,64}\]  [45][0-9]{2} Server Error for HTTP ', message))) if service == 'api-gateway' else (logger == 'ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler' and message.startswith('Unhandled exception correlation='))
+                      expected = expected or (service == 'schedule-service' and logger == 'ru.rutcampustrack.schedule.grpc.GrpcExceptionAdvice' and message == 'gRPC internal error')
+                      if record.get('level') != 'ERROR' or not expected:
+                          continue
+                      stack = record.get('stack')
+                      if type(stack) is not str or len(stack.encode()) > 131072:
+                          return output('UNAVAILABLE_EXCEPTION_STACK', config[6])
+                      category = 'REQUEST_SCOPE' if re.search(r'(?m)^(?:Caused by: )?org\.springframework\.beans\.factory\.support\.ScopeNotActiveException:', stack) else next((label for clazz, label in CLASSES.items() if re.search(r'(?m)^(?:Caused by: )?' + re.escape(clazz) + r'(?::|$)', stack)), 'UNKNOWN')
+                      rpc = re.search(r'(?m)^(?:Caused by: )?io\.grpc\.Status(?:Runtime)?Exception: ([A-Z_]+)(?::|$)', stack)
+                      code = rpc[1] if rpc and rpc[1] in statuses else 'NONE'
+                      if rpc and code != 'NONE' and category == 'UNKNOWN':
+                          category = 'GRPC_STATUS'
+                      for clazz, site in sites.items():
+                          if not clazz.startswith({'academic-service': ('ru.rutcampustrack.academic.',), 'schedule-service': ('ru.rutcampustrack.schedule.',), 'api-gateway': ('ru.rutcampustrack.gateway.',)}[service]):
+                              continue
+                          if re.search(r'(?m)^\s*at ' + re.escape(clazz) + r'\.[A-Za-z_$<>][A-Za-z0-9_$<>]*\(', stack):
+                              hints.add((service, category, code, site))
+              result = output('ABSENT' if not hints else 'REPORTED' if len(hints) == 1 else 'AMBIGUOUS', config[6])
+              result['reportedHints'] = [dict(service=s, exceptionCategory=c, grpcStatus=g, sourceSite=p) for s, c, g, p in sorted(hints)[:8]]
+              result['qualification'] = 'Unkeyed bounded log hints; exact request cause remains UNKNOWN'
+              return result
+
+          def is_target_failure(value, config):
+              core = {'status', 'runnerErrors', 'unsafeArtifact', 'suppressedStdoutBytes',
+                      'suppressedStderrBytes', 'results'}
+              if (type(value) is not dict or set(value) != core or value['status'] != 'failed'
+                      or type(value['runnerErrors']) is not int or value['runnerErrors'] != 0
+                      or value['unsafeArtifact'] is not False
+                      or any(type(value[key]) is not int or value[key] != 0
+                             for key in ('suppressedStdoutBytes', 'suppressedStderrBytes'))
+                      or type(value['results']) is not list
+                      or (not (1 <= len(value['results']) <= 8) if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP' else len(value['results']) != (4 if config[4] == 'STUDENT_STATS_HTTP503' else 1))):
+                  return False
+              if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
+                  return is_homework_failure(value)
+              if config[4] == 'STUDENT_STATS_HTTP503':
+                  return is_student_stats_failure(value)
+              row = value['results'][0]
+              keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
+                      'errorCount', 'diagnostics', 'errorLocations'}
+              return (type(row) is dict and set(row) == keys and row['file'] == config[3]
+                      and type(row['line']) is int and 0 < row['line'] < 1000000
+                      and row['project'] == 'chromium' and row['status'] == 'failed'
+                      and row['expectedStatus'] == 'passed' and type(row['errorCount']) is int
+                      and 0 < row['errorCount'] <= 8 and type(row['diagnostics']) is list
+                      and 0 < len(row['diagnostics']) <= 8
+                      and all(type(item) is dict and set(item) == {'stage', 'cause', 'httpStatus'}
+                              for item in row['diagnostics'])
+                      and {'stage': 'DATASET_HTTP', 'cause': config[4], 'httpStatus': 500}
+                          in row['diagnostics'])
+
+          def classify_projection(payload, config):
+              # An unkeyed log record is a reported operation hint, never exact request causality.
+              stage = config[6]
+              pattern = re.compile(r'Student projection failed: kind=([A-Z_]+), stage=([A-Z_]+)')
+              matches, unusable = [], False
+              for line in payload.splitlines():
+                  if len(line) > 131072:
+                      unusable = True
+                      continue
+                  try:
+                      record = decode(line)
+                  except (ValueError, UnicodeError, RecursionError):
+                      unusable = True
+                      continue
+                  if type(record) is not dict:
+                      unusable = True
+                      continue
+                  if (record.get('logger') != 'ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceImpl'
+                          or record.get('level') != 'WARN'):
+                      continue
+                  message = record.get('msg')
+                  match = pattern.fullmatch(message) if type(message) is str else None
+                  if not match or match[1] not in PROJECTION_KINDS or match[2] not in PROJECTION_STAGES:
+                      unusable = True
+                      continue
+                  matches.append((match[1], match[2]))
+              if unusable:
+                  return output('UNAVAILABLE_LOG_FORMAT', stage)
+              distinct = sorted(set(matches))
+              if len(distinct) > 1:
+                  pairs = '|'.join(kind + '@' + source for kind, source in distinct)
+                  return output('AMBIGUOUS', stage, 'REPORTED_PAIRS:' + pairs)
+              return (output('UNIQUE', stage + '_' + distinct[0][1], 'REPORTED_' + distinct[0][0])
+                      if distinct else output('ABSENT', stage))
+
+          def classify(payload, config, captured_service=None):
+              stage = config[6]
+              captured_service = config[5] if captured_service is None else captured_service
+              if captured_service not in {config[5], 'api-gateway'}:
+                  return output('UNAVAILABLE_SERVICE_OWNERSHIP', stage)
+              gateway = captured_service == 'api-gateway'
+              origin = ORIGINS[captured_service]
+              if len(payload) > LIMIT or len(payload.splitlines()) > 200:
+                  return output('UNAVAILABLE_LOG_FORMAT' if config[4] == 'STUDENT_STATS_HTTP503'
+                                else 'UNAVAILABLE_LOG_LIMIT', stage)
+              if config[4] == 'STUDENT_STATS_HTTP503':
+                  return classify_projection(payload, config)
+              frame = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
+                                 + re.escape(config[7] + '(' + config[8] + ':') + r'[1-9][0-9]{0,5}\)')
+              throwable = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
+                                     r'((?:[A-Za-z_$][A-Za-z0-9_$]*\.)+'
+                                     r'[A-Za-z_$][A-Za-z0-9_$]*(?:Exception|Error))(?::|$)')
+              reported_header = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
+                                           r'((?:[A-Za-z_$][A-Za-z0-9_$]*\.)+'
+                                           r'(?:[A-Za-z_$][A-Za-z0-9_$]*)?(?:Exception|Error))(?::[^\r\n]*|$)')
+              stack_frame = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
+                                       r'(?:[A-Za-z_$][A-Za-z0-9_$]*\.)+[A-Za-z_$<>][A-Za-z0-9_$<>]*'
+                                       r'\((?:[A-Za-z0-9_$.-]+\.java:[1-9][0-9]{0,5}|Native Method|Unknown Source)\)[ \t]*$')
+              matches, fallback = [], []
+              unusable, invalid_stack, fallback_ambiguous = False, False, False
+              line_limit = controller_seen = False
+              for line in payload.splitlines():
+                  if len(line) > 131072:
+                      unusable = line_limit = True
+                      continue
+                  try:
+                      record = decode(line)
+                  except (ValueError, UnicodeError, RecursionError):
+                      unusable = True
+                      continue
+                  if type(record) is not dict:
+                      unusable = True
+                      continue
+                  expected_logger = GATEWAY_LOGGER if gateway else 'ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler'
+                  if (record.get('logger') != expected_logger or record.get('level') != 'ERROR'
+                          or (gateway and record.get('service') != 'api-gateway')):
+                      continue
+                  stack = record.get('stack')
+                  try:
+                      bounded_stack = type(stack) is str and 0 < len(stack.encode()) <= 131072
+                  except UnicodeError:
+                      bounded_stack = False
+                  if not bounded_stack:
+                      unusable = invalid_stack = True
+                      continue
+                  frames = frame.findall(stack)
+                  suppressed = bool(re.search(r'(?m)^[ \t]*Suppressed:', stack))
+                  # Reactor assembly checkpoints are metadata, not an additional causal exception.
+                  # This allowance is only for reported Gateway hints, never exact-controller UNIQUE.
+                  if gateway and suppressed:
+                      suppressed_types = re.findall(r'(?m)^[ \t]*Suppressed: ([A-Za-z0-9_.$]+)(?::|$)', stack)
+                      suppressed_count = len(re.findall(r'(?m)^[ \t]*Suppressed:', stack))
+                      suppressed = (len(suppressed_types) != suppressed_count
+                                    or any(kind != 'reactor.core.publisher.FluxOnAssembly$OnAssemblyException'
+                                           for kind in suppressed_types))
+                  kinds = throwable.findall(stack)
+                  chain_kinds = reported_header.findall(stack)
+                  if frames and not gateway:
+                      controller_seen = True
+                      if len(frames) != 1 or suppressed:
+                          return output('AMBIGUOUS', stage)
+                      if len(chain_kinds) > 16:
+                          unusable = invalid_stack = True
+                          continue
+                      chain = [CLASSES.get(kind, 'UNKNOWN') for kind in chain_kinds]
+                      # Retain the pre-existing exact-controller leaf-category meaning.
+                      category = CLASSES.get(kinds[-1], 'UNKNOWN') if kinds else 'UNKNOWN'
+                      class_chain = [kind if kind in CLASSES else 'UNKNOWN' for kind in chain_kinds]
+                      matches.append((category, chain, reported_own_frame(stack, config), class_chain))
+                      continue
+                  if suppressed:
+                      fallback_ambiguous = True
+                      continue
+                  if (not 1 <= len(chain_kinds) <= 16 or not reported_header.match(stack)
+                          or not stack_frame.search(stack)):
+                      unusable = invalid_stack = True
+                      continue
+                  chain = [CLASSES.get(kind, 'UNKNOWN') for kind in chain_kinds]
+                  class_chain = [kind if kind in CLASSES else 'UNKNOWN' for kind in chain_kinds]
+                  fallback.append((chain[-1], chain, reported_own_frame(stack, config, captured_service), class_chain))
+              if matches:
+                  if len(matches) != 1:
+                      return output('AMBIGUOUS', stage)
+                  category, chain, own_frame, class_chain = matches[0]
+                  return output('REPORTED_PARTIAL_LOG_FORMAT' if unusable else 'UNIQUE',
+                                stage, category, chain, own_frame, origin, class_chain)
+              if controller_seen:
+                  return output('UNAVAILABLE_EXCEPTION_STACK', stage)
+              # No request correlation is inferred from a Global-handler ERROR alone.
+              if fallback_ambiguous or len(fallback) > 1:
+                  return output('AMBIGUOUS', stage)
+              if fallback:
+                  category, chain, own_frame, class_chain = fallback[0]
+                  if gateway:
+                      return output('REPORTED_GATEWAY_PARTIAL_LOG_FORMAT' if unusable else 'REPORTED_GATEWAY',
+                                    stage, category, chain, own_frame, origin, class_chain)
+                  return output('REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER' if unusable
+                                else 'REPORTED_NO_CONTROLLER', stage, category, chain, own_frame, origin, class_chain)
+              if gateway and unusable and not invalid_stack and not line_limit:
+                  return output('UNAVAILABLE_LOG_FORMAT', stage)
+              return output('UNAVAILABLE_EXCEPTION_STACK' if invalid_stack else
+                            'UNAVAILABLE_LOG_LIMIT' if line_limit else 'UNAVAILABLE_NO_ERROR_RECORD', stage)
+
+
+          def combine(domain, gateway, config):
+              # No correlation key is collected: a second eligible origin defeats any unique hint.
+              def candidate(value):
+                  return (value['reportedOrigin'] != 'UNKNOWN'
+                          or value['state'] in {'AMBIGUOUS', 'UNAVAILABLE_EXCEPTION_STACK'})
+              selected = [value for value in (domain, gateway) if candidate(value)]
+              if len(selected) > 1:
+                  return output('AMBIGUOUS', config[6])
+              if selected:
+                  value = selected[0]
+                  other = gateway if value is domain else domain
+                  if other['state'] != 'UNAVAILABLE_NO_ERROR_RECORD':
+                      partial = {'UNIQUE': 'REPORTED_PARTIAL_LOG_FORMAT',
+                                 'REPORTED_NO_CONTROLLER': 'REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER',
+                                 'REPORTED_GATEWAY': 'REPORTED_GATEWAY_PARTIAL_LOG_FORMAT'}
+                      value = dict(value, state=partial.get(value['state'], value['state']))
+                  return value
+              for state in ('UNAVAILABLE_LOG_LIMIT', 'UNAVAILABLE_LOG_FORMAT'):
+                  if any(value['state'] == state for value in (domain, gateway)):
+                      return output(state, config[6])
+              return domain
+
+          def ambiguity_evidence(payloads, config, domain, gateway):
+              # Unkeyed facts from the verified captured streams; never request causality.
+              # Keep classify/combine unchanged so evidence cannot promote or veto their result.
+              header = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
+                                  r'((?:[A-Za-z_$][A-Za-z0-9_$]*\.)+'
+                                  r'(?:[A-Za-z_$][A-Za-z0-9_$]*)?(?:Exception|Error))(?::[^\r\n]*|$)')
+              stack_frame = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
+                                      r'(?:[A-Za-z_$][A-Za-z0-9_$]*\.)+[A-Za-z_$<>][A-Za-z0-9_$<>]*'
+                                      r'\((?:[A-Za-z0-9_$.-]+\.java:[1-9][0-9]{0,5}|Native Method|Unknown Source)\)[ \t]*$')
+              controller = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
+                                     + re.escape(config[7] + '(' + config[8] + ':') + r'[1-9][0-9]{0,5}\)')
+              cross_origin = all(value['reportedOrigin'] != 'UNKNOWN'
+                                 or value['state'] in {'AMBIGUOUS', 'UNAVAILABLE_EXCEPTION_STACK'}
+                                 for value in (domain, gateway))
+              evidence = []
+              for service in (config[5], 'api-gateway'):
+                  payload = payloads[service]
+                  reasons = {'CROSS_ORIGIN_CANDIDATES'} if cross_origin else set()
+                  classes, frames = set(), set()
+                  seen = False
+                  controller_records = fallback_records = 0
+                  lines = payload.splitlines()
+                  if len(payload) > LIMIT or len(lines) > 200:
+                      reasons.add('LOG_LIMIT')
+                  else:
+                      for line in lines:
+                          if len(line) > 131072:
+                              reasons.add('LOG_LIMIT')
+                              continue
+                          try:
+                              record = decode(line)
+                          except (ValueError, UnicodeError, RecursionError):
+                              reasons.add('MALFORMED_LOG_RECORD')
+                              continue
+                          if type(record) is not dict:
+                              reasons.add('MALFORMED_LOG_RECORD')
+                              continue
+                          is_gateway = service == 'api-gateway'
+                          logger = GATEWAY_LOGGER if is_gateway else 'ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler'
+                          if (record.get('logger') != logger or record.get('level') != 'ERROR'
+                                  or (is_gateway and record.get('service') != 'api-gateway')):
+                              continue
+                          seen = True
+                          stack = record.get('stack')
+                          if type(stack) is not str or not stack:
+                              reasons.add('MISSING_EXCEPTION_STACK')
+                              continue
+                          try:
+                              size = len(stack.encode())
+                          except UnicodeError:
+                              reasons.add('INVALID_EXCEPTION_STACK')
+                              continue
+                          if size > 131072:
+                              reasons.add('STACK_LIMIT')
+                              continue
+                          kinds = header.findall(stack)
+                          classes.update(kind for kind in kinds if kind in CLASSES)
+                          if any(kind not in CLASSES for kind in kinds):
+                              reasons.add('UNMAPPED_EXCEPTION_CLASS')
+                          own_frame = reported_own_frame(stack, config, service)
+                          if own_frame is not None:
+                              frames.add((own_frame['symbol'], own_frame['line']))
+                          suppressed_types = re.findall(r'(?m)^[ \t]*Suppressed: ([A-Za-z0-9_.$]+)(?::|$)', stack)
+                          suppressed_count = len(re.findall(r'(?m)^[ \t]*Suppressed:', stack))
+                          classes.update(kind for kind in suppressed_types if kind in CLASSES)
+                          assembly = 'reactor.core.publisher.FluxOnAssembly$OnAssemblyException'
+                          if any(kind not in CLASSES and not (is_gateway and kind == assembly)
+                                 for kind in suppressed_types):
+                              reasons.add('UNMAPPED_EXCEPTION_CLASS')
+                          suppressed = (bool(suppressed_count) and (not is_gateway
+                                        or len(suppressed_types) != suppressed_count
+                                        or any(kind != assembly for kind in suppressed_types)))
+                          if suppressed:
+                              reasons.add('UNQUALIFIED_SUPPRESSION')
+                          matches = controller.findall(stack)
+                          if matches and not is_gateway:
+                              controller_records += 1
+                              if len(matches) != 1:
+                                  reasons.add('MULTIPLE_CONTROLLER_FRAMES')
+                              if len(kinds) > 16:
+                                  reasons.add('STACK_LIMIT')
+                              continue
+                          if suppressed:
+                              continue
+                          if not 1 <= len(kinds) <= 16 or not header.match(stack) or not stack_frame.search(stack):
+                              reasons.add('STACK_LIMIT' if len(kinds) > 16 else 'INVALID_EXCEPTION_STACK')
+                              continue
+                          fallback_records += 1
+                  if not seen and 'LOG_LIMIT' not in reasons:
+                      reasons.add('NO_ELIGIBLE_ERROR_RECORD')
+                  if controller_records > 1:
+                      reasons.add('MULTIPLE_CONTROLLER_RECORDS')
+                  if fallback_records > 1:
+                      reasons.add('MULTIPLE_FALLBACK_RECORDS')
+                  if len(frames) > 16:
+                      reasons.add('EVIDENCE_LIMIT')
+                  assert reasons <= AMBIGUITY_REASONS
+                  evidence.append({'capturedOrigin': ORIGINS[service], 'reasons': sorted(reasons),
+                                   'exceptionClasses': sorted(classes),
+                                   'ownFrames': [{'symbol': symbol, 'line': line}
+                                                 for symbol, line in sorted(frames)[:16]]})
+              return evidence
+
+
+          def load_failure(config):
+              if (os.environ.get('GITHUB_ACTIONS') != 'true'
+                      or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
+                      or os.environ.get('RCT_E2E_SYNTHETIC_SEED') != 'true'):
+                  raise ValueError('Disposable diagnostic unavailable')
+              if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
+                  verify_homework_sources()
+              elif config[4] == 'STUDENT_STATS_HTTP503':
+                  for source, digest in STATS_SOURCES.items():
+                      path = Path(source)
+                      info = path.lstat()
+                      if (not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 262144
+                              or hashlib.sha256(path.read_bytes()).hexdigest() != digest):
+                          raise ValueError('Projection diagnostic source changed')
+              else:
+                  verify_http_sources(config)
+              run, attempt = os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT']
+              if not re.fullmatch(r'[1-9][0-9]{0,19}', run) or not re.fullmatch(r'[1-9][0-9]{0,5}', attempt):
+                  raise ValueError('Invalid diagnostic binding')
+              temporary = Path(os.environ['RUNNER_TEMP'])
+              work = Path(os.environ[config[0]])
+              if not temporary.is_absolute() or work != temporary / (config[1] + run + '-' + attempt):
+                  raise ValueError('Invalid diagnostic directory')
+              for directory in [work] + [work.joinpath(*config[2][:i]) for i in range(1, len(config[2]) + 1)]:
+                  info = directory.lstat()
+                  if not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o700 or info.st_uid != os.getuid():
+                      raise ValueError('Invalid private directory')
+              path = work.joinpath(*config[2], 'safe-results.json')
+              before = path.lstat()
+              with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
+                  info = os.fstat(stream.fileno())
+                  if (not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600
+                          or info.st_uid != os.getuid() or not 0 < info.st_size <= 32768
+                          or (info.st_dev, info.st_ino) != (before.st_dev, before.st_ino)):
+                      raise ValueError('Invalid closed input')
+                  raw = stream.read(32769)
+                  if len(raw) != info.st_size:
+                      raise ValueError('Closed input changed')
+              return decode(raw)
+
+          def collect(config):
+              global result
+              deadline, remaining_bytes = time.monotonic() + 15, LIMIT
+              def remaining():
+                  seconds = deadline - time.monotonic()
+                  if seconds <= 0:
+                      raise TimeoutError('Diagnostic deadline')
+                  return seconds
+              def call(argv, merge_stderr=False):
+                  nonlocal remaining_bytes
+                  payload = bytearray()
+                  with subprocess.Popen(argv, stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT if merge_stderr else subprocess.DEVNULL) as child:
+                      try:
+                          with selectors.DefaultSelector() as ready:
+                              ready.register(child.stdout, selectors.EVENT_READ)
+                              while True:
+                                  if not ready.select(remaining()):
+                                      raise TimeoutError('Diagnostic deadline')
+                                  chunk = os.read(child.stdout.fileno(), min(65536, remaining_bytes + 1))
+                                  if not chunk:
+                                      break
+                                  remaining_bytes -= len(chunk)
+                                  if remaining_bytes < 0:
+                                      raise ValueError('Diagnostic byte limit')
+                                  payload.extend(chunk)
+                          if child.wait(timeout=remaining()):
+                              raise ValueError('Diagnostic command failed')
+                      finally:
+                          if child.poll() is None:
+                              child.kill()
+                          child.wait(timeout=5)
+                  return bytes(payload)
+              compose = ['docker', 'compose', '--env-file', 'tests/e2e/.env.ci', '-p', 'rct-e2e',
+                         '-f', 'docker-compose.e2e.yml', '-f', 'tests/e2e/infra/docker-compose.clock-fixture.yml']
+              services = ('academic-service', 'schedule-service', 'api-gateway') if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP' else ((config[5],) if config[4] == 'STUDENT_STATS_HTTP503' else (config[5], 'api-gateway'))
+              payloads = {}
+              for service in services:
+                  cid = call([*compose, 'ps', '-q', service]).decode().strip()
+                  if not re.fullmatch('[0-9a-f]{64}', cid):
+                      raise ValueError('Owned service unavailable')
+                  template = '[{{json .Id}},{{json (index .Config.Labels "com.docker.compose.project")}},{{json (index .Config.Labels "com.docker.compose.service")}},{{json .State.Running}}]'
+                  def verify():
+                      if decode(call(['docker', 'inspect', '--format', template, cid])) != [cid, 'rct-e2e', service, True]:
+                          raise ValueError('Owned service changed')
+                  verify()
+                  result = output('UNAVAILABLE_LOG_CAPTURE', config[6])
+                  payload = call(['docker', 'logs', '--since', '180s', '--tail', '200', cid], True)
+                  result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
+                  verify()
+                  payloads[service] = payload
+              return payloads
+
+          result = output('UNAVAILABLE_PRIVATE_INPUT', 'UNKNOWN')
+          try:
+              config = STAGES[os.environ['RCT_HTTP500_DIAGNOSTIC_STAGE']]
+              result = output('UNAVAILABLE_PRIVATE_INPUT', config[6])
+              failure = load_failure(config)
+              result = output('UNAVAILABLE_TARGET_SIGNATURE', config[6])
+              if is_target_failure(failure, config):
+                  result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
+                  payloads = collect(config)
+                  result = output('UNAVAILABLE_LOG_FORMAT', config[6])
+                  if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
+                      result = classify_homework(payloads, config)
+                  elif config[4] == 'STUDENT_STATS_HTTP503':
+                      result = classify(payloads[config[5]], config)
+                  else:
+                      domain = classify(payloads[config[5]], config)
+                      gateway = classify(payloads['api-gateway'], config, 'api-gateway')
+                      result = combine(domain, gateway, config)
+                      result['reportedAmbiguityEvidence'] = ambiguity_evidence(payloads, config, domain, gateway)
+          except Exception:
+              pass
+          print(json.dumps(result, sort_keys=True))
+          PY_HTTP500_DIAGNOSTIC
+
+
       - name: Upload safe remaining five outcomes
         if: always() && steps.remaining5.outcome != 'skipped'
         uses: actions/upload-artifact@v4
@@ -4033,593 +4716,7 @@ jobs:
         env:
           RCT_HTTP500_DIAGNOSTIC_STAGE: LESSON_CREATE500
           RCT_E2E_SYNTHETIC_SEED: 'true'
-        run: &closed-http500-diagnostic |
-          python3 - <<'PY_HTTP500_DIAGNOSTIC'
-          import hashlib, json, os, re, selectors, stat, subprocess, time
-          from pathlib import Path
-
-          STAGES = {
-              'STUDENT_STATS503': ('RCT_LESSON_LIFECYCLE_RUN', 'rct-lesson-lifecycle-',
-                                   ('artifacts',), 'mobile-schedule-lifecycle.spec.ts', 'STUDENT_STATS_HTTP503',
-                                   'attendance-service', 'ATTENDANCE_STUDENT_PROJECTION',
-                                   'ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceImpl.getStudentAttendanceProjection',
-                                   'AttendanceStudentGrpcServiceImpl.java'),
-              'REPORT500': ('RCT_SEMESTER_RECONCILIATION_RUN', 'rct-semester-reconciliation-',
-                            ('artifacts',), 'semester-lifecycle.spec.ts', 'DATASET_ATTENDANCE_REPORT_HTTP',
-                            'attendance-service', 'ATTENDANCE_LESSON_REPORT',
-                            'ru.rutcampustrack.attendance.report.ReportController.getLessonAttendance',
-                            'ReportController.java'),
-              'LESSON_CREATE500': ('RCT_ASSIGNMENT_LIFECYCLE_RUN', 'rct-assignment-lifecycle-',
-                                  ('artifacts', 'prepare'), 'assignment-lifecycle.spec.ts',
-                                  'DATASET_LESSON_CREATE_HTTP', 'schedule-service', 'SCHEDULE_ONEOFF_LESSON_CREATE',
-                                  'ru.rutcampustrack.schedule.oneoff.OneOffLessonController.createOneOffLesson',
-                                  'OneOffLessonController.java'),
-          }
-          CLASSES = {
-              'io.grpc.StatusRuntimeException': 'GRPC_STATUS',
-              'io.grpc.StatusException': 'GRPC_STATUS',
-              'org.postgresql.util.PSQLException': 'POSTGRESQL',
-              'javax.net.ssl.SSLHandshakeException': 'TLS_HANDSHAKE',
-              'java.net.ConnectException': 'CONNECT',
-              'java.lang.IllegalStateException': 'ILLEGAL_STATE',
-              'java.lang.IllegalArgumentException': 'ILLEGAL_ARGUMENT',
-              'java.lang.NullPointerException': 'NULL_POINTER',
-              'org.springframework.dao.DataIntegrityViolationException': 'DATA_INTEGRITY',
-              'org.springframework.http.converter.HttpMessageNotWritableException': 'HTTP_SERIALIZATION',
-              'org.springframework.web.server.ResponseStatusException': 'HTTP_STATUS',
-              'reactor.netty.http.client.PrematureCloseException': 'UPSTREAM_CLOSED',
-          }
-          HTTP500_STAGES = {'ATTENDANCE_LESSON_REPORT', 'SCHEDULE_ONEOFF_LESSON_CREATE'}
-          ORIGINS = {'attendance-service': 'ATTENDANCE_MVC', 'schedule-service': 'SCHEDULE_MVC',
-                     'api-gateway': 'GATEWAY_WEBFLUX'}
-          GATEWAY_LOGGER = 'org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler'
-          AMBIGUITY_REASONS = {
-              'MULTIPLE_CONTROLLER_FRAMES', 'UNQUALIFIED_SUPPRESSION', 'MULTIPLE_CONTROLLER_RECORDS',
-              'MULTIPLE_FALLBACK_RECORDS', 'CROSS_ORIGIN_CANDIDATES', 'MISSING_EXCEPTION_STACK',
-              'INVALID_EXCEPTION_STACK', 'STACK_LIMIT', 'LOG_LIMIT', 'MALFORMED_LOG_RECORD',
-              'UNMAPPED_EXCEPTION_CLASS', 'EVIDENCE_LIMIT', 'NO_ELIGIBLE_ERROR_RECORD',
-          }
-          OWN_FRAME_SOURCES = {
-              'ATTENDANCE_REPORT_SERVICE': ('attendance-service', 'ru.rutcampustrack.attendance.report.ReportService',
-                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportService.java',
-                  '8ba6b4eea45e27b10d31b9daa010898cac4db68daaa4bfc46c08e71010f730d1', 1812),
-              'ATTENDANCE_READ_PORT': ('attendance-service', 'ru.rutcampustrack.attendance.checkin.AttendanceReadPortImpl',
-                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/checkin/AttendanceReadPortImpl.java',
-                  'eac7f0c10408548f82bf2043e601cf84f796ce2369994a1698a9f3f54b1322f6', 128),
-              'HEADMAN_APPROVED_TICKET_RESOLVER': ('attendance-service', 'ru.rutcampustrack.attendance.report.HeadmanApprovedTicketResolver',
-                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/HeadmanApprovedTicketResolver.java',
-                  '7ccf99773d14f56d7ec70a54ca869033c04bcb2b58adbb674cb0e818696847f7', 96),
-              'ATTENDANCE_REPORT_CONTROLLER': ('attendance-service', 'ru.rutcampustrack.attendance.report.ReportController',
-                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/ReportController.java',
-                  '9253480728210dbb49474a4fa14b6318cf2c9f2e85fba28c99d1fe68f281c4c4', 303),
-              'SCHEDULE_ONEOFF_SERVICE': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonService',
-                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonService.java',
-                  '01cef7d1734a2c850a89b37a164dc5f2fc55ac5ba2771a48ec98c42c53448c46', 75),
-              'SCHEDULE_ONEOFF_COORDINATOR': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonCoordinator',
-                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonCoordinator.java',
-                  'ce21e00634da8326fd8386be27f0bc89e5f8e1d610ecfa3bcf0717223c648205', 181),
-              'SCHEDULE_ONEOFF_WRITER': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonWriter',
-                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonWriter.java',
-                  '4f3bf7ba2033ae7b03e162544a1f8a4788b44eb49fba8b73695baa050defab79', 856),
-              'SCHEDULE_SEMESTER_ARCHIVE_WRITE_FENCE': ('schedule-service', 'ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence',
-                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/grpc/ScheduleSemesterArchiveWriteFence.java',
-                  '38ec1cb6f70cd2af052648ac645491ee3166db9549adcde77199735d1628b597', 265),
-              'SCHEDULE_ONEOFF_CONTROLLER': ('schedule-service', 'ru.rutcampustrack.schedule.oneoff.OneOffLessonController',
-                  'services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/oneoff/OneOffLessonController.java',
-                  '31dbb34318391172689f937046e4aed7e63b239e45be371fa9b04271d6b53417', 59),
-              'INTERNAL_JWT_ISSUER_FILTER': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter',
-                  'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerFilter.java',
-                  '695cff405b84f170a97b5f980756ffd8d060b4917ccd40a47aa3e11d1d79c94c', 608),
-              'INTERNAL_JWT_ISSUER_CLIENT': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerClient',
-                  'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java',
-                  '1e7a444198c7c585bb835fde12d79c59ef4ff8ac9bc73d115ec67083f5dfc42f', 474),
-          }
-          PROJECTION_KINDS = {
-              'INVALID_OCCURRENCE', 'DUPLICATE_OCCURRENCE', 'UNSUPPORTED_ATTENDANCE_STATUS',
-              'INVALID_ROSTER', 'INVALID_METRICS', 'ACADEMIC_DEPENDENCY', 'SCHEDULE_DEPENDENCY', 'UNKNOWN',
-          } | {'RPC_' + code for code in (
-              'OK', 'CANCELLED', 'UNKNOWN', 'INVALID_ARGUMENT', 'DEADLINE_EXCEEDED', 'NOT_FOUND',
-              'ALREADY_EXISTS', 'PERMISSION_DENIED', 'RESOURCE_EXHAUSTED', 'FAILED_PRECONDITION',
-              'ABORTED', 'OUT_OF_RANGE', 'UNIMPLEMENTED', 'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS', 'UNAUTHENTICATED')}
-          PROJECTION_STAGES = {'ACADEMIC_SCOPE', 'ACADEMIC_MEMBERS', 'SCHEDULE_LESSONS',
-                               'CURRENT_GROUP_SCOPE', 'GROUP_CATALOGUE', 'GROUP_SERIES', 'OWN_MARKS',
-                               'LESSON_SNAPSHOT', 'RANK', 'UNKNOWN'}
-          STATS_SOURCES = {
-              'tests/e2e/specs/mobile-schedule-lifecycle.spec.ts':
-                  '99692ef9eda26d27b0cf98b117669940886c598615a1fd59becff6ed42c9f3a9',
-              'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java':
-                  'f5a49c00d8cb1724830876994ac5d93a14b36375dc8180db3163537f2190b3f0',
-          }
-          LIMIT = 8388608
-
-          def decode(raw):
-              def pairs(items):
-                  result = {}
-                  for key, value in items:
-                      if key in result:
-                          raise ValueError('Duplicate closed field')
-                      result[key] = value
-                  return result
-              return json.loads(raw, object_pairs_hook=pairs,
-                                parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
-
-          def output(state, stage, category='UNKNOWN', chain=None, own_frame=None,
-                     origin='UNKNOWN', class_chain=None):
-              value = {'state': state, 'exceptionCategory': category, 'sourceStage': stage}
-              if stage in HTTP500_STAGES:
-                  value.update(reportedExceptionChain=[] if chain is None else chain,
-                               reportedOwnFrame=own_frame, reportedOrigin=origin,
-                               reportedExceptionClassChain=[] if class_chain is None else class_chain,
-                               reportedAmbiguityEvidence=[])
-              return value
-
-          def verify_http_sources(config):
-              for service, _, source, digest, lines in OWN_FRAME_SOURCES.values():
-                  if service not in {config[5], 'api-gateway'}:
-                      continue
-                  path = Path(source)
-                  info = path.lstat()
-                  if not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 262144:
-                      raise ValueError('Reported frame source unavailable')
-                  raw = path.read_bytes()
-                  if hashlib.sha256(raw).hexdigest() != digest or len(raw.splitlines()) != lines:
-                      raise ValueError('Reported frame source changed')
-
-          def reported_own_frame(stack, config, captured_service=None):
-              matches = []
-              for symbol, (service, clazz, source, _, line_bound) in OWN_FRAME_SOURCES.items():
-                  if service != (config[5] if captured_service is None else captured_service):
-                      continue
-                  pattern = (r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
-                             + re.escape(clazz) + r'\.[A-Za-z_$<>][A-Za-z0-9_$<>]*\('
-                             + re.escape(Path(source).name) + r':([1-9][0-9]{0,5})\)[ \t]*$')
-                  for match in re.finditer(pattern, stack):
-                      line = int(match[1])
-                      if line <= line_bound:
-                          matches.append((match.start(), {'symbol': symbol, 'line': line}))
-              return min(matches, key=lambda item: item[0])[1] if matches else None
-
-          def is_student_stats_failure(value):
-              keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
-                      'errorCount', 'diagnostics', 'errorLocations'}
-              expected = {('mobile-attendance-requests.spec.ts', 9), ('mobile-lesson-lifecycle.spec.ts', 20),
-                          ('mobile-schedule-lifecycle.spec.ts', 390), ('mobile-schedule-lifecycle.spec.ts', 1833)}
-              seen, target = set(), None
-              for row in value['results']:
-                  if type(row) is not dict or set(row) != keys:
-                      return False
-                  identity = (row['file'], row['line'])
-                  if (type(row['file']) is not str or type(row['line']) is not int
-                          or identity not in expected or identity in seen or row['project'] != 'chromium'
-                          or row['status'] not in {'passed', 'failed', 'timedOut', 'skipped', 'interrupted'}
-                          or row['expectedStatus'] != 'passed' or type(row['errorCount']) is not int
-                          or not 0 <= row['errorCount'] <= 8 or type(row['durationMs']) not in (int, float)
-                          or not 0 <= row['durationMs'] <= 1800000
-                          or type(row['diagnostics']) is not list or len(row['diagnostics']) > 8
-                          or not all(type(item) is dict and set(item) == {'stage', 'cause', 'httpStatus'}
-                                     and type(item['stage']) is str and type(item['cause']) is str
-                                     and type(item['httpStatus']) is int for item in row['diagnostics'])
-                          or type(row['errorLocations']) is not list
-                          or len(row['errorLocations']) > row['errorCount']
-                          or not all(type(frame) is dict and set(frame) == {'file', 'line'}
-                                     and type(frame['file']) is str and type(frame['line']) is int
-                                     and 0 < frame['line'] < 1000000 for frame in row['errorLocations'])):
-                      return False
-                  seen.add(identity)
-                  if identity == ('mobile-schedule-lifecycle.spec.ts', 390):
-                      target = row
-              return (seen == expected and target['status'] == 'failed' and target['errorCount'] == 1
-                      and target['errorLocations'] == [{'file': 'mobile-schedule-lifecycle.spec.ts', 'line': 1363}])
-
-          def is_target_failure(value, config):
-              core = {'status', 'runnerErrors', 'unsafeArtifact', 'suppressedStdoutBytes',
-                      'suppressedStderrBytes', 'results'}
-              if (type(value) is not dict or set(value) != core or value['status'] != 'failed'
-                      or type(value['runnerErrors']) is not int or value['runnerErrors'] != 0
-                      or value['unsafeArtifact'] is not False
-                      or any(type(value[key]) is not int or value[key] != 0
-                             for key in ('suppressedStdoutBytes', 'suppressedStderrBytes'))
-                      or type(value['results']) is not list
-                      or len(value['results']) != (4 if config[4] == 'STUDENT_STATS_HTTP503' else 1)):
-                  return False
-              if config[4] == 'STUDENT_STATS_HTTP503':
-                  return is_student_stats_failure(value)
-              row = value['results'][0]
-              keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
-                      'errorCount', 'diagnostics', 'errorLocations'}
-              return (type(row) is dict and set(row) == keys and row['file'] == config[3]
-                      and type(row['line']) is int and 0 < row['line'] < 1000000
-                      and row['project'] == 'chromium' and row['status'] == 'failed'
-                      and row['expectedStatus'] == 'passed' and type(row['errorCount']) is int
-                      and 0 < row['errorCount'] <= 8 and type(row['diagnostics']) is list
-                      and 0 < len(row['diagnostics']) <= 8
-                      and all(type(item) is dict and set(item) == {'stage', 'cause', 'httpStatus'}
-                              for item in row['diagnostics'])
-                      and {'stage': 'DATASET_HTTP', 'cause': config[4], 'httpStatus': 500}
-                          in row['diagnostics'])
-
-          def classify_projection(payload, config):
-              # An unkeyed log record is a reported operation hint, never exact request causality.
-              stage = config[6]
-              pattern = re.compile(r'Student projection failed: kind=([A-Z_]+), stage=([A-Z_]+)')
-              matches, unusable = [], False
-              for line in payload.splitlines():
-                  if len(line) > 131072:
-                      unusable = True
-                      continue
-                  try:
-                      record = decode(line)
-                  except (ValueError, UnicodeError, RecursionError):
-                      unusable = True
-                      continue
-                  if type(record) is not dict:
-                      unusable = True
-                      continue
-                  if (record.get('logger') != 'ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceImpl'
-                          or record.get('level') != 'WARN'):
-                      continue
-                  message = record.get('msg')
-                  match = pattern.fullmatch(message) if type(message) is str else None
-                  if not match or match[1] not in PROJECTION_KINDS or match[2] not in PROJECTION_STAGES:
-                      unusable = True
-                      continue
-                  matches.append((match[1], match[2]))
-              if unusable:
-                  return output('UNAVAILABLE_LOG_FORMAT', stage)
-              distinct = sorted(set(matches))
-              if len(distinct) > 1:
-                  pairs = '|'.join(kind + '@' + source for kind, source in distinct)
-                  return output('AMBIGUOUS', stage, 'REPORTED_PAIRS:' + pairs)
-              return (output('UNIQUE', stage + '_' + distinct[0][1], 'REPORTED_' + distinct[0][0])
-                      if distinct else output('ABSENT', stage))
-
-          def classify(payload, config, captured_service=None):
-              stage = config[6]
-              captured_service = config[5] if captured_service is None else captured_service
-              if captured_service not in {config[5], 'api-gateway'}:
-                  return output('UNAVAILABLE_SERVICE_OWNERSHIP', stage)
-              gateway = captured_service == 'api-gateway'
-              origin = ORIGINS[captured_service]
-              if len(payload) > LIMIT or len(payload.splitlines()) > 200:
-                  return output('UNAVAILABLE_LOG_FORMAT' if config[4] == 'STUDENT_STATS_HTTP503'
-                                else 'UNAVAILABLE_LOG_LIMIT', stage)
-              if config[4] == 'STUDENT_STATS_HTTP503':
-                  return classify_projection(payload, config)
-              frame = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
-                                 + re.escape(config[7] + '(' + config[8] + ':') + r'[1-9][0-9]{0,5}\)')
-              throwable = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
-                                     r'((?:[A-Za-z_$][A-Za-z0-9_$]*\.)+'
-                                     r'[A-Za-z_$][A-Za-z0-9_$]*(?:Exception|Error))(?::|$)')
-              reported_header = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
-                                           r'((?:[A-Za-z_$][A-Za-z0-9_$]*\.)+'
-                                           r'(?:[A-Za-z_$][A-Za-z0-9_$]*)?(?:Exception|Error))(?::[^\r\n]*|$)')
-              stack_frame = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
-                                       r'(?:[A-Za-z_$][A-Za-z0-9_$]*\.)+[A-Za-z_$<>][A-Za-z0-9_$<>]*'
-                                       r'\((?:[A-Za-z0-9_$.-]+\.java:[1-9][0-9]{0,5}|Native Method|Unknown Source)\)[ \t]*$')
-              matches, fallback = [], []
-              unusable, invalid_stack, fallback_ambiguous = False, False, False
-              line_limit = controller_seen = False
-              for line in payload.splitlines():
-                  if len(line) > 131072:
-                      unusable = line_limit = True
-                      continue
-                  try:
-                      record = decode(line)
-                  except (ValueError, UnicodeError, RecursionError):
-                      unusable = True
-                      continue
-                  if type(record) is not dict:
-                      unusable = True
-                      continue
-                  expected_logger = GATEWAY_LOGGER if gateway else 'ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler'
-                  if (record.get('logger') != expected_logger or record.get('level') != 'ERROR'
-                          or (gateway and record.get('service') != 'api-gateway')):
-                      continue
-                  stack = record.get('stack')
-                  try:
-                      bounded_stack = type(stack) is str and 0 < len(stack.encode()) <= 131072
-                  except UnicodeError:
-                      bounded_stack = False
-                  if not bounded_stack:
-                      unusable = invalid_stack = True
-                      continue
-                  frames = frame.findall(stack)
-                  suppressed = bool(re.search(r'(?m)^[ \t]*Suppressed:', stack))
-                  # Reactor assembly checkpoints are metadata, not an additional causal exception.
-                  # This allowance is only for reported Gateway hints, never exact-controller UNIQUE.
-                  if gateway and suppressed:
-                      suppressed_types = re.findall(r'(?m)^[ \t]*Suppressed: ([A-Za-z0-9_.$]+)(?::|$)', stack)
-                      suppressed_count = len(re.findall(r'(?m)^[ \t]*Suppressed:', stack))
-                      suppressed = (len(suppressed_types) != suppressed_count
-                                    or any(kind != 'reactor.core.publisher.FluxOnAssembly$OnAssemblyException'
-                                           for kind in suppressed_types))
-                  kinds = throwable.findall(stack)
-                  chain_kinds = reported_header.findall(stack)
-                  if frames and not gateway:
-                      controller_seen = True
-                      if len(frames) != 1 or suppressed:
-                          return output('AMBIGUOUS', stage)
-                      if len(chain_kinds) > 16:
-                          unusable = invalid_stack = True
-                          continue
-                      chain = [CLASSES.get(kind, 'UNKNOWN') for kind in chain_kinds]
-                      # Retain the pre-existing exact-controller leaf-category meaning.
-                      category = CLASSES.get(kinds[-1], 'UNKNOWN') if kinds else 'UNKNOWN'
-                      class_chain = [kind if kind in CLASSES else 'UNKNOWN' for kind in chain_kinds]
-                      matches.append((category, chain, reported_own_frame(stack, config), class_chain))
-                      continue
-                  if suppressed:
-                      fallback_ambiguous = True
-                      continue
-                  if (not 1 <= len(chain_kinds) <= 16 or not reported_header.match(stack)
-                          or not stack_frame.search(stack)):
-                      unusable = invalid_stack = True
-                      continue
-                  chain = [CLASSES.get(kind, 'UNKNOWN') for kind in chain_kinds]
-                  class_chain = [kind if kind in CLASSES else 'UNKNOWN' for kind in chain_kinds]
-                  fallback.append((chain[-1], chain, reported_own_frame(stack, config, captured_service), class_chain))
-              if matches:
-                  if len(matches) != 1:
-                      return output('AMBIGUOUS', stage)
-                  category, chain, own_frame, class_chain = matches[0]
-                  return output('REPORTED_PARTIAL_LOG_FORMAT' if unusable else 'UNIQUE',
-                                stage, category, chain, own_frame, origin, class_chain)
-              if controller_seen:
-                  return output('UNAVAILABLE_EXCEPTION_STACK', stage)
-              # No request correlation is inferred from a Global-handler ERROR alone.
-              if fallback_ambiguous or len(fallback) > 1:
-                  return output('AMBIGUOUS', stage)
-              if fallback:
-                  category, chain, own_frame, class_chain = fallback[0]
-                  if gateway:
-                      return output('REPORTED_GATEWAY_PARTIAL_LOG_FORMAT' if unusable else 'REPORTED_GATEWAY',
-                                    stage, category, chain, own_frame, origin, class_chain)
-                  return output('REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER' if unusable
-                                else 'REPORTED_NO_CONTROLLER', stage, category, chain, own_frame, origin, class_chain)
-              if gateway and unusable and not invalid_stack and not line_limit:
-                  return output('UNAVAILABLE_LOG_FORMAT', stage)
-              return output('UNAVAILABLE_EXCEPTION_STACK' if invalid_stack else
-                            'UNAVAILABLE_LOG_LIMIT' if line_limit else 'UNAVAILABLE_NO_ERROR_RECORD', stage)
-
-
-          def combine(domain, gateway, config):
-              # No correlation key is collected: a second eligible origin defeats any unique hint.
-              def candidate(value):
-                  return (value['reportedOrigin'] != 'UNKNOWN'
-                          or value['state'] in {'AMBIGUOUS', 'UNAVAILABLE_EXCEPTION_STACK'})
-              selected = [value for value in (domain, gateway) if candidate(value)]
-              if len(selected) > 1:
-                  return output('AMBIGUOUS', config[6])
-              if selected:
-                  value = selected[0]
-                  other = gateway if value is domain else domain
-                  if other['state'] != 'UNAVAILABLE_NO_ERROR_RECORD':
-                      partial = {'UNIQUE': 'REPORTED_PARTIAL_LOG_FORMAT',
-                                 'REPORTED_NO_CONTROLLER': 'REPORTED_PARTIAL_LOG_FORMAT_NO_CONTROLLER',
-                                 'REPORTED_GATEWAY': 'REPORTED_GATEWAY_PARTIAL_LOG_FORMAT'}
-                      value = dict(value, state=partial.get(value['state'], value['state']))
-                  return value
-              for state in ('UNAVAILABLE_LOG_LIMIT', 'UNAVAILABLE_LOG_FORMAT'):
-                  if any(value['state'] == state for value in (domain, gateway)):
-                      return output(state, config[6])
-              return domain
-
-          def ambiguity_evidence(payloads, config, domain, gateway):
-              # Unkeyed facts from the verified captured streams; never request causality.
-              # Keep classify/combine unchanged so evidence cannot promote or veto their result.
-              header = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
-                                  r'((?:[A-Za-z_$][A-Za-z0-9_$]*\.)+'
-                                  r'(?:[A-Za-z_$][A-Za-z0-9_$]*)?(?:Exception|Error))(?::[^\r\n]*|$)')
-              stack_frame = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
-                                      r'(?:[A-Za-z_$][A-Za-z0-9_$]*\.)+[A-Za-z_$<>][A-Za-z0-9_$<>]*'
-                                      r'\((?:[A-Za-z0-9_$.-]+\.java:[1-9][0-9]{0,5}|Native Method|Unknown Source)\)[ \t]*$')
-              controller = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
-                                     + re.escape(config[7] + '(' + config[8] + ':') + r'[1-9][0-9]{0,5}\)')
-              cross_origin = all(value['reportedOrigin'] != 'UNKNOWN'
-                                 or value['state'] in {'AMBIGUOUS', 'UNAVAILABLE_EXCEPTION_STACK'}
-                                 for value in (domain, gateway))
-              evidence = []
-              for service in (config[5], 'api-gateway'):
-                  payload = payloads[service]
-                  reasons = {'CROSS_ORIGIN_CANDIDATES'} if cross_origin else set()
-                  classes, frames = set(), set()
-                  seen = False
-                  controller_records = fallback_records = 0
-                  lines = payload.splitlines()
-                  if len(payload) > LIMIT or len(lines) > 200:
-                      reasons.add('LOG_LIMIT')
-                  else:
-                      for line in lines:
-                          if len(line) > 131072:
-                              reasons.add('LOG_LIMIT')
-                              continue
-                          try:
-                              record = decode(line)
-                          except (ValueError, UnicodeError, RecursionError):
-                              reasons.add('MALFORMED_LOG_RECORD')
-                              continue
-                          if type(record) is not dict:
-                              reasons.add('MALFORMED_LOG_RECORD')
-                              continue
-                          is_gateway = service == 'api-gateway'
-                          logger = GATEWAY_LOGGER if is_gateway else 'ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler'
-                          if (record.get('logger') != logger or record.get('level') != 'ERROR'
-                                  or (is_gateway and record.get('service') != 'api-gateway')):
-                              continue
-                          seen = True
-                          stack = record.get('stack')
-                          if type(stack) is not str or not stack:
-                              reasons.add('MISSING_EXCEPTION_STACK')
-                              continue
-                          try:
-                              size = len(stack.encode())
-                          except UnicodeError:
-                              reasons.add('INVALID_EXCEPTION_STACK')
-                              continue
-                          if size > 131072:
-                              reasons.add('STACK_LIMIT')
-                              continue
-                          kinds = header.findall(stack)
-                          classes.update(kind for kind in kinds if kind in CLASSES)
-                          if any(kind not in CLASSES for kind in kinds):
-                              reasons.add('UNMAPPED_EXCEPTION_CLASS')
-                          own_frame = reported_own_frame(stack, config, service)
-                          if own_frame is not None:
-                              frames.add((own_frame['symbol'], own_frame['line']))
-                          suppressed_types = re.findall(r'(?m)^[ \t]*Suppressed: ([A-Za-z0-9_.$]+)(?::|$)', stack)
-                          suppressed_count = len(re.findall(r'(?m)^[ \t]*Suppressed:', stack))
-                          classes.update(kind for kind in suppressed_types if kind in CLASSES)
-                          assembly = 'reactor.core.publisher.FluxOnAssembly$OnAssemblyException'
-                          if any(kind not in CLASSES and not (is_gateway and kind == assembly)
-                                 for kind in suppressed_types):
-                              reasons.add('UNMAPPED_EXCEPTION_CLASS')
-                          suppressed = (bool(suppressed_count) and (not is_gateway
-                                        or len(suppressed_types) != suppressed_count
-                                        or any(kind != assembly for kind in suppressed_types)))
-                          if suppressed:
-                              reasons.add('UNQUALIFIED_SUPPRESSION')
-                          matches = controller.findall(stack)
-                          if matches and not is_gateway:
-                              controller_records += 1
-                              if len(matches) != 1:
-                                  reasons.add('MULTIPLE_CONTROLLER_FRAMES')
-                              if len(kinds) > 16:
-                                  reasons.add('STACK_LIMIT')
-                              continue
-                          if suppressed:
-                              continue
-                          if not 1 <= len(kinds) <= 16 or not header.match(stack) or not stack_frame.search(stack):
-                              reasons.add('STACK_LIMIT' if len(kinds) > 16 else 'INVALID_EXCEPTION_STACK')
-                              continue
-                          fallback_records += 1
-                  if not seen and 'LOG_LIMIT' not in reasons:
-                      reasons.add('NO_ELIGIBLE_ERROR_RECORD')
-                  if controller_records > 1:
-                      reasons.add('MULTIPLE_CONTROLLER_RECORDS')
-                  if fallback_records > 1:
-                      reasons.add('MULTIPLE_FALLBACK_RECORDS')
-                  if len(frames) > 16:
-                      reasons.add('EVIDENCE_LIMIT')
-                  assert reasons <= AMBIGUITY_REASONS
-                  evidence.append({'capturedOrigin': ORIGINS[service], 'reasons': sorted(reasons),
-                                   'exceptionClasses': sorted(classes),
-                                   'ownFrames': [{'symbol': symbol, 'line': line}
-                                                 for symbol, line in sorted(frames)[:16]]})
-              return evidence
-
-
-          def load_failure(config):
-              if (os.environ.get('GITHUB_ACTIONS') != 'true'
-                      or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
-                      or os.environ.get('RCT_E2E_SYNTHETIC_SEED') != 'true'):
-                  raise ValueError('Disposable diagnostic unavailable')
-              if config[4] == 'STUDENT_STATS_HTTP503':
-                  for source, digest in STATS_SOURCES.items():
-                      path = Path(source)
-                      info = path.lstat()
-                      if (not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 262144
-                              or hashlib.sha256(path.read_bytes()).hexdigest() != digest):
-                          raise ValueError('Projection diagnostic source changed')
-              else:
-                  verify_http_sources(config)
-              run, attempt = os.environ['GITHUB_RUN_ID'], os.environ['GITHUB_RUN_ATTEMPT']
-              if not re.fullmatch(r'[1-9][0-9]{0,19}', run) or not re.fullmatch(r'[1-9][0-9]{0,5}', attempt):
-                  raise ValueError('Invalid diagnostic binding')
-              temporary = Path(os.environ['RUNNER_TEMP'])
-              work = Path(os.environ[config[0]])
-              if not temporary.is_absolute() or work != temporary / (config[1] + run + '-' + attempt):
-                  raise ValueError('Invalid diagnostic directory')
-              for directory in [work] + [work.joinpath(*config[2][:i]) for i in range(1, len(config[2]) + 1)]:
-                  info = directory.lstat()
-                  if not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o700 or info.st_uid != os.getuid():
-                      raise ValueError('Invalid private directory')
-              path = work.joinpath(*config[2], 'safe-results.json')
-              before = path.lstat()
-              with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
-                  info = os.fstat(stream.fileno())
-                  if (not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600
-                          or info.st_uid != os.getuid() or not 0 < info.st_size <= 32768
-                          or (info.st_dev, info.st_ino) != (before.st_dev, before.st_ino)):
-                      raise ValueError('Invalid closed input')
-                  raw = stream.read(32769)
-                  if len(raw) != info.st_size:
-                      raise ValueError('Closed input changed')
-              return decode(raw)
-
-          def collect(config):
-              global result
-              deadline, remaining_bytes = time.monotonic() + 15, LIMIT
-              def remaining():
-                  seconds = deadline - time.monotonic()
-                  if seconds <= 0:
-                      raise TimeoutError('Diagnostic deadline')
-                  return seconds
-              def call(argv, merge_stderr=False):
-                  nonlocal remaining_bytes
-                  payload = bytearray()
-                  with subprocess.Popen(argv, stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT if merge_stderr else subprocess.DEVNULL) as child:
-                      try:
-                          with selectors.DefaultSelector() as ready:
-                              ready.register(child.stdout, selectors.EVENT_READ)
-                              while True:
-                                  if not ready.select(remaining()):
-                                      raise TimeoutError('Diagnostic deadline')
-                                  chunk = os.read(child.stdout.fileno(), min(65536, remaining_bytes + 1))
-                                  if not chunk:
-                                      break
-                                  remaining_bytes -= len(chunk)
-                                  if remaining_bytes < 0:
-                                      raise ValueError('Diagnostic byte limit')
-                                  payload.extend(chunk)
-                          if child.wait(timeout=remaining()):
-                              raise ValueError('Diagnostic command failed')
-                      finally:
-                          if child.poll() is None:
-                              child.kill()
-                          child.wait(timeout=5)
-                  return bytes(payload)
-              compose = ['docker', 'compose', '--env-file', 'tests/e2e/.env.ci', '-p', 'rct-e2e',
-                         '-f', 'docker-compose.e2e.yml', '-f', 'tests/e2e/infra/docker-compose.clock-fixture.yml']
-              services = (config[5],) if config[4] == 'STUDENT_STATS_HTTP503' else (config[5], 'api-gateway')
-              payloads = {}
-              for service in services:
-                  cid = call([*compose, 'ps', '-q', service]).decode().strip()
-                  if not re.fullmatch('[0-9a-f]{64}', cid):
-                      raise ValueError('Owned service unavailable')
-                  template = '[{{json .Id}},{{json (index .Config.Labels "com.docker.compose.project")}},{{json (index .Config.Labels "com.docker.compose.service")}},{{json .State.Running}}]'
-                  def verify():
-                      if decode(call(['docker', 'inspect', '--format', template, cid])) != [cid, 'rct-e2e', service, True]:
-                          raise ValueError('Owned service changed')
-                  verify()
-                  result = output('UNAVAILABLE_LOG_CAPTURE', config[6])
-                  payload = call(['docker', 'logs', '--since', '180s', '--tail', '200', cid], True)
-                  result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
-                  verify()
-                  payloads[service] = payload
-              return payloads
-
-          result = output('UNAVAILABLE_PRIVATE_INPUT', 'UNKNOWN')
-          try:
-              config = STAGES[os.environ['RCT_HTTP500_DIAGNOSTIC_STAGE']]
-              result = output('UNAVAILABLE_PRIVATE_INPUT', config[6])
-              failure = load_failure(config)
-              result = output('UNAVAILABLE_TARGET_SIGNATURE', config[6])
-              if is_target_failure(failure, config):
-                  result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
-                  payloads = collect(config)
-                  result = output('UNAVAILABLE_LOG_FORMAT', config[6])
-                  if config[4] == 'STUDENT_STATS_HTTP503':
-                      result = classify(payloads[config[5]], config)
-                  else:
-                      domain = classify(payloads[config[5]], config)
-                      gateway = classify(payloads['api-gateway'], config, 'api-gateway')
-                      result = combine(domain, gateway, config)
-                      result['reportedAmbiguityEvidence'] = ambiguity_evidence(payloads, config, domain, gateway)
-          except Exception:
-              pass
-          print(json.dumps(result, sort_keys=True))
-          PY_HTTP500_DIAGNOSTIC
+        run: *closed-http500-diagnostic
 
       - name: Verify Today quick request after the genuine first lesson closes
         id: student-today-quick-request

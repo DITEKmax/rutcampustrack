@@ -13,7 +13,12 @@ import {
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
 import { requirePrivateArtifacts, sanitizeTestErrors } from '../fixtures/artifact-privacy';
-import { datasetHttpFailure } from '../fixtures/safe-reporter';
+import {
+  datasetHttpFailure,
+  classifySafeFailure,
+  retainHeadmanCleanupFailure,
+  type HeadmanCleanupCause,
+} from '../fixtures/safe-reporter';
 import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
 
 // This opt-in fixture gets Playwright's independent teardown budget even when its body times out.
@@ -1983,14 +1988,37 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         page.locator('.teacher-journal').getByRole('button', { name: 'Лекция', exact: true }),
       ).toHaveAttribute('aria-pressed', 'true');
     } finally {
+      // APIRequestContext calls do not emit page response events. Retain only a closed
+      // rejected-operation witness; the original rejection still reaches allSettled.
+      const observeCleanup = async <T>(
+        initialCause: HeadmanCleanupCause,
+        run: (phase: (cause: HeadmanCleanupCause, status?: number) => void) => Promise<T>,
+      ): Promise<T> => {
+        let cause = initialCause;
+        let status = 0;
+        try {
+          return await run((nextCause, nextStatus = 0) => {
+            cause = nextCause;
+            status = nextStatus;
+          });
+        } catch (error) {
+          retainHeadmanCleanupFailure(
+            info.annotations,
+            cause,
+            status || classifySafeFailure(error).httpStatus,
+          );
+          throw error;
+        }
+      };
       const cleanup = await Promise.allSettled([
         ...(shortcutSubjectId
           ? [
-              (async () => {
+              observeCleanup('HEADMAN_CLEANUP_SHORTCUT_SUBJECT_READ', async (phase) => {
                 const subject = await dataset.headmanActor.call(
                   'GET',
                   `/api/academic/subjects/${shortcutSubjectId}`,
                 );
+                phase('HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_IDENTITY');
                 const assignment = subject.assignments.find(
                   (row: { teacherId: number; semesterId: number; lessonType: string }) =>
                     Number(row.teacherId) === dataset.teacher.id &&
@@ -2001,9 +2029,11 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
                   Number.isSafeInteger(Number(assignment?.id)) && Number(assignment.id) > 0,
                 ).toBe(true);
                 const closePath = `/api/academic/subjects/${shortcutSubjectId}/teachers/${dataset.teacher.id}?assignmentId=${assignment.id}&validUntilExclusive=${dataset.today}`;
+                phase('HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_CLOSE');
                 await expect
                   .poll(
                     async () => {
+                      phase('HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_CLOSE');
                       const closed = await dataset.request.delete(closePath, {
                         headers: {
                           ...dataset.headmanActor.headers(),
@@ -2011,6 +2041,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
                         },
                       });
                       try {
+                        phase('HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_CLOSE', closed.status());
                         if (![204, 503].includes(closed.status()))
                           throw datasetHttpFailure('DELETE', closePath, closed.status());
                         return closed.status();
@@ -2021,13 +2052,16 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
                     { timeout: 5000, message: 'Owned shortcut assignment closure completes' },
                   )
                   .toBe(204);
+                phase('HEADMAN_CLEANUP_SHORTCUT_CATALOG_READ');
                 const restoredScope = await page.request.get(
                   `/api/v1/teacher/catalog?semesterId=${dataset.semester.id}`,
                   { headers },
                 );
                 try {
+                  phase('HEADMAN_CLEANUP_SHORTCUT_CATALOG_READ', restoredScope.status());
                   expect(restoredScope.status()).toBe(200);
                   const current = await restoredScope.json();
+                  phase('HEADMAN_CLEANUP_SHORTCUT_CATALOG_SCOPE', restoredScope.status());
                   expect(currentSubjectScope(current)).toEqual(currentSubjectScope(catalog));
                   expect(current.groups.map((row: { id: string }) => row.id)).toEqual(
                     catalog.groups.map((row: { id: string }) => row.id),
@@ -2036,31 +2070,37 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
                   await restoredScope.dispose();
                 }
                 // Retain the closed assignment and empty synthetic subject with their immutable history.
-              })(),
+              }),
             ]
           : []),
         ...(pendingId
           ? [
-              journalSeed.assistantActor.call(
-                'POST',
-                `/api/v1/student/requests/${pendingId}/cancel`,
+              observeCleanup('HEADMAN_CLEANUP_PENDING_REQUEST_CANCEL', async () =>
+                journalSeed.assistantActor.call(
+                  'POST',
+                  `/api/v1/student/requests/${pendingId}/cancel`,
+                ),
               ),
             ]
           : []),
         ...(originalCancelAttempted
           ? [
-              dataset.headmanActor.call(
-                'PATCH',
-                `/api/schedule/lessons/${future.physicalLessonId}/restore`,
+              observeCleanup('HEADMAN_CLEANUP_FUTURE_LESSON_RESTORE', async () =>
+                dataset.headmanActor.call(
+                  'PATCH',
+                  `/api/schedule/lessons/${future.physicalLessonId}/restore`,
+                ),
               ),
             ]
           : []),
         ...(contrastLessonId
           ? [
-              dataset.headmanActor.call(
-                'PATCH',
-                `/api/schedule/lessons/${contrastLessonId}/cancel`,
-                { reason: 'Синтетическая завершённая проверка дня' },
+              observeCleanup('HEADMAN_CLEANUP_CONTRAST_LESSON_CANCEL', async () =>
+                dataset.headmanActor.call(
+                  'PATCH',
+                  `/api/schedule/lessons/${contrastLessonId}/cancel`,
+                  { reason: 'Синтетическая завершённая проверка дня' },
+                ),
               ),
             ]
           : []),

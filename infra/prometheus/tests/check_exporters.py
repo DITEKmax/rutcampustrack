@@ -447,7 +447,8 @@ def main():
                 check=False,
             )
             assert denied.returncode != 0 and ("not authorized" in denied.stderr or "not authorized" in denied.stdout)
-            wait(lambda: "mongodb_up 1" in metrics("mongodb-exporter"))
+            _STATE["phase"] = "MONGO_EXPORTER_READINESS"
+            wait(lambda: 'mongodb_up{cluster_role="mongod"} 1' in metrics("mongodb-exporter").splitlines())
             _STATE["phase"] = "REDIS_ROLE_AND_EXPORTER"
             wait(
                 lambda: (

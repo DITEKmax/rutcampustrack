@@ -103,6 +103,22 @@ const datasetHttpStages = Object.fromEntries(
   Object.keys(datasetHttpOperations).map((cause) => [cause, 'DATASET_HTTP']),
 ) as Record<DatasetHttpCause, 'DATASET_HTTP'>;
 
+const headmanCleanupStages = {
+  HEADMAN_CLEANUP_SHORTCUT_SUBJECT_READ: 'HEADMAN_CLEANUP',
+  HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_IDENTITY: 'HEADMAN_CLEANUP',
+  HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_CLOSE: 'HEADMAN_CLEANUP',
+  HEADMAN_CLEANUP_SHORTCUT_CATALOG_READ: 'HEADMAN_CLEANUP',
+  HEADMAN_CLEANUP_SHORTCUT_CATALOG_SCOPE: 'HEADMAN_CLEANUP',
+  HEADMAN_CLEANUP_PENDING_REQUEST_CANCEL: 'HEADMAN_CLEANUP',
+  HEADMAN_CLEANUP_FUTURE_LESSON_RESTORE: 'HEADMAN_CLEANUP',
+  HEADMAN_CLEANUP_CONTRAST_LESSON_CANCEL: 'HEADMAN_CLEANUP',
+} as const;
+export type HeadmanCleanupCause = keyof typeof headmanCleanupStages;
+const cleanupHttpStatuses = [
+  0, 200, 204, 400, 401, 403, 404, 409, 410, 422, 423, 429, 500, 502, 503, 504,
+] as const;
+type CleanupHttpStatus = (typeof cleanupHttpStatuses)[number] | 'OTHER';
+
 const failureStages = {
   UNKNOWN: 'UNKNOWN',
   ARTIFACT_REPORTER_GUARD: 'ARTIFACT_PRIVACY',
@@ -120,6 +136,7 @@ const failureStages = {
   CLOCK_WINDOW_GUARD: 'TEACHING_CLOCK',
   INVALID_TIME_VALUE: 'UNKNOWN',
   ...datasetHttpStages,
+  ...headmanCleanupStages,
 } as const;
 type FailureCause = keyof typeof failureStages;
 const reportedClassHints = {
@@ -265,7 +282,7 @@ export function datasetHttpFailure(method: unknown, path: unknown, httpStatus: u
 export interface SafeFailureDiagnostic {
   stage: (typeof failureStages)[FailureCause];
   cause: FailureCause | ReportedFailureHint;
-  httpStatus: FailureHttpStatus;
+  httpStatus: FailureHttpStatus | CleanupHttpStatus;
 }
 const knownFailureMessages: Record<string, FailureCause> = {
   'Real-mobile requires the dedicated safe reporter, no debug/extra reporter and snapshot capture disabled':
@@ -286,7 +303,7 @@ const knownFailureMessages: Record<string, FailureCause> = {
 };
 function failureDiagnostic(
   cause: FailureCause = 'UNKNOWN',
-  httpStatus: FailureHttpStatus = 0,
+  httpStatus: FailureHttpStatus | CleanupHttpStatus = 0,
 ): SafeFailureDiagnostic {
   return { stage: failureStages[cause], cause, httpStatus };
 }
@@ -424,17 +441,45 @@ export function safeFailureDiagnostics(
       const description = ownData(annotation, 'description');
       const match =
         typeof description === 'string' && description.length <= 96
-          ? /^([A-Z_]+):(0|200|201|202|400|401|403|404|409|410|422|423|429|500|502|503|504)$/.exec(
+          ? /^([A-Z_]+):(0|200|201|202|204|400|401|403|404|409|410|422|423|429|500|502|503|504|OTHER)$/.exec(
               description,
             )
           : null;
       const valid = match && Object.prototype.hasOwnProperty.call(failureStages, match[1]);
       const reported = match && isReportedHint(match[1]);
       const diagnostic: SafeFailureDiagnostic = valid
-        ? failureDiagnostic(match[1] as FailureCause, Number(match[2]) as FailureHttpStatus)
+        ? failureDiagnostic(
+            match[1] as FailureCause,
+            match[2] === 'OTHER' ? 'OTHER' : (Number(match[2]) as FailureHttpStatus | 204),
+          )
         : reported && match[2] === '0'
           ? { stage: 'UNKNOWN', cause: match[1] as ReportedFailureHint, httpStatus: 0 }
           : failureDiagnostic();
+      const cleanupCause = Object.prototype.hasOwnProperty.call(
+        headmanCleanupStages,
+        diagnostic.cause,
+      );
+      if (cleanupCause) {
+        if (match?.[0] !== description) continue;
+        if (
+          !cleanupHttpStatuses.some((status) => status === diagnostic.httpStatus) &&
+          diagnostic.httpStatus !== 'OTHER'
+        )
+          continue;
+        // One rejected operation, even if untrusted annotations claim several phases.
+        const operation = diagnostic.cause.split('_')[2];
+        if (
+          !result.some(
+            (item) => item.stage === 'HEADMAN_CLEANUP' && item.cause.split('_')[2] === operation,
+          )
+        )
+          result.push(diagnostic);
+        continue;
+      }
+      if (diagnostic.httpStatus === 204 || diagnostic.httpStatus === 'OTHER') {
+        if (!result.some((item) => item.cause === 'UNKNOWN')) result.push(failureDiagnostic());
+        continue;
+      }
       // Only the existing actor and closed dataset HTTP markers may carry a public status.
       const httpCause =
         Object.prototype.hasOwnProperty.call(datasetHttpOperations, diagnostic.cause) ||
@@ -483,6 +528,28 @@ export function retainFirstDatasetHttpFailure(
     type: safeFailureAnnotation,
     description: `${diagnostic.cause}:${diagnostic.httpStatus}`,
   });
+}
+
+/** A rejected fixture cleanup observation, not an authenticated backend failure cause. */
+export function retainHeadmanCleanupFailure(
+  annotations: TestResult['annotations'],
+  cause: HeadmanCleanupCause,
+  httpStatus: unknown = 0,
+): void {
+  if (!Object.prototype.hasOwnProperty.call(headmanCleanupStages, cause)) return;
+  const previous = safeFailureDiagnostics(annotations);
+  const operation = cause.split('_')[2];
+  if (
+    previous.some(
+      (item) => item.stage === 'HEADMAN_CLEANUP' && item.cause.split('_')[2] === operation,
+    )
+  )
+    return;
+  if (previous.filter((item) => !item.cause.startsWith('REPORTED_')).length >= 8) return;
+  if (previous.length >= 8 && !discardReportedFailureHint(annotations)) return;
+  if (annotations.length >= 32) return;
+  const status = cleanupHttpStatuses.some((value) => value === httpStatus) ? httpStatus : 'OTHER';
+  annotations.push({ type: safeFailureAnnotation, description: `${cause}:${status}` });
 }
 
 interface SafeResult {

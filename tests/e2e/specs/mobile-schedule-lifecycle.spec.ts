@@ -1331,23 +1331,36 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
       );
       await studentPage.clock.install({ time: teachingInstant! });
     }
-    const studentLogin = await loginPwa(studentPage, dataset.student);
-    expect(
-      studentLogin.session.userId === String(dataset.student.id) &&
-        studentLogin.session.activeRole === 'STUDENT',
-      'Statistics browser admits the existing ordinary student before headman replacement',
-    ).toBe(true);
-    await studentPage.getByRole('button', { name: 'Ещё', exact: true }).click();
-    const overviewLoaded = studentPage.waitForResponse((response) => {
+    let observedOverview: Response | undefined;
+    const matchesStudentOverview = (response: Response) => {
       const url = new URL(response.url());
       return (
         response.request().method() === 'GET' &&
         url.pathname === '/api/v1/student/statistics' &&
         url.searchParams.get('semesterId') === String(dataset.semester.id)
       );
-    });
-    await studentPage.getByRole('button', { name: 'Статистика', exact: true }).click();
-    const overviewResponse = await overviewLoaded;
+    };
+    const observeStudentOverview = (response: Response) => {
+      if (matchesStudentOverview(response)) observedOverview ??= response;
+    };
+    studentPage.on('response', observeStudentOverview);
+    let overviewResponse: Response;
+    let studentLogin: Awaited<ReturnType<typeof loginPwa>>;
+    try {
+      studentLogin = await loginPwa(studentPage, dataset.student);
+      expect(
+        studentLogin.session.userId === String(dataset.student.id) &&
+          studentLogin.session.activeRole === 'STUDENT',
+        'Statistics browser admits the existing ordinary student before headman replacement',
+      ).toBe(true);
+      await studentPage.getByRole('button', { name: 'Ещё', exact: true }).click();
+      const overviewLoaded =
+        observedOverview ?? studentPage.waitForResponse(matchesStudentOverview);
+      await studentPage.getByRole('button', { name: 'Статистика', exact: true }).click();
+      overviewResponse = await overviewLoaded;
+    } finally {
+      studentPage.off('response', observeStudentOverview);
+    }
     // Closed public status frames only; response contents and scope remain private RAM.
     if (overviewResponse.status() === 400) throw new Error('Student statistics HTTP 400');
     if (overviewResponse.status() === 401) throw new Error('Student statistics HTTP 401');

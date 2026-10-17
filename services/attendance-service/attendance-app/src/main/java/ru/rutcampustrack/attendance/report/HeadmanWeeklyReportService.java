@@ -5,6 +5,8 @@ import io.grpc.StatusRuntimeException;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
@@ -37,6 +39,7 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.time.Clock;
 import java.time.DayOfWeek;
@@ -78,6 +81,32 @@ public class HeadmanWeeklyReportService {
     private final RequestContext requestContext;
     private final Clock clock;
     private final ReportExecution reportExecution;
+
+    @Autowired
+    public HeadmanWeeklyReportService(
+            AcademicGrpcClient academicGrpcClient,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AttendanceReadPort attendanceReadPort,
+            TeacherAttendanceDocxRenderer docxRenderer,
+            HeadmanWeeklyTabularRenderer tabularRenderer,
+            DocumentRendererGrpcClient documentRendererGrpcClient,
+            RequestContext requestContext,
+            Clock clock,
+            ReportExecution reportExecution,
+            ObjectProvider<EducationalTime> educationalTime) {
+        this(
+                academicGrpcClient,
+                scheduleGrpcClient,
+                attendanceReadPort,
+                docxRenderer,
+                tabularRenderer,
+                documentRendererGrpcClient,
+                requestContext,
+                educationalTime == null
+                        ? clock
+                        : educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(),
+                reportExecution);
+    }
 
     public HeadmanWeeklyWeeksResponse getActiveSemesterWeeks() {
         ensureHeadman();

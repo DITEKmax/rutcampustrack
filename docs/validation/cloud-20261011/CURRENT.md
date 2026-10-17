@@ -7,13 +7,17 @@ decisions/questions, resources и относящиеся к следующему
 один, пока явно incomplete; история/evidence один раз в attempts и Git.
 
 Старт18:49UTC/21:49MSK, base753173688d633ca07991f4dd73bdcd2698f45d96.
-Опубликованный local=remote=PR head **e0a44e4f335c58b6993c4e4de1b4f90222e695c2**,
+Опубликованный local=remote=PR head **f8af7a4225eaf7146e047265bbdd6ce92cd99dfb**,
 ветка codex/server-validation-20261011, [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2)
 → main3908fad9624f97aec8891fc79338ceb6b0616bf3, без merge.
-Actual checkout **7a8cfb494aa7a2374b2b44623dfd52a7fcbd8537**,
+Предыдущийe0 actual checkout **7a8cfb494aa7a2374b2b44623dfd52a7fcbd8537**,
 tree e020a8743187eab8e0b633be802b2003933f0333, artifact12117460957/SHAeb1f96f2… .
-Coverage39075933406, Security39075933403, OpenAPI39075933528 completedSUCCESS.
-CI39075933443 ещё идёт: monitoring и async18 FAIL, остальное продолжается;
+Новыйf8 actual checkout 4da17553476cf9070f8f32289e9f2875400c238e/tree31093158fcbe6019139f93e44c99545297aed22c,
+artifact12117763214/SHA231a91d3… . CI39078337905/Coverage39078337926/Security39078337911/
+OpenAPI39078337923: Coverage/Security/OpenAPI completedSUCCESS; CI ещё идёт.
+Новыйmonitor FAIL REDIS_ADMIN_READINESS; безопасныйprimary12118332323 сохранён, pipeline/receiverPASS.
+Предыдущиеe0 Coverage39075933406, Security39075933403, OpenAPI39075933528 SUCCESS.
+CI39075933443 завершён:20success/4failure (monitoring/2browser/aggregate);
 новый диагноз/исправление не подтверждаются старым green.
 
 | ID | Статус | Достаточный результат / конкретный остаток |
@@ -39,25 +43,43 @@ PASS; весьcohort ещёFAIL, productiongrants не применялись.
    затем REDIS_ROLE_AND_EXPORTER/AssertionError, cleanupPASS. Existingcompletedlog
    не сохранил ветку; ACL/pinnedexporter source не обосновывает расширениеправ.
    Infra ONEfile check_exporters diagnostics7800ed4b frozen/independentreview
-   04a4a38f APPROVE_RUNTIME_PENDING/RootintegratedWIP. Фиксированные stage/exit/
+   04a4a38f APPROVE_RUNTIME_PENDING/publishedf8af7a42. Фиксированные stage/exit/
    category/UP state, исходные6denials/120s/ACL/images/cleanup сохранены.
-   Следующий actualcohort обязан пройти Redis→Rabbitplugin.
+   Новыйf8actual12118332323: REDIS_ADMIN_READINESS/CLIexit1/UNKNOWN, ещё до
+   adminfixture/monitor/denials/exporter. MongoagainPASS, pipeline280.42s/receiver74.36s
+   PASS/cleanupPASS. PinnedRedis7.4.6 officialACLparser требуетuserline, а шаблон содержит3comments.
+   ACLfixea378173 independentlyreviewedbec2d62a/RootintegratedWIP; обеuserlines byteequal. Optional
+   Debian7.0.15 nativeNOT_RUN_SETUP_FAILURE/всёreaped, sourceproof не заменяет
+   следующий actualpinnedCI. Права/таймауты не менялись.
 2. **Новый async DOCX.** e0safe12117836440/SHA354ee958…: download достигнут,
    Pythoncontenthelper5487 FAIL10409ms/error1; какая из2проверок и точный assert
    UNKNOWN.8targetsUP, deltasempty, cleanupPASS. Accepted202/storage/navigation
-   больше не первичный отказ; файл не объявлять правильным. Reports solewriter
-   сравнил тот же helper/renderer/seed: доказанного product/oracledefect нет.
+   больше не первичный отказ; файл не объявлять правильным. Reports solewriter адресно сопоставляет actuallastweekmark/row vs seed/oracle;
+   Найден domainclockseam counterexample: Weeklyservice rawClock masks
+   lastlesson asfuture, тогда как mark/read используют EducationalTime09MSK.
+   Reports solewriter выравнивает existingclockpattern (service+existingunit only),
+   RED01 fixturecompile failed(Objectcast),15770reaped/nosemanticRED.
+   RED02 semantic missingEXCUSED FAIL54s/productunchanged → GREEN01 actualmodel+DOCX
+   regression и existingfuture/missingguard2/2PASS61s. Все процессыreaped;
+   frozen2filesbb36724a/ddf33b2c independentlyapproved/RootintegratedWIP.
    SAMEspec fixedPythonexit/stage +NAVIGATION/LOST_ACCEPTANCE diagnostic97554397
-   frozen/review73a4a70aAPPROVED/RootintegratedWIP,
+   frozen/review73a4a70aAPPROVED/publishedf8af7a42,
    без rawXML/файла/stdout/stderr/имён и без ослабления18weeks/boundaries/rights.
-   TS/format/21Python+32JSprivacycontrolsPASS. Готов coherentent3source diagnosticcheckpoint; дальше scopedhooks/commit/push/readback
-   и следующий обычныйCI, без повторов прежних достаточныхPASS вручную.
+   TS/format/21Python+32JSprivacycontrolsPASS. Coherent3source checkpoint опубликованf8af7a42, hooks/commit/push/readbackPASS;
+   следующий ordinaryCI запущен, без ручного повтора неизменённыхPASS.
 3. **Reconciliation.** Исходный fullhealth barrier перенесён ПОСЛЕ восстановления
    Schedule, при outage остаются running/exactretry/finalDLQ; sourcea1135f4c/review
    4d64ca92. Actuale0 дошёл через exactDLQ и исходные fullhealth barriers до PENDING_ARCHIVE,
    но admin request.get(delete-preview)4136 FAIL до response/try (12117802213).
    Точная requestexception UNKNOWN; cleanup/recoveryeffect/restorationPASS,
-   samearchive/duplicate ещёНЕPASS. Finite TimeoutError-vs-OTHER witness8808b910/reviewAPPROVED интегрированRootWIP,
+   samearchive/duplicate ещёНЕPASS. Обычный archive/restore gate тожеFAIL вSETUP:
+   attendance mark HTTP500/spec1806 (12117711849), ещё доarchive; causeUNKNOWN,
+   cleanup/clock/disposePASS. Reports source/logRCA завершён: CAS/roster inputs согласованы, но existingprivate500
+   classifier UNAVAILABLE_PRIVATE_INPUT для другого LESSON_REPORT. Нужна точная
+   MARK request-correlated Attendance exceptionclass/frame; Infra подтвердил staleInternalJwtIssuerClientpin и отсутствие MARK collector route/
+   responseRequestId. Reviewed/RootintegratedWIP CI+Actor.call точную корреляцию первого MARK500
+   и currentpin;2filesfrozen e03c0c44/f5f74cce,28JS+inlinePythonprivacy/correlation/
+   TS/format/YAML controlsPASS, independent6f6bbb40 APPROVE_RUNTIME_PENDING; без ослабленияidentity/новогоframework. CauseUNKNOWN, не новыйscope. Finite TimeoutError-vs-OTHER witness8808b910/reviewAPPROVED опубликованf8af7a42,
    rethrow SAMEerror; retries/budgets/barriers не изменены.
 4. **После2correctDOCX** существующий check_pipeline в том же8appстенде проверяет
    report/job deltas и actual retained panel queries; не заменятьsourcecontrols.
@@ -81,14 +103,18 @@ D034 offhostprobe приdeploy DEFERRED_LOCAL, отдельно futurealertbotDE
 **Вопросов владельцу сейчас нет.**
 
 Root soleGit/docs integrator selectedSol6.1ULTRA; детиSol6.1/high/forknone,
-actualUNKNOWN. Soleauthors: InfraRedis7800ed4b и ReportsDOCX97554397/preview8808b910 diagnostics
-frozen/reviewed/Rootintegrated; все authors/reviewers idle, процессов нет. Runtime7
-включаяRoot; подробности/resources.md. RootsourceWIP — три revieweddiagnostics7800ed4b/97554397/8808b910,
-плюс Rootdocs/одинhandoff. Foreign25untracked/старыйстенд/volumes/keys сохранены.
-ЛокальныхDB/Docker/browser/server нет; CPU5/RAM16GiB;4GiBworkspacefloor сохранён,
-~1.98MBmargin после exactbackup/pack765 толькоownpublishedobjects
-(pack34c67a90/SHA b37dc3c1…); refs/index/status/diff не изменены,45689reaped.
-ПередGitstaging снова измерить atomicindex+newobject reserve; tmp~6.3GB.
+actualUNKNOWN. Runtime7 включаяRoot. Soleauthors Infra(reviewedACL1+MARK2),
+Reports(reviewedclock2), все5sourcefiles RootintegratedWIP; обеreviewers независимы.
+Auth read-only observer ждёт только новыеsafe reconciliation/lifecycle artifacts текущегоCI.
+Остальныеidle; все локальные native/JVM/Redis процессыreaped, leasesRELEASED.
+ЛокальныхDB/Docker/browser/server нет. Foreign25untracked/старыйстенд/volumes/keys сохранены.
+Rootdocs5WIP; следующийшаг scopedhooks→обычныйcommit/push/readback→новыйordinaryCI
+для5sourcefixes. ТочныйследующийSHA ещёнеопределён. CPU5/RAM16GiB; workspacefloor4GiB.
+Точный atomicindex+blob+treebudget не помещается45KiB: использовать штатный временный
+Gitindex в/tmp с проверенным сохранением/восстановлениемRootindex; не снижатьfloor.
+Толькоownpublished785objects compacted packb6f928cf/SHAf57e7cb6; refs/index/diff неизменны.
+28ownsafeZIPs сохраненыbyteequal/tmp+исходныеsymlinks; публичныйGradleinstaller также
+сохранён/tmp, но underlyinglowerlayer не дал ожидаемогоfree—повторной уборки нет.
 
 Noreset/prune/main/merge/deploy/newbranch/newPR/Angular/newweb/secrets/otherchats/
 daemon. B013/B014/B015 FROZEN и прежние nativeTelegram/push/install/Safari/manual

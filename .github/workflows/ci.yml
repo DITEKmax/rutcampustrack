@@ -3340,6 +3340,10 @@ jobs:
                             'attendance-service', 'ATTENDANCE_LESSON_REPORT',
                             'ru.rutcampustrack.attendance.report.ReportController.getLessonAttendance',
                             'ReportController.java'),
+              'MARK500': ('RCT_SEMESTER_LIFECYCLE_RUN', 'rct-semester-lifecycle-',
+                          ('artifacts',), 'semester-lifecycle.spec.ts', 'DATASET_ATTENDANCE_MARK_HTTP',
+                          'attendance-service', 'ATTENDANCE_MARK',
+                          'ru.rutcampustrack.attendance.marking.MarkingController.mark', 'MarkingController.java'),
               'LESSON_CREATE500': ('RCT_ASSIGNMENT_LIFECYCLE_RUN', 'rct-assignment-lifecycle-',
                                   ('artifacts', 'prepare'), 'assignment-lifecycle.spec.ts',
                                   'DATASET_LESSON_CREATE_HTTP', 'schedule-service', 'SCHEDULE_ONEOFF_LESSON_CREATE',
@@ -3360,7 +3364,7 @@ jobs:
               'org.springframework.web.server.ResponseStatusException': 'HTTP_STATUS',
               'reactor.netty.http.client.PrematureCloseException': 'UPSTREAM_CLOSED',
           }
-          HTTP500_STAGES = {'ATTENDANCE_LESSON_REPORT', 'SCHEDULE_ONEOFF_LESSON_CREATE'}
+          HTTP500_STAGES = {'ATTENDANCE_LESSON_REPORT', 'SCHEDULE_ONEOFF_LESSON_CREATE', 'ATTENDANCE_MARK'}
           ORIGINS = {'attendance-service': 'ATTENDANCE_MVC', 'schedule-service': 'SCHEDULE_MVC',
                      'api-gateway': 'GATEWAY_WEBFLUX'}
           GATEWAY_LOGGER = 'org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler'
@@ -3403,7 +3407,7 @@ jobs:
                   '695cff405b84f170a97b5f980756ffd8d060b4917ccd40a47aa3e11d1d79c94c', 608),
               'INTERNAL_JWT_ISSUER_CLIENT': ('api-gateway', 'ru.rutcampustrack.gateway.security.InternalJwtIssuerClient',
                   'services/api-gateway/src/main/java/ru/rutcampustrack/gateway/security/InternalJwtIssuerClient.java',
-                  '1e7a444198c7c585bb835fde12d79c59ef4ff8ac9bc73d115ec67083f5dfc42f', 474),
+                  '6fe2220b1c5b000bc7eefc7f24f754b734ffb26a787ca21b3c83fb99cdbc7a0a', 479),
           }
           PROJECTION_KINDS = {
               'INVALID_OCCURRENCE', 'DUPLICATE_OCCURRENCE', 'UNSUPPORTED_ATTENDANCE_STATUS',
@@ -3444,8 +3448,16 @@ jobs:
                                reportedAmbiguityEvidence=[])
               return value
 
+          def frame_sources(config):
+              if config[4] != 'DATASET_ATTENDANCE_MARK_HTTP':
+                  return OWN_FRAME_SOURCES
+              return {**OWN_FRAME_SOURCES, 'ATTENDANCE_MARKING_CONTROLLER': (
+                  'attendance-service', 'ru.rutcampustrack.attendance.marking.MarkingController',
+                  'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/marking/MarkingController.java',
+                  '39a2bcc652d780afb4797bf6fa36db20c7cbb9f711690843f49763a1a6f4b3bf', 117)}
+
           def verify_http_sources(config):
-              for service, _, source, digest, lines in OWN_FRAME_SOURCES.values():
+              for service, _, source, digest, lines in frame_sources(config).values():
                   if service not in {config[5], 'api-gateway'}:
                       continue
                   path = Path(source)
@@ -3458,7 +3470,7 @@ jobs:
 
           def reported_own_frame(stack, config, captured_service=None):
               matches = []
-              for symbol, (service, clazz, source, _, line_bound) in OWN_FRAME_SOURCES.items():
+              for symbol, (service, clazz, source, _, line_bound) in frame_sources(config).items():
                   if service != (config[5] if captured_service is None else captured_service):
                       continue
                   pattern = (r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
@@ -3607,6 +3619,9 @@ jobs:
                       and 0 < len(row['diagnostics']) <= 8
                       and all(type(item) is dict and set(item) == {'stage', 'cause', 'httpStatus'}
                               for item in row['diagnostics'])
+                      and (config[4] != 'DATASET_ATTENDANCE_MARK_HTTP'
+                           or (row['line'] == 1580 and {'file': 'semester-lifecycle.spec.ts', 'line': 1806}
+                               in row['errorLocations']))
                       and {'stage': 'DATASET_HTTP', 'cause': config[4], 'httpStatus': 500}
                           in row['diagnostics'])
 
@@ -3645,8 +3660,10 @@ jobs:
               return (output('UNIQUE', stage + '_' + distinct[0][1], 'REPORTED_' + distinct[0][0])
                       if distinct else output('ABSENT', stage))
 
-          def classify(payload, config, captured_service=None):
+          def classify(payload, config, captured_service=None, request_id=None):
               stage = config[6]
+              if config[4] == 'DATASET_ATTENDANCE_MARK_HTTP' and not canonical_request_id(request_id):
+                  return output('UNAVAILABLE_PRIVATE_INPUT', stage)
               captured_service = config[5] if captured_service is None else captured_service
               if captured_service not in {config[5], 'api-gateway'}:
                   return output('UNAVAILABLE_SERVICE_OWNERSHIP', stage)
@@ -3682,6 +3699,8 @@ jobs:
                       continue
                   if type(record) is not dict:
                       unusable = True
+                      continue
+                  if config[4] == 'DATASET_ATTENDANCE_MARK_HTTP' and record.get('requestId') != request_id:
                       continue
                   expected_logger = GATEWAY_LOGGER if gateway else 'ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler'
                   if (record.get('logger') != expected_logger or record.get('level') != 'ERROR'
@@ -3776,7 +3795,7 @@ jobs:
                       return output(state, config[6])
               return domain
 
-          def ambiguity_evidence(payloads, config, domain, gateway):
+          def ambiguity_evidence(payloads, config, domain, gateway, request_id=None):
               # Unkeyed facts from the verified captured streams; never request causality.
               # Keep classify/combine unchanged so evidence cannot promote or veto their result.
               header = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
@@ -3812,6 +3831,8 @@ jobs:
                               continue
                           if type(record) is not dict:
                               reasons.add('MALFORMED_LOG_RECORD')
+                              continue
+                          if config[4] == 'DATASET_ATTENDANCE_MARK_HTTP' and record.get('requestId') != request_id:
                               continue
                           is_gateway = service == 'api-gateway'
                           logger = GATEWAY_LOGGER if is_gateway else 'ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler'
@@ -3879,6 +3900,27 @@ jobs:
                                                  for symbol, line in sorted(frames)[:16]]})
               return evidence
 
+
+          def canonical_request_id(value):
+              return type(value) is str and re.fullmatch(
+                  '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', value) is not None
+
+          def load_mark_request_id(config):
+              path = Path(os.environ[config[0]]) / 'mark-http500.request-id'
+              before = path.lstat()
+              with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
+                  info = os.fstat(stream.fileno())
+                  if (not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600
+                          or info.st_uid != os.getuid() or not 0 < info.st_size <= 64
+                          or (info.st_dev, info.st_ino) != (before.st_dev, before.st_ino)):
+                      raise ValueError('Invalid private MARK witness')
+                  raw = stream.read(65)
+                  if len(raw) != info.st_size:
+                      raise ValueError('Private MARK witness changed')
+              value = raw.decode('ascii').removesuffix('\n')
+              if not canonical_request_id(value):
+                  raise ValueError('Missing canonical MARK witness')
+              return value
 
           def load_failure(config):
               if (os.environ.get('GITHUB_ACTIONS') != 'true'
@@ -3980,6 +4022,10 @@ jobs:
               failure = load_failure(config)
               result = output('UNAVAILABLE_TARGET_SIGNATURE', config[6])
               if is_target_failure(failure, config):
+                  request_id = None
+                  if config[4] == 'DATASET_ATTENDANCE_MARK_HTTP':
+                      result = output('UNAVAILABLE_PRIVATE_INPUT', config[6])
+                      request_id = load_mark_request_id(config)
                   result = output('UNAVAILABLE_SERVICE_OWNERSHIP', config[6])
                   payloads = collect(config)
                   result = output('UNAVAILABLE_LOG_FORMAT', config[6])
@@ -3988,10 +4034,10 @@ jobs:
                   elif config[4] == 'STUDENT_STATS_HTTP503':
                       result = classify(payloads[config[5]], config)
                   else:
-                      domain = classify(payloads[config[5]], config)
-                      gateway = classify(payloads['api-gateway'], config, 'api-gateway')
+                      domain = classify(payloads[config[5]], config, request_id=request_id)
+                      gateway = classify(payloads['api-gateway'], config, 'api-gateway', request_id=request_id)
                       result = combine(domain, gateway, config)
-                      result['reportedAmbiguityEvidence'] = ambiguity_evidence(payloads, config, domain, gateway)
+                      result['reportedAmbiguityEvidence'] = ambiguity_evidence(payloads, config, domain, gateway, request_id=request_id)
           except Exception:
               pass
           print(json.dumps(result, sort_keys=True))
@@ -5333,6 +5379,14 @@ jobs:
           mkdir -m 700 -- "$RCT_SEMESTER_LIFECYCLE_RUN/artifacts"
           printf 'RCT_SEMESTER_DISPOSABLE\n' > "$RCT_SEMESTER_LIFECYCLE_RUN/disposable-target"
           npx playwright test --config playwright.semester-lifecycle.config.ts --project=chromium --grep 'FULL admin archives and restores the disposable CI semester through real participants$'
+
+      - name: Record the exact failed ordinary MARK without exposing request identity
+        if: ${{ !cancelled() && steps.semester-lifecycle.outcome == 'failure' }}
+        timeout-minutes: 1
+        env:
+          RCT_HTTP500_DIAGNOSTIC_STAGE: MARK500
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+        run: *closed-http500-diagnostic
 
       - name: Locate the pending semester effect without exposing event data
         timeout-minutes: 1

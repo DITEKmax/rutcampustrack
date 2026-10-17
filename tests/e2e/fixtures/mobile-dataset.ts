@@ -1,6 +1,16 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
-import { expect, type APIRequestContext, type Page } from '@playwright/test';
+import {
+  closeSync,
+  constants,
+  fstatSync,
+  lstatSync,
+  openSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
+import { isAbsolute, join, resolve } from 'node:path';
+import { expect, type APIRequestContext, type APIResponse, type Page } from '@playwright/test';
 import type { CurrentSession } from './pwa-auth';
 import { TEST_USERS, type TestUser } from './users';
 import { test as base, requirePrivateArtifacts } from './artifact-privacy';
@@ -12,6 +22,90 @@ export interface SyntheticUser extends TestUser {
   id: number;
   displayName: string;
   telegramId: number;
+}
+
+/** First failed ordinary MARK only: private correlation, never reporter/artifact data. */
+function retainMarkRequestId(response: APIResponse, method: string, path: string): void {
+  try {
+    if (
+      response.status() !== 500 ||
+      method !== 'PUT' ||
+      !/^\/api\/attendance\/lessons\/[1-9][0-9]{0,18}\/students\/[1-9][0-9]{0,18}$/.test(path) ||
+      process.env.GITHUB_ACTIONS !== 'true' ||
+      process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
+      process.env.RCT_E2E_SYNTHETIC_SEED !== 'true'
+    )
+      return;
+    const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+    const temporary = process.env.RUNNER_TEMP;
+    const workspace = process.env.GITHUB_WORKSPACE;
+    const runId = process.env.GITHUB_RUN_ID ?? '';
+    const attempt = process.env.GITHUB_RUN_ATTEMPT ?? '';
+    if (
+      !run ||
+      !temporary ||
+      !workspace ||
+      !isAbsolute(temporary) ||
+      !isAbsolute(workspace) ||
+      !/^[1-9][0-9]{0,19}$/.test(runId) ||
+      !/^[1-9][0-9]{0,5}$/.test(attempt) ||
+      run !== join(temporary, `rct-semester-lifecycle-${runId}-${attempt}`)
+    )
+      return;
+    const info = base.info();
+    if (
+      resolve(info.file) !== join(workspace, 'tests/e2e/fixtures/semester-lifecycle.spec.ts') ||
+      info.title !==
+        'FULL admin archives and restores the disposable CI semester through real participants' ||
+      info.project.name !== 'chromium' ||
+      info.project.outputDir !== join(run, 'artifacts')
+    )
+      return;
+    for (const directory of [run, join(run, 'artifacts')]) {
+      const stat = lstatSync(directory);
+      if (
+        !stat.isDirectory() ||
+        stat.isSymbolicLink() ||
+        stat.uid !== process.getuid?.() ||
+        (stat.mode & 0o777) !== 0o700
+      )
+        return;
+    }
+    const marker = openSync(
+      join(run, 'disposable-target'),
+      constants.O_RDONLY | constants.O_NOFOLLOW,
+    );
+    try {
+      const stat = fstatSync(marker);
+      if (
+        !stat.isFile() ||
+        stat.uid !== process.getuid?.() ||
+        (stat.mode & 0o777) !== 0o600 ||
+        stat.size > 64 ||
+        readFileSync(marker, 'utf8') !== 'RCT_SEMESTER_DISPOSABLE\n'
+      )
+        return;
+    } finally {
+      closeSync(marker);
+    }
+    const requestId = response.headers()['x-request-id'];
+    const canonical =
+      typeof requestId === 'string' &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(requestId);
+    const file = openSync(
+      join(run, 'mark-http500.request-id'),
+      constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW,
+      0o600,
+    );
+    try {
+      // An invalid first ID is an empty witness, preventing a later failure from replacing it.
+      writeFileSync(file, canonical ? `${requestId}\n` : '\n');
+    } finally {
+      closeSync(file);
+    }
+  } catch {
+    // Diagnostic refusal cannot replace the existing request/assertion failure.
+  }
 }
 
 /** Status-only diagnostics keep generated initial passwords and bearer tokens out of reports. */
@@ -36,8 +130,10 @@ export class Actor {
       data,
       headers: { ...this.headers(), ...extraHeaders },
     });
-    if (!statuses.includes(response.status()))
+    if (!statuses.includes(response.status())) {
+      retainMarkRequestId(response, method, path);
       throw datasetHttpFailure(method, path, response.status());
+    }
     return response.status() === 204 ? {} : response.json();
   }
 }

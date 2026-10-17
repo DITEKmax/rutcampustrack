@@ -197,6 +197,66 @@ class HeadmanWeeklyReportServiceTest {
     }
 
     @Test
+    void weeklyDocxUsesTheSameEducationalWindowAsTheMarkedLesson() throws Exception {
+        stubBase(semester("2026-04-01", "2026-05-31"));
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, "2026-04-27", "2026-05-03"))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(100L, "2026-04-27", "09:00", 1, "closed"))
+                                .addLessons(lesson(101L, "2026-05-02", "13:00", 2, "active"))
+                                .build());
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L)))
+                .thenReturn(Map.of(5L, new AcademicGrpcClient.SubjectDetails("Math", "lecture")));
+        for (LocalDate date : List.of(WEEK_START, LocalDate.of(2026, 5, 2))) {
+            when(academicGrpcClient.getGroupMembers(10L, date, 1L))
+                    .thenReturn(roster(date, List.of(student(1, "Boundary Student"))));
+        }
+        when(attendanceReadPort.findByGroupAndDateRange(10L, WEEK_START, WEEK_START.plusDays(6)))
+                .thenReturn(
+                        List.of(
+                                attendance(100L, 1L, WEEK_START, 1, AttendanceStatus.PRESENT),
+                                attendance(
+                                        101L,
+                                        1L,
+                                        LocalDate.of(2026, 5, 2),
+                                        2,
+                                        AttendanceStatus.EXCUSED)));
+        var beans = new org.springframework.beans.factory.support.DefaultListableBeanFactory();
+        beans.registerSingleton("academic", academicGrpcClient);
+        beans.registerSingleton("schedule", scheduleGrpcClient);
+        beans.registerSingleton("attendance", attendanceReadPort);
+        beans.registerSingleton("docx", new TeacherAttendanceDocxRenderer());
+        beans.registerSingleton("tabular", new HeadmanWeeklyTabularRenderer());
+        beans.registerSingleton("renderer", documentRendererGrpcClient);
+        beans.registerSingleton("request", requestContext);
+        beans.registerSingleton("realClock", CLOCK);
+        beans.registerSingleton(
+                "educationalTime",
+                new ru.rutcampustrack.shared.web.time.EducationalTime(
+                        Clock.fixed(CLOCK.instant().plusSeconds(4 * 3600), CLOCK.getZone())));
+        beans.registerSingleton(
+                "execution",
+                new ReportExecution(
+                        new io.micrometer.core.instrument.simple.SimpleMeterRegistry()));
+        HeadmanWeeklyReportService weekly =
+                (HeadmanWeeklyReportService)
+                        beans.createBean(
+                                HeadmanWeeklyReportService.class,
+                                org.springframework.beans.factory.config.AutowireCapableBeanFactory
+                                        .AUTOWIRE_CONSTRUCTOR,
+                                false);
+
+        var model = weekly.buildReportModels(List.of(WEEK_START)).get(0);
+        var row = model.rows().get(0);
+        assertThat(row.cellsByLessonId().get(100L).symbol()).isEqualTo("+");
+        assertThat(row.cellsByLessonId()).containsKey(101L);
+        assertThat(row.cellsByLessonId().get(101L).symbol()).isEqualTo("у");
+        String xml =
+                zipText(weekly.exportSingleWeek(WEEK_START, "docx").content(), "word/document.xml");
+        assertThat(textValues(parseXml(xml), WORD_NS)).contains("Boundary Student", "+", "у");
+    }
+
+    @Test
     void weeklyMatrixUsesDatedRosterAndKeepsFutureAndMissingMarksBlankWithoutRosterCap() {
         stubBase(semester("2026-04-01", "2026-05-31"));
         List<StudentInfo> mondayRoster =

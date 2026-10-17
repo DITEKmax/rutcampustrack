@@ -715,3 +715,12 @@ The reviewed correction uses publication-local CorrelationData with the stable m
 ## S17-CHECK-PREVIEW-PRIMARY-01 — directed archive preview request loses exception category
 
 2026-10-17, P2 verification. Actuale0 artifact12117802213 reaches exactstrandedDLQ/fullhealth then APIget(delete-preview)4136 throws beforeHTTPresponse. Historical exception cause UNKNOWN; cleanup/recoveryeffect/restoration passed, samearchive/duplicate notaccepted. Tiny fixture8808b910 adds only actualPlaywrightTimeoutError-vsOTHER staticwitness and rethrows SAMEerror. Wholeinverse verifies sameget/headers/timeout/allremainingflow; TS/format/sourceprivacy+identity controls and independentreview PASS. **SOURCE_FIXED_REVIEWED_RUNTIME_PENDING**; no retry/budget/assertion change or productfixclaim.
+
+
+## S17-M05-REDIS-ACL-01 — comment lines prevent Redis ACL loading
+
+2026-10-17, P2 configuration/startup. Realf8 cohort failsinitialadminPING beforeACLrights/exporter; exacthistoricalserverfatalnotretained. PinnedofficialRedis7.4.6 loader explicitlyrejects#comments andtokenizesnonemptylinesrequiringuser. Templatehad3comments; removeonlythose, preserve bothuser/passwordhash/grantdirectives byteequal. Sourceea378173, independentreviewbec2d62a APPROVE_RUNTIME_PENDING. OptionalDebian7.0.15 nativecontrolsetupfailed/reaped, notRED/GREENevidence. **SOURCE_FIXED_REVIEWED_RUNTIME_PENDING**; nextpinnedstartup/rights/exporter/Rabbitrequired.
+
+## S17-M04-WEEKLY-CLOCK-01 — weekly report masks an already admitted mark under another clock
+
+2026-10-17, P2, M04. Actualf8 async first DOCX passes ZIP/XML/all18dates/group/first+ then LAST_STUDENT_MARK fails (12117919693). Weekly rawClock disagrees with primary EducationalTime used for lesson read/write in isolated educational override; same last lesson is incorrectly future. Exact original service semanticRED02 missing101EXCUSED54s → provider-aligned constructor model+actualDOCX and existing future/missing guard2/2GREEN61s. Sourcebb36724a/unitddf33b2c independently approved; initialRED01 fixturecast compileerror excluded. Default production realtime/legacy9arg/security/API preserved. **SOURCE_FIXED_REVIEWED_ASYNC_RUNTIME_PENDING**; original owner crash cause UNKNOWN.

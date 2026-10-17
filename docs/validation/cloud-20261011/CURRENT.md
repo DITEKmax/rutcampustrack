@@ -1,34 +1,95 @@
 # IN_PROGRESS — A01–A04 / M01–M05, 17.10.2026
 
-После compaction сначала прочитать TASK-CONTRACT-20261017.md, TASK-ADDENDUM-ASYNC-20261017.md (D035), этот CURRENT, decisions/questions, resources и относящиеся к следующему шагу attempts. Широкий прежний аудит не запускать заново. Девять пакетов, не десять; source/unit approval не означает runtime PASS.
+После compaction читать [TASK-CONTRACT-20261017.md](TASK-CONTRACT-20261017.md),
+[TASK-ADDENDUM-ASYNC-20261017.md](TASK-ADDENDUM-ASYNC-20261017.md), этот CURRENT,
+decisions/questions, resources и относящиеся к следующему шагу attempts.
+Старый широкий аудит не возобновлять. [HANDOFF-20261017.md](HANDOFF-20261017.md)
+один, пока явно incomplete; история/evidence один раз в attempts и Git.
 
-Старт этапа: 18:49 UTC / 21:49 MSK, SHA753173688d633ca07991f4dd73bdcd2698f45d96. Последний опубликованный local=remote=PR head: 5c937e727acc8a8f70557e6bfff0e2e78eb28426. Ветка codex/server-validation-20261011, draft https://github.com/DITEKmax/rutcampustrack/pull/2 → main3908fad9624f97aec8891fc79338ceb6b0616bf3, без merge. Реальный checkout CI: 024af37497f70a6e8a406987b85dfbccb287d569, tree9f4abf55fca401e6105cd5b1e34a922b7f4e0905, artifact12116910055. Новая публикация ещё не выполнена.
+Старт18:49UTC/21:49MSK, base753173688d633ca07991f4dd73bdcd2698f45d96.
+Опубликованный local=remote=PR head **e0a44e4f335c58b6993c4e4de1b4f90222e695c2**,
+ветка codex/server-validation-20261011, [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2)
+→ main3908fad9624f97aec8891fc79338ceb6b0616bf3, без merge.
+Actual checkout **7a8cfb494aa7a2374b2b44623dfd52a7fcbd8537**,
+tree e020a8743187eab8e0b633be802b2003933f0333, artifact12117460957/SHAeb1f96f2… .
+Coverage39075933406, Security39075933403, OpenAPI39075933528 completedSUCCESS.
+CI39075933443 ещё идёт: monitoring и async18 FAIL, остальное продолжается;
+новый диагноз/исправление не подтверждаются старым green.
 
 | ID | Статус | Достаточный результат / конкретный остаток |
 | --- | --- | --- |
-| A01 | DONE_CHANGED | Совместимый управляемый BCrypt и constructor injection; hash/lifecycle + реальное Vue admin-create→login PASS, review. executable8ae9b530; Auth/Academic/admin12114507172. |
-| A02 | DONE_CHANGED | Три enum с прежними текстовыми DB-кодами; JPA/JDBC/teacher JPQL/REST/gRPC unknown/null/legacy PASS. SQL/proto не перенумерованы. executable8ae9b530, Academic12114232912, review. |
-| A03 | DONE_CHANGED | DTO redaction/JSON compatibility, RS256/claims, безопасные CI uploads. Реальные Auth145unit+200IT PASS0skip, review. executable8ae9b530/checkoutda31a937, artifact12114133029. |
-| A04 | DONE_CHANGED | Реальные SQL pages/порядок/поля/пустое/currentstudent isolation PASS: subject2 enrichment reads, homework1 completion read; без per-row роста и обещания snapshot. 8ae9b530, AcademicReadBatchIT/artifact12114232912, review. |
-| M01 | DONE_CHANGED | Реальные Gateway→BFF→TCPgRPC и Rabbit delayed retry→Mongo dedup SDK связи, independent next event, Tempo/Loki/Grafana PASS; context/privacy/cancel controls и независимый runtime review. executablee283b95c/checkoutf3feddcb/artifact12114439186; повтор подтверждён5c12116656424. |
-| M02 | IN_PROGRESS | Приложения8/node/cAdvisor/Botqueue и2PG role/exporter blocks подтверждены. Остаток: Mongo→Redis ACL/exporter→Rabbit plugin states; реальные report/job metric deltas и retained families из нового async browser. Автор Infra. |
-| M03 | IN_PROGRESS | Реальные resource queries, 30d engine, requestId/logs↔traces PASS. В5c исправлены scope33/34, producer names APM66/68, BFF Tomcat, query oracle R1/R2. Остаток: новые retained JVM/Hikari/Tomcat/gRPC/report/Auth queries после настоящих DOCX. Автор Infra. |
-| M04 | IN_PROGRESS | Старый HEADMAN HTTP/Mongo/18week DOCX7/7 PASS85463; новый durable job вернул202 в5c. Real Rabbit8cases/ACK-return-NACK/original retry/poison/dedup PASS e283; receiver firing/resolved PASS. Остаток: полный новый async UI→navigate/reconnect/lost-response→2correctDOCX и текущий reconciliation. |
-| M05 | IN_PROGRESS | Независимый review принял реальные private query/auth/admin403, owned recreate/positions/provisioning, capacity/settings/storemap. Единственный общий остаток: реальные Mongo+Redis monitor rights/exporter. Не повторять достаточные прежние проверки. |
+| A01 | DONE_CHANGED | Совместимый управляемый BCrypt/constructor injection; hash/lifecycle + realVue admin-create→login PASS/review. executable8ae9b530, Auth/Academic/admin12114507172. |
+| A02 | DONE_CHANGED | Три enum с прежними текстовыми DB-кодами; realJPA/JDBC/JPQL/REST/gRPC unknown/null/legacy PASS/review. SQL/proto не перенумерованы.8ae9b530, Academic12114232912. |
+| A03 | DONE_CHANGED | DTO redaction/JSON, RS256/claims, safeCI uploads; realAuth145unit+200IT PASS0skip/review.8ae9b530/checkoutda31a937,12114133029. |
+| A04 | DONE_CHANGED | RealSQL pages/order/fields/empty/currentstudent isolation PASS: subjects2 enrichment reads/HW1 completion read без per-row роста.8ae9b530,12114232912/review. |
+| M01 | DONE_CHANGED | RealGateway→BFF→TCPgRPC24spans/Rabbit delayedretry→Mongodedup10spans/independentnext event→Tempo+Loki/Grafana, context/privacy/cancel controls, independent runtime review. e283b95c/12114439186; e0pipeline12116514443 повторноPASS. |
+| M02 | IN_PROGRESS | Apps8/node/cAdvisor/Botqueue/2PG blocks и Mongo auth+diagnostic+appreadDENIED+exporter PASS. Остаток: Redis→Rabbitplugin; realreport/job deltas и retainedfamilies из нового asyncbrowser. Infra/Reports. |
+| M03 | IN_PROGRESS | Realresourcequeries/30dengine/logs↔traces PASS e0pipeline299.77s. Scoped dashboard/BFF/queryoracle corrections reviewed. Остаток: retained JVM/Hikari/Tomcat/gRPC/report/Auth panels после2realDOCX. Infra. |
+| M04 | IN_PROGRESS | Старый HEADMAN HTTP/Mongo18week DOCX7/7 PASS85463; realRabbit8cases/mandatory oldRED→GREEN/ACK-return-NACK/retry/poison/dedup PASS e283, receiverPASS. Новыйasync e0 достигdownload, но содержимое НЕ принято. Остаток: обаcorrectDOCX/reconnect/lost202/currentrights и текущий reconciliation. |
+| M05 | IN_PROGRESS | Independent review принял privatequery/auth/admin403/ownedrecreate/positions/provisioning/capacity/settings/storemap. Actual Mongo rights/exporter PASS e0. Общий остаток: Redis monitor rights/exporter. |
 
-Закрыто5/9: DONE_CHANGED5, ALREADY_SATISFIED0. C01: afterCommit cache correction, настоящий PG old-stale RED→restored commit/rollback2GREEN (12113673595), принят без новой cache architecture. C02: опубликованные93 migrations guard+28controls/ordinaryCI PASS. C03: минимальные роли подготовлены,2PG blocks PASS; весь cohort не PASS, production grants не применялись.
+**Закрыто5/9: DONE_CHANGED5, ALREADY_SATISFIED0.** C01 actualPG old-staleRED→
+restoredcommit/rollback2GREEN12113673595 принят. C02 publishedmigration guard/
+28controls ordinaryCI PASS. C03 минимальныероли/source reviewed,2PG+Mongo blocks
+PASS; весьcohort ещёFAIL, productiongrants не применялись.
 
-Текущий5c: Coverage39074026067, Security39074026070, OpenAPI39074026060 completedSUCCESS. CI39074026054 ещё идёт, известны FAIL. Monitoring117517345495: pipeline283.86s/receiver PASS, cleanupPASS,34 source hashes совпали (artifact12116656424). Exporters FAIL MONGO_MONITOR_AUTH_READINESS после120s: rootprobe0, monitorCLIexit1/AUTHENTICATION_FAILED, numericMongo code UNKNOWN; app-read denial и exporter ещё не выполнялись. Source RCA: Bitnami archived wrapper подаёт.js в stdin REPL, исходная fluent chain разбивается на завершённые выражения. Exact pinned wrapper/version и уникальная историческая причина не доказаны.
+## Исполнимый остаток и текущее действие
 
-Async5c artifact12116377580: реальный backend202, body/intent/sessionStorage, закрытие настроек и journal aria-busy=false прошли; FAIL15675ms при уходе к расписанию. У HEADMAN нет кнопки «Расписание»; принят путь «Ещё»→«Конструктор расписания», GET/api/schedule/items. Полный download/metric deltas пока НЕ PASS. Никакого вывода о cache/UI delay не делали.
+1. **Redis exact primary.** e0safe12116514443/SHA63a8e1be…: MongoALLGREEN,
+   затем REDIS_ROLE_AND_EXPORTER/AssertionError, cleanupPASS. Existingcompletedlog
+   не сохранил ветку; ACL/pinnedexporter source не обосновывает расширениеправ.
+   Infra ONEfile check_exporters diagnostics7800ed4b frozen/independentreview
+   04a4a38f APPROVE_RUNTIME_PENDING/RootintegratedWIP. Фиксированные stage/exit/
+   category/UP state, исходные6denials/120s/ACL/images/cleanup сохранены.
+   Следующий actualcohort обязан пройти Redis→Rabbitplugin.
+2. **Новый async DOCX.** e0safe12117836440/SHA354ee958…: download достигнут,
+   Pythoncontenthelper5487 FAIL10409ms/error1; какая из2проверок и точный assert
+   UNKNOWN.8targetsUP, deltasempty, cleanupPASS. Accepted202/storage/navigation
+   больше не первичный отказ; файл не объявлять правильным. Reports solewriter
+   сравнил тот же helper/renderer/seed: доказанного product/oracledefect нет.
+   SAMEspec fixedPythonexit/stage +NAVIGATION/LOST_ACCEPTANCE diagnostic97554397
+   frozen/review73a4a70aAPPROVED/RootintegratedWIP,
+   без rawXML/файла/stdout/stderr/имён и без ослабления18weeks/boundaries/rights.
+   TS/format/21Python+32JSprivacycontrolsPASS. Готов coherentent3source diagnosticcheckpoint; дальше scopedhooks/commit/push/readback
+   и следующий обычныйCI, без повторов прежних достаточныхPASS вручную.
+3. **Reconciliation.** Исходный fullhealth barrier перенесён ПОСЛЕ восстановления
+   Schedule, при outage остаются running/exactretry/finalDLQ; sourcea1135f4c/review
+   4d64ca92. Actuale0 дошёл через exactDLQ и исходные fullhealth barriers до PENDING_ARCHIVE,
+   но admin request.get(delete-preview)4136 FAIL до response/try (12117802213).
+   Точная requestexception UNKNOWN; cleanup/recoveryeffect/restorationPASS,
+   samearchive/duplicate ещёНЕPASS. Finite TimeoutError-vs-OTHER witness8808b910/reviewAPPROVED интегрированRootWIP,
+   rethrow SAMEerror; retries/budgets/barriers не изменены.
+4. **После2correctDOCX** существующий check_pipeline в том же8appстенде проверяет
+   report/job deltas и actual retained panel queries; не заменятьsourcecontrols.
+5. После достаточных actualPASS — независимая применимость итоговогоevidence,
+   обязательныеcurrentgates, обновить одинHANDOFF с diffот753/inventory/обаSHA.
+   D009 разрешает finaldocs-onlycommit при доказанном sourceidentity.
 
-Root WIP для следующего одного связного publish (все source review приняты):
-- infra/mongo/init-mongo.js SHA7928daff…: три завершённых const вместо fluent chain. Project Prettier check/roundtrip и Node stdin oldRED→new/formattedGREEN/whole-file3user-args equality PASS; роли/secret parser прежние. Промежуточные скобки207bc5… formatter отменял, поэтому superseded. Standalone mongosh2.5.6 stdin NOT_RUN в допустимых config bounds; version/download только, без HOME/global writes. Обязателен следующий настоящий pinned Mongo CI. Review8c1907e8.
-- tests/e2e/fixtures/semester-lifecycle.spec.ts SHAa1135f4c…: running во время намеренного Schedule outage, exact retry/finalDLQ; затем Schedule HEALTHY→исходный Attendance HEALTHY перед archive/replay.40s/identity/effects/cleanup не ослаблены, первый finite health witness до original rethrow. Review4d64ca92. Actual093 restart exit1 после delayed retry; health subcause UNKNOWN.
-- tests/e2e/specs/mobile-real-server.spec.ts SHA596be239…: оба ухода по настоящему HEADMAN пути, exact200 + visible list/busyfalse/journal unmounted.18weeks/jobs/reconnect/lost-response/files/rights/timers/cleanup сохранены. TS/format/inverse proof, review5b3092ae. Реальный after ещё нужен.
+Не повторять достаточные PASS без затронутого риска.5c assignmentprepare/pending/
+resume actualPASS12116498187 закрылstudy-window fixture; formatselection e0достигает
+файла, selectorfixture закрыт.5cAuthunit доtestsFAIL из-заMavenHTTP429/NO_RESULTS,
+currente0AuthunitSUCCESS, код и expectations для этого не менялись.
 
-Следующий шаг: проверить точный inventory3source+Rootdocs, штатные scoped hooks, один commit/push в назначенную ветку, отдельный remote/PR readback и обновить draft. Полезные текущие CI не прерывать вручную. Затем взять только безопасные actual artifacts и адресно исправлять подтверждённую причину; не повторять неизменённые PASS и не создавать новый runner/framework/реестр. Обязательные gates сохранить. После всех9 — один HANDOFF с diff от753, source/test/config inventory, exact executable/docs SHA и receipts; D009 разрешает финальный docs-only commit с доказанной идентичностью исходников.
+## Решения, владельцы, ресурсы
 
-Решения: Q028/D032 — WORD журнала старосты, прежний путь HTTP, не Rabbit. D033 — инженерные SLO99.9%/30d, read/login2s/write3s/report30s p95; async60s99.5%, expected4xx/cancel исключены, no-data не100%. D034 offhost probe при deploy DEFERRED_LOCAL, отдельно от будущего alert-bot DEFERRED_LOCAL. Вопросов владельцу сейчас нет.
+D032/Q028 WORD — журнал старосты; прежний renderer HTTP/JavaXMLZIP, неRabbit.
+D035 asyncjob хранится вPG, Gatewayworker вызывает совместимыйHTTP reportAPI;
+большойDOCX вRabbit не пересылается. Исходная причина пользовательского сбояUNKNOWN.
+D033 инженерныецели99.9%/30d, read/login2s/write3s/report30s p95,
+asyncfinal≤60s99.5%; expected4xx/cancel исключены, no-data не100%.
+D034 offhostprobe приdeploy DEFERRED_LOCAL, отдельно futurealertbotDEFERRED_LOCAL.
+**Вопросов владельцу сейчас нет.**
 
-Root — sole Git/docs integrator, selected Sol6.1 ULTRA; дети Sol6.1/high/forknone, actual UNKNOWN. Runtime7 включая Root; независимые writers/reviewers в resources. Локальных DB/Docker/browser/server нет. CPU5/RAM16GiB; /workspace4GiB floor с~2.1MB запасом после проверенной упаковки только своих747 опубликованных Git objects, /tmp~6.38GB. Foreign25 untracked/старый стенд/volumes/keys/WIP сохранены. Не делать reset/prune/main/merge/deploy/newbranch/newPR/Angular/newweb/secrets/otherchats/daemon. B013/14/15 FROZEN и прежняя native Telegram/push/install/Safari OWNER_MANUAL приёмка остаются отдельно; новый этап не объявляет прежний аудит или production DONE.
+Root soleGit/docs integrator selectedSol6.1ULTRA; детиSol6.1/high/forknone,
+actualUNKNOWN. Soleauthors: InfraRedis7800ed4b и ReportsDOCX97554397/preview8808b910 diagnostics
+frozen/reviewed/Rootintegrated; все authors/reviewers idle, процессов нет. Runtime7
+включаяRoot; подробности/resources.md. RootsourceWIP — три revieweddiagnostics7800ed4b/97554397/8808b910,
+плюс Rootdocs/одинhandoff. Foreign25untracked/старыйстенд/volumes/keys сохранены.
+ЛокальныхDB/Docker/browser/server нет; CPU5/RAM16GiB;4GiBworkspacefloor сохранён,
+~1.98MBmargin после exactbackup/pack765 толькоownpublishedobjects
+(pack34c67a90/SHA b37dc3c1…); refs/index/status/diff не изменены,45689reaped.
+ПередGitstaging снова измерить atomicindex+newobject reserve; tmp~6.3GB.
+
+Noreset/prune/main/merge/deploy/newbranch/newPR/Angular/newweb/secrets/otherchats/
+daemon. B013/B014/B015 FROZEN и прежние nativeTelegram/push/install/Safari/manual
+ограничения остаются отдельно; новыйэтап не объявляет прежнийаудит/productionDONE.

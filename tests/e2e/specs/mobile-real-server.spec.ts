@@ -5430,6 +5430,7 @@ async function assertWeeklyDocx(
   weeks: string[],
   student: string,
   group: string,
+  invocation: 'NAVIGATION' | 'LOST_ACCEPTANCE',
 ): Promise<void> {
   expect(download.suggestedFilename().endsWith('.docx')).toBe(true);
   const stream = await download.createReadStream();
@@ -5446,30 +5447,41 @@ async function assertWeeklyDocx(
   // Same bounded in-memory Python stdlib ZIP pattern used by registry export.
   // Assert real rows/marks in both boundary weeks; never print XML or file bytes.
   const script = String.raw`import base64, datetime, io, json, sys, zipfile, xml.etree.ElementTree as ET
-v=json.load(sys.stdin)
-data=base64.b64decode(v['docx'], validate=True)
-assert 0<len(data)<=20*1024*1024
-with zipfile.ZipFile(io.BytesIO(data)) as z:
- info=z.getinfo('word/document.xml')
- assert 0<info.file_size<=20*1024*1024 and not info.flag_bits&1
- root=ET.fromstring(z.read(info))
-w='{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
-segments=[]; current=[]
-for node in root.find(w+'body'):
- if any(br.get(w+'type')=='page' for br in node.iter(w+'br')):
-  segments.append(current); current=[]
- else: current.append(node)
-segments.append(current)
-assert len(segments)==18
-for i,(week,segment) in enumerate(zip(v['weeks'],segments)):
- start=datetime.date.fromisoformat(week); end=start+datetime.timedelta(days=6)
- text=''.join(t.text or '' for n in segment for t in n.iter(w+'t'))
- assert start.strftime('%d.%m.%Y')+'–'+end.strftime('%d.%m.%Y') in text
- assert v['group'] in text
- if i in (0,17):
-  rows=[[''.join(t.text or '' for t in cell.iter(w+'t')) for cell in row.findall(w+'tc')] for n in segment for row in n.iter(w+'tr')]
-  assert any(v['student'] in cells and ('+' if i==0 else 'у') in cells for cells in rows)
-print('OK')`;
+stage=20
+try:
+ v=json.load(sys.stdin)
+ data=base64.b64decode(v['docx'], validate=True)
+ assert 0<len(data)<=20*1024*1024
+ stage=21
+ with zipfile.ZipFile(io.BytesIO(data)) as z:
+  stage=22
+  info=z.getinfo('word/document.xml')
+  assert 0<info.file_size<=20*1024*1024 and not info.flag_bits&1
+  stage=23
+  root=ET.fromstring(z.read(info))
+ w='{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+ segments=[]; current=[]
+ for node in root.find(w+'body'):
+  if any(br.get(w+'type')=='page' for br in node.iter(w+'br')):
+   segments.append(current); current=[]
+  else: current.append(node)
+ segments.append(current)
+ stage=24
+ assert len(segments)==18
+ for i,(week,segment) in enumerate(zip(v['weeks'],segments)):
+  stage=25
+  start=datetime.date.fromisoformat(week); end=start+datetime.timedelta(days=6)
+  text=''.join(t.text or '' for n in segment for t in n.iter(w+'t'))
+  assert start.strftime('%d.%m.%Y')+'–'+end.strftime('%d.%m.%Y') in text
+  stage=26
+  assert v['group'] in text
+  if i in (0,17):
+   stage=27 if i==0 else 28
+   rows=[[''.join(t.text or '' for t in cell.iter(w+'t')) for cell in row.findall(w+'tc')] for n in segment for row in n.iter(w+'tr')]
+   assert any(v['student'] in cells and ('+' if i==0 else 'у') in cells for cells in rows)
+ print('OK')
+except Exception:
+ sys.exit(stage)`;
   try {
     const result = execFileSync('python3', ['-I', '-c', script], {
       input: JSON.stringify({
@@ -5483,7 +5495,54 @@ print('OK')`;
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     expect(result.toString('utf8').trim()).toBe('OK');
-  } catch {
+  } catch (error) {
+    // Child stderr/stdout can contain private document text. Read only own finite status/code.
+    let status: unknown;
+    let code: unknown;
+    if (error !== null && typeof error === 'object') {
+      try {
+        status = Object.getOwnPropertyDescriptor(error, 'status')?.value;
+        code = Object.getOwnPropertyDescriptor(error, 'code')?.value;
+      } catch {
+        // Uninspectable failures stay unknown.
+      }
+    }
+    if (invocation === 'NAVIGATION') expect.soft(false, 'ASYNC_DOCX_NAVIGATION').toBe(true);
+    else expect.soft(false, 'ASYNC_DOCX_LOST_ACCEPTANCE').toBe(true);
+    switch (status) {
+      case 20:
+        expect.soft(false, 'ASYNC_DOCX_INPUT').toBe(true);
+        break;
+      case 21:
+        expect.soft(false, 'ASYNC_DOCX_ZIP_OPEN').toBe(true);
+        break;
+      case 22:
+        expect.soft(false, 'ASYNC_DOCX_DOCUMENT_ENTRY').toBe(true);
+        break;
+      case 23:
+        expect.soft(false, 'ASYNC_DOCX_XML_BODY').toBe(true);
+        break;
+      case 24:
+        expect.soft(false, 'ASYNC_DOCX_EIGHTEEN_SEGMENTS').toBe(true);
+        break;
+      case 25:
+        expect.soft(false, 'ASYNC_DOCX_WEEK_DATES').toBe(true);
+        break;
+      case 26:
+        expect.soft(false, 'ASYNC_DOCX_GROUP').toBe(true);
+        break;
+      case 27:
+        expect.soft(false, 'ASYNC_DOCX_FIRST_STUDENT_MARK').toBe(true);
+        break;
+      case 28:
+        expect.soft(false, 'ASYNC_DOCX_LAST_STUDENT_MARK').toBe(true);
+        break;
+      default:
+        if (code === 'ENOENT') expect.soft(false, 'ASYNC_DOCX_PYTHON_ABSENT').toBe(true);
+        else if (code === 'ETIMEDOUT') expect.soft(false, 'ASYNC_DOCX_PYTHON_TIMEOUT').toBe(true);
+        else if (code === 'ENOBUFS') expect.soft(false, 'ASYNC_DOCX_OUTPUT_BOUND').toBe(true);
+        else expect.soft(false, 'ASYNC_DOCX_UNKNOWN').toBe(true);
+    }
     throw new Error('Async DOCX boundary content verification failed');
   }
 }
@@ -5610,6 +5669,7 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
           weeks,
           dataset.student.displayName,
           dataset.group.name,
+          'NAVIGATION',
         );
         expect(creations).toHaveLength(1);
         await expect
@@ -5649,6 +5709,7 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
           weeks,
           dataset.student.displayName,
           dataset.group.name,
+          'LOST_ACCEPTANCE',
         );
         const foreign = await admit(dataset.request, dataset.foreignStudent, 'STUDENT');
         for (const suffix of ['', '/file', '/ticket']) {

@@ -56,6 +56,25 @@ def mongo_monitor_witness(probe):
     return witness
 
 
+def redis_probe_witness(probe):
+    """Project an existing synthetic CLI response to fixed categories only."""
+    lines = (probe.stdout + "\n" + probe.stderr).splitlines()
+    category = "UNKNOWN"
+    for candidate in ["WRONGPASS", "NOAUTH", "NOPERM", "ERR"]:
+        prefixes = (candidate + " ", "(error) " + candidate + " ", "AUTH failed: " + candidate + " ")
+        if any(line.startswith(prefixes) for line in lines):
+            category = candidate
+            break
+    else:
+        if probe.stdout.strip() in {"PONG", "OK"}:
+            category = probe.stdout.strip()
+    code = probe.returncode
+    return {
+        "probe_exit": code if type(code) is int and -128 <= code <= 255 else None,
+        "category": category,
+    }
+
+
 async def rabbit_metrics_contract(docker):
     """Actual AMQP acknowledgement states and production plugin→Prometheus scrape."""
     import aio_pika
@@ -520,16 +539,18 @@ def main():
             assert denied.returncode != 0 and unauthorized
             _STATE["phase"] = "MONGO_EXPORTER_READINESS"
             wait(lambda: 'mongodb_up{cluster_role="mongod"} 1' in metrics("mongodb-exporter").splitlines())
-            _STATE["phase"] = "REDIS_ROLE_AND_EXPORTER"
-            wait(
-                lambda: (
-                    execute(
-                        "redis", ["redis-cli", "--no-auth-warning", "-a", "synthetic-admin-only", "PING"], check=False
-                    ).stdout.strip()
-                    == "PONG"
+            _STATE["phase"] = "REDIS_ADMIN_READINESS"
+
+            def redis_admin_ready():
+                probe = execute(
+                    "redis", ["redis-cli", "--no-auth-warning", "-a", "synthetic-admin-only", "PING"], check=False
                 )
-            )
-            execute(
+                _STATE["redis_probe"] = redis_probe_witness(probe)
+                return probe.returncode == 0 and _STATE["redis_probe"]["category"] == "PONG"
+
+            wait(redis_admin_ready)
+            _STATE["phase"] = "REDIS_ADMIN_FIXTURE"
+            fixture = execute(
                 "redis",
                 [
                     "redis-cli",
@@ -540,7 +561,10 @@ def main():
                     "credential_fixture",
                     "synthetic-private-marker",
                 ],
+                check=False,
             )
+            _STATE["redis_probe"] = redis_probe_witness(fixture)
+            assert fixture.returncode == 0 and _STATE["redis_probe"]["category"] == "OK"
             redis_cli = ["redis-cli", "--no-auth-warning", "--user", "rct_monitor", "-a", "synthetic-monitor-only"]
             for command in [
                 ["GET", "credential_fixture"],
@@ -550,10 +574,22 @@ def main():
                 ["CONFIG", "GET", "requirepass"],
                 ["SLOWLOG", "GET", "1"],
             ]:
+                _STATE["phase"] = "REDIS_DENIAL_" + command[0]
                 denied = execute("redis", redis_cli + command, check=False)
+                _STATE["redis_probe"] = redis_probe_witness(denied)
                 assert "NOPERM" in denied.stdout or "NOPERM" in denied.stderr, command[0]
-            wait(lambda: "redis_up 1" in metrics("redis-exporter"))
+            _STATE["phase"] = "REDIS_EXPORTER_READINESS"
+
+            def redis_exporter_ready():
+                _STATE["redis_exporter"] = "ERROR"
+                up = "redis_up 1" in metrics("redis-exporter")
+                _STATE["redis_exporter"] = "UP" if up else "NOT_UP"
+                return up
+
+            wait(redis_exporter_ready)
+            _STATE["phase"] = "REDIS_EXPORTER_CONFIG_GUARD"
             assert "--config-command=-" in config["services"]["redis-exporter"]["command"]
+            _STATE["phase"] = "EXPORTER_FIXTURE_PRIVACY"
             assert all("synthetic-private-marker" not in metrics(n) for n in exporter_names)
             # Sequential reuse of this owned project: release databases first,
             # then576MiB combined Rabbit/Prometheus caps; no second app stand.
@@ -585,6 +621,8 @@ def main():
                 "elapsed_seconds": round(time.monotonic() - started, 2),
                 "actual_rabbit_plugin": rabbit_result,
                 "mongo_monitor": _STATE["mongo_monitor"],
+                "redis_probe": _STATE["redis_probe"],
+                "redis_exporter": _STATE["redis_exporter"],
             }
         finally:
             primary = sys.exc_info()[0]
@@ -634,6 +672,8 @@ if __name__ == "__main__":
                     "returncode": code if type(code) is int and -128 <= code <= 255 else None,
                     "probe_returncode": _STATE.get("probe_returncode"),
                     "mongo_monitor": _STATE.get("mongo_monitor"),
+                    "redis_probe": _STATE.get("redis_probe"),
+                    "redis_exporter": _STATE.get("redis_exporter"),
                 }
             )
         )

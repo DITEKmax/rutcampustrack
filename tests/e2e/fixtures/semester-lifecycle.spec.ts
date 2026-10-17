@@ -4,7 +4,14 @@ import { lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
 import { isIP } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
-import { expect, type APIRequestContext, type Response, type TestInfo } from '@playwright/test';
+import {
+  expect,
+  errors as playwrightErrors,
+  type APIRequestContext,
+  type APIResponse,
+  type Response,
+  type TestInfo,
+} from '@playwright/test';
 import { test, requirePrivateArtifacts } from './artifact-privacy';
 import { Actor, MobileDataset, admit, selectPwaRole } from './mobile-dataset';
 import { loginPwa } from './pwa-auth';
@@ -4133,10 +4140,19 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
         async () => {
           const remaining = Math.floor(readinessEnd - performance.now());
           requireValue(remaining > 0, 'Directed archive readiness deadline exhausted');
-          const response = await admin!.request.get(
-            `/api/academic/semesters/${scope.semester}/delete-preview`,
-            { headers: admin!.headers(), timeout: Math.min(2000, remaining) },
-          );
+          let response: APIResponse;
+          try {
+            response = await admin!.request.get(
+              `/api/academic/semesters/${scope.semester}/delete-preview`,
+              { headers: admin!.headers(), timeout: Math.min(2000, remaining) },
+            );
+          } catch (error) {
+            // Retain only the transport class; never inspect native request details.
+            if (error instanceof playwrightErrors.TimeoutError)
+              expect.soft(false, 'D9_PREVIEW_REQUEST_TIMEOUT').toBe(true);
+            else expect.soft(false, 'D9_PREVIEW_REQUEST_OTHER').toBe(true);
+            throw error;
+          }
           try {
             if (response.status() === 503) return false;
             requireValue(response.status() === 200, 'Directed archive readiness read rejected');

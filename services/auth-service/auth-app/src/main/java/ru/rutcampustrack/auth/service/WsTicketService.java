@@ -1,18 +1,23 @@
 package ru.rutcampustrack.auth.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.stereotype.Service;
+
+import ru.rutcampustrack.auth.security.SessionPrincipal;
+import ru.rutcampustrack.auth.session.AuthSessionException;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.RoleStatus;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.stereotype.Service;
-import ru.rutcampustrack.auth.security.SessionPrincipal;
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleStatus;
+import java.util.function.Supplier;
 
 /**
  * M03b Группа 3: issues + consume short-lived WebSocket tickets.
@@ -97,13 +102,19 @@ public class WsTicketService {
                         Boolean.toString(principal.readOnly()),
                         Long.toString(expiresAt.getEpochSecond()));
 
-        redisTemplate.opsForValue().set(KEY_PREFIX + ticket, payload, TICKET_TTL);
+        redisCall(
+                () -> {
+                    redisTemplate.opsForValue().set(KEY_PREFIX + ticket, payload, TICKET_TTL);
+                    return null;
+                });
         String userSetKey = USER_SET_PREFIX + principal.userId();
-        redisTemplate.execute(
-                addToSetScript,
-                List.of(userSetKey),
-                ticket,
-                String.valueOf(USER_SET_TTL.toSeconds()));
+        redisCall(
+                () ->
+                        redisTemplate.execute(
+                                addToSetScript,
+                                List.of(userSetKey),
+                                ticket,
+                                String.valueOf(USER_SET_TTL.toSeconds())));
         return new Issued(ticket, expiresAt);
     }
 
@@ -116,7 +127,7 @@ public class WsTicketService {
             return Optional.empty();
         }
         List<String> keys = List.of(KEY_PREFIX + ticket);
-        String payload = redisTemplate.execute(consumeScript, keys, ticket);
+        String payload = redisCall(() -> redisTemplate.execute(consumeScript, keys, ticket));
         if (payload == null) {
             return Optional.empty();
         }
@@ -129,15 +140,23 @@ public class WsTicketService {
      */
     public int invalidateAllFor(long userId) {
         String userSetKey = USER_SET_PREFIX + userId;
-        var tickets = redisTemplate.opsForSet().members(userSetKey);
+        var tickets = redisCall(() -> redisTemplate.opsForSet().members(userSetKey));
         int count = 0;
         if (tickets != null && !tickets.isEmpty()) {
             count = tickets.size();
             var keys = tickets.stream().map(t -> KEY_PREFIX + t).toList();
-            redisTemplate.delete(keys);
+            redisCall(() -> redisTemplate.delete(keys));
         }
-        redisTemplate.delete(userSetKey);
+        redisCall(() -> redisTemplate.delete(userSetKey));
         return count;
+    }
+
+    private <T> T redisCall(Supplier<T> operation) {
+        try {
+            return operation.get();
+        } catch (DataAccessException failure) {
+            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE);
+        }
     }
 
     private Optional<TicketClaims> parsePayload(String payload) {

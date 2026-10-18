@@ -23,7 +23,6 @@ from bot.handlers import (
     start_router,
     status_router,
 )
-from bot.handlers.prefs import keyboard_signature, main_keyboard
 from bot.middlewares import ObservabilityMiddleware
 from bot.observability import METRICS_REGISTRY, TASK_ALIVE, SendQueueCollector, setup_observability
 from bot.services.academic_http_client import AcademicHttpClient
@@ -228,6 +227,7 @@ async def main() -> None:
 
     dp["academic_client"] = academic_client
     dp["credential_cards"] = credential_cards
+    dp["bot_homework_client"] = bot_credentials_client
     dp["schedule_client"] = schedule_client
     dp["jwt_redis"] = jwt_redis
     dp["auth_client"] = auth_client
@@ -289,8 +289,7 @@ async def main() -> None:
         sync_registered_keyboards(
             bot=bot,
             keyboard_sync=keyboard_sync,
-            keyboard=main_keyboard(),
-            keyboard_version=keyboard_signature(),
+            academic_client=academic_client,
         )
     )
 

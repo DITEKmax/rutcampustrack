@@ -35,10 +35,25 @@ added to newsparseWTs with byte-exactpreservation anywriterdiff.
 Current824ownpublishedpack72cfc560 remains Rootobjectsource, backupsTMP/noprune.
 Matrixv1FROZEN8/25 weight38/123=30.89%; old6/9. D037fileGoalACTIVE, nofalsecomplete.
 
-Current ONE heavy lease: s17_auth compile/unit in /tmp/rct-s18-auth, exclusive
-/tmp/rct-stage17-auth-gradle-home, offlineJDK21/maxworkers1/fork1, max2.5GiBRSS
-+512MiBnewTMP. NoDB/Docker/browser/networkruntime; releaseafterreap. Dataheavyqueued.
 
-Second Data compile/unit lease approved after actualcgroup5.08/17.18GB/CPUquota4/
-TMP5.94GB check: ownDataWT/stage17gradlehome/CPU1; AuthCPU0/authgradlehome separate.
-Each≤2.5GiBRSS/newTMP512MiB/workers1/fork1, offlineJDK21, noDB/Redis/Docker/browser.
+## Current acceptance/checkpoint
+
+Publishedlocal=remote=PRhead3dc25ce7bddaded5f046233db39f732c05c382ea.
+U22source10accepted/pushed, realAlloyCI39084041118/39084046254pending.
+RootsourceWIP U16exact16 (Data9/Infra7) withcheck03PASS17focused+4guards0skip,
+independent8b09dee4accepted. ActualtwoRedis/PG/CacheITcohortstillpendingnormalCI.
+Auth22source/finalfixture+compile20checks acceptedreview7f363eba, Reports14frozen,
+Gateway1d7534a8/Notification6thcollector2313614f reviewed; exactcopy next.
+Auth/Data compileprocessesreaped, leasesRELEASED. OnlylightReports3VitestPASS1.53s/153MiB,
+sourceunchanged, U19independentapplicabilityreviewactive.
+DataU14/U15authornownewSQL/ownercommands+entities/repos; sharedAdminAccessJdbcAuthority
+solewriterData, ApiGrpcimpl/reader/proto/DTOs/generatorsoleAuth; configs/CI/rolesbootstrapsoleInfra.
+No localDB/Docker/browser/Redis/provider/realnetworkruntime. OldfrozenWT/WIP/resourcesuntouched.
+Ownpublished846objects nowpack068429cd/SHA b7bdf4284af8c16caafb3f549c2fad40f6597848aece78a225e48c9d86b5c8d4,
+TMPexactbackups/noprune. AuxnativeWTsdependRootobjectstore, noRootGC.
+Matrixv1unchangedweights12/25=61/123=49.59%; old9/9functionalnotwholeGoalDONE.
+
+U13final3 Rootcopiedexact/review541c239a; source54coherentpublish queued.
+AllnativeleasesRELEASED, Data/InfraU14sourceauthors only. Ownpublished872objects
+pack884e0fba SHA6c2564f18f870664ce646e8132e06413de4ac40f5601937eef13643a44f39ed2;
+exactTMPbackups, refs/index/status/diffpreserved; workspacefree4296302592.

@@ -4,7 +4,9 @@ from typing import Optional
 
 import redis.asyncio as aioredis
 from aiogram import Bot
-from aiogram.types import ReplyKeyboardMarkup
+
+from bot.handlers.prefs import keyboard_signature, main_keyboard
+from bot.services.menu_scope import resolve_homework_scope
 
 logger = logging.getLogger(__name__)
 
@@ -82,8 +84,7 @@ async def mark_keyboard_synced(
 async def sync_registered_keyboards(
     bot: Bot,
     keyboard_sync: KeyboardSyncClient,
-    keyboard: ReplyKeyboardMarkup,
-    keyboard_version: str,
+    academic_client,
     *,
     delay_seconds: float = 0.05,
 ) -> None:
@@ -94,6 +95,9 @@ async def sync_registered_keyboards(
     failed = 0
 
     for telegram_id in user_ids:
+        scope = await resolve_homework_scope(academic_client, telegram_id)
+        keyboard = main_keyboard(homework_enabled=scope is not None)
+        keyboard_version = keyboard_signature(homework_enabled=scope is not None)
         stored_version = await keyboard_sync.get_user_keyboard_version(telegram_id)
         if stored_version == keyboard_version:
             skipped += 1
@@ -116,8 +120,7 @@ async def sync_registered_keyboards(
             await asyncio.sleep(delay_seconds)
 
     logger.info(
-        "Keyboard sync completed: version=%s users=%d sent=%d skipped=%d failed=%d",
-        keyboard_version,
+        "Keyboard sync completed: users=%d sent=%d skipped=%d failed=%d",
         len(user_ids),
         sent,
         skipped,

@@ -11,6 +11,7 @@ import copy
 import hashlib
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -243,27 +244,27 @@ def main():
             "__APPLICATION_PASSWORD_SHA256__", hashlib.sha256(b"synthetic-admin-only").hexdigest()
         ).replace("__MONITOR_PASSWORD_SHA256__", hashlib.sha256(b"synthetic-monitor-only").hexdigest())
         (td / "redis.acl").write_text(acl)
-        config["services"]["redis"] = {
-            "image": production["services"]["redis"]["image"],
-            "command": [
-                "redis-server",
-                "--aclfile",
-                "/run/redis/users.acl",
-                "--maxmemory",
-                "96mb",
-                "--maxmemory-policy",
-                "allkeys-lru",
-            ],
-            "volumes": [str(td / "redis.acl") + ":/run/redis/users.acl:ro"],
-            "networks": ["private_net"],
-            "mem_limit": "128m",
-            "cpus": 0.25,
-        }
+        for name, filename in [("redis", "redis.acl"), ("redis-cache", "redis-cache.acl")]:
+            service = copy.deepcopy(production["services"][name])
+            for key in ["container_name", "healthcheck", "depends_on", "environment", "secrets", "volumes"]:
+                service.pop(key, None)
+            command = service["command"]
+            command = shlex.split(command) if isinstance(command, str) else list(command)
+            acl_index = command.index("--aclfile") + 1
+            command[acl_index] = "/run/redis/users.acl"
+            service.update(command=command, volumes=[str(td / filename) + ":/run/redis/users.acl:ro"])
+            config["services"][name] = service
+        cache_acl = (ROOT / "infra/prometheus/exporters/redis-cache-users.acl.template").read_text()
+        cache_acl = cache_acl.replace(
+            "__CACHE_PASSWORD_SHA256__", hashlib.sha256(b"synthetic-cache-only").hexdigest()
+        ).replace("__MONITOR_PASSWORD_SHA256__", hashlib.sha256(b"synthetic-cache-monitor-only").hexdigest())
+        (td / "redis-cache.acl").write_text(cache_acl)
         exporter_names = [
             "postgres-academic-exporter",
             "postgres-schedule-exporter",
             "mongodb-exporter",
             "redis-exporter",
+            "redis-cache-exporter",
         ]
         for name in exporter_names:
             service = copy.deepcopy(production["services"][name])
@@ -280,6 +281,8 @@ def main():
                     f.write_text(
                         json.dumps({"redis://redis:6379": "synthetic-monitor-only"})
                         if secret == "redis-monitor-password-map"
+                        else json.dumps({"redis://redis-cache:6379": "synthetic-cache-monitor-only"})
+                        if secret == "redis-cache-monitor-password-map"
                         else "synthetic-monitor-only"
                     )
                     config["secrets"][secret] = {"file": str(f)}
@@ -301,9 +304,11 @@ def main():
         config["services"]["rabbitmq"] = rabbit
         prom = yaml.safe_load((ROOT / "infra/prometheus/prometheus.yml").read_text())
         jobs = [
-            copy.deepcopy(job) for job in prom["scrape_configs"] if job["job_name"] in ["rabbitmq", "rabbitmq-queues"]
+            copy.deepcopy(job)
+            for job in prom["scrape_configs"]
+            if job["job_name"] in ["rabbitmq", "rabbitmq-queues", "redis-exporter", "redis-cache-exporter"]
         ]
-        assert len(jobs) == 2 and next(job for job in jobs if job["job_name"] == "rabbitmq-queues")["params"][
+        assert len(jobs) == 4 and next(job for job in jobs if job["job_name"] == "rabbitmq-queues")["params"][
             "family"
         ] == ["queue_coarse_metrics", "queue_metrics"]
         for job in jobs:
@@ -589,6 +594,126 @@ def main():
             wait(redis_exporter_ready)
             _STATE["phase"] = "REDIS_EXPORTER_CONFIG_GUARD"
             assert "--config-command=-" in config["services"]["redis-exporter"]["command"]
+            _STATE["phase"] = "REDIS_CACHE_READINESS"
+            cache_cli = ["redis-cli", "--no-auth-warning", "-e", "--user", "rct_cache", "-a", "synthetic-cache-only"]
+
+            def cache_ready():
+                probe = execute("redis-cache", cache_cli + ["PING"], check=False)
+                _STATE["redis_probe"] = redis_probe_witness(probe)
+                return probe.returncode == 0 and _STATE["redis_probe"]["category"] == "PONG"
+
+            wait(cache_ready)
+            _STATE["phase"] = "REDIS_CACHE_HANDSHAKE_AND_OPERATIONS"
+            cache_key = "rct:cache:synthetic-startup:semester::fixture"
+            for command in [
+                ["HELLO", "3"],
+                ["SELECT", "0"],
+                ["CLIENT", "SETINFO", "LIB-NAME", "rct-isolation-contract"],
+                ["CLIENT", "SETNAME", "academic-disposable-cache"],
+                ["SET", cache_key, "synthetic-private-marker", "PX", "60000", "NX"],
+            ]:
+                assert execute("redis-cache", cache_cli + command, check=False).returncode == 0
+            assert execute("redis-cache", cache_cli + ["GET", cache_key]).stdout.strip() == "synthetic-private-marker"
+            assert (
+                cache_key
+                in execute("redis-cache", cache_cli + ["SCAN", "0", "MATCH", "rct:cache:*", "COUNT", "128"]).stdout
+            )
+            _STATE["phase"] = "REDIS_CACHE_NAMESPACE_AND_ADMIN_DENIALS"
+            for command in [
+                ["GET", "critical:otp:fixture"],
+                ["SET", "critical:otp:fixture", "forbidden"],
+                ["KEYS", "*"],
+                ["FLUSHDB"],
+                ["EVAL", "return 1", "0"],
+                ["CONFIG", "GET", "maxmemory"],
+                ["INFO"],
+            ]:
+                denied = execute("redis-cache", cache_cli + command, check=False)
+                assert denied.returncode != 0 and redis_probe_witness(denied)["category"] == "NOPERM"
+            assert execute("redis-cache", cache_cli + ["DEL", cache_key]).stdout.strip() == "1"
+            expiring_key = "rct:cache:synthetic-startup:semester::expires"
+            execute("redis-cache", cache_cli + ["SET", expiring_key, "synthetic-expiring", "PX", "25"])
+            wait(lambda: execute("redis-cache", cache_cli + ["GET", expiring_key]).stdout.strip() == "")
+            _STATE["phase"] = "REDIS_CACHE_CRITICAL_ISOLATION"
+            # Cache connection identity cannot authenticate to the critical process.
+            denied = execute("redis", cache_cli + ["PING"], check=False)
+            assert denied.returncode != 0 and redis_probe_witness(denied)["category"] == "WRONGPASS"
+            # Existing critical fixture survives independent cache operations.
+            assert (
+                execute(
+                    "redis",
+                    ["redis-cli", "--no-auth-warning", "-a", "synthetic-admin-only", "GET", "credential_fixture"],
+                ).stdout.strip()
+                == "synthetic-private-marker"
+            )
+            _STATE["phase"] = "REDIS_CAPACITY_POLICIES_AND_EXPORTERS"
+            observed = {}
+            for name, policy, maximum, password in [
+                ("redis", "noeviction", 64 * 1024**2, "synthetic-monitor-only"),
+                ("redis-cache", "allkeys-lru", 48 * 1024**2, "synthetic-cache-monitor-only"),
+            ]:
+                monitor = ["redis-cli", "--no-auth-warning", "-e", "--user", "rct_monitor", "-a", password]
+                info = execute(name, monitor + ["INFO", "memory"]).stdout
+                memory = dict(line.split(":", 1) for line in info.splitlines() if ":" in line)
+                assert memory["maxmemory_policy"] == policy and int(memory["maxmemory"]) == maximum
+                assert 0 < int(memory["used_memory"]) < maximum
+                for command in [
+                    ["GET", cache_key],
+                    ["SET", cache_key, "forbidden"],
+                    ["SCAN", "0"],
+                    ["EVAL", "return 1", "0"],
+                    ["CONFIG", "GET", "requirepass"],
+                    ["SLOWLOG", "GET", "1"],
+                ]:
+                    denied = execute(name, monitor + command, check=False)
+                    assert denied.returncode != 0 and redis_probe_witness(denied)["category"] == "NOPERM"
+                exporter = name + "-exporter"
+                wait(lambda exporter=exporter: "redis_up 1" in metrics(exporter).splitlines())
+                assert "--config-command=-" in config["services"][exporter]["command"]
+                rows = metrics(exporter).splitlines()
+                rss = [float(row.split()[1]) for row in rows if row.startswith("process_resident_memory_bytes ")]
+                assert len(rss) == 1 and 0 < rss[0] <= (32 if name == "redis-cache" else 64) * 1024**2
+                observed[name] = {
+                    "maxmemory_bytes": maximum,
+                    "policy": policy,
+                    "used_memory_bytes": int(memory["used_memory"]),
+                    "exporter_rss_bytes": int(rss[0]),
+                }
+            # Reuse the same bounded Prometheus later used for Rabbit metrics.
+            # The exact production scrape jobs must attach distinct finite roles.
+            _STATE["phase"] = "REDIS_CAPACITY_PROMETHEUS_IDENTITY"
+            docker("up", "-d", "rabbit-prometheus")
+
+            def redis_collector_ready():
+                address = docker("port", "rabbit-prometheus", "9090").stdout.strip()
+                expression = 'redis_up{job=~"redis(-cache)?-exporter"} == 1'
+                url = "http://" + address + "/api/v1/query?" + urllib.parse.urlencode({"query": expression})
+                with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(url, timeout=5) as response:
+                    payload = json.load(response)
+                assert payload["status"] == "success"
+                rows = payload["data"]["result"]
+                if len(rows) != 2:
+                    return False
+                for row in rows:
+                    labels = row["metric"]
+                    name = "redis-cache" if labels["job"] == "redis-cache-exporter" else "redis"
+                    assert labels["instance"] == name + "-exporter:9121"
+                    assert labels["service"] == name and labels["environment"] == "synthetic"
+                    assert labels["redis_role"] == ("cache" if name == "redis-cache" else "critical")
+                assert {row["metric"]["redis_role"] for row in rows} == {"critical", "cache"}
+                return True
+
+            wait(redis_collector_ready)
+            assert len(docker("ps", "--quiet", "redis", "redis-cache").stdout.strip().splitlines()) == 2
+            redis_isolation = {
+                "processes": 2,
+                "prometheus_role_identity_verified": True,
+                "cache_namespace_and_admin_denials": True,
+                "cache_identity_denied_on_critical": True,
+                "critical_fixture_preserved": True,
+                "observed": observed,
+                "qualification": "Bounded actual Redis roles/operations/policies; no memory pressure, durability or production capacity claim",
+            }
             _STATE["phase"] = "EXPORTER_FIXTURE_PRIVACY"
             assert all("synthetic-private-marker" not in metrics(n) for n in exporter_names)
             # Sequential reuse of this owned project: release databases first,
@@ -620,6 +745,7 @@ def main():
                 ],
                 "elapsed_seconds": round(time.monotonic() - started, 2),
                 "actual_rabbit_plugin": rabbit_result,
+                "redis_capacity_isolation": redis_isolation,
                 "mongo_monitor": _STATE["mongo_monitor"],
                 "redis_probe": _STATE["redis_probe"],
                 "redis_exporter": _STATE["redis_exporter"],

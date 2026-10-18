@@ -1,14 +1,11 @@
 package ru.rutcampustrack.academic.assignment;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Comparator;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.academic.contract.dto.assignment.AssignTeacherRequest;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
@@ -25,10 +22,14 @@ import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Comparator;
+import java.util.List;
+
 @Service
 public class AssignmentService {
-    @org.springframework.beans.factory.annotation.Autowired
-    private AssignmentClosureService closureService;
+    private final AssignmentClosureService closureService;
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
@@ -47,7 +48,8 @@ public class AssignmentService {
             SemesterRepository semesterRepository,
             SubjectRepository subjectRepository,
             UserRoleGrantRepository grantRepository,
-            RequestContext requestContext) {
+            RequestContext requestContext,
+            AssignmentClosureService closureService) {
         this.assignmentRepository = assignmentRepository;
         this.assignmentAuthority = assignmentAuthority;
         this.userRepository = userRepository;
@@ -55,6 +57,7 @@ public class AssignmentService {
         this.subjectRepository = subjectRepository;
         this.grantRepository = grantRepository;
         this.requestContext = requestContext;
+        this.closureService = closureService;
     }
 
     private void requireHeadman() {

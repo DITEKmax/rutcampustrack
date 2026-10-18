@@ -1,4 +1,4 @@
-"""Per-call directed identity for the two Academic credential RPCs."""
+"""Per-call directed identity for the exact protected Academic bot RPCs."""
 
 from __future__ import annotations
 
@@ -8,7 +8,9 @@ import re
 import grpc
 
 ACADEMIC_SERVICE = "rutcampustrack.academic.AcademicGrpcService"
-PROTECTED_METHODS = frozenset({"GetOwnBotInitialCredentials", "ManageOwnBotCredentialMessages"})
+PROTECTED_METHODS = frozenset(
+    {"GetOwnBotInitialCredentials", "ManageOwnBotCredentialMessages", "GetOwnBotHomeworksForWeek"}
+)
 
 
 class BotCredentialTransportUnavailable(RuntimeError):

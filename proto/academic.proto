@@ -72,8 +72,11 @@ service AcademicGrpcService {
   rpc ManageOwnBotCredentialMessages (BotCredentialMessagesRequest)
       returns (BotCredentialMessagesResponse);
 
-  // Read homework for a student's group in a date range (for Telegram bot).
+  // Read own homework with a signed student identity and its admitted semester scope.
   rpc GetHomeworksForWeek (HomeworksForWeekRequest) returns (HomeworksForWeekResponse);
+
+  // Directed notification-bot own-read; all academic scope is derived from live authority.
+  rpc GetOwnBotHomeworksForWeek (BotOwnHomeworksForWeekRequest) returns (HomeworksForWeekResponse);
 
   // Set a student's desired completion state for one homework item.
   // The actor is taken from the signed internal JWT metadata, never from the request.
@@ -427,6 +430,14 @@ message HomeworksForWeekRequest {
   bool include_completed_today = 6;
   string completed_today_from = 7;
   string completed_today_to = 8;
+}
+
+message BotOwnHomeworksForWeekRequest {
+  int64 telegram_sender_id = 1;
+  int64 expected_user_id = 2;
+  int64 expected_roles_version = 3;
+  string date_from = 4;
+  string date_to = 5;
 }
 
 message HomeworksForWeekResponse {

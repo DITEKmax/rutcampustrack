@@ -4,27 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
+
 import io.grpc.Server;
 import io.grpc.ServerInterceptors;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyServerBuilder;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.KeyStore;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import javax.net.ssl.KeyManagerFactory;
+
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -41,12 +26,37 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
 import ru.rutcampustrack.academic.grpc.AcademicReadService;
 import ru.rutcampustrack.academic.grpc.GrpcAuthInterceptor;
+import ru.rutcampustrack.academic.grpc.GrpcUserAuthorityReader;
 import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
+import ru.rutcampustrack.academic.repository.HomeworkRepository;
+import ru.rutcampustrack.academic.repository.SemesterRepository;
+import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyStore;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.KeyManagerFactory;
 
 /**
  * Actual Academic/JPA/JDBC/TLS → Python client/Dispatcher/provider. Auth producer is tested
@@ -65,7 +75,8 @@ class BotCredentialPythonBridgeIT {
         String python = System.getenv("NP01_PYTHON_EXECUTABLE");
         if (python == null || !Files.isExecutable(Path.of(python))) {
             throw new AssertionError(
-                    "explicit pinned NP01 Python interpreter required; no skip or implicit environment fallback");
+                    "explicit pinned NP01 Python interpreter required; no skip or implicit"
+                            + " environment fallback");
         }
         Path root = repositoryRoot();
         String serviceToken = token();
@@ -126,12 +137,20 @@ class BotCredentialPythonBridgeIT {
                 repositoryFactory.setBeanFactory(context.getBeanFactory());
                 UserRepository users = repositoryFactory.getRepository(UserRepository.class);
                 GroupRepository groups = repositoryFactory.getRepository(GroupRepository.class);
-                var readService = new AcademicReadService(groups, users, null, null);
+                SemesterRepository semesters =
+                        repositoryFactory.getRepository(SemesterRepository.class);
+                var readService = new AcademicReadService(groups, users, semesters, null);
                 var grpc =
                         new AcademicGrpcServiceImpl(
                                 readService,
                                 groups,
                                 users,
+                                repositoryFactory.getRepository(SubjectRepository.class),
+                                null,
+                                semesters,
+                                null,
+                                repositoryFactory.getRepository(HomeworkRepository.class),
+                                repositoryFactory.getRepository(HomeworkCompletionRepository.class),
                                 null,
                                 null,
                                 null,
@@ -140,13 +159,8 @@ class BotCredentialPythonBridgeIT {
                                 null,
                                 null,
                                 null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                context.getBean(BotCredentialsService.class));
+                                context.getBean(BotCredentialsService.class),
+                                new GrpcUserAuthorityReader(jdbc));
                 var auth = new GrpcAuthInterceptor();
                 ReflectionTestUtils.setField(auth, "expectedSecret", sharedSecret);
                 Path ca = certificate(temporary);
@@ -210,19 +224,24 @@ class BotCredentialPythonBridgeIT {
                                                 tx.execute(
                                                         status -> {
                                                             jdbc.queryForObject(
-                                                                    "SELECT id FROM users WHERE id=? FOR UPDATE",
+                                                                    "SELECT id FROM users WHERE"
+                                                                            + " id=? FOR UPDATE",
                                                                     Long.class,
                                                                     own);
                                                             switch (action) {
                                                                 case "change" ->
                                                                         jdbc.update(
-                                                                                "UPDATE users SET password_hash=?,password_changed=true,initial_password=NULL WHERE id=?",
+                                                                                "UPDATE users SET"
+                                                                                    + " password_hash=?,password_changed=true,initial_password=NULL"
+                                                                                    + " WHERE id=?",
                                                                                 UUID.randomUUID()
                                                                                         .toString(),
                                                                                 own);
                                                                 case "new_initial" ->
                                                                         jdbc.update(
-                                                                                "UPDATE users SET password_hash=?,password_changed=false,initial_password=? WHERE id=?",
+                                                                                "UPDATE users SET"
+                                                                                    + " password_hash=?,password_changed=false,initial_password=?"
+                                                                                    + " WHERE id=?",
                                                                                 UUID.randomUUID()
                                                                                         .toString(),
                                                                                 UUID.randomUUID()
@@ -230,48 +249,74 @@ class BotCredentialPythonBridgeIT {
                                                                                 own);
                                                                 case "rebind_foreign" -> {
                                                                     jdbc.update(
-                                                                            "UPDATE users SET telegram_id=NULL WHERE id=?",
+                                                                            "UPDATE users SET"
+                                                                                + " telegram_id=NULL"
+                                                                                + " WHERE id=?",
                                                                             own);
                                                                     jdbc.update(
-                                                                            "UPDATE users SET telegram_id=? WHERE id=?",
+                                                                            "UPDATE users SET"
+                                                                                + " telegram_id=?"
+                                                                                + " WHERE id=?",
                                                                             ownChat,
                                                                             foreign);
                                                                 }
                                                                 case "restore_binding" -> {
                                                                     jdbc.update(
-                                                                            "UPDATE users SET telegram_id=? WHERE id=?",
+                                                                            "UPDATE users SET"
+                                                                                + " telegram_id=?"
+                                                                                + " WHERE id=?",
                                                                             foreignChat,
                                                                             foreign);
                                                                     jdbc.update(
-                                                                            "UPDATE users SET telegram_id=? WHERE id=?",
+                                                                            "UPDATE users SET"
+                                                                                + " telegram_id=?"
+                                                                                + " WHERE id=?",
                                                                             ownChat,
                                                                             own);
                                                                 }
                                                                 case "revoke" ->
                                                                         jdbc.update(
-                                                                                "UPDATE user_role_grants SET status='suspended' WHERE user_id=?",
+                                                                                "UPDATE"
+                                                                                    + " user_role_grants"
+                                                                                    + " SET status='suspended'"
+                                                                                    + " WHERE"
+                                                                                    + " user_id=?",
                                                                                 own);
                                                                 case "reactivate" ->
                                                                         jdbc.update(
-                                                                                "UPDATE user_role_grants SET status='active' WHERE user_id=?",
+                                                                                "UPDATE"
+                                                                                    + " user_role_grants"
+                                                                                    + " SET status='active'"
+                                                                                    + " WHERE"
+                                                                                    + " user_id=?",
                                                                                 own);
                                                                 case "archive" ->
                                                                         jdbc.update(
-                                                                                "UPDATE users SET status='archived' WHERE id=?",
+                                                                                "UPDATE users SET"
+                                                                                    + " status='archived'"
+                                                                                    + " WHERE id=?",
                                                                                 own);
                                                                 case "facts", "verify" -> {}
                                                                 default ->
                                                                         throw new IllegalArgumentException(
-                                                                                "unknown isolated fixture control");
+                                                                                "unknown isolated"
+                                                                                    + " fixture"
+                                                                                    + " control");
                                                             }
                                                             var versions =
                                                                     jdbc.queryForMap(
-                                                                            "SELECT credentials_version,telegram_binding_version FROM users WHERE id=?",
+                                                                            "SELECT"
+                                                                                + " credentials_version,telegram_binding_version,roles_version"
+                                                                                + " FROM users"
+                                                                                + " WHERE id=?",
                                                                             own);
                                                             versions.put(
                                                                     "pending",
                                                                     jdbc.queryForObject(
-                                                                            "SELECT count(*) FROM bot_credential_messages WHERE user_id=? AND cleanup_state='PENDING'",
+                                                                            "SELECT count(*) FROM"
+                                                                                + " bot_credential_messages"
+                                                                                + " WHERE user_id=?"
+                                                                                + " AND cleanup_state='PENDING'",
                                                                             Long.class,
                                                                             own));
                                                             if (action.equals("verify")) {
@@ -292,7 +337,13 @@ class BotCredentialPythonBridgeIT {
                                                                 versions.put(
                                                                         "registered",
                                                                         jdbc.queryForObject(
-                                                                                "SELECT EXISTS(SELECT 1 FROM bot_credential_messages WHERE private_chat_id=? AND message_id=?)",
+                                                                                "SELECT"
+                                                                                    + " EXISTS(SELECT"
+                                                                                    + " 1 FROM"
+                                                                                    + " bot_credential_messages"
+                                                                                    + " WHERE"
+                                                                                    + " private_chat_id=?"
+                                                                                    + " AND message_id=?)",
                                                                                 Boolean.class,
                                                                                 chat,
                                                                                 message));
@@ -311,51 +362,57 @@ class BotCredentialPythonBridgeIT {
                                     }
                                 });
                         control.start();
-                        var process =
-                                new ProcessBuilder(
-                                        python,
-                                        root.resolve(
-                                                        "services/notification-bot/tests/np01_bridge_runner.py")
-                                                .toString());
-                        process.directory(temporary.toFile()); // No .env/private config discovery.
-                        process.redirectError(ProcessBuilder.Redirect.DISCARD);
-                        var environment = process.environment();
-                        environment.put(
-                                "PYTHONPATH", root.resolve("services/notification-bot").toString());
-                        environment.put("PYTHONDONTWRITEBYTECODE", "1");
-                        environment.put("NP01_AUTHORITY", "localhost:" + server.getPort());
-                        environment.put("NP01_CA", ca.toString());
-                        environment.put("NP01_SERVICE_TOKEN", serviceToken);
-                        environment.put("NP01_SHARED_SECRET", sharedSecret);
-                        environment.put("NP01_CONTROL_TOKEN", controlToken);
-                        environment.put(
-                                "NP01_CONTROL_URL",
-                                "http://127.0.0.1:" + control.getAddress().getPort());
-                        environment.put("NP01_FIXTURES", mapper.writeValueAsString(fixtures));
-                        Process child = process.start();
-                        if (!child.waitFor(90, TimeUnit.SECONDS)) {
-                            child.destroyForcibly();
-                            child.waitFor(5, TimeUnit.SECONDS);
-                            throw new AssertionError("NP01 native Python bridge timed out");
+                        for (String branch : List.of("--own-homework", "")) {
+                            var process =
+                                    new ProcessBuilder(
+                                            python,
+                                            root.resolve(
+                                                            "services/notification-bot/tests/np01_bridge_runner.py")
+                                                    .toString());
+                            if (!branch.isEmpty()) process.command().add(branch);
+                            process.directory(
+                                    temporary.toFile()); // No .env/private config discovery.
+                            process.redirectError(ProcessBuilder.Redirect.DISCARD);
+                            var environment = process.environment();
+                            environment.put(
+                                    "PYTHONPATH",
+                                    root.resolve("services/notification-bot").toString());
+                            environment.put("PYTHONDONTWRITEBYTECODE", "1");
+                            environment.put("NP01_AUTHORITY", "localhost:" + server.getPort());
+                            environment.put("NP01_CA", ca.toString());
+                            environment.put("NP01_SERVICE_TOKEN", serviceToken);
+                            environment.put("NP01_SHARED_SECRET", sharedSecret);
+                            environment.put("NP01_CONTROL_TOKEN", controlToken);
+                            environment.put(
+                                    "NP01_CONTROL_URL",
+                                    "http://127.0.0.1:" + control.getAddress().getPort());
+                            environment.put("NP01_FIXTURES", mapper.writeValueAsString(fixtures));
+                            Process child = process.start();
+                            if (!child.waitFor(90, TimeUnit.SECONDS)) {
+                                child.destroyForcibly();
+                                child.waitFor(5, TimeUnit.SECONDS);
+                                throw new AssertionError("NP01 native Python bridge timed out");
+                            }
+                            var output = child.getInputStream().readAllBytes();
+                            boolean qualified;
+                            try {
+                                var result = mapper.readTree(output);
+                                qualified =
+                                        result.path("qualified").asBoolean(false)
+                                                && result.path("actual_tls").asBoolean(false)
+                                                && result.path("real_academic_pg").asBoolean(false)
+                                                && result.path("failures").asInt(-1) == 0;
+                            } catch (Exception invalid) {
+                                throw new AssertionError(
+                                        "NP01 bridge did not return safe qualified outcomes");
+                            }
+                            assertThat(child.exitValue()).isZero();
+                            assertThat(qualified).isTrue();
                         }
-                        var output = child.getInputStream().readAllBytes();
-                        boolean qualified;
-                        try {
-                            var result = mapper.readTree(output);
-                            qualified =
-                                    result.path("qualified").asBoolean(false)
-                                            && result.path("actual_tls").asBoolean(false)
-                                            && result.path("real_academic_pg").asBoolean(false)
-                                            && result.path("failures").asInt(-1) == 0;
-                        } catch (Exception invalid) {
-                            throw new AssertionError(
-                                    "NP01 bridge did not return safe qualified outcomes");
-                        }
-                        assertThat(child.exitValue()).isZero();
-                        assertThat(qualified).isTrue();
                         assertThat(
                                         jdbc.queryForObject(
-                                                "SELECT count(*) FROM bot_credential_messages WHERE user_id=? AND cleanup_state='PENDING'",
+                                                "SELECT count(*) FROM bot_credential_messages WHERE"
+                                                        + " user_id=? AND cleanup_state='PENDING'",
                                                 Long.class,
                                                 own))
                                 .isZero();
@@ -386,7 +443,9 @@ class BotCredentialPythonBridgeIT {
             String initial = UUID.randomUUID().toString();
             long id =
                     jdbc.queryForObject(
-                            "INSERT INTO users(login,password_hash,last_name,first_name,initial_password,group_id) VALUES(?,?,'NP01','Own',?,?) RETURNING id",
+                            "INSERT INTO"
+                                + " users(login,password_hash,last_name,first_name,initial_password,group_id)"
+                                + " VALUES(?,?,'NP01','Own',?,?) RETURNING id",
                             Long.class,
                             login,
                             UUID.randomUUID().toString(),
@@ -396,7 +455,9 @@ class BotCredentialPythonBridgeIT {
             jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", chat, id);
             if (role.equals("FULL") || role.equals("LIMITED")) {
                 jdbc.update(
-                        "INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) VALUES(?,true,?,?::text[],1)",
+                        "INSERT INTO"
+                            + " admin_access_profiles(user_id,assigned,mode,permissions,version)"
+                            + " VALUES(?,true,?,?::text[],1)",
                         id,
                         role,
                         role.equals("FULL") ? "{}" : "{USERS_VIEW}");
@@ -408,20 +469,73 @@ class BotCredentialPythonBridgeIT {
                 String base =
                         role.equals("teacher") || role.equals("foreign") ? "teacher" : "student";
                 jdbc.update(
-                        "INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
-                                + "VALUES(?,?,'active',?,NOW(),NOW())",
+                        "INSERT INTO"
+                            + " user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
+                            + " VALUES(?,?,'active',?,NOW(),NOW())",
                         id,
                         base,
                         base.equals("teacher") ? null : group);
                 if (role.equals("headman"))
                     jdbc.update(
-                            "INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
-                                    + "VALUES(?,'headman','active',?,NOW(),NOW())",
+                            "INSERT INTO"
+                                + " user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
+                                + " VALUES(?,'headman','active',?,NOW(),NOW())",
                             id,
                             group);
             }
             result.put(role, Map.of("uid", id, "chat", chat, "login", login, "initial", initial));
         }
+        long student = ((Number) result.get("student").get("uid")).longValue();
+        long group =
+                jdbc.queryForObject(
+                        "SELECT group_id FROM user_role_grants WHERE user_id=? AND role='student'",
+                        Long.class,
+                        student);
+        jdbc.update("UPDATE groups SET is_active=true WHERE id=?", group);
+        jdbc.update("UPDATE semesters SET is_active=false WHERE is_active=true");
+        var day = java.time.LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
+        long semester =
+                jdbc.queryForObject(
+                        "INSERT INTO semesters(name,date_from,date_to,is_active,created_at)"
+                                + " VALUES('Own bot homework',?,?,true,NOW()) RETURNING id",
+                        Long.class,
+                        day.minusDays(30),
+                        day.plusDays(30));
+        long subject =
+                jdbc.queryForObject(
+                        """
+                        WITH subject AS (
+                            INSERT INTO subjects(name,type,group_id,semester_id)
+                            VALUES('Own bot subject','lecture',?,?) RETURNING id
+                        ), lesson_type AS (
+                            INSERT INTO subject_lesson_types(subject_id,lesson_type)
+                            SELECT id,'lecture'::subject_type FROM subject RETURNING subject_id
+                        ) SELECT subject_id FROM lesson_type
+                        """,
+                        Long.class,
+                        group,
+                        semester);
+        long homework =
+                jdbc.queryForObject(
+                        """
+INSERT INTO homeworks(group_id,subject_id,semester_id,title,published_by,lesson_date,lesson_number,
+    binding_mode,lesson_type,binding_id,actor_id,request_key,payload_hash,publication_state)
+VALUES(?,?,?,'Own bot homework',?,?,NULL,'DATE','LECTURE',?,?,?,decode(repeat('11',32),'hex'),'ACTIVE') RETURNING id
+""",
+                        Long.class,
+                        group,
+                        subject,
+                        semester,
+                        student,
+                        day,
+                        subject,
+                        student,
+                        UUID.randomUUID());
+        var own = new LinkedHashMap<>(result.get("student"));
+        own.put("homework_id", homework);
+        own.put("date_from", day.toString());
+        own.put("date_to", day.toString());
+        result.put("student", own);
         return result;
     }
 

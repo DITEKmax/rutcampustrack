@@ -1,11 +1,15 @@
 package ru.rutcampustrack.notification.contract.api;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
 import org.springframework.web.bind.annotation.*;
+
 import ru.rutcampustrack.notification.contract.dto.preferences.BotNotificationPreferencesDto;
 import ru.rutcampustrack.notification.contract.dto.preferences.UpdateBotNotificationPreferencesRequest;
 
 /** Internal transport exception; never routed by the public Gateway. */
 @RequestMapping("/internal/bot/notification-preferences/{userId}/{telegramId}")
+@Hidden
 public interface BotNotificationPreferencesApi {
     @GetMapping
     BotNotificationPreferencesDto getPreferences(

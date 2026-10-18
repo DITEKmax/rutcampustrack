@@ -1,7 +1,7 @@
 package ru.rutcampustrack.notification.alert;
 
-import java.util.List;
-import java.util.Map;
+import io.swagger.v3.oas.annotations.Hidden;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * M04 Группа 9 — webhook endpoint для Alertmanager (D2=(a)).
@@ -43,6 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
  * NotificationUserContextFilter.isExcludedPath}) — Alertmanager не умеет носить Internal JWT.
  */
 @RestController
+@Hidden
 @RequestMapping("/internal/alert")
 @EnableConfigurationProperties(AlertProperties.class)
 public class AlertController {

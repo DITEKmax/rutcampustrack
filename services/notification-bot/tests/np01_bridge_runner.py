@@ -435,9 +435,135 @@ async def main():
             await provider_runner.cleanup()
 
 
+async def own_homework_main():
+    """Use the existing isolated Java/PG/TLS fixture; never contact Telegram."""
+    global _phase
+    from datetime import date
+    from unittest.mock import AsyncMock
+
+    from bot.handlers.homework import cmd_homework_today, cmd_homework_week
+    from bot.handlers.prefs import HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL, main_keyboard
+    from bot.services.menu_scope import resolve_homework_scope
+
+    fixtures = json.loads(os.environ.pop("NP01_FIXTURES"))
+    own = fixtures["student"]
+    host, port = os.environ["NP01_AUTHORITY"].rsplit(":", 1)
+    ca_path = os.environ["NP01_CA"]
+    token = os.environ.pop("NP01_SERVICE_TOKEN")
+    shared = os.environ.pop("NP01_SHARED_SECRET")
+    control_token = os.environ.pop("NP01_CONTROL_TOKEN")
+    generic = AcademicGrpcClient(host, int(port), shared, True, ca_path)
+    protected = BotCredentialsGrpcClient(host, int(port), shared, True, ca_path, token)
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as controls:
+
+        async def control(action):
+            async with controls.post(
+                os.environ["NP01_CONTROL_URL"] + "/control/" + action,
+                headers={"x-np01-control": control_token},
+            ) as response:
+                check(response.status == 200)
+                return await response.json()
+
+        async def arguments():
+            scope = await resolve_homework_scope(generic, own["chat"])
+            check(scope is not None and scope.user_id == own["uid"] and scope.roles_version > 0)
+            return dict(
+                telegram_sender_id=own["chat"],
+                expected_user_id=scope.user_id,
+                expected_roles_version=scope.roles_version,
+                date_from=own["date_from"],
+                date_to=own["date_to"],
+            )
+
+        async def denied(values):
+            try:
+                await protected.homeworks(**values)
+            except BotCredentialRequestDenied:
+                check(True)
+            else:
+                check(False)
+
+        try:
+            _phase = "own_homework_profile"
+            values = await arguments()
+            scope = await resolve_homework_scope(generic, own["chat"])
+            labels = [
+                button.text for row in main_keyboard(homework_enabled=scope is not None).keyboard for button in row
+            ]
+            check(HOMEWORK_TODAY_LABEL in labels and HOMEWORK_WEEK_LABEL in labels)
+            items = await protected.homeworks(**values)
+            check(len(items) == 1 and items[0].homework_id == own["homework_id"])
+            check(bool(items[0].title))
+            title = items[0].title
+            _phase = "own_homework_handlers"
+            for handler in (cmd_homework_today, cmd_homework_week):
+                message = SimpleNamespace(
+                    from_user=SimpleNamespace(id=own["chat"]),
+                    chat=SimpleNamespace(id=own["chat"], type="private"),
+                    answer=AsyncMock(),
+                )
+                await handler(
+                    message, generic, today=date.fromisoformat(own["date_from"]), bot_homework_client=protected
+                )
+                check(message.answer.await_count == 1 and title in message.answer.await_args.args[0])
+
+            _phase = "own_homework_transport_denials"
+            request = pb.BotOwnHomeworksForWeekRequest(**values)
+            try:
+                await generic._stub.GetOwnBotHomeworksForWeek(request, metadata=generic._metadata, timeout=3)
+            except grpc.aio.AioRpcError as error:
+                check(error.code() == grpc.StatusCode.UNAUTHENTICATED)
+            else:
+                check(False)
+            # A directed bot token cannot replace the unchanged student-JWT admission.
+            try:
+                await generic._stub.GetHomeworksForWeek(
+                    pb.HomeworksForWeekRequest(
+                        student_id=scope.user_id,
+                        group_id=scope.group_id,
+                        semester_id=1,
+                        date_from=own["date_from"],
+                        date_to=own["date_to"],
+                    ),
+                    metadata=(*generic._metadata, ("x-service-token", token)),
+                    timeout=3,
+                )
+            except grpc.aio.AioRpcError as error:
+                check(error.code() == grpc.StatusCode.PERMISSION_DENIED)
+            else:
+                check(False)
+            await denied({**values, "expected_roles_version": values["expected_roles_version"] + 1})
+            await denied({**values, "telegram_sender_id": fixtures["foreign"]["chat"]})
+
+            _phase = "own_homework_revoked_grant"
+            await control("revoke")
+            check(await resolve_homework_scope(generic, own["chat"]) is None)
+            await denied(values)
+            await control("reactivate")
+            refreshed = await arguments()
+            check(refreshed["expected_roles_version"] > values["expected_roles_version"])
+            check(len(await protected.homeworks(**refreshed)) == 1)
+
+            _phase = "own_homework_rebound_telegram"
+            await control("rebind_foreign")
+            await denied(refreshed)
+            await control("restore_binding")
+            restored = await arguments()
+            check(len(await protected.homeworks(**restored)) == 1)
+            _phase = "complete"
+        finally:
+            try:
+                try:
+                    await control("reactivate")
+                finally:
+                    await control("restore_binding")
+            finally:
+                await asyncio.gather(generic.close(), protected.close())
+
+
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        asyncio.run(asyncio.wait_for(own_homework_main(), timeout=30) if sys.argv[1:] == ["--own-homework"] else main())
     except BaseException:
         print(
             json.dumps(

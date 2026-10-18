@@ -10,14 +10,18 @@ Q031/D037: TASK-CONTRACT/CURRENT — принятая сохранённая ц�
 ## Revision и приёмка
 
 Ветка codex/server-validation-20261011, [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2),
-main не merged. Published local=remote=PR head **9a61873f5e3dc12eccce92a436b39fd38506306d**.
+main не merged. Published local=remote=PR head **3dc25ce7bddaded5f046233db39f732c05c382ea**.
 Stage17 base753173688d633ca07991f4dd73bdcd2698f45d96; scope18 received base
-e66b1711b3d93faee625b50a2e2f785020a0f43a. Stage diff262paths:53A/209M/0D.
-Root WIP: независимо принятые 10 файлов U22 Alloy + текущие task docs, не runtime PASS.
+e66b1711b3d93faee625b50a2e2f785020a0f43a. Stage diff265paths:54A/210M/1D.
+U22 Alloy source10 опубликован3dc25ce7; независимое review755dbf7a принято, runtime pending.
+Root integration: 54exactsource — U16cache/2Redis16 + API22/Python14 + U13Gateway/helper2
+(CI общий). Source/review приняты; реальные2Redis/PGTLS/6OpenAPI/Gateway checks pending.
+Чужие25untracked нетронуты.
 
-Матрица **v1-КТ1 FROZEN: 8/25, вес38/123 =30.89% плана**, не production readiness.
+Матрица **v1-КТ1 FROZEN: 12/25, вес61/123 =49.59% плана**, не production readiness.
 Веса/состав не изменены. Условные integrations UNSELECTED отдельно от принятой оценки U23.
-Прежние **6/9** сохраняются отдельно: DONE_CHANGED6, ALREADY_SATISFIED0.
+Прежние **9/9** функционально закрыты: DONE_CHANGED9, ALREADY_SATISFIED0;
+это не завершение объединённой цели: final gates/U25 и расширенный scope остаются.
 
 | ID | Статус | Доказательство / конкретный остаток |
 | --- | --- | --- |
@@ -26,9 +30,9 @@ Root WIP: независимо принятые 10 файлов U22 Alloy + те
 | A03 | DONE_CHANGED | DTO redaction/RS256/безопасные CI artifacts;Auth145unit+200IT0skip12114133029 +review. |
 | A04 | DONE_CHANGED | RealSQL страницы/order/currentStudent:subject2/HW1 batch enrichment;12114232912 +review. |
 | M01 | DONE_CHANGED | Gateway→BFF→TCPgRPC24spans;Rabbit retry/dedup10spans→Tempo/Loki/Grafana, privacy/context;12114439186 +review. |
-| M02 | IN_PROGRESS | Stores/exporters/8apps/resource signals приняты; нужны actual report/job deltas после двух правильных DOCX. |
-| M03 | IN_PROGRESS | Resource/30d queries/logs↔traces приняты; нужны retained JVM/Hikari/Tomcat/gRPC/Auth/report panel assertions после DOCX. |
-| M04 | IN_PROGRESS | Broker8cases/receiver/samearchive DLQ-replay PASS. Наe66 first18weekDOCX correct, second lost202/reconnect ещё не принят; current rights/runtime pending9a. |
+| M02 | DONE_CHANGED | На9a actual2DOCX дали точные+2job/reportdeltas,8apps/3117series;12120205958+review85f1ca36. |
+| M03 | DONE_CHANGED | Все426livepanelqueries/правдивыеidle/noevent/недостаточные30d + прежниеlogs↔traces;12120205958+review. |
+| M04 | DONE_CHANGED | На9a обаcorrect18weekDOCX/navigation/lost202/reconnect/currentrights PASS12210ms + применимыеPG/broker/recovery proofs;review85f1ca36. |
 | M05 | DONE_CHANGED | e66 actual2PG/Mongo/Redis rights+6NOPERM/exporters/Rabbit/pipeline/privateaccess/recreate;12118842862/SHAfb1a7985… +independent review. |
 
 C01 actualPG oldstaleRED→afterCommit commit/rollback2GREEN12113673595;
@@ -37,13 +41,13 @@ C02 опубликованные93migrations/28controls PASS; C03 minimal runtim
 
 ## Следующие действия
 
-1. Текущий9a pushCI39082996242/PRCI39083002674/Coverage39083002654 выполняются;
-   Security39083002628/OpenAPI39083002852 SUCCESS. Нужны второй DOCX/current rights
-   и job/panel evidence. Reconnect3d631113 независимо принят: session200 + точный старый
-   DOM отсоединён + новый home, затем журнал. Исторический timingUNKNOWN.
-2. U22 source10paths прошёл review755dbf7a без findings и точно перенесён Root;
-   обычный coherent push должен дать actual Alloy1.20.1 validate/pipeline/recreate/
-   delivery/drop/privacy/resources. Source-only не закрывает U22.
+1. СтарыеM02–M04/U07–09 приняты на9a: actual12120205958/SHAс9feaf41,
+   checkout12119293739/treec51c8504, independent85f1ca36. Не повторять без причины.
+   9a pushCI39082996242 завершён24/24SUCCESS, включая reconciliation/lifecycle и
+   Playwright. Прежниеe66UNKNOWN сохранены; новый outcome их не переписывает.
+2. Current3dc25ce7: pushCI39084041118/PRCI39084046254, Coverage39084046250,
+   Security39084046264/OpenAPI39084046258 SUCCESS. Monitoring push/PR jobs SUCCESS;
+   actualAlloy safeartifact/applicability review выполняется. U22 пока REVIEW, не PASS.
 3. Параллельные bounded пакеты: Auth U11–13/U18 и собственный bot read RPC; Reports
    U20 меню/consumer, затем files/notifications/oneHAL/k6; Infra U16 Redis после U22;
    Data U16 cache Java, затем U14/U15 по независимо принятому плану одной PG transaction.
@@ -61,9 +65,11 @@ C02 опубликованные93migrations/28controls PASS; C03 minimal runtim
 Root soleGit/task docs. Новые detached sparse WT /tmp/rct-s18-{auth,infra,reports,data}
 на9a; старые753WT/WIP,25чужих untracked, stand/volumes/keys сохранены.
 Дети Sol6.1/high/forknone; actualUNKNOWN — действующее Cloud-исключение. Capacity7inclRoot,
-CPU5/RAM16GiB/workspace floor4GiB. TWO независимых heavy lease: Auth CPU0 и Data CPU1, offlineJDK21,
-maxworkers1/fork1, каждый≤2.5GiBRSS/512MiBnewTMP; разные caches/outputs, безDB/Redis.
-ReviewerReports U22 source принят; ReviewerAuth U14 amended design принят, не runtime.
+CPU5/RAM16GiB/workspace floor4GiB. Разрешено до TWO независимых heavy lease с известным запасом; Auth compile20tests
+закончил/reaped, Data cachecheck03PASS17focused+4guards; теперь U14/U15. Maxworkers1/fork1, каждый≤2.5GiBRSS/
+512MiBnewTMP, разные caches/outputs, безDB/Redis. Актуальные leases/resources.md.
+ReviewerReports U13helper541c239a принят, API7f363eba/cache8b09dee4 приняты.
+ReviewerAuth проверяетactualAlloySAFE; Data+Infra реализуют U14/U15, не runtimePASS.
 Продуктовых вопросов владельцу сейчас нет; технические gaps не превращать в новые требования.
 
 D032–D037 действуют: WORD старосты, исходный syncHTTP crashUNKNOWN; SLO инженерные цели,
@@ -71,3 +77,6 @@ PG durable job/session authority/current grants сохранены. DEFERRED_LOC
 offhost probe при deploy, realTelegram/push/install/Safari и прежние manual ограничения.
 B013/B014/B015 FROZEN; no обходов. No main/merge/deploy/production grants/reset/delete
 volumes/secrets/Angular/newweb/редизайн/projectdocs refactor/secondCLI.
+
+U19 ALREADY_SATISFIED на9a:64IT/127unit+realPWA4+existing3Vitest actualPASS;
+independent3f068303, no rewrittenproductlogic. RealTG/WebPushDEFERRED_OWNER.

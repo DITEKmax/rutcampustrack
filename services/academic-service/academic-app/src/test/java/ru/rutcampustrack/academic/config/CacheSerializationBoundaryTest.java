@@ -8,30 +8,38 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import java.net.URI;
-import java.nio.ByteBuffer;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair;
 import org.springframework.data.redis.serializer.SerializationException;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import ru.rutcampustrack.academic.contract.dto.subject.AssignmentSummaryResponse;
 import ru.rutcampustrack.academic.contract.enums.SemesterType;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.shared.web.config.JacksonConfig;
+
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /** Exercises the production cache serializer without starting Redis, a database or the app. */
 class CacheSerializationBoundaryTest {
@@ -49,10 +57,101 @@ class CacheSerializationBoundaryTest {
                                                             .getSharedInstance()))
                     .withConfiguration(AutoConfigurations.of(JacksonAutoConfiguration.class))
                     .withUserConfiguration(CacheConfig.class, WebConfig.class, JacksonConfig.class)
-                    // Only the factory is a fixture: serialization uses the actual cache config.
-                    // RedisCacheManager initialization and these serialization pairs do no I/O.
+                    .withPropertyValues("rct.cache.redis.host=cache.invalid")
+                    // Critical Redis remains independent. The private cache client initializes
+                    // lazily; serialization does no network I/O.
                     .withBean(
                             RedisConnectionFactory.class, () -> mock(RedisConnectionFactory.class));
+
+    @Test
+    void privateCacheClientDoesNotReplaceBootCriticalFactory() {
+        new ApplicationContextRunner()
+                .withInitializer(
+                        context ->
+                                context.getBeanFactory()
+                                        .setConversionService(
+                                                ApplicationConversionService.getSharedInstance()))
+                .withConfiguration(AutoConfigurations.of(RedisAutoConfiguration.class))
+                .withUserConfiguration(CacheConfig.class)
+                .withPropertyValues(
+                        "spring.data.redis.host=critical.invalid",
+                        "rct.cache.redis.host=cache.invalid",
+                        "rct.cache.redis.username=rct_cache")
+                .run(
+                        context -> {
+                            assertThat(context.getBeansOfType(RedisConnectionFactory.class))
+                                    .hasSize(1);
+                            var critical = context.getBean(LettuceConnectionFactory.class);
+                            assertThat(critical.getHostName()).isEqualTo("critical.invalid");
+                            var manager = context.getBean(DisposableCacheManager.class);
+                            var disposable =
+                                    (LettuceConnectionFactory)
+                                            ReflectionTestUtils.getField(
+                                                    manager, "connectionFactory");
+                            assertThat(disposable).isNotSameAs(critical);
+                            assertThat(disposable.getHostName()).isEqualTo("cache.invalid");
+                            assertThat(disposable.getStandaloneConfiguration().getUsername())
+                                    .isEqualTo("rct_cache");
+                            assertThat(disposable.getClientConfiguration().getCommandTimeout())
+                                    .isEqualTo(Duration.ofMillis(200));
+                            var options =
+                                    disposable
+                                            .getClientConfiguration()
+                                            .getClientOptions()
+                                            .orElseThrow();
+                            assertThat(options.isAutoReconnect()).isFalse();
+                            assertThat(options.getRequestQueueSize()).isEqualTo(64);
+                            assertThat(options.getTimeoutOptions().isTimeoutCommands()).isTrue();
+                            var timeoutSource = options.getTimeoutOptions().getSource();
+                            assertThat(
+                                            timeoutSource
+                                                    .getTimeUnit()
+                                                    .toMillis(timeoutSource.getTimeout(null)))
+                                    .isEqualTo(200L);
+                            assertThat(options.getSocketOptions().getConnectTimeout())
+                                    .isEqualTo(Duration.ofMillis(500));
+                        });
+    }
+
+    @Test
+    void absentCacheEndpointNeverFallsBackToCriticalRedis() {
+        contextRunner
+                .withPropertyValues("rct.cache.redis.host=")
+                .run(
+                        context ->
+                                assertThat(context.getBean(CacheManager.class))
+                                        .isInstanceOf(NoOpCacheManager.class));
+    }
+
+    @Test
+    void restartUsesNewNamespaceAndRetainsFiniteTtls() {
+        String[] prefixes = new String[2];
+        for (int startup = 0; startup < prefixes.length; startup++) {
+            int index = startup;
+            contextRunner.run(
+                    context -> {
+                        var configurations =
+                                context.getBean(RedisCacheManager.class).getCacheConfigurations();
+                        prefixes[index] = configurations.get("groups").getKeyPrefixFor("groups");
+                        assertThat(prefixes[index]).matches("rct:cache:[0-9a-f-]{36}:groups::");
+                        assertThat(configurations.get("groups").getTtl())
+                                .isEqualTo(Duration.ofMinutes(5));
+                        assertThat(configurations.get("group_members").getTtl())
+                                .isEqualTo(Duration.ofMinutes(5));
+                        assertThat(configurations.get("users").getTtl())
+                                .isEqualTo(Duration.ofMinutes(5));
+                        assertThat(configurations.get("active_semester").getTtl())
+                                .isEqualTo(Duration.ofMinutes(10));
+                        assertThat(configurations.get("campus_geofence").getTtl())
+                                .isEqualTo(Duration.ofHours(1));
+                        assertThat(configurations.get("rbac").getTtl())
+                                .isEqualTo(Duration.ofMinutes(1));
+                        assertThat(configurations.get("subject").getTtl())
+                                .isEqualTo(Duration.ofMinutes(10));
+                    });
+        }
+        assertThat(prefixes[0]).isNotEqualTo(prefixes[1]);
+    }
 
     @Test
     void cachedDomainValuesAndCollectionsRetainTheirTypesAndDates() {

@@ -1,7 +1,10 @@
 package ru.rutcampustrack.auth.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -35,11 +38,14 @@ public final class ExportJobModels {
             @NotNull UUID requestId, @NotNull @Valid IssueReportDownloadTicketRequest report) {}
 
     public record Status(
-            UUID jobId,
-            State state,
-            String suggestedFilename,
-            Instant expiresAt,
-            String errorCode) {}
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID jobId,
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) State state,
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String suggestedFilename,
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant expiresAt,
+            @Schema(
+                            types = {"string", "null"},
+                            requiredMode = Schema.RequiredMode.REQUIRED)
+                    String errorCode) {}
 
     public record Claim(
             UUID jobId, UUID leaseId, ReportDownloadTicketRedemptionResponse authority) {
@@ -55,8 +61,7 @@ public final class ExportJobModels {
             @NotBlank String contentType,
             @Min(0) int rowCount,
             boolean requiresFull,
-            @io.swagger.v3.oas.annotations.media.Schema(types = {"string", "null"})
-                    @Pattern(regexp = "[0-9a-f]{64}")
+            @Schema(types = {"string", "null"}) @Pattern(regexp = "[0-9a-f]{64}")
                     String teacherScopeHash) {
         public Complete(
                 UUID leaseId,

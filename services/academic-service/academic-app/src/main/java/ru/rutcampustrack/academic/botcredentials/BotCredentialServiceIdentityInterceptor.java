@@ -5,13 +5,17 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
-import java.util.List;
-import java.util.Map;
+
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor;
+
 import org.springframework.beans.factory.annotation.Value;
+
 import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
 import ru.rutcampustrack.shared.security.grpc.ServiceIdentityServerInterceptor;
 import ru.rutcampustrack.shared.security.grpc.ServicePrincipal;
+
+import java.util.List;
+import java.util.Map;
 
 /** Fixed bot-to-Academic TLS policy; unrelated RPCs retain their existing admission. */
 @GrpcGlobalServerInterceptor
@@ -22,6 +26,9 @@ public final class BotCredentialServiceIdentityInterceptor implements ServerInte
             "rutcampustrack.academic.AcademicGrpcService/GetOwnBotInitialCredentials";
     public static final String MANAGE_METHOD =
             "rutcampustrack.academic.AcademicGrpcService/ManageOwnBotCredentialMessages";
+
+    public static final String HOMEWORK_METHOD =
+            "rutcampustrack.academic.AcademicGrpcService/GetOwnBotHomeworksForWeek";
 
     private final ServiceIdentityServerInterceptor delegate;
 
@@ -34,7 +41,7 @@ public final class BotCredentialServiceIdentityInterceptor implements ServerInte
         delegate =
                 new ServiceIdentityServerInterceptor(
                         ServicePrincipal.ACADEMIC_SERVICE,
-                        Map.of(READ_METHOD, BOT, MANAGE_METHOD, BOT),
+                        Map.of(READ_METHOD, BOT, MANAGE_METHOD, BOT, HOMEWORK_METHOD, BOT),
                         credentials);
     }
 

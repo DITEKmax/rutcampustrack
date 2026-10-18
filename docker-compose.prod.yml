@@ -149,9 +149,9 @@ services:
     image: redis:7-alpine@sha256:7aec734b2bb298a1d769fd8729f13b8514a41bf90fcdd1f38ec52267fbaa8ee6
     container_name: rct-redis
     logging: *bounded-logs
-    # M09 G7 — maxmemory чуть ниже mem_limit, allkeys-lru выбрасывает
-    # холодные OTP/RBAC-entries раньше, чем OOMKill срубит контейнер.
-    command: redis-server --aclfile /run/secrets/redis-users-acl --maxmemory 96mb --maxmemory-policy allkeys-lru
+    # Critical OTP/tickets/limits never compete with disposable application cache.
+    # noeviction preserves existing entries; writes may fail when memory is full.
+    command: redis-server --aclfile /run/secrets/redis-users-acl --maxmemory 64mb --maxmemory-policy noeviction
     environment:
       REDISCLI_AUTH: ${REDIS_PASSWORD}
     secrets:
@@ -165,8 +165,40 @@ services:
     # M09 G7 (NEW-157).
     mem_limit: 128m
     mem_reservation: 64m
+    cpus: 0.25
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis-cache:
+    image: redis:7-alpine@sha256:7aec734b2bb298a1d769fd8729f13b8514a41bf90fcdd1f38ec52267fbaa8ee6
+    container_name: rct-redis-cache
+    logging: *bounded-logs
+    command:
+      - redis-server
+      - --aclfile
+      - /run/secrets/redis-cache-users-acl
+      - --maxmemory
+      - 48mb
+      - --maxmemory-policy
+      - allkeys-lru
+      - --save
+      - ''
+    secrets:
+      - redis-cache-users-acl
+      - redis-cache-runtime-password
+    expose:
+      - '6379'
+    networks:
+      - private_net
+    mem_limit: 128m
+    mem_reservation: 64m
+    cpus: 0.25
+    healthcheck:
+      test: ['CMD-SHELL', 'REDISCLI_AUTH="$$(cat /run/secrets/redis-cache-runtime-password)" redis-cli --no-auth-warning -e --user rct_cache ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -303,7 +335,10 @@ services:
     container_name: rct-academic-service
     logging: *bounded-logs
     environment:
-      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-cache/
+      RCT_CACHE_REDIS_HOST: redis-cache
+      RCT_CACHE_REDIS_PORT: '6379'
+      RCT_CACHE_REDIS_USERNAME: rct_cache
       SPRING_DATASOURCE_USERNAME: rct_runtime
       SPRING_FLYWAY_USER: rct_migrator
       SPRING_FLYWAY_LOCATIONS: classpath:db/migration,filesystem:/etc/rct/flyway-callbacks
@@ -339,6 +374,8 @@ services:
       # M09 G7 (NEW-157).
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
+    - source: redis-cache-runtime-password
+      target: /run/rct-cache/rct.cache.redis.password
     - source: pg-academic-runtime-password
       target: /run/rct-db/POSTGRES_ACADEMIC_PASSWORD
     - source: pg-academic-migration-password
@@ -975,6 +1012,41 @@ services:
         max-size: 10m
         max-file: '3'
 
+  redis-cache-exporter:
+    image: oliver006/redis_exporter:v1.67.0@sha256:120f7ec77293459ccfdad66bb1db75ab72e8bfeab99f58b1cc2564cadcd7a9e7
+    container_name: rct-redis-cache-exporter
+    command:
+    - --redis.addr=redis://redis-cache:6379
+    - --redis.user=rct_monitor
+    - --redis.password-file=/run/secrets/redis-cache-monitor-password-map
+    - --config-command=-
+    - --disable-exporting-key-values
+    - --exclude-latency-histogram-metrics
+    - --log-format=json
+    secrets:
+    - redis-cache-monitor-password-map
+    expose:
+    - '9121'
+    networks:
+    - private_net
+    mem_limit: 32m
+    environment:
+      GOMEMLIMIT: 24MiB
+      GOMAXPROCS: '1'
+    mem_reservation: 16m
+    cpus: 0.25
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    read_only: true
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+
   node-exporter:
     # M08 G11 — digest-pin (было semver-only M06 P2-9/2). Update:
     #   docker buildx imagetools inspect prom/node-exporter:v1.8.2
@@ -1479,5 +1551,11 @@ secrets:
     file: ${PG_SCHEDULE_MIGRATION_PASSWORD_FILE:?PG_SCHEDULE_MIGRATION_PASSWORD_FILE must be set}
   redis-users-acl:
     file: ${REDIS_SERVER_ACL_FILE:?REDIS_SERVER_ACL_FILE must be set}
+  redis-cache-users-acl:
+    file: ${REDIS_CACHE_SERVER_ACL_FILE:?REDIS_CACHE_SERVER_ACL_FILE must be set}
+  redis-cache-runtime-password:
+    file: ${REDIS_CACHE_RUNTIME_PASSWORD_FILE:?REDIS_CACHE_RUNTIME_PASSWORD_FILE must be set}
+  redis-cache-monitor-password-map:
+    file: ${REDIS_CACHE_MONITOR_PASSWORD_MAP_FILE:?REDIS_CACHE_MONITOR_PASSWORD_MAP_FILE must be set}
   mongo-monitor-env:
     file: ${MONGO_MONITOR_ENV_FILE:?MONGO_MONITOR_ENV_FILE must be set}

@@ -7,6 +7,7 @@ from aiogram.types import Message
 
 from bot.handlers.prefs import CREDENTIALS_LABEL, LINKS_LABEL, keyboard_signature, main_keyboard
 from bot.services.keyboard_sync import mark_keyboard_synced
+from bot.services.menu_scope import resolve_homework_scope
 
 logger = logging.getLogger(__name__)
 
@@ -76,9 +77,11 @@ async def cmd_start(message: Message, academic_client, prefs_client, keyboard_sy
         return
     telegram_id = private_sender(message)
     keyboard = main_keyboard()
-    await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature())
     try:
         response = await academic_client.get_user_by_telegram_id(telegram_id)
+        scope = await resolve_homework_scope(academic_client, telegram_id, response)
+        keyboard = main_keyboard(homework_enabled=scope is not None)
+        await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(homework_enabled=scope is not None))
 
         if not response.found:
             # D-03: unknown telegram_id

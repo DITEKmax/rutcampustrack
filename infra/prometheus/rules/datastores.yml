@@ -24,7 +24,7 @@ groups:
         and network. Do not reuse an application/admin credential.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: RedisUnavailable
-    expr: redis_up == 0
+    expr: redis_up{redis_role!="cache"} == 0
     for: 1m
     labels:
       severity: critical
@@ -33,4 +33,23 @@ groups:
       summary: RedisUnavailable {{ $labels.service }}
       description: Exporter is running but cannot query the store. Check store readiness, least-privilege monitoring identity
         and network. Do not reuse an application/admin credential.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: RedisCacheUnavailable
+    expr: redis_up{redis_role="cache"} == 0
+    for: 1m
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: Disposable Redis cache unavailable
+      description: Academic uses PostgreSQL fallback. Restore the isolated cache and restart Academic to create a fresh cache namespace; do not flush critical Redis.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: RedisCriticalMemoryEviction
+    expr: increase(redis_evicted_keys_total{redis_role="critical"}[5m]) > 0
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: Critical Redis violated its noeviction policy
+      description: Verify critical Redis policy and process isolation. Preserve OTP, tickets and limits; do not redirect disposable caches to this endpoint.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md

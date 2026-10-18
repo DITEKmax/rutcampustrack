@@ -7,6 +7,7 @@ for the application/broker trace required by M01/M04. Only an owned CI project r
 import base64
 import copy
 import hashlib
+import ipaddress
 import json
 import math
 import os
@@ -404,6 +405,127 @@ def e2e_live_panel_queries(query, expected, safe):
     safe.pop("panel_probe", None)
 
 
+def e2e_gateway_openapi(docker, safe):
+    """Seven unauthenticated GETs on the owned Gateway origin, not public ingress."""
+    ids = docker(
+        "ps",
+        "--quiet",
+        "--no-trunc",
+        "--filter",
+        "label=com.docker.compose.project=rct-e2e",
+        "--filter",
+        "label=com.docker.compose.service=api-gateway",
+    ).stdout.splitlines()
+    assert len(ids) == 1 and re.fullmatch("[0-9a-f]{64}", ids[0])
+    host = docker(
+        "inspect", "--format", '{{(index .NetworkSettings.Networks "rct-e2e_private_net").IPAddress}}', ids[0]
+    ).stdout.strip()
+    address = ipaddress.IPv4Address(host)
+    assert address.is_private and not (address.is_loopback or address.is_unspecified or address.is_multicast)
+
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+
+    def unique_pairs(items):
+        value = {}
+        for key, item in items:
+            assert key not in value
+            value[key] = item
+        return value
+
+    result = {
+        "config_status": None,
+        "documents": {},
+        "qualification": "Owned private Gateway HTTP origin; ingress BasicAuth and API authorization policy unchanged",
+    }
+    safe["gateway_openapi"] = result
+
+    def get(path, observed):
+        request = urllib.request.Request("http://" + host + ":8080" + path, headers={"Accept": "application/json"})
+        try:
+            with opener.open(request, timeout=5) as response:
+                observed["status"] = response.status if 100 <= response.status <= 599 else None
+                assert response.status == 200
+                raw = response.read(2 * 1024**2 + 1)
+                assert 0 < len(raw) <= 2 * 1024**2
+        except urllib.error.HTTPError as error:
+            observed["status"] = error.code if type(error.code) is int and 100 <= error.code <= 599 else None
+            error.close()
+            raise
+        value = json.loads(raw, object_pairs_hook=unique_pairs)
+        assert isinstance(value, dict)
+        return value
+
+    producers = {
+        "auth-service",
+        "academic-service",
+        "schedule-service",
+        "attendance-service",
+        "notification-service",
+        "mobile-bff",
+    }
+    safe["phase"] = "GATEWAY_OPENAPI_CONFIG"
+    config_status = {"status": None}
+    try:
+        config = get("/v3/api-docs/swagger-config", config_status)
+    finally:
+        result["config_status"] = config_status["status"]
+    assert isinstance(config.get("urls"), list) and len(config["urls"]) == 6
+    assert all(isinstance(item, dict) and isinstance(item.get("url"), str) for item in config["urls"])
+    assert {item["url"] for item in config["urls"]} == {"/openapi/" + name for name in producers}
+    for producer in sorted(producers):
+        safe["phase"] = "GATEWAY_OPENAPI_" + producer.upper().replace("-", "_")
+        observed = {"status": None, "contract_valid": False}
+        result["documents"][producer] = observed
+        doc = get("/openapi/" + producer, observed)
+        assert doc["openapi"] == ("3.0.1" if producer == "mobile-bff" else "3.1.0")
+        assert doc["servers"] == [{"url": "/" if producer == "mobile-bff" else "/api"}]
+        paths = doc["paths"]
+        assert isinstance(paths, dict) and paths and all(path.startswith("/") for path in paths)
+        assert not any(path.startswith("/internal/") for path in paths)
+        assert isinstance(doc.get("components"), dict)
+        schemes = doc["components"].get("securitySchemes")
+        assert isinstance(schemes, dict) and isinstance(schemes.get("bearerAuth"), dict)
+        assert schemes["bearerAuth"]["type"] == "http" and schemes["bearerAuth"]["scheme"] == "bearer"
+        for item in paths.values():
+            assert isinstance(item, dict)
+            for method, operation in item.items():
+                if method not in {"get", "post", "put", "patch", "delete", "head", "options", "trace"}:
+                    continue
+                assert isinstance(operation, dict)
+                requirements = operation.get("security", [])
+                assert isinstance(requirements, list)
+                assert all(
+                    isinstance(requirement, dict) and set(requirement) <= set(schemes) for requirement in requirements
+                )
+        if producer == "auth-service":
+            assert paths["/auth/login"]["post"]["security"] == []
+            export = paths["/auth/export-jobs"]["post"]
+            assert {"bearerAuth": []} in export["security"] and {"202", "503"} <= set(export["responses"])
+            assert isinstance(doc["components"].get("schemas"), dict)
+            status = doc["components"]["schemas"]["Status"]
+            assert isinstance(status, dict)
+            fields = {"jobId", "state", "suggestedFilename", "expiresAt", "errorCode"}
+            assert isinstance(status.get("properties"), dict) and isinstance(status.get("required"), list)
+            assert set(status["properties"]) == fields and set(status["required"]) == fields
+            error = status["properties"]["errorCode"]
+            assert isinstance(error, dict)
+            types = error.get("type")
+            assert isinstance(types, list) and all(isinstance(item, str) for item in types)
+            assert set(types) == {"string", "null"}
+            # Require the actual flat3.1 String|null schema, not nullable:true.
+            # Reject alternate constraints rather than pretending to validate them.
+            assert not (
+                {"$ref", "$dynamicRef", "enum", "const", "not", "allOf", "anyOf", "oneOf", "if", "then", "else"}
+                & set(error)
+            )
+        observed["contract_valid"] = True
+    return result
+
+
 def e2e_async_browser():
     """Observe the existing real browser scenario, never launch another app stand."""
     assert os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"
@@ -681,6 +803,12 @@ def e2e_async_browser():
                 for job, port in expected.items()
             ]
             guard_disk()
+            # Metadata failures must never prevent the actual DOCX/browser/panel proof.
+            safe["phase"] = "GATEWAY_PUBLIC_OPENAPI"
+            e2e_gateway_openapi(docker, safe)
+            safe["gateway_config_sha256"] = hashlib.sha256(
+                (ROOT / "services/api-gateway/src/main/resources/application.yml").read_bytes()
+            ).hexdigest()
             safe["result"] = "PASS"
             safe["phase"] = "COMPLETE"
         except (AssertionError, subprocess.SubprocessError, OSError, ValueError, KeyError) as error:

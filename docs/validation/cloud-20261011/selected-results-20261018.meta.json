@@ -4,10 +4,10 @@
   "baseline": "e66b1711b3d93faee625b50a2e2f785020a0f43a",
   "rows": 25,
   "mandatoryWeight": 123,
-  "closed": 8,
-  "closedWeight": 38,
-  "weightedPercent": 30.89,
-  "historicalStage": "6/9 DONE_CHANGED6 ALREADY_SATISFIED0",
+  "closed": 12,
+  "closedWeight": 61,
+  "weightedPercent": 49.59,
+  "historicalStage": "9/9 functional DONE_CHANGED9 ALREADY_SATISFIED0 at9a; original6/9 kept incontract/history; globalCI/newscope notDONE",
   "weightPolicy": "1/2/3/5/8 chosen byscope-risk before new implementation; no retrospective change for percentage; existing outcomes mapped once, U10 is sufficient acceptedM04subset notextraoldwholepackage",
   "scopePolicy": "ContextIDEA033/034/045 crosscut; allownerDEFERREDtable entries outside denominator, conditionalintegration notselected outside; U23assessment remainsmandatory; mandatoryblockers staydenominator",
   "frozenUTC": "2026-10-18T00:23:19.426881+00:00",
@@ -19,6 +19,20 @@
       "closed": 7,
       "closedWeight": 35,
       "weightedPercent": 28.46
+    },
+    {
+      "utc": "2026-10-18T00:56:25.630970+00:00",
+      "change": "ExistingU07/U08/U09 actual9a/12120205958+independent85f1ca36 accepted; rowids/weights/denominator unchanged",
+      "closed": 11,
+      "closedWeight": 56,
+      "weightedPercent": 45.53
+    },
+    {
+      "utc": "2026-10-18T01:06:04.096396+00:00",
+      "change": "U19existing64IT/127unit/4PWA+3Vitest independentapplicability3f068303 ALREADY_SATISFIED; no row/weight/denominator change",
+      "closed": 12,
+      "closedWeight": 61,
+      "weightedPercent": 49.59
     }
   ],
   "changeReason": "FourboundedKT1 mappings narrowedactualsourcecriteria; same25rows/same123weights, no denominatorchange. U23 assessmentaccepted, all4conditionalintegrations unselected/excluded; no productintegrationclaim."

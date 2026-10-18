@@ -1,4 +1,4 @@
-"""Uncached protected Academic reads and metadata-only exact-card lifecycle calls."""
+"""Uncached directed Academic bot reads and metadata-only exact-card lifecycle calls."""
 
 from __future__ import annotations
 
@@ -85,6 +85,17 @@ class BotCredentialsGrpcClient:
             mode=(pb.BOT_CREDENTIAL_READ_MODE_SNAPSHOT if snapshot else pb.BOT_CREDENTIAL_READ_MODE_RECHECK),
         )
         return await self._call("GetOwnBotInitialCredentials", request)
+
+    async def homeworks(self, *, telegram_sender_id, expected_user_id, expected_roles_version, date_from, date_to):
+        request = pb.BotOwnHomeworksForWeekRequest(
+            telegram_sender_id=telegram_sender_id,
+            expected_user_id=expected_user_id,
+            expected_roles_version=expected_roles_version,
+            date_from=date_from,
+            date_to=date_to,
+        )
+        response = await self._call("GetOwnBotHomeworksForWeek", request)
+        return list(response.homeworks)
 
     async def register(self, *, user_id, chat_id, message_id, binding_version, credentials_version):
         reference = pb.BotCredentialMessageReference(

@@ -35,12 +35,12 @@ prefs_router = Router()
 
 SETTINGS_LABEL = "⚙️ Настройки уведомлений"
 LOGIN_LABEL = "🔑 Получить код для входа"
+HOMEWORK_TODAY_LABEL = "📚 ДЗ на сегодня"
 HOMEWORK_WEEK_LABEL = "📚 ДЗ на неделю"
 CREDENTIALS_LABEL = "🔐 Данные для входа"
 LINKS_LABEL = "🌐 Сайт и PWA"
 
 _MAIN_KEYBOARD_LAYOUT: tuple[tuple[str, ...], ...] = (
-    (HOMEWORK_WEEK_LABEL,),
     (CREDENTIALS_LABEL, LINKS_LABEL),
     (SETTINGS_LABEL,),
     (LOGIN_LABEL,),
@@ -62,23 +62,27 @@ _MUTE_WEEK_CB = "prefs:mute:week"
 _MUTE_CLEAR_CB = "prefs:mute:clear"
 
 
-def main_keyboard(notifications_enabled: bool | None = None) -> ReplyKeyboardMarkup:
+def main_keyboard(notifications_enabled: bool | None = None, *, homework_enabled: bool = False) -> ReplyKeyboardMarkup:
     """Persistent reply keyboard shown to user after /start.
 
     Сохранён параметр для обратной совместимости со старыми вызовами —
-    значение больше не используется, клавиатура статична.
+    значение больше не используется. Ролевые действия требуют свежего grant scope.
     """
     del notifications_enabled  # unused — kept for backward-compat keyword args
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=label) for label in row] for row in _MAIN_KEYBOARD_LAYOUT],
+        keyboard=[[KeyboardButton(text=label) for label in row] for row in _keyboard_layout(homework_enabled)],
         resize_keyboard=True,
         is_persistent=True,
     )
 
 
-def keyboard_signature() -> str:
+def _keyboard_layout(homework_enabled: bool) -> tuple[tuple[str, ...], ...]:
+    return _MAIN_KEYBOARD_LAYOUT + (((HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL),) if homework_enabled else ())
+
+
+def keyboard_signature(*, homework_enabled: bool = False) -> str:
     """Stable signature for backend-driven reply keyboard updates."""
-    raw = "\n".join("|".join(row) for row in _MAIN_KEYBOARD_LAYOUT)
+    raw = "\n".join("|".join(row) for row in _keyboard_layout(homework_enabled))
     return sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 

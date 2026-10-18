@@ -5,6 +5,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from bot.grpc_client.academic_pb2 import UserResponse, UserRoleGrant
+from bot.handlers.prefs import HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL
 from bot.handlers.start import cmd_credentials, cmd_links, cmd_start
 
 
@@ -104,3 +106,36 @@ async def test_links_retains_site_and_pwa_links():
     assert "https://ru.ruttrack.site/app" in text
     assert "https://ruttrack.site/app" in text
     assert "PWA" in text
+
+
+@pytest.mark.parametrize("student", [False, True])
+async def test_start_menu_uses_current_grants_and_preserves_dedicated_card_capability(student):
+    message = _message()
+    roles = [UserRoleGrant(role="TEACHER", status="ACTIVE")]
+    if student:
+        roles.append(UserRoleGrant(role="STUDENT", status="ACTIVE", group_id=10))
+    academic = SimpleNamespace(
+        get_user_by_telegram_id=AsyncMock(return_value=_profile()),
+        get_user_by_id=AsyncMock(return_value=UserResponse(roles_version=1, id=17, telegram_id=12345, roles=roles)),
+    )
+    cards = SimpleNamespace(deliver=AsyncMock(return_value=True))
+    await _invoke(cmd_start, message, academic, cards)
+    labels = [button.text for row in cards.deliver.await_args.kwargs["reply_markup"].keyboard for button in row]
+    assert (HOMEWORK_TODAY_LABEL in labels) is student
+    assert (HOMEWORK_WEEK_LABEL in labels) is student
+    academic.get_user_by_id.assert_awaited_once_with(17)
+    cards.deliver.assert_awaited_once()
+    message.answer.assert_not_awaited()
+
+
+async def test_start_role_lookup_outage_hides_homework_but_does_not_replace_credentials_flow():
+    message = _message()
+    academic = SimpleNamespace(
+        get_user_by_telegram_id=AsyncMock(return_value=_profile()),
+        get_user_by_id=AsyncMock(side_effect=RuntimeError("PRIVATE_MARKER")),
+    )
+    cards = SimpleNamespace(deliver=AsyncMock(return_value=True))
+    await _invoke(cmd_start, message, academic, cards)
+    labels = [button.text for row in cards.deliver.await_args.kwargs["reply_markup"].keyboard for button in row]
+    assert HOMEWORK_WEEK_LABEL not in labels and HOMEWORK_TODAY_LABEL not in labels
+    cards.deliver.assert_awaited_once()

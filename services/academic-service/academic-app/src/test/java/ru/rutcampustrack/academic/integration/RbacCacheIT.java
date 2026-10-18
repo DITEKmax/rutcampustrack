@@ -2,8 +2,8 @@ package ru.rutcampustrack.academic.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.TimeUnit;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +12,14 @@ import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.user.UserService;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * M05 Группа 3 / D6: покрывает rbac cache namespace для {@code AcademicGrpcServiceImpl.isHeadman}.
@@ -86,7 +89,7 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
         assertThat(first.getIsHeadman()).isTrue();
         assertThat(second.getIsHeadman()).isTrue();
 
-        String cacheKey = "rbac::" + STUDENT_ID + ":" + GROUP_ID;
+        String cacheKey = cachePrefix(cacheManager, "rbac") + STUDENT_ID + ":" + GROUP_ID;
         assertThat(redisTemplate.hasKey(cacheKey)).isTrue();
     }
 
@@ -98,7 +101,7 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
 
         stub.isHeadman(request);
 
-        String cacheKey = "rbac::" + STUDENT_ID + ":" + GROUP_ID;
+        String cacheKey = cachePrefix(cacheManager, "rbac") + STUDENT_ID + ":" + GROUP_ID;
         long ttl = redisTemplate.getExpire(cacheKey, TimeUnit.SECONDS);
         assertThat(ttl).isBetween(55L, 60L);
     }
@@ -111,13 +114,14 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
     void patchUser_headmanReplacement_evictsRbacCache() {
         Long replacementId =
                 jdbcTemplate.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id) "
-                                + "VALUES ('rbac_replacement', 'x', 'Rbac', 'Replacement', 'student', 'active', false, ?) RETURNING id",
+                        "INSERT INTO users (login, password_hash, last_name, first_name, role,"
+                            + " status, is_headman, group_id) VALUES ('rbac_replacement', 'x',"
+                            + " 'Rbac', 'Replacement', 'student', 'active', false, ?) RETURNING id",
                         Long.class,
                         GROUP_ID);
         jdbcTemplate.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'student', 'active', ?, NOW(), NOW())",
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at,"
+                        + " updated_at) VALUES (?, 'student', 'active', ?, NOW(), NOW())",
                 replacementId,
                 GROUP_ID);
         HeadmanCheckRequest request =
@@ -125,7 +129,7 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
 
         // Разогрев кеша
         stub.isHeadman(request);
-        String cacheKey = "rbac::" + STUDENT_ID + ":" + GROUP_ID;
+        String cacheKey = cachePrefix(cacheManager, "rbac") + STUDENT_ID + ":" + GROUP_ID;
         assertThat(redisTemplate.hasKey(cacheKey)).isTrue();
 
         try {
@@ -169,7 +173,7 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
 
         // Boolean false сериализуется в Redis как валидное значение —
         // disableCachingNullValues() в CacheConfig не блокирует false.
-        String cacheKey = "rbac::" + TEACHER_ID + ":" + GROUP_ID;
+        String cacheKey = cachePrefix(cacheManager, "rbac") + TEACHER_ID + ":" + GROUP_ID;
         assertThat(redisTemplate.hasKey(cacheKey)).isTrue();
     }
 }

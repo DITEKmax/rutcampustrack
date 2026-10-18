@@ -1,28 +1,74 @@
 package ru.rutcampustrack.shared.web.config;
 
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Bean-заглушка для M11 G1 (P2-2/1): единый customizer OpenAPI-спеки всех сервисов — описание
- * стандартных ошибок (400, 401, 403, 404, 409, 429, 500) с ссылкой на shared {@code ErrorResponse}
- * schema.
- *
- * <p>M01 — no-op. M11 G1 — наполнение. Бин создаётся только если springdoc на classpath
- * ({@code @ConditionalOnClass}) — сервис без OpenAPI не получает ненужный бин.
- */
+import java.util.List;
+import java.util.Set;
+
+/** Public HTTP access-token profile; internal transports are excluded by their API owners. */
 @Configuration
 @ConditionalOnClass(OpenApiCustomizer.class)
 public class SharedOpenApiCustomizer {
+    private static final Set<String> PUBLIC_AUTH =
+            Set.of("/auth/login", "/auth/refresh", "/auth/logout", "/auth/tma", "/auth/public-key");
+    private static final Set<String> PUBLIC_QR =
+            Set.of("/auth/qr/challenges", "/auth/qr/status", "/auth/qr/exchange");
 
     @Bean
     public OpenApiCustomizer sharedErrorsCustomizer() {
         return openApi -> {
-            // M11 G1 (P2-2/1): обогатить описания 4xx/5xx ошибок ссылкой на
-            // shared ErrorResponse schema. Пока no-op — наполнение в
-            // GlobalErrorResponsesCustomizer (отдельный @Bean в G1).
+            if (openApi.getComponents() == null) openApi.setComponents(new Components());
+            if (openApi.getComponents().getSecuritySchemes() == null
+                    || !openApi.getComponents().getSecuritySchemes().containsKey("bearerAuth")) {
+                openApi.getComponents()
+                        .addSecuritySchemes(
+                                "bearerAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                                        .description(
+                                                "Public access token. Gateway validates the current"
+                                                    + " session and supplies service identity."));
+            }
+            if (openApi.getPaths() == null) return;
+            openApi.getPaths()
+                    .forEach(
+                            (path, item) ->
+                                    item.readOperationsMap()
+                                            .forEach(
+                                                    (method, operation) -> {
+                                                        if (operation.getSecurity() == null) {
+                                                            boolean publicAuth =
+                                                                    PUBLIC_AUTH.contains(path)
+                                                                            || path.startsWith(
+                                                                                    "/auth/otp/")
+                                                                            || path.startsWith(
+                                                                                    "/auth/password-reset/")
+                                                                            || (method
+                                                                                            == PathItem
+                                                                                                    .HttpMethod
+                                                                                                    .POST
+                                                                                    && PUBLIC_QR
+                                                                                            .contains(
+                                                                                                    path));
+                                                            operation.setSecurity(
+                                                                    publicAuth
+                                                                            ? List.of()
+                                                                            : List.of(
+                                                                                    new SecurityRequirement()
+                                                                                            .addList(
+                                                                                                    "bearerAuth")));
+                                                        }
+                                                    }));
         };
     }
 }

@@ -1,28 +1,15 @@
 package ru.rutcampustrack.academic.grpc;
 
 import com.google.protobuf.ByteString;
+
 import io.grpc.Status;
 import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HexFormat;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.BooleanSupplier;
-import java.util.stream.Collectors;
+
 import net.devh.boot.grpc.server.service.GrpcService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
 import ru.rutcampustrack.academic.assignment.AssignmentLifecycle;
 import ru.rutcampustrack.academic.assignment.AssignmentOperationKind;
 import ru.rutcampustrack.academic.assignment.AssignmentOperationState;
@@ -58,6 +45,24 @@ import ru.rutcampustrack.academic.studentprojection.StudentProjectionGrpcErrors;
 import ru.rutcampustrack.academic.studentprojection.StudentProjectionScope;
 import ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeService;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HexFormat;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
 
 /**
  * gRPC service implementation for Academic Service. Delegates cached read operations to
@@ -107,6 +112,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     private final AssignmentReplacementOperationRepository replacementOperationRepository;
     private final HeadmanGroupCompositionReadService groupCompositionReadService;
     private final BotCredentialsService botCredentialsService;
+    private final GrpcUserAuthorityReader userAuthorityReader;
 
     @Autowired private HeadmanStatsScopeReadService headmanStatsScopeReadService;
 
@@ -152,7 +158,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             AssistantPermissionAuthority assistantPermissionAuthority,
             AssignmentReplacementOperationRepository replacementOperationRepository,
             HeadmanGroupCompositionReadService groupCompositionReadService,
-            BotCredentialsService botCredentialsService) {
+            BotCredentialsService botCredentialsService,
+            GrpcUserAuthorityReader userAuthorityReader) {
         this.academicReadService = academicReadService;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
@@ -172,6 +179,48 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.replacementOperationRepository = replacementOperationRepository;
         this.groupCompositionReadService = groupCompositionReadService;
         this.botCredentialsService = botCredentialsService;
+        this.userAuthorityReader = userAuthorityReader;
+    }
+
+    public AcademicGrpcServiceImpl(
+            AcademicReadService academicReadService,
+            GroupRepository groupRepository,
+            UserRepository userRepository,
+            SubjectRepository subjectRepository,
+            AssignmentRepository assignmentRepository,
+            SemesterRepository semesterRepository,
+            UserRoleGrantRepository grantRepository,
+            HomeworkRepository homeworkRepository,
+            HomeworkCompletionRepository completionRepository,
+            HeadmanRateLimiter headmanRateLimiter,
+            HomeworkStudentService homeworkStudentService,
+            StudentProjectionScopeService studentProjectionScopeService,
+            CampusMapReadService campusMapReadService,
+            CampusMapUsageService campusMapUsageService,
+            AssistantPermissionAuthority assistantPermissionAuthority,
+            AssignmentReplacementOperationRepository replacementOperationRepository,
+            HeadmanGroupCompositionReadService groupCompositionReadService,
+            BotCredentialsService botCredentialsService) {
+        this(
+                academicReadService,
+                groupRepository,
+                userRepository,
+                subjectRepository,
+                assignmentRepository,
+                semesterRepository,
+                grantRepository,
+                homeworkRepository,
+                completionRepository,
+                headmanRateLimiter,
+                homeworkStudentService,
+                studentProjectionScopeService,
+                campusMapReadService,
+                campusMapUsageService,
+                assistantPermissionAuthority,
+                replacementOperationRepository,
+                groupCompositionReadService,
+                botCredentialsService,
+                null);
     }
 
     /** Compatibility constructor for existing focused RPC tests without the new bot capability. */
@@ -406,6 +455,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.subjectRepository = subjectRepository;
         this.legacyAssignmentRepository = assignmentRepository;
         this.botCredentialsService = null;
+        this.userAuthorityReader = null;
         this.assignmentRepository = null;
         this.semesterRepository = null;
         this.grantRepository = null;
@@ -434,6 +484,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             HomeworkStudentService homeworkStudentService) {
         this.academicReadService = academicReadService;
         this.botCredentialsService = null;
+        this.userAuthorityReader = null;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.subjectRepository = subjectRepository;
@@ -1648,9 +1699,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     /**
      * Read a student's group homework for a date range.
      *
-     * <p>Used by notification-bot reply keyboard. The bot authenticates to gRPC with the shared
-     * secret, and this method still verifies that the requested student belongs to the requested
-     * group before returning group homework.
+     * <p>The signed student identity is mandatory. The notification bot uses its separate directed
+     * own-read RPC and cannot choose a student, group or semester through this method.
      */
     @Override
     public void getHomeworksForWeek(
@@ -1688,6 +1738,61 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             return;
         }
 
+        responseObserver.onNext(readHomeworks(request, claims.userId()));
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getOwnBotHomeworksForWeek(
+            BotOwnHomeworksForWeekRequest request,
+            StreamObserver<HomeworksForWeekResponse> observer) {
+        try {
+            ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptor
+                    .requireBot();
+            if (userAuthorityReader == null) throw Status.UNAVAILABLE.asRuntimeException();
+            LocalDate from = parseIsoDate(request.getDateFrom(), "date_from");
+            LocalDate to = parseIsoDate(request.getDateTo(), "date_to");
+            if (to.isBefore(from) || java.time.temporal.ChronoUnit.DAYS.between(from, to) > 6) {
+                throw Status.INVALID_ARGUMENT
+                        .withDescription("homework range must contain one to seven days")
+                        .asRuntimeException();
+            }
+            long groupId = userAuthorityReader.requireOwnStudentGroup(request);
+            var semester =
+                    semesterRepository
+                            .findByIsActiveTrue()
+                            .orElseThrow(
+                                    () ->
+                                            Status.FAILED_PRECONDITION
+                                                    .withDescription("active semester required")
+                                                    .asRuntimeException());
+            var scoped =
+                    HomeworksForWeekRequest.newBuilder()
+                            .setGroupId(groupId)
+                            .setStudentId(request.getExpectedUserId())
+                            .setSemesterId(semester.getId())
+                            .setDateFrom(from.toString())
+                            .setDateTo(to.toString())
+                            .build();
+            observer.onNext(readHomeworks(scoped, request.getExpectedUserId()));
+            observer.onCompleted();
+        } catch (io.grpc.StatusRuntimeException error) {
+            observer.onError(error);
+        } catch (IllegalArgumentException error) {
+            observer.onError(
+                    Status.INVALID_ARGUMENT
+                            .withDescription("valid ISO date range required")
+                            .asRuntimeException());
+        } catch (RuntimeException error) {
+            observer.onError(
+                    Status.UNAVAILABLE
+                            .withDescription("homework authority unavailable")
+                            .asRuntimeException());
+        }
+    }
+
+    private HomeworksForWeekResponse readHomeworks(
+            HomeworksForWeekRequest request, long studentId) {
         LocalDate from = parseIsoDate(request.getDateFrom(), "date_from");
         LocalDate to = parseIsoDate(request.getDateTo(), "date_to");
         if (to.isBefore(from)) {
@@ -1714,7 +1819,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             List<Long> completedTodayHomeworkIds =
                     completionRepository
                             .findByStudentIdAndCompletedAtGreaterThanEqualAndCompletedAtLessThan(
-                                    claims.userId(), completedToday.from(), completedToday.to())
+                                    studentId, completedToday.from(), completedToday.to())
                             .stream()
                             .map(HomeworkCompletion::getHomeworkId)
                             .distinct()
@@ -1743,7 +1848,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 homeworkIds.isEmpty()
                         ? Map.of()
                         : completionRepository
-                                .findByHomeworkIdInAndStudentId(homeworkIds, claims.userId())
+                                .findByHomeworkIdInAndStudentId(homeworkIds, studentId)
                                 .stream()
                                 .collect(
                                         Collectors.toMap(
@@ -1828,8 +1933,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                                         .toList())
                         .build();
 
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+        return response;
     }
 
     /**
@@ -1893,6 +1997,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     public void getUserById(UserRequest request, StreamObserver<UserResponse> responseObserver) {
         User user = academicReadService.fetchUserById(request.getUserId());
 
+        var authority = userAuthorityReader == null ? null : userAuthorityReader.read(user.getId());
         UserResponse response =
                 UserResponse.newBuilder()
                         .setId(user.getId())
@@ -1902,8 +2007,15 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                         .setStatus(user.getStatus().name().toLowerCase())
                         .setGroupId(user.getGroupId() != null ? user.getGroupId() : 0L)
                         .setIsHeadman(user.isHeadman())
-                        .setTelegramId(user.getTelegramId() != null ? user.getTelegramId() : 0L)
+                        .setTelegramId(
+                                authority == null
+                                        ? (user.getTelegramId() == null ? 0L : user.getTelegramId())
+                                        : (authority.telegramId() == null
+                                                ? 0L
+                                                : authority.telegramId()))
                         .setAvatarId(user.getAvatarId() != null ? user.getAvatarId() : "")
+                        .addAllRoles(authority == null ? List.of() : authority.roles())
+                        .setRolesVersion(authority == null ? 0 : authority.rolesVersion())
                         .build();
 
         responseObserver.onNext(response);

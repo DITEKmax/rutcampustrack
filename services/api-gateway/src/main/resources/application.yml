@@ -453,6 +453,13 @@ spring:
               filters:
                 - RewritePath=/openapi/attendance-service, /api-docs
 
+            - id: notification-service-openapi
+              uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
+              predicates:
+                - Path=/openapi/notification-service
+              filters:
+                - RewritePath=/openapi/notification-service, /v3/api-docs
+
             - id: mobile-bff-openapi
               uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
               predicates:
@@ -460,25 +467,27 @@ spring:
               filters:
                 - RewritePath=/openapi/mobile-bff, /api-docs
 
-    springdoc:
-      enable-native-support: true
-      api-docs:
-        enabled: true
-      swagger-ui:
-        enabled: true
-        path: /swagger-ui.html
-        config-url: /v3/api-docs/swagger-config
-        urls:
-          - url: /openapi/auth-service
-            name: Auth Service
-          - url: /openapi/academic-service
-            name: Academic Service
-          - url: /openapi/schedule-service
-            name: Schedule Service
-          - url: /openapi/attendance-service
-            name: Attendance Service
-          - url: /openapi/mobile-bff
-            name: Mobile BFF
+springdoc:
+  enable-native-support: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - url: /openapi/auth-service
+        name: Auth Service
+      - url: /openapi/academic-service
+        name: Academic Service
+      - url: /openapi/schedule-service
+        name: Schedule Service
+      - url: /openapi/attendance-service
+        name: Attendance Service
+      - url: /openapi/mobile-bff
+        name: Mobile BFF
+      - url: /openapi/notification-service
+        name: Notification Service
 
 gateway:
   auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}

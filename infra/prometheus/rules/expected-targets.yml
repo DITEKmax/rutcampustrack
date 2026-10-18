@@ -225,6 +225,15 @@ groups:
       instance: redis-exporter:9121
       environment: production
       service: redis
+      redis_role: critical
+  - record: rct_expected_target
+    expr: vector(1)
+    labels:
+      job: redis-cache-exporter
+      instance: redis-cache-exporter:9121
+      environment: production
+      service: redis-cache
+      redis_role: cache
   - record: rct_expected_target
     expr: vector(1)
     labels:

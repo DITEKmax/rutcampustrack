@@ -1,0 +1,3 @@
+user default off
+user rct_cache on #__CACHE_PASSWORD_SHA256__ resetkeys ~rct:cache:* resetchannels -@all +auth +hello +ping +select +client|setinfo +client|setname +get +set +del +scan
+user rct_monitor on #__MONITOR_PASSWORD_SHA256__ resetkeys resetchannels -@all +ping +info +client|setname +slowlog|len

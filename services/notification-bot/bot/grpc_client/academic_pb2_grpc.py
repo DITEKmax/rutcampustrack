@@ -47,6 +47,11 @@ class AcademicGrpcServiceStub(object):
                 request_serializer=academic__pb2.HeadmanStatsScopeRequest.SerializeToString,
                 response_deserializer=academic__pb2.HeadmanStatsScopeResponse.FromString,
                 _registered_method=True)
+        self.GetHeadmanJournalSemesterState = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetHeadmanJournalSemesterState',
+                request_serializer=academic__pb2.HeadmanJournalSemesterStateRequest.SerializeToString,
+                response_deserializer=academic__pb2.SemesterStateResponse.FromString,
+                _registered_method=True)
         self.GetHeadmanGroupComposition = channel.unary_unary(
                 '/rutcampustrack.academic.AcademicGrpcService/GetHeadmanGroupComposition',
                 request_serializer=academic__pb2.GroupRequest.SerializeToString,
@@ -137,6 +142,11 @@ class AcademicGrpcServiceStub(object):
                 request_serializer=academic__pb2.HomeworksForWeekRequest.SerializeToString,
                 response_deserializer=academic__pb2.HomeworksForWeekResponse.FromString,
                 _registered_method=True)
+        self.GetOwnBotHomeworksForWeek = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetOwnBotHomeworksForWeek',
+                request_serializer=academic__pb2.BotOwnHomeworksForWeekRequest.SerializeToString,
+                response_deserializer=academic__pb2.HomeworksForWeekResponse.FromString,
+                _registered_method=True)
         self.SetHomeworkCompletion = channel.unary_unary(
                 '/rutcampustrack.academic.AcademicGrpcService/SetHomeworkCompletion',
                 request_serializer=academic__pb2.SetHomeworkCompletionRequest.SerializeToString,
@@ -189,6 +199,13 @@ class AcademicGrpcServiceServicer(object):
 
     def ResolveHeadmanStatsScope(self, request, context):
         """Fresh signed current-group statistics authority, catalog and selected semester.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetHeadmanJournalSemesterState(self, request, context):
+        """Fresh own-group journal admission, separate from the Schedule-only state RPC.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -316,7 +333,14 @@ class AcademicGrpcServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetHomeworksForWeek(self, request, context):
-        """Read homework for a student's group in a date range (for Telegram bot).
+        """Read own homework with a signed student identity and its admitted semester scope.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetOwnBotHomeworksForWeek(self, request, context):
+        """Directed notification-bot own-read; all academic scope is derived from live authority.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -380,6 +404,11 @@ def add_AcademicGrpcServiceServicer_to_server(servicer, server):
                     servicer.ResolveHeadmanStatsScope,
                     request_deserializer=academic__pb2.HeadmanStatsScopeRequest.FromString,
                     response_serializer=academic__pb2.HeadmanStatsScopeResponse.SerializeToString,
+            ),
+            'GetHeadmanJournalSemesterState': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetHeadmanJournalSemesterState,
+                    request_deserializer=academic__pb2.HeadmanJournalSemesterStateRequest.FromString,
+                    response_serializer=academic__pb2.SemesterStateResponse.SerializeToString,
             ),
             'GetHeadmanGroupComposition': grpc.unary_unary_rpc_method_handler(
                     servicer.GetHeadmanGroupComposition,
@@ -469,6 +498,11 @@ def add_AcademicGrpcServiceServicer_to_server(servicer, server):
             'GetHomeworksForWeek': grpc.unary_unary_rpc_method_handler(
                     servicer.GetHomeworksForWeek,
                     request_deserializer=academic__pb2.HomeworksForWeekRequest.FromString,
+                    response_serializer=academic__pb2.HomeworksForWeekResponse.SerializeToString,
+            ),
+            'GetOwnBotHomeworksForWeek': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetOwnBotHomeworksForWeek,
+                    request_deserializer=academic__pb2.BotOwnHomeworksForWeekRequest.FromString,
                     response_serializer=academic__pb2.HomeworksForWeekResponse.SerializeToString,
             ),
             'SetHomeworkCompletion': grpc.unary_unary_rpc_method_handler(
@@ -564,6 +598,33 @@ class AcademicGrpcService(object):
             '/rutcampustrack.academic.AcademicGrpcService/ResolveHeadmanStatsScope',
             academic__pb2.HeadmanStatsScopeRequest.SerializeToString,
             academic__pb2.HeadmanStatsScopeResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetHeadmanJournalSemesterState(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetHeadmanJournalSemesterState',
+            academic__pb2.HeadmanJournalSemesterStateRequest.SerializeToString,
+            academic__pb2.SemesterStateResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -1049,6 +1110,33 @@ class AcademicGrpcService(object):
             target,
             '/rutcampustrack.academic.AcademicGrpcService/GetHomeworksForWeek',
             academic__pb2.HomeworksForWeekRequest.SerializeToString,
+            academic__pb2.HomeworksForWeekResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetOwnBotHomeworksForWeek(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetOwnBotHomeworksForWeek',
+            academic__pb2.BotOwnHomeworksForWeekRequest.SerializeToString,
             academic__pb2.HomeworksForWeekResponse.FromString,
             options,
             channel_credentials,

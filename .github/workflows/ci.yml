@@ -2739,6 +2739,158 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Generate the official Notification OpenAPI candidate after an exact snapshot drift
+        id: notification-openapi-candidate
+        if: ${{ !cancelled() && matrix.service.name == 'notification-service' && steps.java-tests.outcome == 'failure' }}
+        timeout-minutes: 8
+        env:
+          RCT_CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          umask 077
+          python3 - <<'PY_NOTIFICATION_OPENAPI'
+          import hashlib, json, os, pathlib, re, shutil, subprocess
+          import xml.etree.ElementTree as ET
+
+          def decode(raw):
+              def pairs(items):
+                  value = {}
+                  for key, item in items:
+                      assert key not in value
+                      value[key] = item
+                  return value
+              return json.loads(raw, object_pairs_hook=pairs,
+                                parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite JSON')))
+
+          package = 'ru.rutcampustrack.notification.OpenApiSnapshotIT'
+          method = 'apiDocsMatchesSnapshot'
+          app = pathlib.Path('services/notification-service/notification-app')
+          test_source = app / 'src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java'
+          test_sha = 'c5ac16387716733dcae9f2748e988470e4b742d25913b95d7a154b1fd8e298ea'
+          source = test_source.read_bytes()
+          assert hashlib.sha256(source).hexdigest() == test_sha
+          assert source == subprocess.check_output(['git', 'show', 'HEAD:' + test_source.as_posix()])
+          lines = source.decode().splitlines()
+          target = '                .isEqualTo(expected);'
+          assert lines.count(target) == 1
+          expected_line = lines.index(target) + 1
+          report = pathlib.Path('build/ci-test-outcomes/notification-service/integrationTest/safe-outcomes.json')
+          if not report.is_file() or not 0 < report.stat().st_size <= 33554432:
+              raise SystemExit(0)
+          value = decode(report.read_bytes())
+          if value.get('collection') != 'RESULTS':
+              raise SystemExit(0)
+          meta = value['metadata']
+          checkout = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          assert (meta['checkoutSha'] == checkout
+                  and meta['prHeadSha'] == os.environ['RCT_CI_PR_HEAD_SHA']
+                  and meta['service'] == 'notification-service' and meta['task'] == 'integrationTest'
+                  and meta['job'] == 'java-integration-test' and meta['testStepOutcome'] == 'failure'
+                  and meta['runId'] == os.environ['GITHUB_RUN_ID']
+                  and meta['runAttempt'] == os.environ['GITHUB_RUN_ATTEMPT'])
+          selected = [case for case in value['cases']
+                      if case.get('classname') == package and case.get('method') == method]
+          if not selected:
+              raise SystemExit(0)
+          assert len(selected) == 1
+          case = selected[0]
+          assert (case['identity'] == 'SOURCE_METHOD' and case['source'] == test_source.as_posix()
+                  and case['sourceSha256'] == test_sha)
+          if case['status'] != 'FAILED':
+              raise SystemExit(0)
+          result = app / ('build/test-results/integrationTest/TEST-' + package + '.xml')
+          assert result.is_file() and not result.is_symlink() and 0 < result.stat().st_size <= 33554432
+          raw = result.read_bytes()
+          assert b'<!DOCTYPE' not in raw.upper() and b'<!ENTITY' not in raw.upper()
+          suite = ET.fromstring(raw)
+          cases = suite.findall('testcase')
+          if (suite.tag != 'testsuite' or suite.get('name') != package or len(cases) != 1
+                  or cases[0].get('classname') != package or cases[0].get('name') != method + '()'
+                  or {key: suite.get(key) for key in ('tests', 'failures', 'errors', 'skipped')}
+                  != {'tests': '1', 'failures': '1', 'errors': '0', 'skipped': '0'}):
+              raise SystemExit(0)
+          native_case = cases[0]
+          if native_case.findall('error') or native_case.findall('skipped') or len(native_case.findall('failure')) != 1:
+              raise SystemExit(0)
+          failure = native_case.find('failure')
+          if failure.get('type') not in {'org.opentest4j.AssertionFailedError', 'java.lang.AssertionError'}:
+              raise SystemExit(0)
+          named_lines = re.findall(
+              r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
+              + re.escape(package + '.' + method)
+              + r'\(OpenApiSnapshotIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', failure.text or '')
+          if named_lines != [str(expected_line)]:
+              raise SystemExit(0)
+          wrapper = pathlib.Path('gradlew')
+          assert subprocess.check_output(['git', 'ls-tree', '--format=%(objectmode)', 'HEAD', '--', 'gradlew']) == b'100644\n'
+          wrapper_head = subprocess.check_output(['git', 'show', 'HEAD:gradlew'])
+          wrapper_sha = hashlib.sha256(wrapper_head).hexdigest()
+          assert wrapper_sha == 'c07475b363508dbe7cf7d1ded1b31f6d44bb97d98d069a455ab862b1fb9b25f0'
+          wrapper_mode = wrapper.stat().st_mode & 0o7777
+          assert wrapper_mode in {0o644, 0o755}
+
+          def verify_wrapper():
+              assert wrapper.is_file() and not wrapper.is_symlink()
+              assert wrapper.stat().st_mode & 0o7777 == wrapper_mode
+              assert 0 < wrapper.stat().st_size <= 1048576
+              assert hashlib.sha256(wrapper.read_bytes()).hexdigest() == wrapper_sha
+
+          verify_wrapper()
+          assert subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']) == b''
+          baseline = {path for path in subprocess.check_output(
+              ['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0') if path}
+          assert baseline in (set(), {b'gradlew'})
+          if baseline:
+              assert wrapper_mode == 0o755
+          subprocess.run(
+              ['./gradlew', ':services:notification-service:notification-app:integrationTest', '--no-daemon',
+               '--tests', package + '.' + method, '-Popenapi.snapshot.update=true'],
+              stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, timeout=360, check=True)
+          snapshot = pathlib.Path('docs/openapi/notification.json')
+          assert not snapshot.is_symlink() and snapshot.is_file() and 0 < snapshot.stat().st_size <= 2097152
+          payload = snapshot.read_bytes()
+          generated = decode(payload)
+          assert (type(generated) is dict and set(generated) == {'openapi', 'info', 'tags', 'paths', 'components'}
+                  and generated['openapi'] == '3.1.0' and type(generated['info']) is dict
+                  and all(type(generated['info'].get(key)) is str for key in ('title', 'version'))
+                  and type(generated['tags']) is list and all(type(tag) is dict for tag in generated['tags'])
+                  and type(generated['paths']) is dict and generated['paths']
+                  and all(path.startswith('/') and type(item) is dict for path, item in generated['paths'].items())
+                  and type(generated['components']) is dict and type(generated['components'].get('schemas')) is dict)
+          changed = subprocess.check_output(['git', 'diff', 'HEAD', '--name-only', '-z']).split(b'\0')
+          assert {path for path in changed if path} == baseline | {b'docs/openapi/notification.json'}
+          assert subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']) == b''
+          verify_wrapper()
+          assert subprocess.check_output(['git', 'ls-tree', '--format=%(objectmode)', 'HEAD', '--', snapshot.as_posix()]) == b'100644\n'
+          assert snapshot.stat().st_mode & 0o7777 == 0o644
+          assert payload != subprocess.check_output(['git', 'show', 'HEAD:' + snapshot.as_posix()])
+          output = pathlib.Path('build/ci-test-outcomes/notification-service/openapi-generated')
+          output.mkdir(mode=0o700, parents=True, exist_ok=False)
+          shutil.copyfile(snapshot, output / 'notification.json')
+          proof = {'schemaVersion': 1, 'state': 'OFFICIAL_NOTIFICATION_OPENAPI_GENERATED',
+                   'producerHeadSha': os.environ['RCT_CI_PR_HEAD_SHA'], 'checkoutSha': checkout,
+                   'runId': os.environ['GITHUB_RUN_ID'], 'runAttempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                   'testMethod': package + '.' + method, 'testSourceSha256': test_sha,
+                   'originalDriftFrameLine': expected_line, 'originalIntegrationOutcome': 'failure',
+                   'generatedSnapshotSha256': hashlib.sha256(payload).hexdigest(), 'generatedSnapshotBytes': len(payload),
+                   'trackedChanges': sorted(path.decode('ascii') for path in changed if path),
+                   'preexistingWrapperModeChange': baseline == {b'gradlew'}, 'wrapperSourceSha256': wrapper_sha,
+                   'ordinaryFailurePreserved': True}
+          (output / 'generation.safe.json').write_text(json.dumps(proof, indent=2) + '\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as target_output:
+              target_output.write('generated=true\n')
+          PY_NOTIFICATION_OPENAPI
+
+      - name: Upload the official Notification OpenAPI candidate
+        if: ${{ !cancelled() && steps.notification-openapi-candidate.outputs.generated == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: notification-openapi-generated-${{ github.run_attempt }}
+          path: |
+            build/ci-test-outcomes/notification-service/openapi-generated/notification.json
+            build/ci-test-outcomes/notification-service/openapi-generated/generation.safe.json
+          if-no-files-found: error
+          retention-days: 7
+
   java-verification:
     name: Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)
     runs-on: ubuntu-latest
@@ -5548,7 +5700,7 @@ jobs:
           import hashlib,json,os,pathlib
           out=pathlib.Path('build/monitoring');out.mkdir(parents=True,exist_ok=True)
           paths=[pathlib.Path('docker-compose.prod.yml'),pathlib.Path('nginx/conf.d/default.conf')]
-          paths.extend(p for root in ['infra/prometheus','infra/grafana','infra/alertmanager','infra/loki','infra/tempo','infra/alloy','infra/blackbox','infra/postgres'] for p in pathlib.Path(root).rglob('*') if p.is_file() and p.suffix in ['.yml','.json','.ini','.py','.sh','.sql','.alloy'])
+          paths.extend(p for root in ['infra/prometheus','infra/grafana','infra/alertmanager','infra/loki','infra/tempo','infra/alloy','infra/blackbox','infra/postgres'] for p in pathlib.Path(root).rglob('*') if p.is_file() and p.suffix in ['.yml','.json','.ini','.py','.sh','.sql','.alloy','.template'])
           outcomes={k.lower():os.environ[k+'_OUTCOME'] for k in ['TOOLS','FORMULAS','DELIVERY','EXPORTERS','PIPELINE']}
           checks=dict(outcomes);receipts={}
           for name in ['delivery','exporters','pipeline']:

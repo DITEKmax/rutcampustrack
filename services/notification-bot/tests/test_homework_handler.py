@@ -1,16 +1,21 @@
 from datetime import date
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from bot.handlers.homework import cmd_homework_week
+from bot.grpc_client.academic_pb2 import UserResponse, UserRoleGrant
+from bot.handlers.homework import cmd_homework_today, cmd_homework_week
 
 
 def _make_message(user_id: int = 12345) -> MagicMock:
     message = MagicMock()
     message.from_user = MagicMock()
     message.from_user.id = user_id
+    message.chat.type = "private"
+    message.chat.id = user_id
     message.answer = AsyncMock()
+    message.homework_client = SimpleNamespace(homeworks=AsyncMock())
     return message
 
 
@@ -58,14 +63,23 @@ async def test_homework_week_does_not_require_web_login():
     message = _make_message()
     academic_client = MagicMock()
     academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=10, user_id=77))
+    academic_client.get_user_by_id = AsyncMock(
+        return_value=UserResponse(
+            roles_version=1,
+            id=77,
+            telegram_id=12345,
+            roles=[UserRoleGrant(role="STUDENT", status="ACTIVE", group_id=10)],
+        )
+    )
     academic_client.get_active_semester = AsyncMock(return_value=_make_semester(2))
-    academic_client.get_homeworks_for_week = AsyncMock(
+    message.homework_client.homeworks = AsyncMock(
         return_value=[_make_homework(1, title="Лабораторная работа", lesson_date="2026-05-08")]
     )
 
     await cmd_homework_week(
         message,
         academic_client=academic_client,
+        bot_homework_client=message.homework_client,
         today=date(2026, 5, 7),
     )
 
@@ -73,10 +87,10 @@ async def test_homework_week_does_not_require_web_login():
     text = message.answer.call_args.args[0]
     assert "/login" not in text
     assert "Лабораторная работа" in text
-    academic_client.get_homeworks_for_week.assert_awaited_once_with(
-        group_id=10,
-        semester_id=2,
-        student_id=77,
+    message.homework_client.homeworks.assert_awaited_once_with(
+        telegram_sender_id=12345,
+        expected_user_id=77,
+        expected_roles_version=1,
         date_from="2026-05-07",
         date_to="2026-05-13",
     )
@@ -88,8 +102,16 @@ async def test_homework_week_formats_upcoming_homeworks():
 
     academic_client = MagicMock()
     academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=10, user_id=77))
+    academic_client.get_user_by_id = AsyncMock(
+        return_value=UserResponse(
+            roles_version=1,
+            id=77,
+            telegram_id=12345,
+            roles=[UserRoleGrant(role="STUDENT", status="ACTIVE", group_id=10)],
+        )
+    )
     academic_client.get_active_semester = AsyncMock(return_value=_make_semester(2))
-    academic_client.get_homeworks_for_week = AsyncMock(
+    message.homework_client.homeworks = AsyncMock(
         return_value=[
             _make_homework(
                 1,
@@ -107,6 +129,7 @@ async def test_homework_week_formats_upcoming_homeworks():
     await cmd_homework_week(
         message,
         academic_client=academic_client,
+        bot_homework_client=message.homework_client,
         today=date(2026, 5, 7),
     )
 
@@ -118,7 +141,7 @@ async def test_homework_week_formats_upcoming_homeworks():
     assert "https://example.com/hw.pdf" in text
     assert "✅ Физика · пара №1" in text
     assert "Дальнее ДЗ" not in text
-    academic_client.get_homeworks_for_week.assert_awaited_once()
+    message.homework_client.homeworks.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -127,12 +150,21 @@ async def test_homework_week_empty_range_message():
 
     academic_client = MagicMock()
     academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=10, user_id=77))
+    academic_client.get_user_by_id = AsyncMock(
+        return_value=UserResponse(
+            roles_version=1,
+            id=77,
+            telegram_id=12345,
+            roles=[UserRoleGrant(role="STUDENT", status="ACTIVE", group_id=10)],
+        )
+    )
     academic_client.get_active_semester = AsyncMock(return_value=_make_semester(2))
-    academic_client.get_homeworks_for_week = AsyncMock(return_value=[])
+    message.homework_client.homeworks = AsyncMock(return_value=[])
 
     await cmd_homework_week(
         message,
         academic_client=academic_client,
+        bot_homework_client=message.homework_client,
         today=date(2026, 5, 7),
     )
 
@@ -146,14 +178,116 @@ async def test_homework_week_no_active_semester_message():
 
     academic_client = MagicMock()
     academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=10, user_id=77))
+    academic_client.get_user_by_id = AsyncMock(
+        return_value=UserResponse(
+            roles_version=1,
+            id=77,
+            telegram_id=12345,
+            roles=[UserRoleGrant(role="STUDENT", status="ACTIVE", group_id=10)],
+        )
+    )
     academic_client.get_active_semester = AsyncMock(return_value=None)
-    academic_client.get_homeworks_for_week = AsyncMock()
+    message.homework_client.homeworks = AsyncMock()
 
     await cmd_homework_week(
         message,
         academic_client=academic_client,
+        bot_homework_client=message.homework_client,
         today=date(2026, 5, 7),
     )
 
     assert "нет активного семестра" in message.answer.call_args.args[0]
-    academic_client.get_homeworks_for_week.assert_not_called()
+    message.homework_client.homeworks.assert_not_called()
+
+
+@pytest.mark.parametrize("handler", [cmd_homework_today, cmd_homework_week])
+@pytest.mark.parametrize("status", ["SUSPENDED", "ARCHIVED", "EXPELLED", "GRADUATED", "DISMISSED", "UNKNOWN"])
+async def test_direct_homework_never_reads_for_inactive_student_even_with_active_teacher(handler, status):
+    message = _make_message()
+    academic = MagicMock()
+    academic.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response())
+    academic.get_user_by_id = AsyncMock(
+        return_value=UserResponse(
+            roles_version=1,
+            id=77,
+            telegram_id=12345,
+            role="student",
+            group_id=10,
+            roles=[
+                UserRoleGrant(role="STUDENT", status=status, group_id=10),
+                UserRoleGrant(role="TEACHER", status="ACTIVE"),
+            ],
+        )
+    )
+    message.homework_client.homeworks = AsyncMock()
+    academic.get_active_semester = AsyncMock()
+    await handler(message, academic, today=date(2026, 5, 7), bot_homework_client=message.homework_client)
+    message.homework_client.homeworks.assert_not_awaited()
+    academic.get_active_semester.assert_not_awaited()
+    assert "ДЗ недоступно" in message.answer.await_args.args[0]
+
+
+@pytest.mark.parametrize("handler", [cmd_homework_today, cmd_homework_week])
+async def test_direct_homework_rejects_non_private_chat_before_lookup(handler):
+    message = _make_message()
+    message.chat.type = "group"
+    academic = MagicMock(get_user_by_telegram_id=AsyncMock())
+    await handler(message, academic)
+    academic.get_user_by_telegram_id.assert_not_awaited()
+
+
+async def test_today_uses_current_student_grant_group_and_only_today_for_multirole_user():
+    message = _make_message()
+    academic = MagicMock()
+    academic.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=999))
+    academic.get_user_by_id = AsyncMock(
+        return_value=UserResponse(
+            roles_version=1,
+            id=77,
+            telegram_id=12345,
+            role="teacher",
+            group_id=999,
+            roles=[
+                UserRoleGrant(role="TEACHER", status="ACTIVE"),
+                UserRoleGrant(role="STUDENT", status="ACTIVE", group_id=10),
+            ],
+        )
+    )
+    academic.get_active_semester = AsyncMock(return_value=_make_semester())
+    message.homework_client.homeworks = AsyncMock(
+        return_value=[
+            _make_homework(1, title="Сегодня", lesson_date="2026-05-07"),
+            _make_homework(2, title="Завтра", lesson_date="2026-05-08"),
+        ]
+    )
+    await cmd_homework_today(message, academic, today=date(2026, 5, 7), bot_homework_client=message.homework_client)
+    message.homework_client.homeworks.assert_awaited_once_with(
+        telegram_sender_id=12345,
+        expected_user_id=77,
+        expected_roles_version=1,
+        date_from="2026-05-07",
+        date_to="2026-05-07",
+    )
+    text = message.answer.await_args.args[0]
+    assert "Домашнее задание на сегодня" in text and "Сегодня" in text and "Завтра" not in text
+
+
+@pytest.mark.parametrize("handler", [cmd_homework_today, cmd_homework_week])
+async def test_missing_protected_capability_never_falls_back_to_legacy_student_rpc(handler):
+    message = _make_message()
+    academic = MagicMock(
+        get_user_by_telegram_id=AsyncMock(return_value=_make_user_response()),
+        get_user_by_id=AsyncMock(
+            return_value=UserResponse(
+                id=77,
+                telegram_id=12345,
+                roles_version=1,
+                roles=[UserRoleGrant(role="STUDENT", status="ACTIVE", group_id=10)],
+            )
+        ),
+        get_active_semester=AsyncMock(return_value=_make_semester()),
+        get_homeworks_for_week=AsyncMock(),
+    )
+    await handler(message, academic, today=date(2026, 5, 7))
+    academic.get_homeworks_for_week.assert_not_awaited()
+    assert "Сервис временно недоступен" in message.answer.await_args.args[0]

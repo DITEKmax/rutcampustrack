@@ -17,7 +17,9 @@ def _token() -> str:
     return base64.urlsafe_b64encode(bytes(range(32))).decode().rstrip("=")
 
 
-@pytest.mark.parametrize("method", ["GetOwnBotInitialCredentials", "ManageOwnBotCredentialMessages"])
+@pytest.mark.parametrize(
+    "method", ["GetOwnBotInitialCredentials", "ManageOwnBotCredentialMessages", "GetOwnBotHomeworksForWeek"]
+)
 def test_dedicated_token_is_emitted_only_for_exact_service_and_method(method):
     observed = {}
 
@@ -42,6 +44,10 @@ def test_dedicated_token_is_emitted_only_for_exact_service_and_method(method):
         (f"https://academic.test:19491/{ACADEMIC_SERVICE}/", "GetOwnBotInitialCredentials"),
         ("https://academic.test:19491/rutcampustrack.schedule.ScheduleGrpcService", "GetOwnBotInitialCredentials"),
         (f"https://academic.test:19491/{ACADEMIC_SERVICE}", "GetUserByTelegramId"),
+        (f"https://academic.test:19491/{ACADEMIC_SERVICE}", "GetHomeworksForWeek"),
+        (f"https://academic.test:19491/{ACADEMIC_SERVICE}", "GetOwnBotHomeworksForWeekOther"),
+        (f"http://academic.test:19491/{ACADEMIC_SERVICE}", "GetOwnBotHomeworksForWeek"),
+        (f"https://other.test:19491/{ACADEMIC_SERVICE}", "GetOwnBotHomeworksForWeek"),
         (f"https://academic.test:19491/{ACADEMIC_SERVICE}", ""),
     ],
 )

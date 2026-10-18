@@ -2,17 +2,21 @@ package ru.rutcampustrack.academic.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+
+import ru.rutcampustrack.academic.config.CacheConfig;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
@@ -27,6 +31,11 @@ import ru.rutcampustrack.academic.grpc.UserRequest;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.semester.SemesterService;
 import ru.rutcampustrack.academic.user.UserService;
+
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Integration tests verifying Redis caching behavior for Academic Service gRPC reads.
@@ -97,6 +106,145 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
                         });
     }
 
+    /** Actual cache traffic uses a second Redis; failed invalidation cannot revive old keys. */
+    @Test
+    void failedInvalidationFallsBackAndRestartUsesColdNamespace() throws Exception {
+        String criticalKey = "u16:critical-fixture:" + UUID.randomUUID();
+        var criticalFactory = redisTemplate.getConnectionFactory();
+        redisTemplate
+                .opsForValue()
+                .set(criticalKey, "critical-preserved", java.time.Duration.ofMinutes(3));
+        try (var cacheRedis =
+                new org.testcontainers.containers.GenericContainer<>(REDIS.getDockerImageName())
+                        .withExposedPorts(6379)
+                        .withReuse(false)
+                        .withCommand(
+                                "redis-server",
+                                "--maxmemory",
+                                "16mb",
+                                "--maxmemory-policy",
+                                "allkeys-lru",
+                                "--save",
+                                "",
+                                "--appendonly",
+                                "no")
+                        .withCreateContainerCmdModifier(
+                                command -> command.getHostConfig().withMemory(64L * 1024 * 1024))) {
+            cacheRedis.start();
+            String user = "cache_fixture_" + UUID.randomUUID().toString().replace("-", "");
+            String password = "synthetic-cache-fixture-only";
+            var created =
+                    cacheRedis.execInContainer(
+                            "redis-cli",
+                            "ACL",
+                            "SETUSER",
+                            user,
+                            "on",
+                            ">" + password,
+                            "~rct:cache:*",
+                            "-@all",
+                            "+auth",
+                            "+hello",
+                            "+ping",
+                            "+select",
+                            "+client|setinfo",
+                            "+client|setname",
+                            "+get",
+                            "+set",
+                            "+del",
+                            "+scan");
+            assertThat(created.getStdout().trim()).isEqualTo("OK");
+            String[] oldKey = new String[1];
+            var runner =
+                    new ApplicationContextRunner()
+                            .withInitializer(
+                                    context ->
+                                            context.getBeanFactory()
+                                                    .setConversionService(
+                                                            ApplicationConversionService
+                                                                    .getSharedInstance()))
+                            .withUserConfiguration(CacheConfig.class)
+                            .withPropertyValues(
+                                    "rct.cache.redis.host=" + cacheRedis.getHost(),
+                                    "rct.cache.redis.port=" + cacheRedis.getMappedPort(6379),
+                                    "rct.cache.redis.username=" + user,
+                                    "rct.cache.redis.password=" + password);
+            runner.run(
+                    context -> {
+                        assertThat(
+                                        context.getBeansOfType(
+                                                org.springframework.data.redis.connection
+                                                        .RedisConnectionFactory.class))
+                                .isEmpty();
+                        var manager = context.getBean(RedisCacheManager.class);
+                        var cache = manager.getCache("groups");
+                        oldKey[0] = cachePrefix(manager, "groups") + "failure-key";
+                        cache.put("failure-key", "before-commit");
+                        assertThat(cache.get("failure-key", String.class))
+                                .isEqualTo("before-commit");
+                        assertThat(redisContainsKey(cacheRedis, oldKey[0])).isTrue();
+                        assertThat(redisTemplate.hasKey(oldKey[0])).isFalse();
+                        assertThat(redisContainsKey(cacheRedis, criticalKey)).isFalse();
+
+                        var denied =
+                                cacheRedis.execInContainer(
+                                        "redis-cli", "ACL", "SETUSER", user, "-del");
+                        assertThat(denied.getStdout().trim()).isEqualTo("OK");
+                        cache.evict("failure-key");
+                        assertThat(redisContainsKey(cacheRedis, oldKey[0])).isTrue();
+                        var recovered =
+                                cacheRedis.execInContainer(
+                                        "redis-cli", "ACL", "SETUSER", user, "+del");
+                        assertThat(recovered.getStdout().trim()).isEqualTo("OK");
+
+                        AtomicInteger reads = new AtomicInteger();
+                        assertThat(
+                                        cache.get(
+                                                "failure-key",
+                                                () -> "after-commit-" + reads.incrementAndGet()))
+                                .isEqualTo("after-commit-1");
+                        assertThat(
+                                        cache.get(
+                                                "failure-key",
+                                                () -> "after-commit-" + reads.incrementAndGet()))
+                                .isEqualTo("after-commit-2");
+                        // The failed key still exists, but this process never reads it after
+                        // recovery.
+                        assertThat(redisContainsKey(cacheRedis, oldKey[0])).isTrue();
+                        assertThat(redisTemplate.opsForValue().get(criticalKey))
+                                .isEqualTo("critical-preserved");
+                    });
+            runner.run(
+                    context -> {
+                        var manager = context.getBean(RedisCacheManager.class);
+                        var cache = manager.getCache("groups");
+                        String newKey = cachePrefix(manager, "groups") + "failure-key";
+                        assertThat(newKey).isNotEqualTo(oldKey[0]);
+                        assertThat(cache.get("failure-key")).isNull();
+                        assertThat(cache.get("failure-key", () -> "current-authority"))
+                                .isEqualTo("current-authority");
+                        assertThat(redisContainsKey(cacheRedis, newKey)).isTrue();
+                        assertThat(redisTemplate.hasKey(newKey)).isFalse();
+                        // Real SCAN-based clear is restricted to this startup's cache namespace.
+                        cache.clear();
+                        assertThat(redisContainsKey(cacheRedis, newKey)).isFalse();
+                        assertThat(redisContainsKey(cacheRedis, oldKey[0])).isTrue();
+                    });
+            assertThat(redisTemplate.getConnectionFactory()).isSameAs(criticalFactory);
+            assertThat(redisTemplate.opsForValue().get(criticalKey))
+                    .isEqualTo("critical-preserved");
+        } finally {
+            redisTemplate.delete(criticalKey);
+        }
+    }
+
+    private static boolean redisContainsKey(
+            org.testcontainers.containers.GenericContainer<?> redis, String key) throws Exception {
+        var result = redis.execInContainer("redis-cli", "EXISTS", key);
+        assertThat(result.getExitCode()).isZero();
+        return "1".equals(result.getStdout().trim());
+    }
+
     // =========================================================================
     // CACHE-01: Cache hit verified via Redis key presence
     // After the first gRPC call, the result is in Redis.
@@ -116,7 +264,7 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         stub.getGroup(request);
 
         // If cache works, second call succeeds without error
-        assertThat(redisTemplate.keys("groups::*")).isNotEmpty();
+        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "groups") + "*")).isNotEmpty();
     }
 
     /**
@@ -135,13 +283,15 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         try {
             // No cache eviction: a previously read roster cannot confer authority.
             jdbcTemplate.update(
-                    "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role = 'student'",
+                    "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role ="
+                            + " 'student'",
                     STUDENT_ID);
             assertThat(stub.getGroupMembers(request).getStudentsList())
                     .extracting(student -> student.getUserId())
                     .doesNotContain(STUDENT_ID);
             jdbcTemplate.update(
-                    "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role = 'student'",
+                    "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role ="
+                            + " 'student'",
                     STUDENT_ID);
             jdbcTemplate.update("UPDATE users SET status = 'archived' WHERE id = ?", STUDENT_ID);
             assertThat(stub.getGroupMembers(request).getStudentsList())
@@ -157,7 +307,8 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
                     .contains(STUDENT_ID);
         } finally {
             jdbcTemplate.update(
-                    "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role = 'student'",
+                    "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role ="
+                            + " 'student'",
                     STUDENT_ID);
             jdbcTemplate.update("UPDATE users SET status = 'active' WHERE id = ?", STUDENT_ID);
             jdbcTemplate.update("UPDATE groups SET is_active = true WHERE id = ?", GROUP_ID);
@@ -222,7 +373,8 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         stub.getActiveSemester(request);
         stub.getActiveSemester(request);
 
-        assertThat(redisTemplate.keys("active_semester::*")).isNotEmpty();
+        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "active_semester") + "*"))
+                .isNotEmpty();
     }
 
     /**
@@ -236,7 +388,8 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         stub.getCampusGeofence(request);
         stub.getCampusGeofence(request);
 
-        assertThat(redisTemplate.keys("campus_geofence::*")).isNotEmpty();
+        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "campus_geofence") + "*"))
+                .isNotEmpty();
     }
 
     /**
@@ -250,7 +403,7 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         stub.getUserById(request);
         stub.getUserById(request);
 
-        assertThat(redisTemplate.keys("users::*")).isNotEmpty();
+        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "users") + "*")).isNotEmpty();
     }
 
     // =========================================================================
@@ -268,7 +421,7 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
 
         stub.getActiveSemester(request);
 
-        Set<String> keys = redisTemplate.keys("active_semester::*");
+        Set<String> keys = redisTemplate.keys(cachePrefix(cacheManager, "active_semester") + "*");
         assertThat(keys).isNotEmpty();
 
         String key = keys.iterator().next();
@@ -292,7 +445,8 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         java.time.LocalDate today = java.time.LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
         boolean spring = today.getMonthValue() <= 6;
         jdbcTemplate.update(
-                "UPDATE semesters SET date_from=?,date_to=?,semester_type=?,academic_year=? WHERE id=?",
+                "UPDATE semesters SET date_from=?,date_to=?,semester_type=?,academic_year=? WHERE"
+                        + " id=?",
                 today.minusDays(5),
                 today.plusDays(5),
                 spring ? "SPRING" : "AUTUMN",
@@ -301,17 +455,20 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
 
         // Prime the cache
         stub.getActiveSemester(request);
-        assertThat(redisTemplate.keys("active_semester::*")).isNotEmpty();
+        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "active_semester") + "*"))
+                .isNotEmpty();
 
         // Mutation: activateSemester triggers @CacheEvict(active_semester, allEntries=true)
         semesterService.activateSemester(SEMESTER_ID);
 
         // Cache must be evicted
-        assertThat(redisTemplate.keys("active_semester::*")).isEmpty();
+        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "active_semester") + "*"))
+                .isEmpty();
 
         // Next gRPC call repopulates cache
         stub.getActiveSemester(request);
-        assertThat(redisTemplate.keys("active_semester::*")).isNotEmpty();
+        assertThat(redisTemplate.keys(cachePrefix(cacheManager, "active_semester") + "*"))
+                .isNotEmpty();
     }
 
     /**
@@ -324,16 +481,19 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         // Create a dedicated test user (active student, no group)
         Long testUserId =
                 jdbcTemplate.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, password_changed, created_at, updated_at) "
-                                + "VALUES ('cache_archive_test', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', "
-                                + "'Cache', 'ArchiveTest', 'student', 'active', false, false, NOW(), NOW()) RETURNING id",
+                        "INSERT INTO users (login, password_hash, last_name, first_name, role,"
+                            + " status, is_headman, password_changed, created_at, updated_at)"
+                            + " VALUES ('cache_archive_test',"
+                            + " '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi',"
+                            + " 'Cache', 'ArchiveTest', 'student', 'active', false, false, NOW(),"
+                            + " NOW()) RETURNING id",
                         Long.class);
 
         UserRequest request = UserRequest.newBuilder().setUserId(testUserId).build();
 
         // Prime the cache
         stub.getUserById(request);
-        String userCacheKey = "users::" + testUserId;
+        String userCacheKey = cachePrefix(cacheManager, "users") + testUserId;
         assertThat(redisTemplate.hasKey(userCacheKey)).isTrue();
 
         userService.archiveUser(testUserId);
@@ -411,13 +571,15 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
     void headmanChange_invalidatesGroupCacheAndCurrentRosterReflectsChange() {
         Long replacementId =
                 jdbcTemplate.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id) "
-                                + "VALUES ('cache_replacement', 'x', 'Cache', 'Replacement', 'student', 'active', false, ?) RETURNING id",
+                        "INSERT INTO users (login, password_hash, last_name, first_name, role,"
+                            + " status, is_headman, group_id) VALUES ('cache_replacement', 'x',"
+                            + " 'Cache', 'Replacement', 'student', 'active', false, ?) RETURNING"
+                            + " id",
                         Long.class,
                         GROUP_ID);
         jdbcTemplate.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'student', 'active', ?, NOW(), NOW())",
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at,"
+                        + " updated_at) VALUES (?, 'student', 'active', ?, NOW(), NOW())",
                 replacementId,
                 GROUP_ID);
         GroupRequest groupReq = GroupRequest.newBuilder().setGroupId(GROUP_ID).build();
@@ -431,7 +593,7 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
                 .extracting(student -> student.getIsHeadman())
                 .containsExactly(true);
 
-        String groupKey = "groups::" + GROUP_ID;
+        String groupKey = cachePrefix(cacheManager, "groups") + GROUP_ID;
         assertThat(redisTemplate.hasKey(groupKey)).isTrue();
 
         try {

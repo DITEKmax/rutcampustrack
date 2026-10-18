@@ -5220,6 +5220,31 @@ jobs:
           compose = ['docker', 'compose', '--env-file', str(env_file), '-p', 'rct-e2e',
                      '-f', 'docker-compose.e2e.yml', '-f', 'tests/e2e/infra/docker-compose.clock-fixture.yml']
           stage = 'source'
+          application_failure = {'action': 'UNKNOWN', 'reason': 'UNKNOWN',
+                                 'errorClass': 'UNKNOWN', 'errno': 'UNKNOWN', 'exitStatus': 'UNKNOWN'}
+
+          def retain_application_failure(error=None, *, exit_status=None):
+              if stage != 'application':
+                  return
+              if error is not None and application_failure['errorClass'] == 'UNKNOWN':
+                  name = type(error).__name__
+                  application_failure['errorClass'] = name if name in {
+                      'RuntimeError', 'TimeoutExpired', 'FileNotFoundError', 'PermissionError',
+                      'OSError', 'JSONDecodeError', 'ValueError', 'KeyError', 'TypeError',
+                  } else 'UNKNOWN'
+                  if isinstance(error, subprocess.TimeoutExpired):
+                      application_failure['reason'] = 'COMMAND_TIMEOUT'
+                  elif isinstance(error, OSError):
+                      application_failure['reason'] = 'OS_ERROR'
+                      number = error.errno
+                      if type(number) is int and number in {2, 5, 12, 13, 22, 24, 28, 32, 98, 99, 104, 110, 111}:
+                          application_failure['errno'] = number
+                  elif isinstance(error, json.JSONDecodeError) and application_failure['reason'] == 'UNKNOWN':
+                      application_failure['reason'] = 'JSON_PARSE'
+              if exit_status is not None and application_failure['exitStatus'] == 'UNKNOWN':
+                  application_failure['reason'] = 'COMMAND_EXIT'
+                  if type(exit_status) is int and -255 <= exit_status <= 255:
+                      application_failure['exitStatus'] = exit_status
 
           def verify_failure(stderr, *, timed_out=False):
               # Only exact verifier constants become public; never publish captured stderr.
@@ -5280,11 +5305,16 @@ jobs:
               try:
                   result = subprocess.run(argv, cwd=cwd, env=env, stdout=subprocess.PIPE,
                                           stderr=subprocess.PIPE, timeout=seconds)
-              except subprocess.TimeoutExpired:
+              except subprocess.TimeoutExpired as error:
+                  retain_application_failure(error)
                   if verifier:
                       verify_failure(b'', timed_out=True)
                   raise
+              except OSError as error:
+                  retain_application_failure(error)
+                  raise
               if result.returncode:
+                  retain_application_failure(exit_status=result.returncode)
                   if verifier:
                       verify_failure(result.stderr)
                   raise RuntimeError('Application recovery command failed')
@@ -5465,21 +5495,31 @@ jobs:
               call(['python3', 'scripts/recovery.py', 'restore', *target_args,
                     '--no-files', '--bundle', str(bundle), '--target-project', project])
               stage = 'application'
+              application_failure['action'] = 'START_APPLICATIONS'
               # Restart the same built apps, signing volume and TLS identities on restored databases.
               call([*compose, 'up', '-d', '--no-build', '--no-recreate', '--no-deps', '--pull', 'never',
                     '--wait', '--wait-timeout', '180', 'redis', 'rabbitmq', *writers], seconds=220)
+              application_failure['action'] = 'VERIFY_APPLICATION_IDENTITIES'
               for name in ('redis', 'rabbitmq', *writers):
                   cid = call([*compose, 'ps', '-q', name]).decode().strip()
                   if cid != ids[name] or inspect(cid)['Image'] != sources[name]['Image']:
+                      application_failure['reason'] = 'APPLICATION_IDENTITY_CHANGED'
                       raise RuntimeError('Original application container or image changed')
+              application_failure['action'] = 'VERIFY_SOURCE_DATABASES_STOPPED'
               if any(inspect(ids[name])['State']['Running'] for name in db_services):
+                  application_failure['reason'] = 'SOURCE_DATABASE_RUNNING'
                   raise RuntimeError('Source database restarted unexpectedly')
+              application_failure['action'] = 'VERIFY_DATABASE_ENDPOINTS'
               connected = json.loads(call(['docker', 'network', 'inspect', network]))[0]['Containers']
               if any(ids[name] in connected for name in db_services):
+                  application_failure['reason'] = 'SOURCE_ENDPOINT_ATTACHED'
                   raise RuntimeError('Source database endpoint remains attached')
               if not all(target_ids[name] in connected for name in db_services):
+                  application_failure['reason'] = 'RESTORED_ENDPOINT_MISSING'
                   raise RuntimeError('Restored database endpoint is missing')
+              application_failure['action'] = 'API_ADMIT'
               api('admit')
+              application_failure['action'] = 'VERIFY_RESTORED_STATE'
               call(['python3', 'scripts/test-application-recovery.py', 'verify', *target_args,
                     '--bundle', str(bundle), '--baseline', str(baseline), '--target-project', project,
                     '--schedule-url', 'https://localhost:8443/api',
@@ -5487,6 +5527,7 @@ jobs:
                     '--actor-token-file', str(work / 'actor-token.private'),
                     '--history-token-file', str(work / 'history-token.private'),
                     '--timeout-seconds', '130', '--output', str(work / 'verified.private.json')])
+              application_failure['action'] = 'API_ATTACHMENT'
               api('attachment')
               print('PASS real application recovery: fresh inventory, historical attachment and exact transfer replay')
           except Exception as error:
@@ -5495,7 +5536,11 @@ jobs:
                       lifecycle_diagnostic()
                   except Exception:
                       print('Lifecycle diagnostic unavailable; original failure retained')
-              print('FAIL application recovery stage=' + stage + ' class=' + type(error).__name__)
+              if stage == 'application':
+                  retain_application_failure(error)
+                  print(json.dumps({'stage': 'APPLICATION', **application_failure}, sort_keys=True))
+              error_class = application_failure['errorClass'] if stage == 'application' else type(error).__name__
+              print('FAIL application recovery stage=' + stage + ' class=' + error_class)
               raise SystemExit(1)
           PY_RECOVERY
 

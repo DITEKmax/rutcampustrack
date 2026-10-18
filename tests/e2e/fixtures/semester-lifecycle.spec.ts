@@ -19,6 +19,7 @@ import { TEST_USERS } from './users';
 import {
   retainFirstDatasetHttpFailure,
   retainSemesterPreviewTransport,
+  retainNativePrimaryFailure,
   retainLifecycleCleanupFailure,
   type LifecycleCleanupCause,
 } from './safe-reporter';
@@ -4588,7 +4589,9 @@ function subjectCascadeOtpReceiver(info: TestInfo) {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
       });
-    } catch {
+    } catch (error) {
+      if (args[0] === 'inspect')
+        retainNativePrimaryFailure(info.annotations, 'SUBJECT_OTP', 'DOCKER_INSPECT', error);
       throw new Error('Owned OTP container lookup failed');
     }
   };
@@ -4611,19 +4614,24 @@ function subjectCascadeOtpReceiver(info: TestInfo) {
     'Exactly one owned OTP broker is required',
   );
   const inspect = (timeout = 4000) => {
+    let raw: string;
     try {
-      return JSON.parse(
-        docker(
-          [
-            'inspect',
-            '--format',
-            '{"id":{{json .Id}},"image":{{json .Image}},"imageName":{{json .Config.Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}',
-            ids[0],
-          ],
-          timeout,
-        ),
-      ) as Record<string, any>;
+      raw = docker(
+        [
+          'inspect',
+          '--format',
+          '{"id":{{json .Id}},"image":{{json .Image}},"imageName":{{json .Config.Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}',
+          ids[0],
+        ],
+        timeout,
+      );
     } catch {
+      throw new Error('Owned OTP broker inspection failed');
+    }
+    try {
+      return JSON.parse(raw) as Record<string, any>;
+    } catch (error) {
+      retainNativePrimaryFailure(info.annotations, 'SUBJECT_OTP', 'JSON_PARSE', error);
       throw new Error('Owned OTP broker inspection failed');
     }
   };

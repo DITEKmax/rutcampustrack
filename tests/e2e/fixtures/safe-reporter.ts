@@ -16,6 +16,137 @@ import {
 } from './owned-container-identity';
 
 export const safeFailureAnnotation = 'rct-safe-failure-v1';
+const nativePrimaryAnnotation = 'rct-native-primary-v1';
+const nativePrimaryPaths = {
+  SUBJECT_OTP: ['DOCKER_INSPECT', 'JSON_PARSE'],
+  SEMESTER_PREVIEW: ['HTTP_GET'],
+} as const;
+const nativeErrorClasses = [
+  'Error',
+  'TypeError',
+  'RangeError',
+  'SyntaxError',
+  'TimeoutError',
+  'AbortError',
+  'TargetClosedError',
+  'UNKNOWN',
+] as const;
+const nativeErrorCodes = [
+  'ECONNRESET',
+  'ECONNREFUSED',
+  'ETIMEDOUT',
+  'EPIPE',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'ABORT_ERR',
+  'ENOBUFS',
+  'ENOENT',
+  'EACCES',
+  'ERR_CHILD_PROCESS_STDIO_MAXBUFFER',
+  'UNKNOWN',
+] as const;
+type NativePrimaryPath = keyof typeof nativePrimaryPaths;
+interface NativePrimaryFailure {
+  path: NativePrimaryPath;
+  action: 'DOCKER_INSPECT' | 'JSON_PARSE' | 'HTTP_GET';
+  errorClass: (typeof nativeErrorClasses)[number];
+  code: (typeof nativeErrorCodes)[number];
+  exitStatus: number | 'UNKNOWN';
+}
+
+/** First facts only; no messages, commands, output, paths or object-supplied class names. */
+export function retainNativePrimaryFailure(
+  annotations: TestResult['annotations'],
+  path: NativePrimaryPath,
+  action: NativePrimaryFailure['action'],
+  error: unknown,
+): void {
+  if (
+    annotations.length >= 32 ||
+    safeNativePrimaryFailures(annotations).some((row) => row.path === path)
+  )
+    return;
+  let errorClass: NativePrimaryFailure['errorClass'] = 'UNKNOWN';
+  const name = ownData(error, 'name');
+  if (nativeErrorClasses.some((candidate) => candidate === name))
+    errorClass = name as NativePrimaryFailure['errorClass'];
+  else {
+    try {
+      if (error instanceof SyntaxError) errorClass = 'SyntaxError';
+      else if (error instanceof TypeError) errorClass = 'TypeError';
+      else if (error instanceof RangeError) errorClass = 'RangeError';
+      else if (error instanceof Error) errorClass = 'Error';
+    } catch {
+      // A hostile prototype cannot supply diagnostic data.
+    }
+  }
+  let code: NativePrimaryFailure['code'] = 'UNKNOWN';
+  let current = error;
+  for (let depth = 0; depth < 3; depth++) {
+    const candidate = ownData(current, 'code') ?? ownData(current, 'errno');
+    if (nativeErrorCodes.some((value) => value !== 'UNKNOWN' && value === candidate)) {
+      code = candidate as NativePrimaryFailure['code'];
+      break;
+    }
+    current = ownData(current, 'cause');
+  }
+  const status = ownData(error, 'status');
+  const exitStatus =
+    typeof status === 'number' && Number.isInteger(status) && status >= 0 && status <= 255
+      ? status
+      : 'UNKNOWN';
+  annotations.push({
+    type: nativePrimaryAnnotation,
+    description: JSON.stringify({ path, action, errorClass, code, exitStatus }),
+  });
+}
+
+/** Reconstruct the two fixed failure projections from untrusted, bounded annotations. */
+export function safeNativePrimaryFailures(annotations: unknown): NativePrimaryFailure[] {
+  const result: NativePrimaryFailure[] = [];
+  if (!Array.isArray(annotations)) return result;
+  for (let index = 0; index < Math.min(annotations.length, 32); index++) {
+    const annotation = ownData(annotations, String(index));
+    if (ownData(annotation, 'type') !== nativePrimaryAnnotation) continue;
+    const description = ownData(annotation, 'description');
+    if (typeof description !== 'string' || description.length > 384) continue;
+    let value: unknown;
+    try {
+      value = JSON.parse(description);
+    } catch {
+      continue;
+    }
+    if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
+    const keys = Object.keys(value);
+    if (
+      keys.length !== 5 ||
+      keys.some((key) => !['path', 'action', 'errorClass', 'code', 'exitStatus'].includes(key))
+    )
+      continue;
+    const path = ownData(value, 'path');
+    const action = ownData(value, 'action');
+    const errorClass = ownData(value, 'errorClass');
+    const code = ownData(value, 'code');
+    const exitStatus = ownData(value, 'exitStatus');
+    if (
+      (path !== 'SUBJECT_OTP' && path !== 'SEMESTER_PREVIEW') ||
+      !nativePrimaryPaths[path].some((candidate) => candidate === action) ||
+      !nativeErrorClasses.some((candidate) => candidate === errorClass) ||
+      !nativeErrorCodes.some((candidate) => candidate === code) ||
+      !(
+        exitStatus === 'UNKNOWN' ||
+        (typeof exitStatus === 'number' &&
+          Number.isInteger(exitStatus) &&
+          exitStatus >= 0 &&
+          exitStatus <= 255)
+      ) ||
+      result.some((row) => row.path === path)
+    )
+      continue;
+    result.push({ path, action, errorClass, code, exitStatus } as NativePrimaryFailure);
+  }
+  return result;
+}
 
 /** Untrusted annotations retain only closed fixture/service names and fixed boolean fields. */
 export function safeOwnedContainerIdentityFailure(
@@ -665,6 +796,7 @@ export function retainSemesterPreviewTransport(
   annotations: TestResult['annotations'],
   error: unknown,
 ): void {
+  retainNativePrimaryFailure(annotations, 'SEMESTER_PREVIEW', 'HTTP_GET', error);
   retainLifecycleDiagnostic(annotations, `SEMESTER_PREVIEW_${closedLifecycleTransportCode(error)}`);
 }
 /** First rejected cleanup substage/status, separate from the primary request failure. */
@@ -742,6 +874,7 @@ interface SafeResult {
   errorLocations: { file: string; line: number }[];
   transferObservation?: TransferObservation;
   ownedContainerIdentityFailure?: OwnedContainerIdentityFailure;
+  nativePrimaryFailures?: NativePrimaryFailure[];
 }
 
 /** Allowlist output only. Raw step titles, errors, attachments and worker output are never serialized. */
@@ -787,6 +920,8 @@ export default class SafeReporter implements Reporter {
     if (transferObservation) row.transferObservation = transferObservation;
     const identityFailure = safeOwnedContainerIdentityFailure(result.annotations);
     if (identityFailure) row.ownedContainerIdentityFailure = identityFailure;
+    const nativePrimaryFailures = safeNativePrimaryFailures(result.annotations);
+    if (nativePrimaryFailures.length) row.nativePrimaryFailures = nativePrimaryFailures;
     this.results.push(row);
     // Automatic error contexts are created during worker teardown, after afterEach.
     // Replace attached artifact contents with safe metadata as a second boundary.

@@ -26,6 +26,15 @@ MARKER = "synthetic-private@example.invalid"
 CURRENT_STAGE = "source"
 
 
+def safe_failure(error):
+    result = {"failure_class": type(error).__name__}
+    if isinstance(error, subprocess.CalledProcessError):
+        kind = error.cmd if isinstance(error.cmd, str) and error.cmd in {"docker", "java", "node", "sudo", "openssl"} else "other"
+        reason = error.output if error.output in {"INVALID_MOUNT", "PERMISSION_DENIED", "UNHEALTHY_DEPENDENCY", "OUT_OF_MEMORY"} else "UNKNOWN"
+        result.update({"command_kind": kind, "exit_code": error.returncode, "reason": reason})
+    return result
+
+
 def stage(name):
     global CURRENT_STAGE
     CURRENT_STAGE = name
@@ -49,6 +58,8 @@ def source_check():
     home = source["services"]["homepage"]
     require(home["user"] == "1000:1000" and home["read_only"], "Homepage machine privileges changed")
     require(home["cap_drop"] == ["ALL"] and not home.get("privileged"), "Homepage capabilities changed")
+    require(home.get("tmpfs") == ["/app/.next/cache:uid=1000,gid=1000,size=16m",
+                                  "/tmp:uid=1000,gid=1000,size=8m"], "Homepage bounded writable mounts differ")
     ingress = (ROOT / "nginx/conf.d/default.conf").read_text()
     marker = "# RCT_BROWSER_ERROR_INGEST_"
     public = ingress.split(marker + "BEGIN", 1)[1].split(marker + "END", 1)[0]
@@ -66,7 +77,21 @@ def run(command, env=None, timeout=120, check=True):
                             stderr=subprocess.PIPE, timeout=timeout)
     if check and result.returncode:
         # No stdout, stderr or argument echo: an SDK may include synthetic credentials.
-        raise RuntimeError("Isolated command failed: " + Path(command[0]).name)
+        kind = Path(command[0]).name
+        if kind not in {"docker", "java", "node", "sudo", "openssl"}:
+            kind = "other"
+        reason = "UNKNOWN"
+        for label, pattern in [
+            ("INVALID_MOUNT", r"invalid mount (?:path|config)|mount path must be absolute"),
+            ("PERMISSION_DENIED", r"permission denied|operation not permitted"),
+            ("UNHEALTHY_DEPENDENCY", r"dependency failed to start|container .+ is unhealthy"),
+            ("OUT_OF_MEMORY", r"java\.lang\.outofmemoryerror|cannot allocate memory"),
+        ]:
+            if re.search(pattern, result.stderr.lower()):
+                reason = label
+                break
+        # CalledProcessError carries only closed fields, never arguments or raw output.
+        raise subprocess.CalledProcessError(result.returncode, kind, output=reason)
     return result
 
 
@@ -429,7 +454,7 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
                        "telemetry_outage": outage["result"], "pmm": {"selected": False, "reason": "Existing PostgreSQL/Mongo exporters and Grafana cover the selected workload; query analytics adds statement/profiler access and another resource budget without a demonstrated extra diagnosis."},
                        "qualification": "Actual isolated GlitchTip/Java+Vue SDKs/CPU flamegraph/operator links. Synthetic Vue operations exercise the shared adapter under PWA/TMA prefixes; not a full authenticated business journey. Effective retention is checked; seven-day wall-clock expiry is not elapsed. 16GiB Cloud capacity is not a 32GiB VPS benchmark."}
         except BaseException as error:
-            primary_failure = {"failure_class": type(error).__name__, "stage": CURRENT_STAGE}
+            primary_failure = {**safe_failure(error), "stage": CURRENT_STAGE}
         finally:
             stop_sampler.set()
             stage("verified-owned-cleanup")
@@ -450,7 +475,7 @@ print('RCT_OBSERVER_JSON=' + json.dumps({
                 require(not any(resources().values()), "Owned resources remain after cleanup")
                 cleanup = {"result": "PASS", "verified_removed_counts": removed}
             except BaseException as error:
-                cleanup = {"result": "FAIL", "failure_class": type(error).__name__}
+                cleanup = {"result": "FAIL", **safe_failure(error)}
             if primary_failure is not None:
                 receipt = {"result": "FAIL", "source_sha": revision, **primary_failure, "cleanup": cleanup}
             elif cleanup["result"] != "PASS":
@@ -468,7 +493,7 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main() or 0)
     except Exception as error:
-        failure = {"result": "FAIL", "source_sha": os.environ.get("GITHUB_SHA"), "failure_class": type(error).__name__, "stage": CURRENT_STAGE}
+        failure = {"result": "FAIL", "source_sha": os.environ.get("GITHUB_SHA"), **safe_failure(error), "stage": CURRENT_STAGE}
         output = ROOT / "build/monitoring"
         output.mkdir(parents=True, exist_ok=True)
         (output / "apps.json").write_text(json.dumps(failure, indent=2) + "\n")

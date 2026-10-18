@@ -13,6 +13,8 @@ import {
   classifySafeFailure,
   closedLifecycleTransportCode,
   retainSemesterPreviewTransport,
+  retainNativePrimaryFailure,
+  safeNativePrimaryFailures,
   retainLifecycleCleanupFailure,
   retainHeadmanCleanupFailure,
   type HeadmanCleanupCause,
@@ -220,6 +222,129 @@ test('successful sensitive step metadata and worker output are not emitted', asy
   expect(closedTransferState('COMPLETED')).toBe('COMPLETED');
   expect(closedTransferState(marker)).toBe('OTHER');
   expect(closedTransferState({ state: marker })).toBe('OTHER');
+  const nativeAnnotations: TestInfo['annotations'] = [];
+  const nativeError = Object.assign(new Error(marker), {
+    code: 'ETIMEDOUT',
+    status: null,
+    stderr: marker,
+    stdout: marker,
+    path: marker,
+  });
+  retainNativePrimaryFailure(nativeAnnotations, 'SUBJECT_OTP', 'DOCKER_INSPECT', nativeError);
+  retainNativePrimaryFailure(
+    nativeAnnotations,
+    'SUBJECT_OTP',
+    'JSON_PARSE',
+    new SyntaxError(marker),
+  );
+  retainNativePrimaryFailure(nativeAnnotations, 'SEMESTER_PREVIEW', 'HTTP_GET', {
+    name: 'TimeoutError',
+    cause: { code: 'ECONNRESET' },
+    status: 255,
+    message: marker,
+  });
+  const nativeFacts = [
+    {
+      path: 'SUBJECT_OTP',
+      action: 'DOCKER_INSPECT',
+      errorClass: 'Error',
+      code: 'ETIMEDOUT',
+      exitStatus: 'UNKNOWN',
+    },
+    {
+      path: 'SEMESTER_PREVIEW',
+      action: 'HTTP_GET',
+      errorClass: 'TimeoutError',
+      code: 'ECONNRESET',
+      exitStatus: 255,
+    },
+  ];
+  expect(safeNativePrimaryFailures(nativeAnnotations)).toEqual(nativeFacts);
+  expect(nativeAnnotations).toHaveLength(2);
+  expect(JSON.stringify(nativeAnnotations)).not.toContain(marker);
+  info.annotations.push(...nativeAnnotations);
+  const nativeAnnotation = (value: unknown) => [
+    {
+      type: nativeAnnotations[0].type,
+      description: JSON.stringify(value),
+    },
+  ];
+  for (const value of [
+    null,
+    [],
+    marker,
+    { ...nativeFacts[0], path: marker },
+    { ...nativeFacts[0], action: 'HTTP_GET' },
+    { ...nativeFacts[0], errorClass: marker },
+    { ...nativeFacts[0], code: marker },
+    { ...nativeFacts[0], exitStatus: -1 },
+    { ...nativeFacts[0], exitStatus: 256 },
+    { ...nativeFacts[0], exitStatus: 1.5 },
+    { ...nativeFacts[0], exitStatus: '1' },
+    { ...nativeFacts[0], extra: marker },
+    { path: 'SUBJECT_OTP' },
+  ])
+    expect(safeNativePrimaryFailures(nativeAnnotation(value))).toEqual([]);
+  const syntaxAnnotations: TestInfo['annotations'] = [];
+  retainNativePrimaryFailure(
+    syntaxAnnotations,
+    'SUBJECT_OTP',
+    'JSON_PARSE',
+    new SyntaxError(marker),
+  );
+  expect(safeNativePrimaryFailures(syntaxAnnotations)).toEqual([
+    {
+      path: 'SUBJECT_OTP',
+      action: 'JSON_PARSE',
+      errorClass: 'SyntaxError',
+      code: 'UNKNOWN',
+      exitStatus: 'UNKNOWN',
+    },
+  ]);
+  const nativeHostile = Object.create({ code: 'ECONNRESET' });
+  for (const key of ['name', 'code', 'errno', 'status', 'cause', 'message', 'stack'])
+    Object.defineProperty(nativeHostile, key, {
+      get() {
+        throw new Error(marker);
+      },
+    });
+  const nativeHostileAnnotations: TestInfo['annotations'] = [];
+  retainNativePrimaryFailure(
+    nativeHostileAnnotations,
+    'SUBJECT_OTP',
+    'DOCKER_INSPECT',
+    nativeHostile,
+  );
+  expect(safeNativePrimaryFailures(nativeHostileAnnotations)).toEqual([
+    {
+      path: 'SUBJECT_OTP',
+      action: 'DOCKER_INSPECT',
+      errorClass: 'UNKNOWN',
+      code: 'UNKNOWN',
+      exitStatus: 'UNKNOWN',
+    },
+  ]);
+  expect(
+    safeNativePrimaryFailures([
+      Object.defineProperty({ type: nativeAnnotations[0].type }, 'description', {
+        get() {
+          throw new Error(marker);
+        },
+      }),
+    ]),
+  ).toEqual([]);
+  expect(
+    safeNativePrimaryFailures([
+      { type: nativeAnnotations[0].type, description: '{' },
+      { type: nativeAnnotations[0].type, description: marker.repeat(80) },
+    ]),
+  ).toEqual([]);
+  expect(
+    safeNativePrimaryFailures([
+      ...Array.from({ length: 32 }, () => ({ type: 'unrelated' })),
+      ...nativeAnnotations,
+    ]),
+  ).toEqual([]);
   const transportCodes = [
     'TIMEOUT',
     'ECONNRESET',

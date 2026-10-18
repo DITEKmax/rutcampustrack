@@ -1,65 +1,50 @@
 # Current resources / sole writers — 18.10.2026
 
-История предыдущих раскладок сохранена в Git26c/resources и attempts.ndjson.
-Root soleGit/taskdocs/matrix, Sol6.1selectedULTRA/actualUNKNOWN acceptedCloudexception.
-Children Sol6.1/high/forknone, actualUNKNOWN; native7slots inclRoot. No secondCLI.
+Root soleGit/taskdocs/matrix. RULES models: Root Astra medium; children selected
+Sol6.1/high/forknone, actual metadata UNKNOWN acceptedCloudexception. Native7slots
+inclRoot; no secondCLI. Historical resource snapshots remain in Git/attempts.
 
-## KT0 measured after managed restart
+## Environment / budgets
 
-Observed current running/connected; exec available. /tmp cleared, oldworktrees/caches/
-receipts/last2fixtureWIP lost. RootHEAD26c, fourtaskdocsWIP and25foreignuntracked preserved;
-index regularSHAac91df9b8ff6d1b13a833e517e6ed1ae0cd48c01eb15b67d2fda89612ad8508e.
-Owned1359packa0e5040f regularSHAefd2f1558a9cc94ff21ca4b99c0f714c9082bd362f75a949ac07c87cc0dd4705.
-NoGC/prune/reset/volume deletion. Oldstand/keys/volumes not independently inventoried.
-Workspacefree4294959104B/inodes1258405; TMP9466073088B/inodes2311037.
-RAMcgroup max17179869184/current546213888; CPU quota4/cpuset0–4. Not32GiBVPS.
-Two nonmutating capacity checks (denser exactownedpack/indexv4) gained0allocatedbytes;
-no furtherpacking/cleanup campaign. Root/tmp/rct-s19-recovery contains backups whileVMlives.
+ManagedCloud running/connected, exec работает. При прежнем restart /tmp потерян;
+Root workspace/Git/WIP и25foreignuntracked сохранены. Noreset/GC/prune/deleteguessing.
+Measured workspacefree4,278,157,312B, TMP5,154,185,216B; cgroup5,378,936,832B /
+max17,179,869,184B; CPUquota4/cpuset0–4. Это не32GiB VPS/capacityproof.
+Workspace-writing heavy reserve4GiB; TMP-only checks projectedTMPfree>=4GiB.
+Source/taskdocs/Git<=128MiB with>=3.75GiB physicalfree. Noaccountlimit changes.
+Max2heavy only independent CPU/cache/output/runtime after measurement+lease.
+Docker28.4 socket available with permitted network grant; VFS uses workspace disk.
+NO localDB/container/imagepull/stand launched. Actual stacks via ordinaryCI.
+JDK21.0.12.1 /workspace/rct-cloud-setup/jdk21; systemJava isJREonly.
+Gradle8.12 offline still needs localdaemon/Netty network permission.
+Known extractedproto0444 ENV: u+w ONLY private GENERATED outputs, samebytes;
+never source/read-only dependency cache. No wrapper/framework for this.
 
-Engineering allocation for new scope: no actualdiskfull; reserve4GiB for workspace-writing
-heavy runtimes remains. Bounded source/taskdocs/Git administration <=128MiB may use its
-known small allocation with >=3.75GiB physical free, preserving data/accountlimits.
-This does not lower a testgate or permit localDocker/imagepull/DB. Checks writing exclusively
-TMP need >=4GiB projected TMPfree; workspace dependencies readonly. No heavy withoutlease.
-AllsourceWIP must publish coherent checkpoints because TMP does not survive managedrestart.
+## Ownership / current packets
 
-## Assigned clean detached worktrees / baseline26c
+Auxbare /tmp/rct-s19-worktrees.git references Root objects READONLY. Authors never
+commit/reset/rebase; Root integrates authoredinventories, not readonly dependencies.
 
-Auxbare /tmp/rct-s19-worktrees.git uses readonlyRootobjects; no newworkingbranch/PR.
-Rootneverproductauthor; only assignedinventory integrates. No writer commits/resets/rebases.
-
-| Owner | WT / exclusive paths |
+| Owner | WT / exclusive scope / state |
 | --- | --- |
-| s19_boundary | /tmp/rct-s19-auth: Auth/app/API/sharedauthority/proto/generatedconsumers; frozenprotocol beforefanout. No SDKbuild/lock ownership. |
-| s19_academic | /tmp/rct-s19-academic: Academicprofile/eligibility/coordinator/newmigration/ORM/fixtures; firstboundedpresplit3 includes ONEAcademicapplication.yml property. |
-| s19_bot | /tmp/rct-s19-bot: Pythonmenu/handlers/typedRPC/config/synthetic tests; no commonproto. |
-| s19_apps | /tmp/rct-s19-apps: newobservabilityappscompose/infra, shared-observability+Attendancebuild/instrumentation, mobile-coreSDK+PWA/TMAbootstrap/frontendlock. ExistingCIymlRootsolewriter, designatedpatchonly. |
-| s19_bot_producer | WT pending: MobileBFF/Attendance newbotread+focusedTeacherReadFacade/ReportService seams, noAcademic/Auth/proto/sharedbuild. |
-| s19_review | readonly independentpresplit3 APPROVE/runtimepending; thenfrozenS3boundaryreview. Never fixes findings. |
+| s19_boundary | /tmp/rct-s19-auth base26c: Auth/proto/generated/basecompose/env/routes; Config3fix+V10shedlock; group-cycle finite securityparent pending. |
+| s19_academic | /tmp/rct-s19-academic base26c: profile/catalog/coordinator/publicusers/group/history/migrations/filter; R6reviewfix/localnegative/groupfanout. |
+| s19_identity_ui | /tmp/rct-s19-identity-ui basea69:8helper/adminusers/admingroups files; review3P2fix; no bootstrap/SDK/generated/lock writes. |
+| s19_jobs | /tmp/rct-s19-jobs baseda: ready58 all11jobs/V2/Notificationadmit; SOURCEAPPROVE compile+Validation6/Authority5PASS; actualPG15/twoDB pending. |
+| s19_auth_runtime | /tmp/rct-s19-auth-runtime base5ff: ready25v4 ownAuth; SOURCEAPPROVE pure10+compileTestJavaPASS; actualDB pending. |
+| s19_academic_bot | /tmp/rct-s19-academic-bot basea69: ready7 oldgrpc/ownHW, delegated2grpc; SOURCEAPPROVE javac+JUnit20PASS; actualtwoDB pending. |
+| s19_bot_producer | /tmp/rct-s19-bot-producer: readydirected25+renderer23; SOURCEAPPROVE finalmetadata/DOCX18/18/3PASS; actualtwoDB pending. |
+| s19_bot | /tmp/rct-s19-bot base26c: readyPython26 privateexactmenu/handlers; source+synthetic accepted; actualnewAPI pending. |
+| s19_apps | /tmp/rct-s19-apps base26c:39published apps/SDK/build/lock +legacyDocxfix;2Homepagefix RootWIP; nativeApps acceptance open. |
+| s19_recovery_consumer | /tmp/rct-s19-recovery-consumer base4e:6existing ownDB recovery consumers; source/purechecks APPROVE. No realbackup/restore. |
+| s19_ci_diagnosis | readonly a69 primary47/57UNKNOWN, cleanup distinct;4safe diagnostic files RootWIP. |
 
-Current lease: Jobs freeze4 bounded five compile targets +Validation6/Authority5,
-CPU0/workers1/JDK21.0.12.1/Xmx1GiB/meta256/RSS2.5GiB; TMP floor4GiB.
-Auth runtime compile5 released: PASS59.22s/RSS797069312B. Apps isolated DOCX
-javac/JUnit3/unchangedProbe192MiB released: PASS, no container/image/DB launched.
-No localDB/Docker/images. Other completed leases reaped: Apps peak1.16GiB,
-Producer1.136GB, Academicpresplit1.12GiB; Auth fullprocesspeakUNKNOWN(observergap).
-Prepared JDK /workspace/rct-cloud-setup/jdk21; systemJava onlyJRE, not compiler.
-Loopback Gradle/Netty needs normalnetworkenabled permission even offline; ENV failure
-is not sourceFAIL. Cache/publicinputs readonly; task outputs exclusivelyTMP.
-
-Last measured workspace4286464000B/inodes1257955, TMP5214949376B/inodes2167527;
-RAMcurrent5436284928/max17179869184, CPUquota4. Sourcebudget<=128MiB retained.
-Author26Bot/25Producer/39Apps ready patches + manifests saved onecopy to ignored
-.agent/evidence/cloud-20261011/current-wip against observed /tmp-loss. This is WIP,
-not final sole evidence/extra packaging milestone. Preserve25foreignuntracked.
-Native slots7 includingRoot; active Auth/Academic/Jobs plus bounded independent scopes,
-review byreadiness. Authruntime base5ff, owncache lease released; ready25v4 saved once.
-Recoveryconsumer WT/tmp/rct-s19-recovery-consumer base4e owns exactlyrecovery.py,
-test-recovery.py, test-recovery-failure-boundaries.py and test-restorecompose; only
-source+puremock checks, no backup/restore/Docker/realdata. Boundary ownsbaseconfig.
-Botvenv~105MiB cap256, AppsSDKextract7.68MiB/npmcache29MiB hard32; noRootmoduleswrite.
-CI actual threeapps runtime runs remotely via one additive bounded ordinaryCIjob;
-source limits1376MiB/2.5CPU incl extraPG are configuration, measurements remain pending.
-
-B013/B014/B015FROZEN; no equivalentcaller/mutation throughagent/model/CI/launcher.
-No production/mainmerge/deploy/secrets/foreignWIP/Angular/newweb/hiddencontrolplane.
+Config17/AcademicR6/IdentityUI8 independentreview READONLY, findings sameauthors;
+focusedrecheck only. Native slots reflect running scopes, not all historical owners.
+Academic6c CPU0 lease RELEASED:67.46s/RSS1,087,700,992B,5PASS+unchanged29PASS.
+Authcompile8 RELEASED main/testPASS67.16s/noDB. All processes reaped.
+IdentityUI lightNode CPU1/max1worker/RSS1GiB/privateTMP; Rootnode_modules READONLY,
+no npmci/install/Rootwrites. Otherheavy released; nextlease needs measurement.
+Ready patches/manifest once in ignored workspace; preserveforeign25/volumes/keys.
+CI Apps sourcecaps1376MiB/2.5CPU inclPG; actualcombinedmeasurements stillpending.
+B013/B014/B015FROZEN. No production/main/merge/deploy/secrets/newweb/Angular retirement.

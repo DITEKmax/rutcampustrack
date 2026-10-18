@@ -72,7 +72,9 @@ services:
     # Links only: no Docker socket, host filesystem, credentials or machine widgets.
     volumes:
       - ./infra/homepage:/app/config:ro
-    tmpfs: [/app/.next/cache:uid=1000, gid=1000, size=16m, /tmp:uid=1000, gid=1000, size=8m]
+    tmpfs:
+      - '/app/.next/cache:uid=1000,gid=1000,size=16m'
+      - '/tmp:uid=1000,gid=1000,size=8m'
     networks: [observer]
     read_only: true
     cap_drop: [ALL]

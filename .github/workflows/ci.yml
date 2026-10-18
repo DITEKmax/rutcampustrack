@@ -551,7 +551,7 @@ jobs:
                   method = 'protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment'
                   test_source = app / 'src/test/java/ru/rutcampustrack/academic/integration/UserArchiveLifecycleIT.java'
                   source = test_source.read_bytes()
-                  assert hashlib.sha256(source).hexdigest() == '209a71d2411132ba4cfaf46e03e595f1e027f1ff1da0723e48a82db3e47e4d8a'
+                  assert hashlib.sha256(source).hexdigest() == 'e4c28850a60ae3c0207205d9f651edaa89e2700e3d26bc0cd9ceef60dd97a374'
                   archive = b'        service.archive(target, request);\n'
                   oracle = (b'        assertThat(\n'
                             b'                        jdbc.queryForList(retainedHomeworkSql, homework, completion, target)\n'
@@ -568,7 +568,7 @@ jobs:
                           .isEqualTo(1);
           '''
                   negative = source.replace(anchor, archive + update + oracle)
-                  assert hashlib.sha256(negative).hexdigest() == 'f48f723ef14a1434161da4030bba27e1e69c180a3dee67a01849e50c4b9a69b6'
+                  assert hashlib.sha256(negative).hexdigest() == '11d392c7402350d3e22015ee131eefdbebf148184fcc9c66288a6c8971f73460'
                   assert negative.count(archive + update + oracle) == 1
                   rule_line = negative[:negative.index(archive + update + oracle)].count(b'\n') + len((archive + update + oracle).splitlines())
                   replacements = {test_source: negative}
@@ -632,13 +632,13 @@ jobs:
 
                   admin_source = app / 'src/test/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportIT.java'
                   admin_test = admin_source.read_bytes()
-                  assert hashlib.sha256(admin_test).hexdigest() == '05d4ee3e8d97a35d0c44d02cad7c0450eec39632f71e29b92bb087084e86492e'
+                  assert hashlib.sha256(admin_test).hexdigest() == 'd0d844748441cd4cb0fd9a2bb98b21e92ff0faecf146a5706b6cb40f894c9cd0'
                   assert admin_test == subprocess.check_output(['git', 'show', 'HEAD:' + admin_source.as_posix()])
                   admin_oracle = (b'        assertThatThrownBy(() -> reports.read("7", "", Sort.GROUP_NAME, Direction.ASC, 0, 25))\n'
                                   b'                .isInstanceOf(AdminAccessException.class);\n')
                   assert admin_test.count(admin_oracle) == 1
                   admin_line = admin_test[:admin_test.index(admin_oracle)].count(b'\n') + 1
-                  assert admin_line == 216
+                  assert admin_line == 237
                   admin_production = app / 'src/main/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportService.java'
                   admin_current = admin_production.read_bytes()
                   assert hashlib.sha256(admin_current).hexdigest() == '6eedd43163eb0656a253f3acbf995ab24e5d8d317ccae4eb72cf6a76a6142d36'
@@ -724,14 +724,14 @@ jobs:
                   digest_source = app / 'src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java'
                   digest_test_source = app / 'src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java'
                   digest_current, digest_test = digest_source.read_bytes(), digest_test_source.read_bytes()
-                  assert hashlib.sha256(digest_current).hexdigest() == '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'
+                  assert hashlib.sha256(digest_current).hexdigest() == 'c348f19743aa4ad82fa023f7700a1eae18bf1cf6177905cba927d933e65c7f01'
                   assert hashlib.sha256(digest_test).hexdigest() == 'bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42'
                   assert digest_test == subprocess.check_output(['git', 'show', 'HEAD:' + digest_test_source.as_posix()])
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(digest_test_source)]) == b''
                   digest_anchor, digest_changed = b'|| !p.digest().equals(b.previewDigest())', b'|| false'
                   assert digest_current.count(digest_anchor) == 1
                   digest_negative = digest_current.replace(digest_anchor, digest_changed)
-                  assert hashlib.sha256(digest_negative).hexdigest() == '101e3c63f1fca24beffebbf3a932dcb6e1c928f86a9bc5ffee35df2e88ae39ab'
+                  assert hashlib.sha256(digest_negative).hexdigest() == '3801f6a37afb983bfffeb74a14deaa1b0ef2625d6c820e5afcc0c4e938df2f4a'
                   assert digest_negative.replace(digest_changed, digest_anchor) == digest_current
                   digest_lines = digest_test.decode().splitlines()
                   digest_package = 'ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT'
@@ -917,10 +917,10 @@ jobs:
                       'source': 'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java',
                       'testSha': 'bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42',
                       'production': 'services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java',
-                      'productionSha': '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81',
+                      'productionSha': 'c348f19743aa4ad82fa023f7700a1eae18bf1cf6177905cba927d933e65c7f01',
                       'anchor': '        if (!MessageDigest.isEqual(\n                p.codeHash().getBytes(StandardCharsets.US_ASCII),\n                hash(request.challengeId() + ":" + request.code())\n                        .getBytes(StandardCharsets.US_ASCII))) {\n            // Consumed proof retries cannot exhaust or mutate the already accepted command.\n            if (p.receipt() == null)\n                jdbc.update(\n                        "UPDATE subject_deletion_proofs SET attempts=attempts+1 WHERE"\n                                + " challenge_hash=?",\n                        hash(request.challengeId()));\n            return new Verification(false, null);\n        }\n',
                       'changed': '',
-                      'negativeSha': 'a466010d578083c39c3a54215a591ba9a6d2910064158f94b61acfc81a0fc7fd',
+                      'negativeSha': 'be01d54b861265265ec809c339c5acadf51d2a1e16541bbc3f5fb7d60b8c9e8b',
                       'counterexample': 'OMITTED_CHALLENGE_SCOPED_SUBJECT_PROOF_CODE_GUARD',
                       'ruleLine': 429,
                       'ruleSource': 'assertPrivate(denied, 409);',
@@ -931,14 +931,14 @@ jobs:
                       'package': 'ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT',
                       'method': 'unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation',
                       'source': 'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java',
-                      'testSha': 'cc29ce79202bd7d5b8b3ee56509af944f2403467805b8883c96e4c7d6b35c776',
+                      'testSha': '614c46777c156328359296df91cd21007c3f24c36a676e16ea854d7eccc6b7b1',
                       'production': 'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java',
-                      'productionSha': '53741f8dc927a2198a518d90789f0cc94a4ed566888049acd0c4b5f03be9d148',
+                      'productionSha': '4e3cc0e1cef2d747f7c215fc32644a9765333f669ac9f9db5f879ec11536576c',
                       'anchor': '        return AdminPermission.validate(input.mode(), input.permissions());',
                       'changed': '        return AdminPermission.validate(input.mode(), input.permissions().stream().filter(java.util.Objects::nonNull).filter(AdminPermission.allCodes()::contains).toList());',
-                      'negativeSha': '06e0ff3c8d73a4f62ddc3541c916517d05a2d9c3e812143ca0d9f9cf12f78e23',
+                      'negativeSha': '388be24a2e9fb662550d34521eb8a82d3ed659c9a55542c51ad9bf757529c1eb',
                       'counterexample': 'SILENTLY_FILTERED_UNKNOWN_AND_NULL_ADMIN_PERMISSION_ELEMENTS',
-                      'ruleLine': 390,
+                      'ruleLine': 404,
                       'ruleSource': '.andExpect(',
                       'messagePattern': 'Status expected:<400> but was:<200>',
                   },
@@ -1495,7 +1495,7 @@ jobs:
                   assert hashlib.sha256(audit['production'].read_bytes()).hexdigest() == '682a47e0f7c570fccbc253b20dbc8070e60f7e8a3b30746bb8add44afbd38253'
                   proof['auditRule']['sourceRestoredExact'] = True
               if admin_rights is not None and current:
-                  assert hashlib.sha256(admin_rights['source'].read_bytes()).hexdigest() == '05d4ee3e8d97a35d0c44d02cad7c0450eec39632f71e29b92bb087084e86492e'
+                  assert hashlib.sha256(admin_rights['source'].read_bytes()).hexdigest() == 'd0d844748441cd4cb0fd9a2bb98b21e92ff0faecf146a5706b6cb40f894c9cd0'
                   assert hashlib.sha256(admin_rights['production'].read_bytes()).hexdigest() == '6eedd43163eb0656a253f3acbf995ab24e5d8d317ccae4eb72cf6a76a6142d36'
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(admin_rights['source'])]) == b''
                   proof['adminRightsRule']['sourceRestoredExact'] = True
@@ -1506,7 +1506,7 @@ jobs:
               if service == 'notification-service' and current:
                   proof['sourceRestoredExact'] = True
               if service == 'academic-service' and current:
-                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == '209a71d2411132ba4cfaf46e03e595f1e027f1ff1da0723e48a82db3e47e4d8a'
+                  assert hashlib.sha256(test_source.read_bytes()).hexdigest() == 'e4c28850a60ae3c0207205d9f651edaa89e2700e3d26bc0cd9ceef60dd97a374'
                   assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(test_source)]) == b''
                   proof['sourceRestoredExact'] = True
               if scoped_read is not None and current:
@@ -1517,7 +1517,7 @@ jobs:
                   proof[scoped_read['proofKey']]['sourceRestoredExact'] = True
               if subject_digest is not None and current:
                   assert hashlib.sha256(subject_digest['source'].read_bytes()).hexdigest() == 'bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42'
-                  assert hashlib.sha256(subject_digest['production'].read_bytes()).hexdigest() == '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'
+                  assert hashlib.sha256(subject_digest['production'].read_bytes()).hexdigest() == 'c348f19743aa4ad82fa023f7700a1eae18bf1cf6177905cba927d933e65c7f01'
                   for path in (subject_digest['source'], subject_digest['production']):
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
                   proof['subjectDigestRule']['sourceRestoredExact'] = True
@@ -1876,7 +1876,7 @@ jobs:
                   source = 'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java'
                   digest = 'bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42'
                   production = pathlib.Path('services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java')
-                  assert hashlib.sha256(production.read_bytes()).hexdigest() == '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'
+                  assert hashlib.sha256(production.read_bytes()).hexdigest() == 'c348f19743aa4ad82fa023f7700a1eae18bf1cf6177905cba927d933e65c7f01'
                   assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest
                   for target in (source, str(production)):
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', target]) == b''
@@ -1895,10 +1895,10 @@ jobs:
                   'services/schedule-service/schedule-app/src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql', '8d02720f48b67e21c78373b214adb414a2f435a8016c35987839d330b6042fcc'),
               'auth-service': ('ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT', 'loginOtpCannotAuthorizeSubjectDeletionAndRemainsUsableForLogin',
                   'services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/SubjectDeletionProofHttpIT.java', 'bce65d0f318be6add9edb7c752b0817d03977eafa7b15ef5b68372a9b8028f42',
-                  'services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java', '9c307c4189f11b65a1ceeb9a9723c2c83277b26a0ca7fb12b0dd26f26a380f81'),
+                  'services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java', 'c348f19743aa4ad82fa023f7700a1eae18bf1cf6177905cba927d933e65c7f01'),
               'academic-service': ('ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT', 'unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation',
-                  'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java', 'cc29ce79202bd7d5b8b3ee56509af944f2403467805b8883c96e4c7d6b35c776',
-                  'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java', '53741f8dc927a2198a518d90789f0cc94a4ed566888049acd0c4b5f03be9d148'),
+                  'services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/admin/AdminAccessAuthorityIT.java', '614c46777c156328359296df91cd21007c3f24c36a676e16ea854d7eccc6b7b1',
+                  'services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java', '4e3cc0e1cef2d747f7c215fc32644a9765333f669ac9f9db5f879ec11536576c'),
           }
           package, method, source, digest, production, production_digest = boundary_targets[service]
           assert hashlib.sha256(pathlib.Path(source).read_bytes()).hexdigest() == digest

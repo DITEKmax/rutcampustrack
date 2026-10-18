@@ -38,8 +38,8 @@ Matrixv1FROZEN8/25 weight38/123=30.89%; old6/9. D037fileGoalACTIVE, nofalsecompl
 
 ## Current acceptance/checkpoint
 
-Published62c9a0d26f2a690aaff0266318b55856f650167b, Root71source integrated
-withindependent1f9f21eb approval/runtimepending. Matrixv1FROZEN20/25 weight94/123=76.42%; U16actual7b580917 and
+Publishedf2f8046a03ac3198c1bfa405a10606ad98b5678d, Root71source integrated
+withindependent1f9f21eb approval/runtimepending. Matrixv1FROZEN21/25 weight97/123=78.86%; U16actual7b580917 and
 U20actualdfed6ec6 accepted; old9/9functional, GoalACTIVE. CurrentCI/CoverageFAIL;
 Security/OpenAPISUCCESS. Exactoutcomes/solehistory inattempts.ndjson.
 
@@ -58,8 +58,16 @@ TWOheavy ceiling onlywithindependentcaches/outputs/actualfreeRAM; workers1/fork1
 ≤2.5GiBRSS/512MiBnewTMP each, workspace/TMPfloor4GiB. LastRAM5.52/17.18GB,
 TMP5.61GB; recheck before nextheavy. Existingstoppedstand/volumes/keys untouched.
 
-Rootown1120objects pack2605eb3e SHA87e8afd409e478047a73ef7bd4868decc892eb976ee6aeeb7442eb3da513e7b8,
+Rootown1296objects pack86d07593 SHAccf6d566659d73909cd81a1b7a6518aca73c972530351949ce2e3d419d4f741b,
 exactTMPbackups/noprune. AuxWTs useRootobjects readonly; noRootGC. Nextstaging
 uses temporaryindex and ifneeded exactownedobjectpacking, preservingrefs/index/WIP,
 no foreignobject deletion/lowerfloor. CurrentGitbackup /tmp/rct-s18-ownership-checkpoint; stageincludesownedtrees toreservecommitbudget.
 B013/B014/B015FROZEN; no production/main/Angular/secrets/secondCLI.
+
+LatestGitf2 commit/push/readback/PRhead verified; normalindex restored, foreign25 preserved.
+71source/6docs allhashmatched. Newstage representation missedfloor32KiB beforecommit;
+corrected sameownedobjects densepacking +12newownedSAFEZIP exactcopy/tmp/rct-s18-zips
+withoriginalshortsymlinks; noGC/foreigndeletion/lowerfloor. Currentpack+backups in
+/tmp/rct-s18-ownership-checkpoint (stage-result/result/safe-zip-relocation).
+Finalworkspacefree4295139328≥4GiB; no localcontainerwrite headroom. AllGradle/Node/Python
+leases released, no runtime. NewCI isordinaryisolatedGitHubActions.

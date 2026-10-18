@@ -10,16 +10,16 @@ platform Goal нет. [Матрица](selected-results-20261018.csv)/[веса]
 ## Revision / критерии
 
 codex/server-validation-20261011, [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2),
-main не merged. Последний подтверждённый local/remote/PR head **62c9a0d26f2a690aaff0266318b55856f650167b**.
+main не merged. Последний подтверждённый local/remote/PR head **f2f8046a03ac3198c1bfa405a10606ad98b5678d**.
 На62c опубликован HAL producer/consumer+browser, restore-file IT, четыре canonical
 OpenAPI+AuthTS, Notification native identity/CI pin и два k6 scripts/portable40controls.
-Следующий связный пакет основан на62c: U14 ownership63 source +8contract/diagnostic/CI
-paths =71; reviewer1f9f21eb и адресные2d54d0a2/37f0ffd0 приняты.
+Наf2 опубликован пакет относительно62c: U14 ownership63 source +8contract/diagnostic/CI
+paths =71, taskdocs6; reviewer1f9f21eb и адресные2d54d0a2/37f0ffd0 приняты.
 Его новая исполняемая revision определяется коммитом пакета, а не старым runtime903.
 Stage17 base753173688d633ca07991f4dd73bdcd2698f45d96; received18 basee66b1711b3d93faee625b50a2e2f785020a0f43a.
 Чужие25untracked, старыеWT/WIP/stand/volumes/keys сохранены.
 
-Матрица **v1-КТ1 FROZEN: 20/25, вес94/123=76.42% принятого плана**, DONE_CHANGED17,
+Матрица **v1-КТ1 FROZEN: 21/25, вес97/123=78.86% принятого плана**, DONE_CHANGED18,
 ALREADY_SATISFIED3. Не production readiness. Состав/веса не менялись.
 U16 принят на903: actual2Redis/PG/cachefallback/ACL/caps/exporters +independent7b580917.
 U20 принят на903: actualPG→TLS→Python TODAY/WEEK/currentroles/menu +independentdfed6ec6.
@@ -28,7 +28,7 @@ U19/U22 прежние actual9a/3dc notification/Alloy proof применимы,
 U12 DONE_CHANGED@62c:200IT/148unit/генератор+TS PASS/review9f691350;
 U13 ожидает all6canonical comparison; U17 DONE_CHANGED на62c: actual248IT/
 exact855fac4b restorefilebytes+grantdeny PASS/reviewe11ae909;
-U21 — реальной пагинации через браузер. U24 DONE_CHANGED: actualportable40controls
+U21 DONE_CHANGED@62c: actual4/4browser/size1+HALnextGET200, reviewf104287a; fivefiles unchanged throughf2. U24 DONE_CHANGED: actualportable40controls
 и независимое reviewbe3a402a/f5025c2a; k6/HTTP/load NOT_RUN, capacity не заявляется.
 U14/U15 и итоговый U25 открыты. Продуктовых вопросов владельцу сейчас нет.
 
@@ -54,7 +54,12 @@ C02 published93migrations/28controlsPASS; C03 runtime/migrator/monitor rights M0
 ## Ближайший исполнимый остаток
 
 1. Root опубликовал62c:16source+5docs/scopedhooks6PASS; local=remote=PRhead.
-   Новый пакет:71source integrated, scopedhooks и normalCI следующие.
+   Новый пакетf2:71source+6docs опубликован, scopedhooks6PASS;
+   PRCI39089909475: Auth/Academic failed SOURCE_ADMISSION доordinaryIT; Infra проверяет
+   stale sourcepins/restoration: coherent19scalar fix6669f96d approved1f895e43,
+   Root integratedONECIpath/preparingnormalpublish. Coverage39089909428 running; Security39089909436 и
+   OpenAPI39089909433 SUCCESS. Vue/Python/NotificationIT/BFFIT/GatewayIT SUCCESS.
+   Новый U14 actualruntime/финальные gates ещё pending.
    U21 assembler2PASS, client same-testRED2FAIL→GREEN25PASS/0skip/typechecks/review682d4610;
    U17 compile94s/review0352fe25. Actual newpaginatedbrowser пока NOT_RUN; новый MongoU17 теперь actualPASS.
    Четыре canonical взяты из strictnative actual903 candidates; BFF74ITPASS unchanged.
@@ -73,13 +78,15 @@ C02 published93migrations/28controlsPASS; C03 runtime/migrator/monitor rights M0
    credential; Academic старый read закрыт, manage/HW сохранены. Auth7/Python7/Infra8
    приняты independent1f9f21eb: R1–5 и generatorhex/base64url закрыты по исходникам.
    SQL authority не объявлять независимой проверкой JWT/полной изоляцией при компрометации сервиса.
-4. Следующий U14 commit→обычныйCI fresh/upgrade/ORM/TLS/broker/restart.
+4. U14f2 обычныйCI fresh/upgrade/ORM/TLS/broker/restart вочереди.
    62c PRCI39088416035/Coverage39088416031/Security39088416045 queued;
    OpenAPI39088416017 SUCCESS. 903 async/7Gateway PASS; transferPENDING timeout,
    reconciliationpreviewOTHER/cleanupFAILED и NotificationCoverage35non-snapshotFAIL
    остаются causeUNKNOWN; Новое минимальное наблюдение подготовлено: finiteNotificationcausecodes и
    original/firstcleanup browsercodes/status, privacy/passcontrols приняты.
    ПричинастарогоFAILостаётсяUNKNOWN, без blindrerun/таймаутослабления.
+   62c browser: D002 REFRESH_UNOBSERVED/sessiontimeout и role ADMIN_UI FAIL causeUNKNOWN;
+   U21 ownHWcase PASS независимо. Reports предложил только finite request/substage witness.
    U25 finalchangedriskreview+актуальные CI/Coverage/Security/OpenAPI+exactSHA handoff.
 
 ## Owners / ресурсы / ограничения

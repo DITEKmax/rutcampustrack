@@ -24,12 +24,15 @@ GIB = 1024**3
 SERVICES = {"glitchtip-db", "glitchtip", "pyroscope", "homepage", "observer-proxy"}
 MARKER = "synthetic-private@example.invalid"
 CURRENT_STAGE = "source"
+BROWSER_BOOT_HINTS = {"PROCESS_GLOBAL", "VUE_FEATURE_FLAG", "MODULE_EXPORT", "DYNAMIC_IMPORT",
+                      "JS_REFERENCE", "JS_SYNTAX", "JS_TYPE", "JS_ERROR", "JS_UNKNOWN",
+                      "SCRIPT_403", "SCRIPT_404", "SCRIPT_500", "SCRIPT_504", "SCRIPT_OTHER"}
 BROWSER_REASONS = {"NODE_MODULE_NOT_FOUND", "VITE_IMPORT", "BROWSER_LAUNCH",
-                   "BROWSER_TIMEOUT", "BROWSER_ASSERTION"}
+                   "BROWSER_TIMEOUT", "BROWSER_ASSERTION"} | {"BROWSER_BOOT_" + hint for hint in BROWSER_BOOT_HINTS}
 # Only known call/assertion lines in the current, source-bound browser fixture.
 BROWSER_SOURCE_LINES = {11, 12, 16, 17, 18, 54, 56, 57, 58, 59, 60, 61, 64, 65, 67,
-                        69, 70, 71, 72, 73, 81, 82, 83, 84, 85, 87, 88, 89, 92, 102,
-                        105, 106, 107, 120, 121}
+                        69, 70, 71, 72, 73, 75, 90, 98, 104, 105, 106, 107, 108,
+                        110, 111, 112, 115, 125, 128, 129, 130, 143, 144}
 DIAGNOSTIC_REASONS = {"INVALID_MOUNT", "PERMISSION_DENIED", "UNHEALTHY_DEPENDENCY",
                       "OUT_OF_MEMORY", "READ_ONLY_FS", "NGINX_CONFIG", "PYRO_CONFIG", "DATABASE",
                       "GLITCHTIP_MODULE_PATH"} | BROWSER_REASONS
@@ -62,10 +65,14 @@ def closed_browser_failure(text, returncode):
         ("BROWSER_TIMEOUT", r"(?m)^(?:locator\.(?:waitFor|click)|page\.(?:goto|waitForFunction|evaluate)|apiRequestContext\.get): Timeout [0-9]{1,6}ms exceeded\."),
         ("BROWSER_ASSERTION", r"(?m)^AssertionError \[ERR_ASSERTION\]:"),
     ]
-    matches = [(match.start(), label) for label, pattern in patterns
-               if (match := re.search(pattern, text))]
     frames = re.finditer(r"(?m)^[ \t]+at (?:file://)?[^\r\n]*?/infra/observability-apps/browser\.mjs:([0-9]{1,3}):[0-9]{1,4}\)?(?: \{)?\r?$", text)
     source_line = next((line for match in frames if (line := int(match[1])) in BROWSER_SOURCE_LINES), None)
+    # A recovered module request must not replace a later privacy/count assertion.
+    if source_line in {104, 105}:
+        patterns.extend(("BROWSER_BOOT_" + hint, r"(?m)^RCT_BROWSER_BOOT:" + hint + r"\r?$")
+                        for hint in BROWSER_BOOT_HINTS)
+    matches = [(match.start(), label) for label, pattern in patterns
+               if (match := re.search(pattern, text))]
     native_exit = type(returncode) is int
     return {"state": "LIVE" if returncode is None else "EXITED" if native_exit else "UNKNOWN",
             "exit_code_category": "UNKNOWN" if not native_exit else "ZERO" if returncode == 0 else "SIGNAL" if returncode < 0 else "NONZERO",

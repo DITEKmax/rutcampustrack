@@ -481,7 +481,8 @@ public final class AcademicIdentityIntegrationFixture implements AutoCloseable {
         registry.add("grpc.client.auth-service.negotiation-type", () -> "TLS");
         registry.add("grpc.client.auth-service.security.authority-override", () -> "localhost");
         registry.add(
-                "grpc.client.auth-service.security.trust-cert-collection", certificate::toString);
+                "grpc.client.auth-service.security.trust-cert-collection",
+                () -> certificate.toUri().toString());
         registry.add("grpc.service-identity.academic-to-auth-token", () -> academicToAuth);
         registry.add(
                 "grpc.service-identity.auth-to-academic-presentation-token",

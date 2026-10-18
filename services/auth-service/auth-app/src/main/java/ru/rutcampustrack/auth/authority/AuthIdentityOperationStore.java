@@ -913,25 +913,29 @@ ON CONFLICT(user_id) DO UPDATE SET assigned=EXCLUDED.assigned,mode=EXCLUDED.mode
                 jdbc.query(
                         "SELECT * FROM auth_identity_operations WHERE operation_id=?"
                                 + (lock ? " FOR UPDATE" : ""),
-                        (rs, n) ->
-                                new Operation(
-                                        id,
-                                        rs.getBytes("command_hash"),
-                                        rs.getBytes("canonical_command"),
-                                        rs.getString("phase"),
-                                        rs.getLong("revision"),
-                                        rs.getString("error_code"),
-                                        rs.getLong("actor_id"),
-                                        rs.getObject("actor_session_id", UUID.class),
-                                        rs.getLong("actor_session_version"),
-                                        rs.getLong("actor_commit_roles_version"),
-                                        rs.getLong("actor_credentials_version"),
-                                        rs.getLong("actor_binding_version"),
-                                        rs.getLong("actor_admin_profile_version"),
-                                        rs.getLong("committed_catalog_version"),
-                                        IdentityOperationKind.valueOf(
-                                                "IDENTITY_OPERATION_KIND_"
-                                                        + rs.getString("authorization_kind"))),
+                        (rs, n) -> {
+                            if (rs.getBoolean("initial_admin_bootstrap"))
+                                throw error(
+                                        Status.PERMISSION_DENIED, "BOOTSTRAP_OPERATION_RESERVED");
+                            return new Operation(
+                                    id,
+                                    rs.getBytes("command_hash"),
+                                    rs.getBytes("canonical_command"),
+                                    rs.getString("phase"),
+                                    rs.getLong("revision"),
+                                    rs.getString("error_code"),
+                                    rs.getLong("actor_id"),
+                                    rs.getObject("actor_session_id", UUID.class),
+                                    rs.getLong("actor_session_version"),
+                                    rs.getLong("actor_commit_roles_version"),
+                                    rs.getLong("actor_credentials_version"),
+                                    rs.getLong("actor_binding_version"),
+                                    rs.getLong("actor_admin_profile_version"),
+                                    rs.getLong("committed_catalog_version"),
+                                    IdentityOperationKind.valueOf(
+                                            "IDENTITY_OPERATION_KIND_"
+                                                    + rs.getString("authorization_kind")));
+                        },
                         id);
         return rows.isEmpty() ? null : rows.getFirst();
     }

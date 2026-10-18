@@ -19,6 +19,7 @@ public class InternalJwtTestConfig {
             case "ordinary" -> AbstractAcademicIntegrationTest.IDENTITY_FIXTURE;
             case "cache" -> AbstractAcademicCacheIntegrationTest.IDENTITY_FIXTURE;
             case "event" -> AbstractAcademicEventIntegrationTest.IDENTITY_FIXTURE;
+            case "health-degradation" -> HealthDegradationIT.IDENTITY_FIXTURE;
             default ->
                     throw new IllegalArgumentException("Known owned integration fixture required");
         };

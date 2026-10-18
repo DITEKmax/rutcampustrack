@@ -12,9 +12,9 @@
   },
   "mandatoryRows": 39,
   "mandatoryWeight": 196,
-  "closed": 24,
-  "closedWeight": 114,
-  "percent": 58.16,
+  "closed": 25,
+  "closedWeight": 117,
+  "percent": 59.69,
   "weightPolicy": "Weights1/2/3/5/8frozenbefore newimplementation; changedtargetscope versioneddelta, no retroactive oldv1weightschange. Acceptedoldproof retainedonlywhileapplicable; affectedoldrow requiresnewproof beforefinalclosure.",
   "deferred": "Realdeploy/ownerstand/TG/push/install/Safari/alertbot/offhostprobe/realbackup/VPS/multiworker/Angularretirement/newweb. B013/B014/B015FROZEN remain no replay.",
   "riskGate": "No wholeGoalPASS fromweightedcount; U25CI/CoverageFAIL remain separatelyblocking.",
@@ -36,11 +36,11 @@
       "percent": 52.11
     },
     "КТ3": {
-      "closed": 2,
+      "closed": 3,
       "total": 9,
-      "weight": 7,
+      "weight": 10,
       "denominator": 37,
-      "percent": 18.92
+      "percent": 27.03
     },
     "КТ4": {
       "closed": 13,

@@ -5,67 +5,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
 
-import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
-import ru.rutcampustrack.shared.outbox.OutboxEventSender;
+import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
-/** Actual committed outbox/marker proof in a database owned only by this test. */
+/** Actual committed outbox/marker proof under the common owned split fixture's reset lease. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-@Import({InternalJwtTestConfig.class, GroupPromotionCycleIT.PromotionTestClockConfig.class})
+@Import(GroupPromotionCycleIT.PromotionTestClockConfig.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-class AdministrativeNotificationGroupCycleIT {
-    private static final PostgreSQLContainer<?> POSTGRES =
-            new PostgreSQLContainer<>("postgres:16")
-                    .withDatabaseName("n4_group_cycle")
-                    .withLabel("rct.package", "notifications-admin-n4-1010")
-                    .withReuse(false);
-
-    static {
-        POSTGRES.start();
-        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
-    }
-
-    @AfterAll
-    static void stopOwnedDatabase() {
-        POSTGRES.stop();
-    }
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add(
-                "spring.autoconfigure.exclude",
-                () ->
-                        "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,"
-                            + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-                            + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
-    }
-
-    @MockitoBean RabbitTemplate rabbitTemplate;
-
-    @MockitoBean OutboxEventSender outboxEventSender;
+class AdministrativeNotificationGroupCycleIT extends AbstractAcademicIntegrationTest {
     @Autowired JdbcTemplate jdbc;
     @Autowired GroupPromotionService service;
     @Autowired PlatformTransactionManager transactions;

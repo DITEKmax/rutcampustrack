@@ -2,37 +2,40 @@
 
 Root sole Git/taskdocs/matrix. RULES2b9a859c; children Sol6.1/high/forknone,
 actual metadata UNKNOWN accepted Cloud exception. Native7 slots inclRoot; no CLI plane.
-Published/remote/PRefeaf6ff, Root foreign25 + reserved reporttypealias preserved.
+Current source is branch HEAD; runtime baseline3f491d64.
+Foreign25 + reserved reporttypealias preserved.
 
 ## Resources
 
-Cloud exec works. Workspace4,246,368,256B<4GiB reserve; Docker28.4 VFS samefilesystem.
-No local Docker/DB/imagepull; no cleanup/prune/reset/volume actions. Source/Git<=128MiB
-and>=3.75GiB reserve. TMP4,813,885,440B; RAM~6.05/max17.18GB before current12.
-CPUquota4/cpuset0–4. Native CPU0/worker1/heap1GiB/meta256/RSS<=2.5GiB/TMPfloor4GiB.
-JDK21.0.12.1/Gradle8.12 --offline; private /tmp/rct-s19-auth-gradle-home, Apps cacheRO.
-Q032 exact granted run completed; subsequent changed-risk checks separately admitted,
-no refusal bypass. Other checks light CPU1/RSS<=1GiB, no installs.
+Cloud exec works. Workspace4,240,252,928B<4GiB Dockerreserve; Docker28.4 VFSsameFS.
+No local Docker/DB/imagepull or cleanup/prune/reset/volume actions. Source/Git<=128MiB
+and>=3.75GiB reserve. current13 TMPminimum4,808,830,976B; cgroup~6GB/max16GiB,
+CPUquota4/cpuset0–4. JDK21.0.12.1/Gradle8.12 offline; own native mirror/privateGradlehome.
+current13 core1/RSS<=2.5GiB/outputs<=128MiB; PASS85.29s/peak1082138624B,
+changedownedfiles108112233B; processes0/leaseRELEASED. No tests/DB/downloads.
+Apps scopedfirstmount core0/RSS<=768MiB/90s/privateTMP<=64MiB was allowed
+parallel by measured capacity. First guard volatileENOENT corrected; second probe
+NOT_ACCEPTED: incomplete cached graph and RSSguard813404160B; process0/TMPremoved,
+leaseRELEASED. Not actualCIcause or application resource acceptance; no more probes/install.
+Other checks light CPU1/RSS<=1GiB. Q032 exactconsent executed, no refusals bypassed.
 
 ## Owners / next
 
 | Owner | Worktree / scope / state |
 | --- | --- |
-| Root | /workspace/rutcampustrack; integration/docs; foreignWIP preserved. |
-| s19_integration_compile | /tmp/rct-s19-auth-runtime; current12 AcademiccompileTestJava PASS62.77s/RSS855298048; leaseRELEASED/processes0, Root1903inputs stable. |
-| s19_edge_it_diagnosis | /tmp/rct-s19-bot-producer; Q0339paths implementing; RootAuthStore/SecurityConfig + reservedAuthV13/AcademicV11 + offlineCLI/tests, no e2eoverlap. |
-| s19_ci_diagnosis | /tmp/rct-s19-e2e; Homeworkfixture1 APPROVE/Rootjoined/nativecompilePASS; boundedremaining3 standalonefixture sourceports active. |
-| s19_academic | /tmp/rct-s19-academic; scheduler8 completed/wholeAPPROVE/Rootjoined; runtime bodies unchanged. |
-| ac9_auth_it | /tmp/rct-s19-auth; syntheticbaseline4 SOURCEAPPROVE/Rootjoined; actualfresh/repeat/negative/UI pending; noactivewriter. |
-| ac9_apps | /tmp/rct-s19-apps; Sentryresolver1 complete/Rootjoined/pureViteresolutionPASS; actualbrowser pending. |
-| ac9_contract_generation | /tmp/ac9-contract-generation private mirror; Auth2 ready + existing81consumerPASS; waits officialAcademicsnapshot for atomic5. Prior identityUI WT untouched. |
-| s19_review_producer | independent source APPROVE collector2 privacy; no authoring. |
+| Root | /workspace/rutcampustrack; integration/docs; ready source17; foreignWIP preserved. |
+| s19_fixture_compile | /tmp/rct-s19-auth-runtime + privateGradlehome; current13 four Auth/Academic compile tasks PASS, inputs2016/2266 stable; RELEASED. |
+| s19_edge_it_diagnosis | /tmp/rct-s19-bot-producer; Q0339 SOURCEAPPROVE/Rootjoined; new separate U15.1 existingtest plan only, no frozen9 edits. |
+| s19_ci_diagnosis | /tmp/rct-s19-e2e; standalonefixture4 APPROVE/Rootjoined; Health cleanup finding rechecked, all oracles retained. |
+| ac9_auth_it | /tmp/rct-s19-auth; test TLS URI1 + exact originalV2 semester NULL1 complete/Rootjoined; no runtime. |
+| ac9_apps | /tmp/rct-s19-apps; closedexistingbrowser/checker2 hints APPROVE/Rootjoined; no active local runtime. |
+| ac9_contract_generation | /tmp/ac9-contract-generation; Auth2/scoped81consumerPASS held until officialAcademicsnapshot for atomic5; priorUI WT retained. |
+| s19_review_producer | independent SOURCEAPPROVE Q0339 and affected Appsprivacy2; no authoring. |
+| s19_review_synthetic_baseline | fixture4 recheckAPPROVE; actual3f Homepage U23.3 applicability ACCEPT; no authoring. |
+| s19_3f_ci_observer | read-only meaningful push+PR milestones/artifactmetadata; no rawlogs/downloads. |
 
-Existing worktrees/cache/WIP retained, no new stand per writer. Native current7 OTP13,
-current8 BFF70, current9 Academic40 andcurrent10 Headman1 PASS reused, not repeated.
-Current11 source ed609daa/2261 freeze; no DB/IT/runtime scheduler execution.
-Monitoring actual97 SUCCESS. Apps1376MiB/2.5CPU CONFIG budget only; combined measuredacceptance pending.
-No active heavy runtime. Sourcebaseline4 reviewer s19_review_synthetic_baseline APPROVE;
-HomeWork1 sameindependentreviewer APPROVE; Appschecker1 s19_review_producer APPROVE.
-CurrentordinaryCI independentdisposabletargets; no cancellation/newstand/wrapper.
+No new stand per writer. Prior current7/8/9/10/11/12 sufficient PASS retained.
+Actual3f Monitoring SUCCESS. Apps1376MiB/2.5CPU remains CONFIG budget only;
+combined measured acceptance pending. All local heavy leases RELEASED.
+OrdinaryCI uses independent disposable targets; useful current browser not cancelled.
 Frozen B013/B014/B015 and production/main/merge/deploy/secrets boundaries unchanged.

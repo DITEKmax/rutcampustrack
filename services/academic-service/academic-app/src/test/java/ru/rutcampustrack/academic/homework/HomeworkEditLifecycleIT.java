@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -18,16 +17,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import ru.rutcampustrack.academic.contract.dto.homework.*;
 import ru.rutcampustrack.academic.contract.enums.*;
@@ -38,12 +33,14 @@ import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.exception.HomeworkPublicationPendingException;
 import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
-import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
+import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction;
 import ru.rutcampustrack.schedule.grpc.*;
-import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 import java.time.Clock;
@@ -56,10 +53,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /** One owned PostgreSQL boundary: committed edit/history/outbox and durable RPC recovery. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-@Import({InternalJwtTestConfig.class, HomeworkEditLifecycleIT.ClockConfiguration.class})
-@Testcontainers
-class HomeworkEditLifecycleIT {
+@Import(HomeworkEditLifecycleIT.ClockConfiguration.class)
+class HomeworkEditLifecycleIT extends AbstractAcademicIntegrationTest {
     private static final AtomicInteger FIXTURE_YEAR = new AtomicInteger(2200);
 
     @TestConfiguration
@@ -94,33 +89,16 @@ class HomeworkEditLifecycleIT {
         }
     }
 
-    @Container
-    static final PostgreSQLContainer<?> POSTGRES =
-            new PostgreSQLContainer<>("postgres:16")
-                    .withDatabaseName("homework_lifecycle")
-                    .withUsername("rct_user")
-                    .withPassword("rct_dev_pass");
-
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
-        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add(
-                "spring.autoconfigure.exclude",
-                () ->
-                        "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,"
-                            + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-                            + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
         registry.add("spring.task.scheduling.enabled", () -> "false");
     }
 
-    @MockitoBean RabbitTemplate rabbit;
-
-    @MockitoBean OutboxEventSender outboxEventSender;
     @MockitoBean ScheduleGrpcClient schedule;
-    @MockitoBean RequestContext context;
+
+    @MockitoBean(answers = org.mockito.Answers.CALLS_REAL_METHODS)
+    RequestContext context;
+
     @MockitoBean HomeworkEditRecoveryJob recoveryJob;
     @Autowired JdbcTemplate jdbc;
     @Autowired PlatformTransactionManager transactions;
@@ -135,12 +113,15 @@ class HomeworkEditLifecycleIT {
     @Autowired MutableClock boundaryClock;
     @Autowired HomeworkPublicationPersistence publications;
     @Autowired ObjectMapper mapper;
+    @Autowired AcademicUserIdentityOperations identityOperations;
 
     @MockitoSpyBean(name = "outboxStorage")
     OutboxStorage actionOutbox;
 
     long actor, publisher, group, subject, semester, binding;
     Long ownedAssistantId;
+    long replacementHeadman;
+    boolean headmanReplaced;
     LocalDate day;
     UUID createKey;
     byte[] createHash = new byte[32];
@@ -153,18 +134,29 @@ class HomeworkEditLifecycleIT {
                         .atZone(ZoneId.of("Europe/Moscow"))
                         .toInstant());
         day = LocalDate.now(boundaryClock).plusDays(3);
-        actor = jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
-        publisher = jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
-        group =
-                jdbc.queryForObject(
-                        "SELECT group_id FROM user_role_grants WHERE user_id = ? AND role ="
-                                + " 'student'",
-                        Long.class,
-                        actor);
-        jdbc.update(
-                "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role ="
-                        + " 'headman'",
-                actor);
+        actor = identityFixture.canonical().studentId();
+        publisher = identityFixture.canonical().adminId();
+        group = identityFixture.canonical().groupId();
+        headmanReplaced = false;
+        ownedAssistantId = null;
+        var administrator = identityFixture.select(publisher, AuthRole.ADMIN);
+        replacementHeadman =
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "HomeworkEdit",
+                                        "Replacement",
+                                        null,
+                                        UserRole.STUDENT,
+                                        group,
+                                        null,
+                                        610000004000L),
+                                administrator)
+                        .userId();
+        var student = identityFixture.select(actor, AuthRole.STUDENT);
+        when(context.getClaims()).thenReturn(student.claims());
+        when(context.getInternalToken()).thenReturn(student.internalToken());
+        when(context.getAdmittedAdminProfile()).thenReturn(student.profile());
         subject =
                 new TransactionTemplate(transactions)
                         .execute(
@@ -203,11 +195,7 @@ class HomeworkEditLifecycleIT {
         if (ownedAssistantId != null)
             jdbc.update(
                     "UPDATE headman_assistants SET is_active=false WHERE id=?", ownedAssistantId);
-        if (actor > 0)
-            jdbc.update(
-                    "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role ="
-                            + " 'headman'",
-                    actor);
+        if (actor > 0) setHeadmanActive(true);
         boundaryClock.set(Instant.now());
     }
 
@@ -235,7 +223,8 @@ class HomeworkEditLifecycleIT {
         assertThat(history.getContent()).allMatch(change -> change.actorId() == actor);
         String authorName =
                 jdbc.queryForObject(
-                        "SELECT last_name, first_name, middle_name FROM users WHERE id = ?",
+                        "SELECT last_name, first_name, middle_name FROM academic_user_directory"
+                                + " WHERE id = ?",
                         (rs, index) -> {
                             var user = new ru.rutcampustrack.academic.entity.User();
                             user.setLastName(rs.getString(1));
@@ -279,10 +268,7 @@ SELECT payload ->> 'event_type' AS type, payload #>> '{payload,title}' AS title,
         assertThatThrownBy(() -> service.updateHomework(homework.getId(), edit("foreign", 4)))
                 .isInstanceOf(AccessDeniedException.class);
         when(context.getGroupId()).thenReturn(group);
-        jdbc.update(
-                "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role ="
-                        + " 'headman'",
-                actor);
+        setHeadmanActive(false);
         assertThatThrownBy(() -> service.updateHomework(homework.getId(), first))
                 .isInstanceOf(AccessDeniedException.class);
         assertThat(updatedOutbox(homework)).isEqualTo(3);
@@ -667,49 +653,15 @@ VALUES(?,?,?,'legacy',?,?,1,?,?,?,?,'ACTIVE',NOW(),NOW()) RETURNING id
         assertThat(operation.actorRole()).isEqualTo("ASSISTANT");
         // The archive command is a separate admitted ADMIN request; the edit
         // retains its original ASSISTANT actor even after that grant is revoked.
-        UUID adminSession = UUID.randomUUID();
-        long adminGrant =
-                jdbc.queryForObject(
-                        "SELECT id FROM user_role_grants WHERE user_id=? AND role='admin' AND"
-                                + " status='active'",
-                        Long.class,
-                        publisher);
-        long rolesVersion =
-                jdbc.queryForObject(
-                        "SELECT roles_version FROM users WHERE id=?", Long.class, publisher);
-        long sessionVersion = 1L;
-        jdbc.update(
-                """
-INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
-    refresh_expires_at,created_at,last_seen_at,auth_method)
-VALUES (?,?,?,?,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
-""",
-                adminSession,
-                publisher,
-                adminGrant,
-                sessionVersion,
-                UUID.randomUUID());
-        when(context.getClaims())
-                .thenReturn(
-                        new ru.rutcampustrack.shared.security.InternalJwtClaims(
-                                publisher,
-                                adminSession,
-                                sessionVersion,
-                                rolesVersion,
-                                "ADMIN",
-                                "ACTIVE",
-                                null,
-                                false,
-                                false));
-        when(context.getUserId()).thenReturn(publisher);
-        when(context.getRole()).thenReturn(UserRole.ADMIN);
         var archive =
-                archiveCommands.startOrReplay(
-                        semester, publisher, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
-        jdbc.update(
-                "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role ="
-                        + " 'headman'",
-                actor);
+                asAdministrator(
+                        () ->
+                                archiveCommands.startOrReplay(
+                                        semester,
+                                        publisher,
+                                        UUID.randomUUID(),
+                                        SemesterArchiveAction.ARCHIVE));
+        setHeadmanActive(false);
         jdbc.update("UPDATE headman_assistants SET is_active=false WHERE id=?", ownedAssistantId);
         when(context.getUserId()).thenReturn(publisher);
         when(context.getRole()).thenReturn(UserRole.ADMIN);
@@ -931,10 +883,7 @@ VALUES (?,?,?,?,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
                         () -> service.listHomeworks(group, semester, PageRequest.of(0, 10), true))
                 .isInstanceOf(AccessDeniedException.class);
         when(context.getGroupId()).thenReturn(group);
-        jdbc.update(
-                "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role ="
-                        + " 'headman'",
-                actor);
+        setHeadmanActive(false);
         assertThatThrownBy(() -> service.getHomework(terminal.getId(), true))
                 .isInstanceOf(AccessDeniedException.class);
         jdbc.update(
@@ -1378,9 +1327,7 @@ VALUES (?,?,?,?,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
         var command = edit("B", 1);
         service.updateHomework(created.getId(), command);
         List<String> beforeReplay = actions(created);
-        jdbc.update(
-                "UPDATE user_role_grants SET status='active' WHERE user_id=? AND role='headman'",
-                actor);
+        setHeadmanActive(true);
         service.updateHomework(created.getId(), command);
         service.updateHomework(created.getId(), edit("B", 2));
         assertThat(actions(created)).isEqualTo(beforeReplay).hasSize(2);
@@ -1397,9 +1344,7 @@ VALUES (?,?,?,?,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
                 .isInstanceOf(ScheduleServiceUnavailableException.class);
         assertThat(repository.findById(created.getId()).orElseThrow().getArchiveActionActorRole())
                 .isEqualTo("HEADMAN");
-        jdbc.update(
-                "UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='headman'",
-                actor);
+        setHeadmanActive(false);
         service.deleteHomework(
                 created.getId()); // Current assistant continues the first admitted headman intent.
         service.deleteHomework(created.getId());
@@ -1505,10 +1450,64 @@ VALUES (?,?,?,?,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
                 .isTrue();
     }
 
+    private <T> T asAdministrator(java.util.function.Supplier<T> action) {
+        var userId = context.getUserId();
+        var role = context.getRole();
+        var groupId = context.getGroupId();
+        var claims = context.getClaims();
+        var token = context.getInternalToken();
+        var profile = context.getAdmittedAdminProfile();
+        doCallRealMethod().when(context).getUserId();
+        doCallRealMethod().when(context).getRole();
+        doCallRealMethod().when(context).getGroupId();
+        doCallRealMethod().when(context).getClaims();
+        doCallRealMethod().when(context).getInternalToken();
+        doCallRealMethod().when(context).getAdmittedAdminProfile();
+        try (var ignored =
+                identityFixture.request(identityFixture.select(publisher, AuthRole.ADMIN))) {
+            return action.get();
+        } finally {
+            doReturn(userId).when(context).getUserId();
+            doReturn(role).when(context).getRole();
+            doReturn(groupId).when(context).getGroupId();
+            doReturn(claims).when(context).getClaims();
+            doReturn(token).when(context).getInternalToken();
+            doReturn(profile).when(context).getAdmittedAdminProfile();
+        }
+    }
+
+    private void setHeadmanActive(boolean active) {
+        if (headmanReplaced == !active) return;
+        Boolean assistantActive =
+                ownedAssistantId == null
+                        ? null
+                        : jdbc.queryForObject(
+                                "SELECT is_active FROM headman_assistants WHERE id=?",
+                                Boolean.class,
+                                ownedAssistantId);
+        asAdministrator(
+                () ->
+                        identityOperations.headman(
+                                group, active ? actor : replacementHeadman, null, false, null));
+        identityFixture.catchUpCatalog();
+        // These scenarios vary HEADMAN independently of their separately seeded assistant grant.
+        // Actual replacement revokes assistants; restore only this test's exact prior row state.
+        if (assistantActive != null)
+            jdbc.update(
+                    "UPDATE headman_assistants SET is_active=? WHERE id=?",
+                    assistantActive,
+                    ownedAssistantId);
+        headmanReplaced = !active;
+        if (Objects.equals(context.getUserId(), actor) && context.getRole() == UserRole.STUDENT) {
+            var student = identityFixture.select(actor, AuthRole.STUDENT);
+            doReturn(student.claims()).when(context).getClaims();
+            doReturn(student.internalToken()).when(context).getInternalToken();
+            doReturn(student.profile()).when(context).getAdmittedAdminProfile();
+        }
+    }
+
     private void becomeAssistant() {
-        jdbc.update(
-                "UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='headman'",
-                actor);
+        setHeadmanActive(false);
         ownedAssistantId =
                 jdbc.queryForObject(
                         """

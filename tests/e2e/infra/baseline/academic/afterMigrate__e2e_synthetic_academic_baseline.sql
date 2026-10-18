@@ -51,7 +51,7 @@ BEGIN
           (3, 'STUDENT', 'ACTIVE', 1, NOW()),
           (3, 'HEADMAN', 'ACTIVE', 1, NOW());
     INSERT INTO semesters(id, name, date_from, date_to, is_active, semester_type, academic_year)
-    VALUES(1, 'Spring 2026', '2026-02-01', '2026-06-30', TRUE, 'SPRING', 2025);
+    VALUES(1, 'Spring 2026', '2026-02-01', '2026-06-30', TRUE, NULL, NULL);
     INSERT INTO student_group_history(id, user_id, group_id, joined_at, reason)
     VALUES(1, 3, 1, '2026-02-01', 'initial-enrollment');
     INSERT INTO group_history_coverage(group_id, coverage_from, writer_version)

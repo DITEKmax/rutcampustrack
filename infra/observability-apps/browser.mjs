@@ -71,6 +71,29 @@ try {
   await operator.close()
   const context = await browser.newContext()
   const page = await context.newPage()
+  let bootHintWritten = false
+  page.on('pageerror', (error) => {
+    if (bootHintWritten || error.message === 'synthetic-private@example.invalid') return
+    const message = typeof error.message === 'string' ? error.message : ''
+    let hint = 'JS_UNKNOWN'
+    if (message === 'process is not defined') hint = 'PROCESS_GLOBAL'
+    else if (/^__VUE_(?:OPTIONS_API|PROD_DEVTOOLS|PROD_HYDRATION_MISMATCH_DETAILS)__ is not defined$/.test(message)) hint = 'VUE_FEATURE_FLAG'
+    else if (message.includes('does not provide an export named')) hint = 'MODULE_EXPORT'
+    else if (message.startsWith('Failed to fetch dynamically imported module')) hint = 'DYNAMIC_IMPORT'
+    else if (error.name === 'ReferenceError') hint = 'JS_REFERENCE'
+    else if (error.name === 'SyntaxError') hint = 'JS_SYNTAX'
+    else if (error.name === 'TypeError') hint = 'JS_TYPE'
+    else if (error.name === 'Error') hint = 'JS_ERROR'
+    bootHintWritten = true
+    console.error('RCT_BROWSER_BOOT:' + hint)
+  })
+  page.on('response', (response) => {
+    if (bootHintWritten || response.request().resourceType() !== 'script' ||
+        !response.url().startsWith(fixtureOrigin + '/') || response.status() < 400) return
+    const status = [403, 404, 500, 504].includes(response.status()) ? response.status() : 'OTHER'
+    bootHintWritten = true
+    console.error('RCT_BROWSER_BOOT:SCRIPT_' + status)
+  })
   const sent = []
   page.on('request', (request) => {
     if (request.url().includes('/telemetry/errors/api/1/envelope/'))

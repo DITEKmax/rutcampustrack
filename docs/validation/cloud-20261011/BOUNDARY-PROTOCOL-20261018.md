@@ -215,7 +215,7 @@ B013/B014/B015 FROZEN: no equivalent forbidden caller/mutation/proof rerun.
 8. Verification: source/compose/SQL boundaries, actual isolated fresh/repeat/conflict checks and existing Link/create/login/DOCX UI paths; no mocked runtime PASS.
 9. Exclusions: no real first-admin setup (Q033 separate), grants widening, unrelated workflow/config/consumer rewrite, reset or B013/B014/B015 caller. Root+independent S3 design GO before implementation; final changed-risk source review thereafter.
 
-## U14.7 / Q033 operator bootstrap — DESIGN GO / implementation active
+## U14.7 / Q033 operator bootstrap — SOURCE APPROVE / runtime pending
 
 1. Goal: one explicit operator command creates the first FULL administrator with matching Auth identity/credentials and Academic profile; no production invocation in this task.
 2. Evidence: current CREATE requires a live admin; fresh split chains create no sample actors. Actorless bootstrap is a separate trust root, not a fabricated session or normal create bypass. Weight8 fixed before code; v3 adds only U14.7.

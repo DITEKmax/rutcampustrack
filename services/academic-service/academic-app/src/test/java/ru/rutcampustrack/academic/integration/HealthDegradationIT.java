@@ -11,12 +11,13 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
 
 import java.time.Duration;
@@ -26,52 +27,67 @@ import java.time.Duration;
  * (Rabbit), а не silent UP при их падении.
  *
  * <p>Не extends {@link AbstractAcademicIntegrationTest} (тот mock'ает RabbitTemplate + excluds
- * RabbitAutoConfiguration) и не {@link AbstractAcademicEventIntegrationTest} (тот reuse=true делит
- * RabbitMQContainer с другими IT — stop его сломает соседей).
+ * RabbitAutoConfiguration) и не {@link AbstractAcademicEventIntegrationTest} (тот делит один
+ * RabbitMQContainer между своими IT).
  *
- * <p>Здесь — own dedicated PostgreSQLContainer + RabbitMQContainer без {@code reuse}. Тест
- * останавливает Rabbit и проверяет что {@code components.rabbit.status: DOWN} в health response.
+ * <p>Здесь — отдельный owned split identity fixture и собственный RabbitMQContainer без {@code
+ * reuse}. Тест останавливает только свой Rabbit и проверяет {@code components.rabbit.status: DOWN}
+ * в health response.
  *
  * <p>{@code @Order} нужен — health-up должен быть первым (до stop'а), health-down — после.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@Import(InternalJwtTestConfig.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class HealthDegradationIT {
 
     @Autowired TestRestTemplate restTemplate;
 
-    static final PostgreSQLContainer<?> POSTGRES =
-            new PostgreSQLContainer<>("postgres:16")
-                    .withDatabaseName("academic_db")
-                    .withUsername("rct_user")
-                    .withPassword("rct_dev_pass")
-                    .withReuse(false);
+    static final AcademicIdentityIntegrationFixture IDENTITY_FIXTURE =
+            AcademicIdentityIntegrationFixture.start();
 
     /** Dedicated Rabbit без reuse — тест свободно его останавливает, не ломая параллельные IT. */
     static final RabbitMQContainer RABBITMQ =
             new RabbitMQContainer("rabbitmq:3.13-management-alpine");
 
     static {
-        POSTGRES.start();
-        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
-        RABBITMQ.start();
+        try {
+            RABBITMQ.start();
+        } catch (RuntimeException failure) {
+            try {
+                RABBITMQ.stop();
+            } catch (RuntimeException cleanup) {
+                failure.addSuppressed(cleanup);
+            }
+            try {
+                IDENTITY_FIXTURE.close();
+            } catch (RuntimeException cleanup) {
+                failure.addSuppressed(cleanup);
+            }
+            throw failure;
+        }
     }
 
     @AfterAll
     static void stopOwnedContainers() {
         try {
             RABBITMQ.stop();
-        } finally {
-            POSTGRES.stop();
+        } catch (RuntimeException | Error failure) {
+            try {
+                IDENTITY_FIXTURE.close();
+            } catch (RuntimeException | Error cleanup) {
+                failure.addSuppressed(cleanup);
+            }
+            throw failure;
         }
+        IDENTITY_FIXTURE.close();
     }
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        IDENTITY_FIXTURE.properties(registry, "health-degradation");
 
         registry.add("spring.rabbitmq.host", RABBITMQ::getHost);
         registry.add("spring.rabbitmq.port", () -> RABBITMQ.getMappedPort(5672));

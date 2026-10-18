@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -22,8 +20,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
 import ru.rutcampustrack.shared.outbox.OutboxEventSender;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 /** Actual committed outbox/marker proof in a database owned only by this test. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -39,6 +42,7 @@ class AdministrativeNotificationGroupCycleIT {
 
     static {
         POSTGRES.start();
+        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
     }
 
     @AfterAll
@@ -55,8 +59,8 @@ class AdministrativeNotificationGroupCycleIT {
                 "spring.autoconfigure.exclude",
                 () ->
                         "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,"
-                                + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-                                + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
     }
 
     @MockitoBean RabbitTemplate rabbitTemplate;
@@ -73,9 +77,9 @@ class AdministrativeNotificationGroupCycleIT {
         long cycleId =
                 jdbc.queryForObject(
                         """
-                INSERT INTO semesters(name,date_from,date_to,is_active,semester_type,academic_year)
-                VALUES ('N4 owned spring cycle',? ,?,false,'SPRING',2025) RETURNING id
-                """,
+INSERT INTO semesters(name,date_from,date_to,is_active,semester_type,academic_year)
+VALUES ('N4 owned spring cycle',? ,?,false,'SPRING',2025) RETURNING id
+""",
                         Long.class,
                         LocalDate.of(2026, 8, 1),
                         LocalDate.of(2026, 8, 31));
@@ -99,9 +103,9 @@ class AdministrativeNotificationGroupCycleIT {
                 mapper.readTree(
                                 jdbc.queryForObject(
                                         """
-                SELECT payload::text FROM academic_outbox WHERE event_type='group.promotion.completed'
-                  AND payload #>> '{payload,cycle_semester_id}'=?
-                """,
+SELECT payload::text FROM academic_outbox WHERE event_type='group.promotion.completed'
+  AND payload #>> '{payload,cycle_semester_id}'=?
+""",
                                         String.class,
                                         Long.toString(cycleId)))
                         .path("payload");
@@ -110,19 +114,22 @@ class AdministrativeNotificationGroupCycleIT {
         assertThat(fact.path("promoted").asLong())
                 .isEqualTo(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id=? AND action='PROMOTE'",
+                                "SELECT count(*) FROM group_promotion_cycle_record WHERE"
+                                        + " cycle_semester_id=? AND action='PROMOTE'",
                                 Long.class,
                                 cycleId));
         assertThat(fact.path("graduated").asLong())
                 .isEqualTo(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM group_promotion_cycle_record WHERE cycle_semester_id=? AND action='ARCHIVE'",
+                                "SELECT count(*) FROM group_promotion_cycle_record WHERE"
+                                        + " cycle_semester_id=? AND action='ARCHIVE'",
                                 Long.class,
                                 cycleId));
         assertThat(fact.path("skipped").asLong())
                 .isEqualTo(
                         jdbc.queryForObject(
-                                "SELECT skipped FROM group_promotion_notification_cycle WHERE cycle_semester_id=?",
+                                "SELECT skipped FROM group_promotion_notification_cycle WHERE"
+                                        + " cycle_semester_id=?",
                                 Long.class,
                                 cycleId));
 
@@ -135,10 +142,10 @@ class AdministrativeNotificationGroupCycleIT {
         assertThat(
                         jdbc.queryForObject(
                                 """
-                SELECT count(*) FROM academic_outbox WHERE event_type='group.renamed'
-                  AND payload #>> '{payload,group_id}'=?
-                  AND payload #>> '{payload,notification_cause}'='AUTOMATIC_GROUP_CYCLE'
-                """,
+SELECT count(*) FROM academic_outbox WHERE event_type='group.renamed'
+  AND payload #>> '{payload,group_id}'=?
+  AND payload #>> '{payload,notification_cause}'='AUTOMATIC_GROUP_CYCLE'
+""",
                                 Long.class,
                                 Long.toString(later)))
                 .isOne();

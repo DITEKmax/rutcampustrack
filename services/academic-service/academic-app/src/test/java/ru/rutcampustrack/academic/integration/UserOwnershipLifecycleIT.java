@@ -312,7 +312,7 @@ class UserOwnershipLifecycleIT extends AbstractAcademicIntegrationTest {
     }
 
     private long managedGroup() {
-        for (int number = 100; number <= 599; number++) {
+        for (int number = 110; number <= 119; number++) {
             String name = "ФД-" + number;
             if (administrator.queryForObject(
                             "SELECT count(*) FROM groups WHERE name=?", Long.class, name)

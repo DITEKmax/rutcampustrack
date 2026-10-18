@@ -5,13 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +28,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
 import ru.rutcampustrack.academic.contract.dto.homework.*;
 import ru.rutcampustrack.academic.contract.enums.*;
 import ru.rutcampustrack.academic.entity.Homework;
@@ -48,8 +43,16 @@ import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction;
 import ru.rutcampustrack.schedule.grpc.*;
-import ru.rutcampustrack.shared.outbox.OutboxStorage;
 import ru.rutcampustrack.shared.outbox.OutboxEventSender;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** One owned PostgreSQL boundary: committed edit/history/outbox and durable RPC recovery. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -100,6 +103,7 @@ class HomeworkEditLifecycleIT {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
+        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
         registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
@@ -107,8 +111,8 @@ class HomeworkEditLifecycleIT {
                 "spring.autoconfigure.exclude",
                 () ->
                         "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,"
-                                + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-                                + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
         registry.add("spring.task.scheduling.enabled", () -> "false");
     }
 
@@ -153,11 +157,13 @@ class HomeworkEditLifecycleIT {
         publisher = jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
         group =
                 jdbc.queryForObject(
-                        "SELECT group_id FROM user_role_grants WHERE user_id = ? AND role = 'student'",
+                        "SELECT group_id FROM user_role_grants WHERE user_id = ? AND role ="
+                                + " 'student'",
                         Long.class,
                         actor);
         jdbc.update(
-                "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role = 'headman'",
+                "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role ="
+                        + " 'headman'",
                 actor);
         subject =
                 new TransactionTemplate(transactions)
@@ -165,18 +171,22 @@ class HomeworkEditLifecycleIT {
                                 status -> {
                                     Long id =
                                             jdbc.queryForObject(
-                                                    "INSERT INTO subjects(name,type,group_id) VALUES(?, 'lecture', ?) RETURNING id",
+                                                    "INSERT INTO subjects(name,type,group_id)"
+                                                        + " VALUES(?, 'lecture', ?) RETURNING id",
                                                     Long.class,
                                                     "hw-edit-" + UUID.randomUUID(),
                                                     group);
                                     jdbc.update(
-                                            "INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,'lecture')",
+                                            "INSERT INTO"
+                                                + " subject_lesson_types(subject_id,lesson_type)"
+                                                + " VALUES(?,'lecture')",
                                             id);
                                     return id;
                                 });
         semester =
                 jdbc.queryForObject(
-                        "INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id",
+                        "INSERT INTO semesters(name,date_from,date_to,is_active,created_at)"
+                                + " VALUES(?,?,?,false,NOW()) RETURNING id",
                         Long.class,
                         "hw-edit-" + UUID.randomUUID(),
                         day.minusDays(10),
@@ -195,7 +205,8 @@ class HomeworkEditLifecycleIT {
                     "UPDATE headman_assistants SET is_active=false WHERE id=?", ownedAssistantId);
         if (actor > 0)
             jdbc.update(
-                    "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role = 'headman'",
+                    "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role ="
+                            + " 'headman'",
                     actor);
         boundaryClock.set(Instant.now());
     }
@@ -242,12 +253,12 @@ class HomeworkEditLifecycleIT {
         Map<String, Object> event =
                 jdbc.queryForMap(
                         """
-                SELECT payload ->> 'event_type' AS type, payload #>> '{payload,title}' AS title,
-                       payload #>> '{payload,binding_mode}' AS mode, payload #>> '{payload,lesson_number}' AS number,
-                       payload #>> '{payload,subject_id}' AS subject
-                  FROM academic_outbox WHERE event_type = 'homework.updated'
-                   AND payload #>> '{payload,homework_id}' = ? ORDER BY id LIMIT 1
-                """,
+SELECT payload ->> 'event_type' AS type, payload #>> '{payload,title}' AS title,
+       payload #>> '{payload,binding_mode}' AS mode, payload #>> '{payload,lesson_number}' AS number,
+       payload #>> '{payload,subject_id}' AS subject
+  FROM academic_outbox WHERE event_type = 'homework.updated'
+   AND payload #>> '{payload,homework_id}' = ? ORDER BY id LIMIT 1
+""",
                         homework.getId().toString());
         assertThat(event)
                 .containsEntry("type", "homework.updated")
@@ -269,7 +280,8 @@ class HomeworkEditLifecycleIT {
                 .isInstanceOf(AccessDeniedException.class);
         when(context.getGroupId()).thenReturn(group);
         jdbc.update(
-                "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role = 'headman'",
+                "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role ="
+                        + " 'headman'",
                 actor);
         assertThatThrownBy(() -> service.updateHomework(homework.getId(), first))
                 .isInstanceOf(AccessDeniedException.class);
@@ -284,11 +296,11 @@ class HomeworkEditLifecycleIT {
         // Historical actor IDs have no users FK; an absent author must not remove the history row.
         jdbc.update(
                 """
-                INSERT INTO homework_edit_history
-                    (homework_id, semester_id, revision, actor_id, occurred_at, action, before_snapshot, after_snapshot)
-                SELECT homework_id, semester_id, 5, ?, occurred_at, action, before_snapshot, after_snapshot
-                  FROM homework_edit_history WHERE homework_id = ? AND revision = 4
-                """,
+INSERT INTO homework_edit_history
+    (homework_id, semester_id, revision, actor_id, occurred_at, action, before_snapshot, after_snapshot)
+SELECT homework_id, semester_id, 5, ?, occurred_at, action, before_snapshot, after_snapshot
+  FROM homework_edit_history WHERE homework_id = ? AND revision = 4
+""",
                 Long.MAX_VALUE,
                 homework.getId());
         var lastPage = service.history(homework.getId(), PageRequest.of(1, 2));
@@ -321,10 +333,10 @@ class HomeworkEditLifecycleIT {
         Long id =
                 jdbc.queryForObject(
                         """
-                INSERT INTO homeworks(group_id,subject_id,semester_id,title,published_by,lesson_date,lesson_number,
-                    binding_id,actor_id,request_key,payload_hash,publication_state,created_at,updated_at)
-                VALUES(?,?,?,'legacy',?,?,1,?,?,?,?,'ACTIVE',NOW(),NOW()) RETURNING id
-                """,
+INSERT INTO homeworks(group_id,subject_id,semester_id,title,published_by,lesson_date,lesson_number,
+    binding_id,actor_id,request_key,payload_hash,publication_state,created_at,updated_at)
+VALUES(?,?,?,'legacy',?,?,1,?,?,?,?,'ACTIVE',NOW(),NOW()) RETURNING id
+""",
                         Long.class,
                         group,
                         subject,
@@ -658,7 +670,8 @@ class HomeworkEditLifecycleIT {
         UUID adminSession = UUID.randomUUID();
         long adminGrant =
                 jdbc.queryForObject(
-                        "SELECT id FROM user_role_grants WHERE user_id=? AND role='admin' AND status='active'",
+                        "SELECT id FROM user_role_grants WHERE user_id=? AND role='admin' AND"
+                                + " status='active'",
                         Long.class,
                         publisher);
         long rolesVersion =
@@ -667,10 +680,10 @@ class HomeworkEditLifecycleIT {
         long sessionVersion = 1L;
         jdbc.update(
                 """
-                INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
-                    refresh_expires_at,created_at,last_seen_at,auth_method)
-                VALUES (?,?,?,?,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
-                """,
+INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
+    refresh_expires_at,created_at,last_seen_at,auth_method)
+VALUES (?,?,?,?,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
+""",
                 adminSession,
                 publisher,
                 adminGrant,
@@ -694,7 +707,8 @@ class HomeworkEditLifecycleIT {
                 archiveCommands.startOrReplay(
                         semester, publisher, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
         jdbc.update(
-                "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role = 'headman'",
+                "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role ="
+                        + " 'headman'",
                 actor);
         jdbc.update("UPDATE headman_assistants SET is_active=false WHERE id=?", ownedAssistantId);
         when(context.getUserId()).thenReturn(publisher);
@@ -720,7 +734,8 @@ class HomeworkEditLifecycleIT {
         assertThat(updatedOutbox(homework)).isEqualTo(1);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT superseded_by_edit_operation_id FROM homework_binding_transfer_markers WHERE binding_id = ?",
+                                "SELECT superseded_by_edit_operation_id FROM"
+                                        + " homework_binding_transfer_markers WHERE binding_id = ?",
                                 UUID.class,
                                 binding))
                 .isEqualTo(operation.operationId());
@@ -728,7 +743,8 @@ class HomeworkEditLifecycleIT {
                 .isEqualTo("ACKNOWLEDGED");
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM homework_edit_archive_admissions WHERE archive_operation_id = ?",
+                                "SELECT count(*) FROM homework_edit_archive_admissions WHERE"
+                                        + " archive_operation_id = ?",
                                 Long.class,
                                 archive.getOperationId()))
                 .isEqualTo(1);
@@ -916,12 +932,14 @@ class HomeworkEditLifecycleIT {
                 .isInstanceOf(AccessDeniedException.class);
         when(context.getGroupId()).thenReturn(group);
         jdbc.update(
-                "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role = 'headman'",
+                "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role ="
+                        + " 'headman'",
                 actor);
         assertThatThrownBy(() -> service.getHomework(terminal.getId(), true))
                 .isInstanceOf(AccessDeniedException.class);
         jdbc.update(
-                "INSERT INTO headman_assistants(group_id, student_id, permissions, is_active,assigned_by) VALUES(?,?,ARRAY['manage_homework'],true,?)",
+                "INSERT INTO headman_assistants(group_id, student_id, permissions,"
+                        + " is_active,assigned_by) VALUES(?,?,ARRAY['manage_homework'],true,?)",
                 group,
                 actor,
                 publisher);
@@ -1271,7 +1289,9 @@ class HomeworkEditLifecycleIT {
         assertThat(payload.path("after").path("publication_state").asText()).isEqualTo("ARCHIVED");
         List<String> withdrawn =
                 jdbc.queryForList(
-                        "SELECT payload::text FROM academic_outbox WHERE event_type = 'homework.withdrawn' AND payload #>> '{payload,homework_id}' = ? ORDER BY id",
+                        "SELECT payload::text FROM academic_outbox WHERE event_type ="
+                            + " 'homework.withdrawn' AND payload #>> '{payload,homework_id}' = ?"
+                            + " ORDER BY id",
                         String.class,
                         homework.getId().toString());
         assertThat(withdrawn).hasSize(1);
@@ -1289,7 +1309,9 @@ class HomeworkEditLifecycleIT {
         assertThat(actions(homework)).isEqualTo(archivedActions);
         assertThat(
                         jdbc.queryForList(
-                                "SELECT payload::text FROM academic_outbox WHERE event_type = 'homework.withdrawn' AND payload #>> '{payload,homework_id}' = ? ORDER BY id",
+                                "SELECT payload::text FROM academic_outbox WHERE event_type ="
+                                        + " 'homework.withdrawn' AND payload #>>"
+                                        + " '{payload,homework_id}' = ? ORDER BY id",
                                 String.class,
                                 homework.getId().toString()))
                 .isEqualTo(withdrawn);
@@ -1442,7 +1464,8 @@ class HomeworkEditLifecycleIT {
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE homeworks SET create_actor_role='HEADMAN' WHERE id=?",
+                                        "UPDATE homeworks SET create_actor_role='HEADMAN' WHERE"
+                                                + " id=?",
                                         legacy.getId()))
                 .isInstanceOf(org.springframework.dao.DataAccessException.class);
         jdbc.update("UPDATE headman_assistants SET is_active=false WHERE id=?", ownedAssistantId);
@@ -1489,9 +1512,9 @@ class HomeworkEditLifecycleIT {
         ownedAssistantId =
                 jdbc.queryForObject(
                         """
-                INSERT INTO headman_assistants(group_id,student_id,permissions,is_active,assigned_by)
-                VALUES(?,?,ARRAY['manage_homework'],true,?) RETURNING id
-                """,
+INSERT INTO headman_assistants(group_id,student_id,permissions,is_active,assigned_by)
+VALUES(?,?,ARRAY['manage_homework'],true,?) RETURNING id
+""",
                         Long.class,
                         group,
                         actor,
@@ -1523,7 +1546,9 @@ class HomeworkEditLifecycleIT {
 
     private List<String> actions(Homework homework) {
         return jdbc.queryForList(
-                "SELECT payload::text FROM academic_outbox WHERE event_type = 'homework.action-recorded' AND payload #>> '{payload,homework_id}' = ? ORDER BY id",
+                "SELECT payload::text FROM academic_outbox WHERE event_type ="
+                        + " 'homework.action-recorded' AND payload #>> '{payload,homework_id}' = ?"
+                        + " ORDER BY id",
                 String.class,
                 homework.getId().toString());
     }
@@ -1556,7 +1581,8 @@ class HomeworkEditLifecycleIT {
 
     private void completion(Homework homework) {
         jdbc.update(
-                "INSERT INTO homework_completions(homework_id,student_id,completed_at) VALUES(?,?,NOW())",
+                "INSERT INTO homework_completions(homework_id,student_id,completed_at)"
+                        + " VALUES(?,?,NOW())",
                 homework.getId(),
                 actor);
     }
@@ -1567,7 +1593,8 @@ class HomeworkEditLifecycleIT {
 
     private long updatedOutbox(Homework homework) {
         return jdbc.queryForObject(
-                "SELECT count(*) FROM academic_outbox WHERE event_type = 'homework.updated' AND payload #>> '{payload,homework_id}' = ?",
+                "SELECT count(*) FROM academic_outbox WHERE event_type = 'homework.updated' AND"
+                        + " payload #>> '{payload,homework_id}' = ?",
                 Long.class,
                 homework.getId().toString());
     }
@@ -1644,11 +1671,11 @@ class HomeworkEditLifecycleIT {
     private void oldTransferMarker(Homework homework) {
         jdbc.update(
                 """
-                INSERT INTO homework_binding_transfer_markers(binding_id,actor_id,request_key,binding_payload_hash,homework_id,
-                    operation_id,operation_hash,occurrence_id,group_id,subject_id,semester_id,source_lesson_id,target_lesson_id,
-                    source_date,source_lesson_number,target_date,target_lesson_number,state,source_event_id,batch_index)
-                VALUES(?,?,?,?,?,?,?,701,?,?,?,700,701,?,1,?,1,'APPLIED',?,0)
-                """,
+INSERT INTO homework_binding_transfer_markers(binding_id,actor_id,request_key,binding_payload_hash,homework_id,
+    operation_id,operation_hash,occurrence_id,group_id,subject_id,semester_id,source_lesson_id,target_lesson_id,
+    source_date,source_lesson_number,target_date,target_lesson_number,state,source_event_id,batch_index)
+VALUES(?,?,?,?,?,?,?,701,?,?,?,700,701,?,1,?,1,'APPLIED',?,0)
+""",
                 binding,
                 publisher,
                 createKey,

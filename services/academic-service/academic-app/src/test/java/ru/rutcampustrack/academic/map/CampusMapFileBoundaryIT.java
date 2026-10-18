@@ -7,6 +7,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
+import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
+import org.testcontainers.containers.PostgreSQLContainer;
+
+import ru.rutcampustrack.academic.admin.AcademicAdminAccess;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.academic.security.RoleCheckAspect;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,35 +48,8 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.CRC32;
+
 import javax.imageio.ImageIO;
-import org.flywaydb.core.Flyway;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
-import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
-import org.springframework.transaction.interceptor.TransactionInterceptor;
-import org.testcontainers.containers.PostgreSQLContainer;
-import ru.rutcampustrack.academic.admin.AcademicAdminAccess;
-import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
-import ru.rutcampustrack.academic.contract.enums.UserRole;
-import ru.rutcampustrack.academic.security.RequestContext;
-import ru.rutcampustrack.academic.security.RoleCheckAspect;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
-import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 
 /** Real PG BYTEA and MVC/AOP proof; no browser or signed JWT admission is inferred. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -74,21 +75,9 @@ class CampusMapFileBoundaryIT {
 
     @BeforeEach
     void schemaAndLiveAuthority() {
-        String schema = "files_" + UUID.randomUUID().toString().replace("-", "");
         var source =
-                new DriverManagerDataSource(
-                        postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
-        new JdbcTemplate(source).execute("CREATE SCHEMA " + schema);
-        source.setSchema(schema);
-        Flyway.configure()
-                .dataSource(source)
-                .locations("classpath:db/migration")
-                .schemas(schema)
-                .defaultSchema(schema)
-                .cleanDisabled(true)
-                .target("54")
-                .load()
-                .migrate();
+                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.freshPublicDatabase(
+                        postgres);
         jdbc = new JdbcTemplate(source);
         var transaction = new TransactionInterceptor();
         transaction.setTransactionManager(new DataSourceTransactionManager(source));
@@ -100,23 +89,25 @@ class CampusMapFileBoundaryIT {
         admin = (CampusMapAdminService) serviceProxy.getProxy();
 
         jdbc.update(
-                "INSERT INTO users(id,login,last_name,first_name) VALUES (700,'files-admin','Synthetic','Admin')");
+                "INSERT INTO users(id,login,last_name,first_name) VALUES"
+                        + " (700,'files-admin','Synthetic','Admin')");
         jdbc.update(
-                "INSERT INTO admin_access_profiles(user_id,assigned,mode,version) VALUES (700,TRUE,'FULL',1)");
+                "INSERT INTO admin_access_profiles(user_id,assigned,mode,version) VALUES"
+                        + " (700,TRUE,'FULL',1)");
         Long grant =
                 jdbc.queryForObject(
                         """
-                INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
-                VALUES (700,'admin','active',NOW(),NOW()) RETURNING id
-                """,
+                        INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
+                        VALUES (700,'admin','active',NOW(),NOW()) RETURNING id
+                        """,
                         Long.class);
         session = UUID.randomUUID();
         jdbc.update(
                 """
-                INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
-                    refresh_expires_at,created_at,last_seen_at,auth_method)
-                VALUES (?,700,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
-                """,
+INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
+    refresh_expires_at,created_at,last_seen_at,auth_method)
+VALUES (?,700,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
+""",
                 session,
                 grant,
                 UUID.randomUUID());
@@ -171,9 +162,9 @@ class CampusMapFileBoundaryIT {
         assertThat(image.getRGB(1, 1)).isEqualTo(0xff0000ff);
 
         byte[] svg =
-                ("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"2\" height=\"2\">"
-                                + "<defs><linearGradient id=\"local\"/></defs><rect width=\"2\" height=\"2\" "
-                                + "fill=\"url(#local)\"/><text>Синтетическая схема</text></svg>")
+                ("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"2\""
+                     + " height=\"2\"><defs><linearGradient id=\"local\"/></defs><rect width=\"2\""
+                     + " height=\"2\" fill=\"url(#local)\"/><text>Синтетическая схема</text></svg>")
                         .getBytes(StandardCharsets.UTF_8);
         mvc.perform(upload().file(file("svg", "схема.svg", "image/svg+xml", svg)))
                 .andExpect(status().isOk());
@@ -231,9 +222,12 @@ class CampusMapFileBoundaryIT {
                 "<script>alert(1)</script>",
                 "<image href='https://example.invalid/rct-file-marker'/>",
                 "<rect onload='alert(1)'/>",
-                "<image href='#local'><set attributeName='href' to='https://example.invalid/rct-file-marker' begin='0s'/></image>",
-                "<image href='#local'><animate attributeName='href' values='#local;https://example.invalid/rct-file-marker' dur='1s'/></image>",
-                "<style>rect { fill: url('/rct-file-marker.svg#paint'); }</style><rect width='2' height='2'/>",
+                "<image href='#local'><set attributeName='href'"
+                        + " to='https://example.invalid/rct-file-marker' begin='0s'/></image>",
+                "<image href='#local'><animate attributeName='href'"
+                    + " values='#local;https://example.invalid/rct-file-marker' dur='1s'/></image>",
+                "<style>rect { fill: url('/rct-file-marker.svg#paint'); }</style><rect width='2'"
+                        + " height='2'/>",
                 "<style>rect { fill: u\\72l('\\2f rct-file-marker.svg#paint'); }</style>",
                 "<style>@\\69mport '//example.invalid/rct-file-marker.css';</style>",
                 "<use xml:base='https://example.invalid/rct-file-marker.svg' href='#paint'/>"
@@ -248,8 +242,9 @@ class CampusMapFileBoundaryIT {
     @Test
     void svgDoctypeCannotResolveAnExternalEntityOrPublishAFile() throws Exception {
         byte[] svg =
-                ("<!DOCTYPE svg [<!ENTITY external SYSTEM 'file:///rct-synthetic-nonexistent-marker'>]>"
-                                + "<svg xmlns='http://www.w3.org/2000/svg'><text>&external;</text></svg>")
+                ("<!DOCTYPE svg [<!ENTITY external SYSTEM"
+                     + " 'file:///rct-synthetic-nonexistent-marker'>]><svg"
+                     + " xmlns='http://www.w3.org/2000/svg'><text>&external;</text></svg>")
                         .getBytes(StandardCharsets.UTF_8);
         assertRejectedWithoutWrites(file("svg", "xxe.svg", "image/svg+xml", svg));
     }
@@ -265,7 +260,8 @@ class CampusMapFileBoundaryIT {
                 };
         String instruction = "<?xml-stylesheet type='text/css' href='" + target + "'?>";
         String root =
-                "<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'><rect width='2' height='2'/></svg>";
+                "<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'><rect width='2'"
+                        + " height='2'/></svg>";
         String document =
                 "<?xml version='1.0' encoding='UTF-8'?>"
                         + ("after-root".equals(position) ? root + instruction : instruction + root);
@@ -284,7 +280,8 @@ class CampusMapFileBoundaryIT {
                 "background-image:-webkit-image-set('//example.invalid/rct-file-marker.png' 1x)",
                 "background-image:image-set('/rct-file-marker.png' 1x)",
                 "background-image:i\\6d age-set('\\2f rct-file-marker.png' 1x)",
-                "background-image:image-set(url('#local') 1x, 'https://example.invalid/rct-file-marker.png' 2x)",
+                "background-image:image-set(url('#local') 1x,"
+                        + " 'https://example.invalid/rct-file-marker.png' 2x)",
                 "background-image:image-set('/*rct-marker*/#paint' 1x)",
                 "background-image:image-set('\\27 /rct-file-marker.png' 1x)"
             })
@@ -303,13 +300,13 @@ class CampusMapFileBoundaryIT {
     @Test
     void xmlDeclarationLocalStylesheetAndImageSetFragmentRemainAccepted() throws Exception {
         byte[] svg =
-                ("<?xml version='1.0' encoding='UTF-8'?>"
-                                + "<?xml-stylesheet type='text/css' href='#local-css'?>"
-                                + "<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'>"
-                                + "<defs><linearGradient id='paint'/></defs>"
-                                + "<style id='local-css'>rect { fill: url('#paint'); background-image:image-set('#paint' 1x type('image/png')); "
-                                + "border-image:image-set('#paint\\27 local' 1x); }</style>"
-                                + "<rect width='2' height='2'/></svg>")
+                ("<?xml version='1.0' encoding='UTF-8'?><?xml-stylesheet type='text/css'"
+                     + " href='#local-css'?><svg xmlns='http://www.w3.org/2000/svg' width='2'"
+                     + " height='2'><defs><linearGradient id='paint'/></defs><style"
+                     + " id='local-css'>rect { fill: url('#paint');"
+                     + " background-image:image-set('#paint' 1x type('image/png'));"
+                     + " border-image:image-set('#paint\\27 local' 1x); }</style><rect width='2'"
+                     + " height='2'/></svg>")
                         .getBytes(StandardCharsets.UTF_8);
         mvc.perform(upload().file(file("svg", "local-styles.svg", "image/svg+xml", svg)))
                 .andExpect(status().isCreated());
@@ -435,11 +432,12 @@ class CampusMapFileBoundaryIT {
         assertThat(ImageIO.read(new ByteArrayInputStream(jpegBytes.toByteArray()))).isNotNull();
         String jpeg = java.util.Base64.getEncoder().encodeToString(jpegBytes.toByteArray());
         byte[] svg =
-                ("<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'>"
-                                + "<defs><linearGradient id='paint'/></defs><style>rect { fill: u\\72l('#paint'); }</style>"
-                                + "<rect width='2' height='2'><animate attributeName='opacity' values='0;1' dur='1s'/></rect>"
-                                + "<use href='#paint'><set attributeName='href' to='#paint' begin='0s'/></use>"
-                                + "<image href='data:image/png;base64,"
+                ("<svg xmlns='http://www.w3.org/2000/svg' width='2'"
+                     + " height='2'><defs><linearGradient id='paint'/></defs><style>rect { fill:"
+                     + " u\\72l('#paint'); }</style><rect width='2' height='2'><animate"
+                     + " attributeName='opacity' values='0;1' dur='1s'/></rect><use"
+                     + " href='#paint'><set attributeName='href' to='#paint'"
+                     + " begin='0s'/></use><image href='data:image/png;base64,"
                                 + raster
                                 + "'/>"
                                 + "<image href='data:image/jpeg;base64,"
@@ -467,7 +465,9 @@ class CampusMapFileBoundaryIT {
                 .andExpect(status().isOk())
                 .andExpect(content().bytes(png()));
         jdbc.update(
-                "UPDATE admin_access_profiles SET mode='LIMITED',permissions=ARRAY['USERS_VIEW'],version=version+1 WHERE user_id=700");
+                "UPDATE admin_access_profiles SET"
+                        + " mode='LIMITED',permissions=ARRAY['USERS_VIEW'],version=version+1 WHERE"
+                        + " user_id=700");
         refreshClaims(); // Fresh selected session remains live, but it no longer has
         // CAMPUS_MAP_MANAGE.
         byte[] denied =

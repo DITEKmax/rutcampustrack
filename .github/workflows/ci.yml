@@ -597,11 +597,11 @@ jobs:
 
                   audit_source = app / 'src/test/java/ru/rutcampustrack/academic/homework/HomeworkEditLifecycleIT.java'
                   audit_test = audit_source.read_bytes()
-                  assert hashlib.sha256(audit_test).hexdigest() == 'b9e054d160023203ee25a553057fcb8a152d03422a4b1cd9e9be3223809beb95'
+                  assert hashlib.sha256(audit_test).hexdigest() == 'd8908673946a019e36f1b5b4766f41b5106817a6778e3aafc5ac1b2f928ad241'
                   audit_oracle = b'        assertThat(payload.path("actor").path("user_id").asLong()).isEqualTo(actor);\n'
                   assert audit_test.count(audit_oracle) == 1
                   audit_line = audit_test[:audit_test.index(audit_oracle)].count(b'\n') + 1
-                  assert audit_line == 1268
+                  assert audit_line == 1286
                   audit_production = app / 'src/main/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveCoordinator.java'
                   audit_current = audit_production.read_bytes()
                   assert hashlib.sha256(audit_current).hexdigest() == '682a47e0f7c570fccbc253b20dbc8070e60f7e8a3b30746bb8add44afbd38253'
@@ -1491,7 +1491,7 @@ jobs:
                   assert hashlib.sha256(additional['source'].read_bytes()).hexdigest() == '1224df554a337875ef33384e850cd58d2d79c2e825f701ee83938444b111cac2'
                   proof['additionalRule']['sourceRestoredExact'] = True
               if audit is not None and current:
-                  assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == 'b9e054d160023203ee25a553057fcb8a152d03422a4b1cd9e9be3223809beb95'
+                  assert hashlib.sha256(audit['source'].read_bytes()).hexdigest() == 'd8908673946a019e36f1b5b4766f41b5106817a6778e3aafc5ac1b2f928ad241'
                   assert hashlib.sha256(audit['production'].read_bytes()).hexdigest() == '682a47e0f7c570fccbc253b20dbc8070e60f7e8a3b30746bb8add44afbd38253'
                   proof['auditRule']['sourceRestoredExact'] = True
               if admin_rights is not None and current:

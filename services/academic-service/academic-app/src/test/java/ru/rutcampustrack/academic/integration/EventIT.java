@@ -195,10 +195,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         testSemester.setCreatedAt(OffsetDateTime.now());
         testSemester = semesterRepository.save(testSemester);
 
-        when(requestContext.getUserId()).thenReturn(null);
-        when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
-        when(requestContext.isHeadman()).thenReturn(true);
-        when(requestContext.getGroupId()).thenReturn(groupA.getId());
+        useCurrentAdministrator();
 
         // Create the student through UserService so enrollment history is
         // written atomically with the user row.
@@ -235,6 +232,8 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                                 List.of(SubjectType.LECTURE),
                                 List.of()));
 
+        // Keep the original homework actor context separate from setup's admitted administrator.
+        when(requestContext.getClaims()).thenReturn(null);
         // Stub RequestContext mock for homework permission checks
         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
         when(requestContext.isHeadman()).thenReturn(true);
@@ -424,6 +423,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         Long oldGroupId = groupA.getId();
         Long newGroupId = groupB.getId();
 
+        useCurrentAdministrator();
         userService.transferStudent(
                 testUser.getId(), new TransferStudentRequest(newGroupId, "Test transfer reason"));
         flushOutbox();
@@ -439,6 +439,36 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                                 .map(event -> event.path("payload").path("group_id").asLong())
                                 .toList())
                 .containsExactlyInAnyOrder(oldGroupId, newGroupId);
+    }
+
+    private void useCurrentAdministrator() {
+        long actor =
+                jdbcTemplate.queryForObject(
+                        "SELECT u.id FROM users u JOIN admin_access_profiles p ON p.user_id=u.id"
+                                + " JOIN user_role_grants g ON g.user_id=u.id WHERE"
+                                + " u.status<>'archived' AND p.assigned AND p.mode='FULL' AND"
+                                + " g.role='admin' AND g.status='active' ORDER BY u.id LIMIT 1",
+                        Long.class);
+        var session = AcademicTestAdminRequest.selectedSession(jdbcTemplate, actor, 1);
+        when(requestContext.getUserId()).thenReturn(actor);
+        when(requestContext.getRole()).thenReturn(UserRole.ADMIN);
+        when(requestContext.isHeadman()).thenReturn(false);
+        when(requestContext.getGroupId()).thenReturn(null);
+        when(requestContext.getClaims())
+                .thenReturn(
+                        new ru.rutcampustrack.shared.security.InternalJwtClaims(
+                                actor,
+                                session,
+                                1,
+                                jdbcTemplate.queryForObject(
+                                        "SELECT roles_version FROM users WHERE id=?",
+                                        Long.class,
+                                        actor),
+                                "ADMIN",
+                                "ACTIVE",
+                                null,
+                                false,
+                                false));
     }
 
     // --- EVENT-02: semester.archived event ---

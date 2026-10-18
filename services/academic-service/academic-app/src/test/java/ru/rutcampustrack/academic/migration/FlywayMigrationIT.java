@@ -198,9 +198,43 @@ class FlywayMigrationIT {
         var old = new JdbcTemplate(OwnedAuthPrincipals.source(POSTGRES, "rct_runtime"));
         assertThat(old.queryForObject("SELECT count(*) FROM users WHERE id=?", Long.class, legacy))
                 .isOne();
+        var through62 =
+                Flyway.configure()
+                        .dataSource(migrator)
+                        .locations("classpath:db/migration")
+                        .target("62")
+                        .load();
+        assertThat(through62.migrate().migrationsExecuted).isOne();
+        var proofCaller =
+                new JdbcTemplate(OwnedAuthPrincipals.source(POSTGRES, "rct_academic_runtime"));
+        String missingProofCall =
+                "SELECT"
+                    + " auth_api.subject_proof_admitted(NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)";
+        assertThatThrownBy(() -> proofCaller.queryForObject(missingProofCall, Boolean.class))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class)
+                .satisfies(
+                        failure ->
+                                assertThat(
+                                                ((java.sql.SQLException)
+                                                                org.springframework.core
+                                                                        .NestedExceptionUtils
+                                                                        .getMostSpecificCause(
+                                                                                failure))
+                                                        .getSQLState())
+                                        .isEqualTo("42702"));
         var full =
                 Flyway.configure().dataSource(migrator).locations("classpath:db/migration").load();
         assertThat(full.migrate().migrationsExecuted).isOne();
+        assertThat(proofCaller.queryForObject(missingProofCall, Boolean.class)).isFalse();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT pg_get_userbyid(p.proowner)='rct_auth_command_owner' AND"
+                                    + " p.prosecdef AND p.proconfig=ARRAY['search_path=pg_catalog']"
+                                    + " FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace"
+                                    + " WHERE n.nspname='auth_api' AND"
+                                    + " p.proname='subject_proof_admitted'",
+                                Boolean.class))
+                .isTrue();
         assertThat(
                         jdbc.queryForObject(
                                 "SELECT count(*) FROM users WHERE id=? AND"

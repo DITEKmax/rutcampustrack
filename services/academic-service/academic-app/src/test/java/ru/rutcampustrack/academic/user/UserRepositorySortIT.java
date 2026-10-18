@@ -2,20 +2,20 @@ package ru.rutcampustrack.academic.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.OffsetDateTime;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.contract.enums.AccountStatus;
-import ru.rutcampustrack.academic.contract.enums.UserRole;
+
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Verifies findByGroupId / findByRole return users in Cyrillic-alphabetical order via the ru_icu
@@ -29,6 +29,8 @@ import ru.rutcampustrack.academic.repository.UserRepository;
 class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private UserRepository userRepository;
+    @Autowired private org.springframework.jdbc.core.JdbcTemplate fixtureJdbc;
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
     @Autowired private GroupRepository groupRepository;
 
     @Test
@@ -76,13 +78,9 @@ class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
         insertStudent(groupId, "arch_active2", "Васильев", "Виктор", "Витальевич", 3003L);
 
         // Archive Абрамов — он не должен попасть в выдачу.
-        userRepository
-                .findById(archivedId)
-                .ifPresent(
-                        u -> {
-                            u.setStatus(AccountStatus.ARCHIVED);
-                            userRepository.save(u);
-                        });
+        entityManager.flush();
+        fixtureJdbc.update("UPDATE users SET status='archived' WHERE id=?", archivedId);
+        entityManager.clear();
 
         List<User> students = userRepository.findByGroupId(groupId);
 
@@ -104,21 +102,18 @@ class UserRepositorySortIT extends AbstractAcademicIntegrationTest {
             String firstName,
             String middleName,
             Long telegramId) {
-        User u = new User();
-        u.setLogin(login);
-        u.setPasswordHash("x");
-        u.setLastName(lastName);
-        u.setFirstName(firstName);
-        u.setMiddleName(middleName);
-        u.setRole(UserRole.STUDENT);
-        u.setStatus(AccountStatus.ACTIVE);
-        u.setTelegramId(telegramId);
-        u.setGroupId(groupId);
-        u.setHeadman(false);
-        u.setPasswordChanged(false);
-        OffsetDateTime now = OffsetDateTime.now();
-        u.setCreatedAt(now);
-        u.setUpdatedAt(now);
-        return userRepository.save(u).getId();
+        entityManager.flush();
+        return fixtureJdbc.queryForObject(
+                "INSERT INTO"
+                    + " users(login,password_hash,last_name,first_name,middle_name,role,status,telegram_id,group_id,is_headman,password_changed,created_at,updated_at)"
+                    + " VALUES (?,'x',?,?,?,'student','active',?,?,false,false,NOW(),NOW())"
+                    + " RETURNING id",
+                Long.class,
+                login,
+                lastName,
+                firstName,
+                middleName,
+                telegramId,
+                groupId);
     }
 }

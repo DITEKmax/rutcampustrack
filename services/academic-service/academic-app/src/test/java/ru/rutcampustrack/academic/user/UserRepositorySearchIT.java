@@ -2,7 +2,6 @@ package ru.rutcampustrack.academic.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.OffsetDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
@@ -28,6 +27,7 @@ import ru.rutcampustrack.academic.repository.UserRepository;
 class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private UserRepository userRepository;
+    @Autowired private org.springframework.jdbc.core.JdbcTemplate fixtureJdbc;
 
     private Long ivanovId;
     private Long petrovId;
@@ -72,21 +72,18 @@ class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
             String middleName,
             UserRole role,
             Long telegramId) {
-        User u = new User();
-        u.setLogin(login);
-        u.setPasswordHash("x");
-        u.setLastName(lastName);
-        u.setFirstName(firstName);
-        u.setMiddleName(middleName);
-        u.setRole(role);
-        u.setStatus(AccountStatus.ACTIVE);
-        u.setTelegramId(telegramId);
-        u.setHeadman(false);
-        u.setPasswordChanged(false);
-        OffsetDateTime now = OffsetDateTime.now();
-        u.setCreatedAt(now);
-        u.setUpdatedAt(now);
-        return userRepository.save(u).getId();
+        return fixtureJdbc.queryForObject(
+                "INSERT INTO"
+                    + " users(login,password_hash,last_name,first_name,middle_name,role,status,telegram_id,is_headman,password_changed,created_at,updated_at)"
+                    + " VALUES (?,'x',?,?,?,?::user_role,'active',?,false,false,NOW(),NOW())"
+                    + " RETURNING id",
+                Long.class,
+                login,
+                lastName,
+                firstName,
+                middleName,
+                role.name().toLowerCase(java.util.Locale.ROOT),
+                telegramId);
     }
 
     @Test

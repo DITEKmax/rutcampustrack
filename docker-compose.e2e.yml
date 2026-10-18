@@ -248,7 +248,7 @@ services:
       - source: e2e-pg-academic-runtime-password
         target: /run/rct-db/POSTGRES_ACADEMIC_PASSWORD
       - source: e2e-pg-migration-password
-        target: /run/rct-db/SPRING_FLYWAY_PASSWORD
+        target: /run/rct-db/spring.flyway.password
     volumes:
       - ./infra/postgres/flyway-callbacks:/etc/rct/flyway-callbacks:ro
       - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro

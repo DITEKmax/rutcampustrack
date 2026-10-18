@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.NOT_FOUND;
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.UNAVAILABLE;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.Asset;
@@ -14,6 +15,27 @@ import static ru.rutcampustrack.academic.map.CampusMapReadModels.ManifestPlan;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.ManifestResult;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.Plan;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.PlanResult;
+
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
+import org.testcontainers.containers.PostgreSQLContainer;
+
+import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -41,26 +63,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+
 import javax.sql.DataSource;
-import org.flywaydb.core.Flyway;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
-import org.springframework.transaction.interceptor.TransactionInterceptor;
-import org.testcontainers.containers.PostgreSQLContainer;
-import ru.rutcampustrack.academic.entity.User;
-import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 /**
  * Real PostgreSQL proof for the campus-map JDBC read path.
@@ -98,6 +102,8 @@ class CampusMapReadRepositoryIT {
                     .withPassword("rct_dev_pass");
 
     private JdbcTemplate adminJdbc;
+    private final java.util.Map<String, DriverManagerDataSource> currentAuthorityDatabases =
+            new java.util.HashMap<>();
 
     @BeforeAll
     void initializeAdminConnection() {
@@ -286,7 +292,9 @@ class CampusMapReadRepositoryIT {
         assertThat(
                         jdbc(schema)
                                 .queryForObject(
-                                        "SELECT SUM(open_count) FROM campus_map_floor_hourly_activity WHERE floor_id = ?",
+                                        "SELECT SUM(open_count) FROM"
+                                            + " campus_map_floor_hourly_activity WHERE floor_id ="
+                                            + " ?",
                                         Long.class,
                                         floorId))
                 .isEqualTo(1L);
@@ -422,7 +430,8 @@ class CampusMapReadRepositoryIT {
                 OffsetDateTime.ofInstant(
                         window.series().getFirst().from(), java.time.ZoneOffset.UTC));
         db.update(
-                "INSERT INTO campus_map_floor_hourly_activity(floor_id,hour_start,open_count) VALUES (?,?,?)",
+                "INSERT INTO campus_map_floor_hourly_activity(floor_id,hour_start,open_count)"
+                        + " VALUES (?,?,?)",
                 graph.retainedFloorId(),
                 OffsetDateTime.ofInstant(
                         window.series().getFirst().from(), java.time.ZoneOffset.UTC),
@@ -441,9 +450,9 @@ class CampusMapReadRepositoryIT {
         OffsetDateTime at = OffsetDateTime.ofInstant(accepted, java.time.ZoneOffset.UTC);
         db.update(
                 """
-                INSERT INTO campus_map_open_intent(owner_hmac,intent_id,building_id,floor_id,payload_hash,accepted_utc_day,accepted_at,expires_at)
-                VALUES (?,?,?,?,?,?,?,?)
-                """,
+INSERT INTO campus_map_open_intent(owner_hmac,intent_id,building_id,floor_id,payload_hash,accepted_utc_day,accepted_at,expires_at)
+VALUES (?,?,?,?,?,?,?,?)
+""",
                 new byte[32],
                 intent,
                 building,
@@ -472,7 +481,7 @@ class CampusMapReadRepositoryIT {
     @Test
     void planTargetClearPreservesHistoryUsageAndReplaysAgainstOriginalIdentity() {
         String schema = newSchema();
-        migrateActivity(schema);
+        migrateDeletion(schema);
         var db = jdbc(schema);
         var source = dataSourceForSchema(schema);
         var admin =
@@ -501,7 +510,8 @@ class CampusMapReadRepositoryIT {
         var original = admin.uploadPlan("91", "2", "План", png, svg).plan();
         long floorId = Long.parseLong(original.floorId());
         db.update(
-                "INSERT INTO campus_map_floor_daily_demand(floor_id,utc_day,open_count) VALUES (?,CURRENT_DATE,7)",
+                "INSERT INTO campus_map_floor_daily_demand(floor_id,utc_day,open_count) VALUES"
+                        + " (?,CURRENT_DATE,7)",
                 floorId);
         assertThat(admin.getPlanTarget("91", "2").floor().openCount()).isEqualTo(7L);
         var deletion = deletionHarness(schema, CampusMapDeletionRepository::new);
@@ -612,7 +622,7 @@ class CampusMapReadRepositoryIT {
     @Test
     void planTargetStalePreviewAndReceiptFailureKeepPointerAndHistory() {
         String schema = newSchema();
-        migrateActivity(schema);
+        migrateDeletion(schema);
         var db = jdbc(schema);
         var admin = adminHarness(schema);
         var png =
@@ -664,7 +674,8 @@ class CampusMapReadRepositoryIT {
         assertThat(admin.getPlanTarget("92", "1").floor().currentPlan().version()).isEqualTo("2");
         assertThat(
                         db.queryForObject(
-                                "SELECT COUNT(*) FROM campus_map_deletion_receipt WHERE operation_id=?",
+                                "SELECT COUNT(*) FROM campus_map_deletion_receipt WHERE"
+                                        + " operation_id=?",
                                 Long.class,
                                 request.operationId()))
                 .isZero();
@@ -698,25 +709,27 @@ class CampusMapReadRepositoryIT {
                         USER_ID)
                 == 0) {
             db.update(
-                    "INSERT INTO users(id,login,last_name,first_name) VALUES (?, 'activity-admin', 'Synthetic', 'Admin')",
+                    "INSERT INTO users(id,login,last_name,first_name) VALUES (?, 'activity-admin',"
+                            + " 'Synthetic', 'Admin')",
                     USER_ID);
             db.update(
-                    "INSERT INTO admin_access_profiles(user_id,assigned,mode,version) VALUES (?,TRUE,'FULL',1)",
+                    "INSERT INTO admin_access_profiles(user_id,assigned,mode,version) VALUES"
+                            + " (?,TRUE,'FULL',1)",
                     USER_ID);
             Long grant =
                     db.queryForObject(
                             """
-                INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
-                VALUES (?,'admin','active',NOW(),NOW()) RETURNING id
-                """,
+                            INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
+                            VALUES (?,'admin','active',NOW(),NOW()) RETURNING id
+                            """,
                             Long.class,
                             USER_ID);
             db.update(
                     """
-                INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
-                    refresh_expires_at,created_at,last_seen_at,auth_method)
-                VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
-                """,
+INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
+    refresh_expires_at,created_at,last_seen_at,auth_method)
+VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
+""",
                     SESSION_ID,
                     USER_ID,
                     grant,
@@ -1277,7 +1290,8 @@ class CampusMapReadRepositoryIT {
             if (Boolean.TRUE.equals(
                     jdbc(schema)
                             .queryForObject(
-                                    "SELECT EXISTS(SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND NOT granted)",
+                                    "SELECT EXISTS(SELECT 1 FROM pg_locks WHERE locktype ="
+                                            + " 'advisory' AND NOT granted)",
                                     Boolean.class))) return;
             Thread.sleep(20);
         }
@@ -1285,16 +1299,12 @@ class CampusMapReadRepositoryIT {
     }
 
     private void migrateDeletion(String schema) {
-        Flyway.configure()
-                .dataSource(dataSourceForSchema(schema))
-                .locations("classpath:db/migration")
-                // Current deletion entry points require V51 authority and V54 receipt identity.
-                .schemas(schema)
-                .defaultSchema(schema)
-                .cleanDisabled(true)
-                .target("54")
-                .load()
-                .migrate();
+        // Only current deletion/admission cases need the complete public/auth_api authority.
+        // Historical V26 read and V54 activity migrations still use their original schemas.
+        currentAuthorityDatabases.put(
+                schema,
+                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.freshPublicDatabase(
+                        POSTGRES));
     }
 
     private CampusMapAdminService adminHarness(String schema) {
@@ -1479,7 +1489,8 @@ class CampusMapReadRepositoryIT {
             JdbcTemplate afterSwitchJdbc = new JdbcTemplate(dataSourceForSchema(schema));
             assertThat(
                             afterSwitchJdbc.queryForObject(
-                                    "SELECT revision FROM campus_map_catalog_revision WHERE is_current = TRUE",
+                                    "SELECT revision FROM campus_map_catalog_revision WHERE"
+                                            + " is_current = TRUE",
                                     Long.class))
                     .isEqualTo(R2_REVISION);
             assertThat(
@@ -1638,7 +1649,8 @@ class CampusMapReadRepositoryIT {
             throws SQLException {
         try (PreparedStatement clear =
                 writer.prepareStatement(
-                        "UPDATE campus_map_catalog_revision SET is_current = FALSE WHERE is_current = TRUE")) {
+                        "UPDATE campus_map_catalog_revision SET is_current = FALSE WHERE is_current"
+                                + " = TRUE")) {
             clear.executeUpdate();
         }
         try (PreparedStatement select =
@@ -1761,13 +1773,14 @@ class CampusMapReadRepositoryIT {
         String viewBoxSql =
                 viewBox == null
                         ? "NULL"
-                        : "ARRAY[?::double precision, ?::double precision, ?::double precision, ?::double precision]";
+                        : "ARRAY[?::double precision, ?::double precision, ?::double precision,"
+                                + " ?::double precision]";
         String sql =
                 """
-                INSERT INTO campus_map_plan_format
-                    (plan_version_id, format, state, content_type, asset_id, bytes, sha256, width, height, view_box)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, %s)
-                """
+INSERT INTO campus_map_plan_format
+    (plan_version_id, format, state, content_type, asset_id, bytes, sha256, width, height, view_box)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, %s)
+"""
                         .formatted(viewBoxSql);
         if (viewBox == null) {
             jdbc.update(
@@ -1854,6 +1867,8 @@ class CampusMapReadRepositoryIT {
     }
 
     private DriverManagerDataSource dataSourceForSchema(String schema) {
+        if (schema != null && currentAuthorityDatabases.containsKey(schema))
+            return currentAuthorityDatabases.get(schema);
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
         String url = POSTGRES.getJdbcUrl();

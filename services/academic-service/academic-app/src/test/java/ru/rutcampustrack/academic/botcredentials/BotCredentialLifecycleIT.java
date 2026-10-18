@@ -55,6 +55,8 @@ class BotCredentialLifecycleIT {
     private BotCredentialsService service;
     private AnnotationConfigApplicationContext authContext;
     private AuthBotOwnInitialCredentialsQuery authRead;
+    private JdbcTemplate authJdbc;
+    private TransactionTemplate authTransactions;
 
     @Configuration(proxyBeanMethods = false)
     @EnableTransactionManagement
@@ -86,7 +88,7 @@ class BotCredentialLifecycleIT {
         var authSource =
                 ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.source(
                         postgres, "rct_auth_runtime");
-        var authJdbc = new JdbcTemplate(authSource);
+        authJdbc = new JdbcTemplate(authSource);
         assertThat(authJdbc.queryForObject("SELECT current_user", String.class))
                 .isEqualTo("rct_auth_runtime");
         authContext = new AnnotationConfigApplicationContext();
@@ -100,6 +102,8 @@ class BotCredentialLifecycleIT {
         authContext.register(AuthTransactions.class, AuthBotOwnInitialCredentialsQuery.class);
         authContext.refresh();
         authRead = authContext.getBean(AuthBotOwnInitialCredentialsQuery.class);
+        authTransactions =
+                new TransactionTemplate(authContext.getBean(DataSourceTransactionManager.class));
         assertThat(org.springframework.aop.support.AopUtils.isAopProxy(authRead)).isTrue();
     }
 
@@ -393,10 +397,21 @@ class BotCredentialLifecycleIT {
         long original = generation(user);
         assertThatThrownBy(
                         () ->
-                                transactions.executeWithoutResult(
+                                authTransactions.executeWithoutResult(
                                         tx -> {
-                                            change(user);
-                                            assertThat(generation(user)).isEqualTo(original + 1);
+                                            authJdbc.update(
+                                                    "UPDATE users SET password_hash=?,"
+                                                            + " password_changed=true,"
+                                                            + " initial_password=NULL WHERE id=?",
+                                                    UUID.randomUUID().toString(),
+                                                    user.id);
+                                            assertThat(
+                                                            authJdbc.queryForObject(
+                                                                    "SELECT credentials_version"
+                                                                        + " FROM users WHERE id=?",
+                                                                    Long.class,
+                                                                    user.id))
+                                                    .isEqualTo(original + 1);
                                             throw new IllegalStateException(
                                                     "synthetic local rollback");
                                         }))

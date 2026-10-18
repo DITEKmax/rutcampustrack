@@ -3,7 +3,7 @@ package ru.rutcampustrack.academic.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import java.time.Duration;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -18,6 +18,8 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
+
+import java.time.Duration;
 
 /**
  * M13 G12 — проверяет что {@code /actuator/health} реально отражает состояние downstream'ов
@@ -44,7 +46,7 @@ class HealthDegradationIT {
                     .withDatabaseName("academic_db")
                     .withUsername("rct_user")
                     .withPassword("rct_dev_pass")
-                    .withReuse(true);
+                    .withReuse(false);
 
     /** Dedicated Rabbit без reuse — тест свободно его останавливает, не ломая параллельные IT. */
     static final RabbitMQContainer RABBITMQ =
@@ -52,7 +54,17 @@ class HealthDegradationIT {
 
     static {
         POSTGRES.start();
+        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
         RABBITMQ.start();
+    }
+
+    @AfterAll
+    static void stopOwnedContainers() {
+        try {
+            RABBITMQ.stop();
+        } finally {
+            POSTGRES.stop();
+        }
     }
 
     @DynamicPropertySource
@@ -70,7 +82,7 @@ class HealthDegradationIT {
                 "spring.autoconfigure.exclude",
                 () ->
                         "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-                                + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
 
         // application-test.yml выключает management.health.rabbit.enabled
         // (чтобы остальные IT без Rabbit container'а не падали). Здесь — у нас

@@ -4,16 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +17,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardDailyGrowthResponse.Status;
 import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.RestoreRequest;
@@ -36,6 +28,17 @@ import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
 import ru.rutcampustrack.academic.user.UserArchiveService;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Real SQL proof for readable counters and the BEFORE_COMMIT durable signal. */
 @Import(DashboardInvalidationIT.ObservationClockFixture.class)
@@ -62,10 +65,10 @@ class DashboardInvalidationIT extends AbstractAcademicIntegrationTest {
         long user =
                 jdbc.queryForObject(
                         """
-                INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,
-                                  password_changed,created_at,updated_at)
-                VALUES (?,'synthetic-hash','Dashboard','Teacher','teacher','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
-                """,
+INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,
+                  password_changed,created_at,updated_at)
+VALUES (?,'synthetic-hash','Dashboard','Teacher','teacher','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
+""",
                         Long.class,
                         UUID.randomUUID().toString().replace("-", ""));
         var tx = new TransactionTemplate(transactionManager);
@@ -81,8 +84,8 @@ class DashboardInvalidationIT extends AbstractAcademicIntegrationTest {
             assertThat(signals()).isEqualTo(signalsBefore + 1);
             String json =
                     jdbc.queryForObject(
-                            "SELECT payload::text FROM academic_outbox "
-                                    + "WHERE event_type='dashboard.invalidated' ORDER BY id DESC LIMIT 1",
+                            "SELECT payload::text FROM academic_outbox WHERE"
+                                + " event_type='dashboard.invalidated' ORDER BY id DESC LIMIT 1",
                             String.class);
             var envelope = mapper.readTree(json);
             assertThat(envelope.path("payload").isObject()).isTrue();
@@ -128,10 +131,10 @@ class DashboardInvalidationIT extends AbstractAcademicIntegrationTest {
         long headman =
                 jdbc.queryForObject(
                         """
-                INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,
-                                  password_changed,created_at,updated_at)
-                VALUES (?,'synthetic-hash','Dashboard','Headman','student','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
-                """,
+INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,
+                  password_changed,created_at,updated_at)
+VALUES (?,'synthetic-hash','Dashboard','Headman','student','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
+""",
                         Long.class,
                         UUID.randomUUID().toString().replace("-", ""));
         jdbc.update(
@@ -285,21 +288,23 @@ class DashboardInvalidationIT extends AbstractAcademicIntegrationTest {
         // A real SQL failure after the domain commit must preserve domain success and a pending
         // marker. NOT VALID leaves existing snapshots intact but refuses the next snapshot write.
         jdbc.execute(
-                "ALTER TABLE dashboard_scale_observations ADD CONSTRAINT dashboard_test_capture_failure "
-                        + "CHECK (kind <> 'SNAPSHOT') NOT VALID");
+                "ALTER TABLE dashboard_scale_observations ADD CONSTRAINT"
+                        + " dashboard_test_capture_failure CHECK (kind <> 'SNAPSHOT') NOT VALID");
         Throwable primary = null;
         try {
             tx.executeWithoutResult(
                     ignored -> grants.upsertRole(teacher, "teacher", "suspended", null));
             assertThat(
                             jdbc.queryForObject(
-                                    "SELECT status FROM user_role_grants WHERE user_id=? AND role='teacher'",
+                                    "SELECT status FROM user_role_grants WHERE user_id=? AND"
+                                            + " role='teacher'",
                                     String.class,
                                     teacher))
                     .isEqualTo("suspended");
             assertThat(
                             jdbc.queryForObject(
-                                    "SELECT COUNT(*) FROM dashboard_scale_observations WHERE kind='CHANGE' AND settled_at IS NULL",
+                                    "SELECT COUNT(*) FROM dashboard_scale_observations WHERE"
+                                            + " kind='CHANGE' AND settled_at IS NULL",
                                     Long.class))
                     .isGreaterThan(0);
         } catch (RuntimeException | Error failure) {
@@ -308,7 +313,8 @@ class DashboardInvalidationIT extends AbstractAcademicIntegrationTest {
         } finally {
             try {
                 jdbc.execute(
-                        "ALTER TABLE dashboard_scale_observations DROP CONSTRAINT dashboard_test_capture_failure");
+                        "ALTER TABLE dashboard_scale_observations DROP CONSTRAINT"
+                                + " dashboard_test_capture_failure");
             } catch (RuntimeException cleanup) {
                 var failure =
                         new IllegalStateException(
@@ -365,7 +371,6 @@ class DashboardInvalidationIT extends AbstractAcademicIntegrationTest {
         new TransactionTemplate(transactionManager)
                 .executeWithoutResult(
                         ignored -> {
-                            grants.upsertRole(user, "teacher", "active", null);
                             entered.countDown();
                             try {
                                 if (!release.await(5, TimeUnit.SECONDS))
@@ -375,6 +380,7 @@ class DashboardInvalidationIT extends AbstractAcademicIntegrationTest {
                                 Thread.currentThread().interrupt();
                                 throw new IllegalStateException("Own scale writer interrupted");
                             }
+                            grants.upsertRole(user, "teacher", "active", null);
                         });
     }
 
@@ -386,18 +392,18 @@ class DashboardInvalidationIT extends AbstractAcademicIntegrationTest {
 
     private java.util.Map<String, Object> closedScaleDay(LocalDate date) {
         return jdbc.queryForMap(
-                "SELECT total_students,total_teachers,total_groups FROM dashboard_scale_observations "
-                        + "WHERE kind='SNAPSHOT' AND snapshot_day=?",
+                "SELECT total_students,total_teachers,total_groups FROM"
+                        + " dashboard_scale_observations WHERE kind='SNAPSHOT' AND snapshot_day=?",
                 date);
     }
 
     private long countUser(String role, String status, Long groupId) {
         return jdbc.queryForObject(
                 """
-                INSERT INTO users(login,password_hash,last_name,first_name,role,status,group_id,
-                                  employee_number,is_headman,password_changed,created_at,updated_at)
-                VALUES (?,'synthetic-hash','Dashboard','Counts',?::user_role,?::account_status,?,?,FALSE,FALSE,NOW(),NOW()) RETURNING id
-                """,
+INSERT INTO users(login,password_hash,last_name,first_name,role,status,group_id,
+                  employee_number,is_headman,password_changed,created_at,updated_at)
+VALUES (?,'synthetic-hash','Dashboard','Counts',?::user_role,?::account_status,?,?,FALSE,FALSE,NOW(),NOW()) RETURNING id
+""",
                 Long.class,
                 UUID.randomUUID().toString().replace("-", ""),
                 role,

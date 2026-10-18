@@ -4,21 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.grpc.stub.StreamObserver;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,6 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
 import ru.rutcampustrack.academic.AcademicApplication;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
@@ -48,8 +35,24 @@ import ru.rutcampustrack.academic.grpc.HomeworksForWeekResponse;
 import ru.rutcampustrack.academic.grpc.StudentHomeworkTestIdentity;
 import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.outbox.OutboxEventSender;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Real PostgreSQL proof for the student desired-state completion commands.
@@ -80,6 +83,7 @@ class HomeworkStudentCompletionConcurrencyIT {
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
+        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
         registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
@@ -87,8 +91,8 @@ class HomeworkStudentCompletionConcurrencyIT {
                 "spring.autoconfigure.exclude",
                 () ->
                         "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,"
-                                + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-                                + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
         registry.add("grpc.server.port", () -> "-1");
     }
 
@@ -149,12 +153,12 @@ class HomeworkStudentCompletionConcurrencyIT {
                         groupId);
         homeworkId =
                 jdbc.queryForObject(
-                        "INSERT INTO homeworks "
-                                + "(group_id, subject_id, semester_id, lesson_date, lesson_number, title, description, "
-                                + "link, published_by, binding_id, actor_id, request_key, payload_hash, "
-                                + "publication_state, created_at, updated_at) "
-                                + "VALUES (?, ?, ?, ?, 1, ?, ?, NULL, ?, ?, ?, ?, "
-                                + "decode(repeat('11', 32), 'hex'), 'ACTIVE', NOW(), NOW()) RETURNING id",
+                        "INSERT INTO homeworks (group_id, subject_id, semester_id, lesson_date,"
+                            + " lesson_number, title, description, link, published_by, binding_id,"
+                            + " actor_id, request_key, payload_hash, publication_state, created_at,"
+                            + " updated_at) VALUES (?, ?, ?, ?, 1, ?, ?, NULL, ?, ?, ?, ?,"
+                            + " decode(repeat('11', 32), 'hex'), 'ACTIVE', NOW(), NOW()) RETURNING"
+                            + " id",
                         Long.class,
                         groupId,
                         subjectId,
@@ -178,7 +182,8 @@ class HomeworkStudentCompletionConcurrencyIT {
         }
         var beforeRows =
                 jdbc.queryForList(
-                        "SELECT student_id, completed_at FROM homework_completions WHERE homework_id = ? ORDER BY student_id",
+                        "SELECT student_id, completed_at FROM homework_completions WHERE"
+                                + " homework_id = ? ORDER BY student_id",
                         homeworkId);
         UUID requestKey =
                 jdbc.queryForObject(
@@ -208,12 +213,15 @@ class HomeworkStudentCompletionConcurrencyIT {
                                                             if (!cancellationCommitted.await(
                                                                     10, TimeUnit.SECONDS)) {
                                                                 throw new IllegalStateException(
-                                                                        "Cancellation did not commit before completion");
+                                                                        "Cancellation did not"
+                                                                                + " commit before"
+                                                                                + " completion");
                                                             }
                                                         } catch (InterruptedException interrupted) {
                                                             Thread.currentThread().interrupt();
                                                             throw new IllegalStateException(
-                                                                    "Interrupted waiting for cancellation",
+                                                                    "Interrupted waiting for"
+                                                                            + " cancellation",
                                                                     interrupted);
                                                         }
                                                         // The service initially selects the
@@ -252,7 +260,8 @@ class HomeworkStudentCompletionConcurrencyIT {
                     .isEqualTo("ARCHIVED");
             assertThat(
                             jdbc.queryForList(
-                                    "SELECT student_id, completed_at FROM homework_completions WHERE homework_id = ? ORDER BY student_id",
+                                    "SELECT student_id, completed_at FROM homework_completions"
+                                            + " WHERE homework_id = ? ORDER BY student_id",
                                     homeworkId))
                     .isEqualTo(beforeRows);
         } finally {
@@ -353,7 +362,8 @@ class HomeworkStudentCompletionConcurrencyIT {
         OffsetDateTime completedAt =
                 OffsetDateTime.now(MOSCOW).minusSeconds(1).truncatedTo(ChronoUnit.MICROS);
         jdbc.update(
-                "INSERT INTO homework_completions (homework_id, student_id, completed_at) VALUES (?, ?, ?)",
+                "INSERT INTO homework_completions (homework_id, student_id, completed_at) VALUES"
+                        + " (?, ?, ?)",
                 homeworkId,
                 studentId,
                 completedAt);
@@ -396,7 +406,8 @@ class HomeworkStudentCompletionConcurrencyIT {
                 homeworkId);
         OffsetDateTime completedAt = OffsetDateTime.now(MOSCOW).minusDays(1);
         jdbc.update(
-                "INSERT INTO homework_completions (homework_id, student_id, completed_at) VALUES (?, ?, ?)",
+                "INSERT INTO homework_completions (homework_id, student_id, completed_at) VALUES"
+                        + " (?, ?, ?)",
                 homeworkId,
                 studentId,
                 completedAt);
@@ -432,18 +443,19 @@ class HomeworkStudentCompletionConcurrencyIT {
     private long insertStudent(String login, String firstName, long group) {
         long id =
                 jdbc.queryForObject(
-                        "INSERT INTO users "
-                                + "(login, password_hash, last_name, first_name, role, status, is_headman, group_id, "
-                                + "password_changed, created_at, updated_at) "
-                                + "VALUES (?, NULL, 'HomeworkDb', ?, 'student'::user_role, 'active'::account_status, "
-                                + "false, ?, false, NOW(), NOW()) RETURNING id",
+                        "INSERT INTO users (login, password_hash, last_name, first_name, role,"
+                            + " status, is_headman, group_id, password_changed, created_at,"
+                            + " updated_at) VALUES (?, NULL, 'HomeworkDb', ?, 'student'::user_role,"
+                            + " 'active'::account_status, false, ?, false, NOW(), NOW()) RETURNING"
+                            + " id",
                         Long.class,
                         login,
                         firstName,
                         group);
         jdbc.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'student'::user_role, 'active'::account_status, ?, NOW(), NOW())",
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at,"
+                    + " updated_at) VALUES (?, 'student'::user_role, 'active'::account_status, ?,"
+                    + " NOW(), NOW())",
                 id,
                 group);
         return id;
@@ -458,7 +470,8 @@ class HomeworkStudentCompletionConcurrencyIT {
 
     private int completionCount(long student) {
         return jdbc.queryForObject(
-                "SELECT COUNT(*) FROM homework_completions WHERE homework_id = ? AND student_id = ?",
+                "SELECT COUNT(*) FROM homework_completions WHERE homework_id = ? AND student_id ="
+                        + " ?",
                 Integer.class,
                 homeworkId,
                 student);

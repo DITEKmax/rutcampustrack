@@ -39,7 +39,7 @@ Matrixv1FROZEN8/25 weight38/123=30.89%; old6/9. D037fileGoalACTIVE, nofalsecompl
 ## Current acceptance/checkpoint
 
 Publishedf2f8046a03ac3198c1bfa405a10606ad98b5678d, Root71source integrated
-withindependent1f9f21eb approval/runtimepending. Matrixv1FROZEN21/25 weight97/123=78.86%; U16actual7b580917 and
+withindependent1f9f21eb approval/runtimepending. Matrixv1FROZEN22/25 weight105/123=85.37%; U16actual7b580917 and
 U20actualdfed6ec6 accepted; old9/9functional, GoalACTIVE. CurrentCI/CoverageFAIL;
 Security/OpenAPISUCCESS. Exactoutcomes/solehistory inattempts.ndjson.
 
@@ -71,3 +71,5 @@ withoriginalshortsymlinks; noGC/foreigndeletion/lowerfloor. Currentpack+backups 
 /tmp/rct-s18-ownership-checkpoint (stage-result/result/safe-zip-relocation).
 Finalworkspacefree4295139328≥4GiB; no localcontainerwrite headroom. AllGradle/Node/Python
 leases released, no runtime. NewCI isordinaryisolatedGitHubActions.
+
+Current17source correction: Data15 compile50.05s/RSS854144KiB/TMP217088B reaped; InfraBinder1.591s/RSS94944KiB/reaped. No active nativeheavy/runtime/DB/Docker. Reviewbb0161b8 complete; Rootpublishpending. Currentowned1309pack5c439ead/backup/tmp/rct-s18-domain-checkpoint, noGC/prune.

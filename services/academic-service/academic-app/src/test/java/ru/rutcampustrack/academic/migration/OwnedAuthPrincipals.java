@@ -28,6 +28,34 @@ public final class OwnedAuthPrincipals {
     }
 
     /**
+     * Fresh public-schema database inside the supplied owned container, removed at its teardown.
+     */
+    public static DriverManagerDataSource freshPublicDatabase(PostgreSQLContainer<?> owner) {
+        prepare(owner);
+        String name = "owned_current_" + java.util.UUID.randomUUID().toString().replace("-", "");
+        new JdbcTemplate(
+                        new DriverManagerDataSource(
+                                owner.getJdbcUrl(), owner.getUsername(), owner.getPassword()))
+                .execute("CREATE DATABASE \"" + name + "\" OWNER rct_migrator");
+        String url =
+                owner.getJdbcUrl()
+                        .replaceFirst(
+                                "/"
+                                        + java.util.regex.Pattern.quote(owner.getDatabaseName())
+                                        + "(?=\\?|$)",
+                                "/" + name);
+        if (url.equals(owner.getJdbcUrl()))
+            throw new IllegalStateException("Owned current database URL required");
+        var migrator = new DriverManagerDataSource(url, "rct_migrator", PASSWORD);
+        org.flywaydb.core.Flyway.configure()
+                .dataSource(migrator)
+                .locations("classpath:db/migration")
+                .load()
+                .migrate();
+        return new DriverManagerDataSource(url, owner.getUsername(), owner.getPassword());
+    }
+
+    /**
      * Flyway clean's public-schema default does not include the separately owned command schema.
      */
     public static void cleanCommands(JdbcTemplate administrator) {

@@ -7,8 +7,8 @@ Q031/D037: эти файлы — persisted Goal; отдельного Goal API �
 Root soleGit/taskdocs; ветка codex/server-validation-20261011,
 [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), main не merged.
 Stage19 starting HEAD **26cbe5912f6683a81780a831609dbddbc26feba4**.
-Published/executable **5ff1a72014de91c9b7a38fc0f0bc5db76c820f43**, local/remote/PR verified.
-Previous executable da3402ea; Rootmatrix/evidence updateWIP belongsnextcoherentcheckpoint.
+Published/executable **4e7454cdd56348ce67ad638a089e64f2b782d443**, local/remote/PR verified.
+Previous executables da3402ea/5ff1a720; status WIP joins next coherent product checkpoint.
 Stage17base753173688d633ca07991f4dd73bdcd2698f45d96; received18basee66b1711.
 
 ## Принятие и конечный остаток
@@ -39,54 +39,71 @@ TASK17 функционально9/9 DONE_CHANGED9, начальные6/9 в и�
 | U23.1/.2/.3/.4 | Apps: actualGlitchTipVueJava+Pyroprofile+protectedHomepage, combinedresourcebudget; CIruntimeнеcomposePASS. |
 | U25 | Root+independentreview: allcurrentgatesPASS/source/executable/PRhead/Q009doconly/handoff. |
 
-## Текущий связный пакет / failures
+## Текущий пакет и реальные проверки
 
-На26c Academic **476PASS/9FAIL/0skip**, все485executed; Coverage теже9.
-Event6 AccessDenied228; Map1AdminAccess316; ORM2SQLGrammar/PSQL193+rollbackassert266.
-Оба browser Boot SUCCESS, затем datasetPOST/api/academic/users500 доlogin/UI/DOCX.
-ActualSQLSTATEUNKNOWN, не установленнаяUIregression. CI39091941238/Coverage39091941236
-FAIL; Security39091941198/OpenAPI39091941265 SUCCESS; monitoringwholepipelineSUCCESS.
-Flyway4(old62SQL42702→63false/repeat/principals) иSubjectHTTP8PASS; V62byteexact.
+26c: Academic 476PASS/9FAIL; оба browser jobs получали usercreate500 до UI.
+Presplit3 опубликован da3402ea без расширения ACL, старых SQL и ослабления assertions.
+На da все 485 IT PASS, включая прежние девять FAIL; dataset create и два DOCX работают.
+Первичный SQLSTATE и причина исторического WORD crash остаются UNKNOWN.
+Первичные artifacts/хэши и уже пройденные проверки — один раз в attempts.ndjson.
 
-Presplit3 published da: originalheadmancontext beforeSubject, oneMapguard currentauthority,
-Academic generatedkeys=false, no secretSELECT/oldSQL/assertion changes. Compile43tasks
-153.06s/RSS1.12GiB, sixhooks and independentS3sourceAPPROVE. daCI39109858933:
-client actual2DOCX/navigation/lost202, authsmoke/remaining5/WebKitonline/workerlogic PASS;
-Academic485IT completedPASS. TerminalallCI notPASS; actualoldSQLSTATEUNKNOWN.
-da Coverage39109858950(all10)/Security39109858940/OpenAPI39109858920 SUCCESS.
-Academic safeartifact12130403445:485PASS/0fail/skip, all9oldfailmatchedPASS; originalSQLSTATE
-stillUNKNOWN. da lifecycleFAIL: first2containerinspectidentityguards(fielddiffUNKNOWN),
-transfer own202+6GET200/PENDING, semesterpreviewtransport0+failedrestoration. New5ff CI
-39111397263/Coverage39111397260/Security39111397283 active; OpenAPI39111397255SUCCESS.
+На **4e** Coverage39112670066 / Security39112670088 / OpenAPI39112670055 **SUCCESS**.
+CI39112670053 **FAIL**: client117631910145 SUCCESS (включая два 18-недельных DOCX,
+навигацию/lost202); lifecycle117631910206 FAIL в subject deletion, stranded semester
+reconciliation, application recovery. Семантический Docker identity guard опубликован;
+новая первичная диагностика трёх FAIL — s19_ci_diagnosis, причины пока UNKNOWN.
 
-Apps39paths+oneauthoredCIhook integrated after independentS3sourceapproval; threeP2
-harness issues fixed/rechecked (cleanup-beforePASS, realidlesamples, structuredstackframes).
-Java+Vueprivacy/compile checks PASS; 5ffApps CI126 beforeGradle (wrapper mode100644),
-one-line authored bashlauncherfix prepared. Actual3apps/grouping/profile/resources NOT_RUN.
-Bot26Python and Producer25Java sourceapproved, addressed tests PASS; realtwoDB/TLSchainpending.
-U23.5 DONE_CHANGED: reviewed justified PMM nonselection only (selection.json), no PMM runtime
-claim. Otherthreeapps/DB/runtime rows remain open; no closure from compile/partialCI. Apps5ff published→nativeApps halted beforeGradle (126/nonexecwrapper); one-linebashfix prepared,
-while Auth/Academic concreteoperation/catalog and Jobs domainqueue migration continue.
+Apps117631910291: bash-launcher исправлен; Java baseline падает до запуска приложений.
+Точный неизменённый 18-week Probe при heap192MiB воспроизвёл OOM в
+DocxRenderer.mergeDocumentXml147 (35.4s, RSS194MB); historical incident не отождествлять.
+Двухфайловый streaming fix4ae78a52 — независимый SOURCE APPROVE; javac и JUnit3/3 PASS
+(все630имён/540предметов/18900отметок), неизменённый Probe192MiB PASS65.27s/RSS121.1MiB.
+Safe before/after evidence: receipts/S19-docx-streaming-memory/. Actual GlitchTip/grouping/Pyroscope/Homepage/resources
+NOT_RUN; cleanup PASS, принадлежащих job ресурсов не осталось.
+U23.5 закрывает только обоснованный PMM nonselection; три обязательных приложения открыты.
 
-## KT0 / writers / восстановление
+Подшаги split (не новые закрытые строки):
 
-Cloud current running/connected, exec работает. /tmp послеoutage пуст: старые4WT,
-2последнихfixtureWIP/receipts/caches утрачены. Root4taskdocsWIP+25foreignuntracked,
-regularGitpack/index сохранены. Не заявлять старыйstand/volumes/keys проверенными;
-ничего не reset/delete. Actualpacka0e5040f SHAefd2f155…4705 unchanged.
-WTs/tmp/rct-s19-{auth,academic,bot,apps,bot-producer} base26; Jobs WTbase da,
-auxbare readonlyRootobjects; noRootGC/prune. Native7slots inclRoot; Sol6.1/high,
-actualmetadataUNKNOWN accepted. Root integrates readyinventory only; currentreadyWIP
-singlecopy .agent/evidence/cloud-20261011/current-wip protects against observedTMPloss.
-Boundary Auth/proto/generated/basecompose/env/routes; Academicprofile/coordinator/catalog;
-Jobs all11domainjobs/AcademicV2/leasedrendererhelpers/Notificationadmit; BotPython;
-ProducerBFF/Attendance/Schedulebotreads; Appsinfra/SDK/build/lock; review independent.
-Authruntime ownDB/session/credentialmetadata author separateWTbase5ff; Producer now owns
-Attendance data-only plannedrenderer, Jobs Academicplanner/queue (no BFFcallback or genericJWT).
-CIauthor isolatedWTbase5ff fixes unstableordering-only oracle and safeclosedfielddiff; actual
-first2runtimecauseUNKNOWN, transfer/backendreconciliation stillopen. Academic/Authnewcore
-compilesPASS; source review3Academic/P1Auth findings accepted/correctionsinprogress. Authruntime oneboundedcompileleaseCPU0 (oldsourcecore passed, currentnewownDBtests only
-compile; noDBproof); no localDB/Docker/images. Limits/measurements inresources.
+- Academic round5: coordinator/read fences/negative Prepare receipt, 23 tests PASS,
+  независимый S3 APPROVE. Round6 public directory/mutation wiring ещё IN_PROGRESS.
+- Auth core/security/login: SOURCE APPROVE, AAA9+login3 PASS; последний empty-Unicode
+  login case source-only. Auth runtime25v4: source APPROVE, compileTestJava PASS59.22s;
+  прежние pure10 PASS не повторялись. OwnDB runtime NOT_RUN.
+- Jobs freeze4: 58 authored paths, старые Auth domain classes убраны с явным mapping
+  прежних критериев. Следующий compile/Validation6+Authority5; actual DB15/twoDB E2E NOT_RUN.
+- Attendance data-only renderer23: SOURCE APPROVE; 34 новых +76 затронутых старых +4 Schedule
+  PASS, actual TLS и DOCX18/18/3. Последние два metadata изменения и новый DocxRenderer
+  требуют адресной проверки. Полный twoDB путь не принят.
+- Bot Python26 и directed Java25: source APPROVE, адресные проверки PASS; новый
+  Auth/Academic/twoDB/TLS пользовательский путь остаётся непроверенным.
+
+## Среда, writers и следующий шаг
+
+Cloud current running/connected, exec работает. После прежнего outage /tmp потерян;
+workspace/Git и 25 foreign untracked сохранены, без reset/delete/GC/prune.
+Последнее измерение: workspace4,286,464,000B free; TMP5,214,949,376B free;
+cgroup5,436,284,928/17,179,869,184B, CPU quota4. Не32GiB VPS.
+Root sole Git/taskdocs/matrix. WTs /tmp/rct-s19-{auth,academic,bot,apps,bot-producer}
+base26; Jobs base da; Auth runtime/CI author base5ff. Auxbare использует Root objects readonly.
+Native7 slots inclRoot; selected Sol6.1/high/forknone, actual metadata UNKNOWN accepted.
+
+Boundary — Auth/proto/generated/basecompose/env/routes; Academic — profile/coordinator/
+catalog/public mutations; Jobs — 11 domain jobs/V2/Notification admit; Runtime — Auth ownDB
+session/credential read paths; Bot — Python; Producer — BFF/Attendance/Schedule directed reads
+и data-only renderer; Apps — infra/SDK/build/lock и двухфайловый DOCX memory fix.
+Independent reviewer только читает, findings исправляет автор. CI author завершил чтение: subject OTP Docker inspect/parsing UNKNOWN;
+semester preview transport UNKNOWN (restoration PASS); recovery application RuntimeError
+без точной команды. Product causes не установлены, promotion/schedule прошли.
+
+Runtime lease завершён; его точный25v4 patch/evidence сохранён в workspace WIP.
+Apps lease завершён; Jobs CPU0 выполняет compile/11адресных tests. Разные outputs/caches,
+максимум два heavy, TMP floor4GiB. Local DB/container/image pull не запускались.
+Existing backup/testrestore consumer: s19_recovery_consumer, isolated WTbase4e,
+ровно recovery.py +два existing tests +test-restore compose для auth_db;
+это source compatibility, реальные backup/deploy отложены.
+Coherent ready WIP сохранён один раз в ignored workspace; не milestone и не Git raw logs.
+Дальше: принять адресный DOCX memory результат и опубликовать готовый независимый пакет;
+закончить связное split wiring, затем реальные twoDB/failure/recovery/consumer проверки.
 
 [Evidence/history](attempts.ndjson), [decisions](decisions.md), [questions](questions.md),
 [единственный HANDOFF](HANDOFF-20261017.md) обновляются вместе связнымcheckpoint.

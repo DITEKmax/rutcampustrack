@@ -1,0 +1,74 @@
+{
+  "patch_sha256": "4ae78a52b2437b68706adedf4fefaefdebc7df6bec9a191db47cd77a2b5ce647",
+  "renderer_test_hashes": [
+    {
+      "path": "services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/report/DocxRenderer.java",
+      "sha256": "b3f4c22b50cf325e7186f871334a4b31f5ae3bf420b0490a2daed6ad3ade12a4"
+    },
+    {
+      "path": "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/report/DocxRendererTest.java",
+      "sha256": "144cecbb28f44811de3dd5bf71d755f571355c907105602ba281612f5989792c"
+    }
+  ],
+  "unchanged_probe_sha256": "6400aab04683da89d43ffa869a661be333f0ed0bfed6f7b6b40de07cf63ad346",
+  "original_classpath_sha256": "749e6c2f30845634816614f82de8a190d9420d097232979e3437a2f7e8901fac",
+  "no_gradle_docker_network_cache_writes": true,
+  "heap_bytes": 201326592,
+  "cpu": 1,
+  "steps": [
+    {
+      "step": "renderer-test-exact-probe-javac",
+      "exit": 0,
+      "duration_seconds": 4.1,
+      "peak_group_rss_bytes": 163307520,
+      "limit_trigger": null,
+      "throwable_classes": [],
+      "own_source_frames": []
+    },
+    {
+      "step": "junit-three-focused-docx-tests",
+      "exit": 0,
+      "duration_seconds": 33.82,
+      "peak_group_rss_bytes": 135876608,
+      "limit_trigger": null,
+      "throwable_classes": [],
+      "own_source_frames": [],
+      "junit_counts": {
+        "found": 3,
+        "passed": 3,
+        "failed": 0
+      }
+    },
+    {
+      "step": "one-unchanged-baseline-jvm",
+      "exit": 0,
+      "duration_seconds": 65.27,
+      "peak_group_rss_bytes": 126988288,
+      "limit_trigger": null,
+      "throwable_classes": [],
+      "own_source_frames": []
+    }
+  ],
+  "result": "PASS",
+  "children_reaped": true,
+  "tmp_evidence_bytes": 47546,
+  "baseline": {
+    "idle": {
+      "operations": 0,
+      "cpu_cores": 0.026945732994025785,
+      "peak_rss_bytes": 55066624,
+      "process_cpu_ns": 270000000,
+      "duration_ns": 10020139369
+    },
+    "operation": {
+      "operations": 1,
+      "cpu_cores": 1.0001686687605587,
+      "peak_rss_bytes": 115879936,
+      "process_cpu_ns": 27830000000,
+      "duration_ns": 27825306740
+    },
+    "mode": "baseline",
+    "result": "PASS",
+    "operation_name": "DocxRenderer.render:18-weeks"
+  }
+}

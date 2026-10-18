@@ -37,20 +37,26 @@ Rootneverproductauthor; only assignedinventory integrates. No writer commits/res
 | s19_bot_producer | WT pending: MobileBFF/Attendance newbotread+focusedTeacherReadFacade/ReportService seams, noAcademic/Auth/proto/sharedbuild. |
 | s19_review | readonly independentpresplit3 APPROVE/runtimepending; thenfrozenS3boundaryreview. Never fixes findings. |
 
-Current lease: Academic bounded compileJava/compileTestJava +two meaningful new core
-classes, CPU0/workers1/JDK21.0.12.1/Xmx1GiB/meta256/RSS2.5GiB; TMP floor4GiB.
+Current lease: Jobs freeze4 bounded five compile targets +Validation6/Authority5,
+CPU0/workers1/JDK21.0.12.1/Xmx1GiB/meta256/RSS2.5GiB; TMP floor4GiB.
+Auth runtime compile5 released: PASS59.22s/RSS797069312B. Apps isolated DOCX
+javac/JUnit3/unchangedProbe192MiB released: PASS, no container/image/DB launched.
 No localDB/Docker/images. Other completed leases reaped: Apps peak1.16GiB,
 Producer1.136GB, Academicpresplit1.12GiB; Auth fullprocesspeakUNKNOWN(observergap).
 Prepared JDK /workspace/rct-cloud-setup/jdk21; systemJava onlyJRE, not compiler.
 Loopback Gradle/Netty needs normalnetworkenabled permission even offline; ENV failure
 is not sourceFAIL. Cache/publicinputs readonly; task outputs exclusivelyTMP.
 
-Last measured workspace4293730304B/inodes1258364, TMP5937713152B/inodes2206262;
-RAMcurrent4702793728/max17179869184, CPUquota4. Sourcebudget<=128MiB retained.
+Last measured workspace4286464000B/inodes1257955, TMP5214949376B/inodes2167527;
+RAMcurrent5436284928/max17179869184, CPUquota4. Sourcebudget<=128MiB retained.
 Author26Bot/25Producer/39Apps ready patches + manifests saved onecopy to ignored
 .agent/evidence/cloud-20261011/current-wip against observed /tmp-loss. This is WIP,
 not final sole evidence/extra packaging milestone. Preserve25foreignuntracked.
-Native slots7 includingRoot; useful active authors Auth/Academic/Jobs, review byreadiness.
+Native slots7 includingRoot; active Auth/Academic/Jobs plus bounded independent scopes,
+review byreadiness. Authruntime base5ff, owncache lease released; ready25v4 saved once.
+Recoveryconsumer WT/tmp/rct-s19-recovery-consumer base4e owns exactlyrecovery.py,
+test-recovery.py, test-recovery-failure-boundaries.py and test-restorecompose; only
+source+puremock checks, no backup/restore/Docker/realdata. Boundary ownsbaseconfig.
 Botvenv~105MiB cap256, AppsSDKextract7.68MiB/npmcache29MiB hard32; noRootmoduleswrite.
 CI actual threeapps runtime runs remotely via one additive bounded ordinaryCIjob;
 source limits1376MiB/2.5CPU incl extraPG are configuration, measurements remain pending.

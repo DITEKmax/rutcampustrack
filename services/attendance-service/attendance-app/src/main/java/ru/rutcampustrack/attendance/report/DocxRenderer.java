@@ -1,9 +1,16 @@
 package ru.rutcampustrack.attendance.report;
 
+import org.springframework.stereotype.Component;
+
+import ru.rutcampustrack.attendance.exception.ReportValidationException;
+
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,8 +22,6 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-import org.springframework.stereotype.Component;
-import ru.rutcampustrack.attendance.exception.ReportValidationException;
 
 @Component
 public class DocxRenderer {
@@ -37,16 +42,9 @@ public class DocxRenderer {
             throw new ReportValidationException("At least one report model is required");
         }
         TemplatePackage template = readTemplate();
-        List<String> renderedDocuments =
-                models.stream()
-                        .map(model -> renderDocumentXml(template.documentXml(), model))
-                        .toList();
-
-        String documentXml =
-                renderedDocuments.size() == 1
-                        ? renderedDocuments.get(0)
-                        : mergeDocumentXml(renderedDocuments);
-        return writePackage(template.entries(), fitLibreOfficeGeometry(documentXml));
+        return writePackage(
+                template.entries(),
+                writer -> writeDocumentXml(writer, template.documentXml(), models));
     }
 
     private static String renderDocumentXml(String documentXml, HeadmanWeeklyReportModel model) {
@@ -137,16 +135,26 @@ public class DocxRenderer {
         return values;
     }
 
-    private static String mergeDocumentXml(List<String> renderedDocuments) {
-        String base = renderedDocuments.get(0);
-        StringBuilder body = new StringBuilder();
-        for (int i = 0; i < renderedDocuments.size(); i++) {
-            if (i > 0) {
-                body.append(PAGE_BREAK);
-            }
-            body.append(extractBodyContent(renderedDocuments.get(i)));
+    private static void writeDocumentXml(
+            Writer writer, String templateXml, List<HeadmanWeeklyReportModel> models)
+            throws IOException {
+        String first = fitLibreOfficeGeometry(renderDocumentXml(templateXml, models.get(0)));
+        if (models.size() == 1) {
+            writer.write(first);
+            return;
         }
-        return replaceBodyContent(base, body.toString());
+        BodyBounds firstBody = bodyBounds(first);
+        writer.write(first, 0, firstBody.start());
+        writer.write(first, firstBody.start(), firstBody.end() - firstBody.start());
+        for (int index = 1; index < models.size(); index++) {
+            writer.write(PAGE_BREAK);
+            // Keep only the current week, rather than all rendered weeks and merged copies.
+            String week = fitLibreOfficeGeometry(renderDocumentXml(templateXml, models.get(index)));
+            BodyBounds body = bodyBounds(week);
+            writer.write(week, body.start(), body.end() - body.start());
+        }
+        // The first document owns namespaces and the single final section definition.
+        writer.write(first, firstBody.end(), first.length() - firstBody.end());
     }
 
     private static String fitLibreOfficeGeometry(String documentXml) {
@@ -157,7 +165,7 @@ public class DocxRenderer {
                 .replace(TEMPLATE_NUMBER_CELL_WIDTH, FITTED_NUMBER_CELL_WIDTH);
     }
 
-    private static String extractBodyContent(String documentXml) {
+    private static BodyBounds bodyBounds(String documentXml) {
         int bodyStart = documentXml.indexOf("<w:body");
         if (bodyStart < 0) {
             throw new ReportValidationException("DOCX document.xml has no w:body");
@@ -169,22 +177,10 @@ public class DocxRenderer {
             throw new ReportValidationException("DOCX document.xml body is malformed");
         }
         int contentEnd = sectStart > bodyOpenEnd ? sectStart : bodyEnd;
-        return documentXml.substring(bodyOpenEnd, contentEnd);
+        return new BodyBounds(bodyOpenEnd, contentEnd);
     }
 
-    private static String replaceBodyContent(String documentXml, String bodyContent) {
-        int bodyStart = documentXml.indexOf("<w:body");
-        int bodyOpenEnd = documentXml.indexOf('>', bodyStart) + 1;
-        int sectStart = documentXml.lastIndexOf("<w:sectPr");
-        int bodyEnd = documentXml.indexOf("</w:body>", bodyOpenEnd);
-        if (bodyStart < 0 || bodyOpenEnd <= 0 || bodyEnd < 0) {
-            throw new ReportValidationException("DOCX document.xml body is malformed");
-        }
-        int contentEnd = sectStart > bodyOpenEnd ? sectStart : bodyEnd;
-        return documentXml.substring(0, bodyOpenEnd)
-                + bodyContent
-                + documentXml.substring(contentEnd);
-    }
+    private record BodyBounds(int start, int end) {}
 
     private static TemplatePackage readTemplate() {
         InputStream resource =
@@ -218,16 +214,20 @@ public class DocxRenderer {
         return new TemplatePackage(entries, documentXml);
     }
 
-    private static byte[] writePackage(Map<String, byte[]> entries, String documentXml) {
+    private static byte[] writePackage(Map<String, byte[]> entries, DocumentXmlWriter documentXml) {
         try (ByteArrayOutputStream output = new ByteArrayOutputStream();
                 ZipOutputStream zip = new ZipOutputStream(output, StandardCharsets.UTF_8)) {
             for (Map.Entry<String, byte[]> entry : entries.entrySet()) {
                 zip.putNextEntry(new ZipEntry(entry.getKey()));
-                byte[] bytes =
-                        DOCUMENT_XML.equals(entry.getKey())
-                                ? documentXml.getBytes(StandardCharsets.UTF_8)
-                                : entry.getValue();
-                zip.write(bytes);
+                if (DOCUMENT_XML.equals(entry.getKey())) {
+                    Writer writer =
+                            new BufferedWriter(new OutputStreamWriter(zip, StandardCharsets.UTF_8));
+                    documentXml.write(writer);
+                    // Closing the writer here would close the archive before its other entries.
+                    writer.flush();
+                } else {
+                    zip.write(entry.getValue());
+                }
                 zip.closeEntry();
             }
             zip.finish();
@@ -235,6 +235,11 @@ public class DocxRenderer {
         } catch (IOException ex) {
             throw new ReportValidationException("Failed to write DOCX report: " + ex.getMessage());
         }
+    }
+
+    @FunctionalInterface
+    private interface DocumentXmlWriter {
+        void write(Writer writer) throws IOException;
     }
 
     static String readDocumentXml(byte[] docx) {

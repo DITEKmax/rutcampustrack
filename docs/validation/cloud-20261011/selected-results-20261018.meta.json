@@ -4,9 +4,9 @@
   "baseline": "e66b1711b3d93faee625b50a2e2f785020a0f43a",
   "rows": 25,
   "mandatoryWeight": 123,
-  "closed": 12,
-  "closedWeight": 61,
-  "weightedPercent": 49.59,
+  "closed": 17,
+  "closedWeight": 83,
+  "weightedPercent": 67.48,
   "historicalStage": "9/9 functional DONE_CHANGED9 ALREADY_SATISFIED0 at9a; original6/9 kept incontract/history; globalCI/newscope notDONE",
   "weightPolicy": "1/2/3/5/8 chosen byscope-risk before new implementation; no retrospective change for percentage; existing outcomes mapped once, U10 is sufficient acceptedM04subset notextraoldwholepackage",
   "scopePolicy": "ContextIDEA033/034/045 crosscut; allownerDEFERREDtable entries outside denominator, conditionalintegration notselected outside; U23assessment remainsmandatory; mandatoryblockers staydenominator",
@@ -33,6 +33,20 @@
       "closed": 12,
       "closedWeight": 61,
       "weightedPercent": 49.59
+    },
+    {
+      "utc": "2026-10-18T01:15:32.097381+00:00",
+      "change": "U22actualAlloyreviewd352c657 + U11/U18sufficientfocusedboundarychecks exact903/sourceapproved7f363eba; no row/weight/denominatorchange",
+      "closed": 15,
+      "closedWeight": 73,
+      "weightedPercent": 59.35
+    },
+    {
+      "utc": "2026-10-18T01:55:29.725199+00:00",
+      "change": "U16 actual2Redis/PGcache and U20actualPGTLS/Python/menu accepted independently7b580917/dfed6ec6; frozen25rows/123weights unchanged",
+      "closed": 17,
+      "closedWeight": 83,
+      "weightedPercent": 67.48
     }
   ],
   "changeReason": "FourboundedKT1 mappings narrowedactualsourcecriteria; same25rows/same123weights, no denominatorchange. U23 assessmentaccepted, all4conditionalintegrations unselected/excluded; no productintegrationclaim."

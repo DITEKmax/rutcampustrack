@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/auth.json. Do not edit.
-// Contract: Auth session/role; SHA-256: f7edb8f5e0655faf1d16b35134490527cdbb75c77e33f1328ea6ca40bb626857
+// Contract: Auth session/role; SHA-256: bd2ea023f05f9560630c3c550d3183c9b807c69f1ac74346e8c5237882a78164
 
 export interface paths {
     "/auth/account-history": {
@@ -686,7 +686,7 @@ export interface components {
              *     }
              */
             extras?: {
-                [key: string]: Record<string, never>;
+                [key: string]: unknown;
             };
             /**
              * @description Имя поля DTO, вызвавшего конфликт (только для 409, BUG-006-2)
@@ -741,7 +741,7 @@ export interface components {
              */
             message?: string;
             /** @description Отклонённое значение */
-            rejectedValue?: Record<string, never>;
+            rejectedValue?: unknown;
         };
         HeadmanCredentialView: {
             credentialsVersion: string;
@@ -997,14 +997,14 @@ export interface components {
             session: components["schemas"]["CurrentSessionResponse"];
         };
         Status: {
-            errorCode?: string;
+            errorCode: string | null;
             /** Format: date-time */
-            expiresAt?: string;
+            expiresAt: string;
             /** Format: uuid */
-            jobId?: string;
+            jobId: string;
             /** @enum {string} */
-            state?: "queued" | "preparing" | "ready" | "error";
-            suggestedFilename?: string;
+            state: "queued" | "preparing" | "ready" | "error";
+            suggestedFilename: string;
         };
         /** @description Complete teacher subject journal parameters */
         TeacherJournalParameters: {
@@ -1331,13 +1331,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Durable export accepted; poll the returned job until ready or error */
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Status"];
+                    "application/json": components["schemas"]["Status"];
                 };
             };
             /** @description Ошибка валидации запроса */
@@ -1396,6 +1396,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Current authority or durable export storage unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1997,6 +2006,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Required authentication storage unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3903,6 +3921,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Required authentication storage unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

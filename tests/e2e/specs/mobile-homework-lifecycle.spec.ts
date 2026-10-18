@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Locator, Page, Request, Response, TestInfo } from '@playwright/test';
+import type { Locator, Page, Request, Response, Route, TestInfo } from '@playwright/test';
 import {
   Actor,
   MobileDataset,
@@ -1669,6 +1669,35 @@ isolated(
       if (request.method() === 'GET' && url.pathname === '/api/academic/homeworks')
         listReads.push(url.searchParams.get('archived') === 'true');
     };
+    // Reuse the two already-owned archived rows; only constrain real server page size.
+    const archivedRows = archiveList._embedded.homeworkResponseList as {
+      id: number;
+      title: string;
+    }[];
+    expect(archivedRows).toHaveLength(2);
+    expect(new Set(archivedRows.map((row) => row.id)).size).toBe(2);
+    const archiveScope = (url: URL) =>
+      url.pathname === '/api/academic/homeworks' &&
+      url.searchParams.get('groupId') === String(dataset.group.id) &&
+      url.searchParams.get('semesterId') === String(dataset.semester.id) &&
+      url.searchParams.get('archived') === 'true';
+    const onePerPage = async (route: Route) => {
+      if (route.request().method() !== 'GET') return route.continue();
+      const url = new URL(route.request().url());
+      url.searchParams.set('size', '1');
+      await route.continue({ url: url.toString() });
+    };
+    const nextArchivePage = (response: Response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        archiveScope(url) &&
+        url.searchParams.get('page') === '1' &&
+        url.searchParams.get('size') === '1'
+      );
+    };
+    const card = page.locator(`.headman-homework__item[data-homework-id="${original.id}"]`);
+    await page.route(archiveScope, onePerPage);
     page.on('request', countListRead);
     try {
       await page.getByRole('button', { name: 'Домашнее задание', exact: true }).click();
@@ -1676,27 +1705,59 @@ isolated(
       await expect(page.getByText('На этот день заданий нет.', { exact: true })).toHaveCount(0);
       expect(listReads).toEqual([]);
       const selectedArchive = http(page, '/api/academic/homeworks', 'GET');
+      const selectedNextPage = page.waitForResponse(nextArchivePage);
       await page.getByRole('button', { name: 'Открыть архив', exact: true }).click();
-      expect((await selectedArchive).status()).toBe(200);
+      const firstPage = await selectedArchive;
+      expect(firstPage.status()).toBe(200);
+      const firstBody = await firstPage.json();
+      const href = firstBody._links?.next?.href;
+      expect(typeof href).toBe('string');
+      expect(href).toMatch(/^\/api\/academic\/homeworks\?/);
+      const authoritativeNext = new URL(href, page.url());
+      expect(authoritativeNext.origin).toBe(new URL(page.url()).origin);
+      expect(archiveScope(authoritativeNext)).toBe(true);
+      expect(authoritativeNext.searchParams.get('page')).toBe('1');
+      expect(authoritativeNext.searchParams.get('size')).toBe('1');
+      const secondPage = await selectedNextPage;
+      expect(secondPage.status()).toBe(200);
+      const actualNext = new URL(secondPage.request().url());
+      expect(actualNext.pathname).toBe(authoritativeNext.pathname);
+      expect(actualNext.searchParams.toString()).toBe(authoritativeNext.searchParams.toString());
+      const secondBody = await secondPage.json();
+      const pageRows = [firstBody, secondBody].map((body) => body._embedded.homeworkResponseList);
+      expect(pageRows.map((rows) => rows.length)).toEqual([1, 1]);
+      expect(
+        pageRows
+          .flat()
+          .map((row: { id: number }) => row.id)
+          .sort((a: number, b: number) => a - b),
+      ).toEqual(archivedRows.map((row) => row.id).sort((a, b) => a - b));
       expect(listReads.length).toBeGreaterThan(0);
       expect(listReads.every((archived) => archived)).toBe(true);
+      const weekdayOffset = (new Date(`${dataset.today}T12:00:00Z`).getUTCDay() + 6) % 7;
+      if (weekdayOffset === 6)
+        await page.getByRole('button', { name: 'Следующая неделя', exact: true }).click();
+      const dayText = new Intl.DateTimeFormat('ru-RU', {
+        timeZone: 'Europe/Moscow',
+        day: 'numeric',
+        month: 'long',
+        weekday: 'long',
+      }).format(new Date(`${dataset.tomorrow}T12:00:00Z`));
+      const dayLabel = dayText.charAt(0).toUpperCase() + dayText.slice(1);
+      const dayNextPage = page.waitForResponse(nextArchivePage);
+      await page.getByRole('button', { name: dayLabel, exact: true }).click();
+      expect((await dayNextPage).status()).toBe(200);
+      await expect(card).toHaveCount(1);
+      await expect(card).toContainText(title);
+      for (const row of archivedRows) {
+        const retained = page.locator(`.headman-homework__item[data-homework-id="${row.id}"]`);
+        await expect(retained).toHaveCount(1);
+        await expect(retained).toContainText(row.title);
+      }
     } finally {
       page.off('request', countListRead);
+      await page.unroute(archiveScope, onePerPage);
     }
-    const weekdayOffset = (new Date(`${dataset.today}T12:00:00Z`).getUTCDay() + 6) % 7;
-    if (weekdayOffset === 6)
-      await page.getByRole('button', { name: 'Следующая неделя', exact: true }).click();
-    const dayText = new Intl.DateTimeFormat('ru-RU', {
-      timeZone: 'Europe/Moscow',
-      day: 'numeric',
-      month: 'long',
-      weekday: 'long',
-    }).format(new Date(`${dataset.tomorrow}T12:00:00Z`));
-    const dayLabel = dayText.charAt(0).toUpperCase() + dayText.slice(1);
-    await page.getByRole('button', { name: dayLabel, exact: true }).click();
-    const card = page.locator(`.headman-homework__item[data-homework-id="${original.id}"]`);
-    await expect(card).toHaveCount(1);
-    await expect(card).toContainText(title);
     await card.click();
     await expect(page.getByText('Архив · только просмотр', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Изменить задание', exact: true })).toHaveCount(

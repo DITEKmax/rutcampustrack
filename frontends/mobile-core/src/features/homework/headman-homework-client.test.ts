@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import { HeadmanHomeworkApi, HeadmanHomeworkApiError } from './headman-homework-client'
+import {
+  createGenerationBoundHeadmanHomeworkApi,
+  HeadmanHomeworkApi,
+  HeadmanHomeworkApiError,
+} from './headman-homework-client'
+import { StaleSessionGenerationError } from '../../shared/session-owner'
 import {
   reuseOrCreateAssistantHomeworkIntent,
   withAssistantHomeworkPublicationReceipt,
@@ -23,6 +28,128 @@ const homework = {
   revision: 4,
   archived: false,
 }
+
+describe('authoritative homework HAL pagination', () => {
+  const initial = '/api/academic/homeworks?groupId=7&semesterId=12&page=0&size=100&archived=true'
+  const next =
+    '/api/academic/homeworks?groupId=7&semesterId=12&archived=true&page=1&size=1&sort=title,asc&cursor=opaque'
+  const first = (href = next) => ({
+    _embedded: { homeworkResponseList: [{ ...homework, archived: true }] },
+    page: { number: 0, totalPages: 2 },
+    _links: { next: { href } },
+  })
+  const last = {
+    _embedded: { homeworkResponseList: [{ ...homework, id: 92, archived: true }] },
+    page: { number: 1, totalPages: 2 },
+  }
+
+  it('follows the exact public next link ahead of page metadata with the current credentials', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async (input) => {
+      expect([initial, next]).toContain(String(input))
+      return Response.json(String(input) === initial ? first() : last)
+    })
+    const api = new HeadmanHomeworkApi({ accessToken: () => 'current-token', fetcher })
+    expect((await api.listHomeworks(7, 12, true)).map((row) => row.id)).toEqual([91, 92])
+    expect(fetcher.mock.calls.map(([path]) => path)).toEqual([initial, next])
+    for (const [, init] of fetcher.mock.calls) {
+      expect(init?.credentials).toBe('include')
+      expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer current-token')
+    }
+  })
+
+  it.each([
+    'https://foreign.example/api/academic/homeworks?page=1',
+    '//foreign.example/api/academic/homeworks?page=1',
+    '/api/auth/sessions?page=1',
+    '/api/academic/homeworks?groupId=8&semesterId=12&archived=true&page=1',
+    '/api/academic/homeworks?groupId=7&semesterId=13&archived=true&page=1',
+    '/api/academic/homeworks?groupId=7&semesterId=12&page=1',
+  ])('rejects an unsafe or changed-scope next link without following it: %s', async (href) => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => {
+      if (fetcher.mock.calls.length > 1) throw new Error('fixture followed an invalid next')
+      return Response.json(first(href))
+    })
+    const api = new HeadmanHomeworkApi({ accessToken: () => 'current-token', fetcher })
+    await expect(api.listHomeworks(7, 12, true)).rejects.toThrow('Некорректная ссылка пагинации ДЗ')
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+
+  it('detects a repeated next path before fetching or returning duplicate rows', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => {
+      if (fetcher.mock.calls.length > 1) throw new Error('fixture duplicate fetch')
+      return Response.json({ ...first(initial), page: { totalPages: 1 } })
+    })
+    const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
+    await expect(api.listHomeworks(7, 12, true)).rejects.toThrow('зацикленную пагинацию')
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+
+  it('retains legacy page fallback only when the response provides no next link', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ ...first(), _links: undefined }))
+      .mockResolvedValueOnce(Response.json(last))
+    const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
+    expect((await api.listHomeworks(7, 12, true)).map((row) => row.id)).toEqual([91, 92])
+    expect(fetcher.mock.calls.map(([path]) => path)).toEqual([
+      initial,
+      initial.replace('page=0', 'page=1'),
+    ])
+  })
+
+  it('retries the same next link once after 401 and discards a revoked-page partial result', async () => {
+    let token = 'before-refresh'
+    const refresh = vi.fn(async () => {
+      token = 'after-refresh'
+    })
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json(first()))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(Response.json(last))
+    const api = new HeadmanHomeworkApi({
+      accessToken: () => token,
+      onUnauthorized: refresh,
+      fetcher,
+    })
+    expect((await api.listHomeworks(7, 12, true)).map((row) => row.id)).toEqual([91, 92])
+    expect(refresh).toHaveBeenCalledTimes(1)
+    expect(fetcher.mock.calls.map(([path]) => path)).toEqual([initial, next, next])
+    expect(new Headers(fetcher.mock.calls[2]?.[1]?.headers).get('Authorization')).toBe(
+      'Bearer after-refresh',
+    )
+    const denied = new HeadmanHomeworkApi({
+      accessToken: () => token,
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(Response.json(first()))
+        .mockResolvedValueOnce(Response.json({}, { status: 403 })),
+    })
+    await expect(denied.listHomeworks(7, 12, true)).rejects.toBeInstanceOf(HeadmanHomeworkApiError)
+  })
+
+  it('discards an old-owner page before another next request after a session switch', async () => {
+    let generation = 1
+    const response = Response.json(first())
+    const json = response.json.bind(response)
+    response.json = async () => {
+      const value: unknown = await json()
+      generation = 2
+      return value
+    }
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(response)
+    const api = createGenerationBoundHeadmanHomeworkApi(
+      {
+        currentGeneration: () => generation,
+        accessTokenFor: () => 'old-owner-token',
+        refreshFor: vi.fn(),
+      },
+      fetcher,
+    )
+    await expect(api.listHomeworks(7, 12, true)).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+})
 
 describe('Headman Homework r2 additive boundary', () => {
   it('preserves DATE type and durable binding receipt on create/reload/content-only edit', async () => {

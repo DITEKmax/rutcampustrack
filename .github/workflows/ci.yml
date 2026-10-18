@@ -2765,7 +2765,7 @@ jobs:
           method = 'apiDocsMatchesSnapshot'
           app = pathlib.Path('services/notification-service/notification-app')
           test_source = app / 'src/test/java/ru/rutcampustrack/notification/OpenApiSnapshotIT.java'
-          test_sha = 'c5ac16387716733dcae9f2748e988470e4b742d25913b95d7a154b1fd8e298ea'
+          test_sha = '4a4f00092bab210cadb7e4da91a1da7815564acf82b02b6e5b0a721f2ad088cb'
           source = test_source.read_bytes()
           assert hashlib.sha256(source).hexdigest() == test_sha
           assert source == subprocess.check_output(['git', 'show', 'HEAD:' + test_source.as_posix()])

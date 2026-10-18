@@ -38,22 +38,28 @@ Matrixv1FROZEN8/25 weight38/123=30.89%; old6/9. D037fileGoalACTIVE, nofalsecompl
 
 ## Current acceptance/checkpoint
 
-Publishedlocal=remote=PRhead3dc25ce7bddaded5f046233db39f732c05c382ea.
-U22source10accepted/pushed, realAlloyCI39084041118/39084046254pending.
-RootsourceWIP U16exact16 (Data9/Infra7) withcheck03PASS17focused+4guards0skip,
-independent8b09dee4accepted. ActualtwoRedis/PG/CacheITcohortstillpendingnormalCI.
-Auth22source/finalfixture+compile20checks acceptedreview7f363eba, Reports14frozen,
-Gateway1d7534a8/Notification6thcollector2313614f reviewed; exactcopy next.
-Auth/Data compileprocessesreaped, leasesRELEASED. OnlylightReports3VitestPASS1.53s/153MiB,
-sourceunchanged, U19independentapplicabilityreviewactive.
-DataU14/U15authornownewSQL/ownercommands+entities/repos; sharedAdminAccessJdbcAuthority
-solewriterData, ApiGrpcimpl/reader/proto/DTOs/generatorsoleAuth; configs/CI/rolesbootstrapsoleInfra.
-No localDB/Docker/browser/Redis/provider/realnetworkruntime. OldfrozenWT/WIP/resourcesuntouched.
-Ownpublished846objects nowpack068429cd/SHA b7bdf4284af8c16caafb3f549c2fad40f6597848aece78a225e48c9d86b5c8d4,
-TMPexactbackups/noprune. AuxnativeWTsdependRootobjectstore, noRootGC.
-Matrixv1unchangedweights12/25=61/123=49.59%; old9/9functionalnotwholeGoalDONE.
+Published903da3a17bd82042464eb56ccbf0e305913acb7e, nextRootREADY15source package
+independentofU14. Matrixv1FROZEN17/25 weight83/123=67.48%; U16actual7b580917 and
+U20actualdfed6ec6 accepted; old9/9functional, GoalACTIVE. CurrentCI/CoverageFAIL;
+Security/OpenAPISUCCESS. Exactoutcomes/solehistory inattempts.ndjson.
 
-U13final3 Rootcopiedexact/review541c239a; source54coherentpublish queued.
-AllnativeleasesRELEASED, Data/InfraU14sourceauthors only. Ownpublished872objects
-pack884e0fba SHA6c2564f18f870664ce646e8132e06413de4ac40f5601937eef13643a44f39ed2;
-exactTMPbackups, refs/index/status/diffpreserved; workspacefree4296302592.
+Active source ownership: Auth /tmp/rct-s18-auth ownsAPI/generated +AuthR1seven;
+Data /tmp/rct-s18-data ownsU14fortyone (BrokerJava nowAuth, foreignAuth4readonly);
+Infra /tmp/rct-s18-infra ownsconfig8 (prior4/R1five Composeoverlap);
+Reports /tmp/rct-s18-reports ownsPython7 +ONEportablek6control; previousU17/U21 frozen.
+ReviewAuth addressesR1–5coherently; ReviewReports reads currentCI safeFAIL and
+narrowportablecontrol equivalence. No newstand/generalframework.
+
+Authcompile09 CPU0/authcache PASS60.55s/RSS0.821GiB/TMP+0.98MiB/reaped;
+Datacompile02 CPU1/datacache PASS77.31s/RSS1.28GB/TMP+0/reaped.
+ReportsPython CPU2 PASS101/1realTLSdeselected8.14s/RSS344.8MiB/reaped.
+No active Gradle/runtime/DB/Docker/browser; pureNode controls no-network.
+TWOheavy ceiling onlywithindependentcaches/outputs/actualfreeRAM; workers1/fork1,
+≤2.5GiBRSS/512MiBnewTMP each, workspace/TMPfloor4GiB. LastRAM5.52/17.18GB,
+TMP5.61GB; recheck before nextheavy. Existingstoppedstand/volumes/keys untouched.
+
+Rootown1047objects pack17345402 SHA4f6fa161b159dd45f0100eb4c4b68cdb083592b29bf723c1890641e670f816a3,
+exactTMPbackups/noprune. AuxWTs useRootobjects readonly; noRootGC. Nextstaging
+uses temporaryindex and ifneeded exactownedobjectpacking, preservingrefs/index/WIP,
+no foreignobject deletion/lowerfloor. CurrentGitbackup /tmp/rct-s18-owned-checkpoint-pack.
+B013/B014/B015FROZEN; no production/main/Angular/secrets/secondCLI.

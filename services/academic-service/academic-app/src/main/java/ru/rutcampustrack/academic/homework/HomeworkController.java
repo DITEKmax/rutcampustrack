@@ -4,10 +4,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import ru.rutcampustrack.academic.contract.api.HomeworkApi;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.HomeworkHistoryResponse;
@@ -68,7 +73,29 @@ public class HomeworkController implements HomeworkApi {
                             return response;
                         });
         return ResponseEntity.ok(
-                assembler.toModel(responsePage, response -> EntityModel.of(response)));
+                assembler.toModel(
+                        responsePage,
+                        response -> EntityModel.of(response),
+                        publicPageLink(responsePage, groupId, semesterId, archived)));
+    }
+
+    private static Link publicPageLink(
+            Page<?> page, Long groupId, Long semesterId, boolean archived) {
+        var uri = UriComponentsBuilder.fromPath("/api/academic/homeworks");
+        if (RequestContextHolder.getRequestAttributes()
+                instanceof ServletRequestAttributes request) {
+            uri.query(request.getRequest().getQueryString());
+        }
+        // Bound filters and actual page metadata remain authoritative. A public link never
+        // inherits the internal servlet authority or trusts forwarding headers.
+        return Link.of(
+                uri.replaceQueryParam("groupId", groupId)
+                        .replaceQueryParam("semesterId", semesterId)
+                        .replaceQueryParam("archived", archived)
+                        .replaceQueryParam("page", page.getNumber())
+                        .replaceQueryParam("size", page.getSize())
+                        .build(true)
+                        .toUriString());
     }
 
     @Override

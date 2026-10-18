@@ -2,6 +2,7 @@ package ru.rutcampustrack.attendance.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,6 +11,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +39,7 @@ import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -46,6 +49,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
+import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceWritePortImpl;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -54,12 +60,15 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
+import ru.rutcampustrack.attendance.marking.MarkingService;
+import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.attendance.studentrequest.AttachmentState;
@@ -142,6 +151,7 @@ class LessonTransferParticipantIT {
     @Autowired private PairWriteCoordinator pairWriteCoordinator;
     @Autowired private SemesterArchiveParticipantService archiveParticipantService;
     @Autowired private SemesterArchiveEffectService archiveEffectService;
+    @Autowired private Clock clock;
 
     @MockitoBean private ScheduleGrpcClient scheduleGrpcClient;
     @MockitoBean private AcademicGrpcClient academicGrpcClient;
@@ -201,6 +211,41 @@ class LessonTransferParticipantIT {
                         .createdAt(CREATED_AT)
                         .updatedAt(UPDATED_AT)
                         .build());
+
+        long retainedLessonId = EFFECT_LESSON_ID + 1;
+        long retainedStudentId = 300L;
+        byte[] retainedBytes =
+                "%PDF-1.7\nretained archive evidence\n"
+                        .getBytes(java.nio.charset.StandardCharsets.US_ASCII);
+        var retainedFile =
+                attachmentService.replace(
+                        semesterId,
+                        retainedLessonId,
+                        retainedStudentId,
+                        GROUP_ID,
+                        new MockMultipartFile(
+                                "file", "retained.pdf", "application/pdf", retainedBytes));
+        RequestAttachmentDocument retainedDescriptor =
+                mongoTemplate.findById(retainedFile.id(), RequestAttachmentDocument.class);
+        AttendanceDocument retainedMark =
+                AttendanceDocument.builder()
+                        .id("retained-file-mark")
+                        .lessonId(retainedLessonId)
+                        .userId(retainedStudentId)
+                        .groupId(GROUP_ID)
+                        .subjectId(20L)
+                        .semesterId(semesterId)
+                        .status(AttendanceStatus.EXCUSED)
+                        .source(AttendanceSource.HEADMAN)
+                        .excuseType(ExcuseType.ILLNESS)
+                        .attachmentId(retainedFile.id())
+                        .attachmentName(retainedFile.name())
+                        .attachmentContentType(retainedFile.contentType())
+                        .attachmentSize(retainedFile.size())
+                        .createdAt(CREATED_AT)
+                        .updatedAt(UPDATED_AT)
+                        .build();
+        mongoTemplate.insert(retainedMark);
 
         archiveParticipantService.apply(
                 participantCommand("PREPARE_ARCHIVE", firstArchive, semesterId, 1));
@@ -295,6 +340,9 @@ class LessonTransferParticipantIT {
                                         SemesterArchiveParticipantReceiptDocument.class)
                                 .getStatus())
                 .isEqualTo("PREPARED_RESTORE");
+        assertThat(mongoTemplate.findById(retainedFile.id(), RequestAttachmentDocument.class))
+                .usingRecursiveComparison()
+                .isEqualTo(retainedDescriptor);
         assertThatThrownBy(
                         () ->
                                 attendanceWritePort.mark(
@@ -313,6 +361,62 @@ class LessonTransferParticipantIT {
                                         SemesterArchiveFenceDocument.class)
                                 .getBarrierState())
                 .isEqualTo("RELEASED");
+        assertThat(mongoTemplate.findById(retainedFile.id(), RequestAttachmentDocument.class))
+                .usingRecursiveComparison()
+                .isEqualTo(retainedDescriptor);
+        assertThat(mongoTemplate.findById(retainedMark.getId(), AttendanceDocument.class))
+                .usingRecursiveComparison()
+                .isEqualTo(retainedMark);
+        assertThat(clock.instant()).isBefore(retainedDescriptor.getExpiresAt());
+
+        RequestContext headman = new RequestContext();
+        headman.setUserId(55L);
+        headman.setGroupId(GROUP_ID);
+        headman.setHeadman(true);
+        LocalDate retainedDate = LocalDate.now(clock.withZone(ZoneOffset.UTC)).minusDays(1);
+        when(scheduleGrpcClient.getLessonById(retainedLessonId))
+                .thenReturn(
+                        LessonResponse.newBuilder()
+                                .setId(retainedLessonId)
+                                .setGroupId(GROUP_ID)
+                                .setSemesterId(semesterId)
+                                .setDate(retainedDate.toString())
+                                .setStartTime("09:00")
+                                .setEndTime("10:30")
+                                .setStatus("CLOSED")
+                                .build());
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, retainedDate, semesterId))
+                .thenReturn(
+                        GroupMembersResponse.newBuilder()
+                                .setSemesterId(semesterId)
+                                .setAsOfDate(retainedDate.toString())
+                                .addStudents(StudentInfo.newBuilder().setUserId(retainedStudentId))
+                                .build());
+        when(academicGrpcClient.isHeadman(headman.getUserId(), GROUP_ID))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
+        MarkingService reader =
+                new MarkingService(
+                        scheduleGrpcClient,
+                        academicGrpcClient,
+                        mongoTemplate,
+                        mock(AttendanceEventPublisher.class),
+                        semesterCacheService,
+                        headman,
+                        pairWriteCoordinator,
+                        clock,
+                        new SyncTaskExecutor(),
+                        attachmentService);
+        var restoredDownload = reader.downloadAttachment(retainedLessonId, retainedStudentId);
+        assertThat(restoredDownload.bytes()).isEqualTo(retainedBytes);
+        assertThat(restoredDownload.name()).isEqualTo(retainedFile.name());
+        assertThat(restoredDownload.contentType()).isEqualTo(retainedFile.contentType());
+        when(academicGrpcClient.isHeadman(headman.getUserId(), GROUP_ID))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
+        assertThatThrownBy(() -> reader.downloadAttachment(retainedLessonId, retainedStudentId))
+                .isInstanceOf(AccessDeniedException.class);
+        assertThat(mongoTemplate.findById(retainedFile.id(), RequestAttachmentDocument.class))
+                .usingRecursiveComparison()
+                .isEqualTo(retainedDescriptor);
         attendanceWritePort.mark(
                 100L, EFFECT_LESSON_ID, GROUP_ID, semesterId, AttendanceStatus.ABSENT);
         assertThat(mongoTemplate.findById("archive-mark", AttendanceDocument.class).getStatus())

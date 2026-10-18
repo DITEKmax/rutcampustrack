@@ -136,6 +136,7 @@ export class HeadmanHomeworkApi {
         `/api/academic/homeworks?groupId=${groupId}&semesterId=${semesterId}&page=${page}&size=100${archived ? '&archived=true' : ''}`,
       (value) =>
         embeddedItems(value, ['homeworkResponseList']).map(normalizeHomework).filter(isValue),
+      true,
     )
   }
 
@@ -362,25 +363,34 @@ export class HeadmanHomeworkApi {
   private async requestPaged<T>(
     path: (page: number) => string,
     read: (value: unknown) => readonly T[],
+    authoritativeNext = false,
   ): Promise<readonly T[]> {
     const items: T[] = []
     const visitedPaths = new Set<string>()
-    let nextPath = path(0)
+    const initialPath = path(0)
+    let nextPath = initialPath
     let page = 0
     for (;;) {
-      if (!visitedPaths.add(nextPath))
+      if (visitedPaths.has(nextPath))
         throw new Error('Сервер вернул зацикленную пагинацию домашних заданий')
+      visitedPaths.add(nextPath)
       const value = await this.request<unknown>(nextPath)
       items.push(...read(value))
+      const nextHref = authoritativeNext ? nextPageHref(value, initialPath) : null
+      if (nextHref !== null) {
+        nextPath = nextHref
+        page += 1
+        continue
+      }
       const metadata = pageMetadata(value)
       if (metadata !== null && metadata.totalPages > page + 1) {
         nextPath = path(page + 1)
         page += 1
         continue
       }
-      const nextHref = nextPageHref(value)
-      if (nextHref !== null) {
-        nextPath = nextHref
+      const legacyNextHref = authoritativeNext ? null : legacyNextPageHref(value)
+      if (legacyNextHref !== null) {
+        nextPath = legacyNextHref
         page += 1
         continue
       }
@@ -658,10 +668,39 @@ function pageMetadata(value: unknown): { totalPages: number } | null {
     : null
 }
 
-function nextPageHref(value: unknown): string | null {
+function legacyNextPageHref(value: unknown): string | null {
   if (!isRecord(value) || !isRecord(value._links) || !isRecord(value._links.next)) return null
   const href = value._links.next.href
   return typeof href === 'string' && href.startsWith('/api/') ? href : null
+}
+
+function nextPageHref(value: unknown, initialPath: string): string | null {
+  if (!isRecord(value) || !isRecord(value._links) || !('next' in value._links)) return null
+  const invalid = (): never => {
+    throw new Error('Некорректная ссылка пагинации ДЗ')
+  }
+  const href = isRecord(value._links.next) ? value._links.next.href : null
+  if (typeof href !== 'string' || !href.startsWith('/api/') || /[\s\\]/.test(href)) return invalid()
+  const initial = new URL(initialPath, 'https://pagination.invalid')
+  const target = new URL(href, initial)
+  if (target.origin !== initial.origin || target.pathname !== initial.pathname || target.hash)
+    return invalid()
+  const filters = new Set([...initial.searchParams.keys(), 'groupId', 'semesterId', 'archived'])
+  for (const filter of filters) {
+    if (['page', 'size', 'sort'].includes(filter)) continue
+    const expected = initial.searchParams.getAll(filter)
+    const actual = target.searchParams.getAll(filter)
+    if (
+      filter === 'archived' &&
+      expected.length === 0 &&
+      actual.length === 1 &&
+      actual[0] === 'false'
+    )
+      continue
+    if (expected.length !== actual.length || expected.some((item, index) => item !== actual[index]))
+      return invalid()
+  }
+  return href
 }
 
 function unwrapEntity(value: unknown): Record<string, unknown> {

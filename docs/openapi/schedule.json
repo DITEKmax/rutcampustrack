@@ -110,7 +110,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       },
       "put" : {
         "tags" : [ "Schedule Items" ],
@@ -234,7 +237,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       },
       "delete" : {
         "tags" : [ "Schedule Items" ],
@@ -338,7 +344,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/one-off-lessons" : {
@@ -452,7 +461,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       },
       "post" : {
         "tags" : [ "One-off Lessons" ],
@@ -568,7 +580,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/lessons/{id}/transfer" : {
@@ -686,7 +701,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/lessons/{id}/blockage" : {
@@ -794,7 +812,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       },
       "delete" : {
         "tags" : [ "Lessons" ],
@@ -890,7 +911,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/items" : {
@@ -1010,7 +1034,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       },
       "post" : {
         "tags" : [ "Schedule Items" ],
@@ -1126,7 +1153,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/items/{id}/lifecycle-preview" : {
@@ -1241,7 +1271,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/lessons/{id}/room" : {
@@ -1357,7 +1390,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/lessons/{id}/restore" : {
@@ -1465,7 +1501,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/lessons/{id}/geo-block" : {
@@ -1573,7 +1612,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/lessons/{id}/cancel" : {
@@ -1691,7 +1733,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/lessons/next" : {
@@ -1835,7 +1880,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/lesson-transfers/{operationId}" : {
@@ -1933,7 +1981,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/lesson-slots" : {
@@ -2022,7 +2073,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/health-check" : {
@@ -2113,7 +2167,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/groups/{groupId}/lessons" : {
@@ -2261,7 +2318,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/academic-week-policy" : {
@@ -2359,7 +2419,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     },
     "/schedule/one-off-lessons/{id}" : {
@@ -2450,7 +2513,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
       }
     }
   },
@@ -3450,6 +3516,14 @@
             "example" : "Имя не может быть пустым"
           }
         }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "description" : "Public access token. Gateway validates the current session and supplies service identity.",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
       }
     }
   }

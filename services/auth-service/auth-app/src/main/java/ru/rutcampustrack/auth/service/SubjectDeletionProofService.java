@@ -262,7 +262,7 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         if (users.size() != 1) throw denied();
         var groups =
                 jdbc.query(
-                        "SELECT is_active FROM groups WHERE id=? FOR UPDATE",
+                        "SELECT is_active FROM auth_api.lock_group_state(?)",
                         (rs, i) -> rs.getBoolean(1),
                         b.groupId());
         if (groups.size() != 1 || !groups.getFirst()) throw denied();

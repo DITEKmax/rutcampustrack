@@ -1,13 +1,17 @@
 package ru.rutcampustrack.auth.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
-import java.time.OffsetDateTime;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import ru.rutcampustrack.auth.entity.enums.AccountStatus;
 import ru.rutcampustrack.auth.entity.enums.UserRole;
+
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "users")
@@ -26,13 +30,23 @@ public class User {
     @Column(name = "password_hash")
     private String passwordHash;
 
-    @Column(name = "last_name", nullable = false, length = 128)
+    @Column(
+            name = "last_name",
+            nullable = false,
+            length = 128,
+            insertable = false,
+            updatable = false)
     private String lastName;
 
-    @Column(name = "first_name", nullable = false, length = 128)
+    @Column(
+            name = "first_name",
+            nullable = false,
+            length = 128,
+            insertable = false,
+            updatable = false)
     private String firstName;
 
-    @Column(name = "middle_name", length = 128)
+    @Column(name = "middle_name", length = 128, insertable = false, updatable = false)
     private String middleName;
 
     @JsonIgnore
@@ -45,7 +59,10 @@ public class User {
         return sb.toString();
     }
 
+    @Column(insertable = false, updatable = false)
     private String email;
+
+    @Column(insertable = false, updatable = false)
     private String phone;
 
     @Column(name = "telegram_id")
@@ -54,7 +71,7 @@ public class User {
     @Column(name = "telegram_username", length = 64)
     private String telegramUsername;
 
-    @Column(name = "employee_number", length = 32)
+    @Column(name = "employee_number", length = 32, insertable = false, updatable = false)
     private String employeeNumber;
 
     @Column(nullable = false)
@@ -66,7 +83,7 @@ public class User {
     @Column(name = "is_headman", nullable = false)
     private boolean isHeadman;
 
-    @Column(name = "group_id")
+    @Column(name = "group_id", insertable = false, updatable = false)
     private Long groupId;
 
     @Setter
@@ -77,9 +94,9 @@ public class User {
     @Column(name = "password_changed", nullable = false)
     private boolean passwordChanged;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime updatedAt;
 }

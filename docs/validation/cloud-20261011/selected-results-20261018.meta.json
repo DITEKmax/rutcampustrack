@@ -4,9 +4,9 @@
   "baseline": "e66b1711b3d93faee625b50a2e2f785020a0f43a",
   "rows": 25,
   "mandatoryWeight": 123,
-  "closed": 17,
-  "closedWeight": 83,
-  "weightedPercent": 67.48,
+  "closed": 20,
+  "closedWeight": 94,
+  "weightedPercent": 76.42,
   "historicalStage": "9/9 functional DONE_CHANGED9 ALREADY_SATISFIED0 at9a; original6/9 kept incontract/history; globalCI/newscope notDONE",
   "weightPolicy": "1/2/3/5/8 chosen byscope-risk before new implementation; no retrospective change for percentage; existing outcomes mapped once, U10 is sufficient acceptedM04subset notextraoldwholepackage",
   "scopePolicy": "ContextIDEA033/034/045 crosscut; allownerDEFERREDtable entries outside denominator, conditionalintegration notselected outside; U23assessment remainsmandatory; mandatoryblockers staydenominator",
@@ -47,6 +47,27 @@
       "closed": 17,
       "closedWeight": 83,
       "weightedPercent": 67.48
+    },
+    {
+      "utc": "2026-10-18T02:02:16.954415+00:00",
+      "change": "U24 selectedscriptadaptation accepted on62c:40executedportablecontrols +independent source/equivalence reviews; conditionalactualk6smoke NOT_RUN, notcapacity. Same25/123 denominator.",
+      "closed": 18,
+      "closedWeight": 86,
+      "weightedPercent": 69.92
+    },
+    {
+      "utc": "2026-10-18T02:18:12.094019+00:00",
+      "change": "U17actualMongo restorefile/currentgrant855fac4b SOURCE_METHOD PASS acceptedindependentlye11ae909 on62c; same25/123 denominator",
+      "closed": 19,
+      "closedWeight": 91,
+      "weightedPercent": 73.98
+    },
+    {
+      "utc": "2026-10-18T02:18:31.963593+00:00",
+      "change": "U12actual62c Auth200IT/148unit/currentgenerator+schema/TS acceptedindependently9f691350; no25/123denominatorchange",
+      "closed": 20,
+      "closedWeight": 94,
+      "weightedPercent": 76.42
     }
   ],
   "changeReason": "FourboundedKT1 mappings narrowedactualsourcecriteria; same25rows/same123weights, no denominatorchange. U23 assessmentaccepted, all4conditionalintegrations unselected/excluded; no productintegrationclaim."

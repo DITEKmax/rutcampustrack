@@ -1,18 +1,22 @@
 package ru.rutcampustrack.academic.user;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
-import org.springframework.web.server.ResponseStatusException;
 
 @Repository
 public class UserArchiveRepository {
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAuthDataCommands authCommands;
+
     @org.springframework.beans.factory.annotation.Autowired
     private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
 
@@ -33,10 +37,10 @@ public class UserArchiveRepository {
         List<Long> lockedUsers =
                 jdbc.queryForList(
                         """
-                SELECT u.id FROM users u WHERE u.id=? OR EXISTS (SELECT 1 FROM user_role_grants g
-                  WHERE g.user_id=u.id AND g.role='admin' AND g.status='active')
-                ORDER BY u.id FOR NO KEY UPDATE
-                """,
+SELECT u.id FROM users u WHERE u.id=? OR EXISTS (SELECT 1 FROM user_role_grants g
+  WHERE g.user_id=u.id AND g.role='admin' AND g.status='active')
+ORDER BY u.id FOR NO KEY UPDATE
+""",
                         Long.class,
                         target);
         adminAccess.require("USERS_ARCHIVE");
@@ -44,9 +48,9 @@ public class UserArchiveRepository {
         if (!Boolean.TRUE.equals(
                 jdbc.queryForObject(
                         """
-                SELECT EXISTS(SELECT 1 FROM users u JOIN user_role_grants g ON g.user_id=u.id
-                  WHERE u.id=? AND u.status<>'archived' AND g.role='admin' AND g.status='active')
-                """,
+SELECT EXISTS(SELECT 1 FROM users u JOIN user_role_grants g ON g.user_id=u.id
+  WHERE u.id=? AND u.status<>'archived' AND g.role='admin' AND g.status='active')
+""",
                         Boolean.class,
                         owner))) denied();
         if (!lockedUsers.contains(target))
@@ -67,11 +71,11 @@ public class UserArchiveRepository {
         String state =
                 jdbc.queryForObject(
                         """
-                SELECT jsonb_build_object('user', to_jsonb(u)-'password_hash'-'initial_password'-'email'-'phone',
-                    'grants', COALESCE((SELECT jsonb_agg(to_jsonb(g) ORDER BY g.id)
-                       FROM user_role_grants g WHERE g.user_id=u.id), '[]'::jsonb))::text
-                FROM users u WHERE u.id=?
-                """,
+SELECT jsonb_build_object('user', (SELECT to_jsonb(safe_user) FROM (SELECT u.id, u.login, u.last_name, u.first_name, u.middle_name, u.telegram_id, u.telegram_username, u.employee_number, u.role, u.status, u.is_headman, u.group_id, u.password_changed, u.created_at, u.updated_at, u.avatar_id, u.roles_version, u.credentials_version, u.telegram_binding_version, u.generated_password_origin) safe_user),
+    'grants', COALESCE((SELECT jsonb_agg(to_jsonb(g) ORDER BY g.id)
+       FROM user_role_grants g WHERE g.user_id=u.id), '[]'::jsonb))::text
+FROM users u WHERE u.id=?
+""",
                         String.class,
                         target);
         if (state == null)
@@ -83,12 +87,12 @@ public class UserArchiveRepository {
         long groups =
                 jdbc.queryForObject(
                         """
-                SELECT COUNT(*) FROM (
-                  SELECT group_id FROM student_group_history WHERE user_id=?
-                  UNION SELECT group_id FROM user_role_grants WHERE user_id=? AND group_id IS NOT NULL
-                  UNION SELECT group_id FROM assignments WHERE teacher_id=?
-                ) linked WHERE group_id IS NOT NULL
-                """,
+SELECT COUNT(*) FROM (
+  SELECT group_id FROM student_group_history WHERE user_id=?
+  UNION SELECT group_id FROM user_role_grants WHERE user_id=? AND group_id IS NOT NULL
+  UNION SELECT group_id FROM assignments WHERE teacher_id=?
+) linked WHERE group_id IS NOT NULL
+""",
                         Long.class,
                         target,
                         target,
@@ -96,37 +100,37 @@ public class UserArchiveRepository {
         long headman =
                 jdbc.queryForObject(
                         """
-                SELECT COUNT(DISTINCT group_id) FROM user_role_grants
-                WHERE user_id=? AND role='headman' AND status='active'
-                """,
+                        SELECT COUNT(DISTINCT group_id) FROM user_role_grants
+                        WHERE user_id=? AND role='headman' AND status='active'
+                        """,
                         Long.class,
                         target);
         boolean dangerous =
                 Boolean.TRUE.equals(
                         jdbc.queryForObject(
                                 """
-                SELECT EXISTS(SELECT 1 FROM user_role_grants WHERE user_id=?
-                    AND role IN ('teacher','headman') AND status='active')
-                """,
+                                SELECT EXISTS(SELECT 1 FROM user_role_grants WHERE user_id=?
+                                    AND role IN ('teacher','headman') AND status='active')
+                                """,
                                 Boolean.class,
                                 target));
         // Warning concerns effective assignments on the observed Moscow date.
         long sole =
                 jdbc.queryForObject(
                         """
-                SELECT COUNT(*) FROM assignments a JOIN semesters s ON s.id=a.semester_id
-                WHERE a.teacher_id=? AND a.lifecycle_state='ACTIVE'
-                  AND a.valid_from <= (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date
-                  AND COALESCE(a.valid_until_exclusive,s.date_to+1) > (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date
-                  AND NOT EXISTS (SELECT 1 FROM assignments other JOIN user_role_grants grant_row
-                    ON grant_row.user_id=other.teacher_id AND grant_row.role='teacher' AND grant_row.status='active'
-                    JOIN users teacher ON teacher.id=other.teacher_id AND teacher.status<>'archived'
-                    WHERE other.teacher_id<>a.teacher_id AND other.subject_id=a.subject_id
-                      AND other.group_id=a.group_id AND other.semester_id=a.semester_id
-                      AND other.lesson_type=a.lesson_type AND other.lifecycle_state='ACTIVE'
-                      AND other.valid_from <= (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date
-                      AND COALESCE(other.valid_until_exclusive,s.date_to+1) > (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date)
-                """,
+SELECT COUNT(*) FROM assignments a JOIN semesters s ON s.id=a.semester_id
+WHERE a.teacher_id=? AND a.lifecycle_state='ACTIVE'
+  AND a.valid_from <= (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date
+  AND COALESCE(a.valid_until_exclusive,s.date_to+1) > (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date
+  AND NOT EXISTS (SELECT 1 FROM assignments other JOIN user_role_grants grant_row
+    ON grant_row.user_id=other.teacher_id AND grant_row.role='teacher' AND grant_row.status='active'
+    JOIN users teacher ON teacher.id=other.teacher_id AND teacher.status<>'archived'
+    WHERE other.teacher_id<>a.teacher_id AND other.subject_id=a.subject_id
+      AND other.group_id=a.group_id AND other.semester_id=a.semester_id
+      AND other.lesson_type=a.lesson_type AND other.lifecycle_state='ACTIVE'
+      AND other.valid_from <= (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date
+      AND COALESCE(other.valid_until_exclusive,s.date_to+1) > (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date)
+""",
                         Long.class,
                         target);
         String fingerprint =
@@ -148,9 +152,9 @@ public class UserArchiveRepository {
     public void savePreview(long owner, Local local, String digest, Instant expiry) {
         jdbc.update(
                 """
-                INSERT INTO user_archive_preview(preview_digest,owner_id,target_id,academic_digest,requires_password,expires_at)
-                VALUES (?,?,?,?,?,?)
-                """,
+INSERT INTO user_archive_preview(preview_digest,owner_id,target_id,academic_digest,requires_password,expires_at)
+VALUES (?,?,?,?,?,?)
+""",
                 digest,
                 owner,
                 local.userId(),
@@ -165,9 +169,9 @@ public class UserArchiveRepository {
         List<String> fingerprints =
                 jdbc.queryForList(
                         """
-                SELECT academic_digest FROM user_archive_preview WHERE preview_digest=?
-                  AND owner_id=? AND target_id=? AND expires_at > NOW()
-                """,
+                        SELECT academic_digest FROM user_archive_preview WHERE preview_digest=?
+                          AND owner_id=? AND target_id=? AND expires_at > NOW()
+                        """,
                         String.class,
                         digest,
                         owner,
@@ -181,9 +185,9 @@ public class UserArchiveRepository {
         List<Receipt> rows =
                 jdbc.query(
                         """
-                SELECT owner_id,target_id,action,preview_digest,requires_password
-                FROM user_archive_receipt WHERE operation_id=?
-                """,
+                        SELECT owner_id,target_id,action,preview_digest,requires_password
+                        FROM user_archive_receipt WHERE operation_id=?
+                        """,
                         (rs, n) ->
                                 new Receipt(
                                         rs.getLong(1),
@@ -199,9 +203,9 @@ public class UserArchiveRepository {
             UUID operation, long owner, long target, String action, String digest, boolean proof) {
         jdbc.update(
                 """
-                INSERT INTO user_archive_receipt(operation_id,owner_id,target_id,action,preview_digest,requires_password)
-                VALUES (?,?,?,?,?,?)
-                """,
+INSERT INTO user_archive_receipt(operation_id,owner_id,target_id,action,preview_digest,requires_password)
+VALUES (?,?,?,?,?,?)
+""",
                 operation,
                 owner,
                 target,
@@ -216,22 +220,9 @@ public class UserArchiveRepository {
     }
 
     public void restore(long target) {
-        // No grant, membership, helper grant or selected session is resurrected.
-        jdbc.update(
-                "UPDATE users SET status='active',group_id=NULL,is_headman=FALSE,updated_at=NOW() WHERE id=?",
-                target);
-        jdbc.update(
-                "UPDATE user_role_grants SET status='archived',updated_at=NOW() WHERE user_id=? AND status<>'archived'",
-                target);
-        jdbc.update(
-                "UPDATE user_role_grants SET group_id=NULL,updated_at=NOW() WHERE user_id=? AND role='student' AND group_id IS NOT NULL",
-                target);
-        jdbc.update(
-                """
-                UPDATE auth_sessions SET active_role_grant_id=NULL,session_version=session_version+1
-                WHERE user_id=? AND revoked_at IS NULL AND active_role_grant_id IS NOT NULL
-                """,
-                target);
+        // Academic restores only its profile; Auth atomically fences all old authority.
+        authCommands.restore(target);
+        jdbc.update("UPDATE users SET group_id=NULL,updated_at=NOW() WHERE id=?", target);
     }
 
     public List<Long> cacheGroups(long target) {
@@ -247,7 +238,8 @@ public class UserArchiveRepository {
 
     public void revokeHelpers(long target) {
         jdbc.update(
-                "UPDATE headman_assistants SET is_active=FALSE,revoked_at=NOW() WHERE student_id=? AND is_active",
+                "UPDATE headman_assistants SET is_active=FALSE,revoked_at=NOW() WHERE student_id=?"
+                        + " AND is_active",
                 target);
     }
 

@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
 import ru.rutcampustrack.academic.event.AdministrativeNotificationAdminAccessChangedEvent;
 import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
@@ -19,6 +20,7 @@ public class AdminAccessService {
     private final RequestContext context;
     private final UserRoleGrantWriter grants;
     private final ApplicationEventPublisher publisher;
+    private final AcademicAuthDataCommands commands;
 
     public AdminAccessService(
             JdbcTemplate jdbc,
@@ -26,13 +28,15 @@ public class AdminAccessService {
             AcademicAdminAccess access,
             RequestContext context,
             UserRoleGrantWriter grants,
-            ApplicationEventPublisher publisher) {
+            ApplicationEventPublisher publisher,
+            AcademicAuthDataCommands commands) {
         this.jdbc = jdbc;
         this.authority = authority;
         this.access = access;
         this.context = context;
         this.grants = grants;
         this.publisher = publisher;
+        this.commands = commands;
     }
 
     public AdminAccessProfile get(long target) {
@@ -47,8 +51,7 @@ public class AdminAccessService {
         var current = authority.profile(target);
         compare(current, expectedVersion);
         if (current.full() && !"FULL".equals(input.mode())) authority.protectLastFull(target);
-        save(target, input.mode(), permissions, current.version() + 1);
-        grants.upsertRole(target, "admin", "active", null);
+        commands.adminAccess(target, input.mode(), permissions, current.version(), false);
         var result = authority.profile(target);
         boolean changed =
                 !current.assigned()
@@ -69,7 +72,7 @@ public class AdminAccessService {
         if (!current.assigned()) return;
         authority.protectLastFull(target);
         // Grant trigger persists the tombstone/version; writer clears only selected ADMIN sessions.
-        grants.upsertRole(target, "admin", "archived", null);
+        commands.adminAccess(target, null, java.util.List.of(), current.version(), true);
     }
 
     public java.util.List<String> validate(AdminAccessInput input) {
@@ -80,8 +83,7 @@ public class AdminAccessService {
     /** Invoked inside createUser's global-locked transaction after the new user is flushed. */
     public void assignCreated(long target, AdminAccessInput input) {
         access.requireFull();
-        save(target, input.mode(), validate(input), 1);
-        grants.upsertRole(target, "admin", "active", null);
+        commands.adminAccess(target, input.mode(), validate(input), 0, false);
     }
 
     private void lock(long target) {
@@ -108,24 +110,5 @@ public class AdminAccessService {
         if (expected == null || expected < 0) throw AdminAccessException.invalid();
         if (current.version() != expected)
             throw new AdminAccessException(HttpStatus.CONFLICT, "ADMIN_ACCESS_CONFLICT", current);
-    }
-
-    private void save(long target, String mode, java.util.List<String> permissions, long version) {
-        jdbc.update(
-                con -> {
-                    var statement =
-                            con.prepareStatement(
-                                    """
-              INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) VALUES (?,TRUE,?,?,?)
-              ON CONFLICT(user_id) DO UPDATE SET assigned=TRUE,mode=EXCLUDED.mode,permissions=EXCLUDED.permissions,
-                version=EXCLUDED.version,updated_at=NOW()
-              """);
-                    statement.setLong(1, target);
-                    statement.setString(2, mode);
-                    statement.setArray(
-                            3, con.createArrayOf("text", permissions.toArray(String[]::new)));
-                    statement.setLong(4, version);
-                    return statement;
-                });
     }
 }

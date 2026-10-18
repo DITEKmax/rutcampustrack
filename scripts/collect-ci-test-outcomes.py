@@ -45,6 +45,48 @@ CAP_MARKER = re.compile(
     r"CAP_FUTURE_DIAGNOSTIC_V1 class=(" + "|".join(CAP_FAILURE_CLASSES) + r") "
     r"sqlState=(" + "|".join(CAP_SQL_STATES) + r") barrier=(NOT_OBSERVED|TIMED_OUT|INTERRUPTED)"
 )
+# Exact native exception classes map to closed categories; never emit class/message text.
+NOTIFICATION_FAILURE_CLASSES = {
+    "INIT": ("java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"),
+    "NO_CLASS": ("java.lang.NoClassDefFoundError", "java.lang.ClassNotFoundException"),
+    "BEAN": (
+        "org.springframework.beans.factory.BeanCreationException",
+        "org.springframework.beans.BeanInstantiationException",
+    ),
+    "DEPENDENCY": ("org.springframework.beans.factory.UnsatisfiedDependencyException",),
+    "CONTAINER": (
+        "org.testcontainers.containers.ContainerLaunchException",
+        "org.testcontainers.containers.ContainerFetchException",
+    ),
+    "MONGO": (
+        "com.mongodb.MongoException",
+        "com.mongodb.MongoTimeoutException",
+        "com.mongodb.MongoSocketOpenException",
+        "com.mongodb.MongoSocketReadException",
+        "com.mongodb.MongoSecurityException",
+        "com.mongodb.MongoCommandException",
+        "com.mongodb.MongoConfigurationException",
+    ),
+    "AMQP": (
+        "org.springframework.amqp.AmqpException",
+        "org.springframework.amqp.AmqpIOException",
+        "org.springframework.amqp.AmqpConnectException",
+        "org.springframework.amqp.AmqpAuthenticationException",
+        "org.springframework.amqp.rabbit.listener.exception.FatalListenerStartupException",
+        "org.springframework.amqp.rabbit.support.ListenerExecutionFailedException",
+        "com.rabbitmq.client.AuthenticationFailureException",
+        "com.rabbitmq.client.PossibleAuthenticationFailureException",
+        "com.rabbitmq.client.ShutdownSignalException",
+        "com.rabbitmq.client.AlreadyClosedException",
+    ),
+    "OOM": ("java.lang.OutOfMemoryError",),
+    "ASSERTION": ("java.lang.AssertionError", "org.opentest4j.AssertionFailedError"),
+}
+NOTIFICATION_FAILURE_CODES = {name: code for code, names in NOTIFICATION_FAILURE_CLASSES.items() for name in names}
+NOTIFICATION_CAUSE_HEADER = re.compile(
+    r"(?m)^[ \t]{0,32}Caused by:[ \t]{1,8}([A-Za-z_$][A-Za-z0-9_.$]{0,255})(?=:|\r?$)"
+)
+NOTIFICATION_DIAGNOSTIC_CHARS = 65536
 METADATA_ENV = (
     "RCT_CI_PR_HEAD_SHA",
     "RCT_CI_RUN_ID",
@@ -230,6 +272,28 @@ def cap_failure_diagnostic(case: ElementTree.Element) -> dict:
     }
 
 
+def notification_failure_diagnostic(case: ElementTree.Element) -> dict:
+    failures = case.findall("failure")
+    if len(failures) != 1:
+        return {"state": "NO_SINGLE_FAILURE", "codes": [], "overflow": False}
+    failure = failures[0]
+    codes = [NOTIFICATION_FAILURE_CODES.get(failure.get("type"), "OTHER")]
+    text = failure.text or ""
+    overflow = len(text) > NOTIFICATION_DIAGNOSTIC_CHARS
+    prefix = text[:NOTIFICATION_DIAGNOSTIC_CHARS]
+    if overflow:
+        # Never classify a header cut from a longer original line.
+        prefix = prefix.rsplit("\n", 1)[0] if "\n" in prefix else ""
+    for match in NOTIFICATION_CAUSE_HEADER.finditer(prefix):
+        code = NOTIFICATION_FAILURE_CODES.get(match.group(1), "OTHER")
+        if code not in codes:
+            if len(codes) < 8:
+                codes.append(code)
+            else:
+                overflow = True
+    return {"state": "CLOSED_CLASSES", "codes": codes, "overflow": overflow}
+
+
 def collect(root: Path, service: str, task: str, environment: dict[str, str]) -> dict:
     if service not in MODULES or task not in {"test", "integrationTest"}:
         raise ValueError("Invalid outcome scope")
@@ -313,6 +377,14 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
                     and method == CAP_METHOD
                 ):
                     safe["failureDiagnostic"] = cap_failure_diagnostic(case)
+                if (
+                    service == "notification-service"
+                    and task == "integrationTest"
+                    and status == "FAILED"
+                    and known
+                    and raw_class.startswith("ru.rutcampustrack.notification.")
+                ):
+                    safe["failureDiagnostic"] = notification_failure_diagnostic(case)
                 report["cases"].append(safe)
             missing = max(0, (declared["tests"] or 0) - len(nodes))
             counts["NOT_EXECUTED"] += missing

@@ -1,11 +1,5 @@
 package ru.rutcampustrack.academic.group;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationEventPublisher;
@@ -14,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
 import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentPreviewResponse;
 import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentResponse;
@@ -29,6 +24,13 @@ import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Canonical group-scoped headman mutation.
@@ -111,7 +113,8 @@ public class GroupHeadmanAssignmentService {
     public HeadmanAssignmentResponse assign(Long groupId, AssignHeadmanRequest request) {
         adminAccess.begin("GROUPS_MANAGE");
         if (request == null) throw new BadRequestException("Запрос назначения старосты обязателен");
-        return mutate(groupId, request.studentId(), request.expectedHeadmanId(), true);
+        return mutate(
+                groupId, request.studentId(), request.expectedHeadmanId(), true, false, null, null);
     }
 
     /**
@@ -121,10 +124,16 @@ public class GroupHeadmanAssignmentService {
      */
     @Transactional
     public HeadmanAssignmentResponse assignLegacyHeadman(Long studentId) {
+        return assignLegacyHeadman(studentId, null, null);
+    }
+
+    @Transactional
+    public HeadmanAssignmentResponse assignLegacyHeadman(
+            Long studentId, Long telegramId, String status) {
         adminAccess.begin("USERS_MANAGE");
         adminAccess.require("GROUPS_MANAGE");
         Long groupId = activeStudentGroup(studentId);
-        return mutate(groupId, studentId, null, false);
+        return mutate(groupId, studentId, null, false, true, telegramId, status);
     }
 
     /** The legacy false flag is a no-op for non-headmen; current headmen require replacement. */
@@ -175,7 +184,13 @@ public class GroupHeadmanAssignmentService {
     }
 
     private HeadmanAssignmentResponse mutate(
-            Long groupId, Long studentId, Long expectedHeadmanId, boolean enforceCas) {
+            Long groupId,
+            Long studentId,
+            Long expectedHeadmanId,
+            boolean enforceCas,
+            boolean legacy,
+            Long telegramId,
+            String status) {
         Group initialGroup = requireActiveGroup(groupId);
         User candidate = requireCandidate(initialGroup.getId(), studentId);
         CurrentHeadman initialCurrent = readCurrentHeadman(initialGroup.getId());
@@ -207,6 +222,14 @@ public class GroupHeadmanAssignmentService {
         }
 
         if (Objects.equals(currentId, studentId)) {
+            if (legacy)
+                roleGrantWriter.replaceHeadman(
+                        currentId,
+                        lockedCandidate.getId(),
+                        group.getId(),
+                        true,
+                        telegramId,
+                        status);
             return new HeadmanAssignmentResponse(
                     group.getId(), studentId, lockedCandidate.getDisplayName(), false, false, 0);
         }
@@ -221,10 +244,8 @@ public class GroupHeadmanAssignmentService {
         lockedCandidate.setUpdatedAt(OffsetDateTime.now());
         userRepository.save(lockedCandidate);
         userRepository.flush();
-        if (previous != null) {
-            roleGrantWriter.synchronizeDerivedHeadman(previous.getId(), false, group.getId());
-        }
-        roleGrantWriter.synchronizeDerivedHeadman(lockedCandidate.getId(), true, group.getId());
+        roleGrantWriter.replaceHeadman(
+                currentId, lockedCandidate.getId(), group.getId(), legacy, telegramId, status);
         int revoked = revokeAssistants(group.getId());
         if (personalNotifications != null) {
             if (previous != null)
@@ -301,7 +322,8 @@ public class GroupHeadmanAssignmentService {
             throw new ConflictException(
                     "studentId",
                     candidate.getId(),
-                    "Старостой может быть только студент с активной ролью STUDENT в выбранной группе");
+                    "Старостой может быть только студент с активной ролью STUDENT в выбранной"
+                            + " группе");
         }
     }
 

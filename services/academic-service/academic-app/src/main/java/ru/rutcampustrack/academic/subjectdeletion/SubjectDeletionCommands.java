@@ -310,11 +310,7 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?::JSONB,?,?,?,'PREPARING',?,?,?)
     private void lockActor(long user, long group, UUID sid) {
         jdbc.query("SELECT id FROM users WHERE id=? FOR UPDATE", (rs, i) -> rs.getLong(1), user);
         jdbc.query("SELECT id FROM groups WHERE id=? FOR UPDATE", (rs, i) -> rs.getLong(1), group);
-        jdbc.query(
-                "SELECT sid FROM auth_sessions WHERE sid=? AND user_id=? FOR UPDATE",
-                (rs, i) -> rs.getObject(1),
-                sid,
-                user);
+        jdbc.query("SELECT auth_api.lock_current_session(?,?)", rs -> {}, user, sid);
     }
 
     private void lockTarget(long subject, long semester) {
@@ -339,27 +335,9 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?::JSONB,?,?,?,'PREPARING',?,?,?)
             long group,
             long actor,
             UUID sid) {
-        jdbc.query(
-                "SELECT receipt_id FROM subject_deletion_proofs WHERE receipt_id=? FOR UPDATE",
-                (rs, i) -> rs.getObject(1),
-                proof);
         return Boolean.TRUE.equals(
                 jdbc.queryForObject(
-                        """
-SELECT EXISTS(SELECT 1 FROM subject_deletion_proofs p JOIN users u ON u.id=p.actor_id
-    JOIN groups g ON g.id=p.group_id JOIN auth_sessions s ON s.sid=p.session_id AND s.user_id=p.actor_id
-    JOIN user_role_grants h ON h.id=s.active_role_grant_id AND h.user_id=p.actor_id
-    WHERE p.receipt_id=? AND p.operation_id=? AND p.preview_digest=? AND p.subject_id=? AND p.semester_id=?
-    AND p.group_id=? AND p.actor_id=? AND p.session_id=? AND p.consumed_at IS NOT NULL AND p.expires_at>?
-    AND p.credentials_version=u.credentials_version AND p.binding_version=u.telegram_binding_version
-    AND p.telegram_id=u.telegram_id AND p.roles_version=u.roles_version AND p.session_version=s.session_version
-    AND s.revoked_at IS NULL AND s.refresh_expires_at>? AND u.status<>'archived' AND g.is_active
-    AND h.role='headman' AND h.status='active' AND h.group_id=p.group_id
-    AND NOT EXISTS(SELECT 1 FROM user_role_grants peer WHERE peer.role='headman' AND peer.status='active'
-        AND peer.group_id=p.group_id AND peer.user_id<>p.actor_id)
-    AND EXISTS(SELECT 1 FROM user_role_grants student WHERE student.user_id=p.actor_id AND student.role='student'
-        AND student.status='active' AND student.group_id=p.group_id))
-""",
+                        "SELECT auth_api.subject_proof_admitted(?,?,?,?,?,?,?,?,?)",
                         Boolean.class,
                         proof,
                         operation,
@@ -369,7 +347,6 @@ SELECT EXISTS(SELECT 1 FROM subject_deletion_proofs p JOIN users u ON u.id=p.act
                         group,
                         actor,
                         sid,
-                        Timestamp.from(clock.instant()),
                         Timestamp.from(clock.instant())));
     }
 

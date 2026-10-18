@@ -1,12 +1,7 @@
 package ru.rutcampustrack.academic.export;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -16,6 +11,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
+
 import ru.rutcampustrack.academic.admin.AcademicAdminAccess;
 import ru.rutcampustrack.academic.contract.dto.export.RegistryExportModels;
 import ru.rutcampustrack.academic.entity.User;
@@ -27,6 +23,13 @@ import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.user.UserService;
 import ru.rutcampustrack.shared.web.audit.AuditLogEntry;
 import ru.rutcampustrack.shared.web.audit.AuditLogStorage;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class AdminRegistryExportService {
@@ -296,14 +299,17 @@ public class AdminRegistryExportService {
         var claims = context.getClaims();
         var rows =
                 jdbc.query(
-                        "SELECT identity->'report'->? AS selector FROM auth_export_jobs WHERE job_id=? AND lease_id=? AND user_id=? AND session_id=? AND state='preparing' AND lease_until>NOW() AND expires_at>NOW() AND identity->'report'->>'kind'=?",
+                        "SELECT selector_json AS selector FROM"
+                                + " auth_api.read_export_selector(?,?,?,?,?,?,?,?)",
                         (rs, n) -> rs.getString("selector"),
-                        selector,
+                        claims.userId(),
+                        claims.rolesVersion(),
+                        claims.sessionId(),
+                        claims.sessionVersion(),
                         jobId,
                         leaseId,
-                        claims.userId(),
-                        claims.sessionId(),
-                        kind);
+                        kind,
+                        selector);
         try {
             if (rows.size() != 1
                     || !mapper.readTree(rows.getFirst()).equals(mapper.valueToTree(query))) {

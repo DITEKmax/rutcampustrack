@@ -3,13 +3,16 @@ package ru.rutcampustrack.academic.botcredentials;
 import static ru.rutcampustrack.academic.botcredentials.BotOwnInitialCredentialsQuery.*;
 
 import io.grpc.Status;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import ru.rutcampustrack.academic.grpc.*;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
-import ru.rutcampustrack.academic.grpc.*;
 
 /**
  * Metadata-only card lifecycle. Caller supplies a short local transaction, never a provider call.
@@ -51,23 +54,25 @@ public class BotCredentialMessageRepository {
                 || !authority.hasOwnAuthority(user)
                 || !user.eligible()) throw stale();
         int inserted =
-                jdbc.update(
-                        """
-                INSERT INTO bot_credential_messages
-                    (user_id, private_chat_id, message_id, telegram_binding_version, credentials_version)
-                VALUES (?, ?, ?, ?, ?) ON CONFLICT (private_chat_id, message_id) DO NOTHING
-                """,
+                jdbc.queryForObject(
+                        "SELECT auth_api.register_bot_message(?,?,?,?,?)",
+                        Integer.class,
                         requested.getUserId(),
                         requested.getPrivateChatId(),
                         requested.getMessageId(),
                         requested.getTelegramBindingVersion(),
                         requested.getCredentialsVersion());
+        jdbc.query(
+                "SELECT auth_api.lock_bot_card(0,0,?,?)",
+                rs -> {},
+                requested.getPrivateChatId(),
+                requested.getMessageId());
         var card =
                 jdbc.query(
                                 "SELECT "
                                         + COLUMNS
                                         + " FROM bot_credential_messages "
-                                        + "WHERE private_chat_id = ? AND message_id = ? FOR UPDATE",
+                                        + "WHERE private_chat_id = ? AND message_id = ?",
                                 this::map,
                                 requested.getPrivateChatId(),
                                 requested.getMessageId())
@@ -97,10 +102,10 @@ public class BotCredentialMessageRepository {
                                 + COLUMNS
                                 + " FROM bot_credential_messages "
                                 + """
-                WHERE user_id = ? AND invalidated_by_credentials_version IS NOT NULL
-                  AND invalidated_by_credentials_version <= ? AND cleanup_state = 'PENDING'
-                  AND record_id > ? ORDER BY record_id LIMIT ?
-                """,
+WHERE user_id = ? AND invalidated_by_credentials_version IS NOT NULL
+  AND invalidated_by_credentials_version <= ? AND cleanup_state = 'PENDING'
+  AND record_id > ? ORDER BY record_id LIMIT ?
+""",
                         this::map,
                         command.getUserId(),
                         command.getInvalidatedCredentialsVersion(),
@@ -161,21 +166,13 @@ public class BotCredentialMessageRepository {
         }
         if (inFlight || invalidation != card.getInvalidatedCredentialsVersion()) {
             requireRevisionCapacity(card);
-            jdbc.update(
-                    """
-                    UPDATE bot_credential_messages
-                    SET render_state = ?, render_completed_at = COALESCE(render_completed_at, now()),
-                        invalidated_by_credentials_version = ?,
-                        invalidated_at = CASE WHEN ? THEN COALESCE(invalidated_at, now()) ELSE invalidated_at END,
-                        cleanup_state = ?, record_revision = record_revision + 1, updated_at = now()
-                    WHERE record_id = ? AND record_revision = ?
-                    """,
-                    renderCode(outcome),
-                    invalidation == 0 ? null : invalidation,
-                    invalidation > 0,
-                    invalidation == 0 ? "NOT_REQUIRED" : "PENDING",
+            jdbc.queryForObject(
+                    "SELECT auth_api.complete_bot_render(?,?,?,?)",
+                    Integer.class,
                     card.getRecordId(),
-                    card.getRecordRevision());
+                    card.getRecordRevision(),
+                    renderCode(outcome),
+                    invalidation == 0 ? null : invalidation);
             card = lockCard(requested);
         }
         return response(
@@ -223,16 +220,13 @@ public class BotCredentialMessageRepository {
             throw stale();
         requireRevisionCapacity(card);
         int changed =
-                jdbc.update(
-                        """
-                UPDATE bot_credential_messages SET cleanup_state = 'CLEANED', cleanup_event_id = ?,
-                    cleanup_outcome = ?, cleaned_at = now(), updated_at = now(), record_revision = record_revision + 1
-                WHERE record_id = ? AND record_revision = ? AND cleanup_state = 'PENDING'
-                """,
-                        event,
-                        outcome,
+                jdbc.queryForObject(
+                        "SELECT auth_api.complete_bot_cleanup(?,?,?,?)",
+                        Integer.class,
                         card.getRecordId(),
-                        card.getRecordRevision());
+                        card.getRecordRevision(),
+                        event,
+                        outcome);
         if (changed != 1) throw stale();
         return response(
                 BotCredentialMessageDisposition
@@ -241,11 +235,17 @@ public class BotCredentialMessageRepository {
     }
 
     private BotCredentialMessageReference lockCard(BotCredentialMessageReference requested) {
+        jdbc.query(
+                "SELECT auth_api.lock_bot_card(?,?,0,0)",
+                rs -> {},
+                requested.getUserId(),
+                requested.getRecordId());
         List<BotCredentialMessageReference> rows =
                 jdbc.query(
                         "SELECT "
                                 + COLUMNS
-                                + " FROM bot_credential_messages WHERE record_id = ? AND user_id = ? FOR UPDATE",
+                                + " FROM bot_credential_messages WHERE record_id = ? AND user_id ="
+                                + " ?",
                         this::map,
                         requested.getRecordId(),
                         requested.getUserId());

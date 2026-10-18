@@ -3,19 +3,6 @@ package ru.rutcampustrack.academic.migration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.output.MigrateResult;
 import org.junit.jupiter.api.AfterAll;
@@ -28,8 +15,24 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 import ru.rutcampustrack.academic.map.CampusMapUsageCleanupJob;
 import ru.rutcampustrack.academic.map.CampusMapUsageRepository;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.sql.DataSource;
 
 /**
  * PostgreSQL behavior checks for the B0 academic V24-V30 chain.
@@ -82,7 +85,7 @@ class StudentFoundationMigrationIT {
     }
 
     @Test
-    void freshFullChainMigratesValidatesAndRepeatsWithoutWork() {
+    void historicalPrefixThroughV61MigratesValidatesAndRepeatsWithoutWork() {
         String schema = newSchema();
         Flyway flyway = flyway(schema, null);
 
@@ -171,8 +174,8 @@ class StudentFoundationMigrationIT {
         jdbc.update(
                 "INSERT INTO "
                         + table(schema, "campus_map_plan_format")
-                        + " (plan_version_id, format, state, content_type, asset_id, bytes, sha256, width, height)"
-                        + " VALUES (?, 'PNG', 'READY', 'image/png', ?, 8, "
+                        + " (plan_version_id, format, state, content_type, asset_id, bytes, sha256,"
+                        + " width, height) VALUES (?, 'PNG', 'READY', 'image/png', ?, 8, "
                         + hash
                         + ", 640, 480)",
                 fixture.planVersionId(),
@@ -181,15 +184,15 @@ class StudentFoundationMigrationIT {
         Map<String, Object> metadata =
                 jdbc.queryForMap(
                         """
-                SELECT a.content_type AS asset_mime,
-                       f.content_type AS format_mime,
-                       a.bytes AS asset_bytes,
-                       f.bytes AS format_bytes,
-                       a.sha256 AS asset_hash,
-                       f.sha256 AS format_hash
-                FROM %s a JOIN %s f ON f.asset_id = a.id
-                WHERE a.id = ?
-                """
+                        SELECT a.content_type AS asset_mime,
+                               f.content_type AS format_mime,
+                               a.bytes AS asset_bytes,
+                               f.bytes AS format_bytes,
+                               a.sha256 AS asset_hash,
+                               f.sha256 AS format_hash
+                        FROM %s a JOIN %s f ON f.asset_id = a.id
+                        WHERE a.id = ?
+                        """
                                 .formatted(
                                         table(schema, "campus_map_asset"),
                                         table(schema, "campus_map_plan_format")),
@@ -214,8 +217,9 @@ class StudentFoundationMigrationIT {
                         jdbc.update(
                                 "INSERT INTO "
                                         + formats
-                                        + " (plan_version_id, format, state, content_type, asset_id, bytes, sha256, width, height)"
-                                        + " VALUES (?, 'PNG', 'READY', 'image/png', ?, 8, "
+                                        + " (plan_version_id, format, state, content_type,"
+                                        + " asset_id, bytes, sha256, width, height) VALUES (?,"
+                                        + " 'PNG', 'READY', 'image/png', ?, 8, "
                                         + hash
                                         + ", 641, 480)",
                                 fixture.planVersionId(),
@@ -233,8 +237,9 @@ class StudentFoundationMigrationIT {
                         jdbc.update(
                                 "INSERT INTO "
                                         + table(schema, "campus_map_plan_format")
-                                        + " (plan_version_id, format, state, content_type, asset_id, bytes, sha256, width, height)"
-                                        + " VALUES (?, 'PNG', 'READY', 'image/png', ?, 7, "
+                                        + " (plan_version_id, format, state, content_type,"
+                                        + " asset_id, bytes, sha256, width, height) VALUES (?,"
+                                        + " 'PNG', 'READY', 'image/png', ?, 7, "
                                         + hash
                                         + ", 640, 480)",
                                 fixture.planVersionId(),
@@ -245,8 +250,10 @@ class StudentFoundationMigrationIT {
                         jdbc.update(
                                 "INSERT INTO "
                                         + table(schema, "campus_map_plan_format")
-                                        + " (plan_version_id, format, state, content_type, asset_id, bytes, sha256, width, height)"
-                                        + " VALUES (?, 'PNG', 'READY', 'image/png', ?, 8, decode(repeat('00', 32), 'hex'), 640, 480)",
+                                        + " (plan_version_id, format, state, content_type,"
+                                        + " asset_id, bytes, sha256, width, height) VALUES (?,"
+                                        + " 'PNG', 'READY', 'image/png', ?, 8, decode(repeat('00',"
+                                        + " 32), 'hex'), 640, 480)",
                                 fixture.planVersionId(),
                                 assetId));
         assertSqlFailure(
@@ -255,8 +262,9 @@ class StudentFoundationMigrationIT {
                         jdbc.update(
                                 "INSERT INTO "
                                         + table(schema, "campus_map_plan_format")
-                                        + " (plan_version_id, format, state, content_type, asset_id, bytes, sha256, width, height)"
-                                        + " VALUES (?, 'PNG', 'READY', 'image/svg+xml', ?, 8, "
+                                        + " (plan_version_id, format, state, content_type,"
+                                        + " asset_id, bytes, sha256, width, height) VALUES (?,"
+                                        + " 'PNG', 'READY', 'image/svg+xml', ?, 8, "
                                         + hash
                                         + ", 640, 480)",
                                 fixture.planVersionId(),
@@ -305,14 +313,16 @@ class StudentFoundationMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "campus_map_floor")
-                                + " (building_id, code, label, display_order) VALUES (?, 'F2', 'Second floor', 2) RETURNING id",
+                                + " (building_id, code, label, display_order) VALUES (?, 'F2',"
+                                + " 'Second floor', 2) RETURNING id",
                         Long.class,
                         fixture.buildingId());
         Long catalogRevisionId =
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "campus_map_catalog_revision")
-                                + " (schema_version, validation_policy_version) VALUES (1, 1) RETURNING id",
+                                + " (schema_version, validation_policy_version) VALUES (1, 1)"
+                                + " RETURNING id",
                         Long.class);
         String plan = table(schema, "campus_map_plan_version");
         String formats = table(schema, "campus_map_plan_format");
@@ -537,7 +547,8 @@ class StudentFoundationMigrationIT {
                     publisher.prepareStatement(
                             "UPDATE "
                                     + plan
-                                    + " SET published_at = TIMESTAMPTZ '2026-01-02 00:00:00+00' WHERE id = ?")) {
+                                    + " SET published_at = TIMESTAMPTZ '2026-01-02 00:00:00+00'"
+                                    + " WHERE id = ?")) {
                 statement.setLong(1, fixture.planVersionId());
                 statement.executeUpdate();
             }
@@ -551,7 +562,8 @@ class StudentFoundationMigrationIT {
                                         editor.prepareStatement(
                                                 "UPDATE "
                                                         + formats
-                                                        + " SET state = 'PROCESSING' WHERE id = ?")) {
+                                                        + " SET state = 'PROCESSING' WHERE id ="
+                                                        + " ?")) {
                                     statement.setLong(1, formatId);
                                     statement.executeUpdate();
                                     editor.commit();
@@ -1116,9 +1128,10 @@ class StudentFoundationMigrationIT {
         jdbc.update(
                 "INSERT INTO "
                         + table(schema, "auth_sessions")
-                        + " (sid, user_id, active_role_grant_id, session_version, current_refresh_jti,"
-                        + " refresh_expires_at, created_at, last_seen_at, auth_method)"
-                        + " VALUES (?, ?, ?, 1, ?, NOW() + INTERVAL '1 day', NOW(), NOW(), 'PASSWORD')",
+                        + " (sid, user_id, active_role_grant_id, session_version,"
+                        + " current_refresh_jti, refresh_expires_at, created_at, last_seen_at,"
+                        + " auth_method) VALUES (?, ?, ?, 1, ?, NOW() + INTERVAL '1 day', NOW(),"
+                        + " NOW(), 'PASSWORD')",
                 sid,
                 teacherId,
                 teacherGrant,
@@ -1129,9 +1142,11 @@ class StudentFoundationMigrationIT {
                                 jdbc.update(
                                         "INSERT INTO "
                                                 + table(schema, "auth_sessions")
-                                                + " (sid, user_id, active_role_grant_id, session_version, current_refresh_jti,"
-                                                + " refresh_expires_at, created_at, last_seen_at, auth_method)"
-                                                + " VALUES (?, ?, ?, 1, ?, NOW() + INTERVAL '1 day', NOW(), NOW(), 'PASSWORD')",
+                                                + " (sid, user_id, active_role_grant_id,"
+                                                + " session_version, current_refresh_jti,"
+                                                + " refresh_expires_at, created_at, last_seen_at,"
+                                                + " auth_method) VALUES (?, ?, ?, 1, ?, NOW() +"
+                                                + " INTERVAL '1 day', NOW(), NOW(), 'PASSWORD')",
                                         UUID.randomUUID(),
                                         teacherId,
                                         studentGrant,
@@ -1150,7 +1165,8 @@ class StudentFoundationMigrationIT {
                                 jdbc.update(
                                         "UPDATE "
                                                 + table(schema, "account_security_events")
-                                                + " SET event_type = 'LOGOUT_ALL' WHERE user_id = ?",
+                                                + " SET event_type = 'LOGOUT_ALL' WHERE user_id ="
+                                                + " ?",
                                         teacherId))
                 .isInstanceOf(DataAccessException.class);
         assertThatThrownBy(
@@ -1296,23 +1312,24 @@ class StudentFoundationMigrationIT {
         jdbc.update(
                 "INSERT INTO "
                         + table(schema, "assignments")
-                        + " (teacher_id, subject_id, group_id, semester_id, lesson_type, valid_from)"
-                        + " VALUES (2, ?, 1, 1, 'lecture', DATE '2026-02-01')",
+                        + " (teacher_id, subject_id, group_id, semester_id, lesson_type,"
+                        + " valid_from) VALUES (2, ?, 1, 1, 'lecture', DATE '2026-02-01')",
                 subjectId);
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
                                         "INSERT INTO "
                                                 + table(schema, "assignments")
-                                                + " (teacher_id, subject_id, group_id, semester_id, lesson_type, valid_from)"
-                                                + " VALUES (2, ?, 1, 1, 'lecture', DATE '2026-03-01')",
+                                                + " (teacher_id, subject_id, group_id, semester_id,"
+                                                + " lesson_type, valid_from) VALUES (2, ?, 1, 1,"
+                                                + " 'lecture', DATE '2026-03-01')",
                                         subjectId))
                 .isInstanceOf(DataAccessException.class);
         jdbc.update(
                 "INSERT INTO "
                         + table(schema, "assignments")
-                        + " (teacher_id, subject_id, group_id, semester_id, lesson_type, valid_from)"
-                        + " VALUES (3, ?, 1, 1, 'lecture', DATE '2026-03-01')",
+                        + " (teacher_id, subject_id, group_id, semester_id, lesson_type,"
+                        + " valid_from) VALUES (3, ?, 1, 1, 'lecture', DATE '2026-03-01')",
                 subjectId);
         Long assignmentId =
                 jdbc.queryForObject(
@@ -1333,7 +1350,8 @@ class StudentFoundationMigrationIT {
                                 jdbc.update(
                                         "UPDATE "
                                                 + table(schema, "assignments")
-                                                + " SET valid_until_exclusive = DATE '2026-05-01' WHERE id = ?",
+                                                + " SET valid_until_exclusive = DATE '2026-05-01'"
+                                                + " WHERE id = ?",
                                         assignmentId))
                 .isInstanceOf(DataAccessException.class);
         assertThatThrownBy(
@@ -1359,9 +1377,12 @@ class StudentFoundationMigrationIT {
                                 jdbc.update(
                                         "INSERT INTO "
                                                 + table(schema, "homeworks")
-                                                + " (group_id, subject_id, semester_id, lesson_date, lesson_number, title,"
-                                                + " published_by, binding_id, actor_id, request_key, payload_hash)"
-                                                + " VALUES (1, ?, 1, DATE '2026-03-01', 1, 'bad', 2, 0, 2, ?, decode(repeat('11', 32), 'hex'))",
+                                                + " (group_id, subject_id, semester_id,"
+                                                + " lesson_date, lesson_number, title,"
+                                                + " published_by, binding_id, actor_id,"
+                                                + " request_key, payload_hash) VALUES (1, ?, 1,"
+                                                + " DATE '2026-03-01', 1, 'bad', 2, 0, 2, ?,"
+                                                + " decode(repeat('11', 32), 'hex'))",
                                         subjectId,
                                         UUID.randomUUID()))
                 .isInstanceOf(DataAccessException.class);
@@ -1392,7 +1413,8 @@ class StudentFoundationMigrationIT {
                                 jdbc.update(
                                         "UPDATE "
                                                 + table(schema, "homeworks")
-                                                + " SET publication_state = 'PENDING' WHERE binding_id = 700"))
+                                                + " SET publication_state = 'PENDING' WHERE"
+                                                + " binding_id = 700"))
                 .isInstanceOf(DataAccessException.class);
     }
 
@@ -1426,9 +1448,9 @@ class StudentFoundationMigrationIT {
                         .schemas(schema)
                         .defaultSchema(schema)
                         .cleanDisabled(true);
-        if (target != null) {
-            configuration.target(target);
-        }
+        // Historical V24/V25 foundation/upgrade oracle. Latest ownership is exercised by
+        // FlywayMigrationIT.
+        configuration.target(target == null ? "61" : target);
         return configuration.load();
     }
 
@@ -1437,13 +1459,15 @@ class StudentFoundationMigrationIT {
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "campus_map_building")
-                                + " (code, label, display_order) VALUES ('B-MAIN', 'Main building', 1) RETURNING id",
+                                + " (code, label, display_order) VALUES ('B-MAIN', 'Main building',"
+                                + " 1) RETURNING id",
                         Long.class);
         Long floorId =
                 jdbc.queryForObject(
                         "INSERT INTO "
                                 + table(schema, "campus_map_floor")
-                                + " (building_id, code, label, display_order) VALUES (?, 'F1', 'First floor', 1) RETURNING id",
+                                + " (building_id, code, label, display_order) VALUES (?, 'F1',"
+                                + " 'First floor', 1) RETURNING id",
                         Long.class,
                         buildingId);
         Long planVersionId =
@@ -1469,8 +1493,8 @@ class StudentFoundationMigrationIT {
         return jdbc.queryForObject(
                 "INSERT INTO "
                         + table(schema, "campus_map_asset")
-                        + " (plan_version_id, format, content_type, content, bytes, sha256, width, height)"
-                        + " VALUES (?, ?, ?, "
+                        + " (plan_version_id, format, content_type, content, bytes, sha256, width,"
+                        + " height) VALUES (?, ?, ?, "
                         + contentExpression
                         + ", ?, "
                         + hashExpression
@@ -1496,8 +1520,8 @@ class StudentFoundationMigrationIT {
         jdbc.update(
                 "INSERT INTO "
                         + table(schema, "campus_map_open_intent")
-                        + " (owner_hmac, intent_id, building_id, floor_id, payload_hash, accepted_utc_day,"
-                        + " accepted_at, expires_at) VALUES ("
+                        + " (owner_hmac, intent_id, building_id, floor_id, payload_hash,"
+                        + " accepted_utc_day, accepted_at, expires_at) VALUES ("
                         + ownerExpression
                         + ", ?, ?, ?, "
                         + payloadExpression
@@ -1623,24 +1647,24 @@ class StudentFoundationMigrationIT {
         jdbc.execute("DROP TRIGGER subjects_lesson_type_minimum_trg ON " + subjects);
         jdbc.execute(
                 """
-                CREATE OR REPLACE FUNCTION %s.require_subject_lesson_type()
-                RETURNS TRIGGER
-                LANGUAGE plpgsql
-                AS $fn$
-                DECLARE
-                    affected_subject_id BIGINT;
-                BEGIN
-                    affected_subject_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.subject_id ELSE NEW.subject_id END;
-                    IF NOT EXISTS (
-                        SELECT 1 FROM %s
-                        WHERE subject_id = affected_subject_id
-                    ) THEN
-                        RAISE EXCEPTION 'subject %% must retain at least one lesson type', affected_subject_id;
-                    END IF;
-                    RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
-                END
-                $fn$;
-                """
+CREATE OR REPLACE FUNCTION %s.require_subject_lesson_type()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $fn$
+DECLARE
+    affected_subject_id BIGINT;
+BEGIN
+    affected_subject_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.subject_id ELSE NEW.subject_id END;
+    IF NOT EXISTS (
+        SELECT 1 FROM %s
+        WHERE subject_id = affected_subject_id
+    ) THEN
+        RAISE EXCEPTION 'subject %% must retain at least one lesson type', affected_subject_id;
+    END IF;
+    RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
+END
+$fn$;
+"""
                         .formatted(quote(schema), subjectTypes));
         jdbc.execute(
                 """
@@ -1744,13 +1768,13 @@ class StudentFoundationMigrationIT {
             waiting =
                     jdbc.queryForObject(
                             """
-                    SELECT COUNT(DISTINCT pid)
-                    FROM pg_locks
-                    WHERE locktype = 'advisory'
-                      AND classid = ?
-                      AND objid = ?
-                      AND granted = FALSE
-                    """,
+                            SELECT COUNT(DISTINCT pid)
+                            FROM pg_locks
+                            WHERE locktype = 'advisory'
+                              AND classid = ?
+                              AND objid = ?
+                              AND granted = FALSE
+                            """,
                             Integer.class,
                             PRE_FIX_BARRIER_KEY_CLASS,
                             PRE_FIX_BARRIER_KEY_OBJECT);

@@ -3,6 +3,17 @@ package ru.rutcampustrack.auth.session.jdbc;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
+import ru.rutcampustrack.auth.session.AuthSessionException;
+import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Timestamp;
@@ -11,16 +22,8 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
+
 import javax.sql.DataSource;
-import org.flywaydb.core.Flyway;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import ru.rutcampustrack.auth.session.AuthSessionException;
-import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
 
 /**
  * PostgreSQL proof for the read-only public session query adapter.
@@ -272,10 +275,10 @@ class JdbcAuthSessionQueryAdapterIT {
             long userId, String role, String status, Long grantGroupId, Instant timestamp) {
         jdbc.update(
                 """
-                        INSERT INTO user_role_grants (
-                            user_id, role, status, group_id, created_at, updated_at
-                        ) VALUES (?, ?, ?, ?, ?, ?)
-                        """,
+                INSERT INTO user_role_grants (
+                    user_id, role, status, group_id, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
                 userId,
                 role,
                 status,
@@ -296,13 +299,13 @@ class JdbcAuthSessionQueryAdapterIT {
         UUID sid = UUID.randomUUID();
         jdbc.update(
                 """
-                        INSERT INTO auth_sessions (
-                            sid, user_id, active_role_grant_id, session_version,
-                            current_refresh_jti, previous_refresh_jti, refresh_expires_at,
-                            created_at, last_seen_at, revoked_at, revoke_reason,
-                            auth_method, client_label, location_label
-                        ) VALUES (?, ?, ?, 1, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """,
+                INSERT INTO auth_sessions (
+                    sid, user_id, active_role_grant_id, session_version,
+                    current_refresh_jti, previous_refresh_jti, refresh_expires_at,
+                    created_at, last_seen_at, revoked_at, revoke_reason,
+                    auth_method, client_label, location_label
+                ) VALUES (?, ?, ?, 1, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
                 sid,
                 user.userId(),
                 user.studentGrantId(),
@@ -328,11 +331,11 @@ class JdbcAuthSessionQueryAdapterIT {
             String locationLabel) {
         jdbc.update(
                 """
-                        INSERT INTO account_security_events (
-                            user_id, sid, event_type, occurred_at,
-                            auth_method, client_label, location_label
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                        """,
+                INSERT INTO account_security_events (
+                    user_id, sid, event_type, occurred_at,
+                    auth_method, client_label, location_label
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
                 userId,
                 sessionId,
                 type,
@@ -369,6 +372,8 @@ class JdbcAuthSessionQueryAdapterIT {
 
         void start() {
             delegate.start();
+            ru.rutcampustrack.shared.testcontainers.MigrationTestUtils
+                    .prepareAcademicAuthPrincipals(delegate);
         }
 
         void stop() {

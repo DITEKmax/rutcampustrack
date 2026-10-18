@@ -3,15 +3,17 @@ package ru.rutcampustrack.academic.user;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import java.util.List;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
+
 import ru.rutcampustrack.academic.contract.dto.user.RoleGrantViewResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
+
+import java.util.List;
 
 /** Assembles User entity into HATEOAS EntityModel<UserResponse>. */
 @Component
@@ -22,6 +24,9 @@ public class UserAssembler
 
     @org.springframework.beans.factory.annotation.Autowired
     private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.admin.AcademicAuthDataCommands authCommands;
 
     public UserAssembler(UserRoleGrantReader grantReader) {
         this.grantReader = grantReader;
@@ -74,7 +79,7 @@ public class UserAssembler
                 (includeInitialPassword
                                 && adminAccess.credentials(entity.getId())
                                 && !entity.isPasswordChanged())
-                        ? entity.getInitialPassword()
+                        ? authCommands.initialPassword(entity.getId())
                         : null;
         UserResponse response =
                 new UserResponse(

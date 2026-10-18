@@ -267,21 +267,12 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     public void getOwnBotInitialCredentials(
             BotOwnInitialCredentialsRequest request,
             StreamObserver<BotOwnInitialCredentialsResponse> observer) {
-        try {
-            if (botCredentialsService == null)
-                throw Status.UNAUTHENTICATED
-                        .withDescription("verified bot credential capability unavailable")
-                        .asRuntimeException();
-            observer.onNext(botCredentialsService.read(request));
-            observer.onCompleted();
-        } catch (io.grpc.StatusRuntimeException error) {
-            observer.onError(error);
-        } catch (RuntimeException error) {
-            observer.onError(
-                    Status.UNAVAILABLE
-                            .withDescription("own credential authority unavailable")
-                            .asRuntimeException());
-        }
+        // Credential projection is owned by the separately authenticated Auth receiver.
+        // Academic retains only the metadata tracker and homework capabilities.
+        observer.onError(
+                Status.PERMISSION_DENIED
+                        .withDescription("own credential read requires Auth service")
+                        .asRuntimeException());
     }
 
     @Override

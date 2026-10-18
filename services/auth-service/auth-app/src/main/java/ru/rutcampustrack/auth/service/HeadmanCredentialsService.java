@@ -171,7 +171,7 @@ WHERE id = ? AND credentials_version = ?
         if (!users.contains(actor.userId()) || !users.contains(studentId)) throw denied();
         List<Boolean> group =
                 jdbc.query(
-                        "SELECT is_active FROM groups WHERE id = ? FOR UPDATE",
+                        "SELECT is_active FROM auth_api.lock_group_state(?)",
                         (row, index) -> row.getBoolean(1),
                         actor.groupId());
         if (group.size() != 1 || !group.getFirst()) throw denied();

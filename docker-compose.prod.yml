@@ -30,6 +30,10 @@ services:
       target: rct-bootstrap-password
     - source: pg-academic-runtime-password
       target: rct-runtime-password
+    - source: pg-auth-runtime-password
+      target: rct-auth-runtime-password
+    - source: pg-academic-service-runtime-password
+      target: rct-academic-runtime-password
     - source: pg-academic-migration-password
       target: rct-migration-password
     - source: pg-academic-monitor-password
@@ -248,8 +252,8 @@ services:
     container_name: rct-auth-service
     logging: *bounded-logs
     environment:
-      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/
-      SPRING_DATASOURCE_USERNAME: rct_runtime
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-auth/
+      SPRING_DATASOURCE_USERNAME: rct_auth_runtime
       MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
@@ -280,18 +284,26 @@ services:
       # отсутствии. Должен совпадать с api-gateway / notification-web env value.
       INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
       GRPC_SECRET: ${GRPC_SECRET:?GRPC_SECRET must be set}
+      AUTH_GRPC_PORT: '19090'
+      AUTH_GRPC_CERTIFICATE_CHAIN: file:/run/rct-auth-tls/auth-server.crt
+      AUTH_GRPC_PRIVATE_KEY: file:/run/rct-auth-tls/auth-server.key
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
       # M09 G7 (NEW-157) — heap = 0.75 × mem_limit. См. docs/resource-limits.md.
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
-    - source: pg-academic-runtime-password
+    - source: bot-to-auth-service-token
+      target: /run/rct-auth/BOT_TO_AUTH_SERVICE_TOKEN
+    - source: pg-auth-runtime-password
       target: /run/rct-db/POSTGRES_ACADEMIC_PASSWORD
     volumes:
+      - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
+      - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.key:/run/rct-auth-tls/auth-server.key:ro
       - jwt-keys:/keys
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
       - '9090'
+      - '19090'
     networks:
       - private_net
     depends_on:
@@ -339,7 +351,7 @@ services:
       RCT_CACHE_REDIS_HOST: redis-cache
       RCT_CACHE_REDIS_PORT: '6379'
       RCT_CACHE_REDIS_USERNAME: rct_cache
-      SPRING_DATASOURCE_USERNAME: rct_runtime
+      SPRING_DATASOURCE_USERNAME: rct_academic_runtime
       SPRING_FLYWAY_USER: rct_migrator
       SPRING_FLYWAY_LOCATIONS: classpath:db/migration,filesystem:/etc/rct/flyway-callbacks
       MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
@@ -376,7 +388,7 @@ services:
     secrets:
     - source: redis-cache-runtime-password
       target: /run/rct-cache/rct.cache.redis.password
-    - source: pg-academic-runtime-password
+    - source: pg-academic-service-runtime-password
       target: /run/rct-db/POSTGRES_ACADEMIC_PASSWORD
     - source: pg-academic-migration-password
       target: /run/rct-db/spring.flyway.password
@@ -687,7 +699,16 @@ services:
     image: ghcr.io/ditekmax/rutcampustrack/notification-bot:${IMAGE_TAG:-latest}
     container_name: rct-notification-bot
     logging: *bounded-logs
+    # The dedicated credential is not part of the shared Compose environment.
+    command: ['/bin/sh', '-ec', 'BOT_TO_AUTH_SERVICE_TOKEN="$$(cat /run/secrets/bot-to-auth-service-token)"; export BOT_TO_AUTH_SERVICE_TOKEN; exec python -m bot']
+    secrets:
+    - source: bot-to-auth-service-token
+      target: bot-to-auth-service-token
     environment:
+      AUTH_GRPC_HOST: auth-service
+      AUTH_GRPC_PORT: '19090'
+      AUTH_GRPC_TLS_ENABLED: 'true'
+      AUTH_GRPC_TLS_CA_PATH: /run/rct-auth-tls/auth-server.crt
       DEPLOYMENT_ENVIRONMENT: production
       SERVICE_VERSION: ${IMAGE_TAG:-unknown}
       OTEL_RESOURCE_ATTRIBUTES: deployment.environment=production,service.version=${IMAGE_TAG:-unknown}
@@ -730,6 +751,7 @@ services:
       ADMIN_TELEGRAM_IDS: ${ADMIN_TELEGRAM_IDS:-0}
       TZ: Europe/Moscow
     volumes:
+      - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     networks:
@@ -1529,6 +1551,8 @@ volumes:
 
 # Keep ALERT_WEBHOOK_SECRET in deployment secret injection; never commit its value.
 secrets:
+  bot-to-auth-service-token:
+    file: ${BOT_TO_AUTH_SERVICE_TOKEN_FILE:?BOT_TO_AUTH_SERVICE_TOKEN_FILE must be set}
   alert-webhook-token:
     environment: ALERT_WEBHOOK_SECRET
   pg-academic-monitor-password:
@@ -1541,6 +1565,10 @@ secrets:
     file: ${PG_ACADEMIC_BOOTSTRAP_PASSWORD_FILE:?PG_ACADEMIC_BOOTSTRAP_PASSWORD_FILE must be set}
   pg-academic-runtime-password:
     file: ${PG_ACADEMIC_RUNTIME_PASSWORD_FILE:?PG_ACADEMIC_RUNTIME_PASSWORD_FILE must be set}
+  pg-auth-runtime-password:
+    file: ${PG_AUTH_RUNTIME_PASSWORD_FILE:?PG_AUTH_RUNTIME_PASSWORD_FILE must be set}
+  pg-academic-service-runtime-password:
+    file: ${PG_ACADEMIC_SERVICE_RUNTIME_PASSWORD_FILE:?PG_ACADEMIC_SERVICE_RUNTIME_PASSWORD_FILE must be set}
   pg-academic-migration-password:
     file: ${PG_ACADEMIC_MIGRATION_PASSWORD_FILE:?PG_ACADEMIC_MIGRATION_PASSWORD_FILE must be set}
   pg-schedule-bootstrap-password:

@@ -10,24 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import javax.sql.DataSource;
+
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 import ru.rutcampustrack.auth.controller.AuthSessionController;
 import ru.rutcampustrack.auth.controller.InternalWsSessionAdmissionController;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
@@ -61,6 +45,26 @@ import ru.rutcampustrack.auth.session.model.SessionState;
 import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
 import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import javax.sql.DataSource;
 
 /**
  * Real PostgreSQL proof for the two session authority ports.
@@ -83,6 +87,7 @@ class JdbcSessionAuthorityIT {
                     .withReuse(false);
 
     private JdbcTemplate jdbc;
+    private JdbcTemplate authorityJdbc;
     private DataSource dataSource;
     private DataSourceTransactionManager transactionManager;
     private JdbcSessionAuthority authority;
@@ -92,6 +97,8 @@ class JdbcSessionAuthorityIT {
     @BeforeAll
     void startDatabase() {
         POSTGRES.start();
+        ru.rutcampustrack.shared.testcontainers.MigrationTestUtils.prepareAcademicAuthPrincipals(
+                POSTGRES);
         Flyway.configure()
                 .dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
                 .locations("filesystem:" + migrationDirectory().toAbsolutePath())
@@ -105,10 +112,19 @@ class JdbcSessionAuthorityIT {
         source.setDriverClassName("org.postgresql.Driver");
         dataSource = source;
         jdbc = new JdbcTemplate(dataSource);
-        transactionManager = new DataSourceTransactionManager(dataSource);
+        var authoritySource =
+                new DriverManagerDataSource(
+                        POSTGRES.getJdbcUrl(),
+                        "rct_auth_runtime",
+                        ru.rutcampustrack.shared.testcontainers.MigrationTestUtils
+                                .ACADEMIC_AUTH_FIXTURE_PASSWORD);
+        authorityJdbc = new JdbcTemplate(authoritySource);
+        transactionManager = new DataSourceTransactionManager(authoritySource);
         passwordChangedOutbox =
-                new PasswordChangedOutbox(jdbc, new ObjectMapper().findAndRegisterModules());
-        authority = new JdbcSessionAuthority(jdbc, transactionManager, passwordChangedOutbox);
+                new PasswordChangedOutbox(
+                        authorityJdbc, new ObjectMapper().findAndRegisterModules());
+        authority =
+                new JdbcSessionAuthority(authorityJdbc, transactionManager, passwordChangedOutbox);
     }
 
     @AfterAll
@@ -210,7 +226,8 @@ class JdbcSessionAuthorityIT {
         List<RoleGrant> originalGrants = user.grants();
 
         jdbc.update(
-                "UPDATE user_role_grants SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?",
+                "UPDATE user_role_grants SET status = ?, updated_at = ? WHERE id = ? AND user_id ="
+                        + " ?",
                 "suspended",
                 Timestamp.from(GRANT_TIME.plusSeconds(1)),
                 studentGrant,
@@ -538,7 +555,8 @@ class JdbcSessionAuthorityIT {
         assertThat(eventCount(user.userId(), SecurityEvent.Type.CURRENT_LOGOUT)).isEqualTo(1);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT sid FROM account_security_events WHERE user_id=? AND event_type='CURRENT_LOGOUT'",
+                                "SELECT sid FROM account_security_events WHERE user_id=? AND"
+                                        + " event_type='CURRENT_LOGOUT'",
                                 UUID.class,
                                 user.userId()))
                 .isEqualTo(target.sessionId());
@@ -822,7 +840,8 @@ class JdbcSessionAuthorityIT {
                 .isEqualTo(204);
 
         jdbc.update(
-                "UPDATE admin_access_profiles SET permissions=ARRAY['USERS_VIEW'],version=version+1 WHERE user_id=?",
+                "UPDATE admin_access_profiles SET permissions=ARRAY['USERS_VIEW'],version=version+1"
+                        + " WHERE user_id=?",
                 admin.userId());
         assertThat(controller.admitDashboardSession(wsRequest(bound)).getStatusCode().value())
                 .isEqualTo(401);
@@ -831,13 +850,15 @@ class JdbcSessionAuthorityIT {
         assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value())
                 .isEqualTo(403);
         jdbc.update(
-                "UPDATE admin_access_profiles SET permissions=ARRAY['DASHBOARD_VIEW'],version=version+1 WHERE user_id=?",
+                "UPDATE admin_access_profiles SET"
+                        + " permissions=ARRAY['DASHBOARD_VIEW'],version=version+1 WHERE user_id=?",
                 admin.userId());
         current = selectedPrincipal(loadUser(admin.userId(), admin.passwordHash()), session);
         assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value())
                 .isEqualTo(204);
         jdbc.update(
-                "UPDATE auth_sessions SET revoked_at=NOW(),revoke_reason='CURRENT_LOGOUT' WHERE sid=?",
+                "UPDATE auth_sessions SET revoked_at=NOW(),revoke_reason='CURRENT_LOGOUT' WHERE"
+                        + " sid=?",
                 session.sessionId());
         assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value())
                 .isEqualTo(401);
@@ -1159,7 +1180,7 @@ class JdbcSessionAuthorityIT {
         CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
         JdbcSessionAuthority failingAuthority =
                 new JdbcSessionAuthority(
-                        jdbc,
+                        authorityJdbc,
                         transactionManager,
                         passwordChangedOutbox,
                         operation -> {
@@ -1196,7 +1217,7 @@ class JdbcSessionAuthorityIT {
 
     private JdbcSessionAuthority failingAuthority(String failedOperation) {
         return new JdbcSessionAuthority(
-                jdbc,
+                authorityJdbc,
                 transactionManager,
                 passwordChangedOutbox,
                 operation -> {
@@ -1227,7 +1248,8 @@ class JdbcSessionAuthorityIT {
 
         String ticketHash = "reset-ticket-hash-" + user.userId();
         jdbc.update(
-                "INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)",
+                "INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?,"
+                        + " ?)",
                 user.userId(),
                 ticketHash,
                 Timestamp.from(SESSION_TIME.plusSeconds(300)));
@@ -1301,7 +1323,8 @@ class JdbcSessionAuthorityIT {
                 .isBetween(before.plusSeconds(3600), after.plusSeconds(3600));
         Instant stored =
                 jdbc.queryForObject(
-                                "SELECT expires_at FROM password_reset_tokens WHERE user_id=? AND used_at IS NULL",
+                                "SELECT expires_at FROM password_reset_tokens WHERE user_id=? AND"
+                                        + " used_at IS NULL",
                                 Timestamp.class,
                                 user.userId())
                         .toInstant();
@@ -1377,7 +1400,8 @@ class JdbcSessionAuthorityIT {
                 .isFalse();
         assertThat(
                         count(
-                                "SELECT count(*) FROM password_reset_tokens WHERE user_id=? AND used_at IS NULL",
+                                "SELECT count(*) FROM password_reset_tokens WHERE user_id=? AND"
+                                        + " used_at IS NULL",
                                 user.userId()))
                 .isEqualTo(1);
         assertThat(
@@ -1411,7 +1435,7 @@ class JdbcSessionAuthorityIT {
             new TransactionTemplate(transactionManager)
                     .executeWithoutResult(
                             status -> {
-                                jdbc.queryForObject(
+                                authorityJdbc.queryForObject(
                                         "SELECT id FROM users WHERE id=? FOR UPDATE",
                                         Long.class,
                                         user.userId());
@@ -1475,7 +1499,8 @@ class JdbcSessionAuthorityIT {
             assertThat(two.get(10, TimeUnit.SECONDS)).isTrue();
             String latest =
                     jdbc.queryForObject(
-                            "SELECT token_hash FROM password_reset_tokens WHERE user_id=? AND used_at IS NULL",
+                            "SELECT token_hash FROM password_reset_tokens WHERE user_id=? AND"
+                                    + " used_at IS NULL",
                             String.class,
                             user.userId());
             String superseded = latest.equals(first) ? second : first;
@@ -1529,7 +1554,8 @@ class JdbcSessionAuthorityIT {
         np01AssertCleanupEvent(user);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT cleanup_state FROM bot_credential_messages WHERE record_id=?",
+                                "SELECT cleanup_state FROM bot_credential_messages WHERE"
+                                        + " record_id=?",
                                 String.class,
                                 card))
                 .isEqualTo("PENDING");
@@ -1590,13 +1616,15 @@ class JdbcSessionAuthorityIT {
                 .isEqualTo(generation);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT record_revision FROM bot_credential_messages WHERE record_id=?",
+                                "SELECT record_revision FROM bot_credential_messages WHERE"
+                                        + " record_id=?",
                                 Long.class,
                                 card))
                 .isEqualTo(revision);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT cleanup_state FROM bot_credential_messages WHERE record_id=?",
+                                "SELECT cleanup_state FROM bot_credential_messages WHERE"
+                                        + " record_id=?",
                                 String.class,
                                 card))
                 .isEqualTo("NOT_REQUIRED");
@@ -1609,9 +1637,9 @@ class JdbcSessionAuthorityIT {
         jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", chat, user.userId());
         return jdbc.queryForObject(
                 """
-                INSERT INTO bot_credential_messages(user_id,private_chat_id,message_id,telegram_binding_version,credentials_version)
-                SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM users WHERE id=? RETURNING record_id
-                """,
+INSERT INTO bot_credential_messages(user_id,private_chat_id,message_id,telegram_binding_version,credentials_version)
+SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM users WHERE id=? RETURNING record_id
+""",
                 Long.class,
                 user.userId());
     }
@@ -1619,7 +1647,8 @@ class JdbcSessionAuthorityIT {
     private void np01AssertCleanupEvent(UserFixture user) throws Exception {
         String json =
                 jdbc.queryForObject(
-                        "SELECT payload::text FROM auth_outbox WHERE payload->'payload'->>'user_id'=?",
+                        "SELECT payload::text FROM auth_outbox WHERE"
+                                + " payload->'payload'->>'user_id'=?",
                         String.class,
                         Long.toString(user.userId()));
         var event = new ObjectMapper().readTree(json);
@@ -1703,7 +1732,7 @@ class JdbcSessionAuthorityIT {
         return new TransactionTemplate(transactionManager)
                 .execute(
                         status -> {
-                            jdbc.queryForObject(
+                            authorityJdbc.queryForObject(
                                     "SELECT id FROM users WHERE id = ? FOR UPDATE",
                                     Long.class,
                                     userId);
@@ -1718,7 +1747,7 @@ class JdbcSessionAuthorityIT {
                                 throw new IllegalStateException(
                                         "grant writer was interrupted", interrupted);
                             }
-                            return jdbc.update(
+                            return authorityJdbc.update(
                                     "UPDATE user_role_grants SET status = ?, updated_at = ? "
                                             + "WHERE id = ? AND user_id = ?",
                                     "suspended",
@@ -1885,11 +1914,11 @@ class JdbcSessionAuthorityIT {
         for (GrantSeed seed : seeds) {
             jdbc.queryForObject(
                     """
-                            INSERT INTO user_role_grants (
-                                user_id, role, status, group_id, created_at, updated_at
-                            ) VALUES (?, ?, ?, ?, ?, ?)
-                            RETURNING id
-                            """,
+                    INSERT INTO user_role_grants (
+                        user_id, role, status, group_id, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                    RETURNING id
+                    """,
                     Long.class,
                     userId,
                     seed.role().name().toLowerCase(Locale.ROOT),

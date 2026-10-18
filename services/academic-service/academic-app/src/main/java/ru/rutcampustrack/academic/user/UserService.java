@@ -1,15 +1,5 @@
 package ru.rutcampustrack.academic.user;
 
-import java.security.SecureRandom;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -27,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
@@ -59,12 +50,26 @@ import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
 import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
 import ru.rutcampustrack.academic.security.RequestContext;
 
+import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 /**
  * Business logic for User domain: CRUD, login generation, BCrypt password, headman cascade revoke,
  * student group transfer with history.
  */
 @Service
 public class UserService {
+
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
+
     @Autowired
     private ru.rutcampustrack.academic.notification.AcademicPersonalNotificationPublisher
             personalNotifications;
@@ -224,6 +229,7 @@ public class UserService {
 
         user = userRepository.save(user);
         userRepository.flush();
+        if (roleGrantWriter != null) roleGrantWriter.initialize(user);
         if (request.role() == UserRole.ADMIN)
             adminAccessService.assignCreated(user.getId(), request.adminAccess());
         else synchronizeRoleGrants(user);
@@ -240,6 +246,7 @@ public class UserService {
                     new StudentInitialMembershipRecordedEvent(history, enrollment.semester()));
             evictGroupMembersAfterCommit(enrollment.group().getId());
         }
+        refresh(user);
         return userAssembler.toCreatedModel(user, plainPassword);
     }
 
@@ -513,17 +520,17 @@ public class UserService {
         user.setUpdatedAt(OffsetDateTime.now());
         User saved = userRepository.save(user);
         userRepository.flush();
+        roleGrantWriter.project(saved);
         roleGrantWriter.upsertRole(
                 id,
                 role.name().toLowerCase(java.util.Locale.ROOT),
                 status.name().toLowerCase(java.util.Locale.ROOT),
                 grantGroupId);
         if (role == UserRole.STUDENT) {
-            roleGrantWriter.synchronizeDerivedHeadman(
-                    id, status == RoleGrantStatus.ACTIVE && saved.isHeadman(), grantGroupId);
             evictGroupMembersAfterCommit(grantGroupId);
         }
         if (initialMembership != null) eventPublisher.publishEvent(initialMembership);
+        refresh(saved);
         return saved;
     }
 
@@ -810,7 +817,12 @@ public class UserService {
                         "status", "Старостой может быть только активный студент");
             }
             if (request.isHeadman()) {
-                headmanAssignmentService.assignLegacyHeadman(id);
+                headmanAssignmentService.assignLegacyHeadman(
+                        id,
+                        request.telegramId(),
+                        request.status() == null
+                                ? null
+                                : request.status().name().toLowerCase(java.util.Locale.ROOT));
             } else {
                 headmanAssignmentService.revokeLegacyHeadman(id);
             }
@@ -961,7 +973,7 @@ public class UserService {
         userRepository.flush();
         if (saved.getStatus() == AccountStatus.ARCHIVED) {
             archiveRoleGrants(saved);
-        } else if (!profileOnlyPatch) {
+        } else if (!profileOnlyPatch && !(canonicalHeadmanMutation && request.isHeadman())) {
             synchronizeRoleGrants(saved);
         }
         return saved;
@@ -1168,14 +1180,13 @@ public class UserService {
 
         User saved = userRepository.save(user);
         userRepository.flush();
-        synchronizeRoleGrants(saved);
-        if (!legacyStudent && studentGrant.isPresent()) {
-            roleGrantWriter.upsertRole(
-                    id,
-                    "student",
-                    studentGrant.get().status().toLowerCase(java.util.Locale.ROOT),
-                    newGroupId);
-        }
+        roleGrantWriter.transfer(
+                saved,
+                !legacyStudent && studentGrant.isPresent()
+                        ? studentGrant.get().status().toLowerCase(java.util.Locale.ROOT)
+                        : null,
+                newGroupId);
+        refresh(saved);
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, oldGroupId));
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, newGroupId));
         if (personalNotifications != null)
@@ -1465,11 +1476,18 @@ public class UserService {
         }
     }
 
+    private void refresh(User user) {
+        // Spring always supplies the persistence context; the source-era in-memory constructor has
+        // none.
+        if (entityManager != null) entityManager.refresh(user);
+    }
+
     private void synchronizeRoleGrants(User user) {
         // The compatibility constructor is retained for source-era unit tests;
         // the Spring application constructor always supplies the V24 writer.
         if (roleGrantWriter != null) {
             roleGrantWriter.synchronize(user);
+            refresh(user);
         }
     }
 
@@ -1478,6 +1496,10 @@ public class UserService {
         // removing every selectable privilege from this account.
         if (roleGrantWriter != null) {
             roleGrantWriter.archive(user);
+            // @SQLRestriction excludes the newly archived row from a normal JPA refresh.
+            // These two values are the command's authoritative archive projection.
+            user.setStatus(AccountStatus.ARCHIVED);
+            user.setHeadman(false);
         }
     }
 

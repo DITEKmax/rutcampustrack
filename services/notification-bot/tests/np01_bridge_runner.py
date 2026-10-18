@@ -32,6 +32,7 @@ from bot.services.send_queue import TelegramSendQueue
 logging.disable(logging.CRITICAL)
 _phase = "setup"
 _checks = 0
+_auth_boundary = {"actual_auth_tls": False, "old_academic_denied": False, "old_credential_denied": False}
 
 
 class BridgeFailure(RuntimeError):
@@ -166,11 +167,27 @@ async def main():
     host, port = authority.rsplit(":", 1)
     ca_path = os.environ["NP01_CA"]
     service_token = os.environ.pop("NP01_SERVICE_TOKEN")
+    auth_authority = os.environ["NP01_AUTH_SERVICE_AUTHORITY"]
+    auth_host, auth_port = auth_authority.rsplit(":", 1)
+    auth_ca_path = os.environ["NP01_AUTH_SERVICE_CA"]
+    auth_service_token = os.environ.pop("NP01_AUTH_SERVICE_TOKEN")
     shared = os.environ.pop("NP01_SHARED_SECRET")
     control_token = os.environ.pop("NP01_CONTROL_TOKEN")
     control_url = os.environ["NP01_CONTROL_URL"]
     generic_actual = AcademicGrpcClient(host, int(port), shared, True, ca_path)
-    protected_actual = BotCredentialsGrpcClient(host, int(port), shared, True, ca_path, service_token)
+    protected_actual = BotCredentialsGrpcClient(
+        host,
+        int(port),
+        shared,
+        True,
+        ca_path,
+        service_token,
+        auth_host=auth_host,
+        auth_port=int(auth_port),
+        auth_tls_enabled=True,
+        auth_tls_ca_path=auth_ca_path,
+        auth_service_token=auth_service_token,
+    )
     generic = CountingAcademic(generic_actual)
     protected = CountingCredentials(protected_actual)
     provider_runner = None
@@ -254,31 +271,46 @@ async def main():
                 await batch.wait()
 
         try:
-            _phase = "real_tls_token_denial"
+            _phase = "real_tls_directed_auth_boundaries"
             from pathlib import Path
 
-            channel = grpc.aio.secure_channel(
-                authority, grpc.ssl_channel_credentials(root_certificates=Path(ca_path).read_bytes())
+            request = pb.BotOwnInitialCredentialsRequest(
+                telegram_sender_id=own["chat"],
+                private_chat_id=own["chat"],
+                expected_user_id=own["uid"],
+                mode=pb.BOT_CREDENTIAL_READ_MODE_SNAPSHOT,
             )
-            try:
-                stub = academic_pb2_grpc.AcademicGrpcServiceStub(channel)
+
+            async def denied(endpoint, ca, metadata, expected):
+                channel = grpc.aio.secure_channel(
+                    endpoint, grpc.ssl_channel_credentials(root_certificates=Path(ca).read_bytes())
+                )
                 try:
-                    await stub.GetOwnBotInitialCredentials(
-                        pb.BotOwnInitialCredentialsRequest(
-                            telegram_sender_id=own["chat"],
-                            private_chat_id=own["chat"],
-                            expected_user_id=own["uid"],
-                            mode=pb.BOT_CREDENTIAL_READ_MODE_SNAPSHOT,
-                        ),
-                        metadata=(("x-grpc-secret", shared),),
-                        timeout=3,
-                    )
-                except grpc.aio.AioRpcError as error:
-                    check(error.code() == grpc.StatusCode.UNAUTHENTICATED)
-                else:
-                    raise BridgeFailure("shared secret unexpectedly admitted credential capability")
-            finally:
-                await channel.close()
+                    stub = academic_pb2_grpc.AcademicGrpcServiceStub(channel)
+                    try:
+                        await stub.GetOwnBotInitialCredentials(request, metadata=metadata, timeout=3)
+                    except grpc.aio.AioRpcError as error:
+                        check(error.code() == expected)
+                    else:
+                        raise BridgeFailure("retired or unauthenticated credential read was admitted")
+                finally:
+                    await channel.close()
+
+            await denied(
+                authority,
+                ca_path,
+                (("x-grpc-secret", shared), ("x-service-token", service_token)),
+                grpc.StatusCode.PERMISSION_DENIED,
+            )
+            _auth_boundary["old_academic_denied"] = True
+            await denied(
+                auth_authority, auth_ca_path, (("x-service-token", service_token),), grpc.StatusCode.UNAUTHENTICATED
+            )
+            _auth_boundary["old_credential_denied"] = True
+            await denied(auth_authority, auth_ca_path, (), grpc.StatusCode.UNAUTHENTICATED)
+            snapshot = await protected.read(own["chat"], own["uid"])
+            check(snapshot.user_id == own["uid"] and snapshot.initial_password == own["initial"])
+            _auth_boundary["actual_auth_tls"] = True
 
             _phase = "own_roles_native_dispatcher"
             for role in ("student", "teacher", "headman", "FULL", "LIMITED"):
@@ -574,6 +606,9 @@ if __name__ == "__main__":
                     "failures": 1,
                     "checks": _checks,
                     "phase": _phase,
+                    "actual_auth_tls": False,
+                    "old_academic_denied": False,
+                    "old_credential_denied": False,
                 }
             )
         )
@@ -589,6 +624,7 @@ if __name__ == "__main__":
                 "phase": _phase,
                 "auth_producer_exercised": False,
                 "external_telegram_exercised": False,
+                **_auth_boundary,
             }
         )
     )

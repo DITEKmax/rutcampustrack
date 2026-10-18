@@ -1,16 +1,17 @@
 package ru.rutcampustrack.academic.botcredentials;
 
 import io.grpc.Status;
-import java.util.List;
-import java.util.Set;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.grpc.BotCredentialReadMode;
+
 import ru.rutcampustrack.academic.grpc.BotOwnInitialCredentialsRequest;
 import ru.rutcampustrack.academic.grpc.BotOwnInitialCredentialsResponse;
 import ru.rutcampustrack.shared.security.admin.AdminAccessException;
 import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Uncached own-account capability, separate from default-role activation and admin target access.
@@ -28,30 +29,15 @@ public class BotOwnInitialCredentialsQuery {
         this.admins = admins;
     }
 
-    @Transactional
+    /**
+     * Retained internal signature; credentials are served only by the independently authenticated
+     * Auth boundary.
+     */
     public BotOwnInitialCredentialsResponse read(BotOwnInitialCredentialsRequest request) {
         BotCredentialServiceIdentityInterceptor.requireBot();
-        validateRead(request);
-        UserState user = lockUser(request.getExpectedUserId());
-        if (user == null) return BotOwnInitialCredentialsResponse.getDefaultInstance();
-        if (user.telegramId != request.getTelegramSenderId()) throw denied();
-        if (request.getMode() == BotCredentialReadMode.BOT_CREDENTIAL_READ_MODE_RECHECK
-                && (user.bindingVersion != request.getExpectedTelegramBindingVersion()
-                        || user.credentialsVersion != request.getExpectedCredentialsVersion())) {
-            throw stale();
-        }
-        if (!hasOwnAuthority(user)) return BotOwnInitialCredentialsResponse.getDefaultInstance();
-        boolean eligible = user.eligible();
-        var response =
-                BotOwnInitialCredentialsResponse.newBuilder()
-                        .setFound(true)
-                        .setUserId(user.id)
-                        .setTelegramBindingVersion(user.bindingVersion)
-                        .setCredentialsVersion(user.credentialsVersion)
-                        .setPasswordChanged(user.passwordChanged)
-                        .setEligible(eligible);
-        if (eligible) response.setLogin(user.login).setInitialPassword(user.initialPassword);
-        return response.build();
+        throw Status.UNIMPLEMENTED
+                .withDescription("own credentials require Auth service")
+                .asRuntimeException();
     }
 
     /**
@@ -62,17 +48,15 @@ public class BotOwnInitialCredentialsQuery {
         List<UserState> rows =
                 jdbc.query(
                         """
-                SELECT id, telegram_id, status::text, login, initial_password, password_changed,
-                       credentials_version, telegram_binding_version
-                FROM users WHERE id = ? FOR UPDATE
-                """,
+                        SELECT id, telegram_id, status, password_changed, credentials_version,
+                               telegram_binding_version, eligible FROM auth_api.bot_user_state(?)
+                        """,
                         (rs, index) ->
                                 new UserState(
                                         rs.getLong("id"),
                                         rs.getLong("telegram_id"),
                                         rs.getString("status"),
-                                        rs.getString("login"),
-                                        rs.getString("initial_password"),
+                                        rs.getBoolean("eligible"),
                                         rs.getBoolean("password_changed"),
                                         rs.getLong("credentials_version"),
                                         rs.getLong("telegram_binding_version")),
@@ -90,8 +74,8 @@ public class BotOwnInitialCredentialsQuery {
         List<Grant> grants =
                 jdbc.query(
                         """
-                SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY id
-                """,
+SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY id
+""",
                         (rs, index) -> {
                             long group = rs.getLong("group_id");
                             boolean noGroup = rs.wasNull();
@@ -130,22 +114,6 @@ public class BotOwnInitialCredentialsQuery {
             }
         }
         return false;
-    }
-
-    private static void validateRead(BotOwnInitialCredentialsRequest request) {
-        requireOwnIds(
-                request.getTelegramSenderId(),
-                request.getPrivateChatId(),
-                request.getExpectedUserId());
-        boolean snapshot =
-                request.getMode() == BotCredentialReadMode.BOT_CREDENTIAL_READ_MODE_SNAPSHOT
-                        && request.getExpectedTelegramBindingVersion() == 0
-                        && request.getExpectedCredentialsVersion() == 0;
-        boolean recheck =
-                request.getMode() == BotCredentialReadMode.BOT_CREDENTIAL_READ_MODE_RECHECK
-                        && request.getExpectedTelegramBindingVersion() > 0
-                        && request.getExpectedCredentialsVersion() > 0;
-        if (!snapshot && !recheck) throw invalid();
     }
 
     static void requireOwnIds(long sender, long chat, long user) {
@@ -195,8 +163,7 @@ public class BotOwnInitialCredentialsQuery {
         final long id;
         final long telegramId;
         final String status;
-        final String login;
-        final String initialPassword;
+        final boolean credentialEligible;
         final boolean passwordChanged;
         final long credentialsVersion;
         final long bindingVersion;
@@ -205,27 +172,21 @@ public class BotOwnInitialCredentialsQuery {
                 long id,
                 long telegramId,
                 String status,
-                String login,
-                String initialPassword,
+                boolean credentialEligible,
                 boolean passwordChanged,
                 long credentialsVersion,
                 long bindingVersion) {
             this.id = id;
             this.telegramId = telegramId;
             this.status = status;
-            this.login = login;
-            this.initialPassword = initialPassword;
+            this.credentialEligible = credentialEligible;
             this.passwordChanged = passwordChanged;
             this.credentialsVersion = credentialsVersion;
             this.bindingVersion = bindingVersion;
         }
 
         boolean eligible() {
-            return !passwordChanged
-                    && initialPassword != null
-                    && !initialPassword.isEmpty()
-                    && login != null
-                    && !login.isEmpty();
+            return !passwordChanged && credentialEligible;
         }
 
         @Override

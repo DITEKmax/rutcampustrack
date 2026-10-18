@@ -11,6 +11,9 @@ import { assistantPermissionCodes } from '../fixtures/assistant-permissions';
 import { rosterEditBlockFacts, validateFacts } from '../fixtures/first3-observer';
 import {
   classifySafeFailure,
+  closedLifecycleTransportCode,
+  retainSemesterPreviewTransport,
+  retainLifecycleCleanupFailure,
   retainHeadmanCleanupFailure,
   type HeadmanCleanupCause,
   datasetHttpFailure,
@@ -109,6 +112,131 @@ test('successful sensitive step metadata and worker output are not emitted', asy
   expect(closedTransferState('COMPLETED')).toBe('COMPLETED');
   expect(closedTransferState(marker)).toBe('OTHER');
   expect(closedTransferState({ state: marker })).toBe('OTHER');
+  const transportCodes = [
+    'TIMEOUT',
+    'ECONNRESET',
+    'ECONNREFUSED',
+    'ETIMEDOUT',
+    'EPIPE',
+    'ENOTFOUND',
+    'EAI_AGAIN',
+    'ABORTED',
+    'TARGET_CLOSED',
+    'UNKNOWN',
+  ] as const;
+  for (const code of transportCodes) {
+    const original = Object.assign(new Error(marker), { code });
+    const annotations: TestInfo['annotations'] = [];
+    retainSemesterPreviewTransport(annotations, original);
+    retainLifecycleCleanupFailure(annotations, 'CLEANUP_TRANSFER_CANCEL', original, 409);
+    retainLifecycleCleanupFailure(annotations, 'CLEANUP_SEMESTER_RESTORE', { code: 'EPIPE' }, 503);
+    retainSemesterPreviewTransport(annotations, { code: 'EPIPE' });
+    expect(safeFailureDiagnostics(annotations)).toEqual([
+      { stage: 'SEMESTER_PREVIEW_TRANSPORT', cause: `SEMESTER_PREVIEW_${code}`, httpStatus: 0 },
+      { stage: 'LIFECYCLE_CLEANUP', cause: 'CLEANUP_TRANSFER_CANCEL', httpStatus: 409 },
+      { stage: 'LIFECYCLE_CLEANUP_TRANSPORT', cause: `CLEANUP_TRANSPORT_${code}`, httpStatus: 0 },
+    ]);
+    expect(JSON.stringify(safeFailureDiagnostics(annotations))).not.toContain(marker);
+  }
+  expect(closedLifecycleTransportCode({ cause: { cause: { code: 'ECONNRESET' } } })).toBe(
+    'ECONNRESET',
+  );
+  expect(
+    closedLifecycleTransportCode({ cause: { cause: { cause: { code: 'ECONNRESET' } } } }),
+  ).toBe('UNKNOWN');
+  expect(closedLifecycleTransportCode({ name: 'TimeoutError' })).toBe('TIMEOUT');
+  expect(closedLifecycleTransportCode({ name: 'AbortError' })).toBe('ABORTED');
+  expect(closedLifecycleTransportCode({ name: 'TargetClosedError' })).toBe('TARGET_CLOSED');
+  expect(closedLifecycleTransportCode({ code: 'ABORT_ERR' })).toBe('ABORTED');
+  const cyclicError: { cause?: unknown } = {};
+  cyclicError.cause = cyclicError;
+  const hostileError = Object.create({ code: 'ECONNRESET' });
+  for (const key of ['code', 'name', 'cause', 'message', 'stack', 'toString'])
+    Object.defineProperty(hostileError, key, {
+      get() {
+        throw new Error(marker);
+      },
+    });
+  for (const error of [
+    hostileError,
+    cyclicError,
+    { code: marker },
+    { name: marker },
+    marker,
+    null,
+    Object.create({ code: 'ECONNRESET' }),
+    new Proxy(
+      {},
+      {
+        getOwnPropertyDescriptor() {
+          throw new Error(marker);
+        },
+      },
+    ),
+  ]) {
+    expect(closedLifecycleTransportCode(error)).toBe('UNKNOWN');
+    const annotations: TestInfo['annotations'] = [];
+    retainLifecycleCleanupFailure(annotations, 'CLEANUP_SEMESTER_RECOVER', error);
+    expect(safeFailureDiagnostics(annotations)).toEqual([
+      { stage: 'LIFECYCLE_CLEANUP', cause: 'CLEANUP_SEMESTER_RECOVER', httpStatus: 0 },
+      { stage: 'LIFECYCLE_CLEANUP_TRANSPORT', cause: 'CLEANUP_TRANSPORT_UNKNOWN', httpStatus: 0 },
+    ]);
+    expect(JSON.stringify(annotations)).not.toContain(marker);
+  }
+  const failedCancel: TestInfo['annotations'] = [];
+  retainLifecycleCleanupFailure(
+    failedCancel,
+    'CLEANUP_TRANSFER_CANCEL',
+    datasetHttpFailure('PATCH', '/api/schedule/lessons/123/cancel', 409),
+  );
+  expect(safeFailureDiagnostics(failedCancel)[0].httpStatus).toBe(409);
+  for (const status of [
+    0,
+    200,
+    204,
+    400,
+    401,
+    403,
+    404,
+    409,
+    410,
+    422,
+    423,
+    429,
+    500,
+    502,
+    503,
+    504,
+    'OTHER',
+  ]) {
+    const annotations: TestInfo['annotations'] = [];
+    retainLifecycleCleanupFailure(annotations, 'CLEANUP_SEMESTER_PUBLISH', undefined, status);
+    expect(safeFailureDiagnostics(annotations)[0].httpStatus).toBe(status);
+  }
+  for (const description of [
+    'SEMESTER_PREVIEW_EPIPE:503',
+    'CLEANUP_TRANSPORT_UNKNOWN:OTHER',
+    'CLEANUP_TRANSFER_CANCEL:201',
+    'CLEANUP_TRANSFER_CANCEL:418',
+    `SEMESTER_PREVIEW_${marker}:0`,
+    `CLEANUP_${marker}:503`,
+    `CLEANUP_TRANSFER_CANCEL:503\n${marker}`,
+    'CLEANUP_TRANSFER_CANCEL:503\n',
+    marker.repeat(100),
+  ]) {
+    const diagnostics = safeFailureDiagnostics([{ type: safeFailureAnnotation, description }]);
+    expect(
+      diagnostics.every(
+        (item) =>
+          ![
+            'LIFECYCLE_CLEANUP',
+            'LIFECYCLE_CLEANUP_TRANSPORT',
+            'SEMESTER_PREVIEW_TRANSPORT',
+          ].includes(item.stage),
+      ),
+    ).toBe(true);
+    expect(JSON.stringify(diagnostics)).not.toContain(marker);
+  }
   const cleanupCauses = [
     'HEADMAN_CLEANUP_SHORTCUT_SUBJECT_READ',
     'HEADMAN_CLEANUP_SHORTCUT_ASSIGNMENT_IDENTITY',

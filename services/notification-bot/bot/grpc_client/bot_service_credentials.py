@@ -1,4 +1,4 @@
-"""Per-call directed identity for the exact protected Academic bot RPCs."""
+"""Separate per-call directed identities for Auth reads and Academic metadata RPCs."""
 
 from __future__ import annotations
 
@@ -8,9 +8,7 @@ import re
 import grpc
 
 ACADEMIC_SERVICE = "rutcampustrack.academic.AcademicGrpcService"
-PROTECTED_METHODS = frozenset(
-    {"GetOwnBotInitialCredentials", "ManageOwnBotCredentialMessages", "GetOwnBotHomeworksForWeek"}
-)
+PROTECTED_METHODS = frozenset({"ManageOwnBotCredentialMessages", "GetOwnBotHomeworksForWeek"})
 
 
 class BotCredentialTransportUnavailable(RuntimeError):
@@ -34,16 +32,24 @@ class BotServiceCredentials(grpc.AuthMetadataPlugin):
     separately on each protected call. It is never channel/global metadata.
     """
 
+    _allowed_methods = PROTECTED_METHODS
+
     def __init__(self, authority: str, token: str) -> None:
         if not authority or any(char in authority for char in "/@?#\\"):
-            raise BotCredentialTransportUnavailable("Academic TLS authority is invalid")
+            raise BotCredentialTransportUnavailable("Protected bot TLS authority is invalid")
         if not canonical_token(token):
-            raise BotCredentialTransportUnavailable("Academic bot identity is unavailable")
+            raise BotCredentialTransportUnavailable("Directed bot identity is unavailable")
         self._service_url = f"https://{authority}/{ACADEMIC_SERVICE}"
         self._token = token
 
     def __call__(self, context, callback) -> None:
-        if context.service_url != self._service_url or context.method_name not in PROTECTED_METHODS:
-            callback((), BotCredentialTransportUnavailable("Academic bot identity destination is denied"))
+        if context.service_url != self._service_url or context.method_name not in self._allowed_methods:
+            callback((), BotCredentialTransportUnavailable("Directed bot identity destination is denied"))
             return
         callback((("x-service-token", self._token),), None)
+
+
+class BotAuthReadCredentials(BotServiceCredentials):
+    """The new Auth credential can accompany only the existing own-read wire method."""
+
+    _allowed_methods = frozenset({"GetOwnBotInitialCredentials"})

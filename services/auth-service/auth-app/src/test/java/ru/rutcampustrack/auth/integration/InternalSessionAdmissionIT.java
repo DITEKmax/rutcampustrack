@@ -14,23 +14,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
-import javax.sql.DataSource;
+
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,6 +36,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 import ru.rutcampustrack.auth.config.InternalIssuerProperties;
 import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.controller.InternalSemesterDeletionConfirmationController;
@@ -79,6 +67,23 @@ import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.sql.DataSource;
+
 /**
  * Source proof for admission against a fresh PostgreSQL 16/V24 authority. Reuse is deliberately
  * disabled; this test is not run during source stage.
@@ -102,6 +107,8 @@ class InternalSessionAdmissionIT {
     @BeforeAll
     void startDatabase() {
         POSTGRES.start();
+        ru.rutcampustrack.shared.testcontainers.MigrationTestUtils.prepareAcademicAuthPrincipals(
+                POSTGRES);
         Flyway.configure()
                 .dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
                 .locations("filesystem:" + migrationDirectory().toAbsolutePath())
@@ -172,13 +179,15 @@ class InternalSessionAdmissionIT {
         String liveAccess = accessToken(liveSession.snapshot(), now);
         UUID revokedJti =
                 jdbc.queryForObject(
-                        "SELECT current_refresh_jti FROM auth_sessions WHERE sid = ? AND user_id = ?",
+                        "SELECT current_refresh_jti FROM auth_sessions WHERE sid = ? AND user_id ="
+                                + " ?",
                         UUID.class,
                         revokedSession.sessionId(),
                         user.userId());
         UUID liveJti =
                 jdbc.queryForObject(
-                        "SELECT current_refresh_jti FROM auth_sessions WHERE sid = ? AND user_id = ?",
+                        "SELECT current_refresh_jti FROM auth_sessions WHERE sid = ? AND user_id ="
+                                + " ?",
                         UUID.class,
                         liveSession.sessionId(),
                         user.userId());
@@ -549,8 +558,8 @@ class InternalSessionAdmissionIT {
         CreatedSession ungrantedSession = createSession(ungrantedUser, now, AuthRole.STUDENT);
         String ungrantedAccess = accessToken(ungrantedSession.snapshot(), now);
         jdbc.update(
-                "UPDATE auth_sessions SET active_role_grant_id = NULL, session_version = session_version + 1 "
-                        + "WHERE sid = ? AND user_id = ?",
+                "UPDATE auth_sessions SET active_role_grant_id = NULL, session_version ="
+                        + " session_version + 1 WHERE sid = ? AND user_id = ?",
                 ungrantedSession.sessionId(),
                 ungrantedUser.userId());
 
@@ -618,7 +627,8 @@ class InternalSessionAdmissionIT {
         String previousAccess = accessToken(session.snapshot(), now);
         jdbc.update("UPDATE user_role_grants SET status='archived' WHERE user_id=?", user.userId());
         jdbc.update(
-                "UPDATE auth_sessions SET active_role_grant_id=NULL,session_version=session_version+1 WHERE sid=?",
+                "UPDATE auth_sessions SET"
+                    + " active_role_grant_id=NULL,session_version=session_version+1 WHERE sid=?",
                 session.sessionId());
         jdbc.update(
                 "UPDATE users SET status='active',group_id=NULL,is_headman=FALSE WHERE id=?",
@@ -912,8 +922,8 @@ class InternalSessionAdmissionIT {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 "{\"internalToken\":\"request-token-sentinel\","
-                                                        + "\"password\":\"request-password-sentinel\",\"semesterId\":0,"
-                                                        + "\"operationId\":\"not-a-uuid\",\"previewDigest\":\"digest-sentinel\"}"))
+                                                    + "\"password\":\"request-password-sentinel\",\"semesterId\":0,"
+                                                    + "\"operationId\":\"not-a-uuid\",\"previewDigest\":\"digest-sentinel\"}"))
                         .andExpect(status().isBadRequest())
                         .andExpect(header().string("Cache-Control", "no-store"))
                         .andReturn();
@@ -1227,16 +1237,16 @@ class InternalSessionAdmissionIT {
         for (GrantSeed seed : seeds) {
             if (seed.role() == AuthRole.ADMIN && seed.status() == RoleStatus.ACTIVE) {
                 jdbc.update(
-                        "INSERT INTO admin_access_profiles(user_id, assigned, mode, permissions, version) "
-                                + "VALUES (?, TRUE, 'FULL', '{}', 1)",
+                        "INSERT INTO admin_access_profiles(user_id, assigned, mode, permissions,"
+                                + " version) VALUES (?, TRUE, 'FULL', '{}', 1)",
                         userId);
             }
             jdbc.update(
                     """
-                            INSERT INTO user_role_grants (
-                                user_id, role, status, group_id, created_at, updated_at
-                            ) VALUES (?, ?, ?, ?, ?, ?)
-                            """,
+                    INSERT INTO user_role_grants (
+                        user_id, role, status, group_id, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                    """,
                     userId,
                     seed.role().name().toLowerCase(Locale.ROOT),
                     seed.status().name().toLowerCase(Locale.ROOT),
@@ -1263,7 +1273,8 @@ class InternalSessionAdmissionIT {
         Instant updatedAt = grant.createdAt().plusSeconds(1);
         int updatedRows =
                 jdbc.update(
-                        "UPDATE user_role_grants SET status = ?, updated_at = ? WHERE id = ? AND user_id = ?",
+                        "UPDATE user_role_grants SET status = ?, updated_at = ? WHERE id = ? AND"
+                                + " user_id = ?",
                         status.name().toLowerCase(Locale.ROOT),
                         Timestamp.from(updatedAt),
                         grant.grantId(),
@@ -1293,7 +1304,8 @@ class InternalSessionAdmissionIT {
                         "admission-group-" + user.userId());
         int updatedRows =
                 jdbc.update(
-                        "UPDATE user_role_grants SET group_id = ?, updated_at = ? WHERE id = ? AND user_id = ?",
+                        "UPDATE user_role_grants SET group_id = ?, updated_at = ? WHERE id = ? AND"
+                                + " user_id = ?",
                         groupId,
                         Timestamp.from(grant.createdAt().plusSeconds(1)),
                         grant.grantId(),
@@ -1423,18 +1435,19 @@ class InternalSessionAdmissionIT {
         return java.util.Map.of(
                 "sessions",
                 database.queryForList(
-                        "SELECT sid, active_role_grant_id, session_version, current_refresh_jti, "
-                                + "previous_refresh_jti, refresh_expires_at, created_at, last_seen_at, revoked_at, "
-                                + "revoke_reason, auth_method, client_label, location_label "
-                                + "FROM auth_sessions WHERE user_id = ? ORDER BY sid",
+                        "SELECT sid, active_role_grant_id, session_version, current_refresh_jti,"
+                            + " previous_refresh_jti, refresh_expires_at, created_at, last_seen_at,"
+                            + " revoked_at, revoke_reason, auth_method, client_label,"
+                            + " location_label FROM auth_sessions WHERE user_id = ? ORDER BY sid",
                         userId),
                 "rolesVersion",
                 database.queryForObject(
                         "SELECT roles_version FROM users WHERE id = ?", Long.class, userId),
                 "events",
                 database.queryForList(
-                        "SELECT id, sid, event_type, occurred_at, auth_method, client_label, location_label "
-                                + "FROM account_security_events WHERE user_id = ? ORDER BY id",
+                        "SELECT id, sid, event_type, occurred_at, auth_method, client_label,"
+                            + " location_label FROM account_security_events WHERE user_id = ? ORDER"
+                            + " BY id",
                         userId),
                 "outbox",
                 database.queryForObject("SELECT count(*) FROM auth_outbox", Long.class));

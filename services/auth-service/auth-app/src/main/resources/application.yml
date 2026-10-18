@@ -50,6 +50,16 @@ spring:
     enabled: false
 
 grpc:
+  server:
+    # Unconfigured dev/test startup has no additional listener. Compose enables TLS only.
+    port: ${AUTH_GRPC_PORT:-1}
+    reflection-service-enabled: false
+    security:
+      enabled: true
+      certificate-chain: ${AUTH_GRPC_CERTIFICATE_CHAIN:}
+      private-key: ${AUTH_GRPC_PRIVATE_KEY:}
+  service-identity:
+    bot-to-auth-token: ${BOT_TO_AUTH_SERVICE_TOKEN:}
   auth:
     secret: ${GRPC_SECRET:}
   client:

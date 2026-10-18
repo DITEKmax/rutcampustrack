@@ -5,10 +5,6 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.time.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
+
 import ru.rutcampustrack.academic.admin.AcademicAdminAccess;
 import ru.rutcampustrack.academic.assistant.AssistantService;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
@@ -35,6 +32,11 @@ import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.user.*;
 import ru.rutcampustrack.attendance.grpc.UserImpactSnapshot;
 
+import java.time.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
 class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
     private static final String OWNED_SEMESTER_NAME = "user-archive-" + UUID.randomUUID();
     @Autowired JdbcTemplate jdbc;
@@ -42,6 +44,7 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
     @Autowired GroupService groups;
     @Autowired UserArchiveRepository repository;
     @Autowired AcademicAdminAccess adminAccess;
+    @Autowired ru.rutcampustrack.academic.admin.AcademicAuthDataCommands authCommands;
     @Autowired UserRoleGrantReader grants;
     @Autowired PlatformTransactionManager transactionManager;
     @Autowired org.springframework.context.ApplicationEventPublisher eventPublisher;
@@ -68,7 +71,8 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         if (ownedSemesters.isEmpty()) {
             semester =
                     jdbc.queryForObject(
-                            "INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,TRUE,NOW()) RETURNING id",
+                            "INSERT INTO semesters(name,date_from,date_to,is_active,created_at)"
+                                    + " VALUES(?,?,?,TRUE,NOW()) RETURNING id",
                             Long.class,
                             OWNED_SEMESTER_NAME,
                             today.minusDays(5),
@@ -85,9 +89,9 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         owner =
                 jdbc.queryForObject(
                         """
-                INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,password_changed,created_at,updated_at)
-                VALUES (?, 'synthetic-hash','Archive','Admin','admin','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
-                """,
+INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,password_changed,created_at,updated_at)
+VALUES (?, 'synthetic-hash','Archive','Admin','admin','active',FALSE,FALSE,NOW(),NOW()) RETURNING id
+""",
                         Long.class,
                         "archive-admin-" + UUID.randomUUID().toString().substring(0, 8));
         jdbc.update(
@@ -95,7 +99,8 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                         + "VALUES(?,TRUE,'FULL','{}',1)",
                 owner);
         jdbc.update(
-                "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES(?,'admin','active',NOW(),NOW())",
+                "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)"
+                        + " VALUES(?,'admin','active',NOW(),NOW())",
                 owner);
         target =
                 users.createUser(
@@ -116,15 +121,16 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                         RoleGrantStatus.ACTIVE, null, "archive-employee-" + target, null));
         jdbc.update("UPDATE users SET is_headman=TRUE WHERE id=?", target);
         jdbc.update(
-                "INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) VALUES(?,'headman','active',?,NOW(),NOW())",
+                "INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
+                        + " VALUES(?,'headman','active',?,NOW(),NOW())",
                 target,
                 group);
         session = UUID.randomUUID();
         jdbc.update(
                 """
-                INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,refresh_expires_at,created_at,last_seen_at,auth_method)
-                VALUES (?,?,(SELECT id FROM user_role_grants WHERE user_id=? AND role='student'),1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
-                """,
+INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,refresh_expires_at,created_at,last_seen_at,auth_method)
+VALUES (?,?,(SELECT id FROM user_role_grants WHERE user_id=? AND role='student'),1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
+""",
                 session,
                 target,
                 target,
@@ -161,14 +167,14 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         long subject =
                 jdbc.queryForObject(
                         """
-                WITH subject AS (
-                    INSERT INTO subjects(name,type,group_id)
-                    VALUES (?, 'lecture', ?) RETURNING id,type
-                ), lesson_type AS (
-                    INSERT INTO subject_lesson_types(subject_id,lesson_type)
-                    SELECT id,type FROM subject RETURNING subject_id
-                ) SELECT subject_id FROM lesson_type
-                """,
+                        WITH subject AS (
+                            INSERT INTO subjects(name,type,group_id)
+                            VALUES (?, 'lecture', ?) RETURNING id,type
+                        ), lesson_type AS (
+                            INSERT INTO subject_lesson_types(subject_id,lesson_type)
+                            SELECT id,type FROM subject RETURNING subject_id
+                        ) SELECT subject_id FROM lesson_type
+                        """,
                         Long.class,
                         "Archive retained homework " + UUID.randomUUID(),
                         group);
@@ -177,12 +183,12 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         long homework =
                 jdbc.queryForObject(
                         """
-                INSERT INTO homeworks(group_id,subject_id,semester_id,lesson_date,lesson_number,
-                    title,description,link,published_by,binding_id,actor_id,request_key,payload_hash,
-                    publication_state,created_at,updated_at)
-                VALUES(?,?,?,?,1,?,?,?, ?,?,?,?,decode(repeat('11',32),'hex'),'ACTIVE',?,?)
-                RETURNING id
-                """,
+INSERT INTO homeworks(group_id,subject_id,semester_id,lesson_date,lesson_number,
+    title,description,link,published_by,binding_id,actor_id,request_key,payload_hash,
+    publication_state,created_at,updated_at)
+VALUES(?,?,?,?,1,?,?,?, ?,?,?,?,decode(repeat('11',32),'hex'),'ACTIVE',?,?)
+RETURNING id
+""",
                         Long.class,
                         group,
                         subject,
@@ -199,7 +205,8 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                         completedAt.minusHours(4));
         long completion =
                 jdbc.queryForObject(
-                        "INSERT INTO homework_completions(homework_id,student_id,completed_at) VALUES(?,?,?) RETURNING id",
+                        "INSERT INTO homework_completions(homework_id,student_id,completed_at)"
+                                + " VALUES(?,?,?) RETURNING id",
                         Long.class,
                         homework,
                         target,
@@ -214,7 +221,8 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         assertThat(retainedHomework).hasSize(1);
         var before =
                 jdbc.queryForMap(
-                        "SELECT login,password_hash,initial_password,telegram_id FROM users WHERE id=?",
+                        "SELECT login,password_hash,initial_password,telegram_id FROM users WHERE"
+                                + " id=?",
                         target);
         var grantIds =
                 jdbc.queryForList(
@@ -261,13 +269,15 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         assertThat(repository.observe(target).status()).isEqualTo("active");
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT active_role_grant_id IS NOT NULL FROM auth_sessions WHERE sid=?",
+                                "SELECT active_role_grant_id IS NOT NULL FROM auth_sessions WHERE"
+                                        + " sid=?",
                                 Boolean.class,
                                 session))
                 .isTrue();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT COUNT(*) FROM student_group_history WHERE user_id=? AND left_at IS NULL",
+                                "SELECT COUNT(*) FROM student_group_history WHERE user_id=? AND"
+                                        + " left_at IS NULL",
                                 Long.class,
                                 target))
                 .isEqualTo(1);
@@ -302,7 +312,8 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                 .isEqualTo(1);
         var closedHistory =
                 jdbc.queryForList(
-                        "SELECT id,user_id,group_id,joined_at,left_at,reason FROM student_group_history WHERE user_id=?",
+                        "SELECT id,user_id,group_id,joined_at,left_at,reason FROM"
+                                + " student_group_history WHERE user_id=?",
                         target);
         RestoreRequest restore = new RestoreRequest(UUID.randomUUID());
         service.restore(target, restore);
@@ -313,7 +324,8 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                 .isTrue();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=? AND status='active'",
+                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=? AND"
+                                        + " status='active'",
                                 Long.class,
                                 target))
                 .isZero();
@@ -331,7 +343,8 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                 .isNull();
         assertThat(
                         jdbc.queryForMap(
-                                "SELECT login,password_hash,initial_password,telegram_id FROM users WHERE id=?",
+                                "SELECT login,password_hash,initial_password,telegram_id FROM users"
+                                        + " WHERE id=?",
                                 target))
                 .isEqualTo(before);
         assertThat(
@@ -354,13 +367,16 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                 new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE, destination, null, null));
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT joined_at FROM student_group_history WHERE user_id=? AND left_at IS NULL",
+                                "SELECT joined_at FROM student_group_history WHERE user_id=? AND"
+                                        + " left_at IS NULL",
                                 LocalDate.class,
                                 target))
                 .isEqualTo(today);
         assertThat(
                         jdbc.queryForList(
-                                "SELECT id,user_id,group_id,joined_at,left_at,reason FROM student_group_history WHERE user_id=? AND left_at IS NOT NULL",
+                                "SELECT id,user_id,group_id,joined_at,left_at,reason FROM"
+                                    + " student_group_history WHERE user_id=? AND left_at IS NOT"
+                                    + " NULL",
                                 target))
                 .isEqualTo(closedHistory);
         assertThat(
@@ -515,9 +531,9 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                                 assertThat(
                                                 jdbc.queryForObject(
                                                         """
-                        SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=? AND wait_event_type='Lock'
-                          AND query LIKE '%SELECT id FROM groups WHERE id IN%')
-                        """,
+SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=? AND wait_event_type='Lock'
+  AND query LIKE '%SELECT id FROM groups WHERE id IN%')
+""",
                                                         Boolean.class, archivePid.get()))
                                         .isTrue();
                             });
@@ -526,13 +542,15 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
             archiveWrite.get(10, TimeUnit.SECONDS);
             assertThat(
                             jdbc.queryForObject(
-                                    "SELECT COUNT(*) FROM headman_assistants WHERE group_id=? AND is_active",
+                                    "SELECT COUNT(*) FROM headman_assistants WHERE group_id=? AND"
+                                            + " is_active",
                                     Long.class,
                                     group))
                     .isZero();
             assertThat(
                             jdbc.queryForObject(
-                                    "SELECT NOT is_active AND revoked_at IS NOT NULL FROM headman_assistants WHERE group_id=? AND student_id=?",
+                                    "SELECT NOT is_active AND revoked_at IS NOT NULL FROM"
+                                        + " headman_assistants WHERE group_id=? AND student_id=?",
                                     Boolean.class,
                                     group,
                                     candidate))
@@ -550,7 +568,8 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                     .isInstanceOf(AccessDeniedException.class);
             assertThat(
                             jdbc.queryForObject(
-                                    "SELECT COUNT(*) FROM headman_assistants WHERE group_id=? AND is_active",
+                                    "SELECT COUNT(*) FROM headman_assistants WHERE group_id=? AND"
+                                            + " is_active",
                                     Long.class,
                                     group))
                     .isZero();
@@ -568,6 +587,8 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
         // Manual failure/lock probes still execute the real persisted admin authority.
         org.springframework.test.util.ReflectionTestUtils.setField(
                 result, "adminAccess", adminAccess);
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                result, "authCommands", authCommands);
         return result;
     }
 
@@ -582,30 +603,34 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                             long other =
                                     jdbc.queryForObject(
                                             """
-                    INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,password_changed,created_at,updated_at,employee_number)
-                    VALUES (?, 'synthetic-hash','Archive','OtherTeacher','teacher','active',FALSE,FALSE,NOW(),NOW(),'ARCHIVE-OTHER-01') RETURNING id
-                    """,
+INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,password_changed,created_at,updated_at,employee_number)
+VALUES (?, 'synthetic-hash','Archive','OtherTeacher','teacher','active',FALSE,FALSE,NOW(),NOW(),'ARCHIVE-OTHER-01') RETURNING id
+""",
                                             Long.class,
                                             "archive-other-"
                                                     + UUID.randomUUID().toString().substring(0, 8));
                             jdbc.update(
-                                    "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES(?,'teacher','active',NOW(),NOW())",
+                                    "INSERT INTO"
+                                        + " user_role_grants(user_id,role,status,created_at,updated_at)"
+                                        + " VALUES(?,'teacher','active',NOW(),NOW())",
                                     other);
                             long subject =
                                     jdbc.queryForObject(
-                                            "INSERT INTO subjects(name,type,group_id) VALUES(?,'lecture',?) RETURNING id",
+                                            "INSERT INTO subjects(name,type,group_id)"
+                                                    + " VALUES(?,'lecture',?) RETURNING id",
                                             Long.class,
                                             "Archive " + UUID.randomUUID(),
                                             group);
                             jdbc.update(
-                                    "INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,'lecture')",
+                                    "INSERT INTO subject_lesson_types(subject_id,lesson_type)"
+                                            + " VALUES(?,'lecture')",
                                     subject);
                             for (long teacher : List.of(target, other))
                                 jdbc.update(
                                         """
-                    INSERT INTO assignments(teacher_id,subject_id,group_id,semester_id,lesson_type,valid_from,valid_until_exclusive)
-                    VALUES(?,?,?,?,'lecture',?,?)
-                    """,
+INSERT INTO assignments(teacher_id,subject_id,group_id,semester_id,lesson_type,valid_from,valid_until_exclusive)
+VALUES(?,?,?,?,'lecture',?,?)
+""",
                                         teacher,
                                         subject,
                                         group,
@@ -616,24 +641,30 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                             assertThat(preview.soleTeacherAssignmentCount()).isZero();
                             var unchangedTarget =
                                     jdbc.queryForMap(
-                                            "SELECT to_jsonb(u)::text AS state FROM users u WHERE id=?",
+                                            "SELECT to_jsonb(u)::text AS state FROM users u WHERE"
+                                                    + " id=?",
                                             target);
                             var unchangedGrants =
                                     jdbc.queryForList(
-                                            "SELECT * FROM user_role_grants WHERE user_id=? ORDER BY id",
+                                            "SELECT * FROM user_role_grants WHERE user_id=? ORDER"
+                                                    + " BY id",
                                             target);
                             jdbc.update(
-                                    "UPDATE user_role_grants SET status='suspended',updated_at=NOW() WHERE user_id=? AND role='teacher'",
+                                    "UPDATE user_role_grants SET"
+                                        + " status='suspended',updated_at=NOW() WHERE user_id=? AND"
+                                        + " role='teacher'",
                                     other);
                             assertThat(repository.observe(target).soleTeacherCount()).isEqualTo(1);
                             assertThat(
                                             jdbc.queryForMap(
-                                                    "SELECT to_jsonb(u)::text AS state FROM users u WHERE id=?",
+                                                    "SELECT to_jsonb(u)::text AS state FROM users u"
+                                                            + " WHERE id=?",
                                                     target))
                                     .isEqualTo(unchangedTarget);
                             assertThat(
                                             jdbc.queryForList(
-                                                    "SELECT * FROM user_role_grants WHERE user_id=? ORDER BY id",
+                                                    "SELECT * FROM user_role_grants WHERE user_id=?"
+                                                            + " ORDER BY id",
                                                     target))
                                     .isEqualTo(unchangedGrants);
                             assertThatThrownBy(
@@ -656,13 +687,15 @@ class UserArchiveLifecycleIT extends AbstractAcademicIntegrationTest {
                             assertThat(repository.observe(target).status()).isEqualTo("active");
                             assertThat(
                                             jdbc.queryForObject(
-                                                    "SELECT active_role_grant_id IS NOT NULL FROM auth_sessions WHERE sid=?",
+                                                    "SELECT active_role_grant_id IS NOT NULL FROM"
+                                                            + " auth_sessions WHERE sid=?",
                                                     Boolean.class,
                                                     session))
                                     .isTrue();
                             assertThat(
                                             jdbc.queryForObject(
-                                                    "SELECT COUNT(*) FROM user_archive_receipt WHERE target_id=?",
+                                                    "SELECT COUNT(*) FROM user_archive_receipt"
+                                                            + " WHERE target_id=?",
                                                     Long.class,
                                                     target))
                                     .isZero();

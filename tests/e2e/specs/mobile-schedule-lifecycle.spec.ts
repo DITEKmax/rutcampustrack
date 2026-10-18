@@ -5,6 +5,7 @@ import { Actor, admit, expect, test as base, MobileDataset } from '../fixtures/m
 import { http, registerPrivateSuite, selectRole } from '../fixtures/cloud-accepted-support';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import {
+  retainLifecycleCleanupFailure,
   closedTransferHttpStatus,
   closedTransferState,
   transferObservationAnnotation,
@@ -1880,11 +1881,13 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
         .call('PATCH', `/api/schedule/lessons/${id}/cancel`, {
           reason: 'Синтетическая уборка дополнительных пар статистики',
         })
-        .catch(() => {
+        .catch((error) => {
+          retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_TRANSFER_CANCEL', error);
           expect.soft(false, 'Own complementary statistics lesson cleanup failed').toBe(true);
         });
     }
-    await studentContext.close().catch(() => {
+    await studentContext.close().catch((error) => {
+      retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_TRANSFER_CONTEXT', error);
       expect.soft(false, 'Own student statistics context cleanup failed').toBe(true);
     });
   }

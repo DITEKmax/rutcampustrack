@@ -52,6 +52,9 @@ _WORKER_INPUTS = (
     "NP01_AUTHORITY",
     "NP01_CA",
     "NP01_SERVICE_TOKEN",
+    "NP01_AUTH_SERVICE_AUTHORITY",
+    "NP01_AUTH_SERVICE_CA",
+    "NP01_AUTH_SERVICE_TOKEN",
     "NP01_SHARED_SECRET",
     "NP01_RABBIT_HOST",
     "NP01_RABBIT_AMQP_PORT",
@@ -120,8 +123,17 @@ def redis_client():
 
 def clients():
     host, port = os.environ["NP01_AUTHORITY"].rsplit(":", 1)
+    auth_host, auth_port = os.environ["NP01_AUTH_SERVICE_AUTHORITY"].rsplit(":", 1)
     args = (host, int(port), os.environ["NP01_SHARED_SECRET"], True, os.environ["NP01_CA"])
-    return AcademicGrpcClient(*args), BotCredentialsGrpcClient(*args, os.environ["NP01_SERVICE_TOKEN"])
+    return AcademicGrpcClient(*args), BotCredentialsGrpcClient(
+        *args,
+        os.environ["NP01_SERVICE_TOKEN"],
+        auth_host=auth_host,
+        auth_port=int(auth_port),
+        auth_tls_enabled=True,
+        auth_tls_ca_path=os.environ["NP01_AUTH_SERVICE_CA"],
+        auth_service_token=os.environ["NP01_AUTH_SERVICE_TOKEN"],
+    )
 
 
 def provider_bot(url):

@@ -1,14 +1,19 @@
 package ru.rutcampustrack.academic.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
-import java.time.OffsetDateTime;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import org.hibernate.annotations.SQLRestriction;
+
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
+
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "users")
@@ -22,12 +27,10 @@ public class User {
     private Long id;
 
     @Setter
-    @Column(nullable = false, unique = true, length = 32)
+    @Column(nullable = false, unique = true, length = 32, insertable = false, updatable = false)
     private String login;
 
-    @Setter
-    @Column(name = "password_hash")
-    private String passwordHash;
+    @Setter @JsonIgnore @Transient private String passwordHash;
 
     @Setter
     @Column(name = "last_name", nullable = false, length = 128)
@@ -57,11 +60,11 @@ public class User {
     @Setter private String phone;
 
     @Setter
-    @Column(name = "telegram_id")
+    @Column(name = "telegram_id", insertable = false, updatable = false)
     private Long telegramId;
 
     @Setter
-    @Column(name = "telegram_username", length = 64)
+    @Column(name = "telegram_username", length = 64, insertable = false, updatable = false)
     private String telegramUsername;
 
     @Setter
@@ -69,27 +72,25 @@ public class User {
     private String employeeNumber;
 
     @Setter
-    @Column(nullable = false)
+    @Column(nullable = false, insertable = false, updatable = false)
     private UserRole role;
 
     @Setter
-    @Column(nullable = false)
+    @Column(nullable = false, insertable = false, updatable = false)
     private AccountStatus status;
 
     @Setter
-    @Column(name = "is_headman", nullable = false)
+    @Column(name = "is_headman", nullable = false, insertable = false, updatable = false)
     private boolean isHeadman;
 
     @Setter
     @Column(name = "group_id")
     private Long groupId;
 
-    @Setter
-    @Column(name = "initial_password", length = 128)
-    private String initialPassword;
+    @Setter @JsonIgnore @Transient private String initialPassword;
 
     @Setter
-    @Column(name = "password_changed", nullable = false)
+    @Column(name = "password_changed", nullable = false, insertable = false, updatable = false)
     private boolean passwordChanged;
 
     /** Preset avatar id (e.g. "avatar_03"). NULL = render initials on the client. */

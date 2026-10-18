@@ -5,13 +5,9 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.concurrent.*;
+
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,12 +15,20 @@ import org.springframework.jdbc.datasource.*;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 import ru.rutcampustrack.auth.dto.*;
 import ru.rutcampustrack.auth.dto.ExportJobModels.*;
 import ru.rutcampustrack.auth.security.SessionPrincipal;
 import ru.rutcampustrack.auth.service.ReportDownloadTicketService;
 import ru.rutcampustrack.auth.session.model.*;
 import ru.rutcampustrack.shared.security.admin.AdminAccessException;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Real owning Flyway chain and transactions; synthetic authority token never leaves this fixture.
@@ -50,6 +54,8 @@ class ExportJobsIT {
     @BeforeAll
     void start() {
         postgres.start();
+        ru.rutcampustrack.shared.testcontainers.MigrationTestUtils.prepareAcademicAuthPrincipals(
+                postgres);
         Path root = Path.of("").toAbsolutePath();
         while (!java.nio.file.Files.exists(root.resolve("settings.gradle.kts")))
             root = root.getParent();
@@ -117,13 +123,17 @@ class ExportJobsIT {
         long rv = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, id);
         UUID session = UUID.randomUUID();
         jdbc.update(
-                "INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,refresh_expires_at,created_at,last_seen_at,auth_method) VALUES (?,?,?,1,?,NOW()+interval '1 day',NOW(),NOW(),'PASSWORD')",
+                "INSERT INTO"
+                    + " auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,refresh_expires_at,created_at,last_seen_at,auth_method)"
+                    + " VALUES (?,?,?,1,?,NOW()+interval '1 day',NOW(),NOW(),'PASSWORD')",
                 session,
                 id,
                 grant,
                 UUID.randomUUID());
         jdbc.update(
-                "UPDATE admin_access_profiles SET version=version+1,assigned=true,mode='FULL',permissions='{}' WHERE user_id=?",
+                "UPDATE admin_access_profiles SET"
+                        + " version=version+1,assigned=true,mode='FULL',permissions='{}' WHERE"
+                        + " user_id=?",
                 id);
         rv = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, id);
         actor =
@@ -165,8 +175,9 @@ class ExportJobsIT {
                         new IssueReportDownloadTicketRequest.AdminGroupAttendanceParameters(
                                 "1", "", "GROUP_NAME", "ASC", ReportDownloadFormat.HTML));
         jdbc.update(
-                "UPDATE admin_access_profiles SET version=version+1,mode='LIMITED',permissions=ARRAY['GROUPS_VIEW']"
-                        + " WHERE user_id=?",
+                "UPDATE admin_access_profiles SET"
+                        + " version=version+1,mode='LIMITED',permissions=ARRAY['GROUPS_VIEW'] WHERE"
+                        + " user_id=?",
                 actor.userId());
         actor =
                 new SessionPrincipal(
@@ -194,8 +205,8 @@ class ExportJobsIT {
                         error -> assertThat(error.getStatusCode().value()).isEqualTo(403));
         assertThat(count("SELECT count(*) FROM auth_export_jobs")).isZero();
         jdbc.update(
-                "UPDATE admin_access_profiles SET version=version+1,permissions=ARRAY['DASHBOARD_VIEW'] WHERE"
-                        + " user_id=?",
+                "UPDATE admin_access_profiles SET"
+                        + " version=version+1,permissions=ARRAY['DASHBOARD_VIEW'] WHERE user_id=?",
                 actor.userId());
         actor =
                 new SessionPrincipal(
@@ -235,7 +246,8 @@ class ExportJobsIT {
                                         + " target_type='ADMIN_GROUP_ATTENDANCE'"))
                 .isEqualTo(1);
         jdbc.update(
-                "UPDATE admin_access_profiles SET version=version+1,permissions=ARRAY['GROUPS_VIEW'] WHERE user_id=?",
+                "UPDATE admin_access_profiles SET"
+                        + " version=version+1,permissions=ARRAY['GROUPS_VIEW'] WHERE user_id=?",
                 actor.userId());
         for (Runnable operation :
                 List.<Runnable>of(
@@ -317,7 +329,8 @@ class ExportJobsIT {
                 .isEqualTo(1);
         assertThat(
                         count(
-                                "SELECT count(*) FROM auth_outbox WHERE payload->'payload'->>'state'='ready'"))
+                                "SELECT count(*) FROM auth_outbox WHERE"
+                                        + " payload->'payload'->>'state'='ready'"))
                 .isEqualTo(1);
         String identity =
                 jdbc.queryForObject(
@@ -357,7 +370,9 @@ class ExportJobsIT {
                         ResponseStatusException.class,
                         error -> assertThat(error.getStatusCode().value()).isEqualTo(404));
         jdbc.update(
-                "UPDATE admin_access_profiles SET version=version+1,mode='LIMITED',permissions=ARRAY['USERS_VIEW'] WHERE user_id=?",
+                "UPDATE admin_access_profiles SET"
+                        + " version=version+1,mode='LIMITED',permissions=ARRAY['USERS_VIEW'] WHERE"
+                        + " user_id=?",
                 actor.userId());
         assertThatThrownBy(() -> jobs.status(actor, queued.jobId()))
                 .isInstanceOf(AdminAccessException.class);
@@ -370,7 +385,9 @@ class ExportJobsIT {
     @Test
     void ordinaryLimitedGrantWorksAndRevokeDeniesEveryLaterReadAndCompletingClaim() {
         jdbc.update(
-                "UPDATE admin_access_profiles SET version=version+1,mode='LIMITED',permissions=ARRAY['USERS_VIEW'] WHERE user_id=?",
+                "UPDATE admin_access_profiles SET"
+                        + " version=version+1,mode='LIMITED',permissions=ARRAY['USERS_VIEW'] WHERE"
+                        + " user_id=?",
                 actor.userId());
         actor =
                 new SessionPrincipal(
@@ -391,7 +408,8 @@ class ExportJobsIT {
         tx.execute(ignored -> jobs.complete(claim.jobId(), complete(claim, false)));
         assertThat(jobs.file(actor, queued.jobId()).content()).isNotEmpty();
         jdbc.update(
-                "UPDATE admin_access_profiles SET version=version+1,permissions=ARRAY['GROUPS_VIEW'] WHERE user_id=?",
+                "UPDATE admin_access_profiles SET"
+                        + " version=version+1,permissions=ARRAY['GROUPS_VIEW'] WHERE user_id=?",
                 actor.userId());
         assertThatThrownBy(() -> jobs.status(actor, queued.jobId()))
                 .isInstanceOf(AdminAccessException.class);
@@ -405,7 +423,8 @@ class ExportJobsIT {
         Status queued = enqueue();
         Claim claim = claim();
         jdbc.execute(
-                "ALTER TABLE auth_outbox ADD CONSTRAINT fixture_ready_failure CHECK (payload->'payload'->>'state' IS DISTINCT FROM 'ready')");
+                "ALTER TABLE auth_outbox ADD CONSTRAINT fixture_ready_failure CHECK"
+                        + " (payload->'payload'->>'state' IS DISTINCT FROM 'ready')");
         try {
             assertThatThrownBy(
                             () ->
@@ -441,11 +460,13 @@ class ExportJobsIT {
                 assertThat(tx.<Optional<Claim>>execute(ignored -> jobs.claim())).isEmpty();
                 Double delay =
                         jdbc.queryForObject(
-                                "SELECT EXTRACT(EPOCH FROM lease_until-NOW()) FROM auth_export_jobs",
+                                "SELECT EXTRACT(EPOCH FROM lease_until-NOW()) FROM"
+                                        + " auth_export_jobs",
                                 Double.class);
                 assertThat(delay).isBetween(i == 0 ? 3.0 : 8.0, i == 0 ? 6.0 : 11.0);
                 jdbc.update(
-                        "UPDATE auth_export_jobs SET lease_until=NOW()-interval '1 second' WHERE job_id=?",
+                        "UPDATE auth_export_jobs SET lease_until=NOW()-interval '1 second' WHERE"
+                                + " job_id=?",
                         queued.jobId());
             }
         }
@@ -471,7 +492,9 @@ class ExportJobsIT {
         assertThat(jobs.status(actor, queued.jobId()).state()).isEqualTo(State.QUEUED);
         assertThat(
                         count(
-                                "SELECT count(*) FROM auth_export_jobs WHERE state='queued' AND lease_id IS NULL AND lease_until>NOW()+interval '3 seconds' AND lease_until<=NOW()+interval '6 seconds'"))
+                                "SELECT count(*) FROM auth_export_jobs WHERE state='queued' AND"
+                                    + " lease_id IS NULL AND lease_until>NOW()+interval '3 seconds'"
+                                    + " AND lease_until<=NOW()+interval '6 seconds'"))
                 .isEqualTo(1);
         jobs =
                 new ExportJobService(
@@ -494,7 +517,8 @@ class ExportJobsIT {
         assertThat(jobs.status(actor, queued.jobId()).state()).isEqualTo(State.READY);
         assertThat(
                         count(
-                                "SELECT count(*) FROM auth_outbox WHERE payload->'payload'->>'state'='ready'"))
+                                "SELECT count(*) FROM auth_outbox WHERE"
+                                        + " payload->'payload'->>'state'='ready'"))
                 .isEqualTo(1);
     }
 
@@ -522,7 +546,8 @@ class ExportJobsIT {
             assertThat(accepted).hasSize(2);
             assertThat(
                             count(
-                                    "SELECT count(*) FROM auth_export_jobs WHERE state='preparing' AND lease_until>NOW()"))
+                                    "SELECT count(*) FROM auth_export_jobs WHERE state='preparing'"
+                                            + " AND lease_until>NOW()"))
                     .isEqualTo(2);
             assertThat(count("SELECT count(*) FROM auth_export_jobs WHERE state='queued'"))
                     .isEqualTo(5);
@@ -561,7 +586,9 @@ class ExportJobsIT {
         // Persist the real near-expiry identity as well as the row deadline.
         Instant nearExpiry = Instant.now().plusSeconds(4);
         jdbc.update(
-                "UPDATE auth_export_jobs SET identity=jsonb_set(identity,'{expiresAt}',?::jsonb),expires_at=? WHERE job_id=?",
+                "UPDATE auth_export_jobs SET"
+                        + " identity=jsonb_set(identity,'{expiresAt}',?::jsonb),expires_at=? WHERE"
+                        + " job_id=?",
                 mapper.writeValueAsString(nearExpiry),
                 nearExpiry.atOffset(java.time.ZoneOffset.UTC),
                 queued.jobId());
@@ -570,7 +597,8 @@ class ExportJobsIT {
                         jobs.fail(first.jobId(), new Fail(first.leaseId(), "GENERATION_FAILED")));
         assertThat(
                         count(
-                                "SELECT count(*) FROM auth_export_jobs WHERE state='error' AND error_code='GENERATION_FAILED'"))
+                                "SELECT count(*) FROM auth_export_jobs WHERE state='error' AND"
+                                        + " error_code='GENERATION_FAILED'"))
                 .isEqualTo(1);
     }
 
@@ -738,7 +766,9 @@ class ExportJobsIT {
         assertThat(registry.get("rct.export.jobs.snapshot.timestamp").gauge().value()).isPositive();
         String marker = "synthetic-untrusted-kind-never-a-label";
         jdbc.update(
-                "UPDATE auth_export_jobs SET identity=jsonb_set(identity,'{report,kind}',to_jsonb(?::text)),lease_until=NULL WHERE job_id=?",
+                "UPDATE auth_export_jobs SET"
+                    + " identity=jsonb_set(identity,'{report,kind}',to_jsonb(?::text)),lease_until=NULL"
+                    + " WHERE job_id=?",
                 marker,
                 queued.jobId());
         metrics.refresh();

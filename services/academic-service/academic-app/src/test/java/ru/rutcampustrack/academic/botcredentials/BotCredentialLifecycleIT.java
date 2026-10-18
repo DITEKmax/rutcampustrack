@@ -6,6 +6,29 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.testcontainers.containers.PostgreSQLContainer;
+
+import ru.rutcampustrack.academic.grpc.*;
+import ru.rutcampustrack.auth.botcredentials.AuthBotCredentialServiceIdentityInterceptor;
+import ru.rutcampustrack.auth.botcredentials.AuthBotOwnInitialCredentialsQuery;
+import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
+import ru.rutcampustrack.shared.security.grpc.ServicePrincipal;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -15,21 +38,6 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import org.flywaydb.core.Flyway;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import ru.rutcampustrack.academic.grpc.*;
-import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
-import ru.rutcampustrack.shared.security.grpc.ServicePrincipal;
 
 /**
  * Real PostgreSQL authority/generation/CAS evidence, separate from the provider transport bridge.
@@ -45,10 +53,17 @@ class BotCredentialLifecycleIT {
     private JdbcTemplate jdbc;
     private TransactionTemplate transactions;
     private BotCredentialsService service;
+    private AnnotationConfigApplicationContext authContext;
+    private AuthBotOwnInitialCredentialsQuery authRead;
+
+    @Configuration(proxyBeanMethods = false)
+    @EnableTransactionManagement
+    static class AuthTransactions {}
 
     @BeforeAll
     void start() {
         postgres.start();
+        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(postgres);
         Flyway.configure()
                 .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
                 .locations("filesystem:" + migrationDirectory())
@@ -58,14 +73,43 @@ class BotCredentialLifecycleIT {
                 new DriverManagerDataSource(
                         postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
         jdbc = new JdbcTemplate(data);
-        transactions = new TransactionTemplate(new DataSourceTransactionManager(data));
-        var query = new BotOwnInitialCredentialsQuery(jdbc, new AdminAccessJdbcAuthority(jdbc));
-        service = new BotCredentialsService(query, new BotCredentialMessageRepository(jdbc, query));
+        var runtimeSource =
+                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.source(
+                        postgres, "rct_academic_runtime");
+        var runtime = new JdbcTemplate(runtimeSource);
+        transactions = new TransactionTemplate(new DataSourceTransactionManager(runtimeSource));
+        var query =
+                new BotOwnInitialCredentialsQuery(runtime, new AdminAccessJdbcAuthority(runtime));
+        service =
+                new BotCredentialsService(
+                        query, new BotCredentialMessageRepository(runtime, query));
+        var authSource =
+                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.source(
+                        postgres, "rct_auth_runtime");
+        var authJdbc = new JdbcTemplate(authSource);
+        assertThat(authJdbc.queryForObject("SELECT current_user", String.class))
+                .isEqualTo("rct_auth_runtime");
+        authContext = new AnnotationConfigApplicationContext();
+        authContext.registerBean(
+                "transactionManager",
+                DataSourceTransactionManager.class,
+                () -> new DataSourceTransactionManager(authSource));
+        authContext.registerBean(JdbcTemplate.class, () -> authJdbc);
+        authContext.registerBean(
+                AdminAccessJdbcAuthority.class, () -> new AdminAccessJdbcAuthority(authJdbc));
+        authContext.register(AuthTransactions.class, AuthBotOwnInitialCredentialsQuery.class);
+        authContext.refresh();
+        authRead = authContext.getBean(AuthBotOwnInitialCredentialsQuery.class);
+        assertThat(org.springframework.aop.support.AopUtils.isAopProxy(authRead)).isTrue();
     }
 
     @AfterAll
     void stop() {
-        postgres.stop();
+        try {
+            if (authContext != null) authContext.close();
+        } finally {
+            postgres.stop();
+        }
     }
 
     @ParameterizedTest
@@ -112,27 +156,40 @@ class BotCredentialLifecycleIT {
         var own = user("student");
         var foreign = user("student");
         denied(
-                () -> bot(() -> service.read(request(own).setExpectedUserId(foreign.id).build())),
+                () ->
+                        authBot(
+                                () ->
+                                        authRead.read(
+                                                request(own)
+                                                        .setExpectedUserId(foreign.id)
+                                                        .build())),
                 Status.Code.PERMISSION_DENIED);
         denied(
-                () -> bot(() -> service.read(request(own).setPrivateChatId(own.chat + 1).build())),
+                () ->
+                        authBot(
+                                () ->
+                                        authRead.read(
+                                                request(own)
+                                                        .setPrivateChatId(own.chat + 1)
+                                                        .build())),
                 Status.Code.PERMISSION_DENIED);
         denied(
-                () -> bot(() -> service.read(request(own).setModeValue(0).build())),
+                () -> authBot(() -> authRead.read(request(own).setModeValue(0).build())),
                 Status.Code.INVALID_ARGUMENT);
         denied(
-                () -> bot(() -> service.read(request(own).setModeValue(991).build())),
+                () -> authBot(() -> authRead.read(request(own).setModeValue(991).build())),
                 Status.Code.INVALID_ARGUMENT);
         denied(
                 () ->
-                        bot(
+                        authBot(
                                 () ->
-                                        service.read(
+                                        authRead.read(
                                                 request(own)
                                                         .setExpectedCredentialsVersion(1)
                                                         .build())),
                 Status.Code.INVALID_ARGUMENT);
-        denied(() -> service.read(request(own).build()), Status.Code.UNAUTHENTICATED);
+        denied(() -> authRead.read(request(own).build()), Status.Code.UNAUTHENTICATED);
+        denied(() -> bot(() -> service.read(request(own).build())), Status.Code.UNIMPLEMENTED);
     }
 
     @Test
@@ -315,13 +372,15 @@ class BotCredentialLifecycleIT {
                 BotCredentialCleanupOutcome.BOT_CREDENTIAL_CLEANUP_OUTCOME_DELETED);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT cleanup_state FROM bot_credential_messages WHERE record_id=?",
+                                "SELECT cleanup_state FROM bot_credential_messages WHERE"
+                                        + " record_id=?",
                                 String.class,
                                 later.getRecordId()))
                 .isEqualTo("NOT_REQUIRED");
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT cleanup_state FROM bot_credential_messages WHERE record_id=?",
+                                "SELECT cleanup_state FROM bot_credential_messages WHERE"
+                                        + " record_id=?",
                                 String.class,
                                 foreignCard.getRecordId()))
                 .isEqualTo("NOT_REQUIRED");
@@ -345,7 +404,8 @@ class BotCredentialLifecycleIT {
         assertThat(generation(user)).isEqualTo(original);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT record_revision FROM bot_credential_messages WHERE record_id=?",
+                                "SELECT record_revision FROM bot_credential_messages WHERE"
+                                        + " record_id=?",
                                 Long.class,
                                 card.getRecordId()))
                 .isEqualTo(card.getRecordRevision());
@@ -385,7 +445,8 @@ class BotCredentialLifecycleIT {
         assertThat(list(user, generation(user), 0, 10).getMessagesCount()).isEqualTo(1);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT cleanup_state FROM bot_credential_messages WHERE record_id=?",
+                                "SELECT cleanup_state FROM bot_credential_messages WHERE"
+                                        + " record_id=?",
                                 String.class,
                                 pending.getRecordId()))
                 .isEqualTo("PENDING");
@@ -416,9 +477,9 @@ class BotCredentialLifecycleIT {
         long id =
                 jdbc.queryForObject(
                         """
-                INSERT INTO users(login,password_hash,last_name,first_name,initial_password,role,group_id)
-                VALUES(?,?,'NP01','Synthetic',?,'student',?) RETURNING id
-                """,
+INSERT INTO users(login,password_hash,last_name,first_name,initial_password,role,group_id)
+VALUES(?,?,'NP01','Synthetic',?,'student',?) RETURNING id
+""",
                         Long.class,
                         login,
                         UUID.randomUUID().toString(),
@@ -428,7 +489,8 @@ class BotCredentialLifecycleIT {
         jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", chat, id);
         if (role.equals("FULL") || role.equals("LIMITED")) {
             jdbc.update(
-                    "INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) VALUES(?,true,?,?::text[],1)",
+                    "INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version)"
+                            + " VALUES(?,true,?,?::text[],1)",
                     id,
                     role,
                     role.equals("FULL") ? "{}" : "{USERS_VIEW}");
@@ -454,7 +516,8 @@ class BotCredentialLifecycleIT {
 
     private void change(Fixture user) {
         jdbc.update(
-                "UPDATE users SET password_hash=?, password_changed=true, initial_password=NULL WHERE id=?",
+                "UPDATE users SET password_hash=?, password_changed=true, initial_password=NULL"
+                        + " WHERE id=?",
                 UUID.randomUUID().toString(),
                 user.id);
     }
@@ -486,7 +549,7 @@ class BotCredentialLifecycleIT {
                         .setExpectedCredentialsVersion(generation);
         if (binding > 0 || generation > 0)
             request.setMode(BotCredentialReadMode.BOT_CREDENTIAL_READ_MODE_RECHECK);
-        return bot(() -> service.read(request.build()));
+        return authBot(() -> authRead.read(request.build()));
     }
 
     private BotCredentialMessageReference reference(Fixture user, long message) {
@@ -546,6 +609,16 @@ class BotCredentialLifecycleIT {
 
     private BotCredentialMessagesResponse manage(BotCredentialMessagesRequest request) {
         return bot(() -> service.manage(request));
+    }
+
+    private <T> T authBot(Supplier<T> operation) {
+        var result = new java.util.concurrent.atomic.AtomicReference<T>();
+        Context.current()
+                .withValue(
+                        ServicePrincipal.CONTEXT_KEY,
+                        AuthBotCredentialServiceIdentityInterceptor.BOT)
+                .run(() -> result.set(operation.get()));
+        return result.get();
     }
 
     private <T> T bot(Supplier<T> operation) {

@@ -424,6 +424,115 @@ class SafeCases {
                 self.assertEqual(value["stage"], "AWAIT_BARRIER")
                 self.assertNotIn(MARKER, json.dumps(value))
 
+    def notification_fixture(self) -> str:
+        package = "ru.rutcampustrack.notification.diagnostic"
+        source = self.root / COLLECTOR.MODULES["notification-service"] / "src/test/java/NotificationStartupIT.java"
+        source.parent.mkdir(parents=True)
+        source.write_text("package " + package + "; class NotificationStartupIT {@Test void contextStarts() {}}")
+        subprocess.run(
+            ["git", "add", str(source.relative_to(self.root))], cwd=self.root, check=True, capture_output=True
+        )
+        self.results = self.root / COLLECTOR.MODULES["notification-service"] / "build/test-results/integrationTest"
+        self.results.mkdir(parents=True)
+        self.environment["RCT_CI_JOB_ID"] = "java-coverage"
+        self.environment["RCT_CI_TEST_OUTCOME"] = "failure"
+        return package + ".NotificationStartupIT"
+
+    def test_notification_failure_codes_preserve_named_and_ordinal_identity(self) -> None:
+        classname = self.notification_fixture()
+        self.xml(
+            f'<testcase classname="{classname}" name="contextStarts()">'
+            f'<failure type="java.lang.ExceptionInInitializerError" message="{MARKER}">'
+            f"java.lang.ExceptionInInitializerError: {MARKER}\n"
+            f"Caused by: org.springframework.beans.factory.BeanCreationException: {MARKER}\n"
+            f"Caused by: com.mongodb.MongoTimeoutException: {MARKER}</failure></testcase>"
+            f'<testcase classname="{classname}" name="{MARKER}">'
+            f'<failure type="java.lang.NoClassDefFoundError">{MARKER}</failure></testcase>',
+            tests=2,
+            failures=2,
+        )
+        report = COLLECTOR.collect(self.root, "notification-service", "integrationTest", self.environment)
+        named, ordinal = report["cases"]
+        self.assertEqual(named["identity"], "SOURCE_METHOD")
+        self.assertEqual(named["method"], "contextStarts")
+        self.assertEqual(ordinal["identity"], "ORDINAL_ONLY")
+        self.assertIsNone(ordinal["method"])
+        self.assertEqual(named["sourceSha256"], ordinal["sourceSha256"])
+        self.assertEqual(
+            named["failureDiagnostic"],
+            {"state": "CLOSED_CLASSES", "codes": ["INIT", "BEAN", "MONGO"], "overflow": False},
+        )
+        self.assertEqual(ordinal["failureDiagnostic"]["codes"], ["NO_CLASS"])
+        self.assertEqual(report["summary"]["FAILED"], 2)
+        self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+        self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_notification_only_exact_anchored_classes_without_messages_frames_or_values(self) -> None:
+        case = COLLECTOR.ElementTree.Element("testcase")
+        failure = COLLECTOR.ElementTree.SubElement(case, "failure", type=MARKER, message=MARKER)
+        failure.text = (
+            "java.lang.OutOfMemoryError: " + MARKER + "\n"
+            "prefix Caused by: java.lang.OutOfMemoryError: " + MARKER + "\n"
+            "    at com.mongodb.MongoTimeoutException.fake(" + MARKER + ")\n"
+            "Caused by: com.mongodb.MongoTimeoutExceptionCounterfeit: " + MARKER + "\n"
+            "Caused by: com.mongodb.MongoSecurityException: " + MARKER + "\n"
+            "\tCaused by: org.springframework.amqp.AmqpConnectException: " + MARKER + "\n"
+        )
+        value = COLLECTOR.notification_failure_diagnostic(case)
+        self.assertEqual(value, {"state": "CLOSED_CLASSES", "codes": ["OTHER", "MONGO", "AMQP"], "overflow": False})
+        self.assertNotIn(MARKER, json.dumps(value))
+
+    def test_notification_all_categories_are_finite_and_capped_at_eight(self) -> None:
+        case = COLLECTOR.ElementTree.Element("testcase")
+        failure = COLLECTOR.ElementTree.SubElement(case, "failure", type="java.lang.AssertionError")
+        failure.text = "\n".join(
+            "Caused by: " + classes[0] + ": " + MARKER for classes in COLLECTOR.NOTIFICATION_FAILURE_CLASSES.values()
+        )
+        value = COLLECTOR.notification_failure_diagnostic(case)
+        self.assertEqual(len(value["codes"]), 8)
+        self.assertTrue(value["overflow"])
+        self.assertEqual(value["codes"][0], "ASSERTION")
+        self.assertTrue(set(value["codes"]) <= set(COLLECTOR.NOTIFICATION_FAILURE_CLASSES) | {"OTHER"})
+        self.assertNotIn(MARKER, json.dumps(value))
+        for code, classes in COLLECTOR.NOTIFICATION_FAILURE_CLASSES.items():
+            for name in classes:
+                with self.subTest(category=code):
+                    failure.set("type", name)
+                    failure.text = MARKER
+                    self.assertEqual(COLLECTOR.notification_failure_diagnostic(case)["codes"], [code])
+
+    def test_notification_diagnostic_scope_never_promotes_unknown_or_nonfailed_cases(self) -> None:
+        classname = self.notification_fixture()
+        body = (
+            f'<testcase classname="{classname}" name="contextStarts()"/>'
+            f'<testcase classname="{classname}" name="contextStarts()"><skipped/></testcase>'
+            f'<testcase classname="{MARKER}" name="contextStarts()"><failure type="java.lang.OutOfMemoryError"/></testcase>'
+        )
+        self.xml(body, tests=3, failures=1, skipped=1)
+        report = COLLECTOR.collect(self.root, "notification-service", "integrationTest", self.environment)
+        self.assertTrue(all("failureDiagnostic" not in case for case in report["cases"]))
+        self.assertEqual([case["status"] for case in report["cases"]], ["PASSED", "SKIPPED", "FAILED"])
+        self.assertEqual(report["cases"][2]["identity"], "ORDINAL_ONLY")
+        self.assertIsNone(report["cases"][2]["classname"])
+        unit_dir = self.results.parent / "test"
+        unit_dir.mkdir()
+        (unit_dir / "TEST-control.xml").write_bytes((self.results / "TEST-control.xml").read_bytes())
+        report = COLLECTOR.collect(self.root, "notification-service", "test", self.environment)
+        self.assertTrue(all("failureDiagnostic" not in case for case in report["cases"]))
+        self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_notification_cutoff_does_not_classify_partial_cause_and_multiple_failures_are_unknown(self) -> None:
+        case = COLLECTOR.ElementTree.Element("testcase")
+        failure = COLLECTOR.ElementTree.SubElement(case, "failure", type="java.lang.AssertionError")
+        failure.text = "Caused by: java.lang.OutOfMemoryError" + " " * COLLECTOR.NOTIFICATION_DIAGNOSTIC_CHARS + MARKER
+        value = COLLECTOR.notification_failure_diagnostic(case)
+        self.assertEqual(value, {"state": "CLOSED_CLASSES", "codes": ["ASSERTION"], "overflow": True})
+        COLLECTOR.ElementTree.SubElement(case, "failure", type="java.lang.OutOfMemoryError")
+        self.assertEqual(
+            COLLECTOR.notification_failure_diagnostic(case),
+            {"state": "NO_SINGLE_FAILURE", "codes": [], "overflow": False},
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

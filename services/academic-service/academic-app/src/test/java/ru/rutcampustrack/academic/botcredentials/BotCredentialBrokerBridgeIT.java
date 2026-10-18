@@ -9,10 +9,63 @@ import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+
+import io.grpc.BindableService;
 import io.grpc.Server;
+import io.grpc.ServerInterceptor;
 import io.grpc.ServerInterceptors;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyServerBuilder;
+
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.SharedEntityManagerCreator;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.RabbitMQContainer;
+
+import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
+import ru.rutcampustrack.academic.grpc.AcademicReadService;
+import ru.rutcampustrack.academic.grpc.GrpcAuthInterceptor;
+import ru.rutcampustrack.academic.migration.OwnedAuthPrincipals;
+import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.auth.botcredentials.AuthBotCredentialServiceIdentityInterceptor;
+import ru.rutcampustrack.auth.botcredentials.AuthBotCredentialsGrpcService;
+import ru.rutcampustrack.auth.botcredentials.AuthBotOwnInitialCredentialsQuery;
+import ru.rutcampustrack.auth.event.AuthOutboxEntity;
+import ru.rutcampustrack.auth.event.AuthOutboxPublisherJob;
+import ru.rutcampustrack.auth.event.PasswordChangedOutbox;
+import ru.rutcampustrack.auth.event.RabbitOutboxEventSender;
+import ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthority;
+import ru.rutcampustrack.auth.session.model.AuthMethod;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.RoleGrant;
+import ru.rutcampustrack.auth.session.model.RoleStatus;
+import ru.rutcampustrack.auth.session.model.SecurityEvent;
+import ru.rutcampustrack.auth.session.model.SessionState;
+import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
+import ru.rutcampustrack.auth.session.port.SessionStatePort;
+import ru.rutcampustrack.shared.outbox.jpa.JpaOutboxStorage;
+import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
+
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -43,50 +96,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.net.ssl.KeyManagerFactory;
-import org.flywaydb.core.Flyway;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.SharedEntityManagerCreator;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.containers.RabbitMQContainer;
-import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
-import ru.rutcampustrack.academic.grpc.AcademicReadService;
-import ru.rutcampustrack.academic.grpc.GrpcAuthInterceptor;
-import ru.rutcampustrack.academic.repository.GroupRepository;
-import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.auth.event.AuthOutboxEntity;
-import ru.rutcampustrack.auth.event.AuthOutboxPublisherJob;
-import ru.rutcampustrack.auth.event.PasswordChangedOutbox;
-import ru.rutcampustrack.auth.event.RabbitOutboxEventSender;
-import ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthority;
-import ru.rutcampustrack.auth.session.model.AuthMethod;
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleGrant;
-import ru.rutcampustrack.auth.session.model.RoleStatus;
-import ru.rutcampustrack.auth.session.model.SecurityEvent;
-import ru.rutcampustrack.auth.session.model.SessionState;
-import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
-import ru.rutcampustrack.auth.session.port.SessionStatePort;
-import ru.rutcampustrack.shared.outbox.jpa.JpaOutboxStorage;
-import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 
 /**
  * Genuine Auth transaction/outbox/confirmed Rabbit → native consumer/Redis → Academic/TLS/provider.
@@ -116,6 +127,8 @@ class BotCredentialBrokerBridgeIT {
         Path root = repositoryRoot();
         String namespace = "np01_" + UUID.randomUUID().toString().replace("-", "");
         String serviceToken = token();
+        String authServiceToken = token();
+        assertThat(authServiceToken).isNotEqualTo(serviceToken);
         String sharedSecret = token();
         String controlToken = token();
         try (var postgres =
@@ -138,6 +151,7 @@ class BotCredentialBrokerBridgeIT {
             loopbackPorts(rabbit);
             loopbackPorts(redis);
             postgres.start();
+            ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(postgres);
             assertLoopbackPorts(postgres);
             rabbit.start();
             assertLoopbackPorts(rabbit);
@@ -184,7 +198,18 @@ class BotCredentialBrokerBridgeIT {
             broker.setPassword(rabbit.getAdminPassword());
             broker.setVirtualHost(namespace);
             broker.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.SIMPLE);
-            try (var context = new AnnotationConfigApplicationContext()) {
+            var authData = OwnedAuthPrincipals.source(postgres, "rct_auth_runtime");
+            var authJdbc = new JdbcTemplate(authData);
+            assertThat(authJdbc.queryForObject("SELECT current_user", String.class))
+                    .isEqualTo("rct_auth_runtime");
+            assertThat(
+                            authJdbc.queryForObject(
+                                    "SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE"
+                                        + " rolname=current_user",
+                                    Boolean.class))
+                    .isFalse();
+            try (var context = new AnnotationConfigApplicationContext();
+                    var authContext = new AnnotationConfigApplicationContext()) {
                 var emf = entities.getObject();
                 var txManager = new JpaTransactionManager(emf);
                 context.registerBean(
@@ -198,6 +223,16 @@ class BotCredentialBrokerBridgeIT {
                         BotCredentialMessageRepository.class,
                         BotCredentialsService.class);
                 context.refresh();
+                authContext.registerBean(JdbcTemplate.class, () -> authJdbc);
+                authContext.registerBean(
+                        "transactionManager",
+                        DataSourceTransactionManager.class,
+                        () -> new DataSourceTransactionManager(authData));
+                authContext.registerBean(
+                        AdminAccessJdbcAuthority.class,
+                        () -> new AdminAccessJdbcAuthority(authJdbc));
+                authContext.register(Transactions.class, AuthBotOwnInitialCredentialsQuery.class);
+                authContext.refresh();
                 var sharedEntities = SharedEntityManagerCreator.createSharedEntityManager(emf);
                 var factory = new JpaRepositoryFactory(sharedEntities);
                 factory.setBeanFactory(context.getBeanFactory());
@@ -231,13 +266,26 @@ class BotCredentialBrokerBridgeIT {
                 var publisher = new AuthOutboxPublisherJob(storage, sender, null);
                 var tx = new TransactionTemplate(txManager);
                 Path ca = certificate(temporary);
-                Server server = server(grpc, auth, serviceToken, temporary);
+                Server server =
+                        server(
+                                grpc,
+                                temporary,
+                                auth,
+                                new BotCredentialServiceIdentityInterceptor(serviceToken));
+                Server authServer =
+                        server(
+                                new AuthBotCredentialsGrpcService(
+                                        authContext.getBean(
+                                                AuthBotOwnInitialCredentialsQuery.class)),
+                                temporary,
+                                new AuthBotCredentialServiceIdentityInterceptor(authServiceToken));
                 var workers = Executors.newFixedThreadPool(2);
                 var supervisor = new AtomicReference<Process>();
                 List<OwnedWorker> ownedWorkers = new CopyOnWriteArrayList<>();
                 HttpServer control = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
                 try {
                     server.start();
+                    authServer.start();
                     control.setExecutor(workers);
                     control.createContext(
                             "/control/",
@@ -269,6 +317,9 @@ class BotCredentialBrokerBridgeIT {
                     env.put("PYTHONSAFEPATH", "1");
                     env.put("NP01_AUTHORITY", "localhost:" + server.getPort());
                     env.put("NP01_CA", ca.toString());
+                    env.put("NP01_AUTH_SERVICE_AUTHORITY", "localhost:" + authServer.getPort());
+                    env.put("NP01_AUTH_SERVICE_CA", ca.toString());
+                    env.put("NP01_AUTH_SERVICE_TOKEN", authServiceToken);
                     env.put("NP01_SERVICE_TOKEN", serviceToken);
                     env.put("NP01_SHARED_SECRET", sharedSecret);
                     env.put("NP01_CONTROL_TOKEN", controlToken);
@@ -326,7 +377,8 @@ class BotCredentialBrokerBridgeIT {
                                         + result.path("held_lease_redeliveries").asInt(-1));
                         assertThat(
                                         jdbc.queryForObject(
-                                                "SELECT count(*) FROM bot_credential_messages WHERE user_id=? AND cleanup_state='PENDING'",
+                                                "SELECT count(*) FROM bot_credential_messages WHERE"
+                                                        + " user_id=? AND cleanup_state='PENDING'",
                                                 Long.class,
                                                 own))
                                 .isZero();
@@ -337,7 +389,9 @@ class BotCredentialBrokerBridgeIT {
                     control.stop(0);
                     workers.shutdownNow();
                     assertThat(workers.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+                    authServer.shutdownNow();
                     server.shutdownNow();
+                    assertThat(authServer.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
                     assertThat(server.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
                 }
             } finally {
@@ -409,7 +463,9 @@ class BotCredentialBrokerBridgeIT {
                         tx.executeWithoutResult(
                                 status ->
                                         jdbc.update(
-                                                "UPDATE users SET password_hash=?,initial_password=?,password_changed=false WHERE id=?",
+                                                "UPDATE users SET"
+                                                    + " password_hash=?,initial_password=?,password_changed=false"
+                                                    + " WHERE id=?",
                                                 passwords.encode(token()),
                                                 token(),
                                                 own)); // Explicit isolated fixture setup, never a
@@ -473,37 +529,47 @@ class BotCredentialBrokerBridgeIT {
             Map<String, Object> facts =
                     new LinkedHashMap<>(
                             jdbc.queryForMap(
-                                    "SELECT credentials_version,telegram_binding_version,initial_password IS NULL AS initial_cleared FROM users WHERE id=?",
+                                    "SELECT"
+                                        + " credentials_version,telegram_binding_version,initial_password"
+                                        + " IS NULL AS initial_cleared FROM users WHERE id=?",
                                     own));
             if (action.equals("worker_started")) facts.put("worker_owned", true);
             if (action.equals("worker_reaped")) facts.put("worker_reaped", true);
             facts.put(
                     "pending",
                     jdbc.queryForObject(
-                            "SELECT count(*) FROM bot_credential_messages WHERE user_id=? AND cleanup_state='PENDING'",
+                            "SELECT count(*) FROM bot_credential_messages WHERE user_id=? AND"
+                                    + " cleanup_state='PENDING'",
                             Long.class,
                             own));
             facts.put(
                     "revoked_sessions",
                     jdbc.queryForObject(
-                            "SELECT count(*) FROM auth_sessions WHERE user_id=? AND revoked_at IS NOT NULL",
+                            "SELECT count(*) FROM auth_sessions WHERE user_id=? AND revoked_at IS"
+                                    + " NOT NULL",
                             Long.class,
                             own));
             facts.put(
                     "outbox_pending",
                     jdbc.queryForObject(
-                            "SELECT count(*) FROM auth_outbox WHERE event_type='password.changed' AND payload->'payload'->>'user_id'=? AND status='pending'",
+                            "SELECT count(*) FROM auth_outbox WHERE event_type='password.changed'"
+                                    + " AND payload->'payload'->>'user_id'=? AND status='pending'",
                             Long.class,
                             Long.toString(own)));
             facts.put(
                     "outbox_sent",
                     jdbc.queryForObject(
-                            "SELECT count(*) FROM auth_outbox WHERE event_type='password.changed' AND payload->'payload'->>'user_id'=? AND status='sent'",
+                            "SELECT count(*) FROM auth_outbox WHERE event_type='password.changed'"
+                                    + " AND payload->'payload'->>'user_id'=? AND status='sent'",
                             Long.class,
                             Long.toString(own)));
             List<String> events =
                     jdbc.query(
-                            "SELECT payload::text FROM auth_outbox WHERE event_type='password.changed' AND payload->'payload'->>'user_id'=? ORDER BY (payload->'payload'->>'credentials_version')::bigint DESC,created_at DESC,id DESC LIMIT 1",
+                            "SELECT payload::text FROM auth_outbox WHERE"
+                                    + " event_type='password.changed' AND"
+                                    + " payload->'payload'->>'user_id'=? ORDER BY"
+                                    + " (payload->'payload'->>'credentials_version')::bigint"
+                                    + " DESC,created_at DESC,id DESC LIMIT 1",
                             (row, index) -> row.getString(1),
                             Long.toString(own));
             if (!events.isEmpty()) {
@@ -525,7 +591,8 @@ class BotCredentialBrokerBridgeIT {
                 facts.put(
                         "registered",
                         jdbc.queryForObject(
-                                "SELECT EXISTS(SELECT 1 FROM bot_credential_messages WHERE private_chat_id=? AND message_id=?)",
+                                "SELECT EXISTS(SELECT 1 FROM bot_credential_messages WHERE"
+                                        + " private_chat_id=? AND message_id=?)",
                                 Boolean.class,
                                 chat,
                                 message));
@@ -549,7 +616,8 @@ class BotCredentialBrokerBridgeIT {
                         "SELECT password_hash FROM users WHERE id=?", String.class, user);
         List<RoleGrant> grants =
                 jdbc.query(
-                        "SELECT id,role,status,group_id,created_at,updated_at FROM user_role_grants WHERE user_id=? ORDER BY id",
+                        "SELECT id,role,status,group_id,created_at,updated_at FROM user_role_grants"
+                                + " WHERE user_id=? ORDER BY id",
                         (row, index) -> {
                             long group = row.getLong("group_id");
                             Long scope = row.wasNull() ? null : group;
@@ -629,7 +697,10 @@ class BotCredentialBrokerBridgeIT {
 
     private static String event(JdbcTemplate jdbc, long user) {
         return jdbc.queryForObject(
-                "SELECT payload::text FROM auth_outbox WHERE event_type='password.changed' AND payload->'payload'->>'user_id'=? ORDER BY (payload->'payload'->>'credentials_version')::bigint DESC,created_at DESC,id DESC LIMIT 1",
+                "SELECT payload::text FROM auth_outbox WHERE event_type='password.changed' AND"
+                        + " payload->'payload'->>'user_id'=? ORDER BY"
+                        + " (payload->'payload'->>'credentials_version')::bigint DESC,created_at"
+                        + " DESC,id DESC LIMIT 1",
                 String.class,
                 Long.toString(user));
     }
@@ -646,7 +717,9 @@ class BotCredentialBrokerBridgeIT {
             String initial = token();
             long user =
                     jdbc.queryForObject(
-                            "INSERT INTO users(login,password_hash,last_name,first_name,initial_password,group_id) VALUES(?,?,'NP01','Synthetic',?,?) RETURNING id",
+                            "INSERT INTO"
+                                + " users(login,password_hash,last_name,first_name,initial_password,group_id)"
+                                + " VALUES(?,?,'NP01','Synthetic',?,?) RETURNING id",
                             Long.class,
                             login,
                             passwords.encode(initial),
@@ -655,7 +728,9 @@ class BotCredentialBrokerBridgeIT {
             long chat = 850000000L + user;
             jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", chat, user);
             jdbc.update(
-                    "INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) VALUES(?,'student','active',?,?,?)",
+                    "INSERT INTO"
+                        + " user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
+                        + " VALUES(?,'student','active',?,?,?)",
                     user,
                     group,
                     OffsetDateTime.ofInstant(COMMAND_TIME, java.time.ZoneOffset.UTC),
@@ -698,7 +773,7 @@ class BotCredentialBrokerBridgeIT {
     }
 
     private static Server server(
-            AcademicGrpcServiceImpl grpc, GrpcAuthInterceptor auth, String token, Path directory)
+            BindableService grpc, Path directory, ServerInterceptor... interceptors)
             throws Exception {
         var keys = KeyStore.getInstance("PKCS12");
         try (var stream = Files.newInputStream(directory.resolve("server.p12"))) {
@@ -711,9 +786,7 @@ class BotCredentialBrokerBridgeIT {
                         GrpcSslContexts.configure(
                                         io.netty.handler.ssl.SslContextBuilder.forServer(manager))
                                 .build())
-                .addService(
-                        ServerInterceptors.intercept(
-                                grpc, auth, new BotCredentialServiceIdentityInterceptor(token)))
+                .addService(ServerInterceptors.intercept(grpc, interceptors))
                 .build();
     }
 

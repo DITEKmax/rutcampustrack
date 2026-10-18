@@ -2,21 +2,21 @@ package ru.rutcampustrack.academic.admin;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.*;
 import org.junit.jupiter.api.*;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.*;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.admin.*;
+
+import java.util.*;
+import java.util.concurrent.*;
 
 /** Real PostgreSQL authority, lifecycle and races in an owned ephemeral database. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -25,6 +25,7 @@ class AdminAccessAuthorityIT {
             new PostgreSQLContainer<>("postgres:16-alpine")
                     .withLabel("rct.package", "admin-permissions-20261008");
     private JdbcTemplate jdbc;
+    private JdbcTemplate runtimeJdbc;
     private TransactionTemplate tx;
     private AdminAccessJdbcAuthority authority;
     private UserRoleGrantWriter grants;
@@ -35,6 +36,7 @@ class AdminAccessAuthorityIT {
     @BeforeAll
     void start() {
         postgres.start();
+        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(postgres);
     }
 
     @AfterAll
@@ -47,41 +49,45 @@ class AdminAccessAuthorityIT {
         DriverManagerDataSource source =
                 new DriverManagerDataSource(
                         postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
-        String schema = "admin_" + UUID.randomUUID().toString().replace("-", "");
-        new JdbcTemplate(source).execute("CREATE SCHEMA " + schema);
-        source.setSchema(schema);
         jdbc = new JdbcTemplate(source);
-        tx = new TransactionTemplate(new DataSourceTransactionManager(source));
-        jdbc.execute(
-                "CREATE TABLE groups(id BIGSERIAL PRIMARY KEY,name TEXT,archived_at TIMESTAMPTZ)");
-        jdbc.execute(
-                "CREATE TABLE users(id BIGINT PRIMARY KEY,status TEXT NOT NULL DEFAULT 'active',roles_version BIGINT NOT NULL DEFAULT 1,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
-        jdbc.execute(
-                """
-          CREATE TABLE user_role_grants(id BIGSERIAL PRIMARY KEY,user_id BIGINT REFERENCES users(id),role TEXT,status TEXT,
-             group_id BIGINT,created_at TIMESTAMPTZ,updated_at TIMESTAMPTZ,UNIQUE(user_id,role))
-          """);
-        jdbc.execute(
-                """
-          CREATE TABLE auth_sessions(sid UUID PRIMARY KEY,user_id BIGINT REFERENCES users(id),active_role_grant_id BIGINT,
-            session_version BIGINT NOT NULL DEFAULT 1,revoked_at TIMESTAMPTZ,refresh_expires_at TIMESTAMPTZ DEFAULT NOW()+INTERVAL '1 day')
-          """);
-        for (long id = 1; id <= 6; id++) jdbc.update("INSERT INTO users(id) VALUES (?)", id);
+        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.cleanCommands(jdbc);
+        ru.rutcampustrack.shared.testcontainers.MigrationTestUtils.clean(source);
+        org.flywaydb.core.Flyway.configure()
+                .dataSource(source)
+                .locations("classpath:db/migration")
+                .target("50")
+                .load()
+                .migrate();
+        // V51 backfill remains real migration evidence, not a profile manufactured by a new
+        // command.
+        jdbc.execute("TRUNCATE public.groups RESTART IDENTITY CASCADE");
+        for (long id = 1; id <= 6; id++)
+            jdbc.update(
+                    "INSERT INTO"
+                        + " users(id,login,last_name,first_name,role,initial_password,password_hash)"
+                        + " VALUES (?,?,"
+                        + " 'Synthetic','Fixture',?::user_role,'synthetic-initial','synthetic-hash')",
+                    id,
+                    "admin_fixture_" + id,
+                    id <= 3 ? "admin" : "teacher");
         jdbc.update(
-                "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES (1,'admin','active',NOW(),NOW()),(2,'admin','active',NOW(),NOW()),(3,'admin','archived',NOW(),NOW()),(4,'teacher','active',NOW(),NOW())");
-        String v24 =
-                new ClassPathResource("db/migration/V24__auth_session_authority.sql")
-                        .getContentAsString(StandardCharsets.UTF_8);
-        jdbc.execute(
-                v24.substring(
-                        v24.indexOf("CREATE OR REPLACE FUNCTION bump_user_roles_version()"),
-                        v24.indexOf("CREATE TABLE auth_sessions")));
-        jdbc.execute(
-                new ClassPathResource("db/migration/V51__admin_access_permissions.sql")
-                        .getContentAsString(StandardCharsets.UTF_8));
-        authority = new AdminAccessJdbcAuthority(jdbc);
-        grants = new UserRoleGrantWriter(jdbc, event -> {});
+                "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES"
+                    + " (1,'admin','active',NOW(),NOW()),(2,'admin','active',NOW(),NOW()),(3,'admin','archived',NOW(),NOW()),(4,'teacher','active',NOW(),NOW())");
+        org.flywaydb.core.Flyway.configure()
+                .dataSource(source)
+                .locations("classpath:db/migration")
+                .load()
+                .migrate();
+        var runtime =
+                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.source(
+                        postgres, "rct_academic_runtime");
+        tx = new TransactionTemplate(new DataSourceTransactionManager(runtime));
+        runtimeJdbc = new JdbcTemplate(runtime);
+        authority = new AdminAccessJdbcAuthority(runtimeJdbc);
         context = new RequestContext();
+        grants =
+                new UserRoleGrantWriter(
+                        new AcademicAuthDataCommands(runtimeJdbc, context), event -> {});
         publisher =
                 org.mockito.Mockito.mock(
                         org.springframework.context.ApplicationEventPublisher.class);
@@ -91,12 +97,13 @@ class AdminAccessAuthorityIT {
 
     private AdminAccessService service(RequestContext ctx) {
         return new AdminAccessService(
-                jdbc,
+                runtimeJdbc,
                 authority,
-                new AcademicAdminAccess(authority, ctx, jdbc),
+                new AcademicAdminAccess(authority, ctx, runtimeJdbc),
                 ctx,
                 grants,
-                publisher);
+                publisher,
+                new AcademicAuthDataCommands(runtimeJdbc, ctx));
     }
 
     private void select(RequestContext ctx, long id) {
@@ -107,10 +114,13 @@ class AdminAccessAuthorityIT {
                         Long.class,
                         id);
         jdbc.update(
-                "INSERT INTO auth_sessions(sid,user_id,active_role_grant_id) VALUES (?,?,?)",
+                "INSERT INTO"
+                    + " auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,refresh_expires_at,created_at,last_seen_at,auth_method)"
+                    + " VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')",
                 session,
                 id,
-                grant);
+                grant,
+                UUID.randomUUID());
         ctx.setRole(UserRole.ADMIN);
         ctx.setUserId(id);
         ctx.setClaims(
@@ -172,7 +182,8 @@ class AdminAccessAuthorityIT {
         org.mockito.Mockito.verifyNoMoreInteractions(publisher);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=4 AND role='teacher' AND status='active'",
+                                "SELECT COUNT(*) FROM user_role_grants WHERE user_id=4 AND"
+                                        + " role='teacher' AND status='active'",
                                 Long.class))
                 .isOne();
         RequestContext actor = new RequestContext();
@@ -211,7 +222,8 @@ class AdminAccessAuthorityIT {
         assertThat(authority.profile(4).version()).isEqualTo(2);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT active_role_grant_id IS NULL FROM auth_sessions WHERE sid=?",
+                                "SELECT active_role_grant_id IS NULL FROM auth_sessions WHERE"
+                                        + " sid=?",
                                 Boolean.class,
                                 oldSession))
                 .isTrue();
@@ -223,7 +235,8 @@ class AdminAccessAuthorityIT {
                 .isTrue();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT status FROM user_role_grants WHERE user_id=4 AND role='teacher'",
+                                "SELECT status FROM user_role_grants WHERE user_id=4 AND"
+                                        + " role='teacher'",
                                 String.class))
                 .isEqualTo("active");
         put(4, "FULL", List.of(), 2);
@@ -236,7 +249,8 @@ class AdminAccessAuthorityIT {
                                         .containsKey("currentProfile"));
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT active_role_grant_id IS NULL FROM auth_sessions WHERE sid=?",
+                                "SELECT active_role_grant_id IS NULL FROM auth_sessions WHERE"
+                                        + " sid=?",
                                 Boolean.class,
                                 oldSession))
                 .isTrue();
@@ -278,7 +292,7 @@ class AdminAccessAuthorityIT {
                 org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
                                 new AdminAccessController(
                                         (AdminAccessService) factory.getProxy(),
-                                        new AcademicAdminAccess(authority, context, jdbc)))
+                                        new AcademicAdminAccess(authority, context, runtimeJdbc)))
                         .setControllerAdvice(
                                 new ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler())
                         .build();
@@ -361,7 +375,7 @@ class AdminAccessAuthorityIT {
                 org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
                                 new AdminAccessController(
                                         (AdminAccessService) factory.getProxy(),
-                                        new AcademicAdminAccess(authority, context, jdbc)))
+                                        new AcademicAdminAccess(authority, context, runtimeJdbc)))
                         .setControllerAdvice(
                                 new ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler())
                         .build();
@@ -446,7 +460,9 @@ SELECT jsonb_build_object(
                 new ru.rutcampustrack.academic.user.UserAssembler(
                         new ru.rutcampustrack.academic.repository.UserRoleGrantReader(jdbc));
         org.springframework.test.util.ReflectionTestUtils.setField(
-                assembler, "adminAccess", new AcademicAdminAccess(authority, context, jdbc));
+                assembler, "adminAccess", new AcademicAdminAccess(authority, context, runtimeJdbc));
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                assembler, "authCommands", new AcademicAuthDataCommands(runtimeJdbc, context));
         var user = new ru.rutcampustrack.academic.entity.User();
         org.springframework.test.util.ReflectionTestUtils.setField(user, "id", 5L);
         user.setRole(UserRole.STUDENT);
@@ -484,7 +500,8 @@ SELECT jsonb_build_object(
     @Test
     void groupPickerIncludesDraftAndExcludesArchivedWithoutRegistryMetadata() {
         jdbc.update(
-                "INSERT INTO groups(name,archived_at) VALUES ('Тест-2',NULL),('Тест-1',NULL),('Тест-старый',NOW()),('Другой',NULL)");
+                "INSERT INTO groups(name,archived_at) VALUES"
+                        + " ('Тест-2',NULL),('Тест-1',NULL),('Тест-старый',NOW()),('Другой',NULL)");
         var picker = new ru.rutcampustrack.academic.group.GroupOptionsController(jdbc);
         var page = picker.options("тест", 0, 1);
         assertThat(page.totalElements()).isEqualTo(2);
@@ -534,7 +551,7 @@ SELECT jsonb_build_object(
                                 org.springframework.context.ApplicationEventPublisher.class),
                         null);
         org.springframework.test.util.ReflectionTestUtils.setField(
-                headmen, "adminAccess", new AcademicAdminAccess(authority, context, jdbc));
+                headmen, "adminAccess", new AcademicAdminAccess(authority, context, runtimeJdbc));
         org.mockito.Mockito.when(userRepo.findActiveHeadmenByGrantGroupId(10L))
                 .thenReturn(List.of());
         assertThatThrownBy(
@@ -618,7 +635,9 @@ SELECT jsonb_build_object(
         var reader = new ru.rutcampustrack.academic.repository.UserRoleGrantReader(jdbc);
         var assembler = new ru.rutcampustrack.academic.user.UserAssembler(reader);
         org.springframework.test.util.ReflectionTestUtils.setField(
-                assembler, "adminAccess", new AcademicAdminAccess(authority, context, jdbc));
+                assembler, "adminAccess", new AcademicAdminAccess(authority, context, runtimeJdbc));
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                assembler, "authCommands", new AcademicAuthDataCommands(runtimeJdbc, context));
         var service =
                 users(
                         repository,
@@ -653,14 +672,16 @@ SELECT jsonb_build_object(
         assertThat(response.getBody().getContent().getInitialPassword()).isNull();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT status FROM user_role_grants WHERE user_id=1 AND role='teacher'",
+                                "SELECT status FROM user_role_grants WHERE user_id=1 AND"
+                                        + " role='teacher'",
                                 String.class))
                 .isEqualTo("suspended");
         assertThat(jdbc.queryForObject("SELECT roles_version FROM users WHERE id=1", Long.class))
                 .isGreaterThan(oldVersion);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT g.role FROM auth_sessions s JOIN user_role_grants g ON g.id=s.active_role_grant_id WHERE s.sid=?",
+                                "SELECT g.role FROM auth_sessions s JOIN user_role_grants g ON"
+                                        + " g.id=s.active_role_grant_id WHERE s.sid=?",
                                 String.class,
                                 sid))
                 .isEqualTo("admin");
@@ -693,7 +714,7 @@ SELECT jsonb_build_object(
                         headmen,
                         new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder());
         org.springframework.test.util.ReflectionTestUtils.setField(
-                result, "adminAccess", new AcademicAdminAccess(authority, context, jdbc));
+                result, "adminAccess", new AcademicAdminAccess(authority, context, runtimeJdbc));
         org.springframework.test.util.ReflectionTestUtils.setField(
                 result, "adminAccessService", service);
         return result;
@@ -736,7 +757,7 @@ SELECT jsonb_build_object(
                                 ru.rutcampustrack.academic.semester.SemesterArchiveCoordinator
                                         .class));
         org.springframework.test.util.ReflectionTestUtils.setField(
-                archive, "adminAccess", new AcademicAdminAccess(authority, context, jdbc));
+                archive, "adminAccess", new AcademicAdminAccess(authority, context, runtimeJdbc));
         assertThatThrownBy(() -> archive.status(10))
                 .isInstanceOf(AdminAccessException.class)
                 .hasMessageContaining("ADMIN_PERMISSION_DENIED");
@@ -758,7 +779,8 @@ SELECT jsonb_build_object(
                     .containsExactlyInAnyOrder(true, false);
             assertThat(
                             jdbc.queryForObject(
-                                    "SELECT COUNT(*) FROM admin_access_profiles WHERE assigned AND mode='FULL'",
+                                    "SELECT COUNT(*) FROM admin_access_profiles WHERE assigned AND"
+                                            + " mode='FULL'",
                                     Long.class))
                     .isOne();
         } finally {
@@ -842,6 +864,6 @@ SELECT jsonb_build_object(
                         () ->
                                 tx.executeWithoutResult(
                                         status -> grants.upsertRole(3L, "admin", "active", null)))
-                .isInstanceOf(org.springframework.dao.DataAccessException.class);
+                .isInstanceOf(AdminAccessException.class);
     }
 }

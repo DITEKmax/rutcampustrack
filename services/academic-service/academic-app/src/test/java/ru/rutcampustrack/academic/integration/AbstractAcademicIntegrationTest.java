@@ -49,6 +49,7 @@ public abstract class AbstractAcademicIntegrationTest {
                         .withPassword("rct_dev_pass")
                         .withReuse(false);
         POSTGRES.start();
+        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
     }
 
     @DynamicPropertySource
@@ -60,7 +61,7 @@ public abstract class AbstractAcademicIntegrationTest {
                 "spring.autoconfigure.exclude",
                 () ->
                         "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,"
-                                + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-                                + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
     }
 }

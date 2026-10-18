@@ -91,6 +91,10 @@ const datasetHttpOperations = {
     path: /^\/api\/academic\/subjects\/[1-9][0-9]{0,18}$/,
   },
   DATASET_LESSON_CREATE_HTTP: { method: 'POST', path: /^\/api\/schedule\/one-off-lessons$/ },
+  DATASET_LESSON_CANCEL_HTTP: {
+    method: 'PATCH',
+    path: /^\/api\/schedule\/lessons\/[1-9][0-9]{0,18}\/cancel$/,
+  },
   DATASET_LESSON_TRANSFER_HTTP: {
     method: 'POST',
     path: /^\/api\/schedule\/lessons\/[1-9][0-9]{0,18}\/transfer$/,
@@ -119,6 +123,47 @@ const cleanupHttpStatuses = [
 ] as const;
 type CleanupHttpStatus = (typeof cleanupHttpStatuses)[number] | 'OTHER';
 
+const lifecycleCleanupStages = {
+  CLEANUP_TRANSFER_CANCEL: 'LIFECYCLE_CLEANUP',
+  CLEANUP_TRANSFER_CONTEXT: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_RESTART: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_RECOVER: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_PUBLISH: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_APPLY: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_ARCHIVE: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_RESTORE: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_ACTIVATE: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_VERIFY: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_DLQ: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_SETTLE: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_CLOCK: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_DISPOSE: 'LIFECYCLE_CLEANUP',
+  CLEANUP_SEMESTER_WRITE: 'LIFECYCLE_CLEANUP',
+} as const;
+export type LifecycleCleanupCause = keyof typeof lifecycleCleanupStages;
+const transportCodes = [
+  'TIMEOUT',
+  'ECONNRESET',
+  'ECONNREFUSED',
+  'ETIMEDOUT',
+  'EPIPE',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'ABORTED',
+  'TARGET_CLOSED',
+  'UNKNOWN',
+] as const;
+type TransportCode = (typeof transportCodes)[number];
+type LifecycleTransportCause =
+  | `SEMESTER_PREVIEW_${TransportCode}`
+  | `CLEANUP_TRANSPORT_${TransportCode}`;
+const lifecycleTransportStages = Object.fromEntries(
+  transportCodes.flatMap((code) => [
+    [`SEMESTER_PREVIEW_${code}`, 'SEMESTER_PREVIEW_TRANSPORT'],
+    [`CLEANUP_TRANSPORT_${code}`, 'LIFECYCLE_CLEANUP_TRANSPORT'],
+  ]),
+) as Record<LifecycleTransportCause, 'SEMESTER_PREVIEW_TRANSPORT' | 'LIFECYCLE_CLEANUP_TRANSPORT'>;
+
 const failureStages = {
   UNKNOWN: 'UNKNOWN',
   ARTIFACT_REPORTER_GUARD: 'ARTIFACT_PRIVACY',
@@ -137,6 +182,8 @@ const failureStages = {
   INVALID_TIME_VALUE: 'UNKNOWN',
   ...datasetHttpStages,
   ...headmanCleanupStages,
+  ...lifecycleCleanupStages,
+  ...lifecycleTransportStages,
 } as const;
 type FailureCause = keyof typeof failureStages;
 const reportedClassHints = {
@@ -455,6 +502,27 @@ export function safeFailureDiagnostics(
         : reported && match[2] === '0'
           ? { stage: 'UNKNOWN', cause: match[1] as ReportedFailureHint, httpStatus: 0 }
           : failureDiagnostic();
+      const lifecycleCleanup = Object.prototype.hasOwnProperty.call(
+        lifecycleCleanupStages,
+        diagnostic.cause,
+      );
+      const lifecycleTransport = Object.prototype.hasOwnProperty.call(
+        lifecycleTransportStages,
+        diagnostic.cause,
+      );
+      if (lifecycleCleanup || lifecycleTransport) {
+        if (match?.[0] !== description) continue;
+        if (lifecycleTransport && diagnostic.httpStatus !== 0) continue;
+        if (
+          lifecycleCleanup &&
+          !cleanupHttpStatuses.some((status) => status === diagnostic.httpStatus) &&
+          diagnostic.httpStatus !== 'OTHER'
+        )
+          continue;
+        // The first failure in each channel wins, including across later cleanup errors.
+        if (!result.some((item) => item.stage === diagnostic.stage)) result.push(diagnostic);
+        continue;
+      }
       const cleanupCause = Object.prototype.hasOwnProperty.call(
         headmanCleanupStages,
         diagnostic.cause,
@@ -509,6 +577,63 @@ export function safeFailureDiagnostics(
   }
   const diagnostics = [...result, ...reportedHints].slice(0, 8);
   return diagnostics.length || !hasErrors ? diagnostics : [failureDiagnostic()];
+}
+
+/** Read only bounded own data: protocol serialization may omit the native code entirely. */
+export function closedLifecycleTransportCode(error: unknown): TransportCode {
+  let current = error;
+  for (let depth = 0; depth < 3; depth++) {
+    const code = ownData(current, 'code');
+    if (transportCodes.some((value) => value !== 'UNKNOWN' && value === code))
+      return code as TransportCode;
+    if (code === 'ABORT_ERR') return 'ABORTED';
+    const name = ownData(current, 'name');
+    if (name === 'TimeoutError') return 'TIMEOUT';
+    if (name === 'AbortError') return 'ABORTED';
+    if (name === 'TargetClosedError') return 'TARGET_CLOSED';
+    current = ownData(current, 'cause');
+  }
+  return 'UNKNOWN';
+}
+function retainLifecycleDiagnostic(
+  annotations: TestResult['annotations'],
+  cause: FailureCause,
+  status: SafeFailureDiagnostic['httpStatus'] = 0,
+): void {
+  const previous = safeFailureDiagnostics(annotations);
+  if (previous.some((item) => item.stage === failureStages[cause])) return;
+  if (previous.filter((item) => !item.cause.startsWith('REPORTED_')).length >= 8) return;
+  if (previous.length >= 8 && !discardReportedFailureHint(annotations)) return;
+  if (annotations.length >= 32) return;
+  annotations.push({ type: safeFailureAnnotation, description: `${cause}:${status}` });
+}
+/** Retain the original preview transport, before the caller rethrows the identical error. */
+export function retainSemesterPreviewTransport(
+  annotations: TestResult['annotations'],
+  error: unknown,
+): void {
+  retainLifecycleDiagnostic(annotations, `SEMESTER_PREVIEW_${closedLifecycleTransportCode(error)}`);
+}
+/** First rejected cleanup substage/status, separate from the primary request failure. */
+export function retainLifecycleCleanupFailure(
+  annotations: TestResult['annotations'],
+  cause: LifecycleCleanupCause,
+  error: unknown,
+  observedStatus?: unknown,
+): void {
+  if (!Object.prototype.hasOwnProperty.call(lifecycleCleanupStages, cause)) return;
+  if (safeFailureDiagnostics(annotations).some((item) => item.stage === 'LIFECYCLE_CLEANUP'))
+    return;
+  const status =
+    observedStatus === undefined ? classifySafeFailure(error).httpStatus : observedStatus;
+  const closedStatus = cleanupHttpStatuses.some((value) => value === status)
+    ? (status as CleanupHttpStatus)
+    : 'OTHER';
+  retainLifecycleDiagnostic(annotations, cause, closedStatus);
+  retainLifecycleDiagnostic(
+    annotations,
+    `CLEANUP_TRANSPORT_${closedLifecycleTransportCode(error)}`,
+  );
 }
 
 /** Preserve the first propagated body HTTP marker before a later cleanup error can replace it. */

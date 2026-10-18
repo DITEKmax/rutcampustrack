@@ -176,6 +176,11 @@ async def main() -> None:
         config.academic_grpc_tls_enabled,
         config.academic_grpc_tls_ca_path,
         config.bot_to_academic_service_token,
+        auth_host=config.auth_grpc_host,
+        auth_port=config.auth_grpc_port,
+        auth_tls_enabled=config.auth_grpc_tls_enabled,
+        auth_tls_ca_path=config.auth_grpc_tls_ca_path,
+        auth_service_token=config.bot_to_auth_service_token,
     )
     credential_cards = BotCredentialCards(bot=bot, client=bot_credentials_client)
     storage = MemoryStorage()

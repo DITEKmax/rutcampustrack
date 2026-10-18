@@ -140,16 +140,17 @@ public class AdminAttendanceExportService {
         var claims = context.getClaims();
         var rows =
                 jdbc.query(
-                        "SELECT identity->'report'->'adminGroupAttendance' AS selector FROM"
-                                + " auth_export_jobs WHERE job_id=? AND lease_id=? AND user_id=? AND"
-                                + " session_id=? AND state='preparing' AND lease_until>NOW() AND"
-                                + " expires_at>NOW() AND"
-                                + " identity->'report'->>'kind'='ADMIN_GROUP_ATTENDANCE'",
+                        "SELECT selector_json AS selector FROM"
+                                + " auth_api.read_export_selector(?,?,?,?,?,?,?,?)",
                         (rs, n) -> rs.getString("selector"),
+                        claims.userId(),
+                        claims.rolesVersion(),
+                        claims.sessionId(),
+                        claims.sessionVersion(),
                         jobId,
                         leaseId,
-                        claims.userId(),
-                        claims.sessionId());
+                        "ADMIN_GROUP_ATTENDANCE",
+                        "adminGroupAttendance");
         try {
             if (rows.size() != 1
                     || !mapper.readTree(rows.getFirst()).equals(mapper.valueToTree(query)))

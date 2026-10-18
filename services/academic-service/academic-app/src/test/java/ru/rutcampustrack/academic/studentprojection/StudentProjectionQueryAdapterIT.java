@@ -2,19 +2,6 @@ package ru.rutcampustrack.academic.studentprojection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.sql.Timestamp;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,7 +17,23 @@ import org.springframework.transaction.annotation.AnnotationTransactionAttribute
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
+
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.sql.DataSource;
 
 /**
  * PostgreSQL evidence for the projection read adapter.
@@ -59,8 +62,14 @@ class StudentProjectionQueryAdapterIT {
     @BeforeAll
     void startContainer() {
         POSTGRES.start();
+        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
         adminDataSource = dataSourceForSchema(null);
         adminJdbc = new JdbcTemplate(adminDataSource);
+        Flyway.configure()
+                .dataSource(adminDataSource)
+                .locations("classpath:db/migration")
+                .load()
+                .migrate();
     }
 
     @AfterAll
@@ -72,7 +81,6 @@ class StudentProjectionQueryAdapterIT {
     void findAssignmentsBindsSemesterGroupsAndBoundsInDeclaredOrder() {
         String schema = newSchema();
         JdbcTemplate jdbc = jdbcFor(schema);
-        flyway(schema).migrate();
 
         long groupA = insertGroup(jdbc, "A");
         long groupB = insertGroup(jdbc, "B");
@@ -83,7 +91,11 @@ class StudentProjectionQueryAdapterIT {
         long assignmentA = insertAssignment(jdbc, teacherId, subjectA, groupA, semesterId);
         long assignmentB = insertAssignment(jdbc, teacherId, subjectB, groupB, semesterId);
 
-        JdbcStudentProjectionQueryAdapter adapter = new JdbcStudentProjectionQueryAdapter(jdbc);
+        JdbcStudentProjectionQueryAdapter adapter =
+                new JdbcStudentProjectionQueryAdapter(
+                        new JdbcTemplate(
+                                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.source(
+                                        POSTGRES, "rct_academic_runtime")));
         List<StudentProjectionQuery.AssignmentSnapshot> assignments =
                 adapter.findAssignments(
                         semesterId,
@@ -103,7 +115,6 @@ class StudentProjectionQueryAdapterIT {
     void authorityAndRosterUseCurrentStudentGrantWithoutLegacyStatusFallback() {
         String schema = newSchema();
         JdbcTemplate jdbc = jdbcFor(schema);
-        flyway(schema).migrate();
 
         long groupId = insertGroup(jdbc, "A");
         long semesterId = insertSemester(jdbc, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30));
@@ -111,9 +122,9 @@ class StudentProjectionQueryAdapterIT {
                 insertUser(jdbc, "projection_archived_legacy", "student", "archived", groupId);
         jdbc.update(
                 """
-                INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at)
-                VALUES (?, 'student', 'active', ?, NOW(), NOW())
-                """,
+INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at)
+VALUES (?, 'student', 'active', ?, NOW(), NOW())
+""",
                 studentId,
                 groupId);
         jdbc.update(
@@ -124,7 +135,11 @@ class StudentProjectionQueryAdapterIT {
                 studentId,
                 groupId);
 
-        JdbcStudentProjectionQueryAdapter adapter = new JdbcStudentProjectionQueryAdapter(jdbc);
+        JdbcStudentProjectionQueryAdapter adapter =
+                new JdbcStudentProjectionQueryAdapter(
+                        new JdbcTemplate(
+                                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.source(
+                                        POSTGRES, "rct_academic_runtime")));
         StudentProjectionQuery.AuthoritySnapshot authority =
                 adapter.findAuthority(studentId).orElseThrow();
         List<Long> roster =
@@ -143,9 +158,10 @@ class StudentProjectionQueryAdapterIT {
     void resolverUsesOneRepeatableReadSnapshotAcrossCommittedAuthorityAndHistoryChange()
             throws Exception {
         String schema = newSchema();
-        DataSource resolverDataSource = dataSourceForSchema(schema);
-        JdbcTemplate jdbc = new JdbcTemplate(resolverDataSource);
-        flyway(schema).migrate();
+        DataSource resolverDataSource =
+                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.source(
+                        POSTGRES, "rct_academic_runtime");
+        JdbcTemplate jdbc = jdbcFor(schema);
 
         long groupA = insertGroup(jdbc, "Snapshot A");
         long groupB = insertGroup(jdbc, "Snapshot B");
@@ -154,9 +170,9 @@ class StudentProjectionQueryAdapterIT {
         long semesterId = insertSemester(jdbc, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30));
         jdbc.update(
                 """
-                INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at)
-                VALUES (?, 'student', 'active', ?, NOW(), NOW())
-                """,
+INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at)
+VALUES (?, 'student', 'active', ?, NOW(), NOW())
+""",
                 studentId,
                 groupA);
         long rolesVersion =
@@ -176,7 +192,8 @@ class StudentProjectionQueryAdapterIT {
                         studentId);
         insertSession(jdbc, studentId, studentGrantId, SESSION_ID);
 
-        JdbcStudentProjectionQueryAdapter adapter = new JdbcStudentProjectionQueryAdapter(jdbc);
+        JdbcStudentProjectionQueryAdapter adapter =
+                new JdbcStudentProjectionQueryAdapter(new JdbcTemplate(resolverDataSource));
         PausingProjectionQuery query =
                 new PausingProjectionQuery(adapter, new CountDownLatch(1), new CountDownLatch(1));
         StudentProjectionScopeService resolver =
@@ -229,24 +246,24 @@ class StudentProjectionQueryAdapterIT {
                 ignored -> {
                     writerJdbc.update(
                             """
-                    UPDATE user_role_grants
-                    SET group_id = ?, updated_at = NOW()
-                    WHERE user_id = ? AND role = 'student'
-                    """,
+                            UPDATE user_role_grants
+                            SET group_id = ?, updated_at = NOW()
+                            WHERE user_id = ? AND role = 'student'
+                            """,
                             groupB,
                             studentId);
                     writerJdbc.update(
                             """
-                    UPDATE student_group_history
-                    SET left_at = DATE '2026-09-10'
-                    WHERE user_id = ? AND left_at IS NULL
-                    """,
+                            UPDATE student_group_history
+                            SET left_at = DATE '2026-09-10'
+                            WHERE user_id = ? AND left_at IS NULL
+                            """,
                             studentId);
                     writerJdbc.update(
                             """
-                    INSERT INTO student_group_history (user_id, group_id, joined_at, left_at)
-                    VALUES (?, ?, DATE '2026-09-10', NULL)
-                    """,
+INSERT INTO student_group_history (user_id, group_id, joined_at, left_at)
+VALUES (?, ?, DATE '2026-09-10', NULL)
+""",
                             studentId,
                             groupB);
                 });
@@ -261,9 +278,9 @@ class StudentProjectionQueryAdapterIT {
     }
 
     private String newSchema() {
-        String schema = "rct_projection_" + SCHEMA_SEQUENCE.incrementAndGet();
-        adminJdbc.execute("CREATE SCHEMA \"" + schema + "\"");
-        return schema;
+        // This non-reused container owns the current public schema, including V62 commands.
+        adminJdbc.execute("TRUNCATE public.groups,public.semesters RESTART IDENTITY CASCADE");
+        return "public";
     }
 
     private JdbcTemplate jdbcFor(String schema) {
@@ -282,16 +299,6 @@ class StudentProjectionQueryAdapterIT {
         return dataSource;
     }
 
-    private Flyway flyway(String schema) {
-        return Flyway.configure()
-                .dataSource(dataSourceForSchema(schema))
-                .locations("classpath:db/migration")
-                .schemas(schema)
-                .defaultSchema(schema)
-                .cleanDisabled(true)
-                .load();
-    }
-
     private static long insertGroup(JdbcTemplate jdbc, String suffix) {
         return jdbc.queryForObject(
                 "INSERT INTO groups (name) VALUES (?) RETURNING id",
@@ -303,13 +310,13 @@ class StudentProjectionQueryAdapterIT {
             JdbcTemplate jdbc, String login, String role, String status, Long groupId) {
         return jdbc.queryForObject(
                 """
-                INSERT INTO users (
-                    login, password_hash, last_name, first_name, role, status,
-                    is_headman, group_id, password_changed, created_at, updated_at)
-                VALUES (?, 'hash', 'Projection', 'Fixture', CAST(? AS user_role), CAST(? AS account_status),
-                        FALSE, ?, FALSE, NOW(), NOW())
-                RETURNING id
-                """,
+INSERT INTO users (
+    login, password_hash, last_name, first_name, role, status,
+    is_headman, group_id, password_changed, created_at, updated_at)
+VALUES (?, 'hash', 'Projection', 'Fixture', CAST(? AS user_role), CAST(? AS account_status),
+        FALSE, ?, FALSE, NOW(), NOW())
+RETURNING id
+""",
                 Long.class,
                 login,
                 role,

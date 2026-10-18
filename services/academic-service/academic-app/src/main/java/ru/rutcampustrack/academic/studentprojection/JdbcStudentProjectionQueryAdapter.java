@@ -1,5 +1,8 @@
 package ru.rutcampustrack.academic.studentprojection;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -12,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
 
 /**
  * PostgreSQL read adapter for the signed student projection.
@@ -50,8 +51,7 @@ public class JdbcStudentProjectionQueryAdapter implements StudentProjectionQuery
             """
             SELECT sid, user_id, active_role_grant_id, session_version,
                    refresh_expires_at, revoked_at
-            FROM auth_sessions
-            WHERE user_id = ? AND sid = ?
+            FROM auth_api.projection_session(?, ?)
             """;
 
     private static final String HISTORY_SQL =
@@ -69,7 +69,8 @@ public class JdbcStudentProjectionQueryAdapter implements StudentProjectionQuery
                    valid_from, valid_until_exclusive
             FROM assignments
             WHERE semester_id = ?
-              AND group_id IN (""";
+              AND group_id IN (\
+            """;
 
     private static final String ASSIGNMENT_SQL_SUFFIX =
             """
@@ -100,7 +101,8 @@ public class JdbcStudentProjectionQueryAdapter implements StudentProjectionQuery
             """
             SELECT id, name, type::text AS subject_type, group_id
             FROM subjects
-            WHERE id IN (""";
+            WHERE id IN (\
+            """;
 
     private static final String SUBJECT_SQL_SUFFIX = ") ORDER BY id";
 

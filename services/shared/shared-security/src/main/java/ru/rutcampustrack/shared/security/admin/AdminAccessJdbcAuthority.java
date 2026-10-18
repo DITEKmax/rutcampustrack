@@ -1,11 +1,13 @@
 package ru.rutcampustrack.shared.security.admin;
 
-import java.sql.Array;
-import java.util.*;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.sql.Array;
+import java.util.*;
 
 /** Fresh authority shared only by the two services using Academic's database. No cache. */
 public class AdminAccessJdbcAuthority {
@@ -41,11 +43,11 @@ public class AdminAccessJdbcAuthority {
             List<AdminAccessProfile> rows =
                     jdbc.query(
                             """
-                SELECT p.version,p.mode,p.permissions,
-                  (u.status<>'archived' AND g.status='active' AND p.assigned) assigned
-                FROM users u LEFT JOIN user_role_grants g ON g.user_id=u.id AND g.role='admin'
-                LEFT JOIN admin_access_profiles p ON p.user_id=u.id WHERE u.id=?
-                """,
+SELECT p.version,p.mode,p.permissions,
+  (u.status<>'archived' AND g.status='active' AND p.assigned) assigned
+FROM users u LEFT JOIN user_role_grants g ON g.user_id=u.id AND g.role='admin'
+LEFT JOIN admin_access_profiles p ON p.user_id=u.id WHERE u.id=?
+""",
                             (rs, n) -> {
                                 long version = rs.getLong("version");
                                 boolean assigned = rs.getBoolean("assigned");
@@ -94,13 +96,7 @@ public class AdminAccessJdbcAuthority {
         try {
             Boolean live =
                     jdbc.queryForObject(
-                            """
-                SELECT EXISTS(SELECT 1 FROM users u JOIN auth_sessions s ON s.user_id=u.id
-                  JOIN user_role_grants g ON g.id=s.active_role_grant_id AND g.user_id=u.id
-                  WHERE u.id=? AND u.status<>'archived' AND u.roles_version=? AND s.sid=?
-                    AND s.session_version=? AND s.revoked_at IS NULL AND s.refresh_expires_at>NOW()
-                    AND g.role='admin' AND g.status='active')
-                """,
+                            "SELECT auth_api.current_admin(?, ?, ?, ?)",
                             Boolean.class,
                             claims.userId(),
                             claims.rolesVersion(),
@@ -130,8 +126,8 @@ public class AdminAccessJdbcAuthority {
             return Boolean.TRUE.equals(
                     jdbc.queryForObject(
                             """
-            SELECT EXISTS(SELECT 1 FROM user_role_grants WHERE user_id=? AND role='admin' AND status='active')
-            """,
+SELECT EXISTS(SELECT 1 FROM user_role_grants WHERE user_id=? AND role='admin' AND status='active')
+""",
                             Boolean.class,
                             target));
         } catch (DataAccessException failure) {
@@ -156,10 +152,10 @@ public class AdminAccessJdbcAuthority {
         if (profile.full()
                 && jdbc.queryForObject(
                                 """
-            SELECT COUNT(*) FROM admin_access_profiles p JOIN users u ON u.id=p.user_id
-              JOIN user_role_grants g ON g.user_id=p.user_id AND g.role='admin'
-            WHERE p.assigned AND p.mode='FULL' AND g.status='active' AND u.status<>'archived'
-            """,
+SELECT COUNT(*) FROM admin_access_profiles p JOIN users u ON u.id=p.user_id
+  JOIN user_role_grants g ON g.user_id=p.user_id AND g.role='admin'
+WHERE p.assigned AND p.mode='FULL' AND g.status='active' AND u.status<>'archived'
+""",
                                 Long.class)
                         <= 1L)
             throw new AdminAccessException(HttpStatus.CONFLICT, "LAST_FULL_ADMIN");

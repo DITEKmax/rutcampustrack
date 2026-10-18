@@ -1,8 +1,7 @@
 package ru.rutcampustrack.academic.repository;
 
 import jakarta.persistence.LockModeType;
-import java.util.List;
-import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,9 +9,23 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 import ru.rutcampustrack.academic.entity.User;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+
+    String SAFE_COLUMNS =
+            "id, login, last_name, first_name, middle_name, email, phone, telegram_id,"
+                    + " telegram_username, employee_number, role, status, is_headman, group_id,"
+                    + " password_changed, avatar_id, created_at, updated_at";
+    String SAFE_ALIASED_COLUMNS =
+            "u.id, u.login, u.last_name, u.first_name, u.middle_name, u.email, u.phone,"
+                    + " u.telegram_id, u.telegram_username, u.employee_number, u.role, u.status,"
+                    + " u.is_headman, u.group_id, u.password_changed, u.avatar_id, u.created_at,"
+                    + " u.updated_at";
 
     String ADMIN_ARCHIVE_FILTERS =
             """
@@ -32,7 +45,11 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     /** Explicit ADMIN archive filters only; ordinary lookups retain User's SQL restriction. */
     @Query(
-            value = "SELECT u.* FROM users u WHERE " + ADMIN_ARCHIVE_FILTERS,
+            value =
+                    "SELECT "
+                            + SAFE_ALIASED_COLUMNS
+                            + " FROM users u WHERE "
+                            + ADMIN_ARCHIVE_FILTERS,
             countQuery = "SELECT count(*) FROM users u WHERE " + ADMIN_ARCHIVE_FILTERS,
             nativeQuery = true)
     Page<User> findAdminRegistryIncludingArchived(
@@ -76,19 +93,24 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     @Query(
             value =
-                    "SELECT * FROM users WHERE group_id = :groupId AND status <> 'archived' "
-                            + "ORDER BY last_name COLLATE \"ru_icu\", first_name COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
+                    "SELECT "
+                            + SAFE_COLUMNS
+                            + " FROM users WHERE group_id = :groupId AND status <> 'archived' ORDER"
+                            + " BY last_name COLLATE \"ru_icu\", first_name COLLATE \"ru_icu\","
+                            + " middle_name COLLATE \"ru_icu\"",
             nativeQuery = true)
     List<User> findByGroupId(@Param("groupId") Long groupId);
 
     /** Student roster source for mixed-role accounts: authority comes from the grant. */
     @Query(
             value =
-                    "SELECT u.* FROM users u "
-                            + "JOIN user_role_grants g ON g.user_id = u.id "
-                            + "WHERE g.role = 'student' AND g.status = 'active' AND g.group_id = :groupId "
-                            + "AND u.status <> 'archived' "
-                            + "ORDER BY u.last_name COLLATE \"ru_icu\", u.first_name COLLATE \"ru_icu\", u.middle_name COLLATE \"ru_icu\"",
+                    "SELECT "
+                            + SAFE_ALIASED_COLUMNS
+                            + " FROM users u JOIN user_role_grants g ON g.user_id = u.id WHERE"
+                            + " g.role = 'student' AND g.status = 'active' AND g.group_id ="
+                            + " :groupId AND u.status <> 'archived' ORDER BY u.last_name COLLATE"
+                            + " \"ru_icu\", u.first_name COLLATE \"ru_icu\", u.middle_name COLLATE"
+                            + " \"ru_icu\"",
             nativeQuery = true)
     List<User> findActiveStudentsByGrantGroupId(@Param("groupId") Long groupId);
 
@@ -99,48 +121,53 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      */
     @Query(
             value =
-                    "SELECT u.* FROM users u "
-                            + "JOIN user_role_grants g ON g.user_id = u.id "
-                            + "WHERE g.role = 'headman' AND g.status = 'active' AND g.group_id = :groupId "
-                            + "AND u.status <> 'archived' ORDER BY u.id",
+                    "SELECT "
+                            + SAFE_ALIASED_COLUMNS
+                            + " FROM users u JOIN user_role_grants g ON g.user_id = u.id WHERE"
+                            + " g.role = 'headman' AND g.status = 'active' AND g.group_id ="
+                            + " :groupId AND u.status <> 'archived' ORDER BY u.id",
             nativeQuery = true)
     List<User> findActiveHeadmenByGrantGroupId(@Param("groupId") Long groupId);
 
     /** ID-only variant used while rechecking the group CAS after row locks. */
     @Query(
             value =
-                    "SELECT g.user_id FROM user_role_grants g "
-                            + "JOIN users u ON u.id = g.user_id "
-                            + "WHERE g.role = 'headman' AND g.status = 'active' AND g.group_id = :groupId "
-                            + "AND u.status <> 'archived' ORDER BY g.user_id",
+                    "SELECT g.user_id FROM user_role_grants g JOIN users u ON u.id = g.user_id"
+                            + " WHERE g.role = 'headman' AND g.status = 'active' AND g.group_id ="
+                            + " :groupId AND u.status <> 'archived' ORDER BY g.user_id",
             nativeQuery = true)
     List<Long> findActiveHeadmanIdsByGrantGroupId(@Param("groupId") Long groupId);
 
     @Query(
             value =
-                    "SELECT u.* FROM users u "
-                            + "JOIN user_role_grants g ON g.user_id = u.id "
-                            + "WHERE g.role = 'student' AND g.status = 'active' AND g.group_id = :groupId "
-                            + "AND u.status <> 'archived' "
-                            + "ORDER BY u.last_name COLLATE \"ru_icu\", u.first_name COLLATE \"ru_icu\", u.middle_name COLLATE \"ru_icu\"",
+                    "SELECT "
+                            + SAFE_ALIASED_COLUMNS
+                            + " FROM users u JOIN user_role_grants g ON g.user_id = u.id WHERE"
+                            + " g.role = 'student' AND g.status = 'active' AND g.group_id ="
+                            + " :groupId AND u.status <> 'archived' ORDER BY u.last_name COLLATE"
+                            + " \"ru_icu\", u.first_name COLLATE \"ru_icu\", u.middle_name COLLATE"
+                            + " \"ru_icu\"",
             countQuery =
-                    "SELECT COUNT(*) FROM users u JOIN user_role_grants g ON g.user_id = u.id "
-                            + "WHERE g.role = 'student' AND g.status = 'active' AND g.group_id = :groupId "
-                            + "AND u.status <> 'archived'",
+                    "SELECT COUNT(*) FROM users u JOIN user_role_grants g ON g.user_id = u.id WHERE"
+                        + " g.role = 'student' AND g.status = 'active' AND g.group_id = :groupId"
+                        + " AND u.status <> 'archived'",
             nativeQuery = true)
     Page<User> findActiveStudentsByGrantGroupId(@Param("groupId") Long groupId, Pageable pageable);
 
     @Query(
             value =
-                    "SELECT g.group_id FROM user_role_grants g "
-                            + "WHERE g.user_id = :userId AND g.role = 'student' AND g.status = 'active'",
+                    "SELECT g.group_id FROM user_role_grants g WHERE g.user_id = :userId AND g.role"
+                            + " = 'student' AND g.status = 'active'",
             nativeQuery = true)
     Optional<Long> findActiveStudentGrantGroupId(@Param("userId") Long userId);
 
     @Query(
             value =
-                    "SELECT * FROM users WHERE group_id = :groupId AND status <> 'archived' "
-                            + "ORDER BY last_name COLLATE \"ru_icu\", first_name COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
+                    "SELECT "
+                            + SAFE_COLUMNS
+                            + " FROM users WHERE group_id = :groupId AND status <> 'archived' ORDER"
+                            + " BY last_name COLLATE \"ru_icu\", first_name COLLATE \"ru_icu\","
+                            + " middle_name COLLATE \"ru_icu\"",
             countQuery =
                     "SELECT COUNT(*) FROM users WHERE group_id = :groupId AND status <> 'archived'",
             nativeQuery = true)
@@ -148,25 +175,35 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     @Query(
             value =
-                    "SELECT * FROM users WHERE role = cast(:role AS user_role) AND status <> 'archived' "
-                            + "ORDER BY last_name COLLATE \"ru_icu\", first_name COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
+                    "SELECT "
+                            + SAFE_COLUMNS
+                            + " FROM users WHERE role = cast(:role AS user_role) AND status <>"
+                            + " 'archived' ORDER BY last_name COLLATE \"ru_icu\", first_name"
+                            + " COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
             countQuery =
-                    "SELECT COUNT(*) FROM users WHERE role = cast(:role AS user_role) AND status <> 'archived'",
+                    "SELECT COUNT(*) FROM users WHERE role = cast(:role AS user_role) AND status <>"
+                            + " 'archived'",
             nativeQuery = true)
     Page<User> findByRole(@Param("role") String role, Pageable pageable);
 
     @Query(
             value =
-                    "SELECT COUNT(*) FROM users WHERE role = cast(:role AS user_role) AND status <> 'archived'",
+                    "SELECT COUNT(*) FROM users WHERE role = cast(:role AS user_role) AND status <>"
+                            + " 'archived'",
             nativeQuery = true)
     long countByRole(@Param("role") String role);
 
     @Query(
             value =
-                    "SELECT * FROM users WHERE group_id = :groupId AND role = cast(:role AS user_role) AND status <> 'archived' "
-                            + "ORDER BY last_name COLLATE \"ru_icu\", first_name COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
+                    "SELECT "
+                            + SAFE_COLUMNS
+                            + " FROM users WHERE group_id = :groupId AND role = cast(:role AS"
+                            + " user_role) AND status <> 'archived' ORDER BY last_name COLLATE"
+                            + " \"ru_icu\", first_name COLLATE \"ru_icu\", middle_name COLLATE"
+                            + " \"ru_icu\"",
             countQuery =
-                    "SELECT COUNT(*) FROM users WHERE group_id = :groupId AND role = cast(:role AS user_role) AND status <> 'archived'",
+                    "SELECT COUNT(*) FROM users WHERE group_id = :groupId AND role = cast(:role AS"
+                            + " user_role) AND status <> 'archived'",
             nativeQuery = true)
     Page<User> findByGroupIdAndRole(
             @Param("groupId") Long groupId, @Param("role") String role, Pageable pageable);
@@ -182,7 +219,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      * Bypasses @SQLRestriction to find any user by ID including archived. Required for admin
      * reactivation and audit operations (per D-02).
      */
-    @Query(value = "SELECT * FROM users WHERE id = :id", nativeQuery = true)
+    @Query(value = "SELECT " + SAFE_COLUMNS + " FROM users WHERE id = :id", nativeQuery = true)
     Optional<User> findByIdIncludingArchived(@Param("id") Long id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -193,18 +230,25 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      * Locks a row even after it has been archived so status/grant revocation remains atomic and
      * idempotent.
      */
-    @Query(value = "SELECT * FROM users WHERE id = :id FOR UPDATE", nativeQuery = true)
+    @Query(
+            value = "SELECT " + SAFE_COLUMNS + " FROM users WHERE id = :id FOR UPDATE",
+            nativeQuery = true)
     Optional<User> findByIdIncludingArchivedForUpdate(@Param("id") Long id);
 
-    @Query(value = "SELECT * FROM users WHERE id IN (:ids)", nativeQuery = true)
+    @Query(value = "SELECT " + SAFE_COLUMNS + " FROM users WHERE id IN (:ids)", nativeQuery = true)
     List<User> findAllIncludingArchivedByIds(@Param("ids") List<Long> ids);
 
     @Query(
-            value = "SELECT * FROM users WHERE group_id = :groupId AND role = 'student'",
+            value =
+                    "SELECT "
+                            + SAFE_COLUMNS
+                            + " FROM users WHERE group_id = :groupId AND role = 'student'",
             nativeQuery = true)
     List<User> findAllStudentAssignmentsIncludingArchived(@Param("groupId") Long groupId);
 
     /** Returns all archived users. Bypasses @SQLRestriction (per D-02). */
-    @Query(value = "SELECT * FROM users WHERE status = 'archived'", nativeQuery = true)
+    @Query(
+            value = "SELECT " + SAFE_COLUMNS + " FROM users WHERE status = 'archived'",
+            nativeQuery = true)
     List<User> findAllArchived();
 }

@@ -52,6 +52,7 @@ public abstract class AbstractAcademicCacheIntegrationTest {
                         .withPassword("rct_dev_pass")
                         .withReuse(false);
         POSTGRES.start();
+        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
 
         REDIS = new GenericContainer<>("redis:7-alpine").withExposedPorts(6379).withReuse(false);
         REDIS.start();

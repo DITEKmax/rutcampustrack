@@ -17,6 +17,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -31,12 +32,16 @@ import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
 import ru.rutcampustrack.academic.grpc.AcademicReadService;
 import ru.rutcampustrack.academic.grpc.GrpcAuthInterceptor;
 import ru.rutcampustrack.academic.grpc.GrpcUserAuthorityReader;
+import ru.rutcampustrack.academic.migration.OwnedAuthPrincipals;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.auth.botcredentials.AuthBotCredentialServiceIdentityInterceptor;
+import ru.rutcampustrack.auth.botcredentials.AuthBotCredentialsGrpcService;
+import ru.rutcampustrack.auth.botcredentials.AuthBotOwnInitialCredentialsQuery;
 import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 
 import java.net.InetAddress;
@@ -80,6 +85,8 @@ class BotCredentialPythonBridgeIT {
         }
         Path root = repositoryRoot();
         String serviceToken = token();
+        String authServiceToken = token();
+        assertThat(authServiceToken).isNotEqualTo(serviceToken);
         String sharedSecret = UUID.randomUUID().toString();
         String controlToken = token();
         try (var postgres =
@@ -89,9 +96,9 @@ class BotCredentialPythonBridgeIT {
                         .withPassword("rct_np01_disposable")
                         .withReuse(false)) {
             postgres.start();
+            OwnedAuthPrincipals.prepare(postgres);
             Flyway.configure()
-                    .dataSource(
-                            postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
+                    .dataSource(OwnedAuthPrincipals.source(postgres, "rct_migrator"))
                     .locations(
                             "filesystem:"
                                     + root.resolve(
@@ -115,7 +122,18 @@ class BotCredentialPythonBridgeIT {
                             "hibernate.jdbc.time_zone",
                             "UTC"));
             entities.afterPropertiesSet();
-            try (var context = new AnnotationConfigApplicationContext()) {
+            var authData = OwnedAuthPrincipals.source(postgres, "rct_auth_runtime");
+            var authJdbc = new JdbcTemplate(authData);
+            assertThat(authJdbc.queryForObject("SELECT current_user", String.class))
+                    .isEqualTo("rct_auth_runtime");
+            assertThat(
+                            authJdbc.queryForObject(
+                                    "SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE"
+                                            + " rolname=current_user",
+                                    Boolean.class))
+                    .isFalse();
+            try (var context = new AnnotationConfigApplicationContext();
+                    var authContext = new AnnotationConfigApplicationContext()) {
                 var emf = entities.getObject();
                 var transactionManager = new JpaTransactionManager(emf);
                 context.registerBean(
@@ -131,6 +149,16 @@ class BotCredentialPythonBridgeIT {
                         BotCredentialMessageRepository.class,
                         BotCredentialsService.class);
                 context.refresh();
+                authContext.registerBean(JdbcTemplate.class, () -> authJdbc);
+                authContext.registerBean(
+                        "transactionManager",
+                        DataSourceTransactionManager.class,
+                        () -> new DataSourceTransactionManager(authData));
+                authContext.registerBean(
+                        AdminAccessJdbcAuthority.class,
+                        () -> new AdminAccessJdbcAuthority(authJdbc));
+                authContext.register(Transactions.class, AuthBotOwnInitialCredentialsQuery.class);
+                authContext.refresh();
                 var repositoryFactory =
                         new JpaRepositoryFactory(
                                 SharedEntityManagerCreator.createSharedEntityManager(emf));
@@ -185,9 +213,27 @@ class BotCredentialPythonBridgeIT {
                                                 auth,
                                                 new BotCredentialServiceIdentityInterceptor(
                                                         serviceToken)))
-                                .build()
-                                .start();
+                                .build();
+                Server authServer =
+                        NettyServerBuilder.forAddress(
+                                        new InetSocketAddress(InetAddress.getLoopbackAddress(), 0))
+                                .sslContext(
+                                        GrpcSslContexts.configure(
+                                                        io.netty.handler.ssl.SslContextBuilder
+                                                                .forServer(manager))
+                                                .build())
+                                .addService(
+                                        ServerInterceptors.intercept(
+                                                new AuthBotCredentialsGrpcService(
+                                                        authContext.getBean(
+                                                                AuthBotOwnInitialCredentialsQuery
+                                                                        .class)),
+                                                new AuthBotCredentialServiceIdentityInterceptor(
+                                                        authServiceToken)))
+                                .build();
                 try {
+                    server.start();
+                    authServer.start();
                     var control = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
                     var controlWorkers = Executors.newFixedThreadPool(2);
                     try {
@@ -380,6 +426,11 @@ class BotCredentialPythonBridgeIT {
                             environment.put("PYTHONDONTWRITEBYTECODE", "1");
                             environment.put("NP01_AUTHORITY", "localhost:" + server.getPort());
                             environment.put("NP01_CA", ca.toString());
+                            environment.put(
+                                    "NP01_AUTH_SERVICE_AUTHORITY",
+                                    "localhost:" + authServer.getPort());
+                            environment.put("NP01_AUTH_SERVICE_CA", ca.toString());
+                            environment.put("NP01_AUTH_SERVICE_TOKEN", authServiceToken);
                             environment.put("NP01_SERVICE_TOKEN", serviceToken);
                             environment.put("NP01_SHARED_SECRET", sharedSecret);
                             environment.put("NP01_CONTROL_TOKEN", controlToken);
@@ -401,7 +452,16 @@ class BotCredentialPythonBridgeIT {
                                         result.path("qualified").asBoolean(false)
                                                 && result.path("actual_tls").asBoolean(false)
                                                 && result.path("real_academic_pg").asBoolean(false)
-                                                && result.path("failures").asInt(-1) == 0;
+                                                && result.path("failures").asInt(-1) == 0
+                                                && (!branch.isEmpty()
+                                                        || (result.path("actual_auth_tls")
+                                                                        .asBoolean(false)
+                                                                && result.path(
+                                                                                "old_academic_denied")
+                                                                        .asBoolean(false)
+                                                                && result.path(
+                                                                                "old_credential_denied")
+                                                                        .asBoolean(false)));
                             } catch (Exception invalid) {
                                 throw new AssertionError(
                                         "NP01 bridge did not return safe qualified outcomes");
@@ -422,7 +482,9 @@ class BotCredentialPythonBridgeIT {
                         assertThat(controlWorkers.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
                     }
                 } finally {
+                    authServer.shutdownNow();
                     server.shutdownNow();
+                    assertThat(authServer.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
                     assertThat(server.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
                 }
             } finally {

@@ -34,10 +34,18 @@ class Settings(BaseSettings):
     notification_service_url: str = "http://notification-web:9094"
     bot_to_notification_service_token: str = ""
 
-    # Optional directed identity for the protected initial-credential RPCs.
+    # Optional directed Academic identity for card metadata management and own homework.
     # Missing/invalid identity disables that capability, not ordinary bot startup.
     # The protected client also requires the existing Academic TLS/CA settings.
     bot_to_academic_service_token: str = Field(default="", repr=False)
+
+    # Initial-credential bytes come only from the private Auth TLS receiver.
+    # Missing trust/identity disables this capability without any Academic fallback.
+    auth_grpc_host: str = "auth-service"
+    auth_grpc_port: int = 19090
+    auth_grpc_tls_enabled: bool = False
+    auth_grpc_tls_ca_path: str = ""
+    bot_to_auth_service_token: str = Field(default="", repr=False)
 
     # Academic Service gRPC (prod compose enables TLS and provides its CA)
     academic_grpc_tls_enabled: bool = False

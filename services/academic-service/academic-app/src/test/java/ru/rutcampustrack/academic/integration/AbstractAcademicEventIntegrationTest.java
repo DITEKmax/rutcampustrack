@@ -1,6 +1,5 @@
 package ru.rutcampustrack.academic.integration;
 
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,9 +12,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
+
 import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
+
+import java.util.List;
 
 /**
  * Base class for event integration tests. Starts Testcontainers PostgreSQL + RabbitMQ. RabbitMQ
@@ -99,6 +101,7 @@ public abstract class AbstractAcademicEventIntegrationTest {
                         .withPassword("rct_dev_pass")
                         .withReuse(false);
         POSTGRES.start();
+        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
 
         RABBITMQ = new RabbitMQContainer("rabbitmq:3.13-management-alpine").withReuse(false);
         RABBITMQ.start();
@@ -122,7 +125,7 @@ public abstract class AbstractAcademicEventIntegrationTest {
                 "spring.autoconfigure.exclude",
                 () ->
                         "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
-                                + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
 
         // Disable gRPC server in event tests
         registry.add("grpc.server.port", () -> -1);

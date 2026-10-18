@@ -38,8 +38,8 @@ Matrixv1FROZEN8/25 weight38/123=30.89%; old6/9. D037fileGoalACTIVE, nofalsecompl
 
 ## Current acceptance/checkpoint
 
-Published903da3a17bd82042464eb56ccbf0e305913acb7e, nextRootREADY15source package
-independentofU14. Matrixv1FROZEN17/25 weight83/123=67.48%; U16actual7b580917 and
+Published62c9a0d26f2a690aaff0266318b55856f650167b, Root71source integrated
+withindependent1f9f21eb approval/runtimepending. Matrixv1FROZEN20/25 weight94/123=76.42%; U16actual7b580917 and
 U20actualdfed6ec6 accepted; old9/9functional, GoalACTIVE. CurrentCI/CoverageFAIL;
 Security/OpenAPISUCCESS. Exactoutcomes/solehistory inattempts.ndjson.
 
@@ -58,8 +58,8 @@ TWOheavy ceiling onlywithindependentcaches/outputs/actualfreeRAM; workers1/fork1
 ≤2.5GiBRSS/512MiBnewTMP each, workspace/TMPfloor4GiB. LastRAM5.52/17.18GB,
 TMP5.61GB; recheck before nextheavy. Existingstoppedstand/volumes/keys untouched.
 
-Rootown1047objects pack17345402 SHA4f6fa161b159dd45f0100eb4c4b68cdb083592b29bf723c1890641e670f816a3,
+Rootown1120objects pack2605eb3e SHA87e8afd409e478047a73ef7bd4868decc892eb976ee6aeeb7442eb3da513e7b8,
 exactTMPbackups/noprune. AuxWTs useRootobjects readonly; noRootGC. Nextstaging
 uses temporaryindex and ifneeded exactownedobjectpacking, preservingrefs/index/WIP,
-no foreignobject deletion/lowerfloor. CurrentGitbackup /tmp/rct-s18-owned-checkpoint-pack.
+no foreignobject deletion/lowerfloor. CurrentGitbackup /tmp/rct-s18-ownership-checkpoint; stageincludesownedtrees toreservecommitbudget.
 B013/B014/B015FROZEN; no production/main/Angular/secrets/secondCLI.

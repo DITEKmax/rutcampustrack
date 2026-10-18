@@ -7,6 +7,7 @@ import pytest
 
 from bot.grpc_client.bot_service_credentials import (
     ACADEMIC_SERVICE,
+    BotAuthReadCredentials,
     BotCredentialTransportUnavailable,
     BotServiceCredentials,
     canonical_token,
@@ -17,9 +18,7 @@ def _token() -> str:
     return base64.urlsafe_b64encode(bytes(range(32))).decode().rstrip("=")
 
 
-@pytest.mark.parametrize(
-    "method", ["GetOwnBotInitialCredentials", "ManageOwnBotCredentialMessages", "GetOwnBotHomeworksForWeek"]
-)
+@pytest.mark.parametrize("method", ["ManageOwnBotCredentialMessages", "GetOwnBotHomeworksForWeek"])
 def test_dedicated_token_is_emitted_only_for_exact_service_and_method(method):
     observed = {}
 
@@ -44,6 +43,7 @@ def test_dedicated_token_is_emitted_only_for_exact_service_and_method(method):
         (f"https://academic.test:19491/{ACADEMIC_SERVICE}/", "GetOwnBotInitialCredentials"),
         ("https://academic.test:19491/rutcampustrack.schedule.ScheduleGrpcService", "GetOwnBotInitialCredentials"),
         (f"https://academic.test:19491/{ACADEMIC_SERVICE}", "GetUserByTelegramId"),
+        (f"https://academic.test:19491/{ACADEMIC_SERVICE}", "GetOwnBotInitialCredentials"),
         (f"https://academic.test:19491/{ACADEMIC_SERVICE}", "GetHomeworksForWeek"),
         (f"https://academic.test:19491/{ACADEMIC_SERVICE}", "GetOwnBotHomeworksForWeekOther"),
         (f"http://academic.test:19491/{ACADEMIC_SERVICE}", "GetOwnBotHomeworksForWeek"),
@@ -62,6 +62,117 @@ def test_wrong_destination_never_receives_token(service_url, method):
         SimpleNamespace(service_url=service_url, method_name=method), callback
     )
     assert all(observed.values())
+
+
+@pytest.mark.parametrize(
+    "authority,method,allowed",
+    [
+        ("auth.test:19090", "GetOwnBotInitialCredentials", True),
+        ("academic.test:19491", "GetOwnBotInitialCredentials", False),
+        ("auth.test:19091", "GetOwnBotInitialCredentials", False),
+        ("auth.test:19090", "ManageOwnBotCredentialMessages", False),
+        ("auth.test:19090", "GetOwnBotHomeworksForWeek", False),
+        ("auth.test:19090", "GetUserById", False),
+    ],
+)
+def test_auth_identity_is_directed_only_to_its_own_read(authority, method, allowed):
+    observed = {}
+
+    def callback(metadata, error):
+        observed["allowed"] = error is None
+        observed["has_token"] = bool(metadata)
+
+    BotAuthReadCredentials("auth.test:19090", _token())(
+        SimpleNamespace(service_url=f"https://{authority}/{ACADEMIC_SERVICE}", method_name=method), callback
+    )
+    assert observed == {"allowed": allowed, "has_token": allowed}
+
+
+def test_auth_identity_config_is_optional_and_hidden_from_repr():
+    from bot.config import Settings
+
+    settings = Settings(_env_file=None, bot_to_auth_service_token=_token())
+    hidden = _token() not in repr(settings)
+    assert hidden
+    assert settings.auth_grpc_host == "auth-service" and settings.auth_grpc_port == 19090
+    assert not settings.auth_grpc_tls_enabled
+
+
+@pytest.mark.parametrize("with_auth", [True, False])
+@pytest.mark.asyncio
+async def test_auth_read_has_no_academic_fallback_while_homework_and_management_stay_academic(
+    tmp_path, monkeypatch, with_auth
+):
+    from unittest.mock import AsyncMock, Mock
+
+    from bot.grpc_client import bot_credentials_client as module
+    from bot.services.notification_prefs import NotificationPreferencesUnavailable
+
+    ca = tmp_path / "synthetic-ca.pem"
+    ca.write_bytes(b"synthetic-ca")
+    academic_channel = SimpleNamespace(close=AsyncMock())
+    auth_channel = SimpleNamespace(close=AsyncMock())
+    academic = SimpleNamespace(
+        GetOwnBotInitialCredentials=AsyncMock(side_effect=AssertionError("No Academic read fallback")),
+        GetOwnBotHomeworksForWeek=AsyncMock(return_value=SimpleNamespace(homeworks=[])),
+        ManageOwnBotCredentialMessages=AsyncMock(return_value=object()),
+    )
+    auth = SimpleNamespace(GetOwnBotInitialCredentials=AsyncMock(return_value=SimpleNamespace(user_id=1)))
+    channels = {"academic.test:19491": academic_channel, "auth.test:19090": auth_channel}
+    monkeypatch.setattr(
+        module.grpc.aio, "secure_channel", Mock(side_effect=lambda target, credentials: channels[target])
+    )
+    monkeypatch.setattr(module.grpc.aio, "insecure_channel", Mock(side_effect=AssertionError("No plaintext")))
+    monkeypatch.setattr(module.grpc, "ssl_channel_credentials", Mock(return_value=object()))
+    monkeypatch.setattr(module.grpc, "metadata_call_credentials", lambda plugin: plugin)
+    monkeypatch.setattr(
+        module.academic_pb2_grpc,
+        "AcademicGrpcServiceStub",
+        lambda channel: auth if channel is auth_channel else academic,
+    )
+    auth_token = base64.urlsafe_b64encode(bytes(range(32, 64))).decode().rstrip("=")
+    client = module.BotCredentialsGrpcClient(
+        "academic.test",
+        19491,
+        "synthetic-shared",
+        True,
+        str(ca),
+        _token(),
+        auth_host="auth.test",
+        auth_port=19090,
+        auth_tls_enabled=with_auth,
+        auth_tls_ca_path=str(ca),
+        auth_service_token=auth_token,
+    )
+    assert client.configured is with_auth
+    if with_auth:
+        assert (await client.read(42, 1)).user_id == 1
+        read = auth.GetOwnBotInitialCredentials.call_args
+        assert read.kwargs["metadata"] == () and read.kwargs["timeout"] == 3.0
+        assert isinstance(read.kwargs["credentials"], BotAuthReadCredentials)
+    else:
+        with pytest.raises(NotificationPreferencesUnavailable):
+            await client.read(42, 1)
+        assert not auth.GetOwnBotInitialCredentials.called
+    assert not academic.GetOwnBotInitialCredentials.called
+    assert (
+        await client.homeworks(
+            telegram_sender_id=42,
+            expected_user_id=1,
+            expected_roles_version=3,
+            date_from="2026-10-18",
+            date_to="2026-10-18",
+        )
+        == []
+    )
+    await client.register(user_id=1, chat_id=42, message_id=7, binding_version=2, credentials_version=3)
+    for method in (academic.GetOwnBotHomeworksForWeek, academic.ManageOwnBotCredentialMessages):
+        assert method.call_args.kwargs["metadata"] == (("x-grpc-secret", "synthetic-shared"),)
+        assert type(method.call_args.kwargs["credentials"]) is BotServiceCredentials
+        assert method.call_args.kwargs["timeout"] == 3.0
+    await client.close()
+    assert academic_channel.close.await_count == 1
+    assert auth_channel.close.await_count == (1 if with_auth else 0)
 
 
 @pytest.mark.parametrize("value", [None, "", "x", "a" * 44, "=" * 43, " " + "a" * 43])

@@ -16,7 +16,12 @@ import { test, requirePrivateArtifacts } from './artifact-privacy';
 import { Actor, MobileDataset, admit, selectPwaRole } from './mobile-dataset';
 import { loginPwa } from './pwa-auth';
 import { TEST_USERS } from './users';
-import { retainFirstDatasetHttpFailure } from './safe-reporter';
+import {
+  retainFirstDatasetHttpFailure,
+  retainSemesterPreviewTransport,
+  retainLifecycleCleanupFailure,
+  type LifecycleCleanupCause,
+} from './safe-reporter';
 
 type Row = Record<string, any>;
 
@@ -2823,6 +2828,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
   let restored = false,
     authorityDirty = false,
     cleaning = false;
+  let cleanupStage: LifecycleCleanupCause = 'CLEANUP_SEMESTER_RESTART';
   let closeDeadline = 0;
   let producerDeadline = 0;
   let lessonClosed = false;
@@ -3220,9 +3226,12 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
         },
         body: data === undefined ? undefined : JSON.stringify(data),
       });
-    } catch {
+    } catch (error) {
+      if (cleaning) retainLifecycleCleanupFailure(info.annotations, cleanupStage, error);
       throw new Error('Owned broker control unavailable');
     }
+    if (cleaning && !(response.ok && response.body))
+      retainLifecycleCleanupFailure(info.annotations, cleanupStage, undefined, response.status);
     requireValue(response.ok && response.body, 'Owned broker control rejected');
     const reader = response.body.getReader();
     const chunks: Uint8Array[] = [];
@@ -4147,6 +4156,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
               { headers: admin!.headers(), timeout: Math.min(2000, remaining) },
             );
           } catch (error) {
+            retainSemesterPreviewTransport(info.annotations, error);
             // Retain only the transport class; never inspect native request details.
             if (error instanceof playwrightErrors.TimeoutError)
               expect.soft(false, 'D9_PREVIEW_REQUEST_TIMEOUT').toBe(true);
@@ -4373,22 +4383,28 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
         try {
           await restart(service);
         } catch (error) {
+          retainLifecycleCleanupFailure(info.annotations, cleanupStage, error);
           cleanupFailure ??= { error };
         }
       }
       if (cleanupFailure) throw cleanupFailure.error;
       if (eventAccepted && !applied) {
+        cleanupStage = 'CLEANUP_SEMESTER_RECOVER';
         await recoverOwnClose();
         if (
           !diagnostic.recoveryPublishAttempted &&
           consumer().receipt.length === 0 &&
           (await queues()).dead.messages_ready === 1
-        )
+        ) {
+          cleanupStage = 'CLEANUP_SEMESTER_PUBLISH';
           await publish();
+        }
+        cleanupStage = 'CLEANUP_SEMESTER_APPLY';
         await awaitApplied();
       }
       if (admin && previous && archiveStarted) {
         if (!archived) {
+          cleanupStage = 'CLEANUP_SEMESTER_ARCHIVE';
           await terminal(
             admin,
             Number(previous.id),
@@ -4400,6 +4416,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
           archived = true;
         }
         if (!restored) {
+          cleanupStage = 'CLEANUP_SEMESTER_RESTORE';
           await terminal(
             admin,
             Number(previous.id),
@@ -4410,6 +4427,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
           );
           restored = true;
         }
+        cleanupStage = 'CLEANUP_SEMESTER_ACTIVATE';
         const current = await admin.call(
           'PATCH',
           `/api/academic/semesters/${previous.id}/activate`,
@@ -4420,6 +4438,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
             current.activationScheduled === false,
           'Original active authority must return',
         );
+        cleanupStage = 'CLEANUP_SEMESTER_VERIFY';
         const active = (await semesters(admin)).filter((row) => row.active === true);
         requireValue(
           active.length === 1 && Number(active[0].id) === Number(previous.id),
@@ -4428,6 +4447,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
         authorityDirty = false;
       }
       if (peeked) {
+        cleanupStage = 'CLEANUP_SEMESTER_DLQ';
         const q = await queues();
         requireValue(
           q.dead.messages_ready === 1 && q.dead.messages_unacknowledged === 0,
@@ -4435,6 +4455,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
         );
         diagnostic.retainedDlqCopies = 1;
       }
+      cleanupStage = 'CLEANUP_SEMESTER_SETTLE';
       requireValue(
         stopped.size === 0 && !authorityDirty && (!eventAccepted || applied),
         'Controlled state must settle safely',
@@ -4442,17 +4463,21 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       diagnostic.restorationSucceeded = true;
       diagnostic.cleanupOutcome = 'PASSED';
     } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, cleanupStage, error);
       cleanupFailure = { error };
       diagnostic.cleanupOutcome = 'FAILED';
     }
     try {
+      cleanupStage = 'CLEANUP_SEMESTER_CLOCK';
       clock.assertUnchanged();
       diagnostic.clockUnchanged = true;
     } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, cleanupStage, error);
       cleanupFailure ??= { error };
     }
     let disposeTimer: ReturnType<typeof setTimeout> | undefined;
     try {
+      cleanupStage = 'CLEANUP_SEMESTER_DISPOSE';
       await Promise.race([
         request.dispose(),
         new Promise<never>((_, reject) => {
@@ -4463,6 +4488,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
         }),
       ]);
     } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, cleanupStage, error);
       cleanupFailure ??= { error };
     } finally {
       if (disposeTimer !== undefined) clearTimeout(disposeTimer);
@@ -4472,11 +4498,13 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       diagnostic.cleanupOutcome = 'FAILED';
     }
     try {
+      cleanupStage = 'CLEANUP_SEMESTER_WRITE';
       writeFileSync(join(run, 'reconciliation.safe.json'), `${JSON.stringify(diagnostic)}\n`, {
         mode: 0o600,
         flag: 'wx',
       });
     } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, cleanupStage, error);
       cleanupFailure ??= { error };
     }
     if (originalFailure) throw originalFailure.error;

@@ -95,6 +95,10 @@ dependencies {
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
         exclude(group = "io.grpc", module = "grpc-netty-shaded")
     }
+    // Private TLS own-credential receiver; the existing Academic protobuf wire is reused.
+    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
     implementation("io.grpc:grpc-netty")
     implementation("com.google.protobuf:protobuf-java")
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")

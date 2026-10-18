@@ -1,4 +1,4 @@
-"""Uncached directed Academic bot reads and metadata-only exact-card lifecycle calls."""
+"""Uncached private Auth reads; Academic owns metadata-only card lifecycle and homework."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import grpc.aio
 
 from bot.grpc_client import academic_pb2 as pb
 from bot.grpc_client import academic_pb2_grpc
-from bot.grpc_client.bot_service_credentials import BotServiceCredentials, canonical_token
+from bot.grpc_client.bot_service_credentials import BotAuthReadCredentials, BotServiceCredentials, canonical_token
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
 
 
@@ -26,41 +26,60 @@ class BotCredentialsGrpcClient:
         tls_enabled: bool = False,
         tls_ca_path: str = "",
         service_token: str = "",
+        *,
+        auth_host: str = "auth-service",
+        auth_port: int = 19090,
+        auth_tls_enabled: bool = False,
+        auth_tls_ca_path: str = "",
+        auth_service_token: str = "",
     ) -> None:
-        self._channel = None
-        self._stub = None
-        self._call_credentials = None
         self._metadata = (("x-grpc-secret", grpc_secret),) if grpc_secret else ()
+        self._channel, self._stub, self._call_credentials = self._capability(
+            host, port, tls_enabled, tls_ca_path, service_token, BotServiceCredentials
+        )
+        self._auth_channel, self._auth_stub, self._auth_call_credentials = self._capability(
+            auth_host, auth_port, auth_tls_enabled, auth_tls_ca_path, auth_service_token, BotAuthReadCredentials
+        )
+
+    @staticmethod
+    def _capability(host, port, tls_enabled, tls_ca_path, service_token, plugin_type):
+        channel = None
         # Capability configuration does not alter the existing ordinary bot startup.
         if not tls_enabled or not tls_ca_path or not canonical_token(service_token):
-            return
+            return None, None, None
         if type(port) is not int or not 1 <= port <= 65535:
-            return
+            return None, None, None
         try:
             authority = f"{host}:{port}"
-            plugin = BotServiceCredentials(authority, service_token)
+            plugin = plugin_type(authority, service_token)
             ca = Path(tls_ca_path).read_bytes()
             if not ca:
-                return
-            self._channel = grpc.aio.secure_channel(authority, grpc.ssl_channel_credentials(root_certificates=ca))
-            self._call_credentials = grpc.metadata_call_credentials(plugin)
-            self._stub = academic_pb2_grpc.AcademicGrpcServiceStub(self._channel)
+                return None, None, None
+            channel = grpc.aio.secure_channel(authority, grpc.ssl_channel_credentials(root_certificates=ca))
+            credentials = grpc.metadata_call_credentials(plugin)
+            return channel, academic_pb2_grpc.AcademicGrpcServiceStub(channel), credentials
         except Exception:
-            self._stub = None
+            return channel, None, None
 
     @property
     def configured(self) -> bool:
         """Configuration only; this does not promise a reachable or authorized server."""
-        return self._stub is not None and self._call_credentials is not None
+        return all(
+            value is not None
+            for value in (self._stub, self._call_credentials, self._auth_stub, self._auth_call_credentials)
+        )
 
     async def _call(self, method: str, request):
-        if not self.configured:
-            raise NotificationPreferencesUnavailable("Protected Academic bot capability unavailable")
+        auth_read = method == "GetOwnBotInitialCredentials"
+        stub = self._auth_stub if auth_read else self._stub
+        credentials = self._auth_call_credentials if auth_read else self._call_credentials
+        if stub is None or credentials is None:
+            raise NotificationPreferencesUnavailable("Protected bot capability unavailable")
         try:
-            return await getattr(self._stub, method)(
+            return await getattr(stub, method)(
                 request,
-                metadata=self._metadata,
-                credentials=self._call_credentials,
+                metadata=() if auth_read else self._metadata,
+                credentials=credentials,
                 timeout=3.0,
             )
         except grpc.aio.AioRpcError as error:
@@ -70,9 +89,9 @@ class BotCredentialsGrpcClient:
                 grpc.StatusCode.NOT_FOUND,
             }:
                 raise BotCredentialRequestDenied("Own credential scope or revision changed") from None
-            raise NotificationPreferencesUnavailable("Protected Academic bot authority unavailable") from None
+            raise NotificationPreferencesUnavailable("Protected bot authority unavailable") from None
         except Exception:
-            raise NotificationPreferencesUnavailable("Protected Academic bot authority unavailable") from None
+            raise NotificationPreferencesUnavailable("Protected bot authority unavailable") from None
 
     async def read(self, sender: int, user_id: int, *, binding_version=0, credentials_version=0):
         snapshot = binding_version == 0 and credentials_version == 0
@@ -146,5 +165,9 @@ class BotCredentialsGrpcClient:
         )
 
     async def close(self) -> None:
-        if self._channel is not None:
-            await self._channel.close()
+        try:
+            if self._channel is not None:
+                await self._channel.close()
+        finally:
+            if self._auth_channel is not None:
+                await self._auth_channel.close()

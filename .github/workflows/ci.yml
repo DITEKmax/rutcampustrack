@@ -2980,6 +2980,7 @@ jobs:
           npm run typecheck:foundation
           npm run typecheck
           node --test pwa-vue/tests/*.test.mjs
+          node ../tests/load/scenario-controls.cjs
           npm run build
   # M13 G15 — ShellCheck lint для всех bash-скриптов.
   # Gate на ошибки уровня `error` и `warning`; `info`/`style` не блочат.
@@ -3573,7 +3574,7 @@ jobs:
                                'LESSON_SNAPSHOT', 'RANK', 'UNKNOWN'}
           STATS_SOURCES = {
               'tests/e2e/specs/mobile-schedule-lifecycle.spec.ts':
-                  '99692ef9eda26d27b0cf98b117669940886c598615a1fd59becff6ed42c9f3a9',
+                  '91e2c4c4f47187f1105fb18b3ad7bb81809ec60354d35078db391ae27b4a784a',
               'services/attendance-service/attendance-app/src/main/java/ru/rutcampustrack/attendance/grpc/AttendanceStudentGrpcServiceImpl.java':
                   'f5a49c00d8cb1724830876994ac5d93a14b36375dc8180db3163537f2190b3f0',
           }
@@ -3638,7 +3639,7 @@ jobs:
               keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs',
                       'errorCount', 'diagnostics', 'errorLocations'}
               expected = {('mobile-attendance-requests.spec.ts', 9), ('mobile-lesson-lifecycle.spec.ts', 20),
-                          ('mobile-schedule-lifecycle.spec.ts', 390), ('mobile-schedule-lifecycle.spec.ts', 1833)}
+                          ('mobile-schedule-lifecycle.spec.ts', 397), ('mobile-schedule-lifecycle.spec.ts', 1922)}
               seen, target = set(), None
               for row in value['results']:
                   if type(row) is not dict or set(row) != keys:
@@ -3661,10 +3662,10 @@ jobs:
                                      and 0 < frame['line'] < 1000000 for frame in row['errorLocations'])):
                       return False
                   seen.add(identity)
-                  if identity == ('mobile-schedule-lifecycle.spec.ts', 390):
+                  if identity == ('mobile-schedule-lifecycle.spec.ts', 397):
                       target = row
               return (seen == expected and target['status'] == 'failed' and target['errorCount'] == 1
-                      and target['errorLocations'] == [{'file': 'mobile-schedule-lifecycle.spec.ts', 'line': 1363}])
+                      and target['errorLocations'] == [{'file': 'mobile-schedule-lifecycle.spec.ts', 'line': 1450}])
 
           def is_homework_failure(value):
               keys = {'file', 'line', 'project', 'status', 'expectedStatus', 'durationMs', 'errorCount', 'diagnostics', 'errorLocations'}
@@ -3772,7 +3773,7 @@ jobs:
                       and all(type(item) is dict and set(item) == {'stage', 'cause', 'httpStatus'}
                               for item in row['diagnostics'])
                       and (config[4] != 'DATASET_ATTENDANCE_MARK_HTTP'
-                           or (row['line'] == 1587 and {'file': 'semester-lifecycle.spec.ts', 'line': 1813}
+                           or (row['line'] == 1592 and {'file': 'semester-lifecycle.spec.ts', 'line': 1818}
                                in row['errorLocations']))
                       and {'stage': 'DATASET_HTTP', 'cause': config[4], 'httpStatus': 500}
                           in row['diagnostics'])

@@ -1,13 +1,14 @@
 package ru.rutcampustrack.auth.integration;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -26,6 +27,8 @@ abstract class AbstractIntegrationTest {
                         .withPassword("rct_dev_pass")
                         .withReuse(false);
         POSTGRES.start();
+        ru.rutcampustrack.shared.testcontainers.MigrationTestUtils.prepareAcademicAuthPrincipals(
+                POSTGRES);
 
         REDIS = new GenericContainer<>("redis:7-alpine").withExposedPorts(6379).withReuse(false);
         REDIS.start();

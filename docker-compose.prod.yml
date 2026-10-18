@@ -1238,7 +1238,7 @@ services:
     # M09 G7 (NEW-157).
     mem_limit: 192m
     mem_reservation: 128m
-    # M16 G4 — healthcheck для гарантии что promtail не начнёт push'и
+    # M16 G4 — healthcheck для гарантии что Alloy не начнёт push'и
     # до того как ingester готов (root cause `InstancesCount <= 0`).
     # /ready возвращает 200 только после min_ready_duration (15s).
     healthcheck:
@@ -1249,33 +1249,38 @@ services:
       start_period: 30s
     restart: unless-stopped
 
-  promtail:
-    # M06 D2: digest-пин обязателен — mounts /var/run/docker.sock:ro.
-    # Socket compromise = docker daemon control (= root host). Bump через Renovate (QD6).
-    # Version: 3.2.1. Update: `docker buildx imagetools inspect grafana/promtail:<ver>`
-    image: grafana/promtail:3.2.1@sha256:bf617e9d67e80247a59f717f9c1ad388d7d32dc0a1d29abd5799516d15e0a9b5
-    container_name: rct-promtail
+  alloy:
+    # Docker socket remains daemon control even when mounted read-only.
+    image: grafana/alloy:v1.20.1@sha256:2aa2099af76c0098d4af7a4d6e48f86cb66dc1a000222ad927a1c67c6542d13f
+    container_name: rct-alloy
     logging: *bounded-logs
-    command: -config.file=/etc/promtail/promtail.yml -config.expand-env=true
+    command:
+      - run
+      - --storage.path=/var/lib/alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --server.http.enable-pprof=false
+      - --server.http.disable-support-bundle
+      - --disable-reporting
+      - /etc/alloy/config.alloy
     environment:
       COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:?Compose project identity required}
+      DEPLOYMENT_ENVIRONMENT: production
+      GOMEMLIMIT: 192MiB
+      GOMAXPROCS: '1'
     volumes:
-      - ./infra/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
-      - promtail-positions:/var/lib/promtail
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./infra/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    expose:
+      - '12345'
     networks:
       - private_net
     depends_on:
-      # M16 G4 — wait for loki readiness (не просто container created).
-      # Раньше promtail мог начать push'и до того как ingester ACTIVE,
-      # триггеря `InstancesCount <= 0` errors.
       loki:
         condition: service_healthy
-    # M13 G11 — promtail tails docker logs всех containers, batch buffer
-    # + positions file. ~50-100m под нагрузкой, 256m даёт большой запас.
     mem_limit: 256m
     mem_reservation: 64m
+    cpus: 0.5
     restart: unless-stopped
 
   # ============================================================
@@ -1448,7 +1453,7 @@ volumes:
   loki-data:
   tempo-data:
   alertmanager-data:
-  promtail-positions:
+  alloy-data:
 
 # Keep ALERT_WEBHOOK_SECRET in deployment secret injection; never commit its value.
 secrets:

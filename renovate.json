@@ -59,8 +59,8 @@
       "prBodyNotes": [":warning: Major Loki upgrade — follow `docs/runbooks/loki-major-upgrade.md` (expand-contract schema)."]
     },
     {
-      "description": "cadvisor/promtail digest bump — auto-merge patch (digest-pinned per M06 D2)",
-      "matchPackageNames": ["gcr.io/cadvisor/cadvisor", "grafana/promtail"],
+      "description": "cadvisor/Alloy digest bump — auto-merge patch (digest-pinned per M06 D2)",
+      "matchPackageNames": ["gcr.io/cadvisor/cadvisor", "grafana/alloy"],
       "matchUpdateTypes": ["digest"],
       "automerge": true
     },

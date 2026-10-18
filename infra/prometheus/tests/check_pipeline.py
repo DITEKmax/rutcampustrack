@@ -1,4 +1,4 @@
-"""Finite Grafana/Loki/Tempo/Promtail contract using exact production versions and config.
+"""Finite Grafana/Loki/Tempo/Alloy contract using exact production versions and config.
 
 Synthetic telemetry proves queries, links and persistence; it does not stand in
 for the application/broker trace required by M01/M04. Only an owned CI project runs.
@@ -30,6 +30,23 @@ ROOT = Path(__file__).resolve().parents[3]
 _STATE = {"phase": "PRECHECK_OR_CONFIG", "cleanup": "NOT_STARTED"}
 PROM_UID = "PBFA97CFB590B2093"
 PYTHON_IMAGE = "python:3.12.12-slim-bookworm@sha256:593bd06efe90efa80dc4eee3948be7c0fde4134606dd40d8dd8dbcade98e669c"
+
+
+def alloy_positions(text):
+    """Alloy1.20.1 positions.File: map[{path,labels}]offset, not Promtail YAML."""
+    root = yaml.compose(text)
+    assert isinstance(root, yaml.MappingNode) and len(root.value) == 1
+    name, entries = root.value[0]
+    assert name.value == "positions" and isinstance(entries, yaml.MappingNode)
+    result = {}
+    for key, value in entries.value:
+        assert isinstance(key, yaml.MappingNode) and isinstance(value, yaml.ScalarNode)
+        fields = {name.value: field.value for name, field in key.value}
+        assert set(fields) == {"path", "labels"} and len(key.value) == 2
+        identity = (fields["path"], fields["labels"])
+        assert identity not in result and re.fullmatch(r"[0-9]+", value.value)
+        result[identity] = int(value.value)
+    return result
 
 
 async def bot_metrics_worker():
@@ -740,7 +757,7 @@ def main():
         "infra/alertmanager/alertmanager.yml",
         "infra/loki/loki.yml",
         "infra/tempo/tempo.yml",
-        "infra/promtail/promtail.yml",
+        "infra/alloy/config.alloy",
         "infra/grafana/provisioning/datasources/loki.yml",
         "infra/grafana/provisioning/datasources/tempo.yml",
         "services/notification-bot/bot/__main__.py",
@@ -752,7 +769,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix=project + "-") as tmp:
         td = Path(tmp)
         config = {"services": {}, "networks": {"private_net": {}}, "volumes": {}, "secrets": {}}
-        names = ["prometheus", "alertmanager", "grafana", "loki", "tempo", "promtail", "blackbox-exporter"]
+        names = ["prometheus", "alertmanager", "grafana", "loki", "tempo", "alloy", "blackbox-exporter"]
         for name in names:
             service = copy.deepcopy(source["services"][name])
             service.pop("container_name", None)
@@ -779,8 +796,13 @@ def main():
                     config["volumes"][host] = {}
                 mounts.append(":".join([host, target] + options))
             service["volumes"] = mounts
-            if name == "promtail":
-                service["environment"]["COMPOSE_PROJECT_NAME"] = project
+            if name == "alloy":
+                service["environment"].update(
+                    COMPOSE_PROJECT_NAME=project,
+                    DEPLOYMENT_ENVIRONMENT="synthetic",
+                    GOMEMLIMIT="192MiB",
+                    GOMAXPROCS="1",
+                )
             # These API ports exist only on loopback in the isolated test project.
             internal = {
                 "prometheus": "9090",
@@ -788,7 +810,7 @@ def main():
                 "grafana": "3000",
                 "loki": "3100",
                 "tempo": "3200",
-                "promtail": "9080",
+                "alloy": "12345",
                 "nginx": "8080",
                 "blackbox-exporter": "9115",
             }[name]
@@ -931,31 +953,25 @@ def main():
         ] + [str(td / "prometheus.yml") + ":/etc/prometheus/prometheus.yml:ro"]
         app_logs = td / "application-logs"
         app_logs.mkdir(mode=0o700)
-        promtail = yaml.safe_load((ROOT / "infra/promtail/promtail.yml").read_text())
-        for relabel in promtail["scrape_configs"][0]["relabel_configs"]:
-            if relabel.get("target_label") == "environment":
-                relabel["replacement"] = "synthetic"
-        for service in ["api-gateway", "mobile-bff"]:
-            promtail["scrape_configs"].append(
-                {
-                    "job_name": "actual-" + service,
-                    "static_configs": [
-                        {
-                            "targets": ["localhost"],
-                            "labels": {
-                                "service": service,
-                                "environment": "synthetic",
-                                "__path__": "/application-logs/" + service + ".log",
-                            },
-                        }
-                    ],
-                }
+        alloy = (ROOT / "infra/alloy/config.alloy").read_text()
+        # Real application processes run on the CI host; these files use their
+        # production JSON encoder, not a second Docker ingestion of those apps.
+        alloy += '\nloki.source.file "actual_applications" {\n  targets = [\n'
+        for service in ["api-gateway", "mobile-bff", "delivery-probe"]:
+            alloy += (
+                '    {__path__ = "/application-logs/'
+                + service
+                + '.log", '
+                + 'service = "'
+                + service
+                + '", environment = "synthetic"},\n'
             )
-        (td / "promtail.yml").write_text(yaml.safe_dump(promtail, sort_keys=False))
-        config["services"]["promtail"]["volumes"] = [
-            x for x in config["services"]["promtail"]["volumes"] if "/etc/promtail/promtail.yml" not in x
-        ] + [str(td / "promtail.yml") + ":/etc/promtail/promtail.yml:ro"]
-        config["services"]["promtail"]["volumes"].append(str(app_logs) + ":/application-logs:ro")
+        alloy += '  ]\n  forward_to = [loki.write.local.receiver]\n  file_match {\n    enabled = true\n    sync_period = "5s"\n  }\n}\n'
+        (td / "config.alloy").write_text(alloy)
+        config["services"]["alloy"]["volumes"] = [
+            x for x in config["services"]["alloy"]["volumes"] if "/etc/alloy/config.alloy" not in x
+        ] + [str(td / "config.alloy") + ":/etc/alloy/config.alloy:ro"]
+        config["services"]["alloy"]["volumes"].append(str(app_logs) + ":/application-logs:ro")
         config["services"]["notification-web"] = {
             "image": PYTHON_IMAGE,
             "command": ["python", "/fixture.py"],
@@ -1002,7 +1018,7 @@ def main():
             "mem_limit": "64m",
             "cpus": 0.25,
         }
-        # Promtail obtains service identity from the Compose service; use the same
+        # Alloy obtains service identity from the Compose service; use the same
         # service.name in the synthetic trace below, not a request/trace ID label.
         compose = td / "compose.yml"
         compose.write_text(yaml.safe_dump(config, sort_keys=False))
@@ -1020,7 +1036,7 @@ def main():
                     "loki": "3100",
                     "tempo": "3200",
                     "notification-web": "9094",
-                    "promtail": "9080",
+                    "alloy": "12345",
                     "nginx": "8080",
                 }[name]
             )
@@ -1084,15 +1100,17 @@ def main():
                 if value is not None
             ]
 
-        def positions():
-            cid = docker("ps", "--quiet", "promtail").stdout.strip()
-            dest = td / "positions-copy.yml"
+        def positions(component="loki.source.docker.containers"):
+            cid = docker("ps", "--quiet", "alloy").stdout.strip()
+            dest = td / (component + "-positions.yml")
             subprocess.run(
-                ["docker", "cp", cid + ":/var/lib/promtail/positions.yaml", str(dest)],
+                ["docker", "cp", cid + ":/var/lib/alloy/" + component + "/positions.yml", str(dest)],
                 capture_output=True,
                 check=True,
+                timeout=15,
             )
-            return yaml.safe_load(dest.read_text())["positions"]
+            assert dest.stat().st_size <= 1024**2, "bounded checkpoint size exceeded"
+            return alloy_positions(dest.read_text())
 
         def identifier(value, length):
             if value == "":
@@ -1286,6 +1304,7 @@ def main():
         started = time.monotonic()
         try:
             _STATE["phase"] = "PIPELINE_START"
+            docker("run", "--rm", "--no-deps", "alloy", "validate", "/etc/alloy/config.alloy")
             docker("up", "-d")
             wait(lambda: grafana("/api/health")["database"] == "ok", 120)
 
@@ -1508,11 +1527,11 @@ def main():
             assert linked and json.loads(linked[0]["values"][0][1])["requestId"] == request_id
             checks.append("requestId JSON search and actual provisioned logs↔trace queries")
             fixture_cid = docker("ps", "--quiet", "notification-web").stdout.strip()
-            wait(lambda: any(fixture_cid in key for key in positions()), 30)
+            wait(lambda: any(fixture_cid in key[0] for key in positions()), 30)
             checkpoint = positions()
-            fixture_keys = {key for key in checkpoint if fixture_cid in key}
+            fixture_keys = {key for key in checkpoint if fixture_cid in key[0]}
             assert fixture_keys
-            docker("up", "-d", "--force-recreate", "--no-deps", "promtail", "loki", "tempo", "grafana")
+            docker("up", "-d", "--force-recreate", "--no-deps", "alloy", "loki", "tempo", "grafana")
             wait(lambda: grafana("/api/health")["database"] == "ok", 120)
             wait(lambda: bool(logs()), 120)
             wait(lambda: bool(api("tempo", "/api/traces/" + trace).get("batches")), 120)
@@ -1521,11 +1540,69 @@ def main():
                 "persisted fixture log checkpoint did not survive"
             )
             assert grafana("/api/datasources/uid/loki")["uid"] == "loki"
-            checks.append("Loki/Tempo log+trace, Promtail positions and Grafana provisioning survive owned recreate")
+            checks.append("Loki/Tempo log+trace, Alloy positions and Grafana provisioning survive owned recreate")
+            # A distinct post-recreate line must arrive through the same reader.
+            recreated_id = str(uuid.uuid4())
+            api("notification-web", "/emit", {"traceId": trace, "spanId": span, "requestId": recreated_id})
+            recreate_query = loki_query.replace(request_id, recreated_id)
+            wait(
+                lambda: bool(
+                    api(
+                        "loki",
+                        "/loki/api/v1/query_range?"
+                        + urllib.parse.urlencode(
+                            {"query": recreate_query, "start": str(now), "end": str(time.time_ns()), "limit": "10"}
+                        ),
+                    )["data"]["result"]
+                ),
+                60,
+            )
+            wait(lambda: all(positions().get(key, 0) > checkpoint[key] for key in fixture_keys), 30)
+            running = docker("ps", "--quiet", "alloy").stdout.strip().splitlines()
+            assert len(running) == 1, "exactly one owned ingestion service required"
+            checks.append("one Alloy reader delivers a distinct post-recreate marker")
             _STATE["phase"] = "ACTUAL_JAVA_TRANSPORT"
             app_result = application_transport()
             _STATE["phase"] = "ACTUAL_BACKGROUND_TRANSPORT"
             background_result = background_transport()
+            _STATE["phase"] = "ALLOY_DELIVERY_AND_BUDGET"
+            wait(lambda: len(samples('up{job="alloy"} == 1')) == 1, 60)
+            series = api(
+                "loki",
+                "/loki/api/v1/series?"
+                + urllib.parse.urlencode(
+                    {
+                        "match[]": '{service=~"api-gateway|mobile-bff|notification-web",environment="synthetic"}',
+                        "start": str(now),
+                        "end": str(time.time_ns()),
+                    }
+                ),
+            )["data"]
+            assert {row["service"] for row in series} == {"api-gateway", "mobile-bff", "notification-web"}
+            forbidden = {"requestid", "traceid", "spanid", "eventid", "userid", "jobid", "authorization", "cookie"}
+            assert all(not (forbidden & {key.replace("_", "").lower() for key in row}) for row in series)
+            sent = samples('loki_write_sent_entries_total{job="alloy"}')
+            assert sent and sum(float(row["value"][1]) for row in sent) > 0
+            # Loki's unchanged64KiB limit rejects this controlled, non-business line.
+            # Require actual terminal-drop telemetry, never a synthetic metric.
+            before_drop = samples('sum(loki_write_dropped_entries_total{job="alloy"})')
+            baseline = float(before_drop[0]["value"][1]) if before_drop else 0
+            (app_logs / "delivery-probe.log").write_text("controlled-line-limit-probe:" + "x" * 70000 + "\n")
+            wait(lambda: bool(samples('sum(loki_write_dropped_entries_total{job="alloy"}) > ' + str(baseline))), 60)
+            rss = samples('process_resident_memory_bytes{job="alloy"}')
+            assert len(rss) == 1 and 0 < float(rss[0]["value"][1]) <= 256 * 1024**2
+            cpu = samples('rate(process_cpu_seconds_total{job="alloy"}[1m])')
+            assert len(cpu) == 1 and 0 <= float(cpu[0]["value"][1]) <= 0.6
+            checks.append(
+                {
+                    "alloy": {
+                        "rss_bytes": int(float(rss[0]["value"][1])),
+                        "cpu_cores_1m": float(cpu[0]["value"][1]),
+                        "sent_entries_positive": True,
+                        "terminal_drop_observed": True,
+                    }
+                }
+            )
             result = {
                 "result": "PASS",
                 "source_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),

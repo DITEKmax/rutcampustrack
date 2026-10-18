@@ -5548,7 +5548,7 @@ jobs:
           import hashlib,json,os,pathlib
           out=pathlib.Path('build/monitoring');out.mkdir(parents=True,exist_ok=True)
           paths=[pathlib.Path('docker-compose.prod.yml'),pathlib.Path('nginx/conf.d/default.conf')]
-          paths.extend(p for root in ['infra/prometheus','infra/grafana','infra/alertmanager','infra/loki','infra/tempo','infra/promtail','infra/blackbox','infra/postgres'] for p in pathlib.Path(root).rglob('*') if p.is_file() and p.suffix in ['.yml','.json','.ini','.py','.sh','.sql'])
+          paths.extend(p for root in ['infra/prometheus','infra/grafana','infra/alertmanager','infra/loki','infra/tempo','infra/alloy','infra/blackbox','infra/postgres'] for p in pathlib.Path(root).rglob('*') if p.is_file() and p.suffix in ['.yml','.json','.ini','.py','.sh','.sql','.alloy'])
           outcomes={k.lower():os.environ[k+'_OUTCOME'] for k in ['TOOLS','FORMULAS','DELIVERY','EXPORTERS','PIPELINE']}
           checks=dict(outcomes);receipts={}
           for name in ['delivery','exporters','pipeline']:

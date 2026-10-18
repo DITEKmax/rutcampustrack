@@ -169,14 +169,14 @@ scrape_configs:
     labels:
       environment: production
       service: tempo
-- job_name: promtail
+- job_name: alloy
   metrics_path: /metrics
   static_configs:
   - targets:
-    - promtail:9080
+    - alloy:12345
     labels:
       environment: production
-      service: promtail
+      service: alloy
 - job_name: blackbox-exporter
   metrics_path: /metrics
   static_configs:

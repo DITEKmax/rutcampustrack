@@ -123,10 +123,10 @@ groups:
   - record: rct_expected_target
     expr: vector(1)
     labels:
-      job: promtail
-      instance: promtail:9080
+      job: alloy
+      instance: alloy:12345
       environment: production
-      service: promtail
+      service: alloy
   - record: rct_expected_target
     expr: vector(1)
     labels:

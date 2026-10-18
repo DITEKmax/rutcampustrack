@@ -78,14 +78,14 @@ groups:
       description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
         before treating dashboards as complete; preserve persistent data.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
-  - alert: PromtailLogDeliveryDropped
-    expr: sum by (job, environment, reason) (increase(promtail_dropped_entries_total[5m])) > 0
+  - alert: AlloyLogDeliveryDropped
+    expr: sum by (job, environment, reason) (increase(loki_write_dropped_entries_total[5m])) > 0
     for: 2m
     labels:
       severity: warning
       owner: platform
     annotations:
-      summary: PromtailLogDeliveryDropped in {{ $labels.job }} / {{ $labels.instance }}
+      summary: AlloyLogDeliveryDropped in {{ $labels.job }} / {{ $labels.instance }}
       description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
         before treating dashboards as complete; preserve persistent data.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md

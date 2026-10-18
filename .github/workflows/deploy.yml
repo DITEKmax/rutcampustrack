@@ -410,12 +410,12 @@ jobs:
             docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml pull
             docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans --wait --wait-timeout 120
 
-            # --- Reload Grafana/Loki/Promtail when observability config changes ---
+            # --- Reload Grafana/Loki/Alloy when observability config changes ---
             # Grafana provisioning (datasources/dashboards) is loaded from
             # ./infra/grafana/provisioning at container start. `docker compose
             # up -d` does not restart containers whose image/env did not change,
             # so config-only changes (e.g. new dashboard JSON, datasource uid)
-            # stay invisible until a manual restart. Same for Loki/Promtail yaml.
+            # stay invisible until a manual restart. Same for Loki YAML/Alloy config.
             # We look at the last git pull delta and restart only what's needed.
             echo "--- Checking observability config changes ---"
             CHANGED=$(git diff --name-only HEAD@{1} HEAD 2>/dev/null || true)
@@ -427,9 +427,9 @@ jobs:
               echo "Loki config changed — restarting rct-loki"
               docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml restart loki
             } || true
-            echo "$CHANGED" | grep -qE '^infra/promtail/' && {
-              echo "Promtail config changed — restarting rct-promtail"
-              docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml restart promtail
+            echo "$CHANGED" | grep -qE '^infra/alloy/' && {
+              echo "Alloy config changed — restarting rct-alloy"
+              docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml restart alloy
             } || true
             echo "$CHANGED" | grep -qE '^infra/prometheus/' && {
               echo "Prometheus config changed — restarting rct-prometheus"

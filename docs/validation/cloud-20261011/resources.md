@@ -21,10 +21,24 @@ Existing stoppedstand/volumes/keys/WIP untouched. Preserveproxy/CA. B013/B014/B0
 
 ## 18.10 current slots
 
-Root soleGit/sharedDocs, scoped precommit→обычный coherentpush2source+10docs.
-s17_propagation: READ_ONLY U14 concreteatomicityplan на currentRoot e66; старыйWT нетронут.
-s17_auth/infra/reports и обаreviewers idle, newcurrentbaselineWT ещёневыданы.
-Все4КТ1 mappings сохранены; U07 final3d631113 и MARKguardcb7ce1ad reviewaccepted.
-Последнийownpublishedpack824objects72cfc560/SHA4c946d96, backupTMP; floor4GiB.
-Матрицаv1FROZEN 8/25 weight38/123=30.89%; старые6/9 отдельно. D037/Q031:
-TASK-CONTRACT/CURRENT — сохранённаяобъединённаяцельACTIVE, nofalsecomplete.
+Root soleGit/sharedDocs/CIintegration, actualpushreadback9a61873f5e3dc12eccce92a436b39fd38506306d.
+New clean detached sparseWT via auxiliarybareGit /tmp/rct-s18-worktrees.git with
+Rootobjects read-onlyalternate (noRootGC whiledependentWTs exist), no newbranch/PR.
+- s17_auth /tmp/rct-s18-auth: soleHTTP/API/generated/SwaggerJava +U11DI/U12/U18errors.
+- s17_infra /tmp/rct-s18-infra: soleconfigs/CI/Compose/infra, U22Alloy first/U16Redis.
+- s17_reports /tmp/rct-s18-reports: U20rolebot first; Python+tests, laterboundedUI/files/k6.
+- s17_propagation /tmp/rct-s18-data: reservedU14/U15/U16Java; currentlyREAD_ONLYatomicityplan.
+- bothreviewers independent/idle. CPU5/RAM16GiB, 7nativeagent slotsinclRoot; heavy/runtime0.
+Old7WTs/foreign25untracked/stoppedstand/volumes/keys unchanged. New4WTs use TMP only,
+freeTMP5943447552; workspace4295766016 >=4GiBfloor. Buildinputsgradle/tools/nginx/events
+added to newsparseWTs with byte-exactpreservation anywriterdiff.
+Current824ownpublishedpack72cfc560 remains Rootobjectsource, backupsTMP/noprune.
+Matrixv1FROZEN8/25 weight38/123=30.89%; old6/9. D037fileGoalACTIVE, nofalsecomplete.
+
+Current ONE heavy lease: s17_auth compile/unit in /tmp/rct-s18-auth, exclusive
+/tmp/rct-stage17-auth-gradle-home, offlineJDK21/maxworkers1/fork1, max2.5GiBRSS
++512MiBnewTMP. NoDB/Docker/browser/networkruntime; releaseafterreap. Dataheavyqueued.
+
+Second Data compile/unit lease approved after actualcgroup5.08/17.18GB/CPUquota4/
+TMP5.94GB check: ownDataWT/stage17gradlehome/CPU1; AuthCPU0/authgradlehome separate.
+Each≤2.5GiBRSS/newTMP512MiB/workers1/fork1, offlineJDK21, noDB/Redis/Docker/browser.

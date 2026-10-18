@@ -838,20 +838,35 @@ class JdbcSessionAuthorityIT {
         assertThat(controller.admitDashboardSession(wsRequest(bound)).getStatusCode().value())
                 .isEqualTo(204);
 
-        jdbc.update(
-                "UPDATE admin_access_profiles SET permissions=ARRAY['USERS_VIEW'],version=version+1"
-                        + " WHERE user_id=?",
-                admin.userId());
+        long adminUserId = admin.userId();
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status -> {
+                            UUID operation = AuthDatabaseFixture.fence(authorityJdbc, adminUserId);
+                            authorityJdbc.update(
+                                    "UPDATE admin_access_profiles SET"
+                                            + " permissions=ARRAY['USERS_VIEW'],version=version+1"
+                                            + " WHERE user_id=?",
+                                    adminUserId);
+                            AuthDatabaseFixture.unfence(authorityJdbc, operation, adminUserId);
+                        });
         assertThat(controller.admitDashboardSession(wsRequest(bound)).getStatusCode().value())
                 .isEqualTo(401);
         SessionPrincipal current =
                 selectedPrincipal(loadUser(admin.userId(), admin.passwordHash()), session);
         assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value())
                 .isEqualTo(403);
-        jdbc.update(
-                "UPDATE admin_access_profiles SET"
-                        + " permissions=ARRAY['DASHBOARD_VIEW'],version=version+1 WHERE user_id=?",
-                admin.userId());
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status -> {
+                            UUID operation = AuthDatabaseFixture.fence(authorityJdbc, adminUserId);
+                            authorityJdbc.update(
+                                    "UPDATE admin_access_profiles SET"
+                                            + " permissions=ARRAY['DASHBOARD_VIEW'],version=version+1"
+                                            + " WHERE user_id=?",
+                                    adminUserId);
+                            AuthDatabaseFixture.unfence(authorityJdbc, operation, adminUserId);
+                        });
         current = selectedPrincipal(loadUser(admin.userId(), admin.passwordHash()), session);
         assertThat(controller.admitDashboardSession(wsRequest(current)).getStatusCode().value())
                 .isEqualTo(204);

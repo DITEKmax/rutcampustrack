@@ -87,6 +87,57 @@ NOTIFICATION_CAUSE_HEADER = re.compile(
     r"(?m)^[ \t]{0,32}Caused by:[ \t]{1,8}([A-Za-z_$][A-Za-z0-9_.$]{0,255})(?=:|\r?$)"
 )
 NOTIFICATION_DIAGNOSTIC_CHARS = 65536
+ACADEMIC_SCHEMA_CLASS = "ru.rutcampustrack.academic.integration.OpenApiSnapshotIT"
+ACADEMIC_SCHEMA_METHOD = "apiDocsMatchesSnapshot"
+ACADEMIC_SCHEMA_SOURCE = (
+    "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/integration/OpenApiSnapshotIT.java"
+)
+# Closed names verified against current Academic (22) and Auth (2) @Entity/@Table mappings.
+# Auth names identify accidental cross-owner mappings without exposing arbitrary relations.
+ACADEMIC_SCHEMA_TABLES = (
+    "academic_outbox",
+    "academic_role_directory",
+    "academic_user_directory",
+    "assignment_replacement_operations",
+    "assignments",
+    "attendance_thresholds",
+    "auth_identities",
+    "auth_outbox",
+    "campus_settings",
+    "event_consumer_processed",
+    "group_history_coverage",
+    "group_promotion_cycle_record",
+    "groups",
+    "headman_assistants",
+    "homework_binding_archives",
+    "homework_completions",
+    "homework_weekly_digest_runs",
+    "homeworks",
+    "semester_archive_operations",
+    "semesters",
+    "student_group_history",
+    "subject_lesson_types",
+    "subjects",
+    "teacher_subject_groups",
+)
+ACADEMIC_SCHEMA_EXCEPTION = "org.hibernate.tool.schema.spi.SchemaManagementException"
+ACADEMIC_SCHEMA_DIAGNOSTIC_CHARS = 65536
+ACADEMIC_SCHEMA_IDENTIFIER = r'(?:[A-Za-z_][A-Za-z0-9_]{0,127}|"[A-Za-z_][A-Za-z0-9_]{0,127}")'
+ACADEMIC_SCHEMA_MISSING = (
+    r"Schema-validation: missing table \[("
+    + ACADEMIC_SCHEMA_IDENTIFIER
+    + r"(?:\."
+    + ACADEMIC_SCHEMA_IDENTIFIER
+    + r")?)\]"
+)
+ACADEMIC_SCHEMA_MESSAGE = re.compile(ACADEMIC_SCHEMA_MISSING)
+ACADEMIC_SCHEMA_HEADER = re.compile(
+    r"(?m)^[ \t]{0,32}(?:Caused by:[ \t]{1,8})?"
+    + re.escape(ACADEMIC_SCHEMA_EXCEPTION)
+    + r": "
+    + ACADEMIC_SCHEMA_MISSING
+    + r"\r?$"
+)
 METADATA_ENV = (
     "RCT_CI_PR_HEAD_SHA",
     "RCT_CI_RUN_ID",
@@ -294,6 +345,40 @@ def notification_failure_diagnostic(case: ElementTree.Element) -> dict:
     return {"state": "CLOSED_CLASSES", "codes": codes, "overflow": overflow}
 
 
+def academic_schema_failure_diagnostic(case: ElementTree.Element) -> dict:
+    result = {"state": "ABSENT_OR_UNRECOGNIZED", "table": "OTHER", "qualifier": "OTHER"}
+    failures = case.findall("failure")
+    if len(failures) != 1:
+        return result
+    failure = failures[0]
+    matches = set()
+    message = failure.get("message", "")
+    if (
+        failure.get("type") == ACADEMIC_SCHEMA_EXCEPTION
+        and len(message) <= 512
+        and (match := ACADEMIC_SCHEMA_MESSAGE.fullmatch(message))
+    ):
+        matches.add(match.group(1))
+    text = failure.text or ""
+    prefix = text[:ACADEMIC_SCHEMA_DIAGNOSTIC_CHARS]
+    if len(text) > ACADEMIC_SCHEMA_DIAGNOSTIC_CHARS:
+        # A truncated original line cannot attest a native exception header.
+        prefix = prefix.rsplit("\n", 1)[0] if "\n" in prefix else ""
+    matches.update(match.group(1) for match in ACADEMIC_SCHEMA_HEADER.finditer(prefix))
+    if len(matches) != 1:
+        return result
+    parts = matches.pop().split(".")
+    table = parts[-1].strip('"')
+    qualifier = "UNQUALIFIED"
+    if len(parts) == 2:
+        qualifier = {"public": "PUBLIC", "pg_catalog": "PG_CATALOG"}.get(parts[0].strip('"'), "OTHER")
+    return {
+        "state": "NATIVE_MISSING_TABLE",
+        "table": table if table in ACADEMIC_SCHEMA_TABLES else "OTHER",
+        "qualifier": qualifier,
+    }
+
+
 def collect(root: Path, service: str, task: str, environment: dict[str, str]) -> dict:
     if service not in MODULES or task not in {"test", "integrationTest"}:
         raise ValueError("Invalid outcome scope")
@@ -385,6 +470,16 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
                     and raw_class.startswith("ru.rutcampustrack.notification.")
                 ):
                     safe["failureDiagnostic"] = notification_failure_diagnostic(case)
+                if (
+                    service == "academic-service"
+                    and task == "integrationTest"
+                    and status == "FAILED"
+                    and safe["identity"] == "SOURCE_METHOD"
+                    and raw_class == ACADEMIC_SCHEMA_CLASS
+                    and method == ACADEMIC_SCHEMA_METHOD
+                    and known["source"] == ACADEMIC_SCHEMA_SOURCE
+                ):
+                    safe["failureDiagnostic"] = academic_schema_failure_diagnostic(case)
                 report["cases"].append(safe)
             missing = max(0, (declared["tests"] or 0) - len(nodes))
             counts["NOT_EXECUTED"] += missing

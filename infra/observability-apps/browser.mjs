@@ -19,7 +19,10 @@ const server = await createServer({
   root: resolve(root, 'frontends'),
   configFile: false,
   logLevel: 'silent',
-  resolve: { alias: { vue: requireFrontend.resolve('vue/dist/vue.esm-bundler.js') } },
+  resolve: {
+    alias: { vue: requireFrontend.resolve('vue/dist/vue.esm-bundler.js') },
+    dedupe: ['@sentry/vue'],
+  },
   optimizeDeps: { include: ['vue'] },
   plugins: [
     {

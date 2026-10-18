@@ -660,12 +660,16 @@ class BotCredentialLifecycleIT {
         owner.execute("GRANT USAGE ON SCHEMA public TO " + role);
         owner.execute("GRANT SELECT,INSERT,UPDATE ON ALL TABLES IN SCHEMA public TO " + role);
         owner.execute("GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO " + role);
-        if (role.equals("rct_auth_runtime"))
+        if (role.equals("rct_auth_runtime")) {
+            owner.execute(
+                    "GRANT EXECUTE ON FUNCTION public.append_auth_identity_catalog_snapshot(bigint)"
+                            + " TO rct_auth_runtime");
             owner.execute(
                     "GRANT DELETE ON"
                         + " auth_outbox,password_reset_tokens,qr_login_challenges,qr_login_issuers"
                         + " TO "
                             + role);
+        }
     }
 
     /**

@@ -2,7 +2,7 @@
 DO $$
 BEGIN
     UPDATE
-        users
+        auth_identities
     SET
         telegram_id = 900000001
     WHERE

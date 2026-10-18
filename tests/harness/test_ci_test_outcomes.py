@@ -533,6 +533,169 @@ class SafeCases {
             {"state": "NO_SINGLE_FAILURE", "codes": [], "overflow": False},
         )
 
+    def academic_fixture(self, source_path: str | None = None) -> str:
+        source = self.root / (source_path or COLLECTOR.ACADEMIC_SCHEMA_SOURCE)
+        source.parent.mkdir(parents=True)
+        source.write_text(
+            "package ru.rutcampustrack.academic.integration; class OpenApiSnapshotIT {"
+            "@Test void apiDocsMatchesSnapshot() {} @Test void anotherCase() {}}"
+        )
+        subprocess.run(
+            ["git", "add", str(source.relative_to(self.root))], cwd=self.root, check=True, capture_output=True
+        )
+        self.results = self.root / COLLECTOR.MODULES["academic-service"] / "build/test-results/integrationTest"
+        self.results.mkdir(parents=True)
+        self.environment["RCT_CI_JOB_ID"] = "java-integration-test"
+        self.environment["RCT_CI_TEST_OUTCOME"] = "failure"
+        return COLLECTOR.ACADEMIC_SCHEMA_CLASS
+
+    def test_academic_missing_table_retains_exact_named_failed_outcome_and_red_summary(self) -> None:
+        classname = self.academic_fixture()
+        self.xml(
+            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()">'
+            f'<failure type="java.lang.IllegalStateException" message="{MARKER}">'
+            f"java.lang.IllegalStateException: {MARKER}\n"
+            f"Caused by: {COLLECTOR.ACADEMIC_SCHEMA_EXCEPTION}: Schema-validation: missing table [public.assignments]\n"
+            f"    at synthetic.PrivateFrame({MARKER})\n{MARKER}</failure></testcase>",
+            tests=1,
+            failures=1,
+        )
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        case = report["cases"][0]
+        self.assertEqual(case["identity"], "SOURCE_METHOD")
+        self.assertEqual(case["method"], "apiDocsMatchesSnapshot")
+        self.assertEqual(case["source"], COLLECTOR.ACADEMIC_SCHEMA_SOURCE)
+        self.assertEqual(
+            case["sourceSha256"],
+            COLLECTOR.hashlib.sha256((self.root / COLLECTOR.ACADEMIC_SCHEMA_SOURCE).read_bytes()).hexdigest(),
+        )
+        self.assertEqual(case["status"], "FAILED")
+        self.assertEqual(
+            case["failureDiagnostic"],
+            {"state": "NATIVE_MISSING_TABLE", "table": "assignments", "qualifier": "PUBLIC"},
+        )
+        self.assertEqual(report["summary"]["FAILED"], 1)
+        self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+        self.assertEqual(report["metadata"]["testStepOutcome"], "failure")
+        self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_academic_missing_table_only_emits_closed_table_and_qualifier_values(self) -> None:
+        self.assertEqual(len(COLLECTOR.ACADEMIC_SCHEMA_TABLES), 24)
+        relations = [(table, table, "UNQUALIFIED") for table in COLLECTOR.ACADEMIC_SCHEMA_TABLES]
+        relations += [
+            ('public."assignments"', "assignments", "PUBLIC"),
+            ('"pg_catalog".auth_identities', "auth_identities", "PG_CATALOG"),
+            (MARKER + ".assignments", "assignments", "OTHER"),
+            ("public." + MARKER, "OTHER", "PUBLIC"),
+            (MARKER, "OTHER", "UNQUALIFIED"),
+            ('"ASSIGNMENTS"', "OTHER", "UNQUALIFIED"),
+        ]
+        for relation, table, qualifier in relations:
+            with self.subTest(table=table, qualifier=qualifier):
+                case = COLLECTOR.ElementTree.Element("testcase")
+                COLLECTOR.ElementTree.SubElement(
+                    case,
+                    "failure",
+                    type=COLLECTOR.ACADEMIC_SCHEMA_EXCEPTION,
+                    message="Schema-validation: missing table [" + relation + "]",
+                )
+                value = COLLECTOR.academic_schema_failure_diagnostic(case)
+                self.assertEqual(value, {"state": "NATIVE_MISSING_TABLE", "table": table, "qualifier": qualifier})
+                self.assertNotIn(MARKER, json.dumps(value))
+
+    def test_academic_missing_table_rejects_non_native_injection_trailing_and_partial_lines(self) -> None:
+        native = COLLECTOR.ACADEMIC_SCHEMA_EXCEPTION + ": Schema-validation: missing table [assignments]"
+        texts = [
+            native + " " + MARKER,
+            native.replace("assignments", "assignments; DROP TABLE " + MARKER),
+            native.replace("assignments", "assign\n" + MARKER),
+            native.replace("assignments", "public.assignments.extra"),
+            native.replace("missing table", "missing column"),
+            native.replace("SchemaManagementException", "SchemaManagementExceptionCounterfeit"),
+            "prefix " + native,
+            "    at " + native,
+            "Caused by: " + native + "; " + MARKER,
+            "Caused by: " + native[:-1] + " " * COLLECTOR.ACADEMIC_SCHEMA_DIAGNOSTIC_CHARS + "]",
+        ]
+        for text in texts:
+            with self.subTest(variant=texts.index(text)):
+                case = COLLECTOR.ElementTree.Element("testcase")
+                failure = COLLECTOR.ElementTree.SubElement(case, "failure", type=MARKER, message=MARKER)
+                failure.text = text
+                value = COLLECTOR.academic_schema_failure_diagnostic(case)
+                self.assertEqual(value, {"state": "ABSENT_OR_UNRECOGNIZED", "table": "OTHER", "qualifier": "OTHER"})
+                self.assertNotIn(MARKER, json.dumps(value))
+
+    def test_academic_missing_table_conflicts_multiple_failures_and_wrong_type_are_unrecognized(self) -> None:
+        case = COLLECTOR.ElementTree.Element("testcase")
+        failure = COLLECTOR.ElementTree.SubElement(
+            case, "failure", type=MARKER, message="Schema-validation: missing table [assignments]"
+        )
+        unknown = {"state": "ABSENT_OR_UNRECOGNIZED", "table": "OTHER", "qualifier": "OTHER"}
+        self.assertEqual(COLLECTOR.academic_schema_failure_diagnostic(case), unknown)
+        failure.set("type", COLLECTOR.ACADEMIC_SCHEMA_EXCEPTION)
+        failure.text = (
+            "Caused by: " + COLLECTOR.ACADEMIC_SCHEMA_EXCEPTION + ": Schema-validation: missing table [groups]"
+        )
+        self.assertEqual(COLLECTOR.academic_schema_failure_diagnostic(case), unknown)
+        failure.text = ""
+        COLLECTOR.ElementTree.SubElement(case, "failure", type=COLLECTOR.ACADEMIC_SCHEMA_EXCEPTION)
+        self.assertEqual(COLLECTOR.academic_schema_failure_diagnostic(case), unknown)
+
+    def test_academic_missing_table_scope_excludes_other_methods_ordinal_nonfailed_and_unit_cases(self) -> None:
+        classname = self.academic_fixture()
+        failure = (
+            f'<failure type="{COLLECTOR.ACADEMIC_SCHEMA_EXCEPTION}" '
+            'message="Schema-validation: missing table [assignments]"/>'
+        )
+        self.xml(
+            f'<testcase classname="{classname}" name="anotherCase()">{failure}</testcase>'
+            f'<testcase classname="{classname}" name="{MARKER}">{failure}</testcase>'
+            f'<testcase classname="{MARKER}" name="apiDocsMatchesSnapshot()">{failure}</testcase>'
+            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()"/>'
+            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()"><skipped/></testcase>'
+            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()"><error/></testcase>',
+            tests=6,
+            failures=3,
+            skipped=1,
+            errors=1,
+        )
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        self.assertTrue(all("failureDiagnostic" not in case for case in report["cases"]))
+        self.assertEqual(
+            [case["identity"] for case in report["cases"][:3]], ["SOURCE_METHOD", "ORDINAL_ONLY", "ORDINAL_ONLY"]
+        )
+        self.assertEqual(report["summary"]["FAILED"], 3)
+        unit_dir = self.results.parent / "test"
+        unit_dir.mkdir()
+        self.results = unit_dir
+        self.xml(
+            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()">{failure}</testcase>',
+            tests=1,
+            failures=1,
+        )
+        self.environment["RCT_CI_JOB_ID"] = "java-unit-test"
+        report = COLLECTOR.collect(self.root, "academic-service", "test", self.environment)
+        self.assertNotIn("failureDiagnostic", report["cases"][0])
+        self.assertNotIn(MARKER, json.dumps(report))
+
+    def test_academic_missing_table_same_native_exception_at_other_source_has_no_diagnostic(self) -> None:
+        source = COLLECTOR.MODULES["academic-service"] + "/src/test/java/OtherSource.java"
+        classname = self.academic_fixture(source)
+        self.xml(
+            f'<testcase classname="{classname}" name="apiDocsMatchesSnapshot()">'
+            f'<failure type="{COLLECTOR.ACADEMIC_SCHEMA_EXCEPTION}" '
+            'message="Schema-validation: missing table [assignments]"/></testcase>',
+            tests=1,
+            failures=1,
+        )
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        case = report["cases"][0]
+        self.assertEqual(case["identity"], "SOURCE_METHOD")
+        self.assertEqual(case["source"], source)
+        self.assertEqual(case["status"], "FAILED")
+        self.assertNotIn("failureDiagnostic", case)
+
 
 if __name__ == "__main__":
     unittest.main()

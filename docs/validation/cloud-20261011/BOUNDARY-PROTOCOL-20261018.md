@@ -20,7 +20,7 @@ Academic logical academic_db owns assigned-UID profile(names/avatar/employeeNo),
 groups/headman/helpers/membership/assignments/history/local eligibility+revision,
 operation coordinator and all academic report jobs/artifacts. Auth group IDs
 are opaque admission scope, not second domain membership authority. Nonsecret
-identity fields for screens/exports are composed with bounded Auth batch reads.
+identity fields use an owner-fed NONAUTHORITATIVE read model for full-list filtering/ordering/counts; current grants/session admission always stay Auth-authoritative.
 No crossDB FK. Runtime/migrator identities restricted to their own DB; published
 V62/V63 immutable, new schema/bootstrap/migrations explicit and nonresetting.
 
@@ -56,6 +56,26 @@ reservation remains nonactive/fenced or safely terminal, not distributed rollbac
 Clarify FAILED_SAFE/reconcile paths in code so accepted work never stays silently
 pending and an expired original actor cannot authorize unrelated new commands.
 Reading status/result still requires current request authority/object scope.
+
+Commit actor stamp binds credential/binding/admin-profile generations, selectedgrant,
+SID/sessionVersion/revokedAt and rolesVersion (adjusted for own reservation). Natural
+access/refresh expiry alone may recover an accepted fixedcommand; permanent revoke,
+logout, changedgrants/credentials/binding/profile must fail safe, never activate stale
+privilege. Local committed receipt remains for a fresh authorized reconcile. No bearer
+is persisted. Definite domainrollback and unknown commit outcome remain distinct.
+
+Auth durable ordered identity catalog feed has own transactional sequence and bounded
+ReadChanges(after,limit<=200)/watermark RPC. Only visible nonsecret identity changes,
+not login/refresh/session churn; Telegram ID stays PII/FULL-only output, never telemetry.
+Academic contiguouscursor/versionedprojection catches up to prewatermark within3s,
+queries fullfilter/count/order under localRR beforepage, then checks postwatermark;
+bounded retry/503 rather than partialpage. Coordinator SUCCESS waits committedcatalog
+projection. Feed retention/freshness budget required; no arbitrary shortTTL.
+
+No-key legacy mutations remain valid with new operationUUID/responseoperationheader;
+strong lostresponse replay requires caller supplied stable Idempotency-Key. Do not
+payload-dedupe identical names/optionalTG legitimate creates. Actual PWA/TMA per-intent
+keys preserve unknownoutcome recovery; never blind retry with a newUUID.
 
 ## Transport / consumers
 
@@ -100,6 +120,16 @@ bounded renderer/data-only producer. Do not copy current public MobileBFF export
 dispatch mechanically: Academic→BFF→Academic callback/cycle must be removed.
 Reuse Attendance/headman/teacher/registry renderers with explicit internal plan,
 not generic worker microservice. No report bytes in Rabbit or bearer in job.
+The bounded existing renderer seam uses real HTTP POST only to exact
+/academic/export-jobs/{jobUUID}/render with lease ID and Auth-signed purpose-bound
+capability. The dedicated filter validates exact job/kind/selectorhash/lease/current
+storedsession/actor generations, derives selector from ownerlocal record and constructs
+normal verified request context only for this route. Capability cannot authorize CRUD.
+All Auth RPCs outside DB locks; stale lease cannot commit. Legacy ticket downloads wait
+bounded on the same durable queue, preserving completion semantics without another
+parallel renderer; disconnect cancels waiting only, not accepted work.
+Notification export.state.changed v1 shape/queues preserved, producer and perhint
+current admission move Auth→Academic. Auth retains security capability only.
 Current Auth authority + fresh local report eligibility rechecked at claim/complete/
 download; final CAS publishes artifact. Recheck after bytes where applicable.
 Lost202/navigation/reconnect/crash/retry resolve the same durable job, not replacement.

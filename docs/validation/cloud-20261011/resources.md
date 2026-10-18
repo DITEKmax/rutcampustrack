@@ -37,12 +37,23 @@ Rootneverproductauthor; only assignedinventory integrates. No writer commits/res
 | s19_bot_producer | WT pending: MobileBFF/Attendance newbotread+focusedTeacherReadFacade/ReportService seams, noAcademic/Auth/proto/sharedbuild. |
 | s19_review | readonly independentpresplit3 APPROVE/runtimepending; thenfrozenS3boundaryreview. Never fixes findings. |
 
-Current heavy0/localDB0/imagepull0. BotvenvPython3.12.14 ~81MiB cap256MiB;
-Appsnpmlockcache29MiB hard32MiB/downloadstopped; SDKextract7.68MiB afterownmapsomit,
-noRootmodules write. No realTelegram/API sends. Newdeps installs preserveproxy/CA.
-LocalGradle compile lease notgranted yet; cache/read-only inputs andTMPbudget first.
-Twoheavy only actualRAM+CPU+independentcache/output proofs, neverbasedagentcount.
-Onefinite existingCIintegration package atreadiness, no allstandperWT.
+Current lease: Academic bounded compileJava/compileTestJava +two meaningful new core
+classes, CPU0/workers1/JDK21.0.12.1/Xmx1GiB/meta256/RSS2.5GiB; TMP floor4GiB.
+No localDB/Docker/images. Other completed leases reaped: Apps peak1.16GiB,
+Producer1.136GB, Academicpresplit1.12GiB; Auth fullprocesspeakUNKNOWN(observergap).
+Prepared JDK /workspace/rct-cloud-setup/jdk21; systemJava onlyJRE, not compiler.
+Loopback Gradle/Netty needs normalnetworkenabled permission even offline; ENV failure
+is not sourceFAIL. Cache/publicinputs readonly; task outputs exclusivelyTMP.
 
-B013/B014/B015FROZEN, no equivalentcaller/mutation throughagent/model/CI/launcher.
+Last measured workspace4293730304B/inodes1258364, TMP5937713152B/inodes2206262;
+RAMcurrent4702793728/max17179869184, CPUquota4. Sourcebudget<=128MiB retained.
+Author26Bot/25Producer/39Apps ready patches + manifests saved onecopy to ignored
+.agent/evidence/cloud-20261011/current-wip against observed /tmp-loss. This is WIP,
+not final sole evidence/extra packaging milestone. Preserve25foreignuntracked.
+Native slots7 includingRoot; useful active authors Auth/Academic/Jobs, review byreadiness.
+Botvenv~105MiB cap256, AppsSDKextract7.68MiB/npmcache29MiB hard32; noRootmoduleswrite.
+CI actual threeapps runtime runs remotely via one additive bounded ordinaryCIjob;
+source limits1376MiB/2.5CPU incl extraPG are configuration, measurements remain pending.
+
+B013/B014/B015FROZEN; no equivalentcaller/mutation throughagent/model/CI/launcher.
 No production/mainmerge/deploy/secrets/foreignWIP/Angular/newweb/hiddencontrolplane.

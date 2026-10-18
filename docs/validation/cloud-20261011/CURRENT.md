@@ -6,7 +6,9 @@
 Q031/D037: эти файлы — persisted Goal; отдельного Goal API нет, falsecomplete нет.
 Root soleGit/taskdocs; ветка codex/server-validation-20261011,
 [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), main не merged.
-Starting/published HEAD **26cbe5912f6683a81780a831609dbddbc26feba4**.
+Stage19 starting HEAD **26cbe5912f6683a81780a831609dbddbc26feba4**.
+Published/executable **da3402ea853133f89c04e7c2db2b18f52eee7971**, local/remote/PR verified.
+Next Apps checkpoint extends da; final commit SHA read after commit, never guessed.
 Stage17base753173688d633ca07991f4dd73bdcd2698f45d96; received18basee66b1711.
 
 ## Принятие и конечный остаток
@@ -31,7 +33,7 @@ TASK17 функционально9/9 DONE_CHANGED9, начальные6/9 в и�
 | Остаток | Владелец / следующий достаточный результат |
 | --- | --- |
 | U14.1/.2/.3/.5 | Boundary+Academic: auth_db/academic_db, AAA-only, fenced durableoperation create/grant/transfer/archive/proofs; frozenproto+независимыйS3review→code→actualfailure/recovery/minrights. |
-| U14.4/.6 | Academic+Boundary: single domainjobqueue/worker/artifacts и compatibleconsumers/OpenAPI/gRPC; 2DOCX+короткийдругойпериод/уход/lost202/recovery/currentrights. |
+| U14.4/.6 | Jobs+Boundary: single domainjobqueue/worker/artifacts и compatibleconsumers/OpenAPI/gRPC; 2DOCX+короткийдругойпериод/уход/lost202/recovery/currentrights. |
 | U15.1 | Academic+Boundary: twoDB fresh/repeat сохраняютIDs/credentials/grants/history/sessions/jobs; newSQLonly. |
 | U20.1/.2/.3 | Bot+BotProducer+Boundary: exactcommon4/studentHW/headmancurrentroster/teacherownToday; privatefreshauthority/choice/timezone/empty/revoke proof. |
 | U23.1/.2/.3/.4/.5 | Apps: actualGlitchTipVueJava+Pyroprofile+protectedHomepage, combinedresourcebudget, PMMjustification; CIruntimeнеcomposePASS. |
@@ -46,13 +48,19 @@ ActualSQLSTATEUNKNOWN, не установленнаяUIregression. CI3909194123
 FAIL; Security39091941198/OpenAPI39091941265 SUCCESS; monitoringwholepipelineSUCCESS.
 Flyway4(old62SQL42702→63false/repeat/principals) иSubjectHTTP8PASS; V62byteexact.
 
-Presplit3 восстановлен в/tmp/rct-s19-academic: Eventoriginalheadmancontext beforeSubject,
-Mapодинguardedcase currentmigrateDeletion, Academicgeneratedkeys=false candidate.
-Patch1406d4a8549a70ffcb0da0bc20e99219f0067bcdafa5dc4fd95a8ef5bdde900f.
-Formatter/transform/diff+6hooksPASS; independentS3sourceAPPROVE. АдресныйcompileJava/
-compileTestJava PASS43tasks153.06s/RSS1.12GiB/reaped; runtime/SQLSTATEнеPASS.
-Следующий шаг: интеграция3+taskstate→normalpush/CI; не выдавать sharedDB
-как конечныйU14DONE. Конечныйsplit идёт параллельно послеfrozenboundaryreview.
+Presplit3 published da: originalheadmancontext beforeSubject, oneMapguard currentauthority,
+Academic generatedkeys=false, no secretSELECT/oldSQL/assertion changes. Compile43tasks
+153.06s/RSS1.12GiB, sixhooks and independentS3sourceAPPROVE. daCI39109858933:
+client actual2DOCX/navigation/lost202, authsmoke/remaining5/WebKitonline/workerlogic PASS;
+Academic485IT stillrunning at last check. ActualoldSQLSTATE/terminalCI UNKNOWN.
+Coverage39109858950/Security39109858940/OpenAPI39109858920 activegates; old26FAIL preserved.
+
+Apps39paths+oneauthoredCIhook integrated after independentS3sourceapproval; threeP2
+harness issues fixed/rechecked (cleanup-beforePASS, realidlesamples, structuredstackframes).
+Java+Vueprivacy/compile checks PASS; actual3apps/grouping/profile/resources PENDING nativeCI.
+Bot26Python and Producer25Java sourceapproved, addressed tests PASS; realtwoDB/TLSchainpending.
+No newmatrixclosure fromsource/compile/partialCI. Next normalpush Apps→actualisolatedCI,
+while Auth/Academic concreteoperation/catalog and Jobs domainqueue migration continue.
 
 ## KT0 / writers / восстановление
 
@@ -60,11 +68,15 @@ Cloud current running/connected, exec работает. /tmp послеoutage п
 2последнихfixtureWIP/receipts/caches утрачены. Root4taskdocsWIP+25foreignuntracked,
 regularGitpack/index сохранены. Не заявлять старыйstand/volumes/keys проверенными;
 ничего не reset/delete. Actualpacka0e5040f SHAefd2f155…4705 unchanged.
-НовыеWT/tmp/rct-s19-{auth,academic,bot,apps}, cleanbase26 черезauxbare readonlyRootobjects;
-noRootGC/prune. Native7slots=Root+6Sol6.1/high, actualmetadataUNKNOWN accepted.
-BoundaryAuth/proto/generated; Academicprofile/coordinator/fixtures; BotPython;
-Appsinfra/SDK/build/lock; BotProducerMobileBFF/Attendancebotreads; Reviewerindependent.
-No localDB/Docker/images/heavy сейчас; ресурсы/leases только поresources.
+WTs/tmp/rct-s19-{auth,academic,bot,apps,bot-producer} base26; Jobs WTbase da,
+auxbare readonlyRootobjects; noRootGC/prune. Native7slots inclRoot; Sol6.1/high,
+actualmetadataUNKNOWN accepted. Root integrates readyinventory only; currentreadyWIP
+singlecopy .agent/evidence/cloud-20261011/current-wip protects against observedTMPloss.
+Boundary Auth/proto/generated/basecompose/env/routes; Academicprofile/coordinator/catalog;
+Jobs all11domainjobs/AcademicV2/leasedrendererhelpers/Notificationadmit; BotPython;
+ProducerBFF/Attendance/Schedulebotreads; Appsinfra/SDK/build/lock; review independent.
+Bot/Producer/Apps sourceauthors finished; wake sameauthors forfindings. Academic onebounded
+compileleaseCPU0 now; no localDB/Docker/images. Limits/measurements inresources.
 
 [Evidence/history](attempts.ndjson), [decisions](decisions.md), [questions](questions.md),
 [единственный HANDOFF](HANDOFF-20261017.md) обновляются вместе связнымcheckpoint.

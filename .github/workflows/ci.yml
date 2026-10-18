@@ -5724,3 +5724,52 @@ jobs:
           path: build/monitoring/*.json
           if-no-files-found: error
           retention-days: 7
+
+  observability-apps:
+    name: Isolated GlitchTip, Java CPU profiles and protected operator links
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      RCT_OBSERVABILITY_APPS_RUNTIME: isolated-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Install the locked Vue and existing browser test dependencies
+        run: |
+          python -m pip install PyYAML==6.0.3
+          npm ci --prefix frontends --ignore-scripts --no-audit --no-fund
+          npm ci --prefix tests/e2e --ignore-scripts --no-audit --no-fund
+          tests/e2e/node_modules/.bin/playwright install --with-deps chromium
+      - name: Compile the actual Java report and check error privacy
+        run: |
+          ./gradlew --no-daemon --max-workers=2 --console=plain \
+            '-Dorg.gradle.jvmargs=-Xmx1g -XX:MaxMetaspaceSize=384m -XX:ActiveProcessorCount=2' \
+            --system-prop=org.gradle.java.compile-classpath-packaging=true \
+            :services:shared:shared-observability:compileJava \
+            :services:shared:shared-observability:compileTestJava \
+            :services:shared:shared-observability:test --tests '*SafeErrorEventTest' \
+            :services:attendance-service:attendance-app:observabilityProbeClasspath
+      - name: Check Vue privacy and platform bootstrap types
+        working-directory: frontends
+        run: |
+          npm run typecheck:foundation
+          npx vitest run --config vitest.config.ts mobile-core/src/observability/privacy.test.ts
+      - name: Exercise the three actual apps, private access, grouping and bounded overhead
+        run: python infra/observability-apps/check_apps.py
+      - name: Upload only the safe app outcome and measured resource receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: safe-observability-apps-${{ github.run_attempt }}
+          path: build/monitoring/apps.json
+          if-no-files-found: error

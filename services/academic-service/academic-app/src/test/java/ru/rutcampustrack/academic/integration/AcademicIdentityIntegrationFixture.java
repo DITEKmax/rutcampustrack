@@ -367,7 +367,13 @@ public final class AcademicIdentityIntegrationFixture implements AutoCloseable {
                 "ru.rutcampustrack.auth.entity", "ru.rutcampustrack.auth.event");
         authEntities.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         authEntities.setJpaPropertyMap(
-                Map.of("hibernate.hbm2ddl.auto", "validate", "hibernate.jdbc.time_zone", "UTC"));
+                Map.of(
+                        "hibernate.hbm2ddl.auto",
+                        "validate",
+                        "hibernate.jdbc.time_zone",
+                        "UTC",
+                        "hibernate.default_schema",
+                        "public"));
         authEntities.afterPropertiesSet();
         entitiesInitialized = true;
         var manager = new JpaTransactionManager(authEntities.getObject());

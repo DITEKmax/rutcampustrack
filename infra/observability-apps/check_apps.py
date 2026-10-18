@@ -25,7 +25,8 @@ SERVICES = {"glitchtip-db", "glitchtip", "pyroscope", "homepage", "observer-prox
 MARKER = "synthetic-private@example.invalid"
 CURRENT_STAGE = "source"
 DIAGNOSTIC_REASONS = {"INVALID_MOUNT", "PERMISSION_DENIED", "UNHEALTHY_DEPENDENCY",
-                      "OUT_OF_MEMORY", "READ_ONLY_FS", "NGINX_CONFIG", "PYRO_CONFIG", "DATABASE"}
+                      "OUT_OF_MEMORY", "READ_ONLY_FS", "NGINX_CONFIG", "PYRO_CONFIG", "DATABASE",
+                      "GLITCHTIP_MODULE_PATH"}
 
 
 def closed_reason(text, service=None):
@@ -42,6 +43,8 @@ def closed_reason(text, service=None):
         patterns.append(("PYRO_CONFIG", r"yaml: unmarshal errors|field .+ not found in type|(?:failed|error).*(?:parsing|loading) config"))
     elif service in {"glitchtip", "glitchtip-db"}:
         patterns.append(("DATABASE", r"django\.db\.(?:utils\.)?(?:operationalerror|programmingerror|integrityerror)|psycopg[23]?\.operationalerror|fatal:.*database"))
+    if service == "glitchtip":
+        patterns.append(("GLITCHTIP_MODULE_PATH", r"(?m)^modulenotfounderror: no module named 'glitchtip'\r?$"))
     return next((label for label, pattern in patterns if re.search(pattern, text.lower())), "UNKNOWN")
 
 

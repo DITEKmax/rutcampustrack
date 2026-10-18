@@ -18,6 +18,9 @@ COPY proto proto
 # M13 G25.5 — shared modules (academic-app транзитивно зависит от shared-*).
 COPY services/shared services/shared
 
+COPY services/auth-service/auth-api-contract/build.gradle.kts services/auth-service/auth-api-contract/
+COPY services/auth-service/auth-api-contract/src services/auth-service/auth-api-contract/src
+
 # API contract module
 COPY services/academic-service/academic-api-contract/build.gradle.kts \
      services/academic-service/academic-api-contract/

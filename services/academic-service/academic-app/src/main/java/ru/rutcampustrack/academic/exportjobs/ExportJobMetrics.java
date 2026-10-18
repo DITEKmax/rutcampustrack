@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import ru.rutcampustrack.academic.scheduling.SingleInstanceScheduled;
 import ru.rutcampustrack.auth.dto.ReportDownloadKind;
 
 import java.time.Duration;
@@ -171,6 +172,10 @@ public class ExportJobMetrics {
 
     /** One aggregate over at most the admitted backlog, never a SQL query during a scrape. */
     @Scheduled(fixedDelayString = "${rutcampustrack.export-jobs.snapshot-millis:5000}")
+    @SingleInstanceScheduled(
+            reason =
+                    "Per-instance metric snapshot: every process must refresh its own gauges; this"
+                        + " read performs no domain mutation.")
     public void refresh() {
         try {
             var next = new LinkedHashMap<String, double[]>();

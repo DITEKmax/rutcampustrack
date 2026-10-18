@@ -173,6 +173,11 @@ def main():
     with tempfile.TemporaryDirectory(prefix=project + "-") as tmp:
         td = Path(tmp)
         config = {"services": {}, "networks": {"private_net": {}}, "volumes": {"mongo-test": {}}, "secrets": {}}
+        databases = [
+            ("academic", "academic_db", "rct_academic_runtime", "rct_migrator"),
+            ("auth", "auth_db", "rct_auth_runtime", "rct_auth_migrator"),
+            ("schedule", "schedule_db", "rct_runtime", "rct_migrator"),
+        ]
         for name, db in [("academic", "academic_db"), ("schedule", "schedule_db")]:
             pg_service = copy.deepcopy(production["services"]["postgres-" + name])
             for key in ["container_name", "healthcheck", "depends_on"]:
@@ -186,21 +191,37 @@ def main():
                 f.write_text("synthetic-" + role + "-only")
                 config["secrets"][secret["source"]] = {"file": str(f)}
             config["services"]["postgres-" + name] = pg_service
+        for name, db, actor, migrator in databases:
+            server = "academic" if name == "auth" else name
             sql = td / (name + "-sql")
             sql.mkdir()
-            application_table = "users" if name == "academic" else "lessons"
+            application_table = "lessons" if name == "schedule" else "application_fixture"
             (sql / "V1__synthetic_application.sql").write_text(
                 "CREATE EXTENSION IF NOT EXISTS btree_gist; CREATE EXTENSION IF NOT EXISTS pgcrypto; CREATE TABLE "
                 + application_table
-                + "(id bigserial PRIMARY KEY,value text); CREATE TABLE credential_fixture(value text); INSERT INTO credential_fixture VALUES ('synthetic-private-marker');"
+                + "(id bigserial PRIMARY KEY,value text);"
             )
+            if name == "schedule":
+                callback = ROOT / "infra/postgres/flyway-callbacks"
+                callback_target = "/flyway/callbacks"
+            else:
+                callback = (
+                    ROOT
+                    / ("services/" + name + "-service/" + name + "-app/src/main/resources/db/" + name + "-migration")
+                    / ("afterMigrate__" + name + "_runtime_history_acl.sql")
+                )
+                callback_target = "/flyway/callbacks/" + callback.name
             migration = td / (name + "-flyway.conf")
             migration.write_text(
                 "flyway.url=jdbc:postgresql://postgres-"
-                + name
+                + server
                 + ":5432/"
                 + db
-                + "\nflyway.user=rct_migrator\nflyway.password=synthetic-migration-only\nflyway.locations=filesystem:/flyway/sql,filesystem:/flyway/callbacks\n"
+                + "\nflyway.user="
+                + migrator
+                + "\nflyway.password=synthetic-"
+                + ("auth-migration" if name == "auth" else "migration")
+                + "-only\nflyway.locations=filesystem:/flyway/sql,filesystem:/flyway/callbacks\n"
             )
             config["services"]["migrate-" + name] = {
                 "image": "redgate/flyway:11.7.2@sha256:b40d022ed6728a400eb46b84e1dd12d7468cdf63a4b83e6094a1768165fc67c6",
@@ -211,7 +232,7 @@ def main():
                 "environment": {"JAVA_ARGS": "-Xmx128m -XX:MaxMetaspaceSize=64m"},
                 "volumes": [
                     str(sql) + ":/flyway/sql:ro",
-                    str(ROOT / "infra/postgres/flyway-callbacks") + ":/flyway/callbacks:ro",
+                    str(callback) + ":" + callback_target + ":ro",
                     str(migration) + ":/flyway/conf/flyway.conf:ro",
                 ],
             }
@@ -369,22 +390,15 @@ def main():
         try:
             _STATE["phase"] = "DATASTORE_START"
             docker("up", "-d")
-            for name, db in [("academic", "academic_db"), ("schedule", "schedule_db")]:
+            for name, db, actor, migrator in databases:
                 _STATE["phase"] = "POSTGRES_" + name.upper()
-                pg = "postgres-" + name
+                pg = "postgres-academic" if name == "auth" else "postgres-" + name
+                bootstrap_cli = ["psql", "-U", "rct_bootstrap", "-d", db, "-v", "ON_ERROR_STOP=1"]
                 wait(
-                    lambda pg=pg, db=db: (
+                    lambda pg=pg, cli=bootstrap_cli, migrator=migrator: (
                         execute(
                             pg,
-                            [
-                                "psql",
-                                "-U",
-                                "rct_bootstrap",
-                                "-d",
-                                db,
-                                "-Atc",
-                                "SELECT count(*) FROM pg_roles WHERE rolname='rct_migrator'",
-                            ],
+                            cli + ["-Atc", "SELECT count(*) FROM pg_roles WHERE rolname='" + migrator + "'"],
                             check=False,
                         ).stdout.strip()
                         == "1"
@@ -392,113 +406,135 @@ def main():
                 )
                 bootstrap = execute(
                     pg,
-                    [
-                        "psql",
-                        "-U",
-                        "rct_bootstrap",
-                        "-d",
-                        db,
-                        "-Atc",
-                        "SELECT rolsuper FROM pg_roles WHERE rolname=current_user",
-                    ],
+                    bootstrap_cli + ["-Atc", "SELECT rolsuper FROM pg_roles WHERE rolname=current_user"],
                 ).stdout.strip()
                 assert bootstrap == "t", "fresh PostgreSQL bootstrap is privileged, never the application identity"
                 docker("run", "--rm", "migrate-" + name, "migrate")
-                application_table = "users" if name == "academic" else "lessons"
-                actors = ["rct_runtime"]
-                if name == "academic":
-                    actors += ["rct_auth_runtime", "rct_academic_runtime"]
-                    owner = execute(
+                application_table = "lessons" if name == "schedule" else "application_fixture"
+                actor_cli = ["psql", "-U", actor, "-d", db, "-v", "ON_ERROR_STOP=1"]
+                migrator_cli = ["psql", "-U", migrator, "-d", db, "-v", "ON_ERROR_STOP=1"]
+                # Private probes are not domain-migrator tables: own-database
+                # default DML grants must not accidentally authorize them.
+                execute(
+                    pg,
+                    bootstrap_cli,
+                    input="CREATE TABLE credential_fixture(value text,password_hash text,totp_secret text); "
+                    "INSERT INTO credential_fixture VALUES "
+                    "('synthetic-private-marker','synthetic-private-marker','synthetic-private-marker');",
+                )
+                _STATE["phase"] = "POSTGRES_" + name.upper() + "_" + actor.upper()
+                for principal, cli in [(actor, actor_cli), (migrator, migrator_cli)]:
+                    identity = execute(
                         pg,
-                        [
-                            "psql",
-                            "-U",
-                            "rct_bootstrap",
-                            "-d",
-                            db,
+                        cli
+                        + [
                             "-Atc",
-                            "SELECT NOT rolcanlogin AND NOT (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls) FROM pg_roles WHERE rolname='rct_auth_command_owner'",
+                            "SELECT current_user='"
+                            + principal
+                            + "' AND session_user='"
+                            + principal
+                            + "' AND current_database()='"
+                            + db
+                            + "' AND rolcanlogin AND NOT "
+                            "(rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls) "
+                            "FROM pg_roles WHERE rolname=current_user",
                         ],
                     ).stdout.strip()
-                    assert owner == "t"
-                    assert (
-                        execute(
-                            pg,
-                            [
-                                "psql",
-                                "-U",
-                                "rct_migrator",
-                                "-d",
-                                db,
-                                "-Atc",
-                                "SELECT pg_has_role(current_user,'rct_auth_command_owner','MEMBER') AND NOT rolcreaterole FROM pg_roles WHERE rolname=current_user",
-                            ],
-                        ).stdout.strip()
-                        == "t"
-                    )
-                for actor in actors:
-                    _STATE["phase"] = "POSTGRES_" + name.upper() + "_" + actor.upper()
-                    actor_cli = ["psql", "-U", actor, "-d", db, "-v", "ON_ERROR_STOP=1"]
-                    flags = execute(
+                    assert identity == "t"
+                execute(
+                    pg,
+                    actor_cli,
+                    input="BEGIN; INSERT INTO "
+                    + application_table
+                    + "(value) VALUES ('synthetic-allowed'); UPDATE "
+                    + application_table
+                    + " SET value='synthetic-updated'; SELECT * FROM "
+                    + application_table
+                    + "; DELETE FROM "
+                    + application_table
+                    + "; COMMIT;",
+                )
+                assert (
+                    execute(
                         pg,
                         actor_cli
                         + [
                             "-Atc",
-                            "SELECT rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls FROM pg_roles WHERE rolname=current_user",
+                            (
+                                "SELECT has_database_privilege(current_database(),'CREATE') OR "
+                                "has_database_privilege(current_database(),'TEMPORARY')"
+                            ),
                         ],
                     ).stdout.strip()
-                    assert flags == "f"
-                    if name == "schedule":
-                        execute(
-                            pg,
-                            actor_cli,
-                            input="BEGIN; INSERT INTO "
-                            + application_table
-                            + "(value) VALUES ('synthetic-allowed'); UPDATE "
-                            + application_table
-                            + " SET value='synthetic-updated'; SELECT * FROM "
-                            + application_table
-                            + "; DELETE FROM "
-                            + application_table
-                            + "; COMMIT;",
-                        )
-                    # This toy Academic schema intentionally has no V62 ownership
-                    # migration. Bootstrap/callback must not invent business grants.
-                    # Full positive column/command policy is exercised by the real
-                    # Academic FlywayMigrationIT, not synthetic GRANT statements here.
-                    denied_queries = [
-                        "CREATE TABLE forbidden_runtime_ddl(id integer)",
-                        "DROP TABLE " + application_table,
-                        "SELECT * FROM flyway_schema_history",
-                        "SELECT passwd FROM pg_shadow",
-                        "SELECT * FROM credential_fixture",
-                    ]
-                    if name == "academic":
+                    == "f"
+                )
+                forbidden_roles = [migrator]
+                if name != "schedule":
+                    foreign_runtime = "rct_auth_runtime" if name == "academic" else "rct_academic_runtime"
+                    foreign_migrator = "rct_auth_migrator" if name == "academic" else "rct_migrator"
+                    foreign_db = "auth_db" if name == "academic" else "academic_db"
+                    forbidden_roles += [foreign_migrator, foreign_runtime, "rct_runtime"]
+                    # All these principals exist in this same cluster. Require a
+                    # database-permission denial, never missing-role/auth failure.
+                    for principal, foreign in [
+                        (actor, foreign_db),
+                        (migrator, foreign_db),
+                        (foreign_runtime, db),
+                        (foreign_migrator, db),
+                        ("rct_runtime", db),
+                        (actor, "postgres"),
+                        (actor, "template1"),
+                    ]:
                         assert (
                             execute(
                                 pg,
-                                actor_cli
-                                + [
-                                    "-Atc",
-                                    "SELECT pg_has_role(current_user,'rct_auth_command_owner','MEMBER') OR pg_has_role(current_user,'rct_migrator','MEMBER') OR has_database_privilege(current_database(),'CREATE') OR has_database_privilege(current_database(),'TEMPORARY')",
-                                ],
+                                bootstrap_cli
+                                + ["-Atc", "SELECT rolcanlogin FROM pg_roles WHERE rolname='" + principal + "'"],
                             ).stdout.strip()
-                            == "f"
+                            == "t"
                         )
-                        denied_queries += [
-                            "SELECT * FROM " + application_table,
-                            "INSERT INTO " + application_table + "(value) VALUES ('forbidden')",
-                            "UPDATE " + application_table + " SET value='forbidden'",
-                            "DELETE FROM " + application_table,
-                            "SET ROLE rct_auth_command_owner",
-                        ]
-                    for query in denied_queries:
-                        denied = execute(pg, actor_cli + ["-c", query], check=False)
-                        assert denied.returncode != 0 and (
-                            "permission denied" in denied.stderr or "must be owner" in denied.stderr
+                        denied = execute(
+                            pg,
+                            ["psql", "-U", principal, "-d", foreign, "-v", "ON_ERROR_STOP=1", "-c", "SELECT 1"],
+                            check=False,
                         )
+                        assert denied.returncode != 0 and "permission denied for database" in denied.stderr
+                    # Own-schema default privileges apply to future domain data.
+                    execute(pg, migrator_cli, input="CREATE TABLE future_application_fixture(value text);")
+                    execute(
+                        pg,
+                        actor_cli,
+                        input="BEGIN; INSERT INTO future_application_fixture VALUES ('synthetic-allowed'); "
+                        "UPDATE future_application_fixture SET value='synthetic-updated'; "
+                        "SELECT * FROM future_application_fixture; DELETE FROM future_application_fixture; COMMIT;",
+                    )
+                denied_queries = [
+                    "CREATE TABLE forbidden_runtime_ddl(id integer)",
+                    "CREATE TEMP TABLE forbidden_runtime_temp(id integer)",
+                    "DROP TABLE " + application_table,
+                    "SELECT * FROM flyway_schema_history",
+                    "SELECT passwd FROM pg_shadow",
+                    "SELECT * FROM credential_fixture",
+                    "SELECT password_hash,totp_secret FROM credential_fixture",
+                    "UPDATE credential_fixture SET password_hash='forbidden'",
+                ]
+                for role in forbidden_roles:
+                    assert (
+                        execute(
+                            pg,
+                            actor_cli + ["-Atc", "SELECT pg_has_role(current_user,'" + role + "','MEMBER')"],
+                        ).stdout.strip()
+                        == "f"
+                    )
+                    denied_queries.append("SET ROLE " + role)
+                for query in denied_queries:
+                    denied = execute(pg, actor_cli + ["-c", query], check=False)
+                    assert denied.returncode != 0 and (
+                        "permission denied" in denied.stderr or "must be owner" in denied.stderr
+                    )
                 for query in [
                     "SELECT * FROM credential_fixture",
+                    "SELECT password_hash,totp_secret FROM credential_fixture",
                     "SELECT * FROM " + application_table,
                     "SELECT passwd FROM pg_shadow",
                 ]:
@@ -506,29 +542,15 @@ def main():
                         pg, ["psql", "-U", "rct_monitor", "-d", db, "-v", "ON_ERROR_STOP=1", "-c", query], check=False
                     )
                     assert denied.returncode != 0 and "permission denied" in denied.stderr
-                # Existing non-allowlisted tables and future migration data remain denied.
+                # Schedule still denies future non-allowlisted migration tables;
+                # Auth/Academic private probes stay outside domain default grants.
                 execute(
                     pg,
-                    ["psql", "-U", "rct_migrator", "-d", db, "-v", "ON_ERROR_STOP=1"],
+                    migrator_cli if name == "schedule" else bootstrap_cli,
                     input="CREATE TABLE future_private_fixture(value text);",
                 )
-                for actor in actors:
-                    denied = execute(
-                        pg,
-                        [
-                            "psql",
-                            "-U",
-                            actor,
-                            "-d",
-                            db,
-                            "-v",
-                            "ON_ERROR_STOP=1",
-                            "-c",
-                            "SELECT * FROM future_private_fixture",
-                        ],
-                        check=False,
-                    )
-                    assert denied.returncode != 0 and "permission denied" in denied.stderr
+                denied = execute(pg, actor_cli + ["-c", "SELECT * FROM future_private_fixture"], check=False)
+                assert denied.returncode != 0 and "permission denied" in denied.stderr
                 wait(lambda pg=pg: "pg_up 1" in metrics(pg + "-exporter"))
             _STATE["phase"] = "MONGO_ROOT_READINESS"
             mongo_cli = [
@@ -809,8 +831,8 @@ def main():
                 "config_sha256": hashlib.sha256((ROOT / "docker-compose.prod.yml").read_bytes()).hexdigest(),
                 "project": project,
                 "checks": [
-                    "PostgreSQL16 bootstrap privileged; Flyway11.7.2 migration identity owns schema and runs actual afterMigrate allowlist callback",
-                    "Schedule runtime retains actual allowlisted CRUD; Academic bootstrap principals deny app-table access until the authoritative ownership migration; full Academic/Auth positive column/command policy is covered by real FlywayMigrationIT",
+                    "PostgreSQL16 bootstrap privileged; exact Flyway11.7.2 owner identities run current afterMigrate ACL callbacks",
+                    "Schedule runtime retains allowlisted CRUD; Auth/Academic runtimes have own-database DML and deny foreign/maintenance database access, DDL, TEMP, role hopping, migration history and private credential fields",
                     "PostgreSQL pg_monitor can export but cannot read application credential fixture or pg_shadow",
                     "MongoDB clusterMonitor can export without local read or application-document access",
                     "Redis exports INFO metrics while GET/SET/SCAN/EVAL/CONFIG/SLOWLOG GET denied",

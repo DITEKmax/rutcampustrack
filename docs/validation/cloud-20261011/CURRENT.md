@@ -6,8 +6,8 @@ Persisted Goal Q031/D037: [GO](TASK-ADDENDUM-SPLIT-APPS-20261018.md),
 Root sole Git/taskdocs; codex/server-validation-20261011,
 [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), no main/merge/deploy.
 Starting **26cbe5912f6683a81780a831609dbddbc26feba4**; published/remote/PR
-**7394a897a33a7b828d817eb0660bd5336c930e58**. Checkout **d7d25b99…**:
-checkout-safe+GitHubcompare подтверждают0changedfiles против7394; это не dirty WIP.
+**ac9eaec52fca99d5ce97b2c72123d9cb15522e3d**. Checkout **50b87c8b…**:
+safe coverage metadata+GitHubcompare подтверждают0changedfiles противac9.
 
 ## Конечный план
 
@@ -34,35 +34,37 @@ U15 sameDB не двеDB/VPS. TASK17 прежние9/9 сохраняются в
 
 ## Факты / классификация
 
-7394: CI39134844701 иCoverage39134844724 FAIL; Security39134844726 иOpenAPI39134844710
-SUCCESS. OpenAPI проверяет committed offline snapshots, не новые runtime contracts.
-Auth/Academic ordinaryIT были SKIPPED: старые source pins/users-SQL/export paths
-несовместимы с split. Native source/компиляция не заменяют actualtwoDB acceptance.
+ac9: CI39138304815/Coverage39138304856 FAIL; Security39138304884 и
+OpenAPI39138304798 SUCCESS (offline snapshots, не новые runtime contracts).
+Gateway/BFF IT SUCCESS; Authunit166PASS; Academicunit650PASS/1ordinalFAIL.
+AuthIT105PASS95FAIL; AcademicIT89PASS409FAIL. Counts не доказывают общий RCA.
+Safe primary единожды: .agent/evidence/cloud-20261011/current-wip/ci-ac9-primary/.
 
-Root WIP после7394, source-reviewed/точно перенесён:
-- Product fixes: field/status validation, Academic employee preflight +UNIQUE,
-  explicit empty AdminProfile при обычномcreate, durable confirmed Telegram conflict
-  subtype/replay (новаяV10). SQL/HTTP wholechain ещё NOT_RUN.
-- Fixtures: Auth obsolete status helper→native13PASS; BFF unused TLS listener
-  disabled→real synthetic HTTP/gRPC70PASS; Headman freshsame3s/perRPC→1PASS.
-  Academic24User+16recoveryPASS; Headman1 перепроверен отдельно, прежние40 не повторялись.
-- Apps private network: approved proxy-only noninternal bridge; CI-only GlitchTip/Pyro
-  loopback ports. На7394 все5containersrunning/noOOM, portlookupFAIL; patchedruntimeNOT_RUN.
-- CI compatibility: ordinary tests после source restoration независимо от redproof;
-  current owner/source/oracles. Review поймал пропуск Attendance classifier; исправлен, affected recheck APPROVE.
+Текущий проверяемый пакет поверхac9:
+- Fixtures: exact Auth V11 helper EXECUTE; manualAuthEMF publicschema при safe
+  searchpath. Missingtable branch подтверждена cachedHibernate6.6.53/CI sourceframe;
+  весь эффект на IT ещё не проверен. ACL/validation не расширены/не отключены.
+- Scheduler guard: retained explicit nonblankreason для шести singleworker/local jobs;
+  runtime CAS/leases/bodies неизменны, unmarked/blank всё ещё отказ. Review APPROVE.
+- Exporter fixture: реальные ownDB права/foreignDB и private запреты вместо sharedDB;
+  production ACL неизменны. Review APPROVE; actualDB runtime pending.
+- Apps: standardDjango bootstrap исправляет source-proven modulepath defect;
+  actual exit1 причина UNKNOWN, не OOM. Review APPROVE; fullruntime/resources pending.
+- Product packaging: actual Dockerbuild AcademicAPI не видит AuthAPI DTOs;
+  добавлены только два необходимых COPY. Browser до UI/login не дошёл.
 
-Native safe evidence: current-wip/integration-compile/compile7.safe.json,
-runtime8.safe.json, compile9.safe.json иtest10.safe.json. OriginalFAIL сохранён.
-Unknown: Academic ordinal1, Gateway6FAIL RCA, историческийWORD incident/первыйSQLSTATE.
-Presplit485PASS/createбез500/2DOCX/b9reconciliation сохранены только по применимости.
-CI primary один раз: .agent/evidence/cloud-20261011/current-wip/ci-7394-primary/.
+Native current11: Auth/Academic fixture compile PASS; exact scheduler guard
+JUnit1+ArchTest1 PASS,108.80s/RSS1,513,558,016B. Старые PASS не повторялись.
+Source ed609daa/2261 неизменён, процессов0/lease RELEASED; actualDB не проверена.
+Presplit485PASS/createбез500/2DOCX/b9reconciliation только прежняя применимость.
+ИсторическийWORD incident/первыйSQLSTATE UNKNOWN.
 
 ## Исполнение / следующий шаг
 
 [Граница](BOUNDARY-PROTOCOL-20261018.md), [owners/resources](resources.md).
-Следующий шаг: precommit иnormalpush связного пакета; CI1 SOURCE APPROVE.
-Затем реальные ordinaryIT/currentcontracts; готовые PASS не повторять без причины.
-Official Auth/Academic snapshots пока отсутствуют; один type-only report client WIP
+Следующий шаг: normalpush связного source-reviewed/native-checked пакета,
+actualCI/newDB paths. Готовые PASS не повторять без причины.
+Official Auth snapshot получен; Academic отсутствует. Один type-only report client WIP
 сохранён до snapshots+existing generators, без ручных spec/generated edits.
 Native heavy lease RELEASED/processes0. Local Docker/DB/imagepull NOT_RUN:
 workspace ниже4GiB reserve, DockerVFS на том же filesystem; no cleanup/limit lowering.

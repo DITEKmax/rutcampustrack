@@ -39,6 +39,11 @@ public final class AuthDatabaseFixture {
         jdbc.execute(
                 "GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO rct_auth_runtime");
         jdbc.execute("GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO rct_auth_runtime");
+        // Unlike production bootstrap, this fixture creates the runtime role after V11.
+        // Reproduce V11's exact grant for the catalog trigger's invoker-rights helper.
+        jdbc.execute(
+                "GRANT EXECUTE ON FUNCTION public.append_auth_identity_catalog_snapshot(bigint)"
+                        + " TO rct_auth_runtime");
         jdbc.execute(
                 "GRANT DELETE ON"
                     + " auth_outbox,password_reset_tokens,qr_login_challenges,qr_login_issuers TO"

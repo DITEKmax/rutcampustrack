@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import ru.rutcampustrack.academic.contract.dto.exportjobs.AcademicExportJobModels.Create;
+import ru.rutcampustrack.academic.scheduling.SingleInstanceScheduled;
 import ru.rutcampustrack.auth.dto.*;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
@@ -179,6 +180,10 @@ public class ExportJobService {
     }
 
     @Scheduled(fixedDelayString = "${rutcampustrack.export-jobs.cleanup-millis:60000}")
+    @SingleInstanceScheduled(
+            reason =
+                    "Single worker cleans bounded batches; existing row locks and SKIP LOCKED"
+                        + " isolate terminal transitions and DELETE RETURNING expiry effects.")
     public void cleanExpired() {
         jobs.cleanExpired();
     }

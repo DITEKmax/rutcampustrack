@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import ru.rutcampustrack.academic.scheduling.SingleInstanceScheduled;
+
 /** Bounded recovery uses stored accepted commands and receipts, never a retained bearer token. */
 @Component
 @Profile("!test")
@@ -24,6 +26,10 @@ public class AcademicIdentityOperationRecovery {
     @Scheduled(
             fixedDelayString = "${academic.identity-operation.recovery-delay-ms:2000}",
             initialDelayString = "${academic.identity-operation.recovery-initial-delay-ms:10000}")
+    @SingleInstanceScheduled(
+            reason =
+                    "Single worker retries persisted operation IDs; own-row phase CAS and exact"
+                        + " Auth receipts retain fences on unknown outcomes.")
     public void recover() {
         for (String id : store.pending()) {
             try {

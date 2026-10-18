@@ -9,6 +9,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
+import ru.rutcampustrack.academic.scheduling.SingleInstanceScheduled;
+
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -39,6 +41,10 @@ public class ExportJobWorker {
     }
 
     @Scheduled(fixedDelayString = "${rutcampustrack.export-worker.poll-millis:1000}")
+    @SingleInstanceScheduled(
+            reason =
+                    "Single worker uses a bounded two-thread dispatcher; existing DB claim locking"
+                        + " and live-lease CAS enforce the global two-job limit.")
     public void tick() {
         for (int slot = 0; slot < 2; slot++) {
             if (active.get() >= 2) return;

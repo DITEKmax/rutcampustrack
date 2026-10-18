@@ -9,6 +9,6 @@ if [ "$#" -gt 0 ]; then exec "$@"; fi
 python manage.py migrate --no-input --skip-checks
 python manage.py maintain_partitions
 python manage.py createcachetable
-python /observer/bootstrap-projects.py
+python manage.py shell < /observer/bootstrap-projects.py
 export SKIP_INIT=true
 exec ./bin/start.sh

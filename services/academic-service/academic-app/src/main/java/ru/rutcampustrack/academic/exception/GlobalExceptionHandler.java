@@ -1,10 +1,7 @@
 package ru.rutcampustrack.academic.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.Instant;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -16,10 +13,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import ru.rutcampustrack.academic.contract.dto.homework.HomeworkPublicationPendingResponse;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.history.HistoricalMembershipException;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Domain-level exception handler для academic-service.
@@ -47,6 +50,34 @@ import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(io.grpc.StatusRuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleIdentityAuthorityStatus(
+            io.grpc.StatusRuntimeException error, HttpServletRequest request) {
+        HttpStatus status =
+                switch (error.getStatus().getCode()) {
+                    case INVALID_ARGUMENT -> HttpStatus.BAD_REQUEST;
+                    case UNAUTHENTICATED -> HttpStatus.UNAUTHORIZED;
+                    case PERMISSION_DENIED -> HttpStatus.FORBIDDEN;
+                    case NOT_FOUND -> HttpStatus.NOT_FOUND;
+                    case ALREADY_EXISTS, ABORTED, FAILED_PRECONDITION -> HttpStatus.CONFLICT;
+                    default -> HttpStatus.SERVICE_UNAVAILABLE;
+                };
+        return problem(
+                status,
+                "identity-state-unavailable",
+                status == HttpStatus.SERVICE_UNAVAILABLE
+                        ? "Состояние данных временно недоступно"
+                        : "Операция не подтверждена",
+                "Обнови данные и повтори запрос. Для сохранённой операции используй прежний ключ.",
+                request,
+                null,
+                Map.of(
+                        "code",
+                        status == HttpStatus.SERVICE_UNAVAILABLE
+                                ? "IDENTITY_PUBLICATION_PENDING"
+                                : "IDENTITY_AUTHORITY_REJECTED"));
+    }
 
     /** MDC key для correlation id (совпадает с shared GlobalExceptionHandler). */
     private static final String MDC_TRACE_ID = "traceId";

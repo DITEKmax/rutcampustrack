@@ -75,8 +75,8 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:rabbitmq")
-    testImplementation("org.flywaydb:flyway-core")
-    testRuntimeOnly("org.flywaydb:flyway-database-postgresql")
+    implementation("org.flywaydb:flyway-core")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // M08 Группа 1 (P2-8/1) — IntegrationTestNamingRule + ArchUnit
@@ -109,6 +109,10 @@ sourceSets {
         proto {
             srcDir(rootProject.file("proto"))
             include("academic.proto")
+            include("auth_authority.proto")
+            include("auth_data_authority.proto")
+            include("auth_identity_operations.proto")
+            include("auth_security_capabilities.proto")
         }
     }
 }

@@ -1,16 +1,18 @@
 package ru.rutcampustrack.academic.repository;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import ru.rutcampustrack.academic.contract.dto.user.RoleGrantViewResponse;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
-import ru.rutcampustrack.academic.contract.dto.user.RoleGrantViewResponse;
 
-/** Read adapter for the same durable grant rows consumed by Auth. */
+/** NONAUTHORITATIVE registry grant display; never admission or domain eligibility. */
 @Repository
 public class UserRoleGrantReader {
 
@@ -18,8 +20,8 @@ public class UserRoleGrantReader {
             """
             SELECT g.user_id, g.role, g.status, g.group_id,
                    grp.name AS group_name, u.status::text AS user_status
-            FROM user_role_grants g
-            JOIN users u ON u.id=g.user_id
+            FROM academic_role_directory g
+            JOIN academic_user_directory u ON u.id=g.user_id
             LEFT JOIN groups grp ON grp.id = g.group_id
             WHERE g.user_id IN (%s)
             ORDER BY g.user_id, g.id

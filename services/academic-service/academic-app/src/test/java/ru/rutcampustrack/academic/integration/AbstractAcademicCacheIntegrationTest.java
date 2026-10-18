@@ -16,10 +16,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 
 /**
- * Base class for cache integration tests. Starts Testcontainers PostgreSQL + Redis. Redis
- * autoconfiguration is NOT excluded for the default critical factory/template. The private cache
- * endpoint is explicitly bound to this fixture's owned Redis too; one CacheIT case adds a second
- * owned Redis to prove actual process isolation.
+ * Cache integration uses the shared split PostgreSQL/Auth fixture and a separate disposable
+ * Academic cache Redis. Auth tickets and limits use the fixture's distinct critical Redis process.
  *
  * <p>Key difference from AbstractAcademicIntegrationTest: - Adds GenericContainer for Redis
  * alongside PostgreSQLContainer - Does NOT exclude RedisAutoConfiguration /
@@ -34,38 +32,33 @@ import ru.rutcampustrack.shared.outbox.OutboxEventSender;
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
 public abstract class AbstractAcademicCacheIntegrationTest {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    protected AcademicIdentityIntegrationFixture identityFixture;
+
+    protected org.springframework.test.web.servlet.request.RequestPostProcessor signedAdmin() {
+        return AcademicTestAdminRequest.signed(identityFixture);
+    }
+
     @MockitoBean RabbitTemplate rabbitTemplate;
 
     @MockitoBean OutboxEventSender outboxEventSender;
 
-    static final PostgreSQLContainer<?> POSTGRES;
+    static final AcademicIdentityIntegrationFixture IDENTITY_FIXTURE =
+            AcademicIdentityIntegrationFixture.start();
+    static final PostgreSQLContainer<?> POSTGRES = IDENTITY_FIXTURE.postgres();
     static final GenericContainer<?> REDIS;
 
     static {
-        // Private resources only: fixture reset must never clear a reused cache.
-        POSTGRES =
-                new PostgreSQLContainer<>("postgres:16")
-                        .withDatabaseName(
-                                "academic_ci_"
-                                        + java.util.UUID.randomUUID().toString().replace("-", ""))
-                        .withUsername("rct_user")
-                        .withPassword("rct_dev_pass")
-                        .withReuse(false);
-        POSTGRES.start();
-        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
-
         REDIS = new GenericContainer<>("redis:7-alpine").withExposedPorts(6379).withReuse(false);
         REDIS.start();
     }
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        IDENTITY_FIXTURE.properties(registry, "cache");
         registry.add("spring.data.redis.host", REDIS::getHost);
         registry.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
-        // Both are owned by this fixture; production uses separate Redis processes.
+        // Academic's cache is separate from the helper's Auth-critical Redis process.
         registry.add("rct.cache.redis.host", REDIS::getHost);
         registry.add("rct.cache.redis.port", () -> REDIS.getMappedPort(6379));
         registry.add("rct.cache.redis.username", () -> "");

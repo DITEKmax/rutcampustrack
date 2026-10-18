@@ -1,10 +1,17 @@
 package ru.rutcampustrack.academic.contract.api;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
@@ -18,6 +25,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import ru.rutcampustrack.academic.contract.dto.IdentityOperationHttpModels;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupRegistryResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
@@ -36,6 +45,7 @@ import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
 import ru.rutcampustrack.academic.contract.dto.group.StudyMode;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 /** REST API contract for student group management. */
 @Tag(name = "Groups", description = "Управление учебными группами")
@@ -142,14 +152,110 @@ public interface GroupApi {
 
     /** Canonical CAS-protected headman mutation. */
     @Operation(summary = "Назначить старосту (ADMIN)")
+    @Parameter(
+            name = "Idempotency-Key",
+            in = ParameterIn.HEADER,
+            required = false,
+            description =
+                    "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с"
+                            + " тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+            schema =
+                    @Schema(
+                            type = "string",
+                            format = "uuid",
+                            pattern =
+                                    "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Староста назначен"),
-        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-        @ApiResponse(responseCode = "404", description = "Группа или студент не найдены"),
+        @ApiResponse(
+                responseCode = "200",
+                description = "Староста назначен",
+                headers = {
+                    @Header(
+                            name = "X-Operation-Id",
+                            description = "UUID сохранённой операции",
+                            schema = @Schema(type = "string", format = "uuid")),
+                    @Header(
+                            name = "Location",
+                            description = "Адрес проверки состояния операции",
+                            schema = @Schema(type = "string", format = "uri-reference")),
+                    @Header(
+                            name = "Cache-Control",
+                            schema = @Schema(type = "string", example = "no-store"))
+                }),
+        @ApiResponse(
+                responseCode = "202",
+                description =
+                        "Операция сохранена; проверьте Location перед повтором команды с прежним"
+                                + " ключом",
+                content =
+                        @Content(
+                                mediaType = "application/json",
+                                schema =
+                                        @Schema(
+                                                implementation =
+                                                        IdentityOperationHttpModels.Operation
+                                                                .class)),
+                headers = {
+                    @Header(
+                            name = "X-Operation-Id",
+                            description = "UUID сохранённой операции",
+                            schema = @Schema(type = "string", format = "uuid")),
+                    @Header(
+                            name = "Location",
+                            description = "Адрес проверки состояния операции",
+                            schema = @Schema(type = "string", format = "uri-reference")),
+                    @Header(
+                            name = "Cache-Control",
+                            schema = @Schema(type = "string", example = "no-store")),
+                    @Header(
+                            name = "Retry-After",
+                            description = "Задержка перед проверкой состояния в секундах",
+                            schema = @Schema(type = "integer", example = "2", minimum = "0"))
+                }),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Ошибка валидации",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Требуется действующая сессия",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Нет прав доступа",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Группа или студент не найдены",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(
                 responseCode = "409",
-                description = "Устаревшее состояние или конфликт назначения")
+                description = "Устаревшее состояние или конфликт назначения",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "503",
+                description =
+                        "Актуальное состояние зависимости недоступно; исход операции нельзя считать"
+                                + " отклонённым",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PutMapping("/{id}/headman")
     HeadmanAssignmentResponse assignHeadman(
@@ -176,23 +282,219 @@ public interface GroupApi {
      * серверным планом; устаревший запрос получает 409.
      */
     @Operation(summary = "Выполнить промоушен групп (ADMIN). Запускать после preview.")
+    @Parameter(
+            name = "Idempotency-Key",
+            in = ParameterIn.HEADER,
+            required = false,
+            description =
+                    "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с"
+                            + " тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+            schema =
+                    @Schema(
+                            type = "string",
+                            format = "uuid",
+                            pattern =
+                                    "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Результат промоушена"),
-        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-        @ApiResponse(responseCode = "404", description = "Весенний семестр или группа не найдены"),
+        @ApiResponse(
+                responseCode = "200",
+                description = "Результат промоушена",
+                headers = {
+                    @Header(
+                            name = "X-Operation-Id",
+                            description = "UUID сохранённой операции",
+                            schema = @Schema(type = "string", format = "uuid")),
+                    @Header(
+                            name = "Location",
+                            description = "Адрес проверки состояния операции",
+                            schema = @Schema(type = "string", format = "uri-reference")),
+                    @Header(
+                            name = "Cache-Control",
+                            schema = @Schema(type = "string", example = "no-store"))
+                }),
+        @ApiResponse(
+                responseCode = "202",
+                description =
+                        "Операция сохранена; проверьте Location перед повтором команды с прежним"
+                                + " ключом",
+                content =
+                        @Content(
+                                mediaType = "application/json",
+                                schema =
+                                        @Schema(
+                                                implementation =
+                                                        IdentityOperationHttpModels.Operation
+                                                                .class)),
+                headers = {
+                    @Header(
+                            name = "X-Operation-Id",
+                            description = "UUID сохранённой операции",
+                            schema = @Schema(type = "string", format = "uuid")),
+                    @Header(
+                            name = "Location",
+                            description = "Адрес проверки состояния операции",
+                            schema = @Schema(type = "string", format = "uri-reference")),
+                    @Header(
+                            name = "Cache-Control",
+                            schema = @Schema(type = "string", example = "no-store")),
+                    @Header(
+                            name = "Retry-After",
+                            description = "Задержка перед проверкой состояния в секундах",
+                            schema = @Schema(type = "integer", example = "2", minimum = "0"))
+                }),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Ошибка валидации",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Требуется действующая сессия",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Нет прав доступа",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Весенний семестр или группа не найдены",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(
                 responseCode = "409",
-                description = "Предпросмотр устарел или группа уже обработана")
+                description = "Предпросмотр устарел или группа уже обработана",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "503",
+                description =
+                        "Актуальное состояние зависимости недоступно; исход операции нельзя считать"
+                                + " отклонённым",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/promote")
     ResponseEntity<PromotionSummary> promote(@Valid @RequestBody PromotionExecuteRequest request);
 
     @Operation(summary = "Полное обновление группы (PUT, ADMIN)")
+    @Parameter(
+            name = "Idempotency-Key",
+            in = ParameterIn.HEADER,
+            required = false,
+            description =
+                    "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с"
+                            + " тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+            schema =
+                    @Schema(
+                            type = "string",
+                            format = "uuid",
+                            pattern =
+                                    "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Группа обновлена"),
-        @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-        @ApiResponse(responseCode = "404", description = "Группа не найдена")
+        @ApiResponse(
+                responseCode = "200",
+                description = "Группа обновлена",
+                headers = {
+                    @Header(
+                            name = "X-Operation-Id",
+                            description = "UUID сохранённой операции",
+                            schema = @Schema(type = "string", format = "uuid")),
+                    @Header(
+                            name = "Location",
+                            description = "Адрес проверки состояния операции",
+                            schema = @Schema(type = "string", format = "uri-reference")),
+                    @Header(
+                            name = "Cache-Control",
+                            schema = @Schema(type = "string", example = "no-store"))
+                }),
+        @ApiResponse(
+                responseCode = "202",
+                description =
+                        "Операция сохранена; проверьте Location перед повтором команды с прежним"
+                                + " ключом",
+                content =
+                        @Content(
+                                mediaType = "application/json",
+                                schema =
+                                        @Schema(
+                                                implementation =
+                                                        IdentityOperationHttpModels.Operation
+                                                                .class)),
+                headers = {
+                    @Header(
+                            name = "X-Operation-Id",
+                            description = "UUID сохранённой операции",
+                            schema = @Schema(type = "string", format = "uuid")),
+                    @Header(
+                            name = "Location",
+                            description = "Адрес проверки состояния операции",
+                            schema = @Schema(type = "string", format = "uri-reference")),
+                    @Header(
+                            name = "Cache-Control",
+                            schema = @Schema(type = "string", example = "no-store")),
+                    @Header(
+                            name = "Retry-After",
+                            description = "Задержка перед проверкой состояния в секундах",
+                            schema = @Schema(type = "integer", example = "2", minimum = "0"))
+                }),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Ошибка валидации",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Требуется действующая сессия",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Нет прав доступа",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Группа не найдена",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Конфликт состояния",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "503",
+                description =
+                        "Актуальное состояние зависимости недоступно; исход операции нельзя считать"
+                                + " отклонённым",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PutMapping("/{id}")
     ResponseEntity<EntityModel<GroupResponse>> updateGroup(
@@ -200,13 +502,111 @@ public interface GroupApi {
 
     /** Restore an archived group without recreating its membership or history. */
     @Operation(summary = "Восстановить группу из архива (ADMIN)")
+    @Parameter(
+            name = "Idempotency-Key",
+            in = ParameterIn.HEADER,
+            required = false,
+            description =
+                    "Необязательный стабильный канонический UUID попытки. Повторять ту же команду с"
+                            + " тем же ключом; без ключа сервер выдаёт X-Operation-Id.",
+            schema =
+                    @Schema(
+                            type = "string",
+                            format = "uuid",
+                            pattern =
+                                    "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))
     @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Группа восстановлена или уже активна"),
-        @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-        @ApiResponse(responseCode = "404", description = "Группа не найдена"),
+        @ApiResponse(
+                responseCode = "202",
+                description =
+                        "Операция сохранена; проверьте Location перед повтором команды с прежним"
+                                + " ключом",
+                content =
+                        @Content(
+                                mediaType = "application/json",
+                                schema =
+                                        @Schema(
+                                                implementation =
+                                                        IdentityOperationHttpModels.Operation
+                                                                .class)),
+                headers = {
+                    @Header(
+                            name = "X-Operation-Id",
+                            description = "UUID сохранённой операции",
+                            schema = @Schema(type = "string", format = "uuid")),
+                    @Header(
+                            name = "Location",
+                            description = "Адрес проверки состояния операции",
+                            schema = @Schema(type = "string", format = "uri-reference")),
+                    @Header(
+                            name = "Cache-Control",
+                            schema = @Schema(type = "string", example = "no-store")),
+                    @Header(
+                            name = "Retry-After",
+                            description = "Задержка перед проверкой состояния в секундах",
+                            schema = @Schema(type = "integer", example = "2", minimum = "0"))
+                }),
+        @ApiResponse(
+                responseCode = "204",
+                description = "Группа восстановлена или уже активна",
+                content = @Content,
+                headers = {
+                    @Header(
+                            name = "X-Operation-Id",
+                            description = "UUID сохранённой операции",
+                            schema = @Schema(type = "string", format = "uuid")),
+                    @Header(
+                            name = "Location",
+                            description = "Адрес проверки состояния операции",
+                            schema = @Schema(type = "string", format = "uri-reference")),
+                    @Header(
+                            name = "Cache-Control",
+                            schema = @Schema(type = "string", example = "no-store"))
+                }),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Ошибка валидации",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Требуется действующая сессия",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Нет прав доступа",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Группа не найдена",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(
                 responseCode = "409",
-                description = "Имя или код группы заняты либо архивное имя не распознано")
+                description = "Имя или код группы заняты либо архивное имя не распознано",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "503",
+                description =
+                        "Актуальное состояние зависимости недоступно; исход операции нельзя считать"
+                                + " отклонённым",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/{id}/restore")
     ResponseEntity<Void> restoreGroup(@PathVariable Long id);

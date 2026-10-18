@@ -6,6 +6,8 @@ group = "ru.rutcampustrack"
 version = "0.1.0"
 
 dependencies {
+    // Preserve the existing report selector wire while Academic owns its lifecycle.
+    api(project(":services:auth-service:auth-api-contract"))
     // M11 G0.3: единый источник ErrorResponse/FieldError для всех контрактов
     api(project(":services:shared:shared-web-api"))
 

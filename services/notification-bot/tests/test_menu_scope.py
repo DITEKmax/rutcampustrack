@@ -82,6 +82,7 @@ async def test_protected_homework_client_sends_only_identity_version_and_dates_o
         "telegram_sender_id",
         "expected_user_id",
         "expected_roles_version",
+        "expected_telegram_binding_version",
         "date_from",
         "date_to",
     }

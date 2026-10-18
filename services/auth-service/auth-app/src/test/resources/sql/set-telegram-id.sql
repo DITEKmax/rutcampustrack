@@ -1,5 +1,5 @@
 UPDATE
-    users
+    auth_identities
 SET
     telegram_id = 123456789
 WHERE

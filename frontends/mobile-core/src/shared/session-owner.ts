@@ -101,6 +101,14 @@ export function createGenerationBoundAdminAccessClient(
   }
   return new AdminAccessClient({
     assertCurrent,
+    ...(owner.sessionScopeFor
+      ? {
+          sessionScopeFor: () => {
+            assertCurrent()
+            return owner.sessionScopeFor?.(generation) ?? null
+          },
+        }
+      : {}),
     accessToken: () => {
       assertCurrent()
       return owner.accessTokenFor(generation)
@@ -152,6 +160,14 @@ export function createGenerationBoundAdminUsersClient(
   }
   const options: AdminUsersApiOptions = {
     assertCurrent,
+    ...(owner.sessionScopeFor
+      ? {
+          sessionScopeFor: () => {
+            assertCurrent()
+            return owner.sessionScopeFor?.(generation) ?? null
+          },
+        }
+      : {}),
     accessToken: () => {
       assertCurrent()
       return owner.accessTokenFor(generation)

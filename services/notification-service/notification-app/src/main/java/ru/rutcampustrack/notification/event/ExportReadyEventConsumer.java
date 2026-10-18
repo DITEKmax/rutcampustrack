@@ -1,8 +1,5 @@
 package ru.rutcampustrack.notification.event;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +8,12 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+
 import ru.rutcampustrack.notification.config.WsSessionAdmissionOutboundInterceptor;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /** Private metadata hints. Outbound admission and authenticated REST own all disclosure. */
 @Component
@@ -27,7 +29,7 @@ public class ExportReadyEventConsumer {
             containerFactory = "notificationHistoryRabbitListenerContainerFactory")
     public void onEvent(Map<String, Object> event) {
         if (!"export.state.changed".equals(event.get("event_type"))) return;
-        if (!"auth-service".equals(event.get("source"))
+        if (!"academic-service".equals(event.get("source"))
                 || !Integer.valueOf(1).equals(event.get("event_version"))
                 || !(event.get("payload") instanceof Map<?, ?> payload)
                 || !payload.keySet().equals(Set.of("job_id", "user_id", "session_id", "state"))) {

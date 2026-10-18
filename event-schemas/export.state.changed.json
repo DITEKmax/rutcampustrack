@@ -13,7 +13,7 @@
     "event_version": {"const": 1},
     "occurred_at": {"$ref": "_common.json#/$defs/occurredAt"},
     "trace_id": {"$ref": "_common.json#/$defs/traceId"},
-    "source": {"const": "auth-service"},
+    "source": {"const": "academic-service"},
     "payload": {
       "type": "object",
       "additionalProperties": false,

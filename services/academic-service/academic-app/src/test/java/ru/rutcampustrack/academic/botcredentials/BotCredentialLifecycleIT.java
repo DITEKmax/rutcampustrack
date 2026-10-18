@@ -24,9 +24,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import ru.rutcampustrack.academic.grpc.*;
+import ru.rutcampustrack.auth.authority.AuthAdminJdbcAuthority;
+import ru.rutcampustrack.auth.botcredentials.AuthBotCredentialMessageRepository;
 import ru.rutcampustrack.auth.botcredentials.AuthBotCredentialServiceIdentityInterceptor;
 import ru.rutcampustrack.auth.botcredentials.AuthBotOwnInitialCredentialsQuery;
-import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 import ru.rutcampustrack.shared.security.grpc.ServicePrincipal;
 
 import java.nio.file.Files;
@@ -51,8 +52,7 @@ class BotCredentialLifecycleIT {
                     .withPassword("rct_np01_disposable")
                     .withReuse(false);
     private JdbcTemplate jdbc;
-    private TransactionTemplate transactions;
-    private BotCredentialsService service;
+    private AuthBotCredentialMessageRepository service;
     private AnnotationConfigApplicationContext authContext;
     private AuthBotOwnInitialCredentialsQuery authRead;
     private JdbcTemplate authJdbc;
@@ -65,29 +65,19 @@ class BotCredentialLifecycleIT {
     @BeforeAll
     void start() {
         postgres.start();
-        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(postgres);
+        var source =
+                new DriverManagerDataSource(
+                        postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
         Flyway.configure()
-                .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
+                .dataSource(source)
                 .locations("filesystem:" + migrationDirectory())
                 .load()
                 .migrate();
-        var data =
-                new DriverManagerDataSource(
-                        postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
-        jdbc = new JdbcTemplate(data);
-        var runtimeSource =
-                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.source(
-                        postgres, "rct_academic_runtime");
-        var runtime = new JdbcTemplate(runtimeSource);
-        transactions = new TransactionTemplate(new DataSourceTransactionManager(runtimeSource));
-        var query =
-                new BotOwnInitialCredentialsQuery(runtime, new AdminAccessJdbcAuthority(runtime));
-        service =
-                new BotCredentialsService(
-                        query, new BotCredentialMessageRepository(runtime, query));
+        jdbc = new JdbcTemplate(source);
+        prepareRuntime(jdbc, "rct_auth_runtime");
         var authSource =
-                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.source(
-                        postgres, "rct_auth_runtime");
+                new DriverManagerDataSource(
+                        postgres.getJdbcUrl(), "rct_auth_runtime", RUNTIME_PASSWORD);
         authJdbc = new JdbcTemplate(authSource);
         assertThat(authJdbc.queryForObject("SELECT current_user", String.class))
                 .isEqualTo("rct_auth_runtime");
@@ -97,11 +87,13 @@ class BotCredentialLifecycleIT {
                 DataSourceTransactionManager.class,
                 () -> new DataSourceTransactionManager(authSource));
         authContext.registerBean(JdbcTemplate.class, () -> authJdbc);
-        authContext.registerBean(
-                AdminAccessJdbcAuthority.class, () -> new AdminAccessJdbcAuthority(authJdbc));
-        authContext.register(AuthTransactions.class, AuthBotOwnInitialCredentialsQuery.class);
+        authContext.register(
+                AuthTransactions.class,
+                AuthBotOwnInitialCredentialsQuery.class,
+                AuthBotCredentialMessageRepository.class);
         authContext.refresh();
         authRead = authContext.getBean(AuthBotOwnInitialCredentialsQuery.class);
+        service = authContext.getBean(AuthBotCredentialMessageRepository.class);
         authTransactions =
                 new TransactionTemplate(authContext.getBean(DataSourceTransactionManager.class));
         assertThat(org.springframework.aop.support.AopUtils.isAopProxy(authRead)).isTrue();
@@ -131,7 +123,7 @@ class BotCredentialLifecycleIT {
                 .isZero();
         if (role.equals("LIMITED")) {
             assertThat(
-                            new AdminAccessJdbcAuthority(jdbc)
+                            new AuthAdminJdbcAuthority(jdbc)
                                     .profile(user.id)
                                     .allows("USER_CREDENTIALS_MANAGE"))
                     .isFalse();
@@ -145,9 +137,9 @@ class BotCredentialLifecycleIT {
                 "UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='student'",
                 user.id);
         assertThat(read(user, 0, 0).getFound()).isFalse();
-        jdbc.update("UPDATE users SET status='archived' WHERE id=?", user.id);
+        jdbc.update("UPDATE auth_identities SET account_state='ARCHIVED' WHERE id=?", user.id);
         jdbc.update("UPDATE user_role_grants SET status='archived' WHERE user_id=?", user.id);
-        jdbc.update("UPDATE users SET status='active' WHERE id=?", user.id);
+        jdbc.update("UPDATE auth_identities SET account_state='ACTIVE' WHERE id=?", user.id);
         var restored = read(user, 0, 0);
         assertThat(restored.getFound()).isFalse();
         assertThat(restored.getInitialPassword().isEmpty()).isTrue();
@@ -193,13 +185,22 @@ class BotCredentialLifecycleIT {
                                                         .build())),
                 Status.Code.INVALID_ARGUMENT);
         denied(() -> authRead.read(request(own).build()), Status.Code.UNAUTHENTICATED);
-        denied(() -> bot(() -> service.read(request(own).build())), Status.Code.UNIMPLEMENTED);
+        denied(() -> service.manage(register(reference(own, 199))), Status.Code.UNAUTHENTICATED);
     }
 
     @Test
     void changedPasswordNeverExposesLeftoverInitialOrLoginFromDedicatedRead() {
         var user = user("student");
-        jdbc.update("UPDATE users SET password_changed=true WHERE id=?", user.id);
+        jdbc.update(
+                "UPDATE auth_identities SET password_changed=true,initial_password=NULL WHERE id=?",
+                user.id);
+        assertThatThrownBy(
+                        () ->
+                                jdbc.update(
+                                        "UPDATE auth_identities SET initial_password=? WHERE id=?",
+                                        user.initial,
+                                        user.id))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class);
         var response = read(user, 0, 0);
         assertThat(response.getFound()).isTrue();
         assertThat(response.getEligible()).isFalse();
@@ -216,8 +217,9 @@ class BotCredentialLifecycleIT {
         assertThat(count(user)).isZero();
         var rebound = user("student");
         var old = reference(rebound, 102);
-        jdbc.update("UPDATE users SET telegram_id=NULL WHERE id=?", rebound.id);
-        jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", rebound.chat, rebound.id);
+        jdbc.update("UPDATE auth_identities SET telegram_id=NULL WHERE id=?", rebound.id);
+        jdbc.update(
+                "UPDATE auth_identities SET telegram_id=? WHERE id=?", rebound.chat, rebound.id);
         denied(() -> manage(register(old)), Status.Code.FAILED_PRECONDITION);
         assertThat(count(rebound)).isZero();
     }
@@ -344,12 +346,15 @@ class BotCredentialLifecycleIT {
     }
 
     @Test
-    void archiveAndFinalDeleteKeepOriginalExactCleanupIdentity() {
+    void archiveUnbindAndRetainedSecurityTombstoneKeepOriginalExactCleanupIdentity() {
         var user = user("student");
         var card = manage(register(reference(user, 107))).getMessages(0);
-        jdbc.update("UPDATE users SET status='archived', telegram_id=NULL WHERE id=?", user.id);
+        jdbc.update(
+                "UPDATE auth_identities SET account_state='ARCHIVED', telegram_id=NULL WHERE id=?",
+                user.id);
         jdbc.update("DELETE FROM user_role_grants WHERE user_id=?", user.id);
-        jdbc.update("DELETE FROM users WHERE id=?", user.id);
+        assertThatThrownBy(() -> jdbc.update("DELETE FROM auth_identities WHERE id=?", user.id))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class);
         var pending = list(user, card.getCredentialsVersion(), 0, 10).getMessages(0);
         assertThat(pending.getUserId()).isEqualTo(user.id);
         assertThat(pending.getPrivateChatId()).isEqualTo(user.chat);
@@ -363,7 +368,7 @@ class BotCredentialLifecycleIT {
         change(user);
         long eventGeneration = generation(user);
         jdbc.update(
-                "UPDATE users SET password_changed=false, initial_password=? WHERE id=?",
+                "UPDATE auth_identities SET password_changed=false, initial_password=? WHERE id=?",
                 UUID.randomUUID().toString(),
                 user.id);
         var later = manage(register(reference(user, 109))).getMessages(0);
@@ -400,15 +405,16 @@ class BotCredentialLifecycleIT {
                                 authTransactions.executeWithoutResult(
                                         tx -> {
                                             authJdbc.update(
-                                                    "UPDATE users SET password_hash=?,"
+                                                    "UPDATE auth_identities SET password_hash=?,"
                                                             + " password_changed=true,"
                                                             + " initial_password=NULL WHERE id=?",
-                                                    UUID.randomUUID().toString(),
+                                                    REPLACEMENT_HASH,
                                                     user.id);
                                             assertThat(
                                                             authJdbc.queryForObject(
                                                                     "SELECT credentials_version"
-                                                                        + " FROM users WHERE id=?",
+                                                                        + " FROM auth_identities"
+                                                                        + " WHERE id=?",
                                                                     Long.class,
                                                                     user.id))
                                                     .isEqualTo(original + 1);
@@ -483,25 +489,12 @@ class BotCredentialLifecycleIT {
 
     private Fixture user(String role) {
         long group =
-                jdbc.queryForObject(
-                        "INSERT INTO groups(name) VALUES(?) RETURNING id",
-                        Long.class,
-                        "NP01 " + UUID.randomUUID().toString().substring(0, 20));
+                100000L + java.util.concurrent.ThreadLocalRandom.current().nextLong(100000000L);
         String login = "np" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
         String initial = UUID.randomUUID().toString();
-        long id =
-                jdbc.queryForObject(
-                        """
-INSERT INTO users(login,password_hash,last_name,first_name,initial_password,role,group_id)
-VALUES(?,?,'NP01','Synthetic',?,'student',?) RETURNING id
-""",
-                        Long.class,
-                        login,
-                        UUID.randomUUID().toString(),
-                        initial,
-                        group);
+        long id = identity(jdbc, login, PASSWORD_HASH, initial);
         long chat = 810000000L + id;
-        jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", chat, id);
+        jdbc.update("UPDATE auth_identities SET telegram_id=? WHERE id=?", chat, id);
         if (role.equals("FULL") || role.equals("LIMITED")) {
             jdbc.update(
                     "INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version)"
@@ -531,15 +524,15 @@ VALUES(?,?,'NP01','Synthetic',?,'student',?) RETURNING id
 
     private void change(Fixture user) {
         jdbc.update(
-                "UPDATE users SET password_hash=?, password_changed=true, initial_password=NULL"
-                        + " WHERE id=?",
-                UUID.randomUUID().toString(),
+                "UPDATE auth_identities SET password_hash=?, password_changed=true,"
+                        + " initial_password=NULL WHERE id=?",
+                REPLACEMENT_HASH,
                 user.id);
     }
 
     private long generation(Fixture user) {
         return jdbc.queryForObject(
-                "SELECT credentials_version FROM users WHERE id=?", Long.class, user.id);
+                "SELECT credentials_version FROM auth_identities WHERE id=?", Long.class, user.id);
     }
 
     private long count(Fixture user) {
@@ -623,7 +616,7 @@ VALUES(?,?,'NP01','Synthetic',?,'student',?) RETURNING id
     }
 
     private BotCredentialMessagesResponse manage(BotCredentialMessagesRequest request) {
-        return bot(() -> service.manage(request));
+        return authBot(() -> service.manage(request));
     }
 
     private <T> T authBot(Supplier<T> operation) {
@@ -633,15 +626,6 @@ VALUES(?,?,'NP01','Synthetic',?,'student',?) RETURNING id
                         ServicePrincipal.CONTEXT_KEY,
                         AuthBotCredentialServiceIdentityInterceptor.BOT)
                 .run(() -> result.set(operation.get()));
-        return result.get();
-    }
-
-    private <T> T bot(Supplier<T> operation) {
-        var result = new java.util.concurrent.atomic.AtomicReference<T>();
-        Context.current()
-                .withValue(
-                        ServicePrincipal.CONTEXT_KEY, BotCredentialServiceIdentityInterceptor.BOT)
-                .run(() -> result.set(transactions.execute(tx -> operation.get())));
         return result.get();
     }
 
@@ -657,13 +641,309 @@ VALUES(?,?,'NP01','Synthetic',?,'student',?) RETURNING id
         while (path != null) {
             var migrations =
                     path.resolve(
-                            "services/academic-service/academic-app/src/main/resources/db/migration");
-            if (Files.isRegularFile(
-                    migrations.resolve("V57__bot_credential_message_lifecycle.sql")))
+                            "services/auth-service/auth-app/src/main/resources/db/auth-migration");
+            if (Files.isRegularFile(migrations.resolve("V2__auth_security_lifecycles.sql")))
                 return migrations;
             path = path.getParent();
         }
         throw new IllegalStateException("published NP01 migration unavailable");
+    }
+
+    static final String PASSWORD_HASH = "$2a$10$" + "a".repeat(53);
+    static final String REPLACEMENT_HASH = "$2a$10$" + "b".repeat(53);
+    static final String RUNTIME_PASSWORD = "synthetic-np01-runtime-only";
+
+    static void prepareRuntime(JdbcTemplate owner, String role) {
+        if (!role.equals("rct_auth_runtime") && !role.equals("rct_academic_runtime"))
+            throw new IllegalArgumentException("fixed synthetic principal required");
+        owner.execute("CREATE ROLE " + role + " LOGIN PASSWORD '" + RUNTIME_PASSWORD + "'");
+        owner.execute("GRANT USAGE ON SCHEMA public TO " + role);
+        owner.execute("GRANT SELECT,INSERT,UPDATE ON ALL TABLES IN SCHEMA public TO " + role);
+        owner.execute("GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO " + role);
+        if (role.equals("rct_auth_runtime"))
+            owner.execute(
+                    "GRANT DELETE ON"
+                        + " auth_outbox,password_reset_tokens,qr_login_challenges,qr_login_issuers"
+                        + " TO "
+                            + role);
+    }
+
+    /**
+     * Same synthetic committed CREATE receipt as AuthDatabaseFixture, without cross-test-module
+     * imports.
+     */
+    static long identity(JdbcTemplate jdbc, String login, String hash, String initial) {
+        return new TransactionTemplate(new DataSourceTransactionManager(jdbc.getDataSource()))
+                .execute(
+                        tx -> {
+                            UUID operation = UUID.randomUUID();
+                            jdbc.update(
+                                    """
+INSERT INTO auth_identity_operations(operation_id,command_hash,canonical_command,kind,authorization_kind,
+    actor_id,actor_session_id,actor_session_version,actor_roles_version,actor_credentials_version,
+    actor_binding_version,actor_commit_roles_version,actor_admin_profile_version)
+VALUES(?,decode(repeat('00',32),'hex'),decode('00','hex'),'CREATE','CREATE',1,?,1,1,1,1,1,1)
+""",
+                                    operation,
+                                    UUID.randomUUID());
+                            long id =
+                                    jdbc.queryForObject(
+                                            """
+INSERT INTO auth_identities(login,password_hash,initial_password,account_state,provision_operation_id)
+VALUES(?,?,?,'ACTIVE',?) RETURNING id
+""",
+                                            Long.class,
+                                            login,
+                                            hash,
+                                            initial,
+                                            operation);
+                            jdbc.update(
+                                    """
+INSERT INTO auth_identity_operation_targets(operation_id,user_id,expected_roles_version,final_roles_version,
+    expected_credentials_version,prepared_credentials_version,expected_binding_version,prepared_binding_version,
+    final_binding_version,expected_academic_revision,desired_grants,desired_admin_profile,desired_account_state,
+    committed_academic_revision)
+SELECT ?,id,0,1,credentials_version,credentials_version,telegram_binding_version,telegram_binding_version,
+    telegram_binding_version,0,'[]'::jsonb,'{}'::jsonb,'ACTIVE',1 FROM auth_identities WHERE id=?
+""",
+                                    operation,
+                                    id);
+                            jdbc.update(
+                                    "UPDATE auth_identity_operations SET"
+                                        + " phase='COMMITTED',revision=revision+1,finished_at=NOW(),committed_catalog_version=1"
+                                        + " WHERE operation_id=?",
+                                    operation);
+                            return id;
+                        });
+    }
+
+    /**
+     * Two logical databases and least-privilege runtime connections for the old bridge criteria.
+     */
+    static final class SplitDatabases {
+        final JdbcTemplate authOwner;
+        final JdbcTemplate academicOwner;
+        final DriverManagerDataSource authData;
+        final DriverManagerDataSource academicData;
+        final JdbcTemplate auth;
+        final JdbcTemplate academic;
+
+        SplitDatabases(PostgreSQLContainer<?> postgres, Path root) {
+            var authSource =
+                    new DriverManagerDataSource(
+                            postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
+            authOwner = new JdbcTemplate(authSource);
+            authOwner.execute("CREATE DATABASE np01_academic");
+            String academicUrl =
+                    postgres.getJdbcUrl()
+                            .replace("/" + postgres.getDatabaseName(), "/np01_academic");
+            var academicSource =
+                    new DriverManagerDataSource(
+                            academicUrl, postgres.getUsername(), postgres.getPassword());
+            academicOwner = new JdbcTemplate(academicSource);
+            Flyway.configure()
+                    .dataSource(authSource)
+                    .locations(
+                            "filesystem:"
+                                    + root.resolve(
+                                            "services/auth-service/auth-app/src/main/resources/db/auth-migration"))
+                    .load()
+                    .migrate();
+            Flyway.configure()
+                    .dataSource(academicSource)
+                    .locations(
+                            "filesystem:"
+                                    + root.resolve(
+                                            "services/academic-service/academic-app/src/main/resources/db/academic-migration"))
+                    .load()
+                    .migrate();
+            prepareRuntime(authOwner, "rct_auth_runtime");
+            prepareRuntime(academicOwner, "rct_academic_runtime");
+            authData =
+                    new DriverManagerDataSource(
+                            postgres.getJdbcUrl(), "rct_auth_runtime", RUNTIME_PASSWORD);
+            academicData =
+                    new DriverManagerDataSource(
+                            academicUrl, "rct_academic_runtime", RUNTIME_PASSWORD);
+            auth = new JdbcTemplate(authData);
+            academic = new JdbcTemplate(academicData);
+            authOwner.execute(
+                    "REVOKE CONNECT ON DATABASE " + postgres.getDatabaseName() + " FROM PUBLIC");
+            authOwner.execute(
+                    "GRANT CONNECT ON DATABASE "
+                            + postgres.getDatabaseName()
+                            + " TO rct_auth_runtime");
+            academicOwner.execute("REVOKE CONNECT ON DATABASE np01_academic FROM PUBLIC");
+            academicOwner.execute(
+                    "GRANT CONNECT ON DATABASE np01_academic TO rct_academic_runtime");
+            assertThat(
+                            auth.queryForObject(
+                                    "SELECT current_database()<>?",
+                                    Boolean.class,
+                                    academic.queryForObject(
+                                            "SELECT current_database()", String.class)))
+                    .isTrue();
+            assertThat(
+                            auth.queryForObject(
+                                    "SELECT to_regclass('academic_profiles') IS NULL",
+                                    Boolean.class))
+                    .isTrue();
+            assertThat(
+                            academic.queryForObject(
+                                    "SELECT to_regclass('auth_identities') IS NULL AND"
+                                            + " to_regclass('user_role_grants') IS NULL AND"
+                                            + " to_regclass('bot_credential_messages') IS NULL",
+                                    Boolean.class))
+                    .isTrue();
+            for (var jdbc : List.of(auth, academic))
+                assertThat(
+                                jdbc.queryForObject(
+                                        "SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE"
+                                                + " rolname=current_user",
+                                        Boolean.class))
+                        .isFalse();
+        }
+
+        void studentGrant(long id, boolean active) {
+            long academicRevision =
+                    academicOwner.queryForObject(
+                            "SELECT academic_revision FROM academic_profiles WHERE id=?",
+                            Long.class,
+                            id);
+            UUID operation = UUID.randomUUID();
+            var authTx = new TransactionTemplate(new DataSourceTransactionManager(authData));
+            authTx.executeWithoutResult(
+                    tx -> {
+                        auth.queryForObject(
+                                "SELECT id FROM auth_identities WHERE id=? FOR UPDATE",
+                                Long.class,
+                                id);
+                        auth.update(
+                                """
+INSERT INTO auth_identity_operations(operation_id,command_hash,canonical_command,kind,authorization_kind,
+    actor_id,actor_session_id,actor_session_version,actor_roles_version,actor_credentials_version,
+    actor_binding_version,actor_commit_roles_version,actor_admin_profile_version)
+VALUES(?,decode(repeat('00',32),'hex'),decode('00','hex'),'ROLE','ROLE',1,?,1,1,1,1,1,1)
+""",
+                                operation,
+                                UUID.randomUUID());
+                        auth.update(
+                                """
+INSERT INTO auth_identity_operation_targets(operation_id,user_id,expected_roles_version,final_roles_version,
+    expected_credentials_version,prepared_credentials_version,expected_binding_version,prepared_binding_version,
+    final_binding_version,expected_academic_revision,desired_grants,desired_admin_profile,desired_account_state)
+SELECT ?,id,roles_version,roles_version+1,credentials_version,credentials_version,telegram_binding_version,
+    telegram_binding_version,telegram_binding_version,?,'[]'::jsonb,'{}'::jsonb,'ACTIVE'
+  FROM auth_identities WHERE id=?
+""",
+                                operation,
+                                academicRevision,
+                                id);
+                        auth.update(
+                                "UPDATE auth_identities SET"
+                                    + " fence_operation_id=?,roles_version=roles_version+1 WHERE"
+                                    + " id=?",
+                                operation,
+                                id);
+                        auth.update(
+                                "UPDATE user_role_grants SET status=? WHERE user_id=? AND"
+                                        + " role='student'",
+                                active ? "active" : "suspended",
+                                id);
+                    });
+            long version =
+                    auth.queryForObject(
+                            "SELECT roles_version FROM auth_identities WHERE id=?", Long.class, id);
+            new TransactionTemplate(new DataSourceTransactionManager(academicData))
+                    .executeWithoutResult(
+                            tx -> {
+                                academic.update(
+                                        "UPDATE academic_profiles SET"
+                                            + " academic_revision=academic_revision+1,applied_auth_roles_version=?"
+                                            + " WHERE id=?",
+                                        version,
+                                        id);
+                                academic.update(
+                                        "UPDATE academic_role_eligibility SET status=? WHERE"
+                                                + " user_id=? AND role='STUDENT'",
+                                        active ? "ACTIVE" : "SUSPENDED",
+                                        id);
+                            });
+            authTx.executeWithoutResult(
+                    tx -> {
+                        auth.update(
+                                "UPDATE auth_identity_operation_targets SET"
+                                        + " committed_academic_revision=? WHERE operation_id=? AND"
+                                        + " user_id=?",
+                                academicRevision + 1,
+                                operation,
+                                id);
+                        auth.update(
+                                "UPDATE auth_identity_operations SET"
+                                    + " phase='COMMITTED',revision=revision+1,finished_at=NOW(),committed_catalog_version=1"
+                                    + " WHERE operation_id=?",
+                                operation);
+                        auth.update(
+                                "UPDATE auth_identities SET fence_operation_id=NULL WHERE id=?",
+                                id);
+                    });
+        }
+
+        long group() {
+            return academicOwner.queryForObject(
+                    "INSERT INTO groups(name) VALUES(?) RETURNING id",
+                    Long.class,
+                    "NP01 " + UUID.randomUUID().toString().substring(0, 20));
+        }
+
+        long identity(String login, String hash, String initial, long group, String role) {
+            long id = BotCredentialLifecycleIT.identity(authOwner, login, hash, initial);
+            String base = role.equals("headman") ? "student" : role;
+            if (role.equals("FULL") || role.equals("LIMITED")) {
+                authOwner.update(
+                        "INSERT INTO"
+                            + " admin_access_profiles(user_id,assigned,mode,permissions,version)"
+                            + " VALUES(?,true,?,?::text[],1)",
+                        id,
+                        role,
+                        role.equals("FULL") ? "{}" : "{USERS_VIEW}");
+                base = "admin";
+            }
+            authOwner.update(
+                    "INSERT INTO user_role_grants(user_id,role,status,group_id)"
+                            + " VALUES(?,?,'active',?)",
+                    id,
+                    base,
+                    base.equals("student") ? group : null);
+            if (role.equals("headman"))
+                authOwner.update(
+                        "INSERT INTO user_role_grants(user_id,role,status,group_id)"
+                                + " VALUES(?,'headman','active',?)",
+                        id,
+                        group);
+            academicOwner.update(
+                    "INSERT INTO"
+                        + " academic_profiles(id,directory_role,last_name,first_name,academic_revision,applied_auth_roles_version,created_at,updated_at)"
+                        + " VALUES(?,?,'NP01','Synthetic',1,1,NOW(),NOW())",
+                    id,
+                    base.equals("admin") ? "ADMIN" : base.toUpperCase(java.util.Locale.ROOT));
+            if (!base.equals("admin"))
+                academicOwner.update(
+                        "INSERT INTO"
+                            + " academic_role_eligibility(user_id,role,status,group_id,updated_at)"
+                            + " VALUES(?,?,'ACTIVE',?,NOW())",
+                        id,
+                        base.toUpperCase(java.util.Locale.ROOT),
+                        base.equals("student") ? group : null);
+            if (role.equals("headman"))
+                academicOwner.update(
+                        "INSERT INTO"
+                            + " academic_role_eligibility(user_id,role,status,group_id,updated_at)"
+                            + " VALUES(?,'HEADMAN','ACTIVE',?,NOW())",
+                        id,
+                        group);
+            return id;
+        }
     }
 
     private static final class Fixture {

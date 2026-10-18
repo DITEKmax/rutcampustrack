@@ -1,8 +1,12 @@
 package ru.rutcampustrack.academic.grpc;
 
 import io.grpc.*;
+
 import net.devh.boot.grpc.client.interceptor.GrpcGlobalClientInterceptor;
+
 import org.springframework.beans.factory.annotation.Value;
+
+import ru.rutcampustrack.shared.security.grpc.ServiceTokenCallCredentials;
 
 /**
  * Phase 61 D-04 hotfix: attaches shared gRPC secret to outgoing calls so schedule-service (which
@@ -24,7 +28,9 @@ public class GrpcSecretClientInterceptor implements ClientInterceptor {
                 next.newCall(method, callOptions)) {
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
-                if (secret != null && !secret.isBlank()) {
+                if (callOptions.getCredentials() instanceof ServiceTokenCallCredentials) {
+                    headers.discardAll(SECRET_KEY);
+                } else if (secret != null && !secret.isBlank()) {
                     headers.put(SECRET_KEY, secret);
                 }
                 super.start(responseListener, headers);

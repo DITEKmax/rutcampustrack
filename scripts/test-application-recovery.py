@@ -336,16 +336,20 @@ def database_snapshot(args, op, secret):
     ids = ",".join(str(v) for v in [op["source_lesson_id"], op["target_lesson_id"], *args.history_lesson_ids])
     occurrence_id = int(op["occurrence_id"])
 
+    targets = {label: (container, db, key, user) for label, container, db, key, user in r.pg_targets(args)}
+
     def pg(store, name, where):
+        container, db, key, user = targets[store]
         return json.loads(
             r.pg_query(
-                getattr(args, store + "_container"),
-                secret["POSTGRES_" + store.upper() + "_PASSWORD"],
-                store + "_db",
+                container,
+                secret[key],
+                db,
                 "SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb) FROM "
                 + name
                 + " t WHERE "
                 + where,
+                user=user,
             )
         )
 

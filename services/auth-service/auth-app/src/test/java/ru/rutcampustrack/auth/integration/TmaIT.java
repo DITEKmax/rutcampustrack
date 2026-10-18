@@ -3,15 +3,6 @@ package ru.rutcampustrack.auth.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.HexFormat;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.ResourceLock;
@@ -27,9 +18,25 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.auth.dto.CurrentSessionResponse;
 import ru.rutcampustrack.auth.dto.TmaAuthRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
+import ru.rutcampustrack.auth.support.AuthDatabaseFixture;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HexFormat;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 @Tag("security-contract")
 @Sql(scripts = "classpath:sql/set-telegram-id.sql")
@@ -41,6 +48,8 @@ class TmaIT extends AbstractIntegrationTest {
     @Autowired TestRestTemplate restTemplate;
 
     @Autowired JdbcTemplate jdbc;
+
+    @Autowired PlatformTransactionManager transactionManager;
 
     @Test
     void tma_withValidInitData_returnsTokenPair() {
@@ -216,7 +225,7 @@ class TmaIT extends AbstractIntegrationTest {
                                 .postForEntity("/auth/tma", request, TokenResponse.class)
                                 .getStatusCode())
                 .isEqualTo(HttpStatus.OK);
-        jdbc.update("UPDATE users SET telegram_id = NULL WHERE login = 'student'");
+        jdbc.update("UPDATE auth_identities SET telegram_id = NULL WHERE login = 'student'");
         long before = jdbc.queryForObject("SELECT count(*) FROM auth_sessions", Long.class);
         assertThat(restTemplate.postForEntity("/auth/tma", request, String.class).getStatusCode())
                 .isEqualTo(HttpStatus.UNAUTHORIZED);
@@ -300,14 +309,22 @@ class TmaIT extends AbstractIntegrationTest {
         var first = restTemplate.postForEntity("/auth/tma", request, TokenResponse.class);
         assertThat(first.getStatusCode()).isEqualTo(HttpStatus.OK);
         long userId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
+                jdbc.queryForObject(
+                        "SELECT id FROM auth_identities WHERE login = 'student'", Long.class);
         var grants =
                 jdbc.queryForList(
                         "SELECT id, status FROM user_role_grants WHERE user_id = ?", userId);
         try {
-            jdbc.update(
-                    "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ?", userId);
-            jdbc.update("UPDATE users SET roles_version = roles_version + 1 WHERE id = ?", userId);
+            new TransactionTemplate(transactionManager)
+                    .executeWithoutResult(
+                            status -> {
+                                UUID operation = AuthDatabaseFixture.fence(jdbc, userId);
+                                jdbc.update(
+                                        "UPDATE user_role_grants SET status = 'suspended' WHERE"
+                                                + " user_id = ?",
+                                        userId);
+                                AuthDatabaseFixture.unfence(jdbc, operation, userId);
+                            });
             var replay = restTemplate.postForEntity("/auth/tma", request, TokenResponse.class);
             assertThat(replay.getStatusCode()).isEqualTo(HttpStatus.OK);
             HttpHeaders headers = new HttpHeaders();
@@ -323,12 +340,17 @@ class TmaIT extends AbstractIntegrationTest {
             assertThat(current.getBody().roles())
                     .allSatisfy(grant -> assertThat(grant.status()).isEqualTo("SUSPENDED"));
         } finally {
-            for (var grant : grants)
-                jdbc.update(
-                        "UPDATE user_role_grants SET status = ? WHERE id = ?",
-                        grant.get("status"),
-                        grant.get("id"));
-            jdbc.update("UPDATE users SET roles_version = roles_version + 1 WHERE id = ?", userId);
+            new TransactionTemplate(transactionManager)
+                    .executeWithoutResult(
+                            status -> {
+                                UUID operation = AuthDatabaseFixture.fence(jdbc, userId);
+                                for (var grant : grants)
+                                    jdbc.update(
+                                            "UPDATE user_role_grants SET status = ? WHERE id = ?",
+                                            grant.get("status"),
+                                            grant.get("id"));
+                                AuthDatabaseFixture.unfence(jdbc, operation, userId);
+                            });
         }
     }
 

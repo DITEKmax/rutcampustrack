@@ -8,7 +8,7 @@ from aiogram.types import Message
 
 from bot.handlers.prefs import HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL
 from bot.handlers.start import private_sender
-from bot.services.menu_scope import resolve_homework_scope
+from bot.services.bot_menu import resolve_menu_scope
 
 logger = logging.getLogger(__name__)
 
@@ -24,29 +24,30 @@ async def cmd_homework_week(
     academic_client,
     today: date | None = None,
     bot_homework_client=None,
+    bot_menu_client=None,
 ) -> None:
     """Show homework for the nearest 7 days for the current Telegram student."""
-    await _show_homework(message, academic_client, bot_homework_client, today, days=7)
+    await _show_homework(message, academic_client, bot_homework_client, today, days=7, bot_menu_client=bot_menu_client)
 
 
 @homework_router.message(Command("homework_today"))
 @homework_router.message(F.text == HOMEWORK_TODAY_LABEL)
 async def cmd_homework_today(
-    message: Message, academic_client, today: date | None = None, bot_homework_client=None
+    message: Message, academic_client, today: date | None = None, bot_homework_client=None, bot_menu_client=None
 ) -> None:
-    await _show_homework(message, academic_client, bot_homework_client, today, days=1)
+    await _show_homework(message, academic_client, bot_homework_client, today, days=1, bot_menu_client=bot_menu_client)
 
 
 async def _show_homework(
-    message: Message, academic_client, bot_homework_client, today: date | None, *, days: int
+    message: Message, academic_client, bot_homework_client, today: date | None, *, days: int, bot_menu_client=None
 ) -> None:
     telegram_id = private_sender(message)
     if telegram_id is None:
         await message.answer("Открой личный чат с ботом, чтобы посмотреть свои задания.")
         return
     try:
-        scope = await resolve_homework_scope(academic_client, telegram_id)
-        if scope is None:
+        scope = await resolve_menu_scope(bot_menu_client, telegram_id)
+        if scope is None or not scope.homework_enabled:
             await message.answer("ДЗ недоступно. Нужна действующая роль студента с учебной группой.")
             return
 
@@ -65,12 +66,15 @@ async def _show_homework(
                 telegram_sender_id=telegram_id,
                 expected_user_id=scope.user_id,
                 expected_roles_version=scope.roles_version,
+                expected_telegram_binding_version=scope.telegram_binding_version,
                 date_from=start.isoformat(),
                 date_to=end.isoformat(),
             )
         ]
         upcoming = _filter_week_homeworks(homeworks, start, end)
 
+        if await resolve_menu_scope(bot_menu_client, telegram_id) != scope:
+            raise RuntimeError("Own homework authority changed")
         await message.answer(_build_homework_week_text(upcoming, {}, start, end))
     except Exception:
         logger.warning("Error in /homework handler", exc_info=True)

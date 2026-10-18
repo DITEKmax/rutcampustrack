@@ -16,15 +16,13 @@ import ru.rutcampustrack.academic.contract.enums.UserRole;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "academic_user_directory")
 @SQLRestriction("status <> 'archived'")
 @Getter
 @NoArgsConstructor
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id @Setter private Long id;
 
     @Setter
     @Column(nullable = false, unique = true, length = 32, insertable = false, updatable = false)

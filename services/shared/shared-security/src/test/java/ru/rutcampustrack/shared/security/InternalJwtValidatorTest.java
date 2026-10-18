@@ -5,6 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureAlgorithm;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.Signature;
@@ -16,8 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 class InternalJwtValidatorTest {
 
@@ -57,6 +59,92 @@ class InternalJwtValidatorTest {
         assertThat(claims.groupId()).isEqualTo(9L);
         assertThat(claims.isHeadman()).isFalse();
         assertThat(claims.readOnly()).isFalse();
+    }
+
+    @Test
+    void reportCapabilityCannotAuthorizeCrudAndMustMatchEveryPlanBinding() {
+        String job = "22222222-2222-4222-8222-222222222222";
+        String lease = "33333333-3333-4333-8333-333333333333";
+        String hash = "a".repeat(64);
+        String token =
+                rawTokenInternal(
+                        null,
+                        "token_use",
+                        "\"academic_report\"",
+                        "report_kind",
+                        "\"TEACHER_JOURNAL\"",
+                        "report_hash",
+                        "\"" + hash + "\"",
+                        "report_job",
+                        "\"" + job + "\"",
+                        "report_lease",
+                        "\"" + lease + "\"",
+                        "report_not_after",
+                        Long.toString(now().plusSeconds(90).getEpochSecond()));
+        assertThatThrownBy(() -> validator.validate(token))
+                .isInstanceOf(InternalJwtException.class);
+        assertThat(
+                        validator
+                                .validateAcademicReport(token, "TEACHER_JOURNAL", hash, job, lease)
+                                .userId())
+                .isEqualTo(1);
+        assertThatThrownBy(
+                        () ->
+                                validator.validateAcademicReport(
+                                        token, "TEACHER_STATS", hash, job, lease))
+                .isInstanceOf(InternalJwtException.class);
+        assertThatThrownBy(
+                        () ->
+                                validator.validateAcademicReport(
+                                        token, "TEACHER_JOURNAL", "b".repeat(64), job, lease))
+                .isInstanceOf(InternalJwtException.class);
+        assertThatThrownBy(
+                        () ->
+                                validator.validateAcademicReport(
+                                        token, "TEACHER_JOURNAL", hash, lease, job))
+                .isInstanceOf(InternalJwtException.class);
+        assertThatThrownBy(
+                        () ->
+                                validator.validateAcademicReport(
+                                        token, "TEACHER_JOURNAL", hash, job, job))
+                .isInstanceOf(InternalJwtException.class);
+        assertThatThrownBy(
+                        () ->
+                                validator.validateAcademicReport(
+                                        rawTokenInternal(null),
+                                        "TEACHER_JOURNAL",
+                                        hash,
+                                        job,
+                                        lease))
+                .isInstanceOf(InternalJwtException.class);
+    }
+
+    @Test
+    void reportCapabilityCannotOutliveItsBoundLease() {
+        String token =
+                rawTokenInternal(
+                        null,
+                        "token_use",
+                        "\"academic_report\"",
+                        "report_kind",
+                        "\"TEACHER_JOURNAL\"",
+                        "report_hash",
+                        "\"" + "a".repeat(64) + "\"",
+                        "report_job",
+                        "\"" + SESSION_ID + "\"",
+                        "report_lease",
+                        "\"" + SESSION_ID + "\"",
+                        "report_not_after",
+                        Long.toString(now().plusSeconds(1).getEpochSecond()));
+        assertThatThrownBy(
+                        () ->
+                                validator.validateAcademicReport(
+                                        token,
+                                        "TEACHER_JOURNAL",
+                                        "a".repeat(64),
+                                        SESSION_ID.toString(),
+                                        SESSION_ID.toString()))
+                .isInstanceOf(InternalJwtException.class);
     }
 
     @Test

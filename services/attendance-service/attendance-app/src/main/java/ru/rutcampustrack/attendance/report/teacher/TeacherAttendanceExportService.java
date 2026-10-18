@@ -1,6 +1,29 @@
 package ru.rutcampustrack.attendance.report.teacher;
 
 import io.grpc.Status;
+
+import ru.rutcampustrack.academic.grpc.GroupResponse;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
+import ru.rutcampustrack.attendance.exception.ReportExportUnavailableException;
+import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.attendance.grpc.DocumentRendererGrpcClient;
+import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.grpc.TeacherAcademicGrpcClient;
+import ru.rutcampustrack.attendance.journal.JournalLessonPolicy;
+import ru.rutcampustrack.attendance.report.ReportService;
+import ru.rutcampustrack.attendance.report.planned.*;
+import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
+import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportRequest;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherAttendanceReportKind;
+import ru.rutcampustrack.teacher.grpc.TeacherJournalCell;
+import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherJournalStudent;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -21,26 +44,6 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import ru.rutcampustrack.academic.grpc.GroupResponse;
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
-import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
-import ru.rutcampustrack.attendance.exception.BadRequestException;
-import ru.rutcampustrack.attendance.exception.ReportExportUnavailableException;
-import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
-import ru.rutcampustrack.attendance.grpc.DocumentRendererGrpcClient;
-import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
-import ru.rutcampustrack.attendance.grpc.TeacherAcademicGrpcClient;
-import ru.rutcampustrack.attendance.journal.JournalLessonPolicy;
-import ru.rutcampustrack.attendance.report.ReportService;
-import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
-import ru.rutcampustrack.schedule.grpc.LessonResponse;
-import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
-import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportRequest;
-import ru.rutcampustrack.teacher.grpc.TeacherAttendanceExportResponse;
-import ru.rutcampustrack.teacher.grpc.TeacherAttendanceReportKind;
-import ru.rutcampustrack.teacher.grpc.TeacherJournalCell;
-import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
-import ru.rutcampustrack.teacher.grpc.TeacherJournalStudent;
 
 /** Builds one complete, server-authorized teacher subject journal for export. */
 public final class TeacherAttendanceExportService {
@@ -62,9 +65,9 @@ public final class TeacherAttendanceExportService {
                     "lab", "Лабораторная");
 
     private final ReportService reportService;
-    private final ScheduleGrpcClient schedule;
-    private final AcademicGrpcClient academic;
-    private final TeacherAcademicGrpcClient teacherAcademic;
+    private final ReportScheduleReadPort schedule;
+    private final ReportAcademicReadPort academic;
+    private final TeacherAssignmentReadPort teacherAcademic;
     private final DocumentRendererGrpcClient renderer;
     private final JournalReader journalReader;
 
@@ -98,12 +101,39 @@ public final class TeacherAttendanceExportService {
             TeacherAcademicGrpcClient teacherAcademic,
             DocumentRendererGrpcClient renderer,
             JournalReader journalReader) {
+        this(
+                reportService,
+                ReportScheduleReadPort.live(schedule),
+                ReportAcademicReadPort.live(academic),
+                teacherAcademic == null ? null : teacherAcademic::fullSemesterAssignments,
+                renderer,
+                journalReader);
+    }
+
+    private TeacherAttendanceExportService(
+            ReportService reportService,
+            ReportScheduleReadPort schedule,
+            ReportAcademicReadPort academic,
+            TeacherAssignmentReadPort teacherAcademic,
+            DocumentRendererGrpcClient renderer,
+            JournalReader journalReader) {
         this.reportService = reportService;
         this.schedule = schedule;
         this.academic = academic;
         this.teacherAcademic = teacherAcademic;
         this.renderer = renderer;
         this.journalReader = journalReader;
+    }
+
+    public static TeacherAttendanceExportService forPlan(
+            AdmittedReportPlan plan, ReportService reports, DocumentRendererGrpcClient converter) {
+        return new TeacherAttendanceExportService(
+                reports,
+                plan,
+                plan,
+                plan,
+                converter,
+                new PlannedTeacherJournalReader(reports, plan));
     }
 
     public TeacherAttendanceExportResponse export(
@@ -556,11 +586,25 @@ public final class TeacherAttendanceExportService {
     private static byte[] html(TeacherAttendanceExportModel model) {
         StringBuilder out = new StringBuilder(16_384);
         out.append(
-                        "<!doctype html><html lang=\"ru\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>")
+                        "<!doctype html><html lang=\"ru\"><head><meta charset=\"UTF-8\"><meta"
+                                + " name=\"viewport\""
+                                + " content=\"width=device-width,initial-scale=1\"><title>")
                 .append(escapeHtml(model.context().groupLabel()))
                 .append(" — журнал</title>")
                 .append(
-                        "<style>body{font:14px/1.45 system-ui,sans-serif;color:#202124;margin:24px}h1{font-size:22px;margin:0 0 12px}p{margin:6px 0}.table-wrap{max-width:100%;overflow:auto;margin-top:18px;border:1px solid #d6dbe1;border-radius:8px}table{border-collapse:collapse;min-width:100%;width:max-content}th,td{border:1px solid #d6dbe1;padding:7px 9px;text-align:center;vertical-align:middle}thead th{position:sticky;top:0;background:#f2f5f8;z-index:2;font-weight:600;white-space:normal;min-width:84px;max-width:150px;overflow-wrap:anywhere}thead th:first-child{left:0;z-index:4;min-width:220px}tbody th{position:sticky;left:0;background:#fff;text-align:left;z-index:1;min-width:220px}tbody td{white-space:nowrap}tbody tr:nth-child(even){background:#f8fafc}footer{margin-top:16px;color:#5f6368;font-size:12px}</style></head><body>")
+                        "<style>body{font:14px/1.45"
+                            + " system-ui,sans-serif;color:#202124;margin:24px}h1{font-size:22px;margin:0"
+                            + " 0 12px}p{margin:6px"
+                            + " 0}.table-wrap{max-width:100%;overflow:auto;margin-top:18px;border:1px"
+                            + " solid"
+                            + " #d6dbe1;border-radius:8px}table{border-collapse:collapse;min-width:100%;width:max-content}th,td{border:1px"
+                            + " solid #d6dbe1;padding:7px"
+                            + " 9px;text-align:center;vertical-align:middle}thead"
+                            + " th{position:sticky;top:0;background:#f2f5f8;z-index:2;font-weight:600;white-space:normal;min-width:84px;max-width:150px;overflow-wrap:anywhere}thead"
+                            + " th:first-child{left:0;z-index:4;min-width:220px}tbody"
+                            + " th{position:sticky;left:0;background:#fff;text-align:left;z-index:1;min-width:220px}tbody"
+                            + " td{white-space:nowrap}tbody"
+                            + " tr:nth-child(even){background:#f8fafc}footer{margin-top:16px;color:#5f6368;font-size:12px}</style></head><body>")
                 .append("<h1>Журнал посещаемости</h1><p>")
                 .append(escapeHtml(model.context().groupLabel()))
                 .append(" · ")
@@ -572,7 +616,9 @@ public final class TeacherAttendanceExportService {
                 .append(" · ")
                 .append(escapeHtml(String.join(", ", model.context().typeLabels())))
                 .append(
-                        "</p><div class=\"table-wrap\" role=\"region\" aria-label=\"Полный журнал, прокручивайте по горизонтали\" tabindex=\"0\"><table><thead><tr><th scope=\"col\">Студент</th>");
+                        "</p><div class=\"table-wrap\" role=\"region\" aria-label=\"Полный журнал,"
+                            + " прокручивайте по горизонтали\" tabindex=\"0\"><table><thead><tr><th"
+                            + " scope=\"col\">Студент</th>");
         for (TeacherAttendanceExportModel.Column column : model.columns()) {
             out.append("<th scope=\"col\">")
                     .append(column.date())
@@ -586,9 +632,11 @@ public final class TeacherAttendanceExportService {
             out.append("</th>");
         }
         out.append(
-                        "<th scope=\"col\">Присутствовал</th><th scope=\"col\">Присутствовал или уважительно</th>")
+                        "<th scope=\"col\">Присутствовал</th><th scope=\"col\">Присутствовал или"
+                                + " уважительно</th>")
                 .append(
-                        "<th scope=\"col\">Уважительно</th><th scope=\"col\">Отсутствовал</th></tr></thead><tbody>");
+                        "<th scope=\"col\">Уважительно</th><th"
+                                + " scope=\"col\">Отсутствовал</th></tr></thead><tbody>");
         for (TeacherAttendanceExportModel.Row row : model.rows()) {
             out.append("<tr><th scope=\"row\">")
                     .append(escapeHtml(row.displayName()))
@@ -643,7 +691,14 @@ public final class TeacherAttendanceExportService {
         StringBuilder sheet = new StringBuilder(16_384);
         sheet.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>")
                 .append(
-                        "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetViews><sheetView workbookViewId=\"0\"><pane xSplit=\"1\" ySplit=\"6\" topLeftCell=\"B7\" activePane=\"bottomRight\" state=\"frozen\"/><selection pane=\"topRight\" activeCell=\"B1\" sqref=\"B1\"/><selection pane=\"bottomLeft\" activeCell=\"A7\" sqref=\"A7\"/><selection pane=\"bottomRight\" activeCell=\"B7\" sqref=\"B7\"/></sheetView></sheetViews><cols>")
+                        "<worksheet"
+                            + " xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetViews><sheetView"
+                            + " workbookViewId=\"0\"><pane xSplit=\"1\" ySplit=\"6\""
+                            + " topLeftCell=\"B7\" activePane=\"bottomRight\""
+                            + " state=\"frozen\"/><selection pane=\"topRight\" activeCell=\"B1\""
+                            + " sqref=\"B1\"/><selection pane=\"bottomLeft\" activeCell=\"A7\""
+                            + " sqref=\"A7\"/><selection pane=\"bottomRight\" activeCell=\"B7\""
+                            + " sqref=\"B7\"/></sheetView></sheetViews><cols>")
                 .append("<col min=\"1\" max=\"1\" width=\"30\" customWidth=\"1\"/>");
         for (int index = 0; index < model.columns().size(); index++) {
             int columnIndex = index + 2;
@@ -708,45 +763,58 @@ public final class TeacherAttendanceExportService {
         Map<String, String> entries = new LinkedHashMap<>();
         entries.put(
                 "[Content_Types].xml",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                        + "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
-                        + "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
-                        + "<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
-                        + "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
-                        + "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
-                        + "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
-                        + "</Types>");
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Types"
+                    + " xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default"
+                    + " Extension=\"rels\""
+                    + " ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default"
+                    + " Extension=\"xml\" ContentType=\"application/xml\"/><Override"
+                    + " PartName=\"/xl/workbook.xml\""
+                    + " ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/><Override"
+                    + " PartName=\"/xl/worksheets/sheet1.xml\""
+                    + " ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/><Override"
+                    + " PartName=\"/xl/styles.xml\""
+                    + " ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
+                    + "</Types>");
         entries.put(
                 "_rels/.rels",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                        + "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
-                        + "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>"
-                        + "</Relationships>");
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships"
+                    + " xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship"
+                    + " Id=\"rId1\""
+                    + " Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\""
+                    + " Target=\"xl/workbook.xml\"/></Relationships>");
         entries.put(
                 "xl/workbook.xml",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-                        + "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><sheets>"
-                        + "<sheet name=\"Журнал\" sheetId=\"1\" r:id=\"rId1\"/></sheets></workbook>");
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook"
+                    + " xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\""
+                    + " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><sheets><sheet"
+                    + " name=\"Журнал\" sheetId=\"1\" r:id=\"rId1\"/></sheets></workbook>");
         entries.put(
                 "xl/_rels/workbook.xml.rels",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                        + "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
-                        + "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>"
-                        + "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"
-                        + "</Relationships>");
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships"
+                    + " xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship"
+                    + " Id=\"rId1\""
+                    + " Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\""
+                    + " Target=\"worksheets/sheet1.xml\"/><Relationship Id=\"rId2\""
+                    + " Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\""
+                    + " Target=\"styles.xml\"/></Relationships>");
         entries.put("xl/worksheets/sheet1.xml", sheet.toString());
         entries.put(
                 "xl/styles.xml",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-                        + "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
-                        + "<fonts count=\"1\"><font><sz val=\"11\"/><name val=\"Calibri\"/></font></fonts>"
-                        + "<fills count=\"2\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill></fills>"
-                        + "<borders count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders>"
-                        + "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>"
-                        + "<cellXfs count=\"3\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>"
-                        + "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"center\" wrapText=\"1\"/></xf>"
-                        + "<xf numFmtId=\"10\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/></cellXfs>"
-                        + "<cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles></styleSheet>");
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><styleSheet"
+                    + " xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><fonts"
+                    + " count=\"1\"><font><sz val=\"11\"/><name"
+                    + " val=\"Calibri\"/></font></fonts><fills count=\"2\"><fill><patternFill"
+                    + " patternType=\"none\"/></fill><fill><patternFill"
+                    + " patternType=\"gray125\"/></fill></fills><borders"
+                    + " count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs"
+                    + " count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\""
+                    + " borderId=\"0\"/></cellStyleXfs><cellXfs count=\"3\"><xf numFmtId=\"0\""
+                    + " fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/><xf numFmtId=\"0\""
+                    + " fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\""
+                    + " applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"center\""
+                    + " wrapText=\"1\"/></xf><xf numFmtId=\"10\" fontId=\"0\" fillId=\"0\""
+                    + " borderId=\"0\" xfId=\"0\"/></cellXfs><cellStyles count=\"1\"><cellStyle"
+                    + " name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles></styleSheet>");
         try (ByteArrayOutputStream bytes = new ByteArrayOutputStream();
                 ZipOutputStream zip = new ZipOutputStream(bytes, StandardCharsets.UTF_8)) {
             for (Map.Entry<String, String> entry : entries.entrySet()) {

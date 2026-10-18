@@ -5,13 +5,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 
 /** Actual read DTO and durable live credential authority; no plaintext is printed in assertions. */
 @AutoConfigureMockMvc(
@@ -20,7 +18,6 @@ class InitialPasswordBoundaryIT extends AbstractAcademicIntegrationTest {
     @Autowired MockMvc mvc;
     @Autowired JdbcTemplate jdbc;
     @Autowired ObjectMapper mapper;
-    @Autowired InternalJwtTestFactory jwt;
 
     @Test
     void initialPasswordReadUsesLiveGrantTargetProtectionAndNoStore() throws Exception {
@@ -89,12 +86,9 @@ class InitialPasswordBoundaryIT extends AbstractAcademicIntegrationTest {
     }
 
     private String token(long admin) {
-        UUID session = AcademicTestAdminRequest.selectedSession(jdbc, admin, 1L);
-        long rolesVersion =
-                jdbc.queryForObject(
-                        "SELECT roles_version FROM users WHERE id=?", Long.class, admin);
-        return jwt.validToken(
-                admin, session, 1L, rolesVersion, "ADMIN", "ACTIVE", null, false, false);
+        return identityFixture
+                .select(admin, ru.rutcampustrack.auth.session.model.AuthRole.ADMIN)
+                .internalToken();
     }
 
     private void assertPassword(long target, String token, String marker, boolean expected)

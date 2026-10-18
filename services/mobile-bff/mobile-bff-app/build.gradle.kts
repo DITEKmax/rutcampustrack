@@ -32,6 +32,9 @@ dependencies {
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
         exclude(group = "io.grpc", module = "grpc-netty-shaded")
     }
+    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
     implementation("io.grpc:grpc-netty")
     implementation("com.google.protobuf:protobuf-java")
     implementation("com.google.api.grpc:proto-google-common-protos:2.29.0")

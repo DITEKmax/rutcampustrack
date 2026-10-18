@@ -1,3 +1,4 @@
+import { IdentityOperationError, IdentityOperations } from '../../shared/identity-operation'
 import { parseReportFormats, type ReportFormatOption } from '../../shared/report-download-client'
 import type { MobileProblemDetails } from '../../api/types'
 
@@ -177,6 +178,12 @@ export interface PromotionExecuteInput {
   readonly groupId: number | null
 }
 
+export type GroupIdentityResult =
+  | { readonly kind: 'HEADMAN'; readonly assignment: HeadmanAssignment }
+  | { readonly kind: 'ARCHIVE' | 'RESTORE'; readonly groupId: number }
+  | { readonly kind: 'PROMOTION'; readonly summary: PromotionSummary }
+  | { readonly kind: 'RECOVERY' }
+
 export interface AdminGroupsApiOptions {
   readonly accessToken: () => string | null
   readonly onUnauthorized?: () => Promise<void>
@@ -198,9 +205,17 @@ export class AdminGroupsApiError extends Error {
 export class AdminGroupsClient {
   private static readonly basePath = '/api/academic/groups/registry'
   private readonly fetcher: typeof fetch
+  private readonly identity: IdentityOperations
+  private failedOperationId: string | null = null
+  private confirmedFailedOperationId: string | null = null
+  private groupIntent = false
 
   constructor(private readonly options: AdminGroupsApiOptions) {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
+    this.identity = new IdentityOperations(
+      (path, init) => this.requestResponse(path, init),
+      () => this.options.assertCurrent?.(),
+    )
   }
 
   /** Existing protected group read supplies factual name for the registry consumer. */
@@ -262,7 +277,7 @@ export class AdminGroupsClient {
   async archiveGroup(groupId: number, name: string, signal?: AbortSignal): Promise<void> {
     positiveInteger(groupId, 'groupId')
     const groupName = requiredText(name, 'name')
-    await this.requestResponse(`/api/academic/groups/${groupId}`, {
+    await this.groupMutation(`/api/academic/groups/${groupId}`, {
       method: 'PUT',
       body: JSON.stringify({ name: groupName, active: false }),
       ...(signal ? { signal } : {}),
@@ -306,7 +321,7 @@ export class AdminGroupsClient {
 
   async restoreGroup(groupId: number, signal?: AbortSignal): Promise<void> {
     positiveInteger(groupId, 'groupId')
-    await this.requestResponse(`/api/academic/groups/${groupId}/restore`, {
+    await this.groupMutation(`/api/academic/groups/${groupId}/restore`, {
       method: 'POST',
       ...(signal ? { signal } : {}),
     })
@@ -343,7 +358,12 @@ export class AdminGroupsClient {
     const studentId = positiveInteger(input.studentId, 'studentId')
     if (input.expectedHeadmanId !== null)
       positiveInteger(input.expectedHeadmanId, 'expectedHeadmanId')
-    return this.request<unknown>(`/api/academic/groups/${groupId}/headman`, {
+    if (!this.identity.pending) {
+      this.groupIntent = false
+      this.failedOperationId = null
+      this.confirmedFailedOperationId = null
+    }
+    return this.identityRequest(`/api/academic/groups/${groupId}/headman`, {
       method: 'PUT',
       body: JSON.stringify({ studentId, expectedHeadmanId: input.expectedHeadmanId }),
       ...(signal ? { signal } : {}),
@@ -363,7 +383,7 @@ export class AdminGroupsClient {
     const cycleSemesterId = positiveInteger(input.cycleSemesterId, 'cycleSemesterId')
     const previewVersion = requiredText(input.previewVersion, 'previewVersion')
     const groupId = input.groupId === null ? null : positiveInteger(input.groupId, 'groupId')
-    return this.request<unknown>('/api/academic/groups/promote', {
+    return this.identityRequest('/api/academic/groups/promote', {
       method: 'POST',
       body: JSON.stringify({ cycleSemesterId, previewVersion, groupId }),
       ...(signal ? { signal } : {}),
@@ -374,6 +394,130 @@ export class AdminGroupsClient {
     return parseReportFormats(
       await this.request<unknown>('/api/academic/registry-exports/groups/formats'),
     )
+  }
+
+  acknowledgeIdentityOperation(): void {
+    this.identity.acknowledge()
+    this.failedOperationId = null
+    this.confirmedFailedOperationId = null
+  }
+
+  get failedGroupOperationId(): string | null {
+    this.options.assertCurrent?.()
+    return this.failedOperationId
+  }
+
+  async confirmGroupRecovery(): Promise<string | null> {
+    this.options.assertCurrent?.()
+    const id = this.failedOperationId
+    if (!id) return null
+    const status = await this.identity.inspect(id)
+    this.options.assertCurrent?.()
+    if (this.failedOperationId !== id) return null
+    if (status !== 'FAILED_SAFE') {
+      this.confirmedFailedOperationId = null
+      return null
+    }
+    this.confirmedFailedOperationId = id
+    return id
+  }
+
+  async reconcileGroupOperation(failedOperationId: string, signal?: AbortSignal): Promise<void> {
+    this.options.assertCurrent?.()
+    if (failedOperationId !== this.confirmedFailedOperationId)
+      throw new Error('Сначала проверь состояние остановленной операции.')
+    const response = await this.groupMutation(
+      `/api/academic/identity-operations/${failedOperationId}/reconcile`,
+      {
+        method: 'POST',
+        ...(signal ? { signal } : {}),
+      },
+    )
+    await this.confirmRecoverySuccess(response)
+  }
+
+  get hasPendingIdentityOperation(): boolean {
+    return this.identity.pending
+  }
+
+  async resumeIdentityOperation(): Promise<GroupIdentityResult> {
+    let resumed: Awaited<ReturnType<IdentityOperations['resume']>>
+    try {
+      resumed = await this.identity.resume()
+    } catch (cause) {
+      if (this.groupIntent) this.captureFailedOperation(cause)
+      throw cause
+    }
+    const { path, response } = resumed
+    if (/^\/api\/academic\/identity-operations\/[0-9a-f-]{36}\/reconcile$/.test(path)) {
+      await this.confirmRecoverySuccess(response)
+      return { kind: 'RECOVERY' }
+    }
+    if (path === '/api/academic/groups/promote') {
+      const value = (await response.json()) as unknown
+      this.options.assertCurrent?.()
+      const summary = normalizePromotionSummary(value)
+      if (!summary.executed || summary.dryRun)
+        throw new Error('Сервер не подтвердил выполнение перевода групп.')
+      return { kind: 'PROMOTION', summary }
+    }
+    const match = /^\/api\/academic\/groups\/([1-9][0-9]*)(\/restore|\/headman)?$/.exec(path)
+    if (!match) throw new Error('Не удалось определить исходное действие группы.')
+    const groupId = positiveInteger(Number(match[1]), 'groupId')
+    if (match[2] !== '/headman')
+      return { kind: match[2] === '/restore' ? 'RESTORE' : 'ARCHIVE', groupId }
+    const value = (await response.json()) as unknown
+    this.options.assertCurrent?.()
+    return { kind: 'HEADMAN', assignment: normalizeHeadmanAssignment(value) }
+  }
+
+  private captureFailedOperation(cause: unknown): void {
+    if (
+      cause instanceof IdentityOperationError &&
+      cause.state === 'FAILED_SAFE' &&
+      cause.operationId
+    ) {
+      this.failedOperationId = cause.operationId
+      this.confirmedFailedOperationId = null
+    }
+  }
+
+  private async groupMutation(path: string, init: RequestInit): Promise<Response> {
+    if (!this.identity.pending) {
+      this.groupIntent = true
+      if (!path.endsWith('/reconcile')) {
+        this.failedOperationId = null
+        this.confirmedFailedOperationId = null
+      }
+    }
+    try {
+      return await this.identity.run(path, init)
+    } catch (cause) {
+      if (this.groupIntent) this.captureFailedOperation(cause)
+      throw cause
+    }
+  }
+
+  private async confirmRecoverySuccess(response: Response): Promise<void> {
+    const value = (await response.json()) as unknown
+    this.options.assertCurrent?.()
+    const record = requiredRecord(value, 'operation recovery')
+    if (
+      record.status !== 'SUCCEEDED' ||
+      record.retryAfterSeconds !== 0 ||
+      typeof record.operationId !== 'string' ||
+      record.operationId !== response.headers.get('X-Operation-Id')
+    )
+      throw new Error('Сервер не подтвердил восстановление операции.')
+  }
+
+  private async identityRequest(path: string, init: RequestInit): Promise<unknown> {
+    const response = path.endsWith('/headman')
+      ? await this.identity.run(path, init)
+      : await this.groupMutation(path, init)
+    const value = (await response.json()) as unknown
+    this.options.assertCurrent?.()
+    return value
   }
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
@@ -408,6 +552,26 @@ export class AdminGroupsClient {
       // Keep the HTTP status when the gateway cannot return Problem Details.
     }
     this.options.assertCurrent?.()
+    if (
+      this.groupIntent &&
+      init?.method &&
+      init.method !== 'GET' &&
+      !path.endsWith('/headman') &&
+      problem &&
+      typeof problem === 'object'
+    ) {
+      const extras = (problem as Record<string, unknown>).extras
+      if (extras && typeof extras === 'object') {
+        const id = (extras as Record<string, unknown>).operationId
+        if (
+          typeof id === 'string' &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)
+        ) {
+          this.failedOperationId = id
+          this.confirmedFailedOperationId = null
+        }
+      }
+    }
     throw new AdminGroupsApiError(response, problem)
   }
 }

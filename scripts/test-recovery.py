@@ -103,6 +103,9 @@ def exercise(args):
         password = project + "-disposable-only"
         (args.work_dir / (project + ".env")).write_text(
             f"POSTGRES_ACADEMIC_PASSWORD={password}\nPOSTGRES_SCHEDULE_PASSWORD={password}\n"
+            f"POSTGRES_AUTH_PASSWORD={password}\nPOSTGRES_ACADEMIC_MIGRATION_PASSWORD={password}\n"
+            f"POSTGRES_AUTH_MIGRATION_PASSWORD={password}\n"
+            f"POSTGRES_RECOVERY_ADMIN_USER=rct_user\nPOSTGRES_RECOVERY_ADMIN_PASSWORD={password}\n"
             f"MONGO_ROOT_PASSWORD={password}\nRCT_RECOVERY_PG_IMAGE={args.pg_image}\n"
             f"RCT_RECOVERY_MONGO_IMAGE={args.mongo_image}\n",
             encoding="utf-8",
@@ -113,16 +116,14 @@ def exercise(args):
     args.failure_stage = "SOURCE_IDENTIFY"
     source = target(args.work_dir, source_project)
     secret = r.credentials(source.env_file)
-    for container, db, key, stage in (
-        (source.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD", "SOURCE_SEED_ACADEMIC"),
-        (source.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD", "SOURCE_SEED_SCHEDULE"),
-    ):
-        args.failure_stage = stage
+    for label, container, db, key, user in r.pg_targets(source):
+        args.failure_stage = "SOURCE_SEED_" + label.upper()
         r.pg_query(
             container,
             secret[key],
             db,
             "CREATE TABLE recovery_probe(id bigserial PRIMARY KEY, payload text NOT NULL); INSERT INTO recovery_probe(payload) VALUES ('Привет — recovery'),('second row'); CREATE INDEX recovery_payload_idx ON recovery_probe(payload);",
+            user=user,
         )
     args.failure_stage = "SOURCE_SEED_MONGO"
     r.mongo_query(
@@ -186,7 +187,7 @@ def exercise(args):
             "projects": projects,
             "bundle_manifest_sha256": r.digest(source.output / "manifest.json"),
             "checks": [
-                "exact PG data/schema/sequences",
+                "all three PG databases: exact data/schema/sequences with separate Auth/Academic owners",
                 "both Mongo documents/indexes/options",
                 "all file bytes/paths",
                 "overwrite/corruption/project/nonempty refusal",

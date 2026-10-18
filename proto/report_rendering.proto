@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package rutcampustrack.reportrendering;
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.reportrendering.grpc";
+
+import "academic.proto";
+import "schedule.proto";
+import "teacher_reads.proto";
+import "auth_security_capabilities.proto";
+
+// Academic-only TLS+x-service-token, exact RenderReport method. The independent
+// x-report-capability metadata carries an Auth academic_report token bound to
+// SHA256(plan.toByteArray()), job, lease, kind and the complete actor tuple.
+// This receiver reads Attendance marks only; it never calls Auth/Academic/
+// Schedule, creates RequestContext, or accepts a generic internal/CRUD token.
+service ReportRenderingService {
+  rpc RenderReport(RenderReportRequest) returns (RenderReportResponse);
+}
+message RenderReportRequest { ReportRenderPlan plan = 1; }
+message RenderReportResponse {
+  bytes body = 1;
+  string content_type = 2;
+  string filename = 3;
+}
+message ReportGroupRoster {
+  int64 group_id = 1;
+  rutcampustrack.academic.GroupMembersResponse roster = 2;
+}
+message ReportWeeklySelector { repeated string week_starts = 1; string format = 2; }
+message ReportStatsSort { string field = 1; bool descending = 2; }
+message ReportStatsFilter {
+  string field = 1;
+  string contains = 2;
+  optional string minimum = 3;
+  optional string maximum = 4;
+}
+message ReportHeadmanStatsSelector {
+  optional int64 semester_id = 1;
+  optional int64 subject_id = 2;
+  repeated string lesson_types = 3;
+  repeated ReportStatsSort sorts = 4;
+  repeated ReportStatsFilter filters = 5;
+  string format = 6;
+}
+message ReportTrendSelector {
+  string mode = 1; // exact existing SEMESTER/WEEK/SUBJECT catalogue
+  string week_start = 2;
+  optional int64 semester_id = 3;
+  optional int64 subject_id = 4;
+  repeated string lesson_types = 5;
+  optional string bucket_unit = 6; // DAY/WEEK
+  string format = 7;
+}
+message ReportCompositionSelector { string format = 1; }
+message ReportSubjectJournalSelector {
+  int64 subject_id = 1;
+  repeated string lesson_types = 2;
+  repeated string week_starts = 3;
+  string format = 4;
+}
+// Canonical protobuf bytes, no unknown fields. No digest field within the plan.
+// <=20MiB request/output, <=5000 lessons and distinct students, <=64 weeks.
+// Receiver rejects duplicates, missing/foreign scope snapshots, nonmatching
+// kind/oneof, unknown catalogue values, and actor/capability tuple mismatch.
+// generated_at is rendering/as-of material, never security freshness evidence.
+message ReportRenderPlan {
+  rutcampustrack.authsecurity.StoredSessionIdentity actor = 1;
+  string job_id = 2;
+  string lease_id = 3;
+  string report_kind = 4; // exact uppercase ReportDownloadKind enum name
+  string generated_at = 5;
+  rutcampustrack.academic.SemesterResponse semester = 6;
+  repeated rutcampustrack.academic.GroupResponse groups = 7;
+  repeated ReportGroupRoster rosters = 8;
+  repeated rutcampustrack.academic.SubjectInfo subjects = 9;
+  rutcampustrack.academic.TeacherSubjectsResponse teacher_subjects = 10;
+  rutcampustrack.teacher.TeacherAssignmentsResponse teacher_assignments = 11;
+  rutcampustrack.academic.HeadmanStatsScopeResponse headman_stats_scope = 12;
+  repeated rutcampustrack.academic.SemesterStateResponse semester_states = 13;
+  repeated rutcampustrack.schedule.LessonResponse lessons = 14;
+  rutcampustrack.academic.HeadmanGroupCompositionResponse group_composition = 15;
+  // Academic freshly resolved VIEW_STATS for actor's exact current group.
+  // Allows accepted student-helper scope; it is not a permission authority map.
+  bool view_stats_authorized = 16;
+  oneof selector {
+    rutcampustrack.teacher.TeacherAttendanceExportRequest teacher_journal = 20;
+    rutcampustrack.teacher.TeacherStatsExportRequest teacher_stats = 21;
+    ReportWeeklySelector weekly = 22;
+    ReportHeadmanStatsSelector headman_stats = 23;
+    ReportTrendSelector trend = 24;
+    ReportCompositionSelector composition = 25;
+    ReportSubjectJournalSelector subject_journal = 26;
+  }
+}

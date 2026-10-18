@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.BindingBuilder;
@@ -51,7 +52,6 @@ import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.semester.SemesterService;
 import ru.rutcampustrack.academic.subject.SubjectService;
 import ru.rutcampustrack.academic.user.UserService;
@@ -118,12 +118,15 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
     }
 
     @Autowired private MutableEventClock eventClock;
-    @MockitoBean private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
 
     private static final String EXCHANGE = "rut-uit.events";
     private static final int RECEIVE_TIMEOUT_MS = 5000;
 
-    @MockitoBean private RequestContext requestContext;
+    @Autowired
+    private ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations
+            identityOperations;
+
+    private AcademicIdentityIntegrationFixture.RequestScope actorRequest;
 
     /**
      * Phase 61-03 / D-04: createHomework теперь вызывает ScheduleGrpcClient. В интеграционном тесте
@@ -172,6 +175,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
     @BeforeEach
     void setUpTestEntities() {
         eventClock.setDate(LocalDate.of(2027, 4, 15));
+        useCurrentAdministrator();
         // Create managed groups through the production writer so coverage
         // provenance exists for the transfer test as well.
         groupA =
@@ -213,21 +217,11 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                 userRepository
                         .findByIdIncludingArchived(created.getContent().getId())
                         .orElseThrow();
-        jdbcTemplate.update(
-                "INSERT INTO user_role_grants (user_id,role,status,group_id,created_at,updated_at) "
-                        + "VALUES (?,'headman','active',?,NOW(),NOW())",
-                testUser.getId(),
-                groupA.getId());
+        useCurrentAdministrator();
+        identityOperations.headman(groupA.getId(), testUser.getId(), null, false, null);
 
-        testSemester = semesterService.activateSemester(testSemester.getId());
-
-        // Keep the original homework actor context separate from setup's admitted administrator.
-        when(requestContext.getClaims()).thenReturn(null);
-        // Stub RequestContext mock for homework permission checks
-        when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
-        when(requestContext.isHeadman()).thenReturn(true);
-        when(requestContext.getUserId()).thenReturn(testUser.getId());
-        when(requestContext.getGroupId()).thenReturn(groupA.getId());
+        testSemester = activateSemesterAsAdministrator(testSemester.getId());
+        useSelectedActor(testUser.getId(), ru.rutcampustrack.auth.session.model.AuthRole.HEADMAN);
 
         // Create the subject and its canonical lesson type atomically through
         // the managed writer; the database requires every subject to retain a
@@ -315,7 +309,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         if (!start.await(10, TimeUnit.SECONDS)) {
             throw new IllegalStateException("activation race barrier timed out");
         }
-        return semesterService.activateSemester(semesterId);
+        return activateSemesterAsAdministrator(semesterId);
     }
 
     private long latestOutboxId() {
@@ -375,6 +369,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
     @Test
     void updateGroup_publishesGroupUpdatedEvent() throws Exception {
         String queueName = bindTempQueue();
+        useCurrentAdministrator();
 
         // 58-04: UpdateGroupRequest(name, active). Новое имя должно матчить активный паттерн.
         // 58-07: при изменении name публикуются ДВА события: group.renamed + group.updated.
@@ -405,6 +400,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
 
     @Test
     void deleteGroup_withManagedCoverageIsRejected() {
+        useCurrentAdministrator();
         assertThatThrownBy(() -> groupService.deleteGroup(groupA.getId()))
                 .isInstanceOfSatisfying(
                         HistoricalMembershipException.class,
@@ -442,33 +438,32 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
     }
 
     private void useCurrentAdministrator() {
-        long actor =
-                jdbcTemplate.queryForObject(
-                        "SELECT u.id FROM users u JOIN admin_access_profiles p ON p.user_id=u.id"
-                                + " JOIN user_role_grants g ON g.user_id=u.id WHERE"
-                                + " u.status<>'archived' AND p.assigned AND p.mode='FULL' AND"
-                                + " g.role='admin' AND g.status='active' ORDER BY u.id LIMIT 1",
-                        Long.class);
-        var session = AcademicTestAdminRequest.selectedSession(jdbcTemplate, actor, 1);
-        when(requestContext.getUserId()).thenReturn(actor);
-        when(requestContext.getRole()).thenReturn(UserRole.ADMIN);
-        when(requestContext.isHeadman()).thenReturn(false);
-        when(requestContext.getGroupId()).thenReturn(null);
-        when(requestContext.getClaims())
-                .thenReturn(
-                        new ru.rutcampustrack.shared.security.InternalJwtClaims(
-                                actor,
-                                session,
-                                1,
-                                jdbcTemplate.queryForObject(
-                                        "SELECT roles_version FROM users WHERE id=?",
-                                        Long.class,
-                                        actor),
-                                "ADMIN",
-                                "ACTIVE",
-                                null,
-                                false,
-                                false));
+        useSelectedActor(
+                identityFixture.canonical().adminId(),
+                ru.rutcampustrack.auth.session.model.AuthRole.ADMIN);
+    }
+
+    private void useSelectedActor(long userId, ru.rutcampustrack.auth.session.model.AuthRole role) {
+        closeActorRequest();
+        actorRequest = identityFixture.request(identityFixture.select(userId, role), null);
+    }
+
+    @AfterEach
+    void closeActorRequest() {
+        if (actorRequest != null) {
+            actorRequest.close();
+            actorRequest = null;
+        }
+    }
+
+    private Semester activateSemesterAsAdministrator(long semesterId) {
+        var admin =
+                identityFixture.select(
+                        identityFixture.canonical().adminId(),
+                        ru.rutcampustrack.auth.session.model.AuthRole.ADMIN);
+        try (var ignored = identityFixture.request(admin, null)) {
+            return semesterService.activateSemester(semesterId);
+        }
     }
 
     // --- EVENT-02: semester.archived event ---
@@ -487,7 +482,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
 
         // Activate semesterA -- this deactivates whatever is currently active (V2 seed semester)
         eventClock.setDate(LocalDate.of(2028, 4, 15));
-        semesterService.activateSemester(semesterA.getId());
+        activateSemesterAsAdministrator(semesterA.getId());
         flushOutbox();
 
         // Drain events from the first activation (seed semester archiving + semesterA activation).
@@ -500,7 +495,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         Long archivedSemesterId = semesterA.getId();
         long outboxBeforeSwitch = latestOutboxId();
         eventClock.setDate(LocalDate.of(2028, 10, 15));
-        semesterService.activateSemester(semesterB.getId());
+        activateSemesterAsAdministrator(semesterB.getId());
         assertThat(archivedSemesterIdsAfter(outboxBeforeSwitch))
                 .containsExactly(archivedSemesterId);
         flushOutbox();
@@ -534,7 +529,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         assertOnlyActiveSemester(semesterB.getId());
 
         long outboxBeforeReplay = latestOutboxId();
-        semesterService.activateSemester(semesterB.getId());
+        activateSemesterAsAdministrator(semesterB.getId());
         flushOutbox();
         assertThat(latestOutboxId()).isEqualTo(outboxBeforeReplay);
         assertThat(rabbitTemplate.receive(queueName, 250))
@@ -543,7 +538,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         assertOnlyActiveSemester(semesterB.getId());
 
         long outboxBeforeMissingTarget = latestOutboxId();
-        assertThatThrownBy(() -> semesterService.activateSemester(Long.MAX_VALUE))
+        assertThatThrownBy(() -> activateSemesterAsAdministrator(Long.MAX_VALUE))
                 .isInstanceOf(ResourceNotFoundException.class);
         flushOutbox();
         assertThat(latestOutboxId()).isEqualTo(outboxBeforeMissingTarget);
@@ -563,7 +558,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         String queueName = bindTempQueue();
 
         eventClock.setDate(LocalDate.of(2038, 4, 15));
-        semesterService.activateSemester(semesterA.getId());
+        activateSemesterAsAdministrator(semesterA.getId());
         flushOutbox();
         while (rabbitTemplate.receive(queueName, 500) != null) {
             /* discard setup transition */

@@ -59,20 +59,35 @@ def credentials(path):
             if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
                 value = value[1:-1]
             values[match[1]] = value
-    for key in ("POSTGRES_ACADEMIC_PASSWORD", "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD"):
+    for key in (
+        "POSTGRES_ACADEMIC_MIGRATION_PASSWORD", "POSTGRES_AUTH_MIGRATION_PASSWORD",
+        "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD",
+        "POSTGRES_RECOVERY_ADMIN_USER", "POSTGRES_RECOVERY_ADMIN_PASSWORD",
+    ):
         require(values.get(key), f"Missing credential: {key}")
+    require(values["POSTGRES_RECOVERY_ADMIN_USER"] in ("rct_user", "rct_bootstrap"),
+            "Unsupported recovery admin identity")
     return values
+
+
+def pg_targets(args):
+    # Auth and Academic share a process, never a database or owner credential.
+    return (
+        ("academic", args.academic_container, "academic_db", "POSTGRES_ACADEMIC_MIGRATION_PASSWORD", "rct_migrator"),
+        ("auth", args.academic_container, "auth_db", "POSTGRES_AUTH_MIGRATION_PASSWORD", "rct_auth_migrator"),
+        ("schedule", args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD", "rct_user"),
+    )
 
 
 def pg_command(container, password, *args, stream=False):
     return ["docker", "exec", *(["-i"] if stream else []), "-e", "PGPASSWORD=" + password, container, *args]
 
 
-def pg_query(container, password, db, sql):
+def pg_query(container, password, db, sql, *, user="rct_user"):
     return (
         run(
             pg_command(
-                container, password, "psql", "-X", "-U", "rct_user", "-d", db, "-v", "ON_ERROR_STOP=1", "-At", "-c", sql
+                container, password, "psql", "-X", "-U", user, "-d", db, "-v", "ON_ERROR_STOP=1", "-At", "-c", sql
             )
         )
         .decode()
@@ -80,11 +95,11 @@ def pg_query(container, password, db, sql):
     )
 
 
-def pg_schema(container, password, db):
+def pg_schema(container, password, db, *, user="rct_user"):
     # Preserve executable DDL; discard only pg_dump's volatile metadata/nonces.
     schema = run(
         pg_command(
-            container, password, "pg_dump", "-U", "rct_user", "-d", db, "--schema-only", "--no-owner", "--no-privileges"
+            container, password, "pg_dump", "-U", user, "-d", db, "--schema-only", "--no-owner", "--no-privileges"
         )
     ).decode()
     return "\n".join(
@@ -97,26 +112,28 @@ def pg_schema(container, password, db):
     )
 
 
-def canonical_reference_schema(container, password, db, schema):
+def canonical_reference_schema(container, password, db, schema, *, user="rct_user"):
     # PostgreSQL reparses dump expressions (casts/AND grouping). Compare its own
     # deparsed reference, never discard constraints/indexes or normalize SQL text.
+    require(user in ("rct_user", "rct_bootstrap"), "Unsupported recovery admin identity")
+    def query(database, sql):
+        return pg_query(container, password, database, sql, user=user)
+
     scratch = "rct_recovery_schema_" + uuid.uuid4().hex
     require(
-        pg_query(container, password, "postgres", f"SELECT count(*) FROM pg_database WHERE datname='{scratch}'") == "0",
+        query("postgres", f"SELECT count(*) FROM pg_database WHERE datname='{scratch}'") == "0",
         "Schema reference database already exists",
     )
-    timezone = pg_query(container, password, db, "SHOW TimeZone").replace("'", "''")
-    pg_query(container, password, "postgres", f'CREATE DATABASE "{scratch}" TEMPLATE template0 OWNER rct_user')
-    identity = pg_query(
-        container,
-        password,
+    timezone = query(db, "SHOW TimeZone").replace("'", "''")
+    query("postgres", f'CREATE DATABASE "{scratch}" TEMPLATE template0 OWNER "{user}"')
+    identity = query(
         "postgres",
         f"SELECT oid FROM pg_database WHERE datname='{scratch}' "
-        "AND datdba=(SELECT oid FROM pg_roles WHERE rolname='rct_user')",
+        f"AND datdba=(SELECT oid FROM pg_roles WHERE rolname='{user}')",
     )
     require(identity.isdigit(), "Created schema reference identity is missing")
     try:
-        pg_query(container, password, "postgres", f"ALTER DATABASE \"{scratch}\" SET TimeZone TO '{timezone}'")
+        query("postgres", f"ALTER DATABASE \"{scratch}\" SET TimeZone TO '{timezone}'")
         run(
             pg_command(
                 container,
@@ -124,7 +141,7 @@ def canonical_reference_schema(container, password, db, schema):
                 "psql",
                 "-X",
                 "-U",
-                "rct_user",
+                user,
                 "-d",
                 scratch,
                 "-v",
@@ -134,41 +151,41 @@ def canonical_reference_schema(container, password, db, schema):
             ),
             input_data=schema.encode("utf-8"),
         )
-        return pg_schema(container, password, scratch)
+        return pg_schema(container, password, scratch, user=user)
     finally:
         require(
-            pg_query(
-                container,
-                password,
+            query(
                 "postgres",
                 f"SELECT oid FROM pg_database WHERE datname='{scratch}' "
-                "AND datdba=(SELECT oid FROM pg_roles WHERE rolname='rct_user')",
+                f"AND datdba=(SELECT oid FROM pg_roles WHERE rolname='{user}')",
             )
             == identity,
             "Schema reference identity changed; cleanup refused",
         )
-        pg_query(container, password, "postgres", f'DROP DATABASE "{scratch}"')
+        query("postgres", f'DROP DATABASE "{scratch}"')
 
 
 def compare_restored_inventory(args, secret, expected):
     actual = inventory(args, secret)
-    for label, container, db, key in (
-        ("academic", args.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD"),
-        ("schedule", args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD"),
-    ):
+    for label, container, db, key, user in pg_targets(args):
         require(
             {k: v for k, v in expected[label].items() if k != "schema"}
             == {k: v for k, v in actual[label].items() if k != "schema"},
             f"Restored {label} data/sequences differ; keep target isolated",
         )
         require(
-            canonical_reference_schema(container, secret[key], db, expected[label]["schema"])
+            canonical_reference_schema(
+                container,
+                secret[key] if label == "schedule" else secret["POSTGRES_RECOVERY_ADMIN_PASSWORD"],
+                db, expected[label]["schema"],
+                user="rct_user" if label == "schedule" else secret["POSTGRES_RECOVERY_ADMIN_USER"],
+            )
             == actual[label]["schema"],
             f"Restored {label} schema differs from PostgreSQL reference; keep target isolated",
         )
     require(
-        {k: v for k, v in expected.items() if k not in ("academic", "schedule")}
-        == {k: v for k, v in actual.items() if k not in ("academic", "schedule")},
+        {k: v for k, v in expected.items() if k not in ("academic", "auth", "schedule")}
+        == {k: v for k, v in actual.items() if k not in ("academic", "auth", "schedule")},
         "Restored Mongo/files inventory differs; keep target isolated",
     )
 
@@ -219,10 +236,7 @@ def file_mode(args):
 
 def inventory(args, secret):
     result = {}
-    for label, container, db, key in (
-        ("academic", args.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD"),
-        ("schedule", args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD"),
-    ):
+    for label, container, db, key, user in pg_targets(args):
         password = secret[key]
         tables = json.loads(
             pg_query(
@@ -234,6 +248,7 @@ def inventory(args, secret):
               ORDER BY schemaname,tablename),'[]'::json) FROM pg_tables
             WHERE schemaname NOT IN ('pg_catalog','information_schema') AND schemaname !~ '^pg_toast';
         """,
+                user=user,
             )
         )
         data = []
@@ -244,9 +259,10 @@ def inventory(args, secret):
                 password,
                 db,
                 f"SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb) FROM {quoted} t",
+                user=user,
             )
             data.append({**table, "rows": json.loads(rows)})
-        schema = pg_schema(container, password, db)
+        schema = pg_schema(container, password, db, user=user)
         sequences = json.loads(
             pg_query(
                 container,
@@ -257,13 +273,14 @@ def inventory(args, secret):
             ORDER BY schemaname,sequencename),'[]'::json) FROM pg_sequences
             WHERE schemaname NOT IN ('pg_catalog','information_schema');
         """,
+                user=user,
             )
         )
         for seq in sequences:
             quoted = ".".join('"' + seq[k].replace('"', '""') + '"' for k in ("schema", "name"))
             seq["state"] = json.loads(
                 pg_query(
-                    container, password, db, f"SELECT row_to_json(t) FROM (SELECT last_value,is_called FROM {quoted}) t"
+                    container, password, db, f"SELECT row_to_json(t) FROM (SELECT last_value,is_called FROM {quoted}) t", user=user
                 )
             )
         result[label] = {"schema": schema, "tables": data, "sequences": sequences}
@@ -295,6 +312,7 @@ def inventory(args, secret):
 
 
 PAYLOADS = {
+    "auth.dump",
     "academic.dump",
     "schedule.dump",
     "attendance.archive",
@@ -314,9 +332,9 @@ def verify_bundle(bundle, requested_mode=None):
         require(path.is_file() and not path.is_symlink(), "Bundle artifacts must be regular files")
     manifest = json.loads((bundle / "manifest.json").read_text(encoding="utf-8"))
     require(
-        manifest.get("format") == 1 and set(manifest.get("sha256", {})) == PAYLOADS, "Unsupported/incomplete manifest"
+        manifest.get("format") == 2 and set(manifest.get("sha256", {})) == PAYLOADS, "Unsupported/incomplete manifest"
     )
-    mode = manifest.get("files_mode", "files")  # Original format-1 bundles always included files.
+    mode = manifest.get("files_mode")
     require(mode in ("files", "database-only"), "Unsupported files mode in manifest")
     require(
         requested_mode is None or requested_mode == mode,
@@ -325,6 +343,8 @@ def verify_bundle(bundle, requested_mode=None):
     for name, expected in manifest["sha256"].items():
         require(digest(bundle / name) == expected, f"Integrity check failed: {name}")
     expected = json.loads((bundle / "inventory.json").read_text(encoding="utf-8"))
+    require(set(expected) == {"academic", "auth", "schedule", "mongo", "files"},
+            "Incomplete/unexpected database inventory")
     require(mode != "database-only" or expected["files"] == [], "Database-only bundle declares files; restore refused")
     with tarfile.open(bundle / "files.tar", "r:") as archive:
         seen = set()
@@ -371,7 +391,7 @@ def backup(args):
         )
     if args.dry_run:
         print(
-            f"PLAN backup: explicit three containers; two PG DBs; two Mongo DBs; mode={mode}; new immutable bundle; no deletion"
+            f"PLAN backup: explicit three containers; three PG DBs (Academic/Auth share one container); two Mongo DBs; mode={mode}; new immutable bundle; no deletion"
         )
         return
     secret = credentials(args.env_file)
@@ -379,10 +399,8 @@ def backup(args):
     before = inventory(args, secret)
     args.output.mkdir(parents=True, exist_ok=False, mode=0o700)
     # No success manifest on failure; partial artifacts are retained for diagnosis.
-    for container, db, key, name in (
-        (args.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD", "academic.dump"),
-        (args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD", "schedule.dump"),
-    ):
+    for label, container, db, key, user in pg_targets(args):
+        name = label + ".dump"
         with (args.output / name).open("xb") as output:
             run(
                 pg_command(
@@ -390,7 +408,7 @@ def backup(args):
                     secret[key],
                     "pg_dump",
                     "-U",
-                    "rct_user",
+                    user,
                     "-d",
                     db,
                     "--format=custom",
@@ -417,7 +435,7 @@ def backup(args):
     write_json(args.output / "inventory.json", before)
     write_json(
         args.output / "manifest.json",
-        {"format": 1, "files_mode": mode, "sha256": {n: digest(args.output / n) for n in sorted(PAYLOADS)}},
+        {"format": 2, "files_mode": mode, "sha256": {n: digest(args.output / n) for n in sorted(PAYLOADS)}},
     )
     verify_bundle(args.output, mode)
     print(f"PASS backup: complete immutable PG/Mongo bundle; mode={mode}")
@@ -436,15 +454,13 @@ def restore(args):
         return
     secret = credentials(args.env_file)
     check_targets(args, restore=True)
-    for container, db, key in (
-        (args.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD"),
-        (args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD"),
-    ):
+    for label, container, db, key, user in pg_targets(args):
         count = pg_query(
             container,
             secret[key],
             db,
             "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname !~ '^pg_toast' AND c.relkind IN ('r','p','S','v','m','f');",
+            user=user,
         )
         require(count == "0", "PostgreSQL target is not fresh; restore refused")
     counts = mongo_query(
@@ -453,10 +469,8 @@ def restore(args):
         "print(JSON.stringify(['attendance_db','notification_db'].map(n=>db.getSiblingDB(n).getCollectionInfos().length)))",
     )
     require(counts == [0, 0], "Mongo target is not fresh; restore refused")
-    for container, db, key, name in (
-        (args.academic_container, "academic_db", "POSTGRES_ACADEMIC_PASSWORD", "academic.dump"),
-        (args.schedule_container, "schedule_db", "POSTGRES_SCHEDULE_PASSWORD", "schedule.dump"),
-    ):
+    for label, container, db, key, user in pg_targets(args):
+        name = label + ".dump"
         with (args.bundle / name).open("rb") as source:
             run(
                 pg_command(
@@ -464,7 +478,7 @@ def restore(args):
                     secret[key],
                     "pg_restore",
                     "-U",
-                    "rct_user",
+                    user,
                     "-d",
                     db,
                     "--exit-on-error",

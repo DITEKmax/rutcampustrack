@@ -54,6 +54,8 @@ services:
         target: rct-auth-runtime-password
       - source: e2e-pg-academic-runtime-password
         target: rct-academic-runtime-password
+      - source: e2e-pg-auth-migration-password
+        target: rct-auth-migration-password
     expose:
       - '5432'
     networks:
@@ -156,9 +158,12 @@ services:
       dockerfile: services/auth-service/Dockerfile
     image: rct/auth-service:${IMAGE_TAG:-e2e-local}
     environment:
-      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-auth/
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-auth/,configtree:/run/rct-directed/
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_USERNAME: rct_auth_runtime
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-academic:5432/auth_db
+      SPRING_FLYWAY_USER: rct_auth_migrator
+      SPRING_FLYWAY_LOCATIONS: classpath:db/auth-migration
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: '5672'
@@ -184,10 +189,20 @@ services:
       # urandom non-blocking, криптостойкость equivalent для post-Java 8 JVMs.
       JAVA_TOOL_OPTIONS: '-Djava.security.egd=file:/dev/./urandom -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC'
     secrets:
+      - source: mobile-bff-to-auth-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-auth-token
+      - source: academic-to-auth-service-token
+        target: /run/rct-directed/grpc.service-identity.academic-to-auth-token
+      - source: attendance-to-auth-service-token
+        target: /run/rct-directed/grpc.service-identity.attendance-to-auth-token
+      - source: auth-to-academic-presentation-service-token
+        target: /run/rct-directed/grpc.service-identity.auth-to-academic-presentation-token
       - source: e2e-pg-auth-runtime-password
-        target: /run/rct-db/POSTGRES_ACADEMIC_PASSWORD
+        target: /run/rct-db/POSTGRES_AUTH_PASSWORD
       - source: bot-to-auth-service-token
         target: /run/rct-auth/BOT_TO_AUTH_SERVICE_TOKEN
+      - source: e2e-pg-auth-migration-password
+        target: /run/rct-db/SPRING_FLYWAY_PASSWORD
     volumes:
       - ${AUTH_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
       - ${AUTH_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/auth-server.key:/run/rct-auth-tls/auth-server.key:ro
@@ -224,9 +239,11 @@ services:
       dockerfile: services/academic-service/academic-app/Dockerfile
     image: rct/academic-service:${IMAGE_TAG:-e2e-local}
     environment:
-      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/
+      AUTH_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-auth-tls/auth-server.crt
+      AUTH_GRPC_TLS_AUTHORITY: auth-service
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-directed/
       SPRING_FLYWAY_USER: rct_migrator
-      SPRING_FLYWAY_LOCATIONS: classpath:db/migration,filesystem:/etc/rct/flyway-callbacks
+      SPRING_FLYWAY_LOCATIONS: classpath:db/academic-migration
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_USERNAME: rct_academic_runtime
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -245,12 +262,26 @@ services:
       ATTENDANCE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-attendance-tls/attendance-server.crt
       ATTENDANCE_GRPC_TLS_AUTHORITY: attendance-service
     secrets:
+      - source: academic-to-auth-service-token
+        target: /run/rct-directed/grpc.service-identity.academic-to-auth-token
+      - source: auth-to-academic-presentation-service-token
+        target: /run/rct-directed/grpc.service-identity.auth-to-academic-presentation-token
+      - source: mobile-bff-to-academic-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-academic-token
+      - source: attendance-bot-read-to-academic-service-token
+        target: /run/rct-directed/grpc.service-identity.attendance-bot-read-to-academic-token
+      - source: academic-report-to-attendance-service-token
+        target: /run/rct-directed/grpc.service-identity.academic-report-to-attendance-token
+      - source: academic-report-to-schedule-service-token
+        target: /run/rct-directed/grpc.service-identity.academic-report-to-schedule-token
+      - source: notification-to-academic-service-token
+        target: /run/rct-directed/grpc.service-identity.notification-to-academic-token
       - source: e2e-pg-academic-runtime-password
         target: /run/rct-db/POSTGRES_ACADEMIC_PASSWORD
       - source: e2e-pg-migration-password
         target: /run/rct-db/spring.flyway.password
     volumes:
-      - ./infra/postgres/flyway-callbacks:/etc/rct/flyway-callbacks:ro
+      - ${AUTH_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.key:/run/rct-academic-tls/academic-server.key:ro
@@ -279,6 +310,7 @@ services:
       dockerfile: services/schedule-service/schedule-app/Dockerfile
     image: rct/schedule-service:${IMAGE_TAG:-e2e-local}
     environment:
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-directed/
       SPRING_PROFILES_ACTIVE: prod
       POSTGRES_SCHEDULE_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD}
       RABBITMQ_USER: ${RABBITMQ_USER}
@@ -292,6 +324,13 @@ services:
       SCHEDULE_GRPC_PRIVATE_KEY: file:/run/rct-schedule-tls/schedule-server.key
       TZ: Europe/Moscow
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC'
+    secrets:
+      - source: mobile-bff-to-schedule-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-schedule-token
+      - source: attendance-bot-read-to-schedule-service-token
+        target: /run/rct-directed/grpc.service-identity.attendance-bot-read-to-schedule-token
+      - source: academic-report-to-schedule-service-token
+        target: /run/rct-directed/grpc.service-identity.academic-report-to-schedule-token
     volumes:
       - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.key:/run/rct-schedule-tls/schedule-server.key:ro
@@ -320,6 +359,10 @@ services:
       dockerfile: services/attendance-service/attendance-app/Dockerfile
     image: rct/attendance-service:${IMAGE_TAG:-e2e-local}
     environment:
+      ATTENDANCE_BOT_READ_AUTH_GRPC_CA_PATH: file:/run/rct-auth-tls/auth-server.crt
+      ATTENDANCE_BOT_READ_ACADEMIC_GRPC_CA_PATH: file:/run/rct-academic-tls/academic-server.crt
+      ATTENDANCE_BOT_READ_SCHEDULE_GRPC_CA_PATH: file:/run/rct-schedule-tls/schedule-server.crt
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-directed/
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin&replicaSet=rs0
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -334,7 +377,19 @@ services:
       ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN: ${ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN:-}
       ATTENDANCE_GRPC_CERTIFICATE_CHAIN: file:/run/rct-attendance-tls/attendance-server.crt
       ATTENDANCE_GRPC_PRIVATE_KEY: file:/run/rct-attendance-tls/attendance-server.key
+    secrets:
+      - source: attendance-to-auth-service-token
+        target: /run/rct-directed/grpc.service-identity.attendance-to-auth-token
+      - source: mobile-bff-to-attendance-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-attendance-token
+      - source: attendance-bot-read-to-academic-service-token
+        target: /run/rct-directed/grpc.service-identity.attendance-bot-read-to-academic-token
+      - source: attendance-bot-read-to-schedule-service-token
+        target: /run/rct-directed/grpc.service-identity.attendance-bot-read-to-schedule-token
+      - source: academic-report-to-attendance-service-token
+        target: /run/rct-directed/grpc.service-identity.academic-report-to-attendance-token
     volumes:
+      - ${AUTH_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
       - ${ATTENDANCE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro
@@ -386,6 +441,15 @@ services:
       dockerfile: services/mobile-bff/mobile-bff-app/Dockerfile
     image: rct/mobile-bff:${IMAGE_TAG:-e2e-local}
     environment:
+      MOBILE_BFF_BOT_GRPC_PORT: '19098'
+      MOBILE_BFF_BOT_GRPC_BIND_ADDRESS: 0.0.0.0
+      MOBILE_BFF_BOT_GRPC_CERTIFICATE_CHAIN: file:/run/rct-mobile-bff-tls/mobile-bff-server.crt
+      MOBILE_BFF_BOT_GRPC_PRIVATE_KEY: file:/run/rct-mobile-bff-tls/mobile-bff-server.key
+      BOT_READ_AUTH_GRPC_CA_PATH: file:/run/rct-auth-tls/auth-server.crt
+      BOT_READ_ACADEMIC_GRPC_CA_PATH: file:/run/rct-academic-tls/academic-server.crt
+      BOT_READ_ATTENDANCE_GRPC_CA_PATH: file:/run/rct-attendance-tls/attendance-server.crt
+      BOT_READ_SCHEDULE_GRPC_CA_PATH: file:/run/rct-schedule-tls/schedule-server.crt
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-directed/
       SPRING_PROFILES_ACTIVE: prod
       AUTH_SERVICE_URL: http://auth-service:9090
       GRPC_SECRET: ${GRPC_SECRET:?GRPC_SECRET must be set}
@@ -396,11 +460,26 @@ services:
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC'
       ATTENDANCE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-attendance-tls/attendance-server.crt
       ATTENDANCE_GRPC_TLS_AUTHORITY: attendance-service
+    secrets:
+      - source: bot-to-read-service-token
+        target: /run/rct-directed/grpc.service-identity.bot-to-mobile-bff-token
+      - source: mobile-bff-to-auth-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-auth-token
+      - source: mobile-bff-to-academic-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-academic-token
+      - source: mobile-bff-to-attendance-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-attendance-token
+      - source: mobile-bff-to-schedule-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-schedule-token
     volumes:
+      - ${AUTH_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
+      - ${MOBILE_BFF_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/mobile-bff-server.crt:/run/rct-mobile-bff-tls/mobile-bff-server.crt:ro
+      - ${MOBILE_BFF_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/mobile-bff-server.key:/run/rct-mobile-bff-tls/mobile-bff-server.key:ro
       - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
       - ${ATTENDANCE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro
     expose:
+      - '19098'
       - '9080'
     networks:
       - private_net
@@ -477,6 +556,7 @@ services:
       dockerfile: services/notification-service/notification-app/Dockerfile
     image: rct/notification-web:${IMAGE_TAG:-e2e-local}
     environment:
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-directed/
       SPRING_PROFILES_ACTIVE: prod
       BOT_TO_NOTIFICATION_SERVICE_TOKEN: ${BOT_TO_NOTIFICATION_SERVICE_TOKEN:?BOT_TO_NOTIFICATION_SERVICE_TOKEN must be set}
       GRPC_SECRET: ${GRPC_SECRET:?GRPC_SECRET must be set}
@@ -505,6 +585,9 @@ services:
       SPRING_DATA_MONGODB_URI: mongodb://${MONGO_NOTIFICATION_USER}:${MONGO_NOTIFICATION_PASSWORD}@mongo-attendance:27017/notification_db?authSource=admin&replicaSet=rs0
       NOTIFICATION_HISTORY_TTL_DAYS: '30'
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC'
+    secrets:
+      - source: notification-to-academic-service-token
+        target: /run/rct-directed/grpc.service-identity.notification-to-academic-token
     volumes:
       - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
@@ -601,3 +684,45 @@ secrets:
     file: ./tests/e2e/infra/certs/auth-secrets/pg-auth-runtime-password
   e2e-pg-academic-runtime-password:
     file: ./tests/e2e/infra/certs/auth-secrets/pg-academic-runtime-password
+
+  e2e-pg-auth-migration-password:
+    file: ./tests/e2e/infra/certs/auth-secrets/pg-auth-migration-password
+
+  mobile-bff-to-auth-service-token:
+    file: ${MOBILE_BFF_TO_AUTH_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/mobile-bff-to-auth-token}
+
+  academic-to-auth-service-token:
+    file: ${ACADEMIC_TO_AUTH_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/academic-to-auth-token}
+
+  attendance-to-auth-service-token:
+    file: ${ATTENDANCE_TO_AUTH_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/attendance-to-auth-token}
+
+  auth-to-academic-presentation-service-token:
+    file: ${AUTH_TO_ACADEMIC_PRESENTATION_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/auth-to-academic-presentation-token}
+
+  mobile-bff-to-academic-service-token:
+    file: ${MOBILE_BFF_TO_ACADEMIC_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/mobile-bff-to-academic-token}
+
+  mobile-bff-to-attendance-service-token:
+    file: ${MOBILE_BFF_TO_ATTENDANCE_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/mobile-bff-to-attendance-token}
+
+  mobile-bff-to-schedule-service-token:
+    file: ${MOBILE_BFF_TO_SCHEDULE_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/mobile-bff-to-schedule-token}
+
+  attendance-bot-read-to-academic-service-token:
+    file: ${ATTENDANCE_BOT_READ_TO_ACADEMIC_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/attendance-bot-read-to-academic-token}
+
+  attendance-bot-read-to-schedule-service-token:
+    file: ${ATTENDANCE_BOT_READ_TO_SCHEDULE_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/attendance-bot-read-to-schedule-token}
+
+  academic-report-to-attendance-service-token:
+    file: ${ACADEMIC_REPORT_TO_ATTENDANCE_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/academic-report-to-attendance-token}
+
+  academic-report-to-schedule-service-token:
+    file: ${ACADEMIC_REPORT_TO_SCHEDULE_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/academic-report-to-schedule-token}
+
+  notification-to-academic-service-token:
+    file: ${NOTIFICATION_TO_ACADEMIC_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/notification-to-academic-token}
+
+  bot-to-read-service-token:
+    file: ${BOT_TO_READ_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/bot-to-read-token}

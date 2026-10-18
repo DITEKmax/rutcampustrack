@@ -1,8 +1,5 @@
 package ru.rutcampustrack.notification.config;
 
-import java.time.Duration;
-import java.util.Optional;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -11,10 +8,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
+
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketRequest;
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
 import ru.rutcampustrack.auth.dto.ExportJobModels;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
+
+import java.time.Duration;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * M03b Группа 4: клиент для consume WebSocket ticket из auth-service. Вызывается {@code
@@ -34,8 +36,22 @@ public class WsTicketClient {
 
     private final RestClient restClient;
     private final String internalSecret;
+    private final RestClient reportClient;
+    private final String reportAdmissionToken;
 
     public WsTicketClient(WsTicketProperties properties) {
+        this(properties, "http://academic-service:9091", "");
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public WsTicketClient(
+            WsTicketProperties properties,
+            @org.springframework.beans.factory.annotation.Value(
+                            "${rutcampustrack.export-jobs.academic-service-url:http://academic-service:9091}")
+                    String academicUrl,
+            @org.springframework.beans.factory.annotation.Value(
+                            "${grpc.service-identity.notification-to-academic-token:}")
+                    String reportAdmissionToken) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(CONNECT_TIMEOUT);
         requestFactory.setReadTimeout(READ_TIMEOUT);
@@ -45,6 +61,9 @@ public class WsTicketClient {
                         .requestFactory(requestFactory)
                         .build();
         this.internalSecret = properties.internalIssuerSecret();
+        this.reportClient =
+                RestClient.builder().baseUrl(academicUrl).requestFactory(requestFactory).build();
+        this.reportAdmissionToken = reportAdmissionToken;
     }
 
     public Optional<ConsumeWsTicketResponse> consume(String ticket) {
@@ -84,12 +103,14 @@ public class WsTicketClient {
     }
 
     public boolean admitExport(UUID jobId, WsSessionAdmissionRequest identity) {
+        if (!ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential.isCanonicalToken(
+                reportAdmissionToken)) return false;
         try {
-            return restClient
+            return reportClient
                             .post()
-                            .uri("/internal/export-jobs/admit")
+                            .uri("/academic/internal/export-jobs/admit")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .header(INTERNAL_SECRET_HEADER, internalSecret)
+                            .header("X-Service-Token", reportAdmissionToken)
                             .body(new ExportJobModels.Admit(jobId, identity))
                             .retrieve()
                             .toBodilessEntity()

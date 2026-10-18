@@ -3,7 +3,22 @@ package ru.rutcampustrack.auth.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+
 import jakarta.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+
+import ru.rutcampustrack.auth.config.JwtProperties;
+import ru.rutcampustrack.auth.entity.User;
+import ru.rutcampustrack.auth.entity.enums.UserRole;
+import ru.rutcampustrack.auth.session.model.RoleGrant;
+import ru.rutcampustrack.auth.session.model.SessionSnapshot;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,17 +40,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
-import ru.rutcampustrack.auth.config.JwtProperties;
-import ru.rutcampustrack.auth.entity.User;
-import ru.rutcampustrack.auth.entity.enums.UserRole;
-import ru.rutcampustrack.auth.session.model.RoleGrant;
-import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 
 @Service
 public class JwtService {
@@ -147,33 +151,6 @@ public class JwtService {
                     "Failed to cache public key in Redis (will retry on next signing): {}",
                     e.toString());
         }
-    }
-
-    /**
-     * Legacy stage-2 access token. It intentionally has no session-bound claims and is never
-     * accepted by {@link #parseSessionAccessToken(String)}.
-     */
-    public String generateAccessToken(User user) {
-        Date now = new Date();
-        Date expiration = new Date(now.getTime() + jwtProperties.accessTokenExpiration() * 1000);
-
-        return Jwts.builder()
-                .header()
-                .keyId(keyId)
-                .and()
-                .subject(user.getId().toString())
-                .issuer(JWT_ISSUER)
-                .audience()
-                .add(JWT_AUDIENCE)
-                .and()
-                .claim(TOKEN_USE_CLAIM, TOKEN_USE_ACCESS)
-                .claim("role", user.getRole().name())
-                .claim("group_id", user.getGroupId())
-                .claim("is_headman", user.isHeadman())
-                .issuedAt(now)
-                .expiration(expiration)
-                .signWith(privateKey, Jwts.SIG.RS256)
-                .compact();
     }
 
     /**
@@ -411,6 +388,62 @@ public class JwtService {
         }
         return generateInternalToken(
                 snapshot, issuedAt, expiration, reportBindingHash, reportTicketExpiresAt);
+    }
+
+    /** Signed authority for exactly one Academic lease; ordinary internal parsers reject it. */
+    public String generateAcademicReportToken(
+            SessionSnapshot snapshot,
+            Instant issuedAt,
+            Instant expiration,
+            String kind,
+            String selectorHash,
+            UUID jobId,
+            UUID leaseId,
+            Instant notAfter) {
+        Objects.requireNonNull(snapshot, "snapshot");
+        Objects.requireNonNull(jobId, "jobId");
+        Objects.requireNonNull(leaseId, "leaseId");
+        Objects.requireNonNull(notAfter, "notAfter");
+        if (kind == null
+                || !kind.matches("[A-Z][A-Z0-9_]{1,63}")
+                || selectorHash == null
+                || !selectorHash.matches("[0-9a-f]{64}")) {
+            throw new IllegalArgumentException("Invalid report binding");
+        }
+        requireWholeSecondWindow(issuedAt, expiration);
+        if (expiration.isAfter(notAfter.truncatedTo(ChronoUnit.SECONDS))
+                || expiration.isAfter(
+                        snapshot.refreshExpiresAt().truncatedTo(ChronoUnit.SECONDS))) {
+            throw new IllegalArgumentException("Report authority exceeds admitted lifetime");
+        }
+        RoleGrant role = requireActiveRole(snapshot);
+        var builder =
+                Jwts.builder()
+                        .header()
+                        .keyId(keyId)
+                        .and()
+                        .subject(Long.toString(snapshot.userId()))
+                        .issuer(JWT_ISSUER)
+                        .audience()
+                        .add(INTERNAL_JWT_AUDIENCE)
+                        .and()
+                        .claim(TOKEN_USE_CLAIM, "academic_report")
+                        .claim("sid", snapshot.sessionId().toString())
+                        .claim("sv", Long.toString(snapshot.sessionVersion()))
+                        .claim("rv", Long.toString(snapshot.rolesVersion()))
+                        .claim("role", role.role().name())
+                        .claim("status", role.status().name())
+                        .claim("is_headman", role.role().name().equals("HEADMAN"))
+                        .claim("readOnly", role.isReadOnly())
+                        .claim("report_kind", kind)
+                        .claim("report_hash", selectorHash)
+                        .claim("report_job", jobId.toString())
+                        .claim("report_lease", leaseId.toString())
+                        .claim("report_not_after", notAfter.getEpochSecond())
+                        .issuedAt(Date.from(issuedAt))
+                        .expiration(Date.from(expiration));
+        if (role.groupId() != null) builder.claim("group_id", Long.toString(role.groupId()));
+        return builder.signWith(privateKey, Jwts.SIG.RS256).compact();
     }
 
     private String generateInternalToken(
@@ -1045,7 +1078,8 @@ public class JwtService {
                 return random;
             } catch (IOException | NoSuchAlgorithmException e) {
                 log.warn(
-                        "Failed to seed SHA1PRNG from /dev/urandom, falling back to default SecureRandom",
+                        "Failed to seed SHA1PRNG from /dev/urandom, falling back to default"
+                                + " SecureRandom",
                         e);
             }
         }

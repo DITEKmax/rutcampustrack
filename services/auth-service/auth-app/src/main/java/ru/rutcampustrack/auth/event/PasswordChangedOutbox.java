@@ -2,13 +2,16 @@ package ru.rutcampustrack.auth.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.util.List;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import ru.rutcampustrack.shared.events.AbstractEventPublisher;
+
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.List;
 
 /** Records only notification metadata in the existing credential transaction. */
 @Component
@@ -32,11 +35,11 @@ public final class PasswordChangedOutbox extends AbstractEventPublisher {
         List<CredentialMetadata> rows =
                 jdbc.query(
                         """
-                SELECT telegram_id, credentials_version, telegram_binding_version,
-                       EXISTS(SELECT 1 FROM bot_credential_messages m WHERE m.user_id = users.id
-                           AND m.cleanup_state = 'PENDING') AS cleanup_pending
-                FROM users WHERE id = ? FOR UPDATE
-                """,
+SELECT telegram_id, credentials_version, telegram_binding_version,
+       EXISTS(SELECT 1 FROM bot_credential_messages m WHERE m.user_id = auth_identities.id
+           AND m.cleanup_state = 'PENDING') AS cleanup_pending
+FROM auth_identities WHERE id = ? FOR UPDATE
+""",
                         (row, index) -> {
                             long telegram = row.getLong("telegram_id");
                             Long recipient = row.wasNull() ? null : telegram;

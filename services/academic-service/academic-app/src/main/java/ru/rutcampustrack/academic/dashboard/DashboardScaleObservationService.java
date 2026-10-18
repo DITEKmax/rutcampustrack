@@ -1,10 +1,7 @@
 package ru.rutcampustrack.academic.dashboard;
 
 import jakarta.persistence.EntityManager;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,12 +13,18 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardDailyGrowthResponse;
 import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardDailyGrowthResponse.Status;
 import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
 import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
 import ru.rutcampustrack.academic.repository.GroupRegistryReadRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 /** Prospective scale history; an uncertain commit interval never becomes a yesterday snapshot. */
 @Service
@@ -90,16 +93,33 @@ public class DashboardScaleObservationService {
 
     /** A new writable transaction also repairs a marker left by a crash/failed afterCommit. */
     public Snapshot capture() {
+        return capture(false);
+    }
+
+    /** Publication retries capture of an existing marker without creating another count change. */
+    public void capturePending() {
+        capture(true);
+    }
+
+    private Snapshot capture(boolean pendingOnly) {
         return captureTransaction.execute(
                 ignored -> {
                     jdbc.execute(LOCK);
+                    if (pendingOnly
+                            && !Boolean.TRUE.equals(
+                                    jdbc.queryForObject(
+                                            "SELECT EXISTS(SELECT 1 FROM"
+                                                + " dashboard_scale_observations WHERE"
+                                                + " kind='CHANGE' AND settled_at IS NULL)",
+                                            Boolean.class))) return null;
                     DashboardScaleCounts current = DashboardScaleCounts.read(grants, groups);
                     Instant capturedAt = clock.instant();
                     LocalDate today = capturedAt.atZone(MOSCOW).toLocalDate();
                     LocalDate baselineDate = today.minusDays(1);
                     LocalDate latestDay =
                             jdbc.queryForObject(
-                                    "SELECT max(snapshot_day) FROM dashboard_scale_observations WHERE kind='SNAPSHOT'",
+                                    "SELECT max(snapshot_day) FROM dashboard_scale_observations"
+                                        + " WHERE kind='SNAPSHOT'",
                                     LocalDate.class);
                     if (latestDay != null && latestDay.isAfter(today)) {
                         // A calendar regression cannot rewrite a previously closed baseline.
@@ -108,20 +128,21 @@ public class DashboardScaleObservationService {
                     }
                     var captured = capturedAt.atZone(MOSCOW).toOffsetDateTime();
                     jdbc.update(
-                            "UPDATE dashboard_scale_observations SET settled_at=GREATEST(observed_at,?) "
-                                    + "WHERE kind='CHANGE' AND settled_at IS NULL",
+                            "UPDATE dashboard_scale_observations SET"
+                                + " settled_at=GREATEST(observed_at,?) WHERE kind='CHANGE' AND"
+                                + " settled_at IS NULL",
                             captured);
                     jdbc.update(
                             """
-                            INSERT INTO dashboard_scale_observations
-                                (kind,observed_at,snapshot_day,total_students,total_teachers,total_groups)
-                            VALUES ('SNAPSHOT',?,?,?,?,?)
-                            ON CONFLICT (snapshot_day) WHERE kind='SNAPSHOT' DO UPDATE SET
-                                observed_at=EXCLUDED.observed_at,
-                                total_students=EXCLUDED.total_students,
-                                total_teachers=EXCLUDED.total_teachers,
-                                total_groups=EXCLUDED.total_groups
-                            """,
+INSERT INTO dashboard_scale_observations
+    (kind,observed_at,snapshot_day,total_students,total_teachers,total_groups)
+VALUES ('SNAPSHOT',?,?,?,?,?)
+ON CONFLICT (snapshot_day) WHERE kind='SNAPSHOT' DO UPDATE SET
+    observed_at=EXCLUDED.observed_at,
+    total_students=EXCLUDED.total_students,
+    total_teachers=EXCLUDED.total_teachers,
+    total_groups=EXCLUDED.total_groups
+""",
                             captured,
                             today,
                             current.students(),

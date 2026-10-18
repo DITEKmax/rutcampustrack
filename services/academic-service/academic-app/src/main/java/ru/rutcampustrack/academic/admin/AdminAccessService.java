@@ -1,114 +1,126 @@
 package ru.rutcampustrack.academic.admin;
 
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
+import io.grpc.Status;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
-import ru.rutcampustrack.academic.event.AdministrativeNotificationAdminAccessChangedEvent;
-import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
+import ru.rutcampustrack.academic.identitycatalog.AuthIdentityDataClient;
+import ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations;
 import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.authauthority.grpc.AuthorityAccountState;
+import ru.rutcampustrack.authauthority.grpc.AuthorityAdminProfile;
 import ru.rutcampustrack.shared.security.admin.*;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/** Public compatibility; Auth owns every permission profile, grant, CAS and live admission. */
 @Service
 public class AdminAccessService {
     private final JdbcTemplate jdbc;
-    private final AdminAccessJdbcAuthority authority;
     private final AcademicAdminAccess access;
-    private final RequestContext context;
-    private final UserRoleGrantWriter grants;
-    private final ApplicationEventPublisher publisher;
-    private final AcademicAuthDataCommands commands;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private AuthIdentityDataClient identities;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private AcademicUserIdentityOperations operations;
+
+    /**
+     * Retains the source-era constructor while the actual runtime uses the required directed
+     * clients.
+     */
     public AdminAccessService(
             JdbcTemplate jdbc,
-            AdminAccessJdbcAuthority authority,
+            AdminAccessJdbcAuthority ignoredAuthority,
             AcademicAdminAccess access,
-            RequestContext context,
-            UserRoleGrantWriter grants,
-            ApplicationEventPublisher publisher,
-            AcademicAuthDataCommands commands) {
+            RequestContext ignoredContext,
+            ru.rutcampustrack.academic.repository.UserRoleGrantWriter ignoredGrants,
+            org.springframework.context.ApplicationEventPublisher ignoredPublisher,
+            AcademicAuthDataCommands ignoredCommands) {
         this.jdbc = jdbc;
-        this.authority = authority;
         this.access = access;
-        this.context = context;
-        this.grants = grants;
-        this.publisher = publisher;
-        this.commands = commands;
     }
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public AdminAccessProfile get(long target) {
+        if (target <= 0) throw AdminAccessException.invalid();
         access.requireFull();
-        return authority.profile(target);
-    }
-
-    @Transactional
-    public AdminAccessProfile put(long target, AdminAccessInput input, Long expectedVersion) {
-        var permissions = validate(input);
-        lock(target);
-        var current = authority.profile(target);
-        compare(current, expectedVersion);
-        if (current.full() && !"FULL".equals(input.mode())) authority.protectLastFull(target);
-        commands.adminAccess(target, input.mode(), permissions, current.version(), false);
-        var result = authority.profile(target);
-        boolean changed =
-                !current.assigned()
-                        || !java.util.Objects.equals(current.mode(), result.mode())
-                        || !current.permissions().equals(result.permissions());
-        if (changed)
-            publisher.publishEvent(
-                    new AdministrativeNotificationAdminAccessChangedEvent(
-                            this, result, true, context.getUserId()));
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
+        var actor = identities.checkAdminAccess(List.of(), true, deadline);
+        if (!Boolean.TRUE.equals(
+                jdbc.queryForObject(
+                        "SELECT EXISTS(SELECT 1 FROM academic_profiles WHERE id=?)",
+                        Boolean.class,
+                        target)))
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND, "Пользователь не найден");
+        var identity = identities.readServiceIdentity(List.of(target), deadline).get(target);
+        if (identity == null
+                || identity.getAccountState()
+                        == AuthorityAccountState.AUTHORITY_ACCOUNT_STATE_PENDING
+                || identity.getAccountState()
+                        == AuthorityAccountState.AUTHORITY_ACCOUNT_STATE_FENCED)
+            throw Status.UNAVAILABLE.asRuntimeException();
+        var result = profile(target, identity.getAdminProfile());
+        if (result.assigned()
+                && (identity.getAccountState()
+                                != AuthorityAccountState.AUTHORITY_ACCOUNT_STATE_ACTIVE
+                        || identity.getGrantsList().stream()
+                                .noneMatch(
+                                        g ->
+                                                g.getRole().equals("ADMIN")
+                                                        && g.getStatus().equals("ACTIVE"))))
+            throw Status.UNAVAILABLE.asRuntimeException();
+        if (!actor.equals(identities.checkAdminAccess(List.of(), true, deadline)))
+            throw Status.UNAVAILABLE.asRuntimeException();
         return result;
     }
 
-    @Transactional
-    public void revoke(long target, Long expectedVersion) {
-        lock(target);
-        var current = authority.profile(target);
-        compare(current, expectedVersion);
-        if (!current.assigned()) return;
-        authority.protectLastFull(target);
-        // Grant trigger persists the tombstone/version; writer clears only selected ADMIN sessions.
-        commands.adminAccess(target, null, java.util.List.of(), current.version(), true);
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public AdminAccessProfile put(long target, AdminAccessInput input, Long expectedVersion) {
+        access.requireFull();
+        operations.adminAccess(target, input, expectedVersion, false);
+        // The durable operation result is replay evidence; public profile data remains a fresh
+        // read.
+        return get(target);
     }
 
-    public java.util.List<String> validate(AdminAccessInput input) {
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void revoke(long target, Long expectedVersion) {
+        access.requireFull();
+        operations.adminAccess(target, null, expectedVersion, true);
+    }
+
+    public List<String> validate(AdminAccessInput input) {
         if (input == null) throw AdminAccessException.invalid();
         return AdminPermission.validate(input.mode(), input.permissions());
     }
 
-    /** Invoked inside createUser's global-locked transaction after the new user is flushed. */
-    public void assignCreated(long target, AdminAccessInput input) {
-        access.requireFull();
-        commands.adminAccess(target, input.mode(), validate(input), 0, false);
-    }
-
-    private void lock(long target) {
-        if (target <= 0) throw AdminAccessException.invalid();
-        authority.lockGlobal();
-        if (context.getUserId() == null) throw AdminAccessException.denied();
-        authority.lockUsers(context.getUserId(), target);
-        access.requireFull();
-        if (target == context.getUserId())
-            throw new AdminAccessException(HttpStatus.FORBIDDEN, "ADMIN_ACCESS_SELF_CHANGE_DENIED");
-        String status =
-                jdbc.query(
-                        "SELECT status::text FROM users WHERE id=?",
-                        rs -> rs.next() ? rs.getString(1) : null,
-                        target);
-        if (status == null)
-            throw new org.springframework.web.server.ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Пользователь не найден");
-        if ("archived".equals(status))
-            throw new AdminAccessException(HttpStatus.FORBIDDEN, "ADMIN_TARGET_PROTECTED");
-    }
-
-    private void compare(AdminAccessProfile current, Long expected) {
-        if (expected == null || expected < 0) throw AdminAccessException.invalid();
-        if (current.version() != expected)
-            throw new AdminAccessException(HttpStatus.CONFLICT, "ADMIN_ACCESS_CONFLICT", current);
+    /** Converts only explicit Auth data; missing or malformed assignment can never imply FULL. */
+    public static AdminAccessProfile profile(long user, AuthorityAdminProfile profile) {
+        if (user <= 0 || profile.getVersion() < 0) throw Status.UNAVAILABLE.asRuntimeException();
+        if (!profile.getAssigned()) {
+            if (!profile.getMode().isEmpty() || profile.getPermissionsCount() != 0)
+                throw Status.UNAVAILABLE.asRuntimeException();
+            return new AdminAccessProfile(user, false, null, List.of(), profile.getVersion());
+        }
+        if (profile.getVersion() <= 0) throw Status.UNAVAILABLE.asRuntimeException();
+        List<String> permissions;
+        try {
+            permissions = AdminPermission.validate(profile.getMode(), profile.getPermissionsList());
+        } catch (AdminAccessException invalid) {
+            throw Status.UNAVAILABLE.asRuntimeException();
+        }
+        return new AdminAccessProfile(
+                user,
+                true,
+                profile.getMode(),
+                "FULL".equals(profile.getMode()) ? AdminPermission.allCodes() : permissions,
+                profile.getVersion());
     }
 }

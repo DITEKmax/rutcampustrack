@@ -439,6 +439,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
       {
         currentGeneration,
         accessTokenFor,
+        sessionScopeFor,
         refreshFor,
       },
       fetcher,
@@ -469,6 +470,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
       {
         currentGeneration,
         accessTokenFor,
+        sessionScopeFor,
         refreshFor,
       },
       fetcher,

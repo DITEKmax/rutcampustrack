@@ -1,0 +1,196 @@
+syntax = "proto3";
+
+package rutcampustrack.authoperations;
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.authoperations.grpc";
+
+// REVIEW DRAFT: Academic is the sole directed caller, using existing TLS +
+// x-service-token exact target/method credentials. Prepare additionally requires
+// the live actor's x-internal-token. Recovery uses the accepted immutable command,
+// not a reconstructed actor or a new operation ID. Natural token/session time
+// expiry does not discard an accepted command. COMMIT nevertheless rechecks the
+// persisted actor's grant/role/profile, credential/binding generations and explicit
+// session revocation/version: administrative revocation/logout or a changed
+// authorization generation cannot activate new authority. No fresh bearer is
+// required; such a mismatch becomes FAILED_SAFE, followed only by a freshly
+// authorized RECONCILE. All RPC deadlines are <=3s.
+service AuthIdentityOperationService {
+  rpc PrepareIdentityOperation(PrepareIdentityOperationRequest) returns (IdentityOperationResult);
+  rpc CommitIdentityOperation(CommitIdentityOperationRequest) returns (IdentityOperationResult);
+  rpc GetIdentityOperation(GetIdentityOperationRequest) returns (IdentityOperationResult);
+  rpc FailIdentityOperation(FailIdentityOperationRequest) returns (IdentityOperationResult);
+  rpc RejectUnpreparedIdentityOperation(RejectUnpreparedIdentityOperationRequest) returns (IdentityOperationResult);
+}
+
+enum IdentityOperationKind {
+  IDENTITY_OPERATION_KIND_UNSPECIFIED = 0;
+  IDENTITY_OPERATION_KIND_CREATE = 1;
+  IDENTITY_OPERATION_KIND_ROLE = 2;
+  IDENTITY_OPERATION_KIND_TRANSFER = 3;
+  IDENTITY_OPERATION_KIND_HEADMAN_REPLACE = 4;
+  IDENTITY_OPERATION_KIND_ARCHIVE = 5;
+  IDENTITY_OPERATION_KIND_RESTORE = 6;
+  IDENTITY_OPERATION_KIND_ADMIN_ACCESS = 7;
+  IDENTITY_OPERATION_KIND_TELEGRAM_BINDING = 8;
+  IDENTITY_OPERATION_KIND_RECONCILE = 9;
+}
+enum IdentityOperationPhase {
+  IDENTITY_OPERATION_PHASE_UNSPECIFIED = 0;
+  IDENTITY_OPERATION_PHASE_PREPARED_FENCED = 1;
+  IDENTITY_OPERATION_PHASE_COMMITTED = 2;
+  IDENTITY_OPERATION_PHASE_FAILED_SAFE = 3;
+  IDENTITY_OPERATION_PHASE_REJECTED = 4;
+  // Terminal point-in-time ADMIN_ACCESS unchanged receipt; no Academic APPLY/Commit.
+  IDENTITY_OPERATION_PHASE_NOOP = 5;
+}
+enum IdentityAccountState {
+  IDENTITY_ACCOUNT_STATE_UNSPECIFIED = 0;
+  IDENTITY_ACCOUNT_STATE_ACTIVE = 1;
+  IDENTITY_ACCOUNT_STATE_ARCHIVED = 2;
+}
+message AdmissionGrant {
+  int64 grant_id = 1; // existing ID must match; zero only for a newly introduced role
+  string role = 2; // exact STUDENT, HEADMAN, TEACHER, ADMIN
+  string status = 3; // closed role-specific status catalogue; unknown is denied
+  optional int64 group_id = 4; // opaque Academic context; no membership/history here
+}
+message AdmissionAdminProfile {
+  bool assigned = 1;
+  string mode = 2; // FULL or LIMITED if assigned, otherwise empty
+  repeated string permissions = 3; // exact existing AdminPermission catalogue/dependencies
+  int64 expected_version = 4; // zero only if no profile has ever existed
+}
+message TelegramBindingChange {
+  optional int64 telegram_id = 1; // absent explicitly unbinds; present must be positive
+  optional string telegram_username = 2;
+}
+message IdentityTargetCommand {
+  int64 user_id = 1; // zero only for CREATE's single new identity
+  int64 expected_roles_version = 2; // zero only for CREATE
+  int64 expected_credentials_version = 3;
+  int64 expected_telegram_binding_version = 4;
+  int64 expected_academic_revision = 5;
+  // Complete desired admission set, ordered by role. Existing role rows cannot
+  // disappear: retain their ID and use an explicit terminal status. Auth checks
+  // the set against its authoritative grant rows; omitted existing roles conflict.
+  repeated AdmissionGrant desired_grants = 6;
+  AdmissionAdminProfile desired_admin_profile = 7; // complete explicit target profile
+  IdentityAccountState desired_account_state = 8;
+  TelegramBindingChange telegram_change = 9; // absence means no binding change
+  // RECONCILE requires the exact complete target set and unchanged desired intent
+  // of one FAILED_SAFE operation; only actor and expected generations may refresh.
+  // Auth persists that operation's original authorization kind and rechecks its
+  // current permission at PREPARE and COMMIT, including reconciliation chains.
+  string supersedes_failed_operation_id = 10;
+}
+message CreateIdentityMaterial {
+  string login_prefix = 1; // normalized transliterated name stem <=32; no Academic profile storage
+  int64 telegram_id = 2;
+  string telegram_username = 3;
+  string login_digits = 4; // exactly four derived TG/employee digits; empty -> Auth sequence
+  // Auth reserves the existing stem-digits / stem-digits-2 collision algorithm,
+  // preserving the digit suffix inside the 32-character limit.
+  // Auth generates initial material and BCrypt. No password/hash input is accepted.
+}
+message PrepareIdentityOperationRequest {
+  string operation_id = 1; // canonical UUID, durable public Idempotency-Key
+  // SHA-256(request.toBuilder().clearCommandHash().build().toByteArray()).
+  // No maps, unknown fields, duplicate/unsorted targets or roles are accepted.
+  // Academic separately hashes/persists its FULL local domain command; no
+  // profile/history payload or transport token is stored in this Auth command.
+  bytes command_hash = 2;
+  IdentityOperationKind kind = 3;
+  repeated IdentityTargetCommand targets = 4; // distinct, ascending existing UID; one CREATE UID0
+  CreateIdentityMaterial create_identity = 5; // CREATE only
+  // Archive admission v1: Auth derives required step-up from current ACTIVE
+  // TEACHER/HEADMAN grants (sticky when reconciling an already admitted intent).
+  // Plain student archive keeps its existing optional-password behavior.
+  string password_step_up_receipt_id = 6; // required only for dangerous archive
+  string archive_preview_digest = 7; // exact opaque Academic preview SHA-256
+  uint32 archive_step_up_protocol_version = 8; // effective ARCHIVE=1; otherwise 0
+  // Fresh RECONCILE refreshes these proof fields and actor/generations only;
+  // immutable business intent v1 is the exact normalized affected target set.
+}
+message PreparedIdentityTarget {
+  int64 user_id = 1;
+  string login = 2; // nonsecret
+  // PREPARE reserves expected RV+1 (CREATE=1) while fencing admission. COMMIT
+  // clears the fence WITHOUT incrementing RV again. Academic persists this exact
+  // final RV in its LOCAL_COMMITTED eligibility snapshot before sending COMMIT.
+  // NOOP is the sole exception: final RV stays equal to expected/current RV;
+  // expected Academic revision and admin-profile version remain unchanged.
+  int64 final_roles_version = 3;
+  int64 credentials_version = 4;
+  int64 telegram_binding_version = 5;
+  int64 expected_academic_revision = 6;
+  repeated AdmissionGrant grants = 7; // allocated stable IDs for exact desired set
+  int64 final_admin_profile_version = 8;
+}
+message AcademicIdentityCommitReceipt {
+  int64 user_id = 1;
+  int64 previous_academic_revision = 2;
+  int64 committed_academic_revision = 3;
+  int64 applied_auth_roles_version = 4;
+}
+message CommitIdentityOperationRequest {
+  string operation_id = 1;
+  bytes command_hash = 2;
+  int64 expected_operation_revision = 3;
+  repeated AcademicIdentityCommitReceipt receipts = 4; // exact affected UID set
+}
+message GetIdentityOperationRequest {
+  string operation_id = 1;
+  bytes command_hash = 2;
+}
+message FailIdentityOperationRequest {
+  string operation_id = 1;
+  bytes command_hash = 2;
+  int64 expected_operation_revision = 3;
+  string error_code = 4; // closed nonsecret code, never exception text
+  // Durable Academic failure means no local APPLY committed. Unknown local or
+  // remote outcome MUST be queried/recovered instead. Failure retains fences;
+  // it cannot restore old privileges or activate a newly prepared identity.
+}
+enum IdentityOperationRejectionReason {
+  IDENTITY_OPERATION_REJECTION_REASON_UNSPECIFIED = 0;
+  IDENTITY_OPERATION_REJECTION_REASON_ACTOR_DENIED = 1;
+  IDENTITY_OPERATION_REJECTION_REASON_TARGET_CONFLICT = 2;
+  IDENTITY_OPERATION_REJECTION_REASON_ACADEMIC_REJECTED = 3;
+}
+message IdentityOperationActor {
+  int64 user_id = 1;
+  string session_id = 2;
+  int64 session_version = 3;
+  int64 roles_version = 4;
+}
+message RejectUnpreparedIdentityOperationRequest {
+  PrepareIdentityOperationRequest canonical_prepare = 1;
+  IdentityOperationRejectionReason reason = 2;
+  IdentityOperationActor actor = 3; // exact original Academic ledger actor
+  // Same Auth local operation lock as PREPARE. Existing positive operation is
+  // returned unchanged; only actual REJECTED permits Academic terminal reject.
+  // Absent creates an immutable negative UUID/hash/command/actor reservation,
+  // without target fences/rights. Actor SID ownership is checked locally even
+  // after natural expiry; no fresh bearer/permission is needed to deny authority.
+}
+message IdentityOperationResult {
+  string operation_id = 1;
+  bytes command_hash = 2;
+  IdentityOperationKind kind = 3;
+  IdentityOperationPhase phase = 4;
+  int64 operation_revision = 5;
+  repeated PreparedIdentityTarget targets = 6;
+  string error_code = 7; // empty for NOOP; phase is the closed unchanged-result reason
+  int64 committed_catalog_version = 8; // positive only for COMMITTED; exact durable result
+}
+
+// No RPC is invoked while a caller holds a DB transaction/row/advisory lock.
+// Prepare is the authorization acceptance point: live actor/admin permissions,
+// self/last-FULL protection, exact expected generations and all target fences are
+// checked in one Auth transaction. HEADMAN_REPLACE fences old+new in one command.
+// Auth commits only an exact durable Academic LOCAL_COMMITTED receipt; Academic
+// guards local profile/group/headman revisions and emits local effects once.
+// Repeated UUID+same canonical command returns the durable result. Different hash
+// or command for that UUID: ALREADY_EXISTS; stale revision/fence: ABORTED; unknown
+// UUID: NOT_FOUND; denied actor: PERMISSION_DENIED; malformed/unknown: INVALID_ARGUMENT;
+// unavailable authority: UNAVAILABLE. No secrets in errors/results/operation rows.

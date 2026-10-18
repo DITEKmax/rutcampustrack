@@ -6,6 +6,7 @@ import type {
   ReportDownloadTicketRequest,
 } from '../../shared/report-download-client';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { IdentityOperationError } from '../../shared/identity-operation';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
 import {
   AdminUsersApiError,
@@ -20,6 +21,7 @@ import {
   type AdminUsersListInput,
   type AdminUserArchivePreview,
   type ArchiveAdminUserInput,
+  type IdentityRecoveryReference,
 } from './admin-users-client';
 import './admin-users-screen.pcss';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
@@ -33,6 +35,7 @@ import {
   type AdminAccessProfile,
   type AdminAccessCatalog,
   type AdminAccessSelection,
+  type AdminAccessOperationResult,
 } from '../admin-access/admin-access-client';
 import AdminPermissionEditor from '../admin-access/AdminPermissionEditor.vue';
 import RecoveryLinkPanel from './RecoveryLinkPanel.vue';
@@ -81,6 +84,16 @@ const totalPages = ref(0);
 const totalElements = ref(0);
 const loading = ref(true);
 const saving = ref(false);
+const identityPending = ref(Boolean(props.client.hasPendingIdentityOperation));
+const failedUserRecovery = ref<IdentityRecoveryReference | null>(null);
+const failedAccessRecovery = ref<IdentityRecoveryReference | null>(null);
+const recoveryReady = ref<{
+  owner: 'USER' | 'ADMIN_ACCESS';
+  reference: IdentityRecoveryReference;
+} | null>(null);
+const userRecoveryReadFailed = ref(false);
+const recoveryBusy = ref(false);
+let recoveryObserverRevision = 0;
 const error = ref<string | null>(null);
 const notice = ref<string | null>(null);
 const archivePasswordError = ref<string | null>(null);
@@ -182,6 +195,10 @@ const accessFlow = new AdminAccessConfirmationFlow();
 const accessConfirmation = ref<AdminAccessConfirmationState | null>(null);
 const accessConflict = ref(false);
 const accessUnknownResult = ref(false);
+const accessPending = ref(Boolean(props.accessClient?.hasPendingIdentityOperation));
+const accessReadFailed = ref(false);
+let accessObserverRevision = 0;
+let accessWorking = false;
 const accessConfirmed = ref(false);
 let accessRevision = 0;
 let accessAbort: AbortController | null = null;
@@ -211,26 +228,39 @@ const accountStatusLabel = (status: string) =>
       ? 'Аккаунт в архиве'
       : 'Аккаунт неактивен';
 const errorTitle = computed(() =>
-  view.value === 'permissions' && accessConflict.value
-    ? 'Права изменились'
-    : lifecycleStale.value
-      ? 'Предпросмотр устарел'
-      : unknownMutation.value ||
-          accessUncertain.value ||
-          lifecycleUncertain.value ||
-          (view.value === 'permissions' && accessUnknownResult.value)
-        ? 'Результат не подтверждён'
-        : 'Действие не выполнено',
+  identityPending.value || accessPending.value
+    ? 'Результат не подтверждён'
+    : accessReadFailed.value || userRecoveryReadFailed.value
+      ? 'Данные не обновлены'
+      : failedUserRecovery.value || failedAccessRecovery.value
+        ? 'Операция остановлена'
+        : view.value === 'permissions' && accessConflict.value
+          ? 'Права изменились'
+          : lifecycleStale.value
+            ? 'Предпросмотр устарел'
+            : unknownMutation.value ||
+                accessUncertain.value ||
+                lifecycleUncertain.value ||
+                (view.value === 'permissions' && accessUnknownResult.value)
+              ? 'Результат не подтверждён'
+              : 'Действие не выполнено',
 );
 const errorTone = computed(() =>
-  view.value === 'permissions' && accessConflict.value
-    ? 'danger'
-    : unknownMutation.value ||
-        accessUncertain.value ||
-        lifecycleUncertain.value ||
-        (view.value === 'permissions' && accessUnknownResult.value)
+  identityPending.value || accessPending.value
+    ? 'warning'
+    : accessReadFailed.value ||
+        userRecoveryReadFailed.value ||
+        failedUserRecovery.value ||
+        failedAccessRecovery.value
       ? 'warning'
-      : 'danger',
+      : view.value === 'permissions' && accessConflict.value
+        ? 'danger'
+        : unknownMutation.value ||
+            accessUncertain.value ||
+            lifecycleUncertain.value ||
+            (view.value === 'permissions' && accessUnknownResult.value)
+          ? 'warning'
+          : 'danger',
 );
 const accessSelectionValid = computed(
   () => accessDraft.value.mode === 'FULL' || accessDraft.value.permissions.length > 0,
@@ -312,6 +342,8 @@ function prepareAccess(operation: 'update' | 'revoke' = 'update'): void {
     saving.value ||
     accessLoading.value ||
     !isFull.value ||
+    accessPending.value ||
+    failedAccessRecovery.value ||
     (!accessSelectionValid.value && operation === 'update')
   )
     return;
@@ -333,7 +365,8 @@ function prepareAccess(operation: 'update' | 'revoke' = 'update'): void {
 }
 async function reloadAccess(): Promise<void> {
   const user = selectedUser.value;
-  if (!user || !props.accessClient || accessLoading.value) return;
+  if (!user || !props.accessClient || accessLoading.value || accessPending.value || !isFull.value)
+    return;
   const revision = ++accessRevision;
   const controller = new AbortController();
   accessAbort = controller;
@@ -371,7 +404,9 @@ async function saveAccess(): Promise<void> {
     !props.accessClient ||
     !accessConfirmed.value ||
     saving.value ||
-    !canEditAccess.value
+    !canEditAccess.value ||
+    accessPending.value ||
+    accessReadFailed.value
   )
     return;
   const context = accessContext();
@@ -388,77 +423,233 @@ async function saveAccess(): Promise<void> {
   }
   const snapshot = confirmation.snapshot;
   closeAccessConfirmation();
-  const { revision, controller } = beginMutation();
-  saving.value = true;
+  const observer = beginAccessObservation();
   error.value = null;
+  notice.value = null;
   accessConflict.value = false;
   accessUnknownResult.value = false;
   try {
+    const client = observer.client;
     if (snapshot.mode === null)
-      await props.accessClient.revokeUserAccess(
+      await client.revokeUserAccess(
         snapshot.userId,
         snapshot.expectedVersion,
-        controller.signal,
+        observer.controller.signal,
       );
     else
-      await props.accessClient.updateUserAccess(
+      await client.updateUserAccess(
         snapshot.userId,
         {
           mode: snapshot.mode,
           permissions: [...snapshot.permissions],
           expectedVersion: snapshot.expectedVersion,
         },
-        controller.signal,
+        observer.controller.signal,
       );
-    if (!isCurrentMutation(revision, controller)) return;
-    closeAccessConfirmation();
-    view.value = 'detail';
-    notice.value =
-      accessOperation.value === 'revoke'
-        ? 'Права администратора отозваны. Аккаунт и остальные роли сохранены.'
-        : 'Права администратора сохранены.';
-    await selectUser(user);
-    if (!isCurrentMutation(revision, controller)) return;
-    notice.value =
-      accessOperation.value === 'revoke'
-        ? 'Права администратора отозваны. Аккаунт и остальные роли сохранены.'
-        : 'Права администратора сохранены.';
+    if (!observer.current()) return;
+    await completeAccessOperation(
+      { userId: snapshot.userId, revoked: snapshot.mode === null, profile: null },
+      observer,
+    );
   } catch (cause) {
-    if (
-      !isCurrentMutation(revision, controller) ||
-      controller.signal.aborted ||
-      cause instanceof StaleSessionGenerationError
-    )
-      return;
-    closeAccessConfirmation();
-    if (cause instanceof AdminAccessApiError && cause.response.status === 409) {
-      accessProfile.value = cause.currentProfile;
-      if (cause.currentProfile)
-        accessDraft.value = {
-          mode: cause.currentProfile.mode ?? 'LIMITED',
-          permissions:
-            cause.currentProfile.mode === 'FULL' ? [] : [...cause.currentProfile.permissions],
-        };
-      accessConflict.value = true;
-      accessUncertain.value = !cause.currentProfile;
-      error.value =
-        'В другом сеансе права уже изменили. Здесь отмечены текущие права с сервера. Проверь их и выбери новое действие.';
-      if (!cause.currentProfile) await reloadAccess();
-    } else if (!(cause instanceof AdminAccessApiError) || cause.response.status >= 500) {
-      accessUncertain.value = true;
-      accessUnknownResult.value = true;
-      await reloadAccess();
-      if (isCurrentMutation(revision, controller))
-        error.value =
-          'Результат изменения не подтверждён. Проверь текущие права перед новым действием.';
-    } else showError(cause, 'Не удалось изменить права доступа.');
+    if (observer.current()) handleAccessOperationError(cause);
   } finally {
-    if (isCurrentMutation(revision, controller)) {
-      saving.value = false;
-      mutationAbortController = null;
-    }
+    finishAccessObservation(observer);
   }
 }
+function beginAccessObservation(reading = false) {
+  const client = props.accessClient!;
+  const authority = JSON.stringify(props.authority);
+  const target = selectedUser.value?.id;
+  const observerRevision = ++accessObserverRevision;
+  const { revision, controller } = beginMutation();
+  accessWorking = true;
+  saving.value = !reading;
+  accessLoading.value = reading;
+  return {
+    client,
+    controller,
+    target,
+    current: () =>
+      isCurrentMutation(revision, controller) &&
+      observerRevision === accessObserverRevision &&
+      props.accessClient === client &&
+      JSON.stringify(props.authority) === authority &&
+      selectedUser.value?.id === target,
+  };
+}
+type AccessObserver = ReturnType<typeof beginAccessObservation>;
+function finishAccessObservation(observer: AccessObserver): void {
+  if (!observer.current()) return;
+  accessWorking = false;
+  saving.value = false;
+  accessLoading.value = false;
+  mutationAbortController = null;
+}
+function handleAccessOperationError(cause: unknown): void {
+  recoveryReady.value = null;
+  closeAccessConfirmation();
+  syncRecoveryCandidates();
+  accessPending.value = Boolean(props.accessClient?.hasPendingIdentityOperation);
+  accessUncertain.value = accessPending.value;
+  accessUnknownResult.value = accessPending.value;
+  const operationTarget = props.accessClient?.identityOperationUserId;
+  if (operationTarget != null && operationTarget !== selectedUser.value?.id) {
+    error.value = accessPending.value
+      ? 'Результат предыдущего изменения прав пока не подтверждён. Проверь результат.'
+      : 'Предыдущее изменение прав не выполнено. Текущая карточка сохранена.';
+    return;
+  }
+  if (cause instanceof AdminAccessApiError && cause.response.status === 409) {
+    accessProfile.value = cause.currentProfile;
+    if (cause.currentProfile)
+      accessDraft.value = {
+        mode: cause.currentProfile.mode ?? 'LIMITED',
+        permissions:
+          cause.currentProfile.mode === 'FULL' ? [] : [...cause.currentProfile.permissions],
+      };
+    accessConflict.value = true;
+    accessUncertain.value = accessPending.value || !cause.currentProfile;
+    error.value = accessPending.value
+      ? 'Права изменились. Результат операции ещё не подтверждён. Проверь результат перед новым действием.'
+      : 'В другом сеансе права уже изменили. Здесь отмечены текущие права с сервера. Проверь их и выбери новое действие.';
+  } else if (accessPending.value) {
+    error.value =
+      cause instanceof IdentityOperationError
+        ? cause.message
+        : cause instanceof AdminAccessApiError
+          ? `${cause.problem?.detail ?? cause.message} Результат операции ещё не подтверждён. Проверь результат.`
+          : 'Результат изменения прав пока не подтверждён. Проверь его перед новым действием.';
+  } else
+    showError(
+      cause,
+      cause instanceof IdentityOperationError
+        ? cause.message
+        : 'Не удалось изменить права доступа.',
+    );
+}
+async function refreshAccessReadModels(observer: AccessObserver, userId: number): Promise<void> {
+  try {
+    if (!isFull.value) throw new Error('Проверь текущий доступ.');
+    const profile = await observer.client.getUserAccess(userId, observer.controller.signal);
+    if (!observer.current()) return;
+    const user = await props.client.getUser(userId, observer.controller.signal);
+    if (!observer.current()) return;
+    accessProfile.value = profile;
+    accessDraft.value = {
+      mode: profile.mode ?? 'LIMITED',
+      permissions: profile.mode === 'FULL' ? [] : [...profile.permissions],
+    };
+    selectedUser.value = user;
+    syncEditorFromUser(user);
+    accessReadFailed.value = false;
+    error.value = null;
+  } catch (cause) {
+    if (!observer.current() || cause instanceof StaleSessionGenerationError) return;
+    accessReadFailed.value = true;
+    error.value =
+      'Изменение прав выполнено, но текущие данные не удалось загрузить. Повтори только загрузку данных.';
+  }
+}
+async function completeAccessOperation(
+  result: AdminAccessOperationResult,
+  observer: AccessObserver,
+): Promise<void> {
+  if (!observer.current()) return;
+  observer.client.acknowledgeIdentityOperation();
+  accessPending.value = false;
+  accessUncertain.value = false;
+  accessUnknownResult.value = false;
+  accessConflict.value = false;
+  syncRecoveryCandidates();
+  recoveryReady.value = null;
+  error.value = null;
+  saving.value = false;
+  accessLoading.value = true;
+  notice.value = result.recovered
+    ? 'Операция восстановлена.'
+    : result.revoked
+      ? 'Права администратора отозваны. Аккаунт и остальные роли сохранены.'
+      : 'Права администратора сохранены.';
+  if (observer.target === result.userId) await refreshAccessReadModels(observer, result.userId);
+  else {
+    // The retained operation may belong to a different target after navigation.
+    // Its success cannot replace the profile currently being viewed.
+    notice.value = 'Изменение прав выполнено.';
+    await refresh();
+  }
+}
+async function resumeAccessOperation(): Promise<void> {
+  if (!props.accessClient || saving.value || !isFull.value) return;
+  const observer = beginAccessObservation();
+  try {
+    const result = await observer.client.resumeIdentityOperation();
+    if (observer.current()) await completeAccessOperation(result, observer);
+  } catch (cause) {
+    if (observer.current()) handleAccessOperationError(cause);
+  } finally {
+    finishAccessObservation(observer);
+  }
+}
+async function retryAccessReads(): Promise<void> {
+  if (
+    !props.accessClient ||
+    saving.value ||
+    !isFull.value ||
+    !selectedUser.value ||
+    !accessReadFailed.value ||
+    accessLoading.value
+  )
+    return;
+  const observer = beginAccessObservation(true);
+  try {
+    await refreshAccessReadModels(observer, selectedUser.value.id);
+  } finally {
+    finishAccessObservation(observer);
+  }
+}
+watch(
+  [
+    () => props.accessClient,
+    () => JSON.stringify(props.authority),
+    () => selectedUser.value?.id,
+    () => view.value,
+  ],
+  () => {
+    ++accessObserverRevision;
+    if (accessWorking) {
+      accessWorking = false;
+      saving.value = false;
+      accessLoading.value = false;
+      error.value = null;
+      notice.value = null;
+    }
+    accessReadFailed.value = false;
+    accessPending.value =
+      props.authority === null ? false : Boolean(props.accessClient?.hasPendingIdentityOperation);
+  },
+  { flush: 'sync' },
+);
+
+watch(
+  () => props.accessClient,
+  () => {
+    ++accessRevision;
+    accessAbort?.abort();
+    accessLoading.value = false;
+    accessCatalog.value = null;
+    accessProfile.value = null;
+    accessDraft.value = { mode: 'LIMITED', permissions: [] };
+    accessUncertain.value = false;
+    accessUnknownResult.value = false;
+    accessConflict.value = false;
+    closeAccessConfirmation();
+    error.value = null;
+    notice.value = null;
+  },
+  { flush: 'sync' },
+);
+
 const unknownMutation = ref(false);
 const copied = ref(false);
 const draftStatuses = computed(() => (draftRole.value ? roleStatusOptions[draftRole.value] : []));
@@ -629,6 +820,325 @@ let mutationAbortController: AbortController | null = null;
 let profileLoadRevision = 0;
 let profileLoadAbortController: AbortController | null = null;
 
+let userRecoveryStorageKey: string | null = null;
+let accessRecoveryStorageKey: string | null = null;
+let userRecoveryRememberedKey: string | null = null;
+let accessRecoveryRememberedKey: string | null = null;
+function syncRecoveryCandidates(): void {
+  failedUserRecovery.value = props.client.failedIdentityOperation ?? null;
+  failedAccessRecovery.value = props.accessClient?.failedIdentityOperation ?? null;
+}
+function bindRecoveryStorage(): void {
+  if (props.authority === null) {
+    // Loading current rights is not a confirmed new owner. Detach UI observation
+    // without replacing either client's ordinary pending/unknown intent.
+    failedUserRecovery.value = null;
+    failedAccessRecovery.value = null;
+    identityPending.value = false;
+    accessPending.value = false;
+    error.value = null;
+    notice.value = null;
+    return;
+  }
+  const authority = JSON.stringify(props.authority);
+  const bind = (owner: 'USER' | 'ADMIN_ACCESS') => {
+    const client = owner === 'USER' ? props.client : props.accessClient;
+    const previous = owner === 'USER' ? userRecoveryRememberedKey : accessRecoveryRememberedKey;
+    let session: string | null = null;
+    let staleOwner = false;
+    try {
+      session = client?.getIdentityRecoverySessionScope() ?? null;
+    } catch {
+      staleOwner = true;
+      /* A stale owner cannot rehydrate. */
+    }
+    const key =
+      session && props.authority?.assigned
+        ? `rct:identity-recovery:v1:${owner}:${session}:${authority}`
+        : null;
+    let saved: unknown = null;
+    try {
+      if (previous && ((key && previous !== key) || staleOwner))
+        globalThis.sessionStorage?.removeItem(previous);
+      // Only this feature's nonsecret references are removed on a confirmed different context.
+      if (key && session) {
+        const storage = globalThis.sessionStorage;
+        for (let index = (storage?.length ?? 0) - 1; index >= 0; index--) {
+          const storedKey = storage?.key(index);
+          if (
+            storedKey?.startsWith('rct:identity-recovery:v1:') &&
+            !storedKey.endsWith(`:${session}:${authority}`)
+          )
+            storage?.removeItem(storedKey);
+        }
+      }
+      const raw = key ? globalThis.sessionStorage?.getItem(key) : null;
+      if (raw && raw.length <= 1024) saved = JSON.parse(raw);
+    } catch {
+      /* Restricted storage retains recovery only during this client lifetime. */
+    }
+    if (owner === 'USER') {
+      userRecoveryStorageKey = key;
+      if (key || staleOwner) userRecoveryRememberedKey = key;
+    } else {
+      accessRecoveryStorageKey = key;
+      if (key || staleOwner) accessRecoveryRememberedKey = key;
+    }
+    client?.bindIdentityRecovery(key ?? `memory:${authority}`, saved, (reference) => {
+      const current = owner === 'USER' ? userRecoveryStorageKey : accessRecoveryStorageKey;
+      if (
+        !key ||
+        current !== key ||
+        client !== (owner === 'USER' ? props.client : props.accessClient)
+      )
+        return;
+      try {
+        // Accepted work may settle after navigation. Persist only while its actor,
+        // current authority and session still match; UI observation remains detached.
+        if (
+          client?.getIdentityRecoverySessionScope() !== session ||
+          JSON.stringify(props.authority) !== authority
+        )
+          return;
+        if (reference) globalThis.sessionStorage?.setItem(key, JSON.stringify(reference));
+        else globalThis.sessionStorage?.removeItem(key);
+      } catch {
+        /* No proof or credential is ever persisted. */
+      }
+    });
+    // A terminal receipt may have arrived while rights were loading. Once the
+    // same context is confirmed, persist its in-memory reference before reload.
+    if (key) {
+      try {
+        const reference = client?.failedIdentityOperation;
+        if (reference) globalThis.sessionStorage?.setItem(key, JSON.stringify(reference));
+      } catch {
+        /* A stale owner or restricted storage cannot publish a receipt. */
+      }
+    }
+  };
+  bind('USER');
+  bind('ADMIN_ACCESS');
+  syncRecoveryCandidates();
+  identityPending.value = Boolean(props.client.hasPendingIdentityOperation);
+  accessPending.value = Boolean(props.accessClient?.hasPendingIdentityOperation);
+}
+watch(
+  [() => props.client, () => props.accessClient, () => JSON.stringify(props.authority)],
+  bindRecoveryStorage,
+  { immediate: true, flush: 'sync' },
+);
+watch(
+  [
+    () => props.client,
+    () => props.accessClient,
+    () => JSON.stringify(props.authority),
+    () => selectedUser.value?.id,
+    () => view.value,
+  ],
+  () => {
+    ++recoveryObserverRevision;
+    recoveryReady.value = null;
+    userRecoveryReadFailed.value = false;
+    if (recoveryBusy.value) saving.value = false;
+    recoveryBusy.value = false;
+    archivePassword.value = '';
+  },
+  { flush: 'sync' },
+);
+function beginRecoveryObservation() {
+  const client = props.client,
+    accessClient = props.accessClient;
+  const authority = JSON.stringify(props.authority),
+    target = selectedUser.value?.id,
+    contextView = view.value;
+  const { revision, controller } = beginMutation();
+  const observerRevision = ++recoveryObserverRevision;
+  recoveryBusy.value = true;
+  return {
+    controller,
+    current: () =>
+      !disposed &&
+      props.client === client &&
+      props.accessClient === accessClient &&
+      authority === JSON.stringify(props.authority) &&
+      target === selectedUser.value?.id &&
+      contextView === view.value &&
+      observerRevision === recoveryObserverRevision &&
+      isCurrentMutation(revision, controller),
+  };
+}
+async function checkIdentityRecovery(): Promise<void> {
+  if (saving.value || recoveryBusy.value || identityPending.value || accessPending.value) return;
+  const owner = failedAccessRecovery.value ? 'ADMIN_ACCESS' : 'USER';
+  if (owner === 'ADMIN_ACCESS' ? !isFull.value : !canRead.value) return;
+  const client = owner === 'USER' ? props.client : props.accessClient;
+  if (!client) return;
+  const observer = beginRecoveryObservation();
+  try {
+    const reference = await client.confirmIdentityRecovery();
+    if (!observer.current()) return;
+    recoveryReady.value = reference ? { owner, reference } : null;
+    error.value = reference
+      ? null
+      : 'Восстановление пока не подтверждено. Проверь состояние операции позже.';
+  } catch {
+    if (observer.current())
+      error.value = 'Не удалось подтвердить возможность восстановления. Проверь состояние позже.';
+  } finally {
+    if (observer.current()) recoveryBusy.value = false;
+  }
+}
+async function openArchiveRecovery(): Promise<void> {
+  const ready = recoveryReady.value;
+  if (
+    !ready ||
+    ready.reference.kind !== 'ARCHIVE' ||
+    ready.reference.userId === null ||
+    recoveryBusy.value ||
+    !adminHasPermission(props.authority, 'USERS_ARCHIVE')
+  )
+    return;
+  let observer = beginRecoveryObservation();
+  try {
+    const user = await props.client.getUser(ready.reference.userId, observer.controller.signal);
+    if (!observer.current()) return;
+    selectedUser.value = user;
+    view.value = 'archive';
+    observer = beginRecoveryObservation();
+    recoveryReady.value = ready;
+    archivePreview.value = null;
+    archivePassword.value = '';
+    archivePasswordError.value = null;
+    lifecycleConfirmed.value = false;
+    lifecycleStale.value = false;
+    lifecycleLoading.value = true;
+    const preview = await props.client.previewIdentityRecovery(observer.controller.signal);
+    if (!observer.current()) return;
+    archivePreview.value = preview;
+    error.value = null;
+  } catch {
+    if (observer.current()) {
+      archivePreview.value = null;
+      error.value = 'Не удалось загрузить свежий предпросмотр восстановления операции.';
+    }
+  } finally {
+    if (observer.current()) {
+      recoveryBusy.value = false;
+      lifecycleLoading.value = false;
+    }
+  }
+}
+async function refreshUserRecoveryReads(current: () => boolean): Promise<void> {
+  const target = selectedUser.value?.id;
+  const refreshed = await refresh();
+  if (!current() || refreshed === 'stale') return;
+  let profileLoaded = true;
+  if (refreshed === 'loaded' && target !== undefined) {
+    try {
+      const user = await props.client.getUser(target);
+      if (!current()) return;
+      selectedUser.value = user;
+      syncEditorFromUser(user);
+    } catch {
+      if (!current()) return;
+      profileLoaded = false;
+    }
+  }
+  userRecoveryReadFailed.value = refreshed === 'failed' || !profileLoaded;
+  error.value = userRecoveryReadFailed.value
+    ? 'Операция восстановлена, но данные не удалось загрузить. Повтори только загрузку данных.'
+    : null;
+  notice.value = userRecoveryReadFailed.value
+    ? 'Операция восстановлена.'
+    : 'Операция восстановлена. Данные обновлены.';
+}
+
+async function retryUserRecoveryReads(): Promise<void> {
+  if (!userRecoveryReadFailed.value || recoveryBusy.value || !canRead.value) return;
+  const observer = beginRecoveryObservation();
+  try {
+    await refreshUserRecoveryReads(observer.current);
+  } finally {
+    if (observer.current()) recoveryBusy.value = false;
+  }
+}
+async function reconcileFailedIdentity(): Promise<void> {
+  const ready = recoveryReady.value;
+  if (!ready || recoveryBusy.value || saving.value || identityPending.value || accessPending.value)
+    return;
+  if (
+    ready.reference.kind === 'ARCHIVE' &&
+    (view.value !== 'archive' || !archivePreview.value || lifecycleStale.value)
+  ) {
+    await openArchiveRecovery();
+    return;
+  }
+  if (ready.owner === 'ADMIN_ACCESS') {
+    if (!props.accessClient || !isFull.value) return;
+    const observer = beginAccessObservation();
+    try {
+      await observer.client.reconcileIdentityOperation(observer.controller.signal);
+      if (!observer.current()) return;
+      await completeAccessOperation(
+        { userId: ready.reference.userId!, revoked: false, profile: null, recovered: true },
+        observer,
+      );
+    } catch (cause) {
+      if (observer.current()) handleAccessOperationError(cause);
+    } finally {
+      finishAccessObservation(observer);
+    }
+    return;
+  }
+  if (!canRead.value) return;
+  let proof: { archivePreviewDigest: string; password?: string } | undefined;
+  if (ready.reference.kind === 'ARCHIVE') {
+    const preview = archivePreview.value;
+    if (
+      !adminHasPermission(props.authority, 'USERS_ARCHIVE') ||
+      !lifecycleConfirmed.value ||
+      !preview ||
+      lifecycleStale.value
+    )
+      return;
+    if (preview.requiresPassword && !archivePassword.value) {
+      archivePasswordError.value = 'Введи свой текущий пароль.';
+      return;
+    }
+    proof = {
+      archivePreviewDigest: preview.previewDigest,
+      ...(preview.requiresPassword ? { password: archivePassword.value } : {}),
+    };
+  }
+  const observer = beginRecoveryObservation();
+  saving.value = true;
+  error.value = null;
+  try {
+    await props.client.reconcileIdentityOperation(proof, observer.controller.signal);
+    if (!observer.current()) return;
+    acknowledgeIdentityOperation();
+    syncRecoveryCandidates();
+    recoveryReady.value = null;
+    archivePassword.value = '';
+    archivePreview.value = null;
+    saving.value = false;
+    notice.value = 'Операция восстановлена.';
+    await refreshUserRecoveryReads(observer.current);
+  } catch (cause) {
+    if (observer.current()) {
+      archivePassword.value = '';
+      showError(cause, 'Результат восстановления пока не подтверждён.');
+    }
+  } finally {
+    if (observer.current()) {
+      saving.value = false;
+      recoveryBusy.value = false;
+      mutationAbortController = null;
+    }
+  }
+}
+
 const roleFilters: readonly { value: AdminManagedRole | ''; label: string }[] = [
   { value: '', label: 'Все роли' },
   { value: 'STUDENT', label: 'Студенты' },
@@ -722,6 +1232,10 @@ function openRestore(): void {
   error.value = null;
 }
 async function submitLifecycle(): Promise<void> {
+  if (recoveryReady.value?.reference.kind === 'ARCHIVE') {
+    await reconcileFailedIdentity();
+    return;
+  }
   const user = selectedUser.value;
   const restoring = view.value === 'restore';
   if (
@@ -760,6 +1274,7 @@ async function submitLifecycle(): Promise<void> {
     if (restoring) await props.client.restoreUser(user.id, restoreOperation!, controller.signal);
     else await props.client.archiveUser(user.id, archiveInput!, controller.signal);
     if (!isCurrentMutation(revision, controller)) return;
+    acknowledgeIdentityOperation();
     lifecycleUncertain.value = false;
     archivePassword.value = '';
     archiveInput = null;
@@ -779,7 +1294,27 @@ async function submitLifecycle(): Promise<void> {
       cause instanceof StaleSessionGenerationError
     )
       return;
-    if (!(cause instanceof AdminUsersApiError) || cause.response.status >= 500) {
+    syncRecoveryCandidates();
+    identityPending.value = Boolean(props.client.hasPendingIdentityOperation);
+    if (cause instanceof IdentityOperationError) {
+      recoveryReady.value = null;
+      lifecycleUncertain.value = false;
+      archivePassword.value = '';
+      if (archiveInput)
+        archiveInput = {
+          operationId: archiveInput.operationId,
+          previewDigest: archiveInput.previewDigest,
+        };
+      if (!identityPending.value) {
+        archiveInput = null;
+        restoreOperation = null;
+        lifecycleStale.value = !restoring;
+      }
+      error.value =
+        cause.state === 'FAILED_SAFE'
+          ? 'Операция остановлена. Часть изменений могла сохраниться. Проверь возможность восстановления.'
+          : cause.message;
+    } else if (!(cause instanceof AdminUsersApiError) || cause.response.status >= 500) {
       lifecycleUncertain.value = true;
       error.value =
         'Результат пока не подтверждён. Повтори подтверждение: действие не выполнится дважды.';
@@ -824,6 +1359,8 @@ function isCurrentListRequest(revision: number, controller: AbortController): bo
 }
 
 function beginMutation(): { revision: number; controller: AbortController } {
+  ++recoveryObserverRevision;
+  recoveryBusy.value = false;
   const revision = ++mutationRevision;
   mutationAbortController?.abort();
   const controller = new AbortController();
@@ -859,12 +1396,12 @@ function cancelProfileLoad(): void {
   profileLoading.value = false;
 }
 
-async function refresh(): Promise<void> {
+async function refresh(): Promise<'loaded' | 'failed' | 'stale'> {
   appliedListQuery.value = null;
   if (!canRead.value) {
     users.value = [];
     loading.value = false;
-    return;
+    return 'failed';
   }
   const { revision, controller } = beginListRequest();
   loading.value = true;
@@ -879,13 +1416,13 @@ async function refresh(): Promise<void> {
       sortDirection: sortDirection.value,
     } satisfies AdminUsersListInput;
     const result = await props.client.listUsers(query, controller.signal);
-    if (!isCurrentListRequest(revision, controller)) return;
+    if (!isCurrentListRequest(revision, controller)) return 'stale';
     users.value = result.items;
     totalPages.value = result.totalPages;
     totalElements.value = result.totalElements;
     if (result.totalPages > 0 && page.value >= result.totalPages) {
       page.value = result.totalPages - 1;
-      return;
+      return 'failed';
     }
     appliedListQuery.value = {
       search: query.search,
@@ -895,14 +1432,16 @@ async function refresh(): Promise<void> {
     };
     const selectedId = selectedUser.value?.id;
     if (selectedId !== undefined && view.value === 'list') selectedUser.value = null;
+    return 'loaded';
   } catch (cause) {
     if (
       !isCurrentListRequest(revision, controller) ||
       isAbortError(cause) ||
       cause instanceof StaleSessionGenerationError
     )
-      return;
+      return 'stale';
     showError(cause, 'Список пользователей не удалось загрузить.');
+    return 'failed';
   } finally {
     if (isCurrentListRequest(revision, controller)) {
       loading.value = false;
@@ -963,6 +1502,7 @@ async function createUser(): Promise<void> {
   try {
     const created = await props.client.createUser(input, controller.signal);
     if (!isCurrentMutation(revision, controller)) return;
+    acknowledgeIdentityOperation();
     selectedUser.value = created;
     view.value = 'created';
     notice.value = null;
@@ -1024,6 +1564,7 @@ async function updateRole(): Promise<void> {
       controller.signal,
     );
     if (!isCurrentMutation(revision, controller)) return;
+    acknowledgeIdentityOperation();
     selectedUser.value = updated;
     view.value = 'detail';
     await selectUser(updated);
@@ -1158,6 +1699,7 @@ async function updateProfile(): Promise<void> {
   try {
     const updated = await props.client.updateProfile(user.id, patch, controller.signal);
     if (!isCurrentMutation(revision, controller) || selectedUser.value?.id !== user.id) return;
+    acknowledgeIdentityOperation();
     selectedUser.value = updated;
     syncEditorFromUser(updated);
     cancelProfileEdit();
@@ -1207,6 +1749,7 @@ async function transferStudent(): Promise<void> {
       controller.signal,
     );
     if (!isCurrentMutation(revision, controller)) return;
+    acknowledgeIdentityOperation();
     selectedUser.value = updated;
     transferGroupId.value = '';
     transferReason.value = '';
@@ -1323,7 +1866,79 @@ function ownerError(cause: unknown): void {
   emit('ownerError', cause);
 }
 
+function acknowledgeIdentityOperation(): void {
+  props.client.acknowledgeIdentityOperation?.();
+  identityPending.value = false;
+  unknownMutation.value = false;
+}
+
+async function resumeIdentityOperation(): Promise<void> {
+  if (saving.value || !canRead.value) return;
+  const client = props.client,
+    authority = JSON.stringify(props.authority),
+    target = selectedUser.value?.id;
+  const contextView = view.value;
+  const { revision, controller } = beginMutation();
+  const current = () =>
+    isCurrentMutation(revision, controller) &&
+    props.client === client &&
+    JSON.stringify(props.authority) === authority &&
+    selectedUser.value?.id === target &&
+    view.value === contextView;
+  saving.value = true;
+  try {
+    const result = await props.client.resumeIdentityOperation();
+    if (!current()) return;
+    acknowledgeIdentityOperation();
+    if (result.recovered) {
+      syncRecoveryCandidates();
+      recoveryReady.value = null;
+      saving.value = false;
+      notice.value = 'Операция восстановлена.';
+      await refreshUserRecoveryReads(current);
+      return;
+    }
+    lifecycleUncertain.value = false;
+    archivePassword.value = '';
+    archiveInput = null;
+    restoreOperation = null;
+    error.value = null;
+    selectedUser.value = result.user;
+    if (result.created) resetCreateForm();
+    view.value = result.created ? 'created' : result.user ? 'detail' : 'list';
+    notice.value = 'Действие выполнено. Данные обновлены.';
+    await refresh();
+  } catch (cause) {
+    if (!current() || cause instanceof StaleSessionGenerationError) return;
+    showError(cause, 'Не удалось проверить результат.');
+  } finally {
+    if (isCurrentMutation(revision, controller)) {
+      saving.value = false;
+      mutationAbortController = null;
+    }
+  }
+}
+
 function showError(cause: unknown, fallback: string, mutation = false): void {
+  syncRecoveryCandidates();
+  identityPending.value = Boolean(props.client.hasPendingIdentityOperation);
+  if (cause instanceof IdentityOperationError) {
+    recoveryReady.value = null;
+    identityPending.value = props.client.hasPendingIdentityOperation;
+    unknownMutation.value = identityPending.value;
+    if (!identityPending.value) {
+      lifecycleUncertain.value = false;
+      archiveInput = null;
+      restoreOperation = null;
+      if (view.value === 'archive') lifecycleStale.value = true;
+    }
+    error.value =
+      cause.state === 'FAILED_SAFE'
+        ? 'Операция остановлена. Часть изменений могла сохраниться. Проверь возможность восстановления.'
+        : cause.message;
+    return;
+  }
+
   if (
     mutation &&
     (!(cause instanceof AdminUsersApiError || cause instanceof AdminAccessApiError) ||
@@ -1391,6 +2006,31 @@ watch(draftRole, () => {
 });
 
 watch(
+  () => props.client,
+  () => {
+    ++mutationRevision;
+    mutationAbortController?.abort();
+    mutationAbortController = null;
+    cancelProfileLoad();
+    identityPending.value = Boolean(props.client.hasPendingIdentityOperation);
+    unknownMutation.value = false;
+    lifecycleUncertain.value = false;
+    saving.value = false;
+    archivePassword.value = '';
+    archiveInput = null;
+    restoreOperation = null;
+    selectedUser.value = null;
+    profileOriginal.value = null;
+    users.value = [];
+    error.value = null;
+    notice.value = null;
+    resetCreateForm();
+    view.value = 'list';
+  },
+  { flush: 'sync' },
+);
+
+watch(
   () => props.authority,
   (current, previous) => {
     if (current === previous) return;
@@ -1422,6 +2062,21 @@ watch(
 );
 
 onBeforeUnmount(() => {
+  // Navigation/reload keeps a same-session receipt. An invalidated owner clears it.
+  for (const [client, key] of [
+    [props.client, userRecoveryRememberedKey],
+    [props.accessClient, accessRecoveryRememberedKey],
+  ] as const) {
+    try {
+      client?.getIdentityRecoverySessionScope();
+    } catch {
+      try {
+        if (key) globalThis.sessionStorage?.removeItem(key);
+      } catch {
+        /* Restricted storage. */
+      }
+    }
+  }
   disposed = true;
   ++listRequestRevision;
   ++mutationRevision;
@@ -1465,21 +2120,24 @@ onBeforeUnmount(() => {
       </h1>
     </header>
     <AdminNotice
-      v-if="error"
+      v-if="error || identityPending || accessPending || accessReadFailed || userRecoveryReadFailed || failedUserRecovery || failedAccessRecovery"
       :tone="errorTone"
       :title="errorTitle"
     >
-      {{ error }}
+      {{ error || (failedUserRecovery || failedAccessRecovery ? 'Операция остановлена. Часть изменений могла сохраниться. Проверь возможность восстановления.' : 'Есть незавершённое действие. Проверь результат перед новым действием.') }}
       <template
-        v-if="view === 'list' && canRead"
+        v-if="identityPending || accessPending || accessReadFailed || userRecoveryReadFailed || failedUserRecovery || failedAccessRecovery || (view === 'list' && canRead)"
         #actions
       >
         <button
+          v-if="!(recoveryReady?.reference.kind === 'ARCHIVE' && view === 'archive' && archivePreview && !identityPending)"
           class="admin-users-action"
           type="button"
-          @click="refresh"
+          :disabled="saving || recoveryBusy || (accessReadFailed && accessLoading) || ((accessPending || accessReadFailed || Boolean(failedAccessRecovery)) && !isFull)"
+          :aria-busy="saving && (identityPending || accessPending)"
+          @click="accessPending ? resumeAccessOperation() : identityPending ? resumeIdentityOperation() : accessReadFailed ? retryAccessReads() : userRecoveryReadFailed ? retryUserRecoveryReads() : recoveryReady ? reconcileFailedIdentity() : failedUserRecovery || failedAccessRecovery ? checkIdentityRecovery() : refresh()"
         >
-          Попробовать ещё раз
+          {{ accessPending || identityPending ? 'Проверить результат' : accessReadFailed || userRecoveryReadFailed ? 'Обновить данные' : recoveryReady ? 'Восстановить операцию' : failedUserRecovery || failedAccessRecovery ? 'Проверить результат' : 'Попробовать ещё раз' }}
         </button>
       </template>
     </AdminNotice>
@@ -2307,7 +2965,7 @@ onBeforeUnmount(() => {
           class="admin-users-action admin-users-action--secondary"
           type="button"
           :disabled="lifecycleLoading"
-          @click="openArchive"
+          @click="recoveryReady?.reference.kind === 'ARCHIVE' ? openArchiveRecovery() : openArchive()"
         >
           Обновить предпросмотр
         </button>
@@ -2340,9 +2998,11 @@ onBeforeUnmount(() => {
             ? 'Сохраняем…'
             : lifecycleUncertain
               ? 'Повторить подтверждение'
-              : view === 'archive'
-                ? 'Архивировать аккаунт'
-                : 'Восстановить аккаунт'
+              : recoveryReady?.reference.kind === 'ARCHIVE'
+                ? 'Восстановить операцию'
+                : view === 'archive'
+                  ? 'Архивировать аккаунт'
+                  : 'Восстановить аккаунт'
         }}
       </button>
     </form>
@@ -2365,9 +3025,9 @@ onBeforeUnmount(() => {
         </div><AdminPermissionEditor
           v-model="accessDraft"
           :catalog="accessCatalog"
-          :disabled="saving || accessUncertain"
+          :disabled="saving || accessUncertain || accessPending || accessReadFailed || Boolean(failedAccessRecovery)"
         /><button
-          v-if="accessUncertain"
+          v-if="accessUncertain && !accessPending"
           class="admin-users-action admin-users-action--secondary"
           type="button"
           @click="reloadAccess"
@@ -2379,6 +3039,9 @@ onBeforeUnmount(() => {
           :disabled="
             saving ||
               accessUncertain ||
+              accessPending ||
+              Boolean(failedAccessRecovery) ||
+              accessReadFailed ||
               !accessSelectionValid ||
               (accessOwner === 'target' && !accessProfile)
           "
@@ -2389,7 +3052,7 @@ onBeforeUnmount(() => {
           v-if="accessOwner === 'target' && accessProfile?.assigned"
           class="admin-users-action admin-users-action--secondary"
           type="button"
-          :disabled="saving || accessUncertain"
+          :disabled="saving || accessUncertain || accessPending || accessReadFailed || Boolean(failedAccessRecovery)"
           @click="prepareAccess('revoke')"
         >
           Отозвать права администратора

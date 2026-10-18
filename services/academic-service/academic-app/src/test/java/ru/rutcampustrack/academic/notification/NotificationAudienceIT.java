@@ -526,7 +526,8 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"role", "status", "archive"})
+    // The archive parameter moved to NotificationHeadmanArchiveIT with real Auth admission/proof.
+    @ValueSource(strings = {"role", "status"})
     void userHeadmanCascadesEmitOneRealAssistantRevocation(String transition) throws Exception {
         long admin = admin("FULL");
         actor(admin, "ADMIN", null, false, session(admin));
@@ -551,7 +552,6 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
                                         null,
                                         null,
                                         AccountStatus.EXPELLED));
-                case "archive" -> userService.archiveUser(headman);
             }
         }
         beforeCommit();

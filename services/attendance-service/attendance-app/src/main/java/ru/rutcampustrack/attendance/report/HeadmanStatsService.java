@@ -3,8 +3,6 @@ package ru.rutcampustrack.attendance.report;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -67,6 +65,7 @@ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.journal.JournalLessonPolicy;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+import ru.rutcampustrack.attendance.report.planned.*;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
@@ -96,7 +95,6 @@ import java.util.TreeMap;
 
 /** Server-owned semester stats for the authenticated headman's current group. */
 @Service
-@RequiredArgsConstructor
 public class HeadmanStatsService {
     private static final int MAX_SEMESTER_LESSONS = 5_000;
     private static final int MAX_PAGE_SIZE = 100;
@@ -134,15 +132,15 @@ public class HeadmanStatsService {
                             java.util.stream.Collectors.toUnmodifiableMap(
                                     ColumnDescriptor::field, column -> column));
 
-    private final AcademicGrpcClient academicGrpcClient;
-    private final ScheduleGrpcClient scheduleGrpcClient;
+    private final ReportAcademicReadPort academicGrpcClient;
+    private final ReportScheduleReadPort scheduleGrpcClient;
     private final AttendanceReadPort attendanceReadPort;
     private final ExcuseRepository excuseRepository;
     private final LateCheckinRepository lateCheckinRepository;
     private final HeadmanStatsDocxRenderer docxRenderer;
     private final HeadmanStatsTabularRenderer tabularRenderer;
     private final DocumentRendererGrpcClient documentRendererGrpcClient;
-    private final RequestContext requestContext;
+    private final ReportActor requestContext;
     private final Clock clock;
     private final HeadmanApprovedTicketResolver approvedTicketResolver;
     private ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionService
@@ -153,6 +151,57 @@ public class HeadmanStatsService {
             ru.rutcampustrack.attendance.report.studentprojection.StudentAttendanceProjectionService
                     service) {
         studentProjection = service;
+    }
+
+    public HeadmanStatsService(
+            AcademicGrpcClient academicGrpcClient,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AttendanceReadPort attendanceReadPort,
+            ExcuseRepository excuseRepository,
+            LateCheckinRepository lateCheckinRepository,
+            HeadmanStatsDocxRenderer docxRenderer,
+            HeadmanStatsTabularRenderer tabularRenderer,
+            DocumentRendererGrpcClient documentRendererGrpcClient,
+            RequestContext requestContext,
+            Clock clock,
+            HeadmanApprovedTicketResolver approvedTicketResolver) {
+        this(
+                ReportAcademicReadPort.live(academicGrpcClient),
+                ReportScheduleReadPort.live(scheduleGrpcClient),
+                attendanceReadPort,
+                excuseRepository,
+                lateCheckinRepository,
+                docxRenderer,
+                tabularRenderer,
+                documentRendererGrpcClient,
+                ReportActor.live(requestContext),
+                clock,
+                approvedTicketResolver);
+    }
+
+    private HeadmanStatsService(
+            ReportAcademicReadPort academicGrpcClient,
+            ReportScheduleReadPort scheduleGrpcClient,
+            AttendanceReadPort attendanceReadPort,
+            ExcuseRepository excuseRepository,
+            LateCheckinRepository lateCheckinRepository,
+            HeadmanStatsDocxRenderer docxRenderer,
+            HeadmanStatsTabularRenderer tabularRenderer,
+            DocumentRendererGrpcClient documentRendererGrpcClient,
+            ReportActor requestContext,
+            Clock clock,
+            HeadmanApprovedTicketResolver approvedTicketResolver) {
+        this.academicGrpcClient = academicGrpcClient;
+        this.scheduleGrpcClient = scheduleGrpcClient;
+        this.attendanceReadPort = attendanceReadPort;
+        this.excuseRepository = excuseRepository;
+        this.lateCheckinRepository = lateCheckinRepository;
+        this.docxRenderer = docxRenderer;
+        this.tabularRenderer = tabularRenderer;
+        this.documentRendererGrpcClient = documentRendererGrpcClient;
+        this.requestContext = requestContext;
+        this.clock = clock;
+        this.approvedTicketResolver = approvedTicketResolver;
     }
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -208,6 +257,21 @@ public class HeadmanStatsService {
                 requestContext,
                 clock,
                 new HeadmanApprovedTicketResolver(excuseRepository, lateCheckinRepository));
+    }
+
+    public HeadmanStatsService forPlan(AdmittedReportPlan plan) {
+        return new HeadmanStatsService(
+                plan,
+                plan,
+                attendanceReadPort,
+                excuseRepository,
+                lateCheckinRepository,
+                docxRenderer,
+                tabularRenderer,
+                documentRendererGrpcClient,
+                plan,
+                plan.clock(),
+                approvedTicketResolver);
     }
 
     public HeadmanStatsSemestersResponse semesters() {

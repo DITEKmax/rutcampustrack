@@ -14,7 +14,6 @@ import ru.rutcampustrack.academic.assignment.AssignmentLifecycle;
 import ru.rutcampustrack.academic.assignment.AssignmentOperationKind;
 import ru.rutcampustrack.academic.assignment.AssignmentOperationState;
 import ru.rutcampustrack.academic.assistant.AssistantPermissionAuthority;
-import ru.rutcampustrack.academic.botcredentials.BotCredentialsService;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Assignment;
@@ -111,10 +110,16 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     private final AssistantPermissionAuthority assistantPermissionAuthority;
     private final AssignmentReplacementOperationRepository replacementOperationRepository;
     private final HeadmanGroupCompositionReadService groupCompositionReadService;
-    private final BotCredentialsService botCredentialsService;
     private final GrpcUserAuthorityReader userAuthorityReader;
 
     @Autowired private HeadmanStatsScopeReadService headmanStatsScopeReadService;
+
+    @Autowired
+    private ru.rutcampustrack.academic.botread.AcademicBotHomeworkService botHomeworkService;
+
+    @Autowired
+    private ru.rutcampustrack.academic.assistant.AssistantPermissionReadService
+            assistantPermissionRead;
 
     @Override
     public void resolveHeadmanStatsScope(
@@ -158,7 +163,6 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             AssistantPermissionAuthority assistantPermissionAuthority,
             AssignmentReplacementOperationRepository replacementOperationRepository,
             HeadmanGroupCompositionReadService groupCompositionReadService,
-            BotCredentialsService botCredentialsService,
             GrpcUserAuthorityReader userAuthorityReader) {
         this.academicReadService = academicReadService;
         this.groupRepository = groupRepository;
@@ -178,49 +182,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.assistantPermissionAuthority = assistantPermissionAuthority;
         this.replacementOperationRepository = replacementOperationRepository;
         this.groupCompositionReadService = groupCompositionReadService;
-        this.botCredentialsService = botCredentialsService;
         this.userAuthorityReader = userAuthorityReader;
-    }
-
-    public AcademicGrpcServiceImpl(
-            AcademicReadService academicReadService,
-            GroupRepository groupRepository,
-            UserRepository userRepository,
-            SubjectRepository subjectRepository,
-            AssignmentRepository assignmentRepository,
-            SemesterRepository semesterRepository,
-            UserRoleGrantRepository grantRepository,
-            HomeworkRepository homeworkRepository,
-            HomeworkCompletionRepository completionRepository,
-            HeadmanRateLimiter headmanRateLimiter,
-            HomeworkStudentService homeworkStudentService,
-            StudentProjectionScopeService studentProjectionScopeService,
-            CampusMapReadService campusMapReadService,
-            CampusMapUsageService campusMapUsageService,
-            AssistantPermissionAuthority assistantPermissionAuthority,
-            AssignmentReplacementOperationRepository replacementOperationRepository,
-            HeadmanGroupCompositionReadService groupCompositionReadService,
-            BotCredentialsService botCredentialsService) {
-        this(
-                academicReadService,
-                groupRepository,
-                userRepository,
-                subjectRepository,
-                assignmentRepository,
-                semesterRepository,
-                grantRepository,
-                homeworkRepository,
-                completionRepository,
-                headmanRateLimiter,
-                homeworkStudentService,
-                studentProjectionScopeService,
-                campusMapReadService,
-                campusMapUsageService,
-                assistantPermissionAuthority,
-                replacementOperationRepository,
-                groupCompositionReadService,
-                botCredentialsService,
-                null);
     }
 
     /** Compatibility constructor for existing focused RPC tests without the new bot capability. */
@@ -261,39 +223,6 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 replacementOperationRepository,
                 groupCompositionReadService,
                 null);
-    }
-
-    @Override
-    public void getOwnBotInitialCredentials(
-            BotOwnInitialCredentialsRequest request,
-            StreamObserver<BotOwnInitialCredentialsResponse> observer) {
-        // Credential projection is owned by the separately authenticated Auth receiver.
-        // Academic retains only the metadata tracker and homework capabilities.
-        observer.onError(
-                Status.PERMISSION_DENIED
-                        .withDescription("own credential read requires Auth service")
-                        .asRuntimeException());
-    }
-
-    @Override
-    public void manageOwnBotCredentialMessages(
-            BotCredentialMessagesRequest request,
-            StreamObserver<BotCredentialMessagesResponse> observer) {
-        try {
-            if (botCredentialsService == null)
-                throw Status.UNAUTHENTICATED
-                        .withDescription("verified bot credential capability unavailable")
-                        .asRuntimeException();
-            observer.onNext(botCredentialsService.manage(request));
-            observer.onCompleted();
-        } catch (io.grpc.StatusRuntimeException error) {
-            observer.onError(error);
-        } catch (RuntimeException error) {
-            observer.onError(
-                    Status.UNAVAILABLE
-                            .withDescription("credential card authority unavailable")
-                            .asRuntimeException());
-        }
     }
 
     /** Compatibility constructor for existing focused RPC tests. */
@@ -445,7 +374,6 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         this.userRepository = userRepository;
         this.subjectRepository = subjectRepository;
         this.legacyAssignmentRepository = assignmentRepository;
-        this.botCredentialsService = null;
         this.userAuthorityReader = null;
         this.assignmentRepository = null;
         this.semesterRepository = null;
@@ -474,7 +402,6 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             HeadmanRateLimiter headmanRateLimiter,
             HomeworkStudentService homeworkStudentService) {
         this.academicReadService = academicReadService;
-        this.botCredentialsService = null;
         this.userAuthorityReader = null;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
@@ -957,38 +884,75 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         responseObserver.onCompleted();
     }
 
-    /**
-     * Checks one assistant capability against the current durable grants. The actor is bound by
-     * {@link StudentHomeworkGrpcIdentityInterceptor}; request fields cannot select another user or
-     * group.
-     */
+    /** Auth owns the fresh administrator decision; the original signed actor is forwarded. */
     @org.springframework.beans.factory.annotation.Autowired
-    private ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority adminAuthority;
+    private ru.rutcampustrack.academic.identitycatalog.AuthIdentityDataClient adminIdentityData;
 
     @Override
     public void checkAdminPermission(
             AdminPermissionCheckRequest request,
             StreamObserver<AdminPermissionCheckResponse> observer) {
+        final InternalJwtClaims actor;
+        final String signedActor;
         try {
-            var profile = adminAuthority.current(StudentHomeworkGrpcIdentity.requireClaims());
+            actor = StudentHomeworkGrpcIdentity.requireClaims();
+            signedActor = StudentHomeworkGrpcIdentity.requireAdminPermissionToken();
+        } catch (IllegalStateException missing) {
+            observer.onError(
+                    Status.UNAUTHENTICATED
+                            .withDescription("signed internal identity is required")
+                            .asRuntimeException());
+            return;
+        }
+        try {
+            boolean known =
+                    request.getPermissionsList().stream()
+                            .allMatch(
+                                    ru.rutcampustrack.shared.security.admin.AdminPermission
+                                                    .allCodes()
+                                            ::contains);
+            var checked =
+                    adminIdentityData.checkAdminAccessForSignedGrpcActor(
+                            signedActor,
+                            request.getFullOnly() || !known
+                                    ? java.util.List.of()
+                                    : request.getPermissionsList(),
+                            request.getFullOnly(),
+                            System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(3));
+            if (checked.getActorUserId() != actor.userId()
+                    || checked.getSessionVersion() != actor.sessionVersion()
+                    || checked.getRolesVersion() != actor.rolesVersion()
+                    || !checked.getProfile().getAssigned())
+                throw Status.UNAVAILABLE.asRuntimeException();
+            var profile =
+                    ru.rutcampustrack.academic.admin.AdminAccessService.profile(
+                            actor.userId(), checked.getProfile());
             boolean allowed =
                     request.getFullOnly()
                             ? profile.full()
-                            : !request.getPermissionsList().isEmpty()
+                            : known
+                                    && !request.getPermissionsList().isEmpty()
                                     && request.getPermissionsList().stream()
                                             .allMatch(profile::allows);
             observer.onNext(AdminPermissionCheckResponse.newBuilder().setAllowed(allowed).build());
             observer.onCompleted();
-        } catch (ru.rutcampustrack.shared.security.admin.AdminAccessException denied) {
-            if (denied.getStatusCode().value() == 503)
-                observer.onError(
-                        Status.UNAVAILABLE
-                                .withDescription("admin authority unavailable")
-                                .asRuntimeException());
-            else {
-                observer.onNext(
-                        AdminPermissionCheckResponse.newBuilder().setAllowed(false).build());
-                observer.onCompleted();
+        } catch (io.grpc.StatusRuntimeException denied) {
+            switch (denied.getStatus().getCode()) {
+                case PERMISSION_DENIED, FAILED_PRECONDITION -> {
+                    observer.onNext(
+                            AdminPermissionCheckResponse.newBuilder().setAllowed(false).build());
+                    observer.onCompleted();
+                }
+                case UNAUTHENTICATED ->
+                        observer.onError(
+                                Status.UNAUTHENTICATED
+                                        .withDescription("valid signed actor required")
+                                        .asRuntimeException());
+                default ->
+                        observer.onError(
+                                Status.UNAVAILABLE
+                                        .withDescription("admin authority unavailable")
+                                        .asRuntimeException());
             }
         } catch (RuntimeException failure) {
             observer.onError(
@@ -1014,10 +978,10 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         }
 
         try {
+            if (assistantPermissionRead == null) throw Status.UNAVAILABLE.asRuntimeException();
             boolean allowed =
-                    assistantPermissionAuthority != null
-                            && assistantPermissionAuthority.allows(
-                                    claims, request.getGroupId(), request.getPermission());
+                    assistantPermissionRead.allows(
+                            claims, request.getGroupId(), request.getPermission());
             responseObserver.onNext(
                     AssistantPermissionCheckResponse.newBuilder().setAllowed(allowed).build());
             responseObserver.onCompleted();
@@ -1738,34 +1702,13 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             BotOwnHomeworksForWeekRequest request,
             StreamObserver<HomeworksForWeekResponse> observer) {
         try {
-            ru.rutcampustrack.academic.botcredentials.BotCredentialServiceIdentityInterceptor
+            ru.rutcampustrack.academic.botread.AcademicBotHomeworkServiceIdentityInterceptor
                     .requireBot();
-            if (userAuthorityReader == null) throw Status.UNAVAILABLE.asRuntimeException();
-            LocalDate from = parseIsoDate(request.getDateFrom(), "date_from");
-            LocalDate to = parseIsoDate(request.getDateTo(), "date_to");
-            if (to.isBefore(from) || java.time.temporal.ChronoUnit.DAYS.between(from, to) > 6) {
-                throw Status.INVALID_ARGUMENT
-                        .withDescription("homework range must contain one to seven days")
-                        .asRuntimeException();
-            }
-            long groupId = userAuthorityReader.requireOwnStudentGroup(request);
-            var semester =
-                    semesterRepository
-                            .findByIsActiveTrue()
-                            .orElseThrow(
-                                    () ->
-                                            Status.FAILED_PRECONDITION
-                                                    .withDescription("active semester required")
-                                                    .asRuntimeException());
-            var scoped =
-                    HomeworksForWeekRequest.newBuilder()
-                            .setGroupId(groupId)
-                            .setStudentId(request.getExpectedUserId())
-                            .setSemesterId(semester.getId())
-                            .setDateFrom(from.toString())
-                            .setDateTo(to.toString())
-                            .build();
-            observer.onNext(readHomeworks(scoped, request.getExpectedUserId()));
+            if (botHomeworkService == null) throw Status.UNAVAILABLE.asRuntimeException();
+            var response =
+                    botHomeworkService.read(
+                            request, scoped -> readHomeworks(scoped, request.getExpectedUserId()));
+            observer.onNext(response);
             observer.onCompleted();
         } catch (io.grpc.StatusRuntimeException error) {
             observer.onError(error);
@@ -1980,37 +1923,23 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     }
 
     /**
-     * GRPC-07: Get user by ID including archived users. Uses cached lookup that
-     * bypasses @SQLRestriction so downstream services can access historical data for archived
-     * users.
+     * GRPC-07: Get user by ID including archived users. Composes fresh Auth-owned nonsecret
+     * metadata with Academic-owned presentation and eligibility from its own database.
      */
     @Override
     public void getUserById(UserRequest request, StreamObserver<UserResponse> responseObserver) {
-        User user = academicReadService.fetchUserById(request.getUserId());
-
-        var authority = userAuthorityReader == null ? null : userAuthorityReader.read(user.getId());
-        UserResponse response =
-                UserResponse.newBuilder()
-                        .setId(user.getId())
-                        .setLogin(user.getLogin())
-                        .setDisplayName(user.getDisplayName())
-                        .setRole(user.getRole().name().toLowerCase())
-                        .setStatus(user.getStatus().name().toLowerCase())
-                        .setGroupId(user.getGroupId() != null ? user.getGroupId() : 0L)
-                        .setIsHeadman(user.isHeadman())
-                        .setTelegramId(
-                                authority == null
-                                        ? (user.getTelegramId() == null ? 0L : user.getTelegramId())
-                                        : (authority.telegramId() == null
-                                                ? 0L
-                                                : authority.telegramId()))
-                        .setAvatarId(user.getAvatarId() != null ? user.getAvatarId() : "")
-                        .addAllRoles(authority == null ? List.of() : authority.roles())
-                        .setRolesVersion(authority == null ? 0 : authority.rolesVersion())
-                        .build();
-
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+        try {
+            if (userAuthorityReader == null) throw Status.UNAVAILABLE.asRuntimeException();
+            responseObserver.onNext(userAuthorityReader.readUser(request.getUserId()));
+            responseObserver.onCompleted();
+        } catch (io.grpc.StatusRuntimeException error) {
+            responseObserver.onError(error);
+        } catch (RuntimeException error) {
+            responseObserver.onError(
+                    Status.UNAVAILABLE
+                            .withDescription("current user metadata unavailable")
+                            .asRuntimeException());
+        }
     }
 
     private static LocalDate parseIsoDate(String raw, String field) {

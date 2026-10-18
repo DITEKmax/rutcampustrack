@@ -1,5 +1,5 @@
 UPDATE
-    users
+    auth_identities
 SET
     telegram_id = NULL
 WHERE

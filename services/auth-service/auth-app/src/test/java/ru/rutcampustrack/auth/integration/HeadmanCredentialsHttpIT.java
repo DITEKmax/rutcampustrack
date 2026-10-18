@@ -57,6 +57,46 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
     @Autowired org.springframework.transaction.PlatformTransactionManager transactions;
     @MockitoSpyBean PasswordChangedOutbox outbox;
 
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    ru.rutcampustrack.auth.authority.AcademicIdentityPresentationClient academic;
+
+    private final Map<Long, Long> academicGroups = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.concurrent.atomic.AtomicLong GROUP_IDS =
+            new java.util.concurrent.atomic.AtomicLong(1_000_000);
+
+    @org.junit.jupiter.api.BeforeEach
+    void academicEligibilityBoundary() {
+        org.mockito.Mockito.doAnswer(
+                        call -> {
+                            assertThat(
+                                            org.springframework.transaction.support
+                                                    .TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .as("Academic eligibility RPC runs before the Auth transaction")
+                                    .isFalse();
+                            var request =
+                                    (ru.rutcampustrack.authauthority.grpc
+                                                    .HeadmanCredentialEligibilityRequest)
+                                            call.getArgument(0);
+                            Long actorGroup = academicGroups.get(request.getActorUserId());
+                            Long targetGroup = academicGroups.get(request.getStudentUserId());
+                            if (actorGroup == null || !actorGroup.equals(targetGroup))
+                                return ru.rutcampustrack.authauthority.grpc
+                                        .HeadmanCredentialEligibility.getDefaultInstance();
+                            return ru.rutcampustrack.authauthority.grpc.HeadmanCredentialEligibility
+                                    .newBuilder()
+                                    .setGroupId(actorGroup)
+                                    .setActorRolesVersion(request.getExpectedActorRolesVersion())
+                                    .setStudentRolesVersion(
+                                            request.getExpectedStudentRolesVersion())
+                                    .setActorAcademicRevision(1)
+                                    .setStudentAcademicRevision(1)
+                                    .build();
+                        })
+                .when(academic)
+                .headmanEligibility(any());
+    }
+
     @AfterEach
     void restoreOutbox() {
         reset(outbox);
@@ -144,8 +184,9 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
                 .isTrue();
         assertThat(
                         count(
-                                "SELECT count(*) FROM users WHERE id=? AND initial_password IS NULL"
-                                        + " AND generated_password_origin IS NULL",
+                                "SELECT count(*) FROM auth_identities WHERE id=? AND"
+                                    + " initial_password IS NULL AND generated_password_origin IS"
+                                    + " NULL",
                                 f.student))
                 .isEqualTo(1);
         assertThat(matches(f.student, replacement)).isTrue();
@@ -156,7 +197,8 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
         Fixture f = fixture();
         String studentBearer = bearer(f.student, AuthRole.STUDENT);
         String actor = bearer(f.headman, AuthRole.HEADMAN);
-        long version = count("SELECT credentials_version FROM users WHERE id=?", f.student);
+        long version =
+                count("SELECT credentials_version FROM auth_identities WHERE id=?", f.student);
         JsonNode first =
                 body(call(actor, f.student, "/password-reset-link", HttpMethod.POST, null), 200);
         JsonNode second =
@@ -166,7 +208,7 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
                                 .getStatusCode()
                                 .value())
                 .isEqualTo(200);
-        assertThat(count("SELECT credentials_version FROM users WHERE id=?", f.student))
+        assertThat(count("SELECT credentials_version FROM auth_identities WHERE id=?", f.student))
                 .isEqualTo(version);
         String firstTicket = ticket(first), secondTicket = ticket(second);
         assertThat(
@@ -226,7 +268,7 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
                 .executeWithoutResult(
                         status -> {
                             jdbc.queryForObject(
-                                    "SELECT id FROM users WHERE id=? FOR UPDATE",
+                                    "SELECT id FROM auth_identities WHERE id=? FOR UPDATE",
                                     Long.class,
                                     f.student);
                             jdbc.update(
@@ -243,7 +285,7 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
                         });
         assertForbidden(headman, f.student);
         jdbc.update(
-                "UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='admin'",
+                "UPDATE user_role_grants SET status='archived' WHERE user_id=? AND role='admin'",
                 f.student);
         jdbc.update(
                 "UPDATE user_role_grants SET status='expelled' WHERE user_id=? AND role='student'",
@@ -286,7 +328,7 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
                                 .value())
                 .isEqualTo(503);
         assertThat(matches(f.student, f.initial)).isTrue();
-        assertThat(count("SELECT credentials_version FROM users WHERE id=?", f.student))
+        assertThat(count("SELECT credentials_version FROM auth_identities WHERE id=?", f.student))
                 .isEqualTo(Long.parseLong(current.path("credentialsVersion").asText()));
         assertThat(count("SELECT count(*) FROM account_security_events WHERE user_id=?", f.student))
                 .isEqualTo(events);
@@ -310,7 +352,8 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
     void unknownOriginIsUnavailableAndGeneratedViewIsNeverCachedAfterActorRevocation()
             throws Exception {
         Fixture f = fixture();
-        jdbc.update("UPDATE users SET generated_password_origin=NULL WHERE id=?", f.student);
+        jdbc.update(
+                "UPDATE auth_identities SET generated_password_origin=NULL WHERE id=?", f.student);
         String actor = bearer(f.headman, AuthRole.HEADMAN);
         JsonNode unknown =
                 body(call(actor, f.student, "/initial-password", HttpMethod.GET, null), 200);
@@ -331,7 +374,7 @@ class HeadmanCredentialsHttpIT extends AbstractIntegrationTest {
     @Test
     void v59BackfillsOnlyConsistentGeneratedRowsAndPreservesExactV57GenerationSemantics() {
         String schema = "headman_credential_" + UUID.randomUUID().toString().replace("-", "");
-        jdbc.execute("CREATE SCHEMA " + schema);
+        authFixtureOwnerJdbc().execute("CREATE SCHEMA " + schema);
         String url = POSTGRES.getJdbcUrl();
         var dataSource =
                 new org.springframework.jdbc.datasource.DriverManagerDataSource(
@@ -461,22 +504,25 @@ VALUES ('consistent','Synthetic','Legacy',?,'synthetic-initial',FALSE),
         Throwable primary = null;
         try {
             // Owned identifiers and a numeric own target only; no credential value enters SQL text.
-            jdbc.execute(
-                    "CREATE FUNCTION "
-                            + function
-                            + "() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN "
-                            + "IF NEW.target_type = 'user' AND NEW.target_id = "
-                            + f.student
-                            + " AND NEW.action IN"
-                            + " ('HEADMAN_PASSWORD_SHOWN','HEADMAN_PASSWORD_RESET','HEADMAN_RESET_LINK_ISSUED')"
-                            + " THEN RAISE EXCEPTION 'synthetic credential audit unavailable' USING"
-                            + " ERRCODE = '23514'; END IF; RETURN NEW; END; $$");
-            jdbc.execute(
-                    "CREATE TRIGGER "
-                            + trigger
-                            + " BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION "
-                            + function
-                            + "()");
+            authFixtureOwnerJdbc()
+                    .execute(
+                            "CREATE FUNCTION "
+                                    + function
+                                    + "() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN "
+                                    + "IF NEW.target_type = 'user' AND NEW.target_id = "
+                                    + f.student
+                                    + " AND NEW.action IN"
+                                    + " ('HEADMAN_PASSWORD_SHOWN','HEADMAN_PASSWORD_RESET','HEADMAN_RESET_LINK_ISSUED')"
+                                    + " THEN RAISE EXCEPTION 'synthetic credential audit"
+                                    + " unavailable' USING ERRCODE = '23514'; END IF; RETURN NEW;"
+                                    + " END; $$");
+            authFixtureOwnerJdbc()
+                    .execute(
+                            "CREATE TRIGGER "
+                                    + trigger
+                                    + " BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION "
+                                    + function
+                                    + "()");
             ResponseEntity<String> shown =
                     call(actor, f.student, "/initial-password", HttpMethod.GET, null);
             assertAuditUnavailable(shown, f.initial, priorTicket);
@@ -517,12 +563,13 @@ VALUES ('consistent','Synthetic','Legacy',?,'synthetic-initial',FALSE),
         } finally {
             boolean cleanupFailed = false;
             try {
-                jdbc.execute("DROP TRIGGER IF EXISTS " + trigger + " ON audit_log");
+                authFixtureOwnerJdbc()
+                        .execute("DROP TRIGGER IF EXISTS " + trigger + " ON audit_log");
             } catch (RuntimeException failure) {
                 cleanupFailed = true;
             }
             try {
-                jdbc.execute("DROP FUNCTION IF EXISTS " + function + "()");
+                authFixtureOwnerJdbc().execute("DROP FUNCTION IF EXISTS " + function + "()");
             } catch (RuntimeException failure) {
                 cleanupFailed = true;
             }
@@ -628,13 +675,16 @@ VALUES ('consistent','Synthetic','Legacy',?,'synthetic-initial',FALSE),
                                             .equals(result.path("credentialsVersion").asText()))
                     .as("winner origin and version match the committed generation")
                     .isTrue();
-            assertThat(count("SELECT credentials_version FROM users WHERE id=?", f.student))
+            assertThat(
+                            count(
+                                    "SELECT credentials_version FROM auth_identities WHERE id=?",
+                                    f.student))
                     .isEqualTo(Long.parseLong(version) + 1);
             assertThat(
                             count(
-                                    "SELECT count(*) FROM users WHERE id=? AND initial_password=?"
-                                            + " AND NOT password_changed AND"
-                                            + " generated_password_origin='headman_reset'",
+                                    "SELECT count(*) FROM auth_identities WHERE id=? AND"
+                                        + " initial_password=? AND NOT password_changed AND"
+                                        + " generated_password_origin='headman_reset'",
                                     f.student,
                                     password))
                     .isEqualTo(1);
@@ -733,7 +783,7 @@ VALUES ('consistent','Synthetic','Legacy',?,'synthetic-initial',FALSE),
                 jdbc.queryForMap(
                         "SELECT"
                             + " password_hash,initial_password,password_changed,generated_password_origin,credentials_version,telegram_binding_version"
-                            + " FROM users WHERE id=?",
+                            + " FROM auth_identities WHERE id=?",
                         userId),
                 jdbc.queryForList(
                         "SELECT"
@@ -793,42 +843,38 @@ VALUES ('consistent','Synthetic','Legacy',?,'synthetic-initial',FALSE),
         long group = group();
         String initial = "Initial-generated-26!";
         long headman = user(group, true, initial), student = user(group, false, initial);
-        jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", 800000000000L + student, student);
+        jdbc.update(
+                "UPDATE auth_identities SET telegram_id=? WHERE id=?",
+                800000000000L + student,
+                student);
         return new Fixture(headman, student, initial);
     }
 
     private long group() {
-        return jdbc.queryForObject(
-                "INSERT INTO groups(name) VALUES (?) RETURNING id",
-                Long.class,
-                "credential-it-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16));
+        // Academic identifiers are opaque scalars here; domain ownership is tested in Academic.
+        return GROUP_IDS.incrementAndGet();
     }
 
     private long user(long group, boolean headman, String initial) {
         long id =
-                jdbc.queryForObject(
-                        """
-INSERT INTO users(login,password_hash,last_name,first_name,group_id,is_headman,initial_password)
-VALUES (?,?,'Credential','Synthetic',?,?,?) RETURNING id
-""",
-                        Long.class,
+                ru.rutcampustrack.auth.support.AuthDatabaseFixture.identity(
+                        jdbc,
                         "hc-" + UUID.randomUUID().toString().substring(0, 20),
+                        Instant.now(),
                         encoder.encode(initial),
-                        group,
-                        headman,
                         initial);
         jdbc.update(
-                "INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
-                        + " VALUES (?,'student','active',?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)",
+                "INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES"
+                    + " (?,'student','active',?)",
                 id,
                 group);
         if (headman)
             jdbc.update(
-                    "INSERT INTO"
-                        + " user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
-                        + " VALUES (?,'headman','active',?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)",
+                    "INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES"
+                        + " (?,'headman','active',?)",
                     id,
                     group);
+        academicGroups.put(id, group);
         return id;
     }
 
@@ -848,7 +894,7 @@ VALUES (?,?,'Credential','Synthetic',?,?,?) RETURNING id
                                 authority.rolesVersion(),
                                 authority.grants(),
                                 jdbc.queryForObject(
-                                        "SELECT password_hash FROM users WHERE id=?",
+                                        "SELECT password_hash FROM auth_identities WHERE id=?",
                                         String.class,
                                         userId),
                                 "credential-it",
@@ -907,7 +953,7 @@ VALUES (?,?,'Credential','Synthetic',?,?,?) RETURNING id
         return encoder.matches(
                 value,
                 jdbc.queryForObject(
-                        "SELECT password_hash FROM users WHERE id=?", String.class, id));
+                        "SELECT password_hash FROM auth_identities WHERE id=?", String.class, id));
     }
 
     private long count(String sql, Object... args) {

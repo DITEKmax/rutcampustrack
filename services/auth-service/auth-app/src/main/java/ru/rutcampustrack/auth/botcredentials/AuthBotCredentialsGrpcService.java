@@ -10,6 +10,8 @@ import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
+import ru.rutcampustrack.academic.grpc.BotCredentialMessagesRequest;
+import ru.rutcampustrack.academic.grpc.BotCredentialMessagesResponse;
 import ru.rutcampustrack.academic.grpc.BotOwnInitialCredentialsRequest;
 import ru.rutcampustrack.academic.grpc.BotOwnInitialCredentialsResponse;
 
@@ -17,9 +19,13 @@ import ru.rutcampustrack.academic.grpc.BotOwnInitialCredentialsResponse;
 @GrpcService(interceptors = AuthBotCredentialServiceIdentityInterceptor.class)
 public final class AuthBotCredentialsGrpcService implements BindableService {
     private final AuthBotOwnInitialCredentialsQuery credentials;
+    private final AuthBotCredentialMessageRepository messages;
 
-    public AuthBotCredentialsGrpcService(AuthBotOwnInitialCredentialsQuery credentials) {
+    public AuthBotCredentialsGrpcService(
+            AuthBotOwnInitialCredentialsQuery credentials,
+            AuthBotCredentialMessageRepository messages) {
         this.credentials = credentials;
+        this.messages = messages;
     }
 
     @Override
@@ -28,7 +34,26 @@ public final class AuthBotCredentialsGrpcService implements BindableService {
                 .addMethod(
                         AcademicGrpcServiceGrpc.getGetOwnBotInitialCredentialsMethod(),
                         ServerCalls.asyncUnaryCall(this::read))
+                .addMethod(
+                        AcademicGrpcServiceGrpc.getManageOwnBotCredentialMessagesMethod(),
+                        ServerCalls.asyncUnaryCall(this::manage))
                 .build();
+    }
+
+    private void manage(
+            BotCredentialMessagesRequest request,
+            StreamObserver<BotCredentialMessagesResponse> observer) {
+        try {
+            observer.onNext(messages.manage(request));
+            observer.onCompleted();
+        } catch (StatusRuntimeException error) {
+            observer.onError(error);
+        } catch (RuntimeException error) {
+            observer.onError(
+                    Status.UNAVAILABLE
+                            .withDescription("credential card authority unavailable")
+                            .asRuntimeException());
+        }
     }
 
     private void read(

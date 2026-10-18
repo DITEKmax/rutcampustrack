@@ -7,7 +7,9 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
+
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor;
+
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.InternalJwtException;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
@@ -74,6 +76,11 @@ public class StudentHomeworkGrpcIdentityInterceptor implements ServerInterceptor
             InternalJwtClaims claims = validator.validate(headers.get(INTERNAL_TOKEN));
             Context context =
                     Context.current().withValue(StudentHomeworkGrpcIdentity.CLAIMS, claims);
+            if (ADMIN_PERMISSION_METHOD_NAME.equals(methodName))
+                context =
+                        context.withValue(
+                                StudentHomeworkGrpcIdentity.ADMIN_PERMISSION_TOKEN,
+                                headers.get(INTERNAL_TOKEN));
             return Contexts.interceptCall(context, call, headers, next);
         } catch (InternalJwtException error) {
             call.close(

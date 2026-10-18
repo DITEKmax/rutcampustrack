@@ -1,23 +1,21 @@
 # ACTIVE — separate DB + apps / 18.10.2026
 
-Persisted Goal Q031/D037: [новый GO](TASK-ADDENDUM-SPLIT-APPS-20261018.md),
+Persisted Goal Q031/D037: [GO](TASK-ADDENDUM-SPLIT-APPS-20261018.md),
 [TASK18](TASK-CONTRACT-20261018.md), [TASK17](TASK-CONTRACT-20261017.md),
 [ASYNC](TASK-ADDENDUM-ASYNC-20261017.md). Goal API нет; falsecomplete нет.
-Root soleGit/taskdocs, codex/server-validation-20261011,
-[draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), main не merged.
+Root sole Git/taskdocs; codex/server-validation-20261011,
+[draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), no main/merge/deploy.
 Stage19 base **26cbe5912f6683a81780a831609dbddbc26feba4**.
-Последний проверенный опубликованный executable **a69dbbd3bbee3471e860799db7b936ddf9a2f5cc**;
-следующий source checkpoint добавляет готовые6 файлов ниже. Его SHA — Git HEAD;
-приведённые CI результаты относятся к a69, не к следующему diff.
+Published/remote/PR HEAD **da2cb606f751990d4ad8c8af4ff6ec07b3974bf4**.
+Последний commit: только Apps startup2; весь согласованный split source join остаётся
+незакоммиченным. Это не проверенный twoDB executable; половину switch не push.
 
-## Принято / конечный остаток
+## Конечный принятый план
 
-[Матрица v2-КТ1 FROZEN](selected-results-20261018-v2.csv)/[веса](selected-results-20261018-v2.meta.json):
-**23/38,109/188=57.98% плана**, не production-readiness. Историческая
-[v1](selected-results-20261018.csv)/[meta](selected-results-20261018.meta.json):
-23/25,110/123=89.43%; U15 sameDBrepeat не две новыеDB/VPSrestart.
-TASK17 старые9/9 сохранены в прежней применимости. Нет double parent/child credit.
-Достаточное неизменённое evidence не повторять; изменённый путь требует новой проверки.
+[Матрица v2 FROZEN](selected-results-20261018-v2.csv)/[веса](selected-results-20261018-v2.meta.json):
+**23/38,109/188=57.98% плана**, не production readiness. Историческая
+[v1](selected-results-20261018.csv):23/25,110/123=89.43%; U15 sameDB не двеDB/VPS.
+TASK17 старые9/9 сохранены в прежней применимости; достаточные неизменённые PASS не повторять.
 
 | КТ | Закрыто / всего | Вес / всего | % плана |
 | --- | --- | --- | --- |
@@ -26,56 +24,56 @@ TASK17 старые9/9 сохранены в прежней применимос
 | КТ4 changedchains/monitoring/jobs | 13/15 | 70/83 | 84.34 |
 | КТ5 finalgates/review/handoff | 0/1 | 0/5 | 0 |
 
-| Остаток | Владелец → минимальный достаточный результат |
+| Остаток | Ответственный → недостающая достаточная проверка |
 | --- | --- |
-| U14.1/.2/.3/.5 | Boundary+Academic → ownDB/minrights, create/grant/transfer/archive/proofs с durable recovery/fences; actual SQL/HTTP/failure/revoke. |
-| U14.4/.6 | Jobs+Boundary+IdentityUI → 11jobs/singlequeue и согласованные API/consumers; 2DOCX+иной короткий период/уход/lost202/currentrights. |
-| U15.1 | Academic+Boundary → fresh/repeat двухDB сохраняют IDs/credentials/grants/history/sessions/jobs; newSQLonly. |
-| U20.1/.2/.3 | Bot+Producers → common4/studentHW/headmancurrentroster/teacherToday, privatefreshbinding/roles/empty/mixed/revoke. |
-| U23.1/.2/.3/.4 | Apps → реальные GlitchTipVueJava/Pyro/защищённыйHomepage + measured combinedresourcebudget. U23.5 закрывает только PMMnonselection. |
-| U25 | Root+review → finalCI/Coverage/Security/OpenAPI/monitoring и точный handoff/source/executable/PRhead. |
+| U14.1/.2/.3/.5 | Auth+Academic: ownDB/minrights; create/initialcredentials/grant/transfer/archive/proofs, unknown/revoke/recovery/currentrights SQL+HTTP. |
+| U14.4/.6 | Jobs+FE:11jobs/singlequeue/API/consumers;2DOCX+короткий период/уход/lost202/currentrights; actual snapshots/scoped TS generation. |
+| U15.1 | Auth+Academic: fresh/repeat двухDB сохраняют IDs/credentials/grants/history/sessions/jobs; newSQLonly. |
+| U20.1/.2/.3 | Bot+Producers: common4/studentHW/headmancurrentroster/teacherToday; private freshbinding/empty/mixed/revoke actual new APIs. |
+| U23.1/.2/.3/.4 | Apps: actual GlitchTipVueJava/Pyro/protectedHomepage и measured combinedresources. PMMassessment U23.5 отдельно закрыт. |
+| U25 | Root+review: current final CI/Coverage/Security/OpenAPI/monitoring; exact source/executable/PR head handoff. |
 
-## Что действительно проверено
+## Подтверждённое / актуальные FAIL
 
-Presplit3 на da устранил прежние9 AcademicFAIL: 485PASS/0FAIL/0skip; браузерный
-create перестал получать500. Точный первоначальный SQLSTATE и historical WORD crash UNKNOWN.
-На **a69** Coverage39115359592/Security39115359631/OpenAPI39115359612 SUCCESS;
-client117639949326 SUCCESS, включая2async18weekDOCX/navigation/lost202.
-CI39115359580 FAIL: lifecycle47subject OTPinspection UNKNOWN;57semesterpreview
-transport UNKNOWN/status0, cleanupFAILED/restorationfalse; application60 SKIPPED по
-зависимости. Promotion/assignment/Today/schedule прошли. Не выдавать masking за RCA.
-Apps117639949553 FAIL isolated-startup после Java baseline; cleanup PASS.
+Published da2: CI39129621591 FAIL; Coverage39129621580/Security39129621631/
+OpenAPI39129621656 SUCCESS. Java/monitoring/client jobs PASS, прежние2asyncDOCX
+сохранены. Application checkpoint restore PASS. Это presplit, не dirty twoDB.
+Открыты: subject Docker inspect ETIMEDOUT; semester readiness GET transport до archive
+POST (причина UNKNOWN, barrier не опровергнут); Apps proxy READ_ONLY_FS.
+Pyroscope running/noOOM; Apps cleanupPASS. Исправление proxy temp paths source-approved
+и joined, ещё не проверено runtime. Старый WORD incident/первый SQLSTATE UNKNOWN.
+Presplit прежние9 AcademicFAIL устранены:485PASS/0FAIL/0skip,create без500.
+На b9 sameArchiveCompleted/duplicateBusinessUnchanged/restoration true,cleanupPASS;
+не повторять неизменённое без причины. Safe primary current-wip/ci-da2-*.safe.json.
 
-Готовый diff6: Homepage tmpfs теперь две quoted строки вместо шести неверных YAML
-entries; существующие безопасные firstfailure diagnostics сохраняют конечные
-class/action/errno/exitstatus. Команды/guards/assertions/timeouts/heap/limits прежние.
-Root independent SOURCE APPROVE, effectiveCompose synthetic/privacy/AST/6hooks PASS;
-actual Apps/grouping/profile/resource acceptance открыты. Детали один раз в attempts.
+## Исполнение / следующий шаг
 
-Streaming DocxRenderer a69 — legacy fixed-layout profiling utility, НЕ текущий
-Headman renderer. JUnit3/3 и неизменённый Probe192MiB PASS; safe before/after:
-[receipts/S19-docx-streaming-memory](receipts/S19-docx-streaming-memory/).
-Не приписывать ему причину historical owner incident.
+[Граница](BOUNDARY-PROTOCOL-20261018.md), [owners/resources](resources.md).
+В coherent Root WIP объединены source-approved Auth/core/jobs/commonfixture/consumers,
+FAILED_SAFE reconcile15 с additiveV9/сохранением исходного UID/всех fences/currentrights,
+старые9 сценариев, Dashboard5+clock fix и recovery UI9+transient authority fix.
+Независимые существенные findings закрыты; actual twoDB/TLS/SQL/fullchain NOT_RUN.
+Native current4:14/14 compileJava/compileTestJava PASS,2252paths1e64095f…,
+221.27s/RSS1.49GB. Current5: finalRecovery+old9consumers Academic Java/TestJava
+и16 адресных pure cases PASS,2259paths e38603a5…,92.60s/RSS1.18GB.
+Safe evidence current-wip/integration-compile/compile4.safe.json и compile5.safe.json.
+UI scoped client6/screen15 PASS; affected P2 causalRED2→PASS5/type/lint/format PASS.
+Dashboard new source compileTestJava PASS: current6/65.39s/RSS0.85GB,
+safe current-wip/integration-compile/compile6.safe.json; DB/runtime не доказан.
+Q032 ANSWERED/точный запуск допущен; offline Sentry найден в существующем cache.
+NativeIT NOT_RUN: workspace ниже4GiB reserve, DockerVFS на том же filesystem.
+No cleanup/limit lowering; actual twoDB/runtime выполняется ordinary CI.
 
-## Текущая реализация / следующий шаг
-
-[Техническая граница DRAFT](BOUNDARY-PROTOCOL-20261018.md), [owners/resources](resources.md).
-Auth core/runtime, Jobs58, Attendance renderer23 и AcademicBot7 имеют независимый
-SOURCE APPROVE и адресные compile/tests. Actual twoDB/новый fullchain NOT_RUN.
-Academic R6 main/test compile+34uniquePASS; source review нашло3 SQL/membership/archive
-findings, исправляет тот же автор. Config17 review:3 secret/localDB/SLIselector findings.
-IdentityUI8 review:3 observation403/bodydeadline/groupresume races. Нужен focused recheck;
-source/compile сами по себе не закрывают строки. Полные findings не копировать сюда.
-
-Следующий шаг: опубликовать готовый diff6; параллельно закрыть review findings,
-local durable negative receipt и group-lifecycle security fanout. Затем coherent
-Auth+Academic+Jobs+contracts+consumers integration, fresh/repeat/failure и настоящие
-PWA/TMA/report/bot/App проверки. Не публиковать половину DB switch.
-Local DB/container/imagepull не запускались; heavy только по lease.
-Coherent WIP/ready patches сохранены один раз в ignored workspace, не milestone.
+Следующий шаг: exact-owned stage/normalpush
+coherent draft candidate; CI даёт реальные twoDB и official Auth/Academic snapshots.
+Не включать type-only report-download-client.ts до этих snapshots и scoped generators;
+сохранённый WIP остаётся локально, committed Auth.Status wire-compatible.
+Не ручной OpenAPI/generated types и не ослабление gate. Proxy/CI JSON brace corrections
+включаются в тот же пакет; новый hash не повод повторять неизменённое полное review.
+Матрица остаётся23/38: source/compile не достаточны для runtime приёмки.
 
 [История/evidence](attempts.ndjson), [решения](decisions.md), [вопросы](questions.md),
-[единственный HANDOFF](HANDOFF-20261017.md). Существенных owner вопросов сейчас нет.
-B013/B014/B015 FROZEN без эквивалентов черезCI/model/agent/launcher.
+[HANDOFF](HANDOFF-20261017.md); freshest ignored checkpoint current-wip/latest-checkpoint.safe.json.
+B013/B014/B015 FROZEN без эквивалентов. Local Docker/DB/imagepull не запускались.
 DEFERRED_LOCAL/OWNER: realTelegram/push/install/Safari/alertbot/offhostprobe/ownerstand/
-realdeploy/backup/VPS/multiworker. No main/merge/deploy/reset/secrets/Angular/newweb.
+realdeploy/backup/VPS/multiworker. No reset/secrets/Angular retirement/newweb.

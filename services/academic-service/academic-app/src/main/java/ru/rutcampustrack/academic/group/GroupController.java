@@ -11,6 +11,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+
 import ru.rutcampustrack.academic.contract.api.GroupApi;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupRegistryResponse;
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupResponse;
@@ -31,7 +32,6 @@ import ru.rutcampustrack.academic.contract.dto.group.StudyMode;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.entity.Group;
-import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.security.RequireRole;
 import ru.rutcampustrack.academic.user.UserAssembler;
 
@@ -222,8 +222,7 @@ public class GroupController implements GroupApi {
             admin = {"GROUPS_MANAGE"})
     public ResponseEntity<PagedModel<EntityModel<UserResponse>>> getMyGroupMembers(
             Pageable pageable, PagedResourcesAssembler<UserResponse> assembler) {
-        Page<User> page = groupService.getMyGroupMembers(pageable);
-        Page<UserResponse> responsePage = page.map(userAssembler::toResponse);
+        Page<UserResponse> responsePage = groupService.getMyGroupMembers(pageable);
         return ResponseEntity.ok(
                 assembler.toModel(responsePage, response -> EntityModel.of(response)));
     }

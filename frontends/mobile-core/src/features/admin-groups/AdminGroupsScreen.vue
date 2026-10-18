@@ -9,6 +9,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { adminHasPermission, type AdminAccessProfile } from '../admin-access/admin-access-client';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import AdminNotice from '../../shared/components/AdminNotice.vue';
+import { IdentityOperationError } from '../../shared/identity-operation';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
 import {
   AdminGroupsApiError,
@@ -55,6 +56,12 @@ const totalElements = ref(0);
 const counts = ref({ active: 0, draft: 0, archived: 0 });
 const loading = ref(true);
 const saving = ref(false);
+const identityPending = ref(Boolean(props.client.hasPendingIdentityOperation));
+const identityChecking = ref(false);
+const recoveryCandidate = ref(Boolean(props.client.failedGroupOperationId));
+const recoveryOperationId = ref<string | null>(null);
+const recoveryReadFailed = ref(false);
+let identityObserverRevision = 0;
 const restoreSavingId = ref<number | null>(null);
 const restoreRefreshPendingIds = ref<ReadonlySet<number>>(new Set());
 const formVisible = ref(false);
@@ -190,6 +197,7 @@ watch(taskActive, (active) => emit('navigation-visibility', !active), { immediat
 function back(): void {
   if (archiveGroupSaving.value) return;
   if (archiveGroupConfirmation.value) {
+    invalidateIdentityObserver();
     archiveGroupConfirmation.value = null;
     return;
   }
@@ -218,23 +226,34 @@ function back(): void {
   }
   if (!saving.value) formVisible.value = false;
 }
+function openGroupArchive(group: AdminGroup): void {
+  invalidateIdentityObserver();
+  archiveGroupConfirmation.value = group;
+}
+
 async function confirmGroupArchive(): Promise<void> {
   const group = archiveGroupConfirmation.value;
   if (!canManage.value || !group || archiveGroupSaving.value) return;
+  invalidateIdentityObserver();
   archiveGroupSaving.value = true;
+  identityPending.value = true;
+  recoveryReadFailed.value = false;
   error.value = null;
   const client = props.client;
   const authority = props.authority;
   const scope = registryScopeRevision;
+  const controller = new AbortController();
   try {
-    await client.archiveGroup(group.id, group.name);
+    await client.archiveGroup(group.id, group.name, controller.signal);
     if (
       disposed ||
       client !== props.client ||
       authority !== props.authority ||
-      scope !== registryScopeRevision
+      scope !== registryScopeRevision ||
+      archiveGroupConfirmation.value?.id !== group.id
     )
       return;
+    acknowledgeGroupOperation(client);
     archiveGroupConfirmation.value = null;
     notice.value = `Группа ${displayCode(group)} отправлена в архив.`;
     await refresh(true);
@@ -421,6 +440,7 @@ function changePage(next: number): void {
 watch(search, () => invalidateRestoreForScopeChange(), { flush: 'sync' });
 
 function invalidateRestoreForScopeChange(): void {
+  invalidateIdentityObserver();
   registryScopeRevision += 1;
   restoreMutationRevision += 1;
   restoreMutationController?.abort();
@@ -451,31 +471,37 @@ async function restoreGroup(group: AdminGroup): Promise<void> {
   )
     return;
 
+  invalidateIdentityObserver();
   const revision = ++restoreMutationRevision;
   const scopeRevision = registryScopeRevision;
   const controller = new AbortController();
   restoreMutationController = controller;
   restoreSavingId.value = group.id;
+  identityPending.value = true;
+  recoveryReadFailed.value = false;
+  const client = props.client;
+  const authority = props.authority;
+  const isCurrentRestore = (): boolean =>
+    isRestoreCurrent(revision, controller, scopeRevision) &&
+    props.client === client &&
+    props.authority === authority &&
+    restoreSavingId.value === group.id;
   error.value = null;
   notice.value = null;
   try {
-    await props.client.restoreGroup(group.id, controller.signal);
-    if (!isRestoreCurrent(revision, controller, scopeRevision)) return;
-
+    await client.restoreGroup(group.id, controller.signal);
+    if (!isCurrentRestore()) return;
+    acknowledgeGroupOperation(client);
     restoreRefreshPendingIds.value = new Set([...restoreRefreshPendingIds.value, group.id]);
     notice.value = `Группа ${displayCode(group)} восстановлена.`;
     const refreshed = await refresh(true);
-    if (!isRestoreCurrent(revision, controller, scopeRevision)) return;
+    if (!isCurrentRestore()) return;
     if (refreshed === 'failed') {
       error.value =
         'Группа восстановлена, но список и счётчики не удалось обновить. Обнови реестр.';
     }
   } catch (cause) {
-    if (
-      !isRestoreCurrent(revision, controller, scopeRevision) ||
-      cause instanceof StaleSessionGenerationError ||
-      isAbortError(cause)
-    )
+    if (!isCurrentRestore() || cause instanceof StaleSessionGenerationError || isAbortError(cause))
       return;
     showError(cause, 'Группу не удалось восстановить.');
   } finally {
@@ -585,8 +611,11 @@ async function confirmHeadman(): Promise<void> {
     currentStudentId === null
   )
     return;
+  invalidateIdentityObserver();
   headmanSaving.value = true;
   headmanMutationPending.value = true;
+  identityPending.value = true;
+  recoveryReadFailed.value = false;
   error.value = null;
   notice.value = null;
   const revision = ++headmanMutationRevision;
@@ -609,6 +638,7 @@ async function confirmHeadman(): Promise<void> {
       void reconciliation;
       return;
     }
+    acknowledgeGroupOperation(props.client);
     headmanSaving.value = false;
     closeHeadman(false);
     notice.value = result.changed
@@ -881,18 +911,29 @@ async function confirmPromotion(): Promise<void> {
   )
     return;
 
+  invalidateIdentityObserver();
   const groupId = preview.groupId;
   const previousIndex =
     groupId === null ? -1 : groups.value.findIndex((group) => group.id === groupId);
   promotionSaving.value = true;
   promotionMutationPending.value = true;
+  identityPending.value = true;
+  recoveryReadFailed.value = false;
   promotionError.value = null;
   error.value = null;
   const revision = ++promotionMutationRevision;
   const controller = new AbortController();
   promotionMutationController = controller;
+  const client = props.client;
+  const authority = props.authority;
+  const scope = registryScopeRevision;
+  const isCurrentPromotion = (): boolean =>
+    isPromotionMutationCurrent(revision, controller, context) &&
+    props.client === client &&
+    props.authority === authority &&
+    scope === registryScopeRevision;
   try {
-    const result = await props.client.executePromotion(
+    const result = await client.executePromotion(
       {
         cycleSemesterId: preview.cycleSemesterId,
         previewVersion: preview.previewVersion,
@@ -900,10 +941,7 @@ async function confirmPromotion(): Promise<void> {
       },
       controller.signal,
     );
-    if (!isPromotionMutationCurrent(revision, controller, context)) {
-      void refresh(true);
-      return;
-    }
+    if (!isCurrentPromotion()) return;
     if (
       !result.executed ||
       result.dryRun ||
@@ -913,22 +951,26 @@ async function confirmPromotion(): Promise<void> {
     ) {
       throw new Error('Сервер не подтвердил выполнение показанного плана.');
     }
+    acknowledgeGroupOperation(client);
     promotionResult.value = result;
     promotionPreview.value = null;
     promotionError.value = null;
     promotionConfirmDialog.value?.close();
     notice.value = promotionResultMessage(result);
     await refresh(true);
+    if (!isCurrentPromotion()) return;
     if (groupId !== null && result.toArchive.some((item) => item.id === groupId)) {
       await focusAfterArchivedGroup(groupId, previousIndex);
     }
   } catch (cause) {
-    void refresh(true);
-    if (
-      !isPromotionMutationCurrent(revision, controller, context) ||
-      cause instanceof StaleSessionGenerationError
-    )
+    if (!isCurrentPromotion() || cause instanceof StaleSessionGenerationError) return;
+    if (cause instanceof IdentityOperationError) {
+      showError(cause, 'Результат перевода групп пока не подтверждён.');
+      promotionConfirmDialog.value?.close();
+      promotionError.value = null;
       return;
+    }
+    void refresh(true);
     const stale = cause instanceof AdminGroupsApiError && cause.response.status === 409;
     promotionPreview.value = null;
     promotionConfirmDialog.value?.close();
@@ -966,6 +1008,7 @@ function isPromotionContextCurrent(context: number): boolean {
 }
 
 function closePromotion(clearResult = true): void {
+  invalidateIdentityObserver();
   renameGroup.value = null;
   renameError.value = null;
   renameSaving.value = false;
@@ -1024,7 +1067,16 @@ function emitPromotionAuthError(cause: unknown): void {
     emit('ownerError', cause);
 }
 
+function invalidateIdentityObserver(): void {
+  if (recoveryReadFailed.value) error.value = null;
+  recoveryReadFailed.value = false;
+  ++identityObserverRevision;
+  identityChecking.value = false;
+  recoveryOperationId.value = null;
+}
+
 function closeHeadman(clearNotice = true): void {
+  invalidateIdentityObserver();
   headmanContextRevision += 1;
   headmanRevision += 1;
   headmanController?.abort();
@@ -1122,7 +1174,173 @@ async function createGroup(): Promise<void> {
   }
 }
 
+function acknowledgeGroupOperation(client: AdminGroupsClient): void {
+  client.acknowledgeIdentityOperation?.();
+  identityPending.value = false;
+  recoveryCandidate.value = false;
+  recoveryOperationId.value = null;
+  recoveryReadFailed.value = false;
+}
+
+function beginIdentityObserver(client: AdminGroupsClient): () => boolean {
+  const authority = props.authority;
+  const authorityScope = JSON.stringify(authority);
+  const contextRevision = headmanContextRevision;
+  const promotionContext = promotionContextRevision;
+  const scope = registryScopeRevision;
+  const archiveGroupId = archiveGroupConfirmation.value?.id;
+  const revision = ++identityObserverRevision;
+  identityChecking.value = true;
+  return (): boolean =>
+    !disposed &&
+    props.client === client &&
+    props.authority === authority &&
+    JSON.stringify(props.authority) === authorityScope &&
+    headmanContextRevision === contextRevision &&
+    promotionContextRevision === promotionContext &&
+    registryScopeRevision === scope &&
+    archiveGroupConfirmation.value?.id === archiveGroupId &&
+    identityObserverRevision === revision;
+}
+
+async function confirmRecoveryAvailability(): Promise<void> {
+  if (identityChecking.value || identityPending.value || !canManage.value) return;
+  const client = props.client;
+  const isCurrentObserver = beginIdentityObserver(client);
+  try {
+    const id = await client.confirmGroupRecovery();
+    if (!isCurrentObserver()) return;
+    recoveryOperationId.value = id;
+    error.value = id
+      ? null
+      : 'Восстановление пока не подтверждено. Проверь состояние операции позже.';
+  } catch (cause) {
+    if (!isCurrentObserver() || cause instanceof StaleSessionGenerationError) return;
+    showError(cause, 'Не удалось проверить возможность восстановления операции.');
+  } finally {
+    if (isCurrentObserver()) identityChecking.value = false;
+  }
+}
+
+async function refreshRecoveryReadModels(isCurrentObserver: () => boolean): Promise<void> {
+  const refreshed = await refresh(true);
+  if (!isCurrentObserver() || refreshed === 'stale') return;
+  let previewLoaded = true;
+  if (promotionPanelVisible.value) {
+    await loadPromotionPreview();
+    if (!isCurrentObserver()) return;
+    previewLoaded = promotionPreview.value !== null && promotionError.value === null;
+  }
+  recoveryReadFailed.value = refreshed === 'failed' || !previewLoaded;
+  error.value = recoveryReadFailed.value
+    ? 'Операция восстановлена, но реестр или предпросмотр не удалось обновить. Повтори загрузку данных.'
+    : null;
+  notice.value = recoveryReadFailed.value
+    ? 'Операция восстановлена.'
+    : 'Операция восстановлена. Данные обновлены.';
+}
+
+async function retryRecoveryReads(): Promise<void> {
+  if (!recoveryReadFailed.value || identityChecking.value || !canView.value) return;
+  const isCurrentObserver = beginIdentityObserver(props.client);
+  try {
+    await refreshRecoveryReadModels(isCurrentObserver);
+  } finally {
+    if (isCurrentObserver()) identityChecking.value = false;
+  }
+}
+
+async function reconcileGroupOperation(): Promise<void> {
+  const failedId = recoveryOperationId.value;
+  if (!failedId || identityChecking.value || identityPending.value || !canManage.value) return;
+  const client = props.client;
+  const isCurrentObserver = beginIdentityObserver(client);
+  identityPending.value = true;
+  recoveryReadFailed.value = false;
+  error.value = null;
+  try {
+    await client.reconcileGroupOperation(failedId, new AbortController().signal);
+    if (!isCurrentObserver()) return;
+    acknowledgeGroupOperation(client);
+    notice.value = 'Операция восстановлена.';
+    await refreshRecoveryReadModels(isCurrentObserver);
+  } catch (cause) {
+    if (!isCurrentObserver() || cause instanceof StaleSessionGenerationError) return;
+    showError(cause, 'Результат восстановления пока не подтверждён.');
+  } finally {
+    if (isCurrentObserver()) identityChecking.value = false;
+  }
+}
+
+async function resumeIdentityOperation(): Promise<void> {
+  if (identityChecking.value || !canManage.value) return;
+  if (!identityPending.value) {
+    await confirmRecoveryAvailability();
+    return;
+  }
+  const client = props.client;
+  const isCurrentObserver = beginIdentityObserver(client);
+  try {
+    const result = await client.resumeIdentityOperation();
+    if (!isCurrentObserver()) return;
+    acknowledgeGroupOperation(client);
+    identityChecking.value = false;
+    error.value = null;
+    if (result.kind === 'HEADMAN') {
+      const assignment = result.assignment;
+      if (assignmentGroup.value?.id === assignment.groupId) closeHeadman(false);
+      notice.value = assignment.changed
+        ? `Староста группы изменён: ${assignment.headmanFio}.`
+        : 'Староста уже назначен, изменений нет.';
+    } else if (result.kind === 'ARCHIVE') {
+      if (archiveGroupConfirmation.value?.id === result.groupId)
+        archiveGroupConfirmation.value = null;
+      notice.value = 'Группа отправлена в архив.';
+    } else if (result.kind === 'RESTORE') {
+      restoreRefreshPendingIds.value = new Set([...restoreRefreshPendingIds.value, result.groupId]);
+      notice.value = 'Группа восстановлена.';
+    } else if (result.kind === 'PROMOTION') {
+      const summary = result.summary;
+      if (
+        promotionPanelVisible.value &&
+        promotionPreview.value?.previewVersion === summary.previewVersion &&
+        promotionPreview.value.cycleSemesterId === summary.cycleSemesterId &&
+        (promotionScopeGroup.value?.id ?? null) === summary.groupId
+      ) {
+        promotionResult.value = summary;
+        promotionPreview.value = null;
+        promotionError.value = null;
+      }
+      notice.value = promotionResultMessage(summary);
+    }
+    if (result.kind === 'RECOVERY') {
+      notice.value = 'Операция восстановлена.';
+      await refreshRecoveryReadModels(isCurrentObserver);
+    } else {
+      await refresh(true);
+    }
+  } catch (cause) {
+    if (!isCurrentObserver() || cause instanceof StaleSessionGenerationError) return;
+    showError(cause, 'Не удалось проверить результат.');
+  } finally {
+    if (isCurrentObserver()) identityChecking.value = false;
+  }
+}
+
 function showError(cause: unknown, fallback: string): void {
+  recoveryReadFailed.value = false;
+  identityPending.value = Boolean(props.client.hasPendingIdentityOperation);
+  recoveryCandidate.value = Boolean(props.client.failedGroupOperationId);
+  recoveryOperationId.value = null;
+  if (cause instanceof IdentityOperationError) {
+    identityPending.value = props.client.hasPendingIdentityOperation;
+    error.value =
+      cause.state === 'FAILED_SAFE'
+        ? 'Выполнение остановлено. Уже выполненные изменения сохраняются. Проверь состояние операции для восстановления.'
+        : cause.message;
+    return;
+  }
+
   error.value =
     cause instanceof AdminGroupsApiError
       ? (cause.problem?.detail ?? cause.message)
@@ -1190,6 +1408,24 @@ function durationLabel(group: AdminGroup): string {
 watch(
   () => props.client,
   () => {
+    identityPending.value = Boolean(props.client.hasPendingIdentityOperation);
+    recoveryCandidate.value = Boolean(props.client.failedGroupOperationId);
+    recoveryOperationId.value = null;
+    identityChecking.value = false;
+    ++headmanMutationRevision;
+    headmanMutationController?.abort();
+    headmanMutationController = null;
+    headmanMutationPending.value = false;
+    archiveGroupSaving.value = false;
+    archiveGroupConfirmation.value = null;
+    invalidateRestoreForScopeChange();
+    ++promotionMutationRevision;
+    promotionMutationController?.abort();
+    promotionMutationController = null;
+    promotionMutationPending.value = false;
+    closePromotion();
+    closeHeadman();
+    notice.value = null;
     if (renameGroup.value) closePromotion();
   },
   { flush: 'sync' },
@@ -1204,6 +1440,8 @@ watch(
     props.authority?.permissions.join('|'),
   ],
   () => {
+    recoveryCandidate.value = false;
+    recoveryOperationId.value = null;
     listRevision += 1;
     listController?.abort();
     listController = null;
@@ -1315,12 +1553,47 @@ onBeforeUnmount(() => {
       Просмотр групп недоступен с текущими правами.
     </AdminNotice>
     <AdminNotice
-      v-if="error"
-      tone="danger"
-      title="Не удалось выполнить действие"
+      v-if="error || identityPending || recoveryCandidate"
+      :tone="identityPending || recoveryCandidate || recoveryReadFailed ? 'warning' : 'danger'"
+      :title="recoveryReadFailed ? 'Данные не обновлены' : identityPending ? 'Результат не подтверждён' : recoveryCandidate ? 'Операция остановлена' : 'Не удалось выполнить действие'"
       class="admin-groups-state--error"
     >
-      {{ error }}
+      {{ error || (recoveryCandidate && !identityPending ? 'Проверь состояние остановленной операции для восстановления.' : 'Есть незавершённое действие группы. Проверь результат перед новым действием.') }}
+      <template
+        v-if="identityPending || recoveryCandidate || recoveryReadFailed"
+        #actions
+      >
+        <button
+          v-if="recoveryReadFailed"
+          class="admin-groups-action"
+          type="button"
+          :disabled="identityChecking"
+          :aria-busy="identityChecking"
+          @click="retryRecoveryReads"
+        >
+          Обновить данные
+        </button>
+        <button
+          v-else-if="identityPending || !recoveryOperationId"
+          class="admin-groups-action"
+          type="button"
+          :disabled="identityChecking"
+          :aria-busy="identityChecking"
+          @click="resumeIdentityOperation"
+        >
+          Проверить результат
+        </button>
+        <button
+          v-else
+          class="admin-groups-action"
+          type="button"
+          :disabled="identityChecking"
+          :aria-busy="identityChecking"
+          @click="reconcileGroupOperation"
+        >
+          Восстановить операцию
+        </button>
+      </template>
     </AdminNotice>
     <AdminNotice
       v-if="notice"
@@ -1769,7 +2042,7 @@ onBeforeUnmount(() => {
                     class="admin-groups-table__action"
                     type="button"
                     :disabled="archiveGroupSaving"
-                    @click="archiveGroupConfirmation = group"
+                    @click="openGroupArchive(group)"
                   >
                     Архивировать
                   </button>

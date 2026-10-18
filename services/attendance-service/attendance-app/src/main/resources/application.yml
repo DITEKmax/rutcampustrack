@@ -33,13 +33,39 @@ spring:
 grpc:
   server:
     port: ${ATTENDANCE_GRPC_PORT:19093}
+    security:
+      enabled: ${ATTENDANCE_GRPC_TLS_ENABLED:false}
+      certificate-chain: ${ATTENDANCE_GRPC_CERTIFICATE_CHAIN:}
+      private-key: ${ATTENDANCE_GRPC_PRIVATE_KEY:}
     max-inbound-message-size: 25165824
   auth:
     secret: ${GRPC_SECRET:}
   service-identity:
+    mobile-bff-to-attendance-token: ${MOBILE_BFF_TO_ATTENDANCE_SERVICE_TOKEN:}
+    attendance-to-auth-token: ${ATTENDANCE_TO_AUTH_SERVICE_TOKEN:}
+    attendance-bot-read-to-academic-token: ${ATTENDANCE_BOT_READ_TO_ACADEMIC_SERVICE_TOKEN:}
+    attendance-bot-read-to-schedule-token: ${ATTENDANCE_BOT_READ_TO_SCHEDULE_SERVICE_TOKEN:}
     attendance-to-academic-token: ${ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN:}
     academic-to-attendance-token: ${ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN:}
   client:
+    bot-read-auth:
+      address: ${ATTENDANCE_BOT_READ_AUTH_GRPC_ADDRESS:dns:///auth-service:19090}
+      negotiation-type: TLS
+      security:
+        authority-override: ${ATTENDANCE_BOT_READ_AUTH_GRPC_AUTHORITY:auth-service}
+        trust-cert-collection: ${ATTENDANCE_BOT_READ_AUTH_GRPC_CA_PATH:}
+    bot-read-academic:
+      address: ${ATTENDANCE_BOT_READ_ACADEMIC_GRPC_ADDRESS:dns:///academic-service:19091}
+      negotiation-type: TLS
+      security:
+        authority-override: ${ATTENDANCE_BOT_READ_ACADEMIC_GRPC_AUTHORITY:academic-service}
+        trust-cert-collection: ${ATTENDANCE_BOT_READ_ACADEMIC_GRPC_CA_PATH:}
+    bot-read-schedule:
+      address: ${ATTENDANCE_BOT_READ_SCHEDULE_GRPC_ADDRESS:dns:///schedule-service:19092}
+      negotiation-type: TLS
+      security:
+        authority-override: ${ATTENDANCE_BOT_READ_SCHEDULE_GRPC_AUTHORITY:schedule-service}
+        trust-cert-collection: ${ATTENDANCE_BOT_READ_SCHEDULE_GRPC_CA_PATH:}
     schedule-service:
       address: dns:///schedule-service:19092
       negotiation-type: plaintext

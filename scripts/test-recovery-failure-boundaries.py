@@ -40,6 +40,7 @@ def arguments(root):
 def synthetic_inventory():
     return {
         "academic": {"schema": "", "tables": [], "sequences": []},
+        "auth": {"schema": "", "tables": [], "sequences": []},
         "schedule": {"schema": "", "tables": [], "sequences": []},
         "mongo": {"attendance_db": {}, "notification_db": {}},
         "files": [],
@@ -57,7 +58,7 @@ def make_bundle(root):
     r.write_json(
         bundle / "manifest.json",
         {
-            "format": 1,
+            "format": 2,
             "files_mode": "database-only",
             "sha256": {name: r.digest(bundle / name) for name in sorted(r.PAYLOADS)},
         },
@@ -73,6 +74,10 @@ class RecoveryFailureBoundaries(unittest.TestCase):
         cls.retained = Path(tempfile.mkdtemp(prefix="guard-unit-", dir=evidence))
         # These command-seam bundles are retained too; no backup/artifact deletion.
         print(f"CONTROLLED DB COMMAND SEAMS ONLY; retained artifacts: {cls.retained}", flush=True)
+
+    def setUp(self):
+        # An accidentally unmocked native command must fail before Docker/DB access.
+        self.enterContext(patch.object(r.subprocess, "run", side_effect=AssertionError("Native command forbidden")))
 
     def test_partial_dump_is_retained_without_success_manifest_and_retry_needs_new_output(self):
         root = self.retained / "partial"
@@ -94,7 +99,8 @@ class RecoveryFailureBoundaries(unittest.TestCase):
         # No real credential is read; do not echo command arguments from this seam.
         secret = {
             key: "SYNTHETIC-ONLY"
-            for key in ("POSTGRES_ACADEMIC_PASSWORD", "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD")
+            for key in ("POSTGRES_ACADEMIC_MIGRATION_PASSWORD", "POSTGRES_AUTH_MIGRATION_PASSWORD",
+                        "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD", "POSTGRES_RECOVERY_ADMIN_PASSWORD")
         }
         with (
             patch.object(r, "credentials", return_value=secret),
@@ -106,6 +112,7 @@ class RecoveryFailureBoundaries(unittest.TestCase):
                 r.backup(args)
             self.assertTrue(args.output.is_dir())
             self.assertEqual((args.output / "academic.dump").read_bytes(), b"controlled native-command output")
+            self.assertEqual((args.output / "auth.dump").read_bytes(), b"controlled native-command output")
             self.assertEqual((args.output / "schedule.dump").read_bytes(), b"controlled incomplete Schedule archive")
             self.assertFalse((args.output / "manifest.json").exists())
             self.assertFalse((args.output / "inventory.json").exists())
@@ -128,8 +135,8 @@ class RecoveryFailureBoundaries(unittest.TestCase):
             self.assertFalse((partial / "manifest.json").exists())
             self.assertEqual({path.name: r.digest(path) for path in partial.iterdir()}, partial_hashes)
 
-    def test_schedule_or_mongo_preflight_failure_prevents_every_restore_write(self):
-        for failed_target in ("schedule", "notification-mongo", "label"):
+    def test_auth_schedule_or_mongo_preflight_failure_prevents_every_restore_write(self):
+        for failed_target in ("auth", "schedule", "notification-mongo", "label"):
             with self.subTest(failed_target=failed_target):
                 root = self.retained / ("preflight-" + failed_target)
                 root.mkdir()
@@ -140,9 +147,9 @@ class RecoveryFailureBoundaries(unittest.TestCase):
                 queries = []
                 inspections = []
 
-                def pg_count(container, password, db, sql):
+                def pg_count(container, password, db, sql, *, user):
                     queries.append(db)
-                    return "1" if failed_target == "schedule" and db == "schedule_db" else "0"
+                    return "1" if db == failed_target + "_db" else "0"
 
                 def native_write(command, **kwargs):
                     if command[:2] == ["docker", "inspect"]:
@@ -170,7 +177,8 @@ class RecoveryFailureBoundaries(unittest.TestCase):
 
                 secret = {
                     key: "SYNTHETIC-ONLY"
-                    for key in ("POSTGRES_ACADEMIC_PASSWORD", "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD")
+                    for key in ("POSTGRES_ACADEMIC_MIGRATION_PASSWORD", "POSTGRES_AUTH_MIGRATION_PASSWORD",
+                        "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD", "POSTGRES_RECOVERY_ADMIN_PASSWORD")
                 }
                 with (
                     patch.object(r, "credentials", return_value=secret),
@@ -190,10 +198,44 @@ class RecoveryFailureBoundaries(unittest.TestCase):
                     self.assertEqual(queries, [])
                     self.assertEqual(inspections, [args.academic_container, args.schedule_container])
                 else:
-                    self.assertEqual(queries, ["academic_db", "schedule_db"])
+                    self.assertEqual(queries, ["academic_db", "auth_db"] if failed_target == "auth"
+                                     else ["academic_db", "auth_db", "schedule_db"])
                     self.assertEqual(
                         inspections, [args.academic_container, args.schedule_container, args.mongo_container]
                     )
+
+    def test_auth_omission_or_unsupported_manifest_refused_before_target_access(self):
+        for defect in ("auth-artifact", "auth-inventory", "unsupported-format", "foreign-project"):
+            with self.subTest(defect=defect):
+                root = self.retained / defect
+                root.mkdir()
+                args = arguments(root)
+                args.bundle = make_bundle(root)
+                manifest_path = args.bundle / "manifest.json"
+                manifest = json.loads(manifest_path.read_text())
+                if defect == "auth-artifact":
+                    # Simulate a two-database bundle without deleting an artifact.
+                    (args.bundle / "auth.dump").rename(root / "retained-auth.dump")
+                    manifest["sha256"].pop("auth.dump")
+                elif defect == "auth-inventory":
+                    inventory_path = args.bundle / "inventory.json"
+                    inventory = json.loads(inventory_path.read_text())
+                    inventory.pop("auth")
+                    inventory_path.write_text(json.dumps(inventory))
+                    manifest["sha256"]["inventory.json"] = r.digest(inventory_path)
+                elif defect == "unsupported-format":
+                    manifest["format"] = 1
+                else:
+                    args.target_project = "existing-live-project"
+                manifest_path.write_text(json.dumps(manifest))
+                before = {path.name: r.digest(path) for path in args.bundle.iterdir()}
+                with (
+                    patch.object(r, "credentials", side_effect=AssertionError("Credentials must not be read")),
+                    patch.object(r, "run", side_effect=AssertionError("Target access forbidden")),
+                ):
+                    with self.assertRaises(r.RecoveryError):
+                        r.restore(args)
+                self.assertEqual({path.name: r.digest(path) for path in args.bundle.iterdir()}, before)
 
 
 if __name__ == "__main__":

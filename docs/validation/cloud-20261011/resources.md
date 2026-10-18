@@ -1,50 +1,46 @@
 # Current resources / sole writers — 18.10.2026
 
-Root soleGit/taskdocs/matrix. RULES models: Root Astra medium; children selected
-Sol6.1/high/forknone, actual metadata UNKNOWN acceptedCloudexception. Native7slots
-inclRoot; no secondCLI. Historical resource snapshots remain in Git/attempts.
+Root sole Git/taskdocs/matrix. RULES2b9a859c: Root Astra medium; selected children
+Sol6.1/high/forknone, actual metadata UNKNOWN accepted Cloud exception. Native7slots
+inclRoot; no second CLI. Historical measurements/evidence remain in attempts.
 
 ## Environment / budgets
 
-ManagedCloud running/connected, exec работает. При прежнем restart /tmp потерян;
-Root workspace/Git/WIP и25foreignuntracked сохранены. Noreset/GC/prune/deleteguessing.
-Measured workspacefree4,278,157,312B, TMP5,154,185,216B; cgroup5,378,936,832B /
-max17,179,869,184B; CPUquota4/cpuset0–4. Это не32GiB VPS/capacityproof.
-Workspace-writing heavy reserve4GiB; TMP-only checks projectedTMPfree>=4GiB.
-Source/taskdocs/Git<=128MiB with>=3.75GiB physicalfree. Noaccountlimit changes.
-Max2heavy only independent CPU/cache/output/runtime after measurement+lease.
-Docker28.4 socket available with permitted network grant; VFS uses workspace disk.
-NO localDB/container/imagepull/stand launched. Actual stacks via ordinaryCI.
-JDK21.0.12.1 /workspace/rct-cloud-setup/jdk21; systemJava isJREonly.
-Gradle8.12 offline still needs localdaemon/Netty network permission.
-Known extractedproto0444 ENV: u+w ONLY private GENERATED outputs, samebytes;
-never source/read-only dependency cache. No wrapper/framework for this.
+Managed Cloud running/connected, exec works. Root Git/WIP/25foreign untracked preserved.
+Measured workspacefree4,259,745,792B/TMP5,074,006,016B; cgroup5,681,819,648/max17,179,869,184B;
+CPUquota4/cpuset0–4. Not32GiB VPS/capacity proof. Heavy workspacefloor4GiB;
+TMP-only compile floor4GiB, incremental<=512MiB. Source/Git/docs<=128MiB with>=3.75GiB.
+No cleanup/reset/prune/GC guessing. Docker28.4 socket available with authorized network;
+NO local DB/container/imagepull/stand launched. Actual stands use ordinary CI.
+JDK21.0.12.1 /workspace/rct-cloud-setup/jdk21; systemJava JREonly; Gradle8.12.
+Additional network flag needed for local IPC; Q032 direct exact-run grant accepted.
+Extractedproto0444: u+w ONLY private generated samebytes, never source/RO cache.
 
-## Ownership / current packets
+## Current ownership
 
-Auxbare /tmp/rct-s19-worktrees.git references Root objects READONLY. Authors never
-commit/reset/rebase; Root integrates authoredinventories, not readonly dependencies.
+Auxbare /tmp/rct-s19-worktrees.git references Root objects READONLY. No author Git.
 
-| Owner | WT / exclusive scope / state |
+| Owner | Worktree / exclusive scope / actual state |
 | --- | --- |
-| s19_boundary | /tmp/rct-s19-auth base26c: Auth/proto/generated/basecompose/env/routes; Config3fix+V10shedlock; group-cycle finite securityparent pending. |
-| s19_academic | /tmp/rct-s19-academic base26c: profile/catalog/coordinator/publicusers/group/history/migrations/filter; R6reviewfix/localnegative/groupfanout. |
-| s19_identity_ui | /tmp/rct-s19-identity-ui basea69:8helper/adminusers/admingroups files; review3P2fix; no bootstrap/SDK/generated/lock writes. |
-| s19_jobs | /tmp/rct-s19-jobs baseda: ready58 all11jobs/V2/Notificationadmit; SOURCEAPPROVE compile+Validation6/Authority5PASS; actualPG15/twoDB pending. |
-| s19_auth_runtime | /tmp/rct-s19-auth-runtime base5ff: ready25v4 ownAuth; SOURCEAPPROVE pure10+compileTestJavaPASS; actualDB pending. |
-| s19_academic_bot | /tmp/rct-s19-academic-bot basea69: ready7 oldgrpc/ownHW, delegated2grpc; SOURCEAPPROVE javac+JUnit20PASS; actualtwoDB pending. |
-| s19_bot_producer | /tmp/rct-s19-bot-producer: readydirected25+renderer23; SOURCEAPPROVE finalmetadata/DOCX18/18/3PASS; actualtwoDB pending. |
-| s19_bot | /tmp/rct-s19-bot base26c: readyPython26 privateexactmenu/handlers; source+synthetic accepted; actualnewAPI pending. |
-| s19_apps | /tmp/rct-s19-apps base26c:39published apps/SDK/build/lock +legacyDocxfix;2Homepagefix RootWIP; nativeApps acceptance open. |
-| s19_recovery_consumer | /tmp/rct-s19-recovery-consumer base4e:6existing ownDB recovery consumers; source/purechecks APPROVE. No realbackup/restore. |
-| s19_ci_diagnosis | readonly a69 primary47/57UNKNOWN, cleanup distinct;4safe diagnostic files RootWIP. |
+| s19_academic | /tmp/rct-s19-academic; completed recovery15+consumer fixes, independent SOURCE APPROVE, Root joined; actualDB pending. |
+| s19_integration_compile | /tmp/rct-s19-auth-runtime; current4 all14compilePASS/current5 Academic+pure16PASS; completed current6 new Dashboard compileTestJava PASS,65.39s/RSS853,491,712B. |
+| s19_ci_diagnosis | /tmp/rct-s19-e2e; completed bounded transport diagnosis + one-character JSON brace fix, Root joined. |
+| s19_identity_ui | /tmp/rct-s19-identity-ui; recovery UI9+transient-null P2 fix independently SOURCE APPROVED/Root joined; causalRED2→PASS5. |
+| reviewers | independent recovery15/Dashboard5+clock/UI9 affected findings closed; no authoring. |
 
-Config17/AcademicR6/IdentityUI8 independentreview READONLY, findings sameauthors;
-focusedrecheck only. Native slots reflect running scopes, not all historical owners.
-Academic6c CPU0 lease RELEASED:67.46s/RSS1,087,700,992B,5PASS+unchanged29PASS.
-Authcompile8 RELEASED main/testPASS67.16s/noDB. All processes reaped.
-IdentityUI lightNode CPU1/max1worker/RSS1GiB/privateTMP; Rootnode_modules READONLY,
-no npmci/install/Rootwrites. Otherheavy released; nextlease needs measurement.
-Ready patches/manifest once in ignored workspace; preserveforeign25/volumes/keys.
-CI Apps sourcecaps1376MiB/2.5CPU inclPG; actualcombinedmeasurements stillpending.
-B013/B014/B015FROZEN. No production/main/merge/deploy/secrets/newweb/Angular retirement.
+HEAVY lease RELEASED/current6 processes0; no local runtime active.
+Last compiler limits CPU0/max1worker/heap1GiB/meta256/RSS2.5GiB/TMPfloor4GiB.
+Private /tmp/rct-s19-auth-gradle-home; known full /tmp/rct-s19-apps-gradle-home/caches RO.
+Current5 finished92.60s/RSS1,180,782,592B/processes0; no DB/server/Docker launched.
+NativeIT NOTRUN: workspacefree4,259,635,200B <4GiB floor by35,332,096B.
+Docker VFS /var/lib/docker shares workspace filesystem; cached images do not mean zero
+writable-layer footprint. No cleanup/prune/guessing. OrdinaryCI is available and required.
+
+Retained completed scopes/worktrees: Auth /tmp/rct-s19-auth; commonfixture/bot
+/tmp/rct-s19-academic-bot; Jobs /tmp/rct-s19-jobs; producer /tmp/rct-s19-bot-producer;
+Python /tmp/rct-s19-bot; Apps /tmp/rct-s19-apps; recovery/subject consumers in assigned WTs.
+Projection WT /tmp/rct-s19-projection-consumer preserves Event/Map/Ownership ports and
+Dashboard onefile; all source-approved and Root joined, runtime pending; do not overwrite.
+Root sourcejoin approved inventories only; ignored immutable packets once, foreign25 untouched.
+Apps sourcebudget1376MiB/2.5CPU inclPG is CONFIG only; actual combined measurements pending.
+B013/B014/B015 FROZEN; no production/main/merge/deploy/secrets/newweb/Angular retirement.

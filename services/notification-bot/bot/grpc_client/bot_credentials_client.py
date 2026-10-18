@@ -1,4 +1,4 @@
-"""Uncached private Auth reads; Academic owns metadata-only card lifecycle and homework."""
+"""Uncached private Auth credential/card lifecycle; Academic owns homework."""
 
 from __future__ import annotations
 
@@ -64,13 +64,10 @@ class BotCredentialsGrpcClient:
     @property
     def configured(self) -> bool:
         """Configuration only; this does not promise a reachable or authorized server."""
-        return all(
-            value is not None
-            for value in (self._stub, self._call_credentials, self._auth_stub, self._auth_call_credentials)
-        )
+        return all(value is not None for value in (self._auth_stub, self._auth_call_credentials))
 
     async def _call(self, method: str, request):
-        auth_read = method == "GetOwnBotInitialCredentials"
+        auth_read = method in {"GetOwnBotInitialCredentials", "ManageOwnBotCredentialMessages"}
         stub = self._auth_stub if auth_read else self._stub
         credentials = self._auth_call_credentials if auth_read else self._call_credentials
         if stub is None or credentials is None:
@@ -105,11 +102,21 @@ class BotCredentialsGrpcClient:
         )
         return await self._call("GetOwnBotInitialCredentials", request)
 
-    async def homeworks(self, *, telegram_sender_id, expected_user_id, expected_roles_version, date_from, date_to):
+    async def homeworks(
+        self,
+        *,
+        telegram_sender_id,
+        expected_user_id,
+        expected_roles_version,
+        date_from,
+        date_to,
+        expected_telegram_binding_version=0,
+    ):
         request = pb.BotOwnHomeworksForWeekRequest(
             telegram_sender_id=telegram_sender_id,
             expected_user_id=expected_user_id,
             expected_roles_version=expected_roles_version,
+            expected_telegram_binding_version=expected_telegram_binding_version,
             date_from=date_from,
             date_to=date_to,
         )

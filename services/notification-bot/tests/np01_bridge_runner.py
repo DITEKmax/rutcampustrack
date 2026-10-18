@@ -24,6 +24,7 @@ from bot.grpc_client import academic_pb2 as pb
 from bot.grpc_client import academic_pb2_grpc
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.bot_credentials_client import BotCredentialRequestDenied, BotCredentialsGrpcClient
+from bot.grpc_client.bot_menu_client import BotMenuGrpcClient
 from bot.handlers.start import start_router
 from bot.services.bot_credential_cards import BotCredentialCards
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
@@ -46,14 +47,18 @@ def check(condition):
     _checks += 1
 
 
-class CountingAcademic:
+class CountingMenu:
     def __init__(self, actual):
         self.actual = actual
         self.calls = 0
 
-    async def get_user_by_telegram_id(self, telegram):
+    async def own_profile(self, telegram):
         self.calls += 1
-        return await self.actual.get_user_by_telegram_id(telegram)
+        return await self.actual.own_profile(telegram)
+
+    async def menu_scope(self, telegram):
+        self.calls += 1
+        return await self.actual.menu_scope(telegram)
 
     def __getattr__(self, name):
         return getattr(self.actual, name)
@@ -188,7 +193,11 @@ async def main():
         auth_tls_ca_path=auth_ca_path,
         auth_service_token=auth_service_token,
     )
-    generic = CountingAcademic(generic_actual)
+    generic = generic_actual
+    menu_actual = BotMenuGrpcClient(
+        auth_host, int(auth_port), tls_enabled=True, tls_ca_path=auth_ca_path, service_token=auth_service_token
+    )
+    menu = CountingMenu(menu_actual)
     protected = CountingCredentials(protected_actual)
     provider_runner = None
     bot = None
@@ -237,7 +246,12 @@ async def main():
                 context={"bot": bot},
             )
             await dispatcher.feed_update(
-                bot, update, academic_client=generic, prefs_client=SimpleNamespace(), credential_cards=cards
+                bot,
+                update,
+                academic_client=generic,
+                prefs_client=SimpleNamespace(),
+                credential_cards=cards,
+                bot_menu_client=menu,
             )
 
         queue = TelegramSendQueue(prefs_client=None)
@@ -300,7 +314,7 @@ async def main():
                 authority,
                 ca_path,
                 (("x-grpc-secret", shared), ("x-service-token", service_token)),
-                grpc.StatusCode.PERMISSION_DENIED,
+                grpc.StatusCode.UNIMPLEMENTED,
             )
             _auth_boundary["old_academic_denied"] = True
             await denied(
@@ -315,18 +329,18 @@ async def main():
             _phase = "own_roles_native_dispatcher"
             for role in ("student", "teacher", "headman", "FULL", "LIMITED"):
                 fixture = fixtures[role]
-                public = await generic.get_user_by_telegram_id(fixture["chat"])
-                check(public.found and public.user_id == fixture["uid"] and not public.initial_password)
+                public = await menu.own_profile(fixture["chat"])
+                check(public.found and public.user_id == fixture["uid"] and not hasattr(public, "initial_password"))
                 await feed(fixture["chat"])
                 check(provider.contains_initial(fixture))
             check(provider.registration_verified)
 
             _phase = "privacy_before_any_lookup"
-            before = (generic.calls, protected.calls, provider.edit_count)
+            before = (menu.calls, protected.calls, provider.edit_count)
             for chat_type in ("group", "supergroup", "channel"):
                 for command in ("/start", "/credentials"):
                     await feed(-10007, command, chat_type=chat_type, sender=own["chat"])
-            check(before == (generic.calls, protected.calls, provider.edit_count))
+            check(before == (menu.calls, protected.calls, provider.edit_count))
 
             _phase = "foreign_uid_denial"
             try:
@@ -362,7 +376,7 @@ async def main():
             marker = html.escape(fresh.initial_password)
             provider.gate = asyncio.Event()
             provider.entered.clear()
-            public = await generic.get_user_by_telegram_id(own["chat"])
+            public = await menu.own_profile(own["chat"])
 
             async def answer(text, **kwargs):
                 return await bot.send_message(chat_id=own["chat"], text=text, **kwargs)
@@ -394,7 +408,7 @@ async def main():
             fresh = await protected.read(own["chat"], own["uid"])
             marker = html.escape(fresh.initial_password)
             provider.drop_reply = True
-            public = await generic.get_user_by_telegram_id(own["chat"])
+            public = await menu.own_profile(own["chat"])
             try:
                 await cards.deliver(message, public)
             except NotificationPreferencesUnavailable:
@@ -461,6 +475,7 @@ async def main():
             if pending is not None:
                 pending.cancel()
                 await asyncio.gather(pending, return_exceptions=True)
+            await menu_actual.close()
             await generic_actual.close()
             await protected_actual.close()
             await bot.session.close()
@@ -475,7 +490,7 @@ async def own_homework_main():
 
     from bot.handlers.homework import cmd_homework_today, cmd_homework_week
     from bot.handlers.prefs import HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL, main_keyboard
-    from bot.services.menu_scope import resolve_homework_scope
+    from bot.services.bot_menu import resolve_menu_scope
 
     fixtures = json.loads(os.environ.pop("NP01_FIXTURES"))
     own = fixtures["student"]
@@ -485,6 +500,14 @@ async def own_homework_main():
     shared = os.environ.pop("NP01_SHARED_SECRET")
     control_token = os.environ.pop("NP01_CONTROL_TOKEN")
     generic = AcademicGrpcClient(host, int(port), shared, True, ca_path)
+    auth_host, auth_port = os.environ["NP01_AUTH_SERVICE_AUTHORITY"].rsplit(":", 1)
+    menu = BotMenuGrpcClient(
+        auth_host,
+        int(auth_port),
+        tls_enabled=True,
+        tls_ca_path=os.environ["NP01_AUTH_SERVICE_CA"],
+        service_token=os.environ.pop("NP01_AUTH_SERVICE_TOKEN"),
+    )
     protected = BotCredentialsGrpcClient(host, int(port), shared, True, ca_path, token)
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as controls:
 
@@ -497,12 +520,19 @@ async def own_homework_main():
                 return await response.json()
 
         async def arguments():
-            scope = await resolve_homework_scope(generic, own["chat"])
-            check(scope is not None and scope.user_id == own["uid"] and scope.roles_version > 0)
+            scope = await resolve_menu_scope(menu, own["chat"])
+            check(
+                scope is not None
+                and scope.user_id == own["uid"]
+                and scope.roles_version > 0
+                and scope.telegram_binding_version > 0
+                and scope.homework_enabled
+            )
             return dict(
                 telegram_sender_id=own["chat"],
                 expected_user_id=scope.user_id,
                 expected_roles_version=scope.roles_version,
+                expected_telegram_binding_version=scope.telegram_binding_version,
                 date_from=own["date_from"],
                 date_to=own["date_to"],
             )
@@ -518,9 +548,11 @@ async def own_homework_main():
         try:
             _phase = "own_homework_profile"
             values = await arguments()
-            scope = await resolve_homework_scope(generic, own["chat"])
+            scope = await resolve_menu_scope(menu, own["chat"])
             labels = [
-                button.text for row in main_keyboard(homework_enabled=scope is not None).keyboard for button in row
+                button.text
+                for row in main_keyboard(homework_enabled=scope is not None and scope.homework_enabled).keyboard
+                for button in row
             ]
             check(HOMEWORK_TODAY_LABEL in labels and HOMEWORK_WEEK_LABEL in labels)
             items = await protected.homeworks(**values)
@@ -535,7 +567,11 @@ async def own_homework_main():
                     answer=AsyncMock(),
                 )
                 await handler(
-                    message, generic, today=date.fromisoformat(own["date_from"]), bot_homework_client=protected
+                    message,
+                    generic,
+                    today=date.fromisoformat(own["date_from"]),
+                    bot_homework_client=protected,
+                    bot_menu_client=menu,
                 )
                 check(message.answer.await_count == 1 and title in message.answer.await_args.args[0])
 
@@ -552,7 +588,7 @@ async def own_homework_main():
                 await generic._stub.GetHomeworksForWeek(
                     pb.HomeworksForWeekRequest(
                         student_id=scope.user_id,
-                        group_id=scope.group_id,
+                        group_id=next(iter(scope.student_groups)),
                         semester_id=1,
                         date_from=own["date_from"],
                         date_to=own["date_to"],
@@ -565,11 +601,13 @@ async def own_homework_main():
             else:
                 check(False)
             await denied({**values, "expected_roles_version": values["expected_roles_version"] + 1})
+            await denied({**values, "expected_telegram_binding_version": 0})
+            await denied({**values, "expected_telegram_binding_version": values["expected_telegram_binding_version"] + 1})
             await denied({**values, "telegram_sender_id": fixtures["foreign"]["chat"]})
 
             _phase = "own_homework_revoked_grant"
             await control("revoke")
-            check(await resolve_homework_scope(generic, own["chat"]) is None)
+            check(await resolve_menu_scope(menu, own["chat"]) is None)
             await denied(values)
             await control("reactivate")
             refreshed = await arguments()
@@ -581,6 +619,8 @@ async def own_homework_main():
             await denied(refreshed)
             await control("restore_binding")
             restored = await arguments()
+            check(restored["expected_telegram_binding_version"] > refreshed["expected_telegram_binding_version"])
+            await denied(refreshed)
             check(len(await protected.homeworks(**restored)) == 1)
             _phase = "complete"
         finally:
@@ -590,7 +630,7 @@ async def own_homework_main():
                 finally:
                     await control("restore_binding")
             finally:
-                await asyncio.gather(generic.close(), protected.close())
+                await asyncio.gather(generic.close(), protected.close(), menu.close())
 
 
 if __name__ == "__main__":

@@ -1,5 +1,21 @@
 package ru.rutcampustrack.academic.history;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+
+import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
+import ru.rutcampustrack.academic.entity.Semester;
+import ru.rutcampustrack.academic.entity.StudentGroupHistory;
+import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence;
+import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
+import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.SemesterRepository;
+import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
+import ru.rutcampustrack.academic.repository.UserRepository;
+
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -7,19 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.entity.Group;
-import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
-import ru.rutcampustrack.academic.entity.Semester;
-import ru.rutcampustrack.academic.entity.StudentGroupHistory;
-import ru.rutcampustrack.academic.entity.User;
-import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
-import ru.rutcampustrack.academic.repository.GroupRepository;
-import ru.rutcampustrack.academic.repository.SemesterRepository;
-import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
-import ru.rutcampustrack.academic.repository.UserRepository;
 
 /**
  * Reads the managed historical roster from one repeatable-read PostgreSQL snapshot. Current role,
@@ -35,18 +38,21 @@ public class HistoricalMembershipService {
     private final SemesterRepository semesterRepository;
     private final StudentGroupHistoryRepository historyRepository;
     private final UserRepository userRepository;
+    private final AcademicIdentityReadFence identityFences;
 
     public HistoricalMembershipService(
             GroupRepository groupRepository,
             GroupHistoryCoverageRepository coverageRepository,
             SemesterRepository semesterRepository,
             StudentGroupHistoryRepository historyRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            AcademicIdentityReadFence identityFences) {
         this.groupRepository = groupRepository;
         this.coverageRepository = coverageRepository;
         this.semesterRepository = semesterRepository;
         this.historyRepository = historyRepository;
         this.userRepository = userRepository;
+        this.identityFences = identityFences;
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
@@ -55,6 +61,7 @@ public class HistoricalMembershipService {
             throw HistoricalMembershipException.invalid(
                     "group_id, as_of_date and semester_id are required");
         }
+        identityFences.requireGroupReadable(groupId);
 
         groupRepository
                 .findById(groupId)
@@ -92,6 +99,7 @@ public class HistoricalMembershipService {
         if (groupId <= 0 || asOfDate == null) {
             throw HistoricalMembershipException.invalid("group_id and as_of_date are required");
         }
+        identityFences.requireGroupReadable(groupId);
         groupRepository
                 .findById(groupId)
                 .orElseThrow(
@@ -171,7 +179,8 @@ public class HistoricalMembershipService {
                     allUserHistory.stream().filter(row -> row.getLeftAt() == null).toList();
             if (openUserHistory.size() != 1 || !groupIdEquals(openUserHistory.get(0), groupId)) {
                 throw HistoricalMembershipException.precondition(
-                        "Current student assignment has no unique open membership in the assigned group");
+                        "Current student assignment has no unique open membership in the assigned"
+                                + " group");
             }
         }
 

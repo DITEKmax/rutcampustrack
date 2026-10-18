@@ -1,5 +1,16 @@
 package ru.rutcampustrack.academic.studentprojection;
 
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Service;
+
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
+
 import java.time.Clock;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -15,21 +26,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
-import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 /**
  * Resolves the signed student's own semester projection and rank cohort.
  *
- * <p>All reads happen in one read-only transaction. Authorization is re-read before semester,
- * history, subject, or roster data is disclosed. A response is assembled only after every required
- * source has succeeded.
+ * <p>Current Auth admission runs outside database transactions. Domain history, assignments and
+ * roster candidates share one own-database repeatable-read snapshot; current authority is checked
+ * again before disclosure.
  */
 @Service
 public class StudentProjectionScopeService {
@@ -63,7 +66,6 @@ public class StudentProjectionScopeService {
         this.educationalClock = educationalTime.clock();
     }
 
-    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public StudentProjectionScope resolve(long semesterId, InternalJwtClaims claims) {
         if (semesterId <= 0) {
             throw StudentProjectionException.invalidRequest("semester_id must be positive");
@@ -76,6 +78,14 @@ public class StudentProjectionScopeService {
         } catch (DataAccessException error) {
             throw StudentProjectionException.dependency(
                     "Academic projection data is unavailable", error);
+        } catch (StatusRuntimeException error) {
+            if (error.getStatus().getCode() == Status.Code.UNAUTHENTICATED
+                    || error.getStatus().getCode() == Status.Code.PERMISSION_DENIED
+                    || error.getStatus().getCode() == Status.Code.FAILED_PRECONDITION) {
+                throw StudentProjectionException.invalidSession("Current student admission denied");
+            }
+            throw StudentProjectionException.dependency(
+                    "Current Auth authority is unavailable", error);
         } catch (DateTimeException error) {
             throw StudentProjectionException.inconsistent(
                     "Academic projection contains an invalid date");
@@ -83,11 +93,19 @@ public class StudentProjectionScopeService {
     }
 
     private StudentProjectionScope resolveInternal(long semesterId, InternalJwtClaims claims) {
-        return resolveInternal(semesterId, authorize(claims), null);
+        Authorization admitted = authorize(claims);
+        StudentProjectionScope scope =
+                query.readSnapshot(
+                        admitted.authority(), () -> resolveInternal(semesterId, admitted, null));
+        query.verifyCurrent(admitted.authority(), scope);
+        Authorization current = authorize(claims);
+        if (!admitted.equals(current)) {
+            throw StudentProjectionException.invalidSession("Signed student authority changed");
+        }
+        return scope;
     }
 
     /** Internal target read; the caller must first admit the dated target with live VIEW_STATS. */
-    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public StudentProjectionScope resolveHeadmanRank(
             long semesterId, long studentId, long groupId) {
         if (semesterId <= 0 || studentId <= 0 || groupId <= 0) {
@@ -110,13 +128,16 @@ public class StudentProjectionScopeService {
         var grant = studentGrant(authority);
         String status = normalize(grant.status());
         // A suspended student cannot participate; personal headman history remains readable.
-        return resolveInternal(
-                semesterId,
+        Authorization admitted =
                 new Authorization(
                         studentId,
                         grant,
-                        TERMINAL_STATUSES.contains(status) || "SUSPENDED".equals(status)),
-                groupId);
+                        TERMINAL_STATUSES.contains(status) || "SUSPENDED".equals(status),
+                        authority);
+        StudentProjectionScope scope =
+                query.readSnapshot(authority, () -> resolveInternal(semesterId, admitted, groupId));
+        query.verifyCurrent(authority, scope);
+        return scope;
     }
 
     private StudentProjectionScope resolveInternal(
@@ -245,8 +266,7 @@ public class StudentProjectionScopeService {
             throw StudentProjectionException.invalidSession("Signed student status is stale");
         }
 
-        Optional<StudentProjectionQuery.SessionSnapshot> sessionResult =
-                query.findSession(claims.userId(), claims.sessionId());
+        Optional<StudentProjectionQuery.SessionSnapshot> sessionResult = query.findSession(claims);
         if (sessionResult == null) {
             throw StudentProjectionException.dependency(
                     "Academic session authority is unavailable", null);
@@ -280,7 +300,8 @@ public class StudentProjectionScopeService {
             throw StudentProjectionException.inconsistent(
                     "Active student grant has no authoritative group");
         }
-        return new Authorization(claims.userId(), studentGrant, terminal && claims.readOnly());
+        return new Authorization(
+                claims.userId(), studentGrant, terminal && claims.readOnly(), authority);
     }
 
     private static StudentProjectionQuery.RoleGrantSnapshot studentGrant(
@@ -449,7 +470,8 @@ public class StudentProjectionScopeService {
                             .orElseThrow(
                                     () ->
                                             StudentProjectionException.unresolved(
-                                                    "Untransferred past scope has no historical group"));
+                                                    "Untransferred past scope has no historical"
+                                                            + " group"));
             if (rankGroupId != grantGroupId) {
                 throw StudentProjectionException.inconsistent(
                         "Current student grant disagrees with history");
@@ -491,6 +513,14 @@ public class StudentProjectionScopeService {
     private static LocalDate exclusiveEnd(LocalDate dateTo) {
         try {
             return dateTo.plusDays(1);
+        } catch (StatusRuntimeException error) {
+            if (error.getStatus().getCode() == Status.Code.UNAUTHENTICATED
+                    || error.getStatus().getCode() == Status.Code.PERMISSION_DENIED
+                    || error.getStatus().getCode() == Status.Code.FAILED_PRECONDITION) {
+                throw StudentProjectionException.invalidSession("Current student admission denied");
+            }
+            throw StudentProjectionException.dependency(
+                    "Current Auth authority is unavailable", error);
         } catch (DateTimeException error) {
             throw StudentProjectionException.inconsistent(
                     "Semester date range cannot be made half-open");
@@ -540,7 +570,8 @@ public class StudentProjectionScopeService {
     private record Authorization(
             long userId,
             StudentProjectionQuery.RoleGrantSnapshot studentGrant,
-            boolean terminalReadOnly) {}
+            boolean terminalReadOnly,
+            StudentProjectionQuery.AuthoritySnapshot authority) {}
 
     private record SubjectResolution(
             List<StudentProjectionScope.MembershipSegment> segments,

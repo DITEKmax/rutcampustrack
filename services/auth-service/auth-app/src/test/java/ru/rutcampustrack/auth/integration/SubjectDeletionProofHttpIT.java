@@ -4,22 +4,25 @@ import static org.assertj.core.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.*;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import ru.rutcampustrack.auth.config.InternalIssuerProperties;
 import ru.rutcampustrack.auth.dto.SubjectDeletionProofModels.*;
 import ru.rutcampustrack.auth.service.JwtService;
 import ru.rutcampustrack.auth.session.SessionLifecycleService;
 import ru.rutcampustrack.auth.session.model.*;
 import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 /** Real private HTTP + PG. Codes/passwords/tokens are compared only as private booleans. */
 class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
@@ -30,6 +33,7 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
     @Autowired SessionLifecycleService sessions;
     @Autowired AuthSessionQueryPort queries;
     @Autowired JwtService jwt;
+    @Autowired ru.rutcampustrack.auth.service.SubjectDeletionProofService proofs;
     @Autowired InternalIssuerProperties issuer;
     @Autowired org.springframework.data.redis.core.StringRedisTemplate redis;
 
@@ -98,6 +102,107 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void storedConsumedProofContinuesWithoutBearerButCannotChangeItsBoundIntent() throws Exception {
+        var f = fixture();
+        var b = binding(f);
+        var receipt = acceptedReceipt(f, b);
+        var current = proofs.storedReceipt(b, receipt);
+        assertThat(current.getActor().getUserId()).isEqualTo(f.user());
+        assertThat(current.getActor().getRole()).isEqualTo("HEADMAN");
+        assertThat(current.getBinding().getOperationId()).isEqualTo(b.operationId().toString());
+        var changed =
+                new Binding(
+                        b.subjectId(),
+                        b.semesterId(),
+                        b.groupId(),
+                        UUID.randomUUID(),
+                        b.previewDigest());
+        assertThatThrownBy(() -> proofs.storedReceipt(changed, receipt))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
+        assertThat(proofs.storedReceipt(b, receipt)).isEqualTo(current);
+    }
+
+    @Test
+    void storedReceiptRejectsCredentialBindingRoleSessionGenerationChangesAndExpiry()
+            throws Exception {
+        for (String change :
+                List.of("CREDENTIAL", "BINDING", "ROLE", "SESSION", "ROLES_VERSION", "EXPIRY")) {
+            var f = fixture();
+            var b = binding(f);
+            var receipt = acceptedReceipt(f, b);
+            var before = proofs.storedReceipt(b, receipt);
+            switch (change) {
+                case "CREDENTIAL" ->
+                        jdbc.update(
+                                "UPDATE auth_identities SET"
+                                    + " password_changed=true,initial_password=NULL WHERE id=?",
+                                f.user());
+                case "BINDING" -> {
+                    long reserved =
+                            jdbc.queryForObject(
+                                    "SELECT"
+                                        + " nextval(pg_get_serial_sequence('auth_identities','id'))",
+                                    Long.class);
+                    jdbc.update(
+                            "UPDATE auth_identities SET telegram_id=? WHERE id=?",
+                            f.telegram() - f.user() + reserved,
+                            f.user());
+                }
+                case "ROLE" ->
+                        jdbc.update(
+                                "UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND"
+                                    + " role='headman'",
+                                f.user());
+                case "SESSION" ->
+                        jdbc.update(
+                                "UPDATE auth_sessions SET"
+                                    + " revoked_at=now(),revoke_reason='SECURITY_REVOKED',session_version=session_version+1"
+                                    + " WHERE sid=?",
+                                UUID.fromString(before.getActor().getSessionId()));
+                case "ROLES_VERSION" -> {
+                    var owner = authFixtureOwnerJdbc();
+                    new org.springframework.transaction.support.TransactionTemplate(
+                                    new org.springframework.jdbc.datasource
+                                            .DataSourceTransactionManager(owner.getDataSource()))
+                            .execute(
+                                    status -> {
+                                        UUID op =
+                                                ru.rutcampustrack.auth.support.AuthDatabaseFixture
+                                                        .fence(owner, f.user());
+                                        ru.rutcampustrack.auth.support.AuthDatabaseFixture.unfence(
+                                                owner, op, f.user());
+                                        return null;
+                                    });
+                }
+                case "EXPIRY" ->
+                        jdbc.update(
+                                "UPDATE subject_deletion_proofs SET created_at=now()-interval '2"
+                                    + " days',expires_at=now()-interval '1 day' WHERE receipt_id=?",
+                                receipt);
+            }
+            assertThatThrownBy(() -> proofs.storedReceipt(b, receipt))
+                    .as(change)
+                    .isInstanceOfAny(
+                            org.springframework.web.server.ResponseStatusException.class,
+                            ru.rutcampustrack.auth.session.AuthSessionException.class);
+        }
+    }
+
+    private UUID acceptedReceipt(Fixture f, Binding b) throws Exception {
+        String token = token(f);
+        var challenge = call("challenge", new ChallengeRequest(token, f.password(), b));
+        assertPrivate(challenge, 200);
+        String challengeId = json.readTree(challenge.getBody()).path("challengeId").asText();
+        var verified =
+                call(
+                        "verify",
+                        new VerifyRequest(
+                                token, b, challengeId, ownCode(f.telegram(), challengeId)));
+        assertPrivate(verified, 200);
+        return UUID.fromString(json.readTree(verified.getBody()).path("receiptId").asText());
+    }
+
+    @Test
     void wrongPasswordForeignScopeBindingAndRevocationCannotAuthorizeDeletion() throws Exception {
         var f = fixture();
         String token = token(f);
@@ -116,14 +221,18 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
         // Reserve a user identity gap so future formula fixtures cannot reuse this Telegram id.
         long reservedUserId =
                 jdbc.queryForObject(
-                        "SELECT nextval(pg_get_serial_sequence('users','id'))", Long.class);
+                        "SELECT nextval(pg_get_serial_sequence('auth_identities','id'))",
+                        Long.class);
         long replacementTelegram = f.telegram() - f.user() + reservedUserId;
         assertThat(replacementTelegram > 0 && replacementTelegram != f.telegram()).isTrue();
-        assertThat(count("SELECT count(*) FROM users WHERE telegram_id=?", replacementTelegram))
+        assertThat(
+                        count(
+                                "SELECT count(*) FROM auth_identities WHERE telegram_id=?",
+                                replacementTelegram))
                 .isZero();
         assertThat(
                         jdbc.update(
-                                "UPDATE users SET telegram_id=? WHERE id=?",
+                                "UPDATE auth_identities SET telegram_id=? WHERE id=?",
                                 replacementTelegram,
                                 f.user()))
                 .isEqualTo(1);
@@ -235,12 +344,13 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
 
     private void refuseOwnOutbox(long telegram, Runnable action) {
         String constraint = "subject_proof_" + UUID.randomUUID().toString().replace("-", "");
-        jdbc.execute(
-                "ALTER TABLE auth_outbox ADD CONSTRAINT "
-                        + constraint
-                        + " CHECK ((payload->'payload'->>'telegram_id') IS DISTINCT FROM '"
-                        + telegram
-                        + "') NOT VALID");
+        authFixtureOwnerJdbc()
+                .execute(
+                        "ALTER TABLE auth_outbox ADD CONSTRAINT "
+                                + constraint
+                                + " CHECK ((payload->'payload'->>'telegram_id') IS DISTINCT FROM '"
+                                + telegram
+                                + "') NOT VALID");
         Throwable primary = null;
         try {
             action.run();
@@ -249,7 +359,8 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
             throw failure;
         } finally {
             try {
-                jdbc.execute("ALTER TABLE auth_outbox DROP CONSTRAINT " + constraint);
+                authFixtureOwnerJdbc()
+                        .execute("ALTER TABLE auth_outbox DROP CONSTRAINT " + constraint);
             } catch (RuntimeException failure) {
                 var fixed = new IllegalStateException("Owned proof outbox control cleanup failed");
                 if (primary != null) primary.addSuppressed(fixed);
@@ -306,44 +417,31 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
         return new Binding(f.subject(), f.semester(), f.group(), UUID.randomUUID(), "a".repeat(64));
     }
 
+    private static final java.util.concurrent.atomic.AtomicLong DOMAIN_IDS =
+            new java.util.concurrent.atomic.AtomicLong(2_000_000);
+
     private Fixture fixture() {
-        long group =
-                jdbc.queryForObject(
-                        "INSERT INTO groups(name) VALUES(?) RETURNING id",
-                        Long.class,
-                        "sd-" + UUID.randomUUID().toString().substring(0, 20));
-        long semester = jdbc.queryForObject("SELECT id FROM semesters WHERE is_active", Long.class);
+        // Auth binds the fixed security purpose to opaque Academic IDs. It owns no domain rows.
+        long group = DOMAIN_IDS.incrementAndGet(),
+                semester = DOMAIN_IDS.incrementAndGet(),
+                subject = DOMAIN_IDS.incrementAndGet();
         String password = "Subject-confirm-synthetic-26!";
         long user =
-                jdbc.queryForObject(
-                        "INSERT INTO"
-                                + " users(login,password_hash,last_name,first_name,group_id,is_headman)"
-                                + " VALUES(?,?,'Synthetic','Proof',?,TRUE) RETURNING id",
-                        Long.class,
+                ru.rutcampustrack.auth.support.AuthDatabaseFixture.identity(
+                        jdbc,
                         "sd-" + UUID.randomUUID().toString().substring(0, 20),
+                        Instant.now(),
                         passwords.encode(password),
-                        group);
+                        password);
         long telegram = 700000000000L + user;
-        jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", telegram, user);
+        jdbc.update("UPDATE auth_identities SET telegram_id=? WHERE id=?", telegram, user);
         for (String role : List.of("student", "headman"))
             jdbc.update(
-                    "INSERT INTO"
-                            + " user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
-                            + " VALUES(?,?,'active',?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)",
+                    "INSERT INTO user_role_grants(user_id,role,status,group_id) VALUES"
+                            + " (?,?,'active',?)",
                     user,
                     role,
                     group);
-        long subject =
-                jdbc.queryForObject(
-                        "WITH created_subject AS ("
-                                + " INSERT INTO subjects(name,type,group_id,semester_id)"
-                                + " VALUES(?,'lecture',?,?) RETURNING id)"
-                                + " INSERT INTO subject_lesson_types(subject_id,lesson_type)"
-                                + " SELECT id,'lecture' FROM created_subject RETURNING subject_id",
-                        Long.class,
-                        "Own deletion subject",
-                        group,
-                        semester);
         return new Fixture(user, group, semester, subject, telegram, password);
     }
 
@@ -363,7 +461,7 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
                                 authority.rolesVersion(),
                                 authority.grants(),
                                 jdbc.queryForObject(
-                                        "SELECT password_hash FROM users WHERE id=?",
+                                        "SELECT password_hash FROM auth_identities WHERE id=?",
                                         String.class,
                                         f.user()),
                                 "subject-proof-it",
@@ -438,12 +536,11 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
             assertThat(ownEvents(f.telegram(), "otp.verified")).isZero();
             assertThat(
                             count(
-                                    "SELECT count(*) FROM subjects WHERE id=? AND semester_id=? AND"
-                                            + " group_id=?",
-                                    f.subject(),
-                                    f.semester(),
-                                    f.group()))
-                    .isOne();
+                                    "SELECT count(*) FROM information_schema.tables WHERE"
+                                            + " table_schema='public' AND table_name IN"
+                                            + " ('subjects','semesters','groups','users')"))
+                    .as("Auth proof admission cannot read or mutate Academic tables")
+                    .isZero();
             assertThat(count("SELECT count(*) FROM auth_sessions WHERE user_id=?", f.user()))
                     .isEqualTo(sessionsBefore);
             assertThat(loginCode.equals(redis.opsForValue().get("otp:" + f.telegram())))
@@ -478,7 +575,7 @@ class SubjectDeletionProofHttpIT extends AbstractIntegrationTest {
             assertThat(
                             count(
                                     "SELECT count(*) FROM subject_deletion_proofs WHERE actor_id=?"
-                                            + " AND receipt_id IS NOT NULL AND consumed_at IS NOT NULL",
+                                        + " AND receipt_id IS NOT NULL AND consumed_at IS NOT NULL",
                                     f.user()))
                     .isOne();
             assertThat(

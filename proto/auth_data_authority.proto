@@ -1,0 +1,177 @@
+syntax = "proto3";
+
+package rutcampustrack.authauthority;
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.authauthority.grpc";
+
+// Academic-only fixed reads. Existing TLS+x-service-token authenticates the
+// service. x-internal-token supplies the live actor for all user-admitted reads.
+// ReadIdentityAuthority is a data snapshot, NOT a substitute for live admission
+// or CheckAdminAccess. No successful authority result is cached.
+service AuthDataAuthorityService {
+  rpc ReadIdentityAuthority(ReadIdentityAuthorityRequest) returns (ReadIdentityAuthorityResponse);
+  rpc CheckAdminAccess(CheckAdminAccessRequest) returns (CheckAdminAccessResponse);
+  rpc ReadInitialCredentials(ReadInitialCredentialsRequest) returns (ReadInitialCredentialsResponse);
+  rpc GetIdentityCatalogWatermark(IdentityCatalogWatermarkRequest) returns (IdentityCatalogWatermark);
+  rpc ReadIdentityCatalogChanges(IdentityCatalogChangesRequest) returns (IdentityCatalogChangesResponse);
+}
+
+enum AuthorityAccountState {
+  AUTHORITY_ACCOUNT_STATE_UNSPECIFIED = 0;
+  AUTHORITY_ACCOUNT_STATE_PENDING = 1;
+  AUTHORITY_ACCOUNT_STATE_ACTIVE = 2;
+  AUTHORITY_ACCOUNT_STATE_ARCHIVED = 3;
+  AUTHORITY_ACCOUNT_STATE_FENCED = 4;
+}
+message AuthorityRoleGrant {
+  int64 grant_id = 1;
+  string role = 2;
+  string status = 3;
+  optional int64 group_id = 4;
+}
+message AuthorityAdminProfile {
+  bool assigned = 1;
+  string mode = 2;
+  repeated string permissions = 3;
+  int64 version = 4;
+}
+message IdentityAuthoritySnapshot {
+  int64 user_id = 1;
+  string login = 2;
+  AuthorityAccountState account_state = 3;
+  int64 roles_version = 4;
+  int64 credentials_version = 5;
+  int64 telegram_binding_version = 6;
+  optional int64 telegram_id = 7;
+  string telegram_username = 8;
+  bool password_changed = 9;
+  repeated AuthorityRoleGrant grants = 10;
+  AuthorityAdminProfile admin_profile = 11;
+  int64 academic_revision = 12; // exact most recent committed eligibility receipt
+}
+message ReadIdentityAuthorityRequest {
+  repeated int64 user_ids = 1; // 1..200 distinct positive IDs; exact bounded batch
+}
+message ReadIdentityAuthorityResponse {
+  repeated IdentityAuthoritySnapshot identities = 1; // absent IDs omitted, never inferred
+}
+message CheckAdminAccessRequest {
+  repeated string permissions = 1; // exact existing closed AdminPermission catalogue
+  bool full_only = 2;
+  optional int64 target_user_id = 3;
+  bool mutation = 4; // applies self/protected-target policy; PREPARE still authorizes mutation
+}
+message CheckAdminAccessResponse {
+  int64 actor_user_id = 1;
+  int64 session_version = 2;
+  int64 roles_version = 3;
+  AuthorityAdminProfile profile = 4;
+}
+message ReadInitialCredentialsRequest {
+  repeated int64 user_ids = 1; // 1..200; fresh USER_CREDENTIALS_MANAGE + target protection
+}
+message InitialCredentialSnapshot {
+  int64 user_id = 1;
+  string login = 2;
+  string initial_password = 3; // secret: direct permitted response only, never ledger/cache/report artifact
+  bool password_changed = 4;
+  int64 credentials_version = 5;
+  int64 telegram_binding_version = 6;
+  string generated_password_origin = 7;
+}
+message ReadInitialCredentialsResponse {
+  repeated InitialCredentialSnapshot credentials = 1;
+}
+
+// Specific NONAUTHORITATIVE registry projection. No password, initial material,
+// session, credential generation or permission profile is included. Telegram ID
+// is restricted PII: internal protected storage only; FULL-only public disclosure.
+// The projection never admits an actor or authorizes a domain action.
+message IdentityCatalogProjection {
+  int64 user_id = 1;
+  string login = 2;
+  AuthorityAccountState account_state = 3;
+  int64 roles_version = 4;
+  int64 telegram_binding_version = 5;
+  optional int64 telegram_id = 6;
+  string telegram_username = 7;
+  bool password_changed = 8;
+  repeated AuthorityRoleGrant grants = 9;
+  int64 academic_revision = 10;
+}
+message IdentityCatalogWatermarkRequest {}
+message IdentityCatalogWatermark {
+  int64 catalog_version = 1; // transactionally contiguous, zero for empty catalog
+}
+message IdentityCatalogChangesRequest {
+  int64 after_catalog_version = 1;
+  int32 limit = 2; // 1..200
+}
+message IdentityCatalogChange {
+  int64 catalog_version = 1;
+  IdentityCatalogProjection identity = 2;
+}
+message IdentityCatalogChangesResponse {
+  repeated IdentityCatalogChange changes = 1; // ascending contiguous versions
+  int64 catalog_version = 2; // current committed Auth watermark
+}
+// Academic stores projection+contiguous cursor in one local transaction. Query:
+// Auth watermark -> bounded catchup -> local RR full filter/count/order/page ->
+// selected-ID current Auth+actor recheck and Auth watermark. Calls are outside
+// local transactions; instability/lag beyond 3s fails UNAVAILABLE, never partial
+// filtering after page. A successful create waits for its committed catalog
+// version to be applied before Academic publishes SUCCEEDED.
+
+// Auth-only presentation read, hosted by Academic. This method checks its exact
+// directed service identity and never calls Auth/admission, avoiding Auth->Academic
+// ->Auth cycles. Labels are non-authoritative and do not confer any role or scope.
+service AcademicIdentityPresentationService {
+  rpc ResolveIdentityPresentation(IdentityPresentationRequest) returns (IdentityPresentationResponse);
+  rpc ResolveHeadmanCredentialEligibility(HeadmanCredentialEligibilityRequest) returns (HeadmanCredentialEligibility);
+}
+message HeadmanCredentialEligibilityRequest {
+  int64 actor_user_id = 1;
+  int64 expected_actor_roles_version = 2;
+  int64 student_user_id = 3;
+  int64 expected_student_roles_version = 4;
+}
+message HeadmanCredentialEligibility {
+  int64 group_id = 1;
+  int64 actor_roles_version = 2;
+  int64 student_roles_version = 3;
+  int64 actor_academic_revision = 4;
+  int64 student_academic_revision = 5;
+}
+// Pure Academic ownDB check: active group, unique current headman and active
+// student membership for actor/target; no pending user/group mutation; exact
+// locally applied Auth RVs. It never calls Auth. Auth preflights outside TX then
+// rechecks both RVs/fences/grants/session under own locks before effects.
+// Domain mutations affecting this eligibility must fence the relevant Auth
+// identities before changing local eligibility; a read preflight alone cannot
+// serialize an uncoordinated group archive with credential disclosure.
+
+message IdentityPresentationRequest {
+  repeated int64 user_ids = 1; // 1..200
+  repeated int64 group_ids = 2; // 0..200; selected by Auth's own admission grant snapshot
+}
+message UserPresentation {
+  int64 user_id = 1;
+  string display_name = 2;
+  string last_name = 3;
+  string first_name = 4;
+  string middle_name = 5;
+}
+message GroupPresentation {
+  int64 group_id = 1;
+  string label = 2;
+}
+message IdentityPresentationResponse {
+  repeated UserPresentation users = 1;
+  repeated GroupPresentation groups = 2;
+}
+
+// All RPCs <=3s, outside caller DB transactions/locks. A fenced/pending account
+// cannot yield credentials or successful permission admission. Unknown/malformed
+// requests: INVALID_ARGUMENT; denied actor: PERMISSION_DENIED; stale actor:
+// FAILED_PRECONDITION; unavailable current state: UNAVAILABLE. No partial authority
+// or credentials when any requested target fails authorization.

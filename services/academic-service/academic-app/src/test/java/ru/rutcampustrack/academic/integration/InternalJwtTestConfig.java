@@ -1,43 +1,49 @@
 package ru.rutcampustrack.academic.integration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+
 import ru.rutcampustrack.shared.security.InternalJwtProperties;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 import ru.rutcampustrack.shared.security.PublicKeyProvider;
 
-/**
- * M03a: supplies a test {@link PublicKeyProvider} bound to {@link InternalJwtTestFactory}'s keypair
- * so IT can issue valid Internal JWT tokens without reaching an actual auth-service.
- */
+/** Fixture key material is also loaded by the actual Auth JwtService. Admission stays live. */
 @TestConfiguration
 public class InternalJwtTestConfig {
-
-    private final InternalJwtTestFactory factory = new InternalJwtTestFactory();
+    @Bean(destroyMethod = "")
+    public AcademicIdentityIntegrationFixture identityIntegrationFixture(
+            @Value("${rct.fixture.kind}") String kind) {
+        return switch (kind) {
+            case "ordinary" -> AbstractAcademicIntegrationTest.IDENTITY_FIXTURE;
+            case "cache" -> AbstractAcademicCacheIntegrationTest.IDENTITY_FIXTURE;
+            case "event" -> AbstractAcademicEventIntegrationTest.IDENTITY_FIXTURE;
+            default ->
+                    throw new IllegalArgumentException("Known owned integration fixture required");
+        };
+    }
 
     @Bean
-    public InternalJwtTestFactory internalJwtTestFactory() {
-        return factory;
+    public InternalJwtTestFactory internalJwtTestFactory(
+            AcademicIdentityIntegrationFixture fixture) {
+        return fixture.signer();
     }
 
     @Bean
     @Primary
-    public PublicKeyProvider testPublicKeyProvider(InternalJwtProperties properties) {
+    public PublicKeyProvider testPublicKeyProvider(
+            InternalJwtProperties properties, AcademicIdentityIntegrationFixture fixture) {
         return new PublicKeyProvider(properties) {
             @Override
-            public void init() {
-                // no-op — we don't call auth-service in tests
-            }
+            public void init() {}
 
             @Override
-            public void refresh() {
-                // no-op
-            }
+            public void refresh() {}
 
             @Override
             public java.security.PublicKey getPublicKey() {
-                return factory.publicKey();
+                return fixture.signer().publicKey();
             }
         };
     }

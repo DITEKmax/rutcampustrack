@@ -12,6 +12,8 @@ from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
 from bot.grpc_client.bot_credentials_client import BotCredentialsGrpcClient
+from bot.grpc_client.bot_menu_client import BotMenuGrpcClient
+from bot.grpc_client.bot_read_client import BotReadGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
 from bot.handlers import (
     excuse_router,
@@ -20,9 +22,11 @@ from bot.handlers import (
     login_router,
     password_reset_router,
     prefs_router,
+    role_reads_router,
     start_router,
     status_router,
 )
+from bot.handlers.role_reads import LessonChoices
 from bot.middlewares import ObservabilityMiddleware
 from bot.observability import METRICS_REGISTRY, TASK_ALIVE, SendQueueCollector, setup_observability
 from bot.services.academic_http_client import AcademicHttpClient
@@ -182,6 +186,21 @@ async def main() -> None:
         auth_tls_ca_path=config.auth_grpc_tls_ca_path,
         auth_service_token=config.bot_to_auth_service_token,
     )
+    bot_read_client = BotReadGrpcClient(
+        config.bot_read_grpc_host,
+        config.bot_read_grpc_port,
+        tls_enabled=config.bot_read_grpc_tls_enabled,
+        tls_ca_path=config.bot_read_grpc_tls_ca_path,
+        service_token=config.bot_to_read_service_token,
+    )
+    bot_menu_client = BotMenuGrpcClient(
+        config.auth_grpc_host,
+        config.auth_grpc_port,
+        tls_enabled=config.auth_grpc_tls_enabled,
+        tls_ca_path=config.auth_grpc_tls_ca_path,
+        service_token=config.bot_to_auth_service_token,
+        read_client=bot_read_client,
+    )
     credential_cards = BotCredentialCards(bot=bot, client=bot_credentials_client)
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
@@ -233,6 +252,8 @@ async def main() -> None:
     dp["academic_client"] = academic_client
     dp["credential_cards"] = credential_cards
     dp["bot_homework_client"] = bot_credentials_client
+    dp["bot_menu_client"] = bot_menu_client
+    dp["bot_lesson_choices"] = LessonChoices()
     dp["schedule_client"] = schedule_client
     dp["jwt_redis"] = jwt_redis
     dp["auth_client"] = auth_client
@@ -249,6 +270,7 @@ async def main() -> None:
     dp.include_router(login_router)
     dp.include_router(password_reset_router)
     dp.include_router(homework_router)
+    dp.include_router(role_reads_router)
     dp.include_router(status_router)
     dp.include_router(prefs_router)
     dp.include_router(late_checkin_router)
@@ -295,6 +317,7 @@ async def main() -> None:
             bot=bot,
             keyboard_sync=keyboard_sync,
             academic_client=academic_client,
+            bot_menu_client=bot_menu_client,
         )
     )
 
@@ -338,6 +361,8 @@ async def main() -> None:
         await schedule_client.close()
         await academic_client.close()
         await bot_credentials_client.close()
+        await bot_menu_client.close()
+        await bot_read_client.close()
         await event_publisher.close()
 
 

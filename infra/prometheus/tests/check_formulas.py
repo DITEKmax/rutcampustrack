@@ -414,7 +414,7 @@ def main():
     tests.append(case(export_hist, "(" + export_expr + ") > 30", []))
     tests.append(case(export_hist, "count((" + export_expr + ") > 2)", [sample("{}", 1)]))
     # Actual exportSDK bucketedge60.0; terminal attempts/expecteddenials are not the denominator.
-    producer_labels = 'job="auth-service",instance="auth:9090",environment="production",kind="HEADMAN_WEEKLY_SELECTED"'
+    producer_labels = 'job="academic-service",instance="academic:9091",environment="production",kind="HEADMAN_WEEKLY_SELECTED"'
     export_ratio = record_expr("rct_sli:export_bad_ratio5m", filename="telemetry-pipeline.yml")
     terminal_inputs = [
         series("rct_export_jobs_terminal_total{" + producer_labels + ',outcome="success",reason="none"}', "0+90x6"),
@@ -442,7 +442,7 @@ def main():
         case(
             [
                 series(
-                    'rct_export_jobs_last_failure_timestamp_seconds{job="auth-service",instance="auth:9090",environment="production"}',
+                    'rct_export_jobs_last_failure_timestamp_seconds{job="academic-service",instance="academic:9091",environment="production"}',
                     "299x6",
                 )
             ],
@@ -455,7 +455,7 @@ def main():
             [
                 series("rct_export_jobs_failures{" + producer_labels + ',reason="generation_failed"}', "1x6"),
                 series(
-                    'rct_export_jobs_snapshot_timestamp_seconds{job="auth-service",instance="auth:9090",environment="production"}',
+                    'rct_export_jobs_snapshot_timestamp_seconds{job="academic-service",instance="academic:9091",environment="production"}',
                     "0x6",
                 ),
             ],
@@ -481,7 +481,7 @@ def main():
     export_series = []
     export_expected = []
     for kind in kinds:
-        k = 'job="auth-service",environment="production",kind="' + kind + '"'
+        k = 'job="academic-service",environment="production",kind="' + kind + '"'
         for metric, values in [
             ("export_eligible_events30m", "1000x1440"),
             ("export_good_events30m", "995x1440"),

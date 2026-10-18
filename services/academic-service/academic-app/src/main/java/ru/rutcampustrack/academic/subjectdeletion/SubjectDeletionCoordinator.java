@@ -18,14 +18,17 @@ public class SubjectDeletionCoordinator {
     private final SubjectDeletionCommands commands;
     private final SubjectDeletionParticipants participants;
     private final Clock clock;
+    private final AuthSubjectDeletionClient auth;
 
     public SubjectDeletionCoordinator(
             SubjectDeletionCommands commands,
             SubjectDeletionParticipants participants,
-            Clock clock) {
+            Clock clock,
+            AuthSubjectDeletionClient auth) {
         this.commands = commands;
         this.participants = participants;
         this.clock = clock;
+        this.auth = auth;
     }
 
     @Scheduled(fixedDelayString = "${subject-deletion.retry-delay-ms:1000}")
@@ -64,7 +67,11 @@ public class SubjectDeletionCoordinator {
                     participants.attendance(operation.command(false, SubjectDeletionAction.SEAL));
                     commands.participant(id, false, "SEALED");
                 }
-                if (!commands.beginCommit(id)) {
+                // Auth admission finishes before local locks. Its expiry/exact tuple is checked
+                // again in the local transition; this is not a distributed transaction and does
+                // not promise to cancel a write already admitted when a later revocation occurs.
+                var admitted = auth.checkStored(operation);
+                if (!commands.beginCommit(id, admitted)) {
                     commands.release(id, "PROOF_OR_SCOPE_STALE");
                     return;
                 }
@@ -82,7 +89,8 @@ public class SubjectDeletionCoordinator {
                 commands.finish(id);
             }
         } catch (ResponseStatusException conflict) {
-            if (conflict.getStatusCode().value() == 409) commands.release(id, "SCOPE_CHANGED");
+            if (java.util.Set.of(401, 403, 409).contains(conflict.getStatusCode().value()))
+                commands.release(id, "PROOF_OR_SCOPE_STALE");
             else commands.failure(id);
         } catch (RuntimeException unavailable) {
             commands.failure(id);

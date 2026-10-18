@@ -6,6 +6,7 @@ import pytest
 
 from bot.grpc_client.academic_pb2 import UserResponse, UserRoleGrant
 from bot.handlers.homework import cmd_homework_today, cmd_homework_week
+from bot.services.bot_menu import BotGrant, MenuScope
 
 
 def _make_message(user_id: int = 12345) -> MagicMock:
@@ -16,6 +17,9 @@ def _make_message(user_id: int = 12345) -> MagicMock:
     message.chat.id = user_id
     message.answer = AsyncMock()
     message.homework_client = SimpleNamespace(homeworks=AsyncMock())
+    message.menu_client = SimpleNamespace(
+        menu_scope=AsyncMock(return_value=MenuScope(77, 2, 1, (BotGrant("STUDENT", 10),)))
+    )
     return message
 
 
@@ -80,6 +84,7 @@ async def test_homework_week_does_not_require_web_login():
         message,
         academic_client=academic_client,
         bot_homework_client=message.homework_client,
+        bot_menu_client=message.menu_client,
         today=date(2026, 5, 7),
     )
 
@@ -91,6 +96,7 @@ async def test_homework_week_does_not_require_web_login():
         telegram_sender_id=12345,
         expected_user_id=77,
         expected_roles_version=1,
+        expected_telegram_binding_version=2,
         date_from="2026-05-07",
         date_to="2026-05-13",
     )
@@ -130,6 +136,7 @@ async def test_homework_week_formats_upcoming_homeworks():
         message,
         academic_client=academic_client,
         bot_homework_client=message.homework_client,
+        bot_menu_client=message.menu_client,
         today=date(2026, 5, 7),
     )
 
@@ -165,6 +172,7 @@ async def test_homework_week_empty_range_message():
         message,
         academic_client=academic_client,
         bot_homework_client=message.homework_client,
+        bot_menu_client=message.menu_client,
         today=date(2026, 5, 7),
     )
 
@@ -193,6 +201,7 @@ async def test_homework_week_no_active_semester_message():
         message,
         academic_client=academic_client,
         bot_homework_client=message.homework_client,
+        bot_menu_client=message.menu_client,
         today=date(2026, 5, 7),
     )
 
@@ -219,9 +228,18 @@ async def test_direct_homework_never_reads_for_inactive_student_even_with_active
             ],
         )
     )
+    message.menu_client.menu_scope.return_value = MenuScope(
+        77, 2, 1, (BotGrant("STUDENT", 10, status), BotGrant("TEACHER"))
+    )
     message.homework_client.homeworks = AsyncMock()
     academic.get_active_semester = AsyncMock()
-    await handler(message, academic, today=date(2026, 5, 7), bot_homework_client=message.homework_client)
+    await handler(
+        message,
+        academic,
+        today=date(2026, 5, 7),
+        bot_homework_client=message.homework_client,
+        bot_menu_client=message.menu_client,
+    )
     message.homework_client.homeworks.assert_not_awaited()
     academic.get_active_semester.assert_not_awaited()
     assert "ДЗ недоступно" in message.answer.await_args.args[0]
@@ -260,11 +278,18 @@ async def test_today_uses_current_student_grant_group_and_only_today_for_multiro
             _make_homework(2, title="Завтра", lesson_date="2026-05-08"),
         ]
     )
-    await cmd_homework_today(message, academic, today=date(2026, 5, 7), bot_homework_client=message.homework_client)
+    await cmd_homework_today(
+        message,
+        academic,
+        today=date(2026, 5, 7),
+        bot_homework_client=message.homework_client,
+        bot_menu_client=message.menu_client,
+    )
     message.homework_client.homeworks.assert_awaited_once_with(
         telegram_sender_id=12345,
         expected_user_id=77,
         expected_roles_version=1,
+        expected_telegram_binding_version=2,
         date_from="2026-05-07",
         date_to="2026-05-07",
     )
@@ -288,6 +313,6 @@ async def test_missing_protected_capability_never_falls_back_to_legacy_student_r
         get_active_semester=AsyncMock(return_value=_make_semester()),
         get_homeworks_for_week=AsyncMock(),
     )
-    await handler(message, academic, today=date(2026, 5, 7))
+    await handler(message, academic, today=date(2026, 5, 7), bot_menu_client=message.menu_client)
     academic.get_homeworks_for_week.assert_not_awaited()
     assert "Сервис временно недоступен" in message.answer.await_args.args[0]

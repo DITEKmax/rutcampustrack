@@ -230,15 +230,15 @@ groups:
   interval: 30m
   rules:
   - record: rct_sli:export_scrape_complete30m
-    expr: (min by(job,environment)(min_over_time(up{job="auth-service",environment="production"}[30m])) == 1) and on(job,environment) (min by(job,environment)(count_over_time(up{job="auth-service",environment="production"}[30m]))
-      >= 120) and on(job,environment) (count by(job,environment)(up{job="auth-service",environment="production"}) == count by(job,environment)(rct_expected_target{job="auth-service",environment="production"}))
+    expr: (min by(job,environment)(min_over_time(up{job="academic-service",environment="production"}[30m])) == 1) and on(job,environment) (min by(job,environment)(count_over_time(up{job="academic-service",environment="production"}[30m]))
+      >= 120) and on(job,environment) (count by(job,environment)(up{job="academic-service",environment="production"}) == count by(job,environment)(rct_expected_target{job="academic-service",environment="production"}))
   - record: rct_sli:export_eligible_events30m
-    expr: sum by(job,environment,kind)(increase(rct_export_jobs_terminal_total{job="auth-service",environment="production",outcome=~"success|failure"}[30m]))
+    expr: sum by(job,environment,kind)(increase(rct_export_jobs_terminal_total{job="academic-service",environment="production",outcome=~"success|failure"}[30m]))
   - record: rct_sli:export_good_events30m
-    expr: sum by(job,environment,kind)(increase(rct_export_jobs_duration_seconds_bucket{job="auth-service",environment="production",outcome="success",le="60.0"}[30m]))
+    expr: sum by(job,environment,kind)(increase(rct_export_jobs_duration_seconds_bucket{job="academic-service",environment="production",outcome="success",le="60.0"}[30m]))
   - record: rct_sli:export_window_timestamp_seconds
-    expr: time() + 0 * ((min by(job,environment,kind)(count_over_time(rct_export_jobs_terminal_total{job="auth-service",environment="production",outcome=~"success|failure"}[30m]))
-      >= 120) and on(job,environment,kind) (min by(job,environment,kind)(count_over_time(rct_export_jobs_duration_seconds_bucket{job="auth-service",environment="production",outcome="success",le="60.0"}[30m]))
+    expr: time() + 0 * ((min by(job,environment,kind)(count_over_time(rct_export_jobs_terminal_total{job="academic-service",environment="production",outcome=~"success|failure"}[30m]))
+      >= 120) and on(job,environment,kind) (min by(job,environment,kind)(count_over_time(rct_export_jobs_duration_seconds_bucket{job="academic-service",environment="production",outcome="success",le="60.0"}[30m]))
       >= 120) and on(job,environment) rct_sli:export_scrape_complete30m)
 - name: export-slo-long-window
   interval: 1m

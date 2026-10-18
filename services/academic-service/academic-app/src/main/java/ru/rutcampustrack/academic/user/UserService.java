@@ -33,8 +33,6 @@ import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.StudentGroupHistory;
 import ru.rutcampustrack.academic.entity.User;
-import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
-import ru.rutcampustrack.academic.event.StudentInitialMembershipRecordedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService;
@@ -50,20 +48,17 @@ import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
 import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
 import ru.rutcampustrack.academic.security.RequestContext;
 
-import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 /**
- * Business logic for User domain: CRUD, login generation, BCrypt password, headman cascade revoke,
- * student group transfer with history.
+ * Academic profile, eligibility and membership operations; Auth allocates identity and credentials.
  */
 @Service
 public class UserService {
@@ -74,13 +69,9 @@ public class UserService {
     private ru.rutcampustrack.academic.notification.AcademicPersonalNotificationPublisher
             personalNotifications;
 
-    private static final String CHARSET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-    private static final int PASSWORD_LENGTH = 12;
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
-    private final PasswordEncoder passwordEncoder;
-    private final SecureRandom secureRandom = new SecureRandom();
-
+    @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbc;
     private final UserRepository userRepository;
     private final HeadmanAssistantRepository headmanAssistantRepository;
     private final StudentGroupHistoryRepository studentGroupHistoryRepository;
@@ -131,7 +122,6 @@ public class UserService {
         this.roleGrantWriter = roleGrantWriter;
         this.roleGrantReader = roleGrantReader;
         this.headmanAssignmentService = headmanAssignmentService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     /** Compatibility constructor for source-era unit tests that do not mutate membership. */
@@ -161,93 +151,35 @@ public class UserService {
                 passwordEncoder);
     }
 
-    @Transactional
+    @Autowired
+    private ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations
+            identityOperations;
+
+    @Autowired
+    private ru.rutcampustrack.academic.identitycatalog.AuthIdentityDataClient identityData;
+
+    @Transactional(
+            propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public EntityModel<UserCreatedResponse> createUser(CreateUserRequest request) {
-        adminAccess.mutation(null, "USERS_MANAGE");
-        if (request.role() == UserRole.ADMIN) {
-            adminAccess.requireFull();
-            adminAccessService.validate(request.adminAccess());
-        } else if (request.adminAccess() != null)
-            throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
-        validateCreateRoleData(request);
-
-        // Lock and validate the group/semester before creating a STUDENT.  The
-        // returned semester is captured once and becomes the authoritative
-        // joined_at value for this transaction. Role-specific validation above
-        // guarantees that a STUDENT always has a real group here.
-        EnrollmentContext enrollment =
-                request.role() == UserRole.STUDENT
-                        ? prepareInitialEnrollment(request.groupId())
-                        : null;
-
-        // One account keeps one login even when later role grants are added.
-        String login = generateLogin(request);
-
-        // BUG-006-2 / D-07: Pre-check unique fields before save to surface
-        // field-specific 409 Conflict responses. The DataIntegrityViolation
-        // handler is kept as a race-condition backstop (T-58-02-02).
-        if (request.telegramId() != null
-                && userRepository.existsByTelegramId(request.telegramId())) {
-            throw new ConflictException(
-                    "telegramId",
-                    request.telegramId(),
-                    "Telegram ID уже привязан к другой учётной записи");
+        var operation = identityOperations.create(request);
+        if (operation.prepared() == null || operation.prepared().getTargetsCount() != 1)
+            throw io.grpc.Status.UNAVAILABLE.asRuntimeException();
+        long id = operation.prepared().getTargets(0).getUserId();
+        User user = findUserById(id);
+        String initial = null;
+        try {
+            var credentials =
+                    identityData.initialCredentials(
+                            List.of(id),
+                            System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(3));
+            if (credentials.getCredentialsCount() != 1
+                    || credentials.getCredentials(0).getUserId() != id)
+                throw io.grpc.Status.UNAVAILABLE.asRuntimeException();
+            initial = credentials.getCredentials(0).getInitialPassword();
+        } catch (io.grpc.StatusRuntimeException denied) {
+            if (denied.getStatus().getCode() != io.grpc.Status.Code.PERMISSION_DENIED) throw denied;
         }
-        if (request.employeeNumber() != null
-                && !request.employeeNumber().isBlank()
-                && userRepository.existsByEmployeeNumber(request.employeeNumber())) {
-            throw new ConflictException(
-                    "employeeNumber", request.employeeNumber(), "Табельный номер уже используется");
-        }
-
-        // Generate random plain-text password
-        String plainPassword = generatePassword();
-
-        // Hash password with BCrypt
-        String passwordHash = passwordEncoder.encode(plainPassword);
-
-        // Build user entity
-        User user = new User();
-        user.setLogin(login);
-        user.setLastName(request.lastName());
-        user.setFirstName(request.firstName());
-        user.setMiddleName(request.middleName());
-        user.setPasswordHash(passwordHash);
-        user.setRole(request.role());
-        user.setStatus(AccountStatus.ACTIVE);
-        user.setGroupId(request.groupId());
-        user.setEmployeeNumber(request.employeeNumber());
-        user.setTelegramId(request.telegramId());
-        user.setHeadman(false);
-        user.setPasswordChanged(false);
-        // BUG-006: храним plaintext до первой смены пароля чтобы админ мог
-        // переиспользовать его (показать пользователю), пока тот его не сменил.
-        user.setInitialPassword(plainPassword);
-        OffsetDateTime now = OffsetDateTime.now();
-        user.setCreatedAt(now);
-        user.setUpdatedAt(now);
-
-        user = userRepository.save(user);
-        userRepository.flush();
-        if (roleGrantWriter != null) roleGrantWriter.initialize(user);
-        if (request.role() == UserRole.ADMIN)
-            adminAccessService.assignCreated(user.getId(), request.adminAccess());
-        else synchronizeRoleGrants(user);
-        if (enrollment != null) {
-            StudentGroupHistory history = new StudentGroupHistory();
-            history.setUserId(user.getId());
-            history.setGroupId(enrollment.group().getId());
-            history.setJoinedAt(enrollment.semester().getDateFrom());
-            history.setCreatedAt(now);
-            history.setReason("initial-enrollment");
-            studentGroupHistoryRepository.save(history);
-            studentGroupHistoryRepository.flush();
-            eventPublisher.publishEvent(
-                    new StudentInitialMembershipRecordedEvent(history, enrollment.semester()));
-            evictGroupMembersAfterCommit(enrollment.group().getId());
-        }
-        refresh(user);
-        return userAssembler.toCreatedModel(user, plainPassword);
+        return userAssembler.toCreatedModel(user, initial);
     }
 
     public User findUserById(Long id) {
@@ -261,7 +193,39 @@ public class UserService {
      * фильтры role/status через JPA Specification API (D-02). Пустые параметры → без ограничений
      * (backward compatible).
      */
+    @Autowired
+    private ru.rutcampustrack.academic.identitycatalog.IdentityRegistryQueryBarrier registryBarrier;
+
+    public ru.rutcampustrack.academic.identitycatalog.IdentityRegistryQueryBarrier.Result
+            listUserRegistry(
+                    String search,
+                    String roleFilter,
+                    AccountStatus statusFilter,
+                    String roleStatusFilter,
+                    Pageable pageable) {
+        return registryBarrier.read(
+                () -> listUsersLocal(search, roleFilter, statusFilter, roleStatusFilter, pageable));
+    }
+
+    public ru.rutcampustrack.academic.identitycatalog.IdentityRegistryQueryBarrier.Result
+            findUserDetail(long userId) {
+        return registryBarrier.read(
+                () ->
+                        new org.springframework.data.domain.PageImpl<>(
+                                List.of(findUserById(userId))));
+    }
+
     public Page<User> listUsers(
+            String search,
+            String roleFilter,
+            AccountStatus statusFilter,
+            String roleStatusFilter,
+            Pageable pageable) {
+        return listUserRegistry(search, roleFilter, statusFilter, roleStatusFilter, pageable)
+                .page();
+    }
+
+    private Page<User> listUsersLocal(
             String search,
             String roleFilter,
             AccountStatus statusFilter,
@@ -355,183 +319,11 @@ public class UserService {
     }
 
     @CacheEvict(value = "users", key = "#id")
-    @Transactional
+    @Transactional(
+            propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public User updateRoleGrant(Long id, String roleName, RoleGrantUpdateRequest request) {
-        adminAccess.mutation(id, "USERS_MANAGE");
-        if ("ADMIN".equalsIgnoreCase(roleName))
-            throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
-        if (roleGrantReader == null || roleGrantWriter == null) {
-            throw HistoricalMembershipException.precondition("Role grant writer is unavailable");
-        }
-        UserRole role = parseManagedRole(roleName);
-        User user =
-                userRepository
-                        .findByIdForUpdate(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        var current =
-                roleGrantReader.findByUserId(id).stream()
-                        .filter(grant -> role.name().equals(grant.role()))
-                        .findFirst();
-        validateRoleGrantData(role, request, current.isPresent());
-        RoleGrantStatus status = request.status();
-        validateRoleStatus(role, status);
-        String previousStatus =
-                current.map(grant -> grant.status().toUpperCase(java.util.Locale.ROOT))
-                        .orElse(null);
-        boolean freshAssignment =
-                "ARCHIVED".equals(previousStatus) && user.getStatus() != AccountStatus.ARCHIVED;
-        if ("ARCHIVED".equals(previousStatus) && !freshAssignment) {
-            throw new BadRequestException("Архивную роль нельзя изменить через этот endpoint");
-        }
-
-        if (role == UserRole.ADMIN
-                && current.isPresent()
-                && !"ACTIVE".equals(current.get().status())
-                && !freshAssignment) {
-            throw new BadRequestException(
-                    "Неактивную роль ADMIN нельзя реактивировать в этом пакете");
-        }
-
-        Long grantGroupId = current.map(grant -> grant.groupId()).orElse(null);
-        if (role == UserRole.STUDENT
-                && grantGroupId == null
-                && current.isPresent()
-                && user.getRole() == UserRole.STUDENT) {
-            grantGroupId = user.getGroupId();
-        }
-        boolean createdStudentHistory = false;
-        StudentInitialMembershipRecordedEvent initialMembership = null;
-        if (role == UserRole.STUDENT) {
-            if (current.isPresent() && !freshAssignment) {
-                if (request.groupId() != null
-                        && !java.util.Objects.equals(request.groupId(), grantGroupId)) {
-                    throw HistoricalMembershipException.unsupported(
-                            "Изменение группы выполняется только через перевод с причиной");
-                }
-                if (status == RoleGrantStatus.ACTIVE) {
-                    if (grantGroupId == null) {
-                        throw new BadRequestException(
-                                "Активная STUDENT роль требует группу; используй перевод с"
-                                        + " историей");
-                    }
-                    Long telegramId =
-                            request.telegramId() != null
-                                    ? request.telegramId()
-                                    : user.getTelegramId();
-                    applyStudentTelegram(user, telegramId);
-                } else if (request.telegramId() != null) {
-                    applyStudentTelegram(user, request.telegramId());
-                }
-            } else {
-                Long telegram =
-                        request.telegramId() != null ? request.telegramId() : user.getTelegramId();
-                if (request.groupId() == null || telegram == null) {
-                    throw new BadRequestException(
-                            "Для добавления STUDENT нужны группа и Telegram ID");
-                }
-                EnrollmentContext enrollment = prepareInitialEnrollment(request.groupId());
-                grantGroupId = enrollment.group().getId();
-                if (freshAssignment) {
-                    requireCoveredGroup(enrollment.group(), LocalDate.now(MOSCOW));
-                    if (!studentGroupHistoryRepository.findOpenByUserIdForUpdate(id).isEmpty()) {
-                        throw HistoricalMembershipException.precondition(
-                                "Fresh role assignment cannot overlap membership");
-                    }
-                }
-                applyStudentTelegram(user, telegram);
-                StudentGroupHistory history = new StudentGroupHistory();
-                history.setUserId(user.getId());
-                history.setGroupId(grantGroupId);
-                history.setJoinedAt(
-                        freshAssignment
-                                ? LocalDate.now(MOSCOW)
-                                : enrollment.semester().getDateFrom());
-                history.setCreatedAt(OffsetDateTime.now());
-                history.setReason(freshAssignment ? "role-reassignment" : "initial-enrollment");
-                studentGroupHistoryRepository.save(history);
-                studentGroupHistoryRepository.flush();
-                if (!freshAssignment)
-                    initialMembership =
-                            new StudentInitialMembershipRecordedEvent(
-                                    history, enrollment.semester());
-                createdStudentHistory = true;
-            }
-        } else if (role == UserRole.TEACHER) {
-            if (current.isEmpty()) {
-                if (request.employeeNumber() == null || request.employeeNumber().isBlank()) {
-                    throw new BadRequestException("Для добавления TEACHER нужен табельный номер");
-                }
-                ensureEmployeeAvailable(user, request.employeeNumber());
-                if (user.getEmployeeNumber() == null)
-                    user.setEmployeeNumber(request.employeeNumber());
-            } else if (request.employeeNumber() != null
-                    && !request.employeeNumber().isBlank()
-                    && !request.employeeNumber().equals(user.getEmployeeNumber())) {
-                ensureEmployeeAvailable(user, request.employeeNumber());
-                user.setEmployeeNumber(request.employeeNumber());
-            }
-            if (status == RoleGrantStatus.ACTIVE
-                    && (user.getEmployeeNumber() == null || user.getEmployeeNumber().isBlank())) {
-                throw new BadRequestException("Активная TEACHER роль требует табельный номер");
-            }
-        } else {
-            if (request.groupId() != null
-                    || request.employeeNumber() != null
-                    || request.telegramId() != null) {
-                throw new BadRequestException("Для ADMIN role-data не поддерживается этим пакетом");
-            }
-        }
-
-        if (role == UserRole.STUDENT && status != RoleGrantStatus.ACTIVE && user.isHeadman()) {
-            if (user.getGroupId() != null) {
-                revokeGroupAssistants(user.getGroupId());
-            }
-            user.setHeadman(false);
-        }
-        // Keep the legacy scalar aligned when this is the user's base role.
-        // GRADUATED/DISMISSED have no legacy AccountStatus value; ACTIVE is a
-        // deliberate neutral marker so synchronize() preserves the durable
-        // role-specific status instead of reactivating or rewriting it.
-        if (role == user.getRole()) {
-            if (freshAssignment && role == UserRole.STUDENT) user.setGroupId(grantGroupId);
-            switch (status) {
-                case ACTIVE -> user.setStatus(AccountStatus.ACTIVE);
-                case EXPELLED -> user.setStatus(AccountStatus.EXPELLED);
-                case SUSPENDED -> user.setStatus(AccountStatus.SUSPENDED);
-                case GRADUATED, DISMISSED -> user.setStatus(AccountStatus.ACTIVE);
-                case ARCHIVED ->
-                        throw new BadRequestException("ARCHIVED не применим к управляемой роли");
-            }
-        }
-
-        if (role == UserRole.STUDENT) {
-            if (createdStudentHistory && isTerminalStudentGrantStatus(status)) {
-                closeOpenMembershipOnTerminalStatus(id, LocalDate.now(MOSCOW));
-            } else if (current.isPresent()
-                    && isTerminalStudentGrantStatus(status)
-                    && !isTerminalStudentGrantStatus(previousStatus)) {
-                closeOpenMembershipOnTerminalStatus(id, LocalDate.now(MOSCOW));
-            } else if (current.isPresent()
-                    && status == RoleGrantStatus.ACTIVE
-                    && isTerminalStudentGrantStatus(previousStatus)) {
-                openMembershipOnStudentReactivation(id, grantGroupId, LocalDate.now(MOSCOW));
-            }
-        }
-        user.setUpdatedAt(OffsetDateTime.now());
-        User saved = userRepository.save(user);
-        userRepository.flush();
-        roleGrantWriter.project(saved);
-        roleGrantWriter.upsertRole(
-                id,
-                role.name().toLowerCase(java.util.Locale.ROOT),
-                status.name().toLowerCase(java.util.Locale.ROOT),
-                grantGroupId);
-        if (role == UserRole.STUDENT) {
-            evictGroupMembersAfterCommit(grantGroupId);
-        }
-        if (initialMembership != null) eventPublisher.publishEvent(initialMembership);
-        refresh(saved);
-        return saved;
+        identityOperations.role(id, roleName, request);
+        return findUserById(id);
     }
 
     public List<User> listTeachers() {
@@ -580,31 +372,11 @@ public class UserService {
     }
 
     @CacheEvict(value = "users", key = "#id")
-    @Transactional
+    @Transactional(
+            propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public User updateUser(Long id, UpdateUserRequest request) {
-        adminAccess.mutation(id, "USERS_MANAGE");
-        if (request.role() == UserRole.ADMIN) {
-            adminAccess.requireFull();
-            if (!adminAccessService.get(id).assigned())
-                throw ru.rutcampustrack.shared.security.admin.AdminAccessException.invalid();
-        }
-        User user =
-                userRepository
-                        .findByIdForUpdate(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        ensureMembershipMutationSupported(user, request.role(), request.groupId());
-        user.setLastName(request.lastName());
-        user.setFirstName(request.firstName());
-        user.setMiddleName(request.middleName());
-        user.setRole(request.role());
-        user.setGroupId(request.groupId());
-        user.setEmployeeNumber(request.employeeNumber());
-        user.setTelegramId(request.telegramId());
-        user.setUpdatedAt(OffsetDateTime.now());
-        User saved = userRepository.save(user);
-        userRepository.flush();
-        synchronizeRoleGrants(saved);
-        return saved;
+        identityOperations.replaceProfile(id, request);
+        return findUserById(id);
     }
 
     private void validateRoleFilter(String roleFilter, String roleStatusFilter) {
@@ -769,214 +541,12 @@ public class UserService {
     }
 
     @CacheEvict(value = "users", key = "#id")
-    @Transactional
+    @Transactional(
+            propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public User patchUser(Long id, PatchUserRequest request) {
-        adminAccess.begin("USERS_MANAGE");
-        adminAccess.target(id);
         if (request != null && request.isHeadman() != null) adminAccess.require("GROUPS_MANAGE");
-        if (request != null
-                && request.status() != null
-                && request.status() != AccountStatus.ACTIVE) {
-            if (id.equals(requestContext.getUserId()) && adminAccessService.get(id).assigned())
-                throw new ru.rutcampustrack.shared.security.admin.AdminAccessException(
-                        org.springframework.http.HttpStatus.FORBIDDEN,
-                        "ADMIN_ACCESS_SELF_CHANGE_DENIED");
-            adminAccess.protectLast(id);
-        }
-        if (request != null && request.status() == AccountStatus.ARCHIVED) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.CONFLICT, "protectedroute_required");
-        }
-        boolean profileOnlyPatch =
-                request != null
-                        && request.isHeadman() == null
-                        && request.groupId() == null
-                        && request.status() == null
-                        && request.telegramId() == null;
-        boolean canonicalHeadmanMutation =
-                request != null && request.isHeadman() != null && headmanAssignmentService != null;
-        if (canonicalHeadmanMutation) {
-            // The canonical operation owns all user locks before taking the
-            // group lock. Combining it with a group move would make the
-            // resulting membership ambiguous, so keep the old admin-users
-            // action atomic and require two explicit operations.
-            if (request.groupId() != null) {
-                User membershipSnapshot =
-                        userRepository
-                                .findById(id)
-                                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-                if (!java.util.Objects.equals(membershipSnapshot.getGroupId(), request.groupId())) {
-                    throw new BadRequestException(
-                            "groupId", "Назначение старосты нельзя совмещать с переводом группы");
-                }
-            }
-            if (request.isHeadman()
-                    && request.status() != null
-                    && request.status() != AccountStatus.ACTIVE) {
-                throw new BadRequestException(
-                        "status", "Старостой может быть только активный студент");
-            }
-            if (request.isHeadman()) {
-                headmanAssignmentService.assignLegacyHeadman(
-                        id,
-                        request.telegramId(),
-                        request.status() == null
-                                ? null
-                                : request.status().name().toLowerCase(java.util.Locale.ROOT));
-            } else {
-                headmanAssignmentService.revokeLegacyHeadman(id);
-            }
-        }
-        if (!canonicalHeadmanMutation) adminAccess.mutation(id, "USERS_MANAGE");
-        User user =
-                userRepository
-                        .findByIdForUpdate(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        String patchedLastName =
-                request.lastName() == null
-                        ? null
-                        : normalizeRequiredProfileField(request.lastName(), "lastName", "Фамилия");
-        String patchedFirstName =
-                request.firstName() == null
-                        ? null
-                        : normalizeRequiredProfileField(request.firstName(), "firstName", "Имя");
-        String patchedMiddleName =
-                request.middleName() == null
-                        ? null
-                        : normalizeOptionalProfileField(
-                                request.middleName(), 128, "middleName", "Отчество");
-        String patchedEmployeeNumber =
-                request.employeeNumber() == null
-                        ? null
-                        : normalizeOptionalProfileField(
-                                request.employeeNumber(), 32, "employeeNumber", "Табельный номер");
-        if (request.employeeNumber() != null) {
-            boolean hasTeacherRole =
-                    user.getRole() == UserRole.TEACHER
-                            || roleGrantReader != null
-                                    && roleGrantReader.findByUserId(id).stream()
-                                            .anyMatch(
-                                                    grant ->
-                                                            "TEACHER"
-                                                                    .equalsIgnoreCase(
-                                                                            grant.role()));
-            if (hasTeacherRole && patchedEmployeeNumber == null) {
-                throw new BadRequestException(
-                        "employeeNumber", "Для преподавателя табельный номер обязателен");
-            }
-            if (patchedEmployeeNumber != null
-                    && !java.util.Objects.equals(patchedEmployeeNumber, user.getEmployeeNumber())
-                    && userRepository.existsByEmployeeNumber(patchedEmployeeNumber)) {
-                throw new ConflictException(
-                        "employeeNumber",
-                        patchedEmployeeNumber,
-                        "Табельный номер уже используется");
-            }
-        }
-        Long oldGroupId = user.getGroupId();
-        boolean oldHeadman = user.isHeadman();
-        ensureMembershipMutationSupported(user, null, request.groupId());
-
-        AccountStatus targetStatus = request.status() != null ? request.status() : user.getStatus();
-        if (request.isHeadman() != null && request.isHeadman()) {
-            if (!canonicalHeadmanMutation && user.getRole() != UserRole.STUDENT) {
-                throw new BadRequestException("Только студент может быть назначен старостой");
-            }
-            if (!canonicalHeadmanMutation && targetStatus != AccountStatus.ACTIVE) {
-                throw new BadRequestException(
-                        "Только активный студент может быть назначен старостой");
-            }
-        }
-        if (isTerminalMembershipStatus(targetStatus)) {
-            closeOpenMembershipOnTerminalStatus(id, LocalDate.now(MOSCOW));
-        }
-
-        if (patchedLastName != null) {
-            user.setLastName(patchedLastName);
-        }
-        if (patchedFirstName != null) {
-            user.setFirstName(patchedFirstName);
-        }
-        if (request.middleName() != null) {
-            user.setMiddleName(patchedMiddleName);
-        }
-        if (request.groupId() != null) {
-            user.setGroupId(request.groupId());
-        }
-        if (request.employeeNumber() != null) {
-            user.setEmployeeNumber(patchedEmployeeNumber);
-        }
-        if (request.telegramId() != null) {
-            user.setTelegramId(request.telegramId());
-        }
-        if (request.status() != null) {
-            user.setStatus(request.status());
-        }
-
-        if (isTerminalMembershipStatus(targetStatus) && user.isHeadman()) {
-            revokeGroupAssistants(oldGroupId);
-            user.setHeadman(false);
-        }
-
-        // Headman revoke cascade (D-13)
-        if (!canonicalHeadmanMutation
-                && request.isHeadman() != null
-                && !request.isHeadman()
-                && user.isHeadman()) {
-            revokeGroupAssistants(user.getGroupId());
-            user.setHeadman(false);
-        }
-
-        // Headman assign (USER-03). Request validation ran before the
-        // terminal-history mutation above, so an unsupported transition cannot
-        // leave a closed history row behind.
-        if (!canonicalHeadmanMutation && request.isHeadman() != null && request.isHeadman()) {
-            user.setHeadman(true);
-        }
-
-        if (isTerminalMembershipStatus(targetStatus)) {
-            // The historical row is the source of dated membership. Clear the
-            // live assignment as well so the completeness guard does not treat
-            // an archived/expelled account as a current student with no open
-            // interval. Past rows remain available through their own timeline.
-            user.setGroupId(null);
-        }
-
-        boolean groupChanged = !java.util.Objects.equals(oldGroupId, user.getGroupId());
-
-        // After headman flag change — evict groups and group_members caches for this user's group
-        // (per D-10)
-        if ((request.isHeadman() != null || groupChanged)
-                && oldGroupId != null
-                && cacheManager != null) {
-            Cache groupsCache = cacheManager.getCache("groups");
-            if (groupsCache != null) {
-                groupsCache.evict(oldGroupId);
-            }
-            Cache groupMembersCache = cacheManager.getCache("group_members");
-            if (groupMembersCache != null) {
-                groupMembersCache.evict(oldGroupId);
-            }
-        }
-
-        // M05 audit fix (bug-hunter 1.1): rbac evict должен идти AFTER COMMIT,
-        // иначе concurrent isHeadmanOf читает pre-commit snapshot и кешит
-        // старое значение — ex-headman сохраняет privileges до истечения TTL.
-        boolean headmanChanged = oldHeadman != user.isHeadman();
-        if (headmanChanged || groupChanged) {
-            Long newGroupId = user.getGroupId();
-            evictRbacAfterCommit(id, oldGroupId, newGroupId);
-        }
-
-        user.setUpdatedAt(OffsetDateTime.now());
-        User saved = userRepository.save(user);
-        userRepository.flush();
-        if (saved.getStatus() == AccountStatus.ARCHIVED) {
-            archiveRoleGrants(saved);
-        } else if (!profileOnlyPatch && !(canonicalHeadmanMutation && request.isHeadman())) {
-            synchronizeRoleGrants(saved);
-        }
-        return saved;
+        identityOperations.patch(id, request);
+        return findUserById(id);
     }
 
     private static String normalizeRequiredProfileField(String value, String field, String label) {
@@ -1000,202 +570,12 @@ public class UserService {
         return normalized.isEmpty() ? null : normalized;
     }
 
-    @CacheEvict(value = "users", key = "#id")
-    @Transactional
-    public void archiveUser(Long id) {
-        adminAccess.mutation(id, "USERS_ARCHIVE");
-        adminAccess.protectLast(id);
-        User user =
-                userRepository
-                        .findByIdIncludingArchivedForUpdate(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        Long oldGroupId = user.getGroupId();
-        boolean wasHeadman = user.isHeadman();
-        closeOpenMembershipOnTerminalStatus(id, LocalDate.now(MOSCOW));
-        if (wasHeadman) {
-            revokeGroupAssistants(oldGroupId);
-            user.setHeadman(false);
-        }
-        user.setStatus(AccountStatus.ARCHIVED);
-        user.setGroupId(null);
-        user.setUpdatedAt(OffsetDateTime.now());
-        User saved = userRepository.save(user);
-        userRepository.flush();
-        archiveRoleGrants(saved);
-        if (wasHeadman) {
-            evictRbacAfterCommit(id, oldGroupId, null);
-        }
-    }
-
     @CacheEvict(value = "group_members", key = "#request.newGroupId()")
-    @Transactional
+    @Transactional(
+            propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public User transferStudent(Long id, TransferStudentRequest request) {
-        adminAccess.mutation(id, "USERS_MANAGE");
-        User user =
-                userRepository
-                        .findByIdForUpdate(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        var studentGrant =
-                roleGrantReader == null
-                        ? java.util.Optional
-                                .<ru.rutcampustrack.academic.contract.dto.user
-                                                .RoleGrantViewResponse>
-                                        empty()
-                        : roleGrantReader.findByUserId(id).stream()
-                                .filter(grant -> "STUDENT".equals(grant.role()))
-                                .findFirst();
-        boolean legacyStudent = user.getRole() == UserRole.STUDENT;
-        if (!legacyStudent && studentGrant.isEmpty()) {
-            throw new BadRequestException("Перевод возможен только для студентов");
-        }
-
-        Long oldGroupId = studentGrant.map(grant -> grant.groupId()).orElse(user.getGroupId());
-        if (studentGrant.isPresent() && !"ACTIVE".equals(studentGrant.get().status())) {
-            throw new BadRequestException("Перевод доступен только для активного STUDENT");
-        }
-        Long newGroupId = request.newGroupId();
-        if (newGroupId == null || newGroupId <= 0 || oldGroupId == null) {
-            throw HistoricalMembershipException.precondition(
-                    "Перевод требует текущую и новую управляемые группы");
-        }
-        if (oldGroupId.equals(newGroupId)) {
-            throw HistoricalMembershipException.invalid(
-                    "Новая группа должна отличаться от текущей");
-        }
-        if (groupRepository == null
-                || coverageRepository == null
-                || studentGroupHistoryRepository == null) {
-            throw HistoricalMembershipException.precondition(
-                    "Historical membership writer is unavailable");
-        }
-
-        // All transfers lock the affected group rows in ascending order after
-        // the user row is locked.  Re-reading the user under the lock makes the
-        // source group authoritative even if the initial request raced.
-        List<Long> groupIds = new ArrayList<>(List.of(oldGroupId, newGroupId));
-        groupIds.sort(Comparator.naturalOrder());
-        for (Long groupId : groupIds) {
-            groupRepository
-                    .findByIdForUpdate(groupId)
-                    .orElseThrow(
-                            () ->
-                                    HistoricalMembershipException.notFound(
-                                            "Group " + groupId + " not found"));
-        }
-        Group oldGroup =
-                groupRepository
-                        .findById(oldGroupId)
-                        .orElseThrow(
-                                () ->
-                                        HistoricalMembershipException.notFound(
-                                                "Source group not found"));
-        Group newGroup =
-                groupRepository
-                        .findById(newGroupId)
-                        .orElseThrow(
-                                () ->
-                                        HistoricalMembershipException.notFound(
-                                                "Destination group not found"));
-        LocalDate transferDate = LocalDate.now(MOSCOW);
-        requireCoveredGroup(oldGroup, transferDate);
-        requireCoveredGroup(newGroup, transferDate);
-        boolean hadActiveHeadmanGrant =
-                userRepository.findActiveHeadmanIdsByGrantGroupId(oldGroupId).contains(id);
-
-        List<StudentGroupHistory> openHistories =
-                studentGroupHistoryRepository.findOpenByUserIdForUpdate(id);
-        if (openHistories.size() != 1 || !oldGroupId.equals(openHistories.get(0).getGroupId())) {
-            throw HistoricalMembershipException.precondition(
-                    "Student must have exactly one open source membership history");
-        }
-        StudentGroupHistory oldHistory = openHistories.get(0);
-        if (oldHistory.getJoinedAt() == null || oldHistory.getJoinedAt().isAfter(transferDate)) {
-            throw HistoricalMembershipException.precondition(
-                    "Source membership history is invalid");
-        }
-
-        // Close current group history entry
-        oldHistory.setLeftAt(transferDate);
-        oldHistory.setReason(request.reason());
-        studentGroupHistoryRepository.save(oldHistory);
-
-        // Create new group history entry
-        StudentGroupHistory newHistory = new StudentGroupHistory();
-        newHistory.setUserId(id);
-        newHistory.setGroupId(newGroupId);
-        newHistory.setJoinedAt(transferDate);
-        newHistory.setReason(request.reason());
-        newHistory.setCreatedAt(OffsetDateTime.now());
-        studentGroupHistoryRepository.save(newHistory);
-
-        // Update user's current group
-        if (legacyStudent) {
-            user.setGroupId(newGroupId);
-        }
-
-        // If user was headman in old group — cascade revoke (same as D-13)
-        if (user.isHeadman() && oldGroupId != null) {
-            if (personalNotifications != null) {
-                personalNotifications.revokeGroupAssistants(oldGroupId);
-            } else headmanAssistantRepository.revokeAllByGroupId(oldGroupId);
-            user.setHeadman(false);
-        }
-
-        // Leaving the managed group also ends this student's delegated access.
-        // The group lock above serializes this with assistant/headman writes.
-        headmanAssistantRepository
-                .findByGroupIdAndStudentIdAndIsActiveTrue(oldGroupId, id)
-                .ifPresent(
-                        assistant -> {
-                            assistant.setActive(false);
-                            assistant.setRevokedAt(OffsetDateTime.now());
-                            headmanAssistantRepository.save(assistant);
-                            if (personalNotifications != null)
-                                personalNotifications.assistant(
-                                        id,
-                                        oldGroupId,
-                                        true,
-                                        false,
-                                        assistant.getPermissions(),
-                                        new String[0]);
-                        });
-
-        user.setUpdatedAt(OffsetDateTime.now());
-
-        // Evict caches for old group (ID only known at runtime) and transferred user
-        if (cacheManager != null) {
-            Cache groupMembersCache = cacheManager.getCache("group_members");
-            if (groupMembersCache != null && oldGroupId != null) {
-                groupMembersCache.evict(oldGroupId);
-            }
-            Cache usersCache = cacheManager.getCache("users");
-            if (usersCache != null) {
-                usersCache.evict(id);
-            }
-        }
-        // M05 audit fix (bug-hunter 1.1): rbac evict переносится в afterCommit —
-        // concurrent isHeadmanOf иначе закеширует стейл-значение из pre-commit
-        // snapshot'а и дальнейшие RBAC-проверки пройдут по старой группе.
-        evictRbacAfterCommit(id, oldGroupId, newGroupId);
-
-        User saved = userRepository.save(user);
-        userRepository.flush();
-        roleGrantWriter.transfer(
-                saved,
-                !legacyStudent && studentGrant.isPresent()
-                        ? studentGrant.get().status().toLowerCase(java.util.Locale.ROOT)
-                        : null,
-                newGroupId);
-        refresh(saved);
-        eventPublisher.publishEvent(new GroupUpdatedEvent(this, oldGroupId));
-        eventPublisher.publishEvent(new GroupUpdatedEvent(this, newGroupId));
-        if (personalNotifications != null)
-            personalNotifications.membership(id, oldGroupId, newGroupId, transferDate);
-        if (personalNotifications != null
-                && hadActiveHeadmanGrant
-                && !userRepository.findActiveHeadmanIdsByGrantGroupId(oldGroupId).contains(id))
-            personalNotifications.headman(id, oldGroupId, true, false);
-        return saved;
+        identityOperations.transfer(id, request);
+        return findUserById(id);
     }
 
     public User getMe() {
@@ -1208,40 +588,34 @@ public class UserService {
     @Transactional
     public User updateMyAvatar(String avatarId) {
         Long userId = requestContext.getUserId();
-        User user =
-                userRepository
-                        .findById(userId)
-                        .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
-        // Empty/blank string == clear (render initials).
-        user.setAvatarId(avatarId == null || avatarId.isBlank() ? null : avatarId);
-        user.setUpdatedAt(OffsetDateTime.now());
-        User saved = userRepository.save(user);
+        if (userId == null || userId <= 0)
+            throw io.grpc.Status.UNAUTHENTICATED.asRuntimeException();
+        String avatar = avatarId == null || avatarId.isBlank() ? null : avatarId;
+        if (avatar != null && avatar.length() > 32)
+            throw new BadRequestException("avatarId", "Недопустимый аватар");
+        // Avatar is presentation-only and independently merged; coordinator APPLY never
+        // overwrites it from an earlier accepted profile snapshot.
+        if (jdbc.update(
+                        "UPDATE academic_profiles p SET avatar_id=?,updated_at=now() WHERE p.id=?"
+                                + " AND p.archived_at IS NULL AND NOT EXISTS(SELECT 1 FROM"
+                                + " academic_identity_operation_targets t JOIN"
+                                + " academic_identity_operations o ON o.operation_id=t.operation_id"
+                                + " WHERE t.user_id=p.id AND t.fenced AND o.phase<>'SUCCEEDED')",
+                        avatar,
+                        userId)
+                != 1)
+            throw io.grpc.Status.UNAVAILABLE
+                    .withDescription("profile mutation pending")
+                    .asRuntimeException();
+        if (entityManager != null) entityManager.clear();
         if (cacheManager != null) {
-            Cache usersCache = cacheManager.getCache("users");
-            if (usersCache != null) {
-                usersCache.evict(userId);
-            }
+            Cache cache = cacheManager.getCache("users");
+            if (cache != null) cache.evict(userId);
         }
-        return saved;
+        return findUserById(userId);
     }
 
     // --- Private helpers ---
-
-    /**
-     * User row is already locked; serialize the snapshot/outbox cascade with delegated-access
-     * writes.
-     */
-    private void revokeGroupAssistants(Long groupId) {
-        if (groupId == null) return;
-        if (personalNotifications == null) {
-            headmanAssistantRepository.revokeAllByGroupId(groupId);
-            return;
-        }
-        groupRepository
-                .findByIdForUpdate(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId));
-        personalNotifications.revokeGroupAssistants(groupId);
-    }
 
     private EnrollmentContext prepareInitialEnrollment(Long groupId) {
         if (groupRepository == null || semesterRepository == null || coverageRepository == null) {
@@ -1345,46 +719,6 @@ public class UserService {
     }
 
     /**
-     * Closes the one managed open interval at the terminal transition date. The half-open interval
-     * remains valid for same-day and future-dated legacy rows by using max(joined_at,
-     * transitionDate); an uncovered user receives no synthetic history row.
-     */
-    private void closeOpenMembershipOnTerminalStatus(Long userId, LocalDate transitionDate) {
-        if (userId == null || userId <= 0 || transitionDate == null) {
-            throw HistoricalMembershipException.invalid(
-                    "Terminal membership transition is invalid");
-        }
-        if (studentGroupHistoryRepository == null) {
-            throw HistoricalMembershipException.precondition(
-                    "Historical membership writer is unavailable");
-        }
-        List<StudentGroupHistory> openHistories =
-                studentGroupHistoryRepository.findOpenByUserIdForUpdate(userId);
-        if (openHistories == null) {
-            throw HistoricalMembershipException.precondition(
-                    "Open membership lookup returned no coherent result");
-        }
-        if (openHistories.size() > 1) {
-            throw HistoricalMembershipException.precondition(
-                    "Student has multiple open membership intervals");
-        }
-        if (openHistories.isEmpty()) {
-            return;
-        }
-
-        StudentGroupHistory openHistory = openHistories.get(0);
-        if (openHistory == null || openHistory.getJoinedAt() == null) {
-            throw HistoricalMembershipException.precondition("Open membership interval is invalid");
-        }
-        LocalDate leftAt =
-                transitionDate.isBefore(openHistory.getJoinedAt())
-                        ? openHistory.getJoinedAt()
-                        : transitionDate;
-        openHistory.setLeftAt(leftAt);
-        studentGroupHistoryRepository.save(openHistory);
-    }
-
-    /**
      * Reopens a new managed interval after a terminal STUDENT grant is reactivated. The old closed
      * row remains immutable; using today's canonical Moscow date avoids resurrecting the old
      * semester-start row.
@@ -1473,33 +807,6 @@ public class UserService {
                             "employeeNumber", "Табельный номер не применим к роли ADMIN");
                 }
             }
-        }
-    }
-
-    private void refresh(User user) {
-        // Spring always supplies the persistence context; the source-era in-memory constructor has
-        // none.
-        if (entityManager != null) entityManager.refresh(user);
-    }
-
-    private void synchronizeRoleGrants(User user) {
-        // The compatibility constructor is retained for source-era unit tests;
-        // the Spring application constructor always supplies the V24 writer.
-        if (roleGrantWriter != null) {
-            roleGrantWriter.synchronize(user);
-            refresh(user);
-        }
-    }
-
-    private void archiveRoleGrants(User user) {
-        // Archive keeps durable grant rows for session/audit foreign keys while
-        // removing every selectable privilege from this account.
-        if (roleGrantWriter != null) {
-            roleGrantWriter.archive(user);
-            // @SQLRestriction excludes the newly archived row from a normal JPA refresh.
-            // These two values are the command's authoritative archive projection.
-            user.setStatus(AccountStatus.ARCHIVED);
-            user.setHeadman(false);
         }
     }
 
@@ -1655,54 +962,5 @@ public class UserService {
             }
         }
         return result.toString();
-    }
-
-    private String generatePassword() {
-        StringBuilder sb = new StringBuilder(PASSWORD_LENGTH);
-        for (int i = 0; i < PASSWORD_LENGTH; i++) {
-            sb.append(CHARSET.charAt(secureRandom.nextInt(CHARSET.length())));
-        }
-        return sb.toString();
-    }
-
-    /**
-     * M05 audit fix (bug-hunter 1.1/1.2): evict rbac-cache ключи {@code <userId>:<groupId>} только
-     * ПОСЛЕ commit'а транзакции.
-     *
-     * <p>Если evict'ить внутри @Transactional — concurrent isHeadmanOf читает pre-commit snapshot
-     * из БД и перезаписывает cache старым значением до истечения TTL (60s), что позволяет
-     * ex-headman'у сохранять privileges.
-     *
-     * <p>Fallback вне активной транзакции — немедленный evict (сценарий unit-тестов и прямых
-     * вызовов из non-@Transactional-context).
-     */
-    private void evictRbacAfterCommit(Long userId, Long oldGroupId, Long newGroupId) {
-        if (cacheManager == null) {
-            return;
-        }
-        Runnable evict =
-                () -> {
-                    Cache rbac = cacheManager.getCache("rbac");
-                    if (rbac == null) {
-                        return;
-                    }
-                    if (oldGroupId != null) {
-                        rbac.evict(userId + ":" + oldGroupId);
-                    }
-                    if (newGroupId != null && !java.util.Objects.equals(oldGroupId, newGroupId)) {
-                        rbac.evict(userId + ":" + newGroupId);
-                    }
-                };
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(
-                    new TransactionSynchronization() {
-                        @Override
-                        public void afterCommit() {
-                            evict.run();
-                        }
-                    });
-        } else {
-            evict.run();
-        }
     }
 }

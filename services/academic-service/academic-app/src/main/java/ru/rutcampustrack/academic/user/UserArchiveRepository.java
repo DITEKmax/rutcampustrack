@@ -14,8 +14,6 @@ import java.util.UUID;
 
 @Repository
 public class UserArchiveRepository {
-    @org.springframework.beans.factory.annotation.Autowired
-    private ru.rutcampustrack.academic.admin.AcademicAuthDataCommands authCommands;
 
     @org.springframework.beans.factory.annotation.Autowired
     private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
@@ -36,60 +34,86 @@ public class UserArchiveRepository {
         // lock only after the group is ours, avoiding a user-FK/group lock cycle.
         List<Long> lockedUsers =
                 jdbc.queryForList(
-                        """
-SELECT u.id FROM users u WHERE u.id=? OR EXISTS (SELECT 1 FROM user_role_grants g
-  WHERE g.user_id=u.id AND g.role='admin' AND g.status='active')
-ORDER BY u.id FOR NO KEY UPDATE
-""",
+                        "SELECT id FROM academic_profiles WHERE id=? OR id=? ORDER BY id FOR NO KEY"
+                                + " UPDATE",
                         Long.class,
+                        owner,
                         target);
         adminAccess.require("USERS_ARCHIVE");
-        adminAccess.target(target);
-        if (!Boolean.TRUE.equals(
-                jdbc.queryForObject(
-                        """
-SELECT EXISTS(SELECT 1 FROM users u JOIN user_role_grants g ON g.user_id=u.id
-  WHERE u.id=? AND u.status<>'archived' AND g.role='admin' AND g.status='active')
-""",
-                        Boolean.class,
-                        owner))) denied();
         if (!lockedUsers.contains(target))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден");
         jdbc.queryForList(
                 """
-                SELECT id FROM groups WHERE id IN (
-                  SELECT group_id FROM user_role_grants WHERE user_id=? AND group_id IS NOT NULL
-                  UNION SELECT group_id FROM headman_assistants WHERE student_id=?
-                ) ORDER BY id FOR UPDATE
-                """,
+SELECT id FROM groups WHERE id IN (
+  SELECT group_id FROM academic_role_eligibility WHERE user_id=? AND group_id IS NOT NULL
+  UNION SELECT group_id FROM headman_assistants WHERE student_id=?
+  UNION SELECT group_id FROM assignments WHERE teacher_id=?
+) ORDER BY id FOR UPDATE
+""",
                 Long.class,
+                target,
                 target,
                 target);
     }
 
+    /** Recovery uses accepted local material, never a reconstructed request actor/JWT. */
+    public void verifyAcceptedArchive(
+            long target,
+            ru.rutcampustrack.academic.identityoperation.AcademicIdentityLocalCommand command) {
+        for (var group : command.groups()) {
+            var revisions =
+                    jdbc.queryForList(
+                            "SELECT academic_revision FROM groups WHERE id=? FOR UPDATE",
+                            Long.class,
+                            group.groupId());
+            if (revisions.size() != 1 || revisions.getFirst() != group.expectedRevision())
+                throw acceptedArchiveConflict();
+        }
+        if (jdbc.queryForList(
+                                "SELECT id FROM academic_profiles WHERE id=? FOR NO KEY UPDATE",
+                                Long.class,
+                                target)
+                        .size()
+                != 1) throw acceptedArchiveConflict();
+        var admission = command.archiveAdmission();
+        if (admission == null || !observe(target).digest().equals(admission.expectedLocalDigest()))
+            throw acceptedArchiveConflict();
+    }
+
+    private static io.grpc.StatusRuntimeException acceptedArchiveConflict() {
+        // Thrown inside the operation store transaction. Its rollback completes before
+        // the coordinator handles ABORTED and asks Auth to retain fail-safe fences.
+        return io.grpc.Status.ABORTED
+                .withDescription("accepted archive preview changed")
+                .asRuntimeException();
+    }
+
     public Local observe(long target) {
-        String state =
-                jdbc.queryForObject(
-                        """
-SELECT jsonb_build_object('user', (SELECT to_jsonb(safe_user) FROM (SELECT u.id, u.login, u.last_name, u.first_name, u.middle_name, u.telegram_id, u.telegram_username, u.employee_number, u.role, u.status, u.is_headman, u.group_id, u.password_changed, u.created_at, u.updated_at, u.avatar_id, u.roles_version, u.credentials_version, u.telegram_binding_version, u.generated_password_origin) safe_user),
-    'grants', COALESCE((SELECT jsonb_agg(to_jsonb(g) ORDER BY g.id)
-       FROM user_role_grants g WHERE g.user_id=u.id), '[]'::jsonb))::text
-FROM users u WHERE u.id=?
-""",
+        var states =
+                jdbc.queryForList(
+                        "SELECT"
+                            + " jsonb_build_object('profile',to_jsonb(p),'eligibility',COALESCE((SELECT"
+                            + " jsonb_agg(to_jsonb(e) ORDER BY e.role) FROM"
+                            + " academic_role_eligibility e WHERE"
+                            + " e.user_id=p.id),'[]'::jsonb))::text FROM academic_profiles p WHERE"
+                            + " p.id=?",
                         String.class,
                         target);
-        if (state == null)
+        if (states.size() != 1)
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден");
-        // No private user state is persisted or returned; only its digest seals local authority.
+        String state = states.getFirst();
         String status =
                 jdbc.queryForObject(
-                        "SELECT status::text FROM users WHERE id=?", String.class, target);
+                        "SELECT CASE WHEN archived_at IS NULL THEN 'active' ELSE 'archived' END"
+                                + " FROM academic_profiles WHERE id=?",
+                        String.class,
+                        target);
         long groups =
                 jdbc.queryForObject(
                         """
 SELECT COUNT(*) FROM (
   SELECT group_id FROM student_group_history WHERE user_id=?
-  UNION SELECT group_id FROM user_role_grants WHERE user_id=? AND group_id IS NOT NULL
+  UNION SELECT group_id FROM academic_role_eligibility WHERE user_id=? AND group_id IS NOT NULL
   UNION SELECT group_id FROM assignments WHERE teacher_id=?
 ) linked WHERE group_id IS NOT NULL
 """,
@@ -100,8 +124,8 @@ SELECT COUNT(*) FROM (
         long headman =
                 jdbc.queryForObject(
                         """
-                        SELECT COUNT(DISTINCT group_id) FROM user_role_grants
-                        WHERE user_id=? AND role='headman' AND status='active'
+                        SELECT COUNT(DISTINCT group_id) FROM academic_role_eligibility
+                        WHERE user_id=? AND role='HEADMAN' AND status='ACTIVE'
                         """,
                         Long.class,
                         target);
@@ -109,9 +133,9 @@ SELECT COUNT(*) FROM (
                 Boolean.TRUE.equals(
                         jdbc.queryForObject(
                                 """
-                                SELECT EXISTS(SELECT 1 FROM user_role_grants WHERE user_id=?
-                                    AND role IN ('teacher','headman') AND status='active')
-                                """,
+SELECT EXISTS(SELECT 1 FROM academic_role_eligibility WHERE user_id=?
+    AND role IN ('TEACHER','HEADMAN') AND status='ACTIVE')
+""",
                                 Boolean.class,
                                 target));
         // Warning concerns effective assignments on the observed Moscow date.
@@ -122,9 +146,9 @@ SELECT COUNT(*) FROM assignments a JOIN semesters s ON s.id=a.semester_id
 WHERE a.teacher_id=? AND a.lifecycle_state='ACTIVE'
   AND a.valid_from <= (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date
   AND COALESCE(a.valid_until_exclusive,s.date_to+1) > (CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Moscow')::date
-  AND NOT EXISTS (SELECT 1 FROM assignments other JOIN user_role_grants grant_row
-    ON grant_row.user_id=other.teacher_id AND grant_row.role='teacher' AND grant_row.status='active'
-    JOIN users teacher ON teacher.id=other.teacher_id AND teacher.status<>'archived'
+  AND NOT EXISTS (SELECT 1 FROM assignments other JOIN academic_role_eligibility grant_row
+    ON grant_row.user_id=other.teacher_id AND grant_row.role='TEACHER' AND grant_row.status='ACTIVE'
+    JOIN academic_profiles teacher ON teacher.id=other.teacher_id AND teacher.archived_at IS NULL
     WHERE other.teacher_id<>a.teacher_id AND other.subject_id=a.subject_id
       AND other.group_id=a.group_id AND other.semester_id=a.semester_id
       AND other.lesson_type=a.lesson_type AND other.lifecycle_state='ACTIVE'
@@ -147,6 +171,26 @@ WHERE a.teacher_id=? AND a.lifecycle_state='ACTIVE'
                                 + dangerous);
         return new Local(
                 target, fingerprint, status, groups, headman, sole, dangerous, Instant.now());
+    }
+
+    public void requireIdentityRevision(
+            ru.rutcampustrack.authauthority.grpc.IdentityAuthoritySnapshot identity) {
+        if (identity == null
+                || identity.getAccountState()
+                        != ru.rutcampustrack.authauthority.grpc.AuthorityAccountState
+                                .AUTHORITY_ACCOUNT_STATE_ACTIVE
+                || !Boolean.TRUE.equals(
+                        jdbc.queryForObject(
+                                "SELECT EXISTS(SELECT 1 FROM academic_profiles WHERE id=? AND"
+                                    + " academic_revision=? AND applied_auth_roles_version=? AND"
+                                    + " archived_at IS NULL)",
+                                Boolean.class,
+                                identity.getUserId(),
+                                identity.getAcademicRevision(),
+                                identity.getRolesVersion())))
+            throw io.grpc.Status.UNAVAILABLE
+                    .withDescription("archive identity changed")
+                    .asRuntimeException();
     }
 
     public void savePreview(long owner, Local local, String digest, Instant expiry) {
@@ -216,22 +260,18 @@ VALUES (?,?,?,?,?,?)
 
     public void checkArchiveSafeguards(long owner, long target) {
         if (owner == target) denied();
-        adminAccess.protectLast(target);
-    }
-
-    public void restore(long target) {
-        // Academic restores only its profile; Auth atomically fences all old authority.
-        authCommands.restore(target);
-        jdbc.update("UPDATE users SET group_id=NULL,updated_at=NOW() WHERE id=?", target);
+        // Auth PREPARE owns self/protected-target/last-FULL checks against current grants.
     }
 
     public List<Long> cacheGroups(long target) {
         return jdbc.queryForList(
                 """
-                SELECT group_id FROM user_role_grants WHERE user_id=? AND group_id IS NOT NULL
-                UNION SELECT group_id FROM headman_assistants WHERE student_id=?
-                """,
+SELECT group_id FROM academic_role_eligibility WHERE user_id=? AND group_id IS NOT NULL
+UNION SELECT group_id FROM headman_assistants WHERE student_id=?
+UNION SELECT group_id FROM assignments WHERE teacher_id=?
+""",
                 Long.class,
+                target,
                 target,
                 target);
     }
@@ -247,8 +287,8 @@ VALUES (?,?,?,?,?,?)
         jdbc.update(
                 """
                 UPDATE headman_assistants SET is_active=FALSE,revoked_at=NOW() WHERE is_active
-                AND group_id IN (SELECT group_id FROM user_role_grants
-                   WHERE user_id=? AND role='headman' AND status='active')
+                AND group_id IN (SELECT group_id FROM academic_role_eligibility
+                   WHERE user_id=? AND role='HEADMAN' AND status='ACTIVE')
                 """,
                 target);
     }

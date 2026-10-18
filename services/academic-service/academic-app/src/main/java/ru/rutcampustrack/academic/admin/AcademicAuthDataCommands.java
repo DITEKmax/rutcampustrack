@@ -18,6 +18,9 @@ public class AcademicAuthDataCommands {
     private final AuthDataCommands commands;
     private final RequestContext context;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.identitycatalog.AuthIdentityDataClient identityData;
+
     public AcademicAuthDataCommands(JdbcTemplate jdbc, RequestContext context) {
         this.commands = new AuthDataCommands(jdbc);
         this.context = context;
@@ -99,24 +102,23 @@ public class AcademicAuthDataCommands {
                 group);
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void restore(long target) {
-        commands.restore(context.getClaims(), target);
-    }
-
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void adminAccess(
-            long target,
-            String mode,
-            List<String> permissions,
-            long expectedVersion,
-            boolean revoke) {
-        commands.adminAccess(
-                context.getClaims(), target, mode, permissions, expectedVersion, revoke);
-    }
-
     public String initialPassword(long target) {
-        return commands.initialPassword(context.getClaims(), target);
+        try {
+            var response =
+                    identityData.initialCredentials(
+                            List.of(target),
+                            System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(3));
+            if (response.getCredentialsCount() != 1
+                    || response.getCredentials(0).getUserId() != target)
+                throw io.grpc.Status.UNAVAILABLE.asRuntimeException();
+            var credential = response.getCredentials(0);
+            return credential.getPasswordChanged() || credential.getInitialPassword().isBlank()
+                    ? null
+                    : credential.getInitialPassword();
+        } catch (io.grpc.StatusRuntimeException denied) {
+            if (denied.getStatus().getCode() == io.grpc.Status.Code.PERMISSION_DENIED) return null;
+            throw denied;
+        }
     }
 
     private static String code(Enum<?> value) {

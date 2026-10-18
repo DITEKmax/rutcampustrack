@@ -47,6 +47,13 @@ class Settings(BaseSettings):
     auth_grpc_tls_ca_path: str = ""
     bot_to_auth_service_token: str = Field(default="", repr=False)
 
+    # Read-only MobileBFF bot capability. Missing TLS/trust/identity fails closed.
+    bot_read_grpc_host: str = "mobile-bff"
+    bot_read_grpc_port: int = 19098
+    bot_read_grpc_tls_enabled: bool = False
+    bot_read_grpc_tls_ca_path: str = ""
+    bot_to_read_service_token: str = Field(default="", repr=False)
+
     # Academic Service gRPC (prod compose enables TLS and provides its CA)
     academic_grpc_tls_enabled: bool = False
     academic_grpc_tls_ca_path: str = ""

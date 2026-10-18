@@ -45,8 +45,8 @@ import ru.rutcampustrack.auth.session.model.SessionState;
 import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
 import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
+import ru.rutcampustrack.auth.support.AuthDatabaseFixture;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -69,10 +69,9 @@ import javax.sql.DataSource;
 /**
  * Real PostgreSQL proof for the two session authority ports.
  *
- * <p>The container is deliberately fresh and non-reusable. The academic migration directory is
- * loaded from this checkout so the test exercises the same V1..V24 schema chain as the owning
- * service, including the imported V24 source. No Spring application context or reused academic_db
- * fixture is involved.
+ * <p>The container is fresh and runs the Auth-only schema. The runtime principal has local table
+ * rights and no Academic SQL bridge. Identity locks serialize operation fences with refresh,
+ * session mutations and credential changes.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JdbcSessionAuthorityIT {
@@ -97,8 +96,6 @@ class JdbcSessionAuthorityIT {
     @BeforeAll
     void startDatabase() {
         POSTGRES.start();
-        ru.rutcampustrack.shared.testcontainers.MigrationTestUtils.prepareAcademicAuthPrincipals(
-                POSTGRES);
         Flyway.configure()
                 .dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
                 .locations("filesystem:" + migrationDirectory().toAbsolutePath())
@@ -112,12 +109,12 @@ class JdbcSessionAuthorityIT {
         source.setDriverClassName("org.postgresql.Driver");
         dataSource = source;
         jdbc = new JdbcTemplate(dataSource);
+        AuthDatabaseFixture.runtimePrincipal(jdbc);
         var authoritySource =
                 new DriverManagerDataSource(
                         POSTGRES.getJdbcUrl(),
                         "rct_auth_runtime",
-                        ru.rutcampustrack.shared.testcontainers.MigrationTestUtils
-                                .ACADEMIC_AUTH_FIXTURE_PASSWORD);
+                        AuthDatabaseFixture.RUNTIME_PASSWORD);
         authorityJdbc = new JdbcTemplate(authoritySource);
         transactionManager = new DataSourceTransactionManager(authoritySource);
         passwordChangedOutbox =
@@ -616,7 +613,9 @@ class JdbcSessionAuthorityIT {
                 grantId(user, AuthRole.STUDENT));
         long currentRolesVersion =
                 jdbc.queryForObject(
-                        "SELECT roles_version FROM users WHERE id=?", Long.class, user.userId());
+                        "SELECT roles_version FROM auth_identities WHERE id=?",
+                        Long.class,
+                        user.userId());
         SessionPrincipal neutral =
                 new SessionPrincipal(
                         user.userId(),
@@ -1033,12 +1032,12 @@ class JdbcSessionAuthorityIT {
     void passwordChangeRechecksHashUpdatesFlagsRevokesAllAndAuditsAtomically() {
         UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
         jdbc.update(
-                "UPDATE users SET telegram_id = ? WHERE id = ?",
+                "UPDATE auth_identities SET telegram_id = ? WHERE id = ?",
                 700000000L + user.userId(),
                 user.userId());
         CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
         CreatedSession other = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
-        String replacementHash = "replacement-hash-" + user.userId();
+        String replacementHash = AuthDatabaseFixture.REPLACEMENT_HASH;
 
         CredentialSessionTransactionPort.ChangePasswordResult result =
                 authority.changePassword(
@@ -1059,19 +1058,19 @@ class JdbcSessionAuthorityIT {
         assertThat(result.revokedSessionCount()).isEqualTo(2);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT password_hash FROM users WHERE id = ?",
+                                "SELECT password_hash FROM auth_identities WHERE id = ?",
                                 String.class,
                                 user.userId()))
                 .isEqualTo(replacementHash);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT password_changed FROM users WHERE id = ?",
+                                "SELECT password_changed FROM auth_identities WHERE id = ?",
                                 Boolean.class,
                                 user.userId()))
                 .isTrue();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT initial_password FROM users WHERE id = ?",
+                                "SELECT initial_password FROM auth_identities WHERE id = ?",
                                 String.class,
                                 user.userId()))
                 .isNull();
@@ -1094,7 +1093,7 @@ class JdbcSessionAuthorityIT {
         UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
         CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
         CreatedSession other = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
-        String replacementHash = "event-failure-hash-" + user.userId();
+        String replacementHash = AuthDatabaseFixture.REPLACEMENT_HASH;
         JdbcSessionAuthority failingAuthority = failingAuthority("password.event");
 
         CredentialSessionTransactionPort.ChangePasswordResult result =
@@ -1114,7 +1113,7 @@ class JdbcSessionAuthorityIT {
         UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
         CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
         CreatedSession other = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
-        String replacementHash = "session-failure-hash-" + user.userId();
+        String replacementHash = AuthDatabaseFixture.REPLACEMENT_HASH;
         JdbcSessionAuthority failingAuthority = failingAuthority("password.sessions");
 
         CredentialSessionTransactionPort.ChangePasswordResult result =
@@ -1133,7 +1132,7 @@ class JdbcSessionAuthorityIT {
     void expiredCurrentSessionCannotChangePasswordOrAppendSecurityEvent() {
         UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
         CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
-        String replacementHash = "expired-replacement-hash";
+        String replacementHash = AuthDatabaseFixture.REPLACEMENT_HASH;
 
         CredentialSessionTransactionPort.ChangePasswordResult result =
                 authority.changePassword(
@@ -1154,19 +1153,19 @@ class JdbcSessionAuthorityIT {
                 .isEqualTo(CredentialSessionTransactionPort.FailureCode.SESSION_REVOKED);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT password_hash FROM users WHERE id = ?",
+                                "SELECT password_hash FROM auth_identities WHERE id = ?",
                                 String.class,
                                 user.userId()))
                 .isEqualTo(user.passwordHash());
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT password_changed FROM users WHERE id = ?",
+                                "SELECT password_changed FROM auth_identities WHERE id = ?",
                                 Boolean.class,
                                 user.userId()))
                 .isFalse();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT initial_password FROM users WHERE id = ?",
+                                "SELECT initial_password FROM auth_identities WHERE id = ?",
                                 String.class,
                                 user.userId()))
                 .isEqualTo("initial");
@@ -1196,7 +1195,8 @@ class JdbcSessionAuthorityIT {
                                 current.sessionId(),
                                 new CredentialSessionTransactionPort.CredentialHash(
                                         user.passwordHash()),
-                                new CredentialSessionTransactionPort.CredentialHash("new-hash"),
+                                new CredentialSessionTransactionPort.CredentialHash(
+                                        AuthDatabaseFixture.REPLACEMENT_HASH),
                                 SESSION_TIME.plusSeconds(70),
                                 event(
                                         user.userId(),
@@ -1207,7 +1207,7 @@ class JdbcSessionAuthorityIT {
                 .isEqualTo(CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT password_hash FROM users WHERE id = ?",
+                                "SELECT password_hash FROM auth_identities WHERE id = ?",
                                 String.class,
                                 user.userId()))
                 .isEqualTo(user.passwordHash());
@@ -1231,14 +1231,16 @@ class JdbcSessionAuthorityIT {
     void notificationIntentRollsBackWithPasswordSessionsAndOneUseResetTicket() {
         UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
         jdbc.update(
-                "UPDATE users SET telegram_id = ? WHERE id = ?",
+                "UPDATE auth_identities SET telegram_id = ? WHERE id = ?",
                 700000000L + user.userId(),
                 user.userId());
         CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
 
         var failedChange =
                 failingAuthority("password.outbox")
-                        .changePassword(passwordCommand(user, current, "replacement-hash"));
+                        .changePassword(
+                                passwordCommand(
+                                        user, current, AuthDatabaseFixture.REPLACEMENT_HASH));
         assertThat(failedChange.failureCode())
                 .isEqualTo(CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE);
         assertPasswordStateUnchanged(user);
@@ -1260,7 +1262,7 @@ class JdbcSessionAuthorityIT {
                                         new CredentialSessionTransactionPort.CredentialHash(
                                                 ticketHash),
                                         new CredentialSessionTransactionPort.CredentialHash(
-                                                "reset-replacement-hash"),
+                                                AuthDatabaseFixture.REPLACEMENT_HASH),
                                         SESSION_TIME.plusSeconds(60)));
         assertThat(failedReset.failureCode())
                 .isEqualTo(
@@ -1436,7 +1438,7 @@ class JdbcSessionAuthorityIT {
                     .executeWithoutResult(
                             status -> {
                                 authorityJdbc.queryForObject(
-                                        "SELECT id FROM users WHERE id=? FOR UPDATE",
+                                        "SELECT id FROM auth_identities WHERE id=? FOR UPDATE",
                                         Long.class,
                                         user.userId());
                                 waiting.set(
@@ -1530,7 +1532,7 @@ class JdbcSessionAuthorityIT {
     private static CredentialSessionTransactionPort.PasswordResetCommand reset(
             String hash, Instant now) {
         return new CredentialSessionTransactionPort.PasswordResetCommand(
-                resetHash(hash), resetHash("synthetic-reset-password-hash"), now);
+                resetHash(hash), resetHash(AuthDatabaseFixture.REPLACEMENT_HASH), now);
     }
 
     private long notificationCount(long userId) {
@@ -1544,11 +1546,15 @@ class JdbcSessionAuthorityIT {
         UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
         CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
         long card = np01Card(user);
-        jdbc.update("UPDATE users SET telegram_id=NULL WHERE id=?", user.userId());
+        jdbc.update("UPDATE auth_identities SET telegram_id=NULL WHERE id=?", user.userId());
 
         assertThat(
                         authority
-                                .changePassword(passwordCommand(user, current, "np01-change-hash"))
+                                .changePassword(
+                                        passwordCommand(
+                                                user,
+                                                current,
+                                                AuthDatabaseFixture.REPLACEMENT_HASH))
                                 .succeeded())
                 .isTrue();
         np01AssertCleanupEvent(user);
@@ -1561,7 +1567,7 @@ class JdbcSessionAuthorityIT {
                 .isEqualTo("PENDING");
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT initial_password IS NULL FROM users WHERE id=?",
+                                "SELECT initial_password IS NULL FROM auth_identities WHERE id=?",
                                 Boolean.class,
                                 user.userId()))
                 .isTrue();
@@ -1572,7 +1578,7 @@ class JdbcSessionAuthorityIT {
     void np01UnlinkedResetKeepsCleanupIntentWithoutRedirectedRecipient() throws Exception {
         UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
         np01Card(user);
-        jdbc.update("UPDATE users SET telegram_id=NULL WHERE id=?", user.userId());
+        jdbc.update("UPDATE auth_identities SET telegram_id=NULL WHERE id=?", user.userId());
         String ticketHash = "np01-ticket-" + user.userId();
         jdbc.update(
                 "INSERT INTO password_reset_tokens(user_id,token_hash,expires_at) VALUES(?,?,?)",
@@ -1595,7 +1601,7 @@ class JdbcSessionAuthorityIT {
         long card = np01Card(user);
         long generation =
                 jdbc.queryForObject(
-                        "SELECT credentials_version FROM users WHERE id=?",
+                        "SELECT credentials_version FROM auth_identities WHERE id=?",
                         Long.class,
                         user.userId());
         long revision =
@@ -1605,12 +1611,14 @@ class JdbcSessionAuthorityIT {
                         card);
         var result =
                 failingAuthority("password.outbox")
-                        .changePassword(passwordCommand(user, current, "np01-rollback-hash"));
+                        .changePassword(
+                                passwordCommand(
+                                        user, current, AuthDatabaseFixture.REPLACEMENT_HASH));
         assertThat(result.failureCode())
                 .isEqualTo(CredentialSessionTransactionPort.FailureCode.AUTHORITY_UNAVAILABLE);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT credentials_version FROM users WHERE id=?",
+                                "SELECT credentials_version FROM auth_identities WHERE id=?",
                                 Long.class,
                                 user.userId()))
                 .isEqualTo(generation);
@@ -1634,11 +1642,11 @@ class JdbcSessionAuthorityIT {
 
     private long np01Card(UserFixture user) {
         long chat = 700000000L + user.userId();
-        jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", chat, user.userId());
+        jdbc.update("UPDATE auth_identities SET telegram_id=? WHERE id=?", chat, user.userId());
         return jdbc.queryForObject(
                 """
 INSERT INTO bot_credential_messages(user_id,private_chat_id,message_id,telegram_binding_version,credentials_version)
-SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM users WHERE id=? RETURNING record_id
+SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM auth_identities WHERE id=? RETURNING record_id
 """,
                 Long.class,
                 user.userId());
@@ -1658,13 +1666,13 @@ SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM use
         assertThat(payload.path("credentials_version").asLong())
                 .isEqualTo(
                         jdbc.queryForObject(
-                                "SELECT credentials_version FROM users WHERE id=?",
+                                "SELECT credentials_version FROM auth_identities WHERE id=?",
                                 Long.class,
                                 user.userId()));
         assertThat(payload.path("telegram_binding_version").asLong())
                 .isEqualTo(
                         jdbc.queryForObject(
-                                "SELECT telegram_binding_version FROM users WHERE id=?",
+                                "SELECT telegram_binding_version FROM auth_identities WHERE id=?",
                                 Long.class,
                                 user.userId()));
         assertThat(payload.has("telegram_id")).isFalse();
@@ -1689,19 +1697,19 @@ SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM use
     private void assertPasswordStateUnchanged(UserFixture user) {
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT password_hash FROM users WHERE id = ?",
+                                "SELECT password_hash FROM auth_identities WHERE id = ?",
                                 String.class,
                                 user.userId()))
                 .isEqualTo(user.passwordHash());
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT password_changed FROM users WHERE id = ?",
+                                "SELECT password_changed FROM auth_identities WHERE id = ?",
                                 Boolean.class,
                                 user.userId()))
                 .isFalse();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT initial_password FROM users WHERE id = ?",
+                                "SELECT initial_password FROM auth_identities WHERE id = ?",
                                 String.class,
                                 user.userId()))
                 .isEqualTo("initial");
@@ -1733,7 +1741,7 @@ SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM use
                 .execute(
                         status -> {
                             authorityJdbc.queryForObject(
-                                    "SELECT id FROM users WHERE id = ? FOR UPDATE",
+                                    "SELECT id FROM auth_identities WHERE id = ? FOR UPDATE",
                                     Long.class,
                                     userId);
                             writerLockHeld.countDown();
@@ -1747,13 +1755,17 @@ SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM use
                                 throw new IllegalStateException(
                                         "grant writer was interrupted", interrupted);
                             }
-                            return authorityJdbc.update(
-                                    "UPDATE user_role_grants SET status = ?, updated_at = ? "
-                                            + "WHERE id = ? AND user_id = ?",
-                                    "suspended",
-                                    Timestamp.from(GRANT_TIME.plusSeconds(2)),
-                                    grantId,
-                                    userId);
+                            UUID operation = AuthDatabaseFixture.fence(authorityJdbc, userId);
+                            int changed =
+                                    authorityJdbc.update(
+                                            "UPDATE user_role_grants SET status = ?, updated_at = ?"
+                                                    + " WHERE id = ? AND user_id = ?",
+                                            "suspended",
+                                            Timestamp.from(GRANT_TIME.plusSeconds(2)),
+                                            grantId,
+                                            userId);
+                            AuthDatabaseFixture.unfence(authorityJdbc, operation, userId);
+                            return changed;
                         });
     }
 
@@ -1772,7 +1784,7 @@ SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM use
                             WHERE blocked.pid <> pg_backend_pid()
                               AND blocked.state = 'active'
                               AND blocked.wait_event_type = 'Lock'
-                              AND blocked.query ~* 'from[[:space:]]+users'
+                              AND blocked.query ~* 'from[[:space:]]+auth_identities'
                               AND blocked.query ~* 'where[[:space:]]+id[[:space:]]*='
                               AND blocked.query ~* 'for[[:space:]]+update'
                               AND EXISTS (
@@ -1788,6 +1800,98 @@ SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM use
             TimeUnit.MILLISECONDS.sleep(10);
         }
         return false;
+    }
+
+    @Test
+    void fencedAndPendingAuthorityDenyAdmissionButLogoutStillInvalidatesAcceptedActor() {
+        UserFixture user = seedUser(GrantSeed.active(AuthRole.STUDENT, 1L));
+        CreatedSession current = create(user, AuthMethod.PASSWORD, grantId(user, AuthRole.STUDENT));
+        CreatedSession other = create(user, AuthMethod.OTP, grantId(user, AuthRole.STUDENT));
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status -> AuthDatabaseFixture.fence(authorityJdbc, user.userId()));
+        assertThat(
+                        authority
+                                .snapshot(
+                                        new SessionStatePort.SnapshotCommand(
+                                                user.userId(), current.sessionId(), SESSION_TIME))
+                                .failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);
+        assertThat(
+                        authority
+                                .refresh(
+                                        new SessionStatePort.RefreshCommand(
+                                                user.userId(),
+                                                current.sessionId(),
+                                                current.currentJti(),
+                                                UUID.randomUUID(),
+                                                SESSION_TIME.plusSeconds(1)))
+                                .failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);
+        assertThat(
+                        authority
+                                .changePassword(
+                                        passwordCommand(
+                                                user,
+                                                current,
+                                                AuthDatabaseFixture.REPLACEMENT_HASH))
+                                .failureCode())
+                .isEqualTo(CredentialSessionTransactionPort.FailureCode.INVALID_SESSION);
+        assertThat(
+                        authority
+                                .createSession(
+                                        command(
+                                                user,
+                                                AuthMethod.OTP,
+                                                UUID.randomUUID(),
+                                                UUID.randomUUID(),
+                                                grantId(user, AuthRole.STUDENT),
+                                                user.grants(),
+                                                user.rolesVersion(),
+                                                null))
+                                .failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);
+        assertThat(
+                        authority
+                                .revokeCurrent(
+                                        new SessionStatePort.RevokeCurrentCommand(
+                                                user.userId(),
+                                                current.sessionId(),
+                                                SESSION_TIME,
+                                                event(
+                                                        user.userId(),
+                                                        current.sessionId(),
+                                                        SecurityEvent.Type.CURRENT_LOGOUT)))
+                                .succeeded())
+                .isTrue();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT revoked_at IS NOT NULL FROM auth_sessions WHERE sid=?",
+                                Boolean.class,
+                                current.sessionId()))
+                .isTrue();
+        jdbc.update("UPDATE auth_identities SET account_state='PENDING' WHERE id=?", user.userId());
+        assertThat(
+                        authority
+                                .snapshot(
+                                        new SessionStatePort.SnapshotCommand(
+                                                user.userId(), other.sessionId(), SESSION_TIME))
+                                .failureCode())
+                .isEqualTo(SessionStatePort.FailureCode.INVALID_SESSION);
+        assertThat(
+                        authority
+                                .revokeAll(
+                                        new SessionStatePort.RevokeAllCommand(
+                                                user.userId(),
+                                                other.sessionId(),
+                                                SESSION_TIME,
+                                                event(
+                                                        user.userId(),
+                                                        other.sessionId(),
+                                                        SecurityEvent.Type.LOGOUT_ALL)))
+                                .succeeded())
+                .isTrue();
+        assertThat(revokedSessionCount(user.userId())).isEqualTo(2);
     }
 
     @Test
@@ -1893,24 +1997,8 @@ SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM use
 
     private UserFixture seedUser(GrantSeed... seeds) {
         String login = "jdbc-it-" + (++userSequence);
-        String hash = "credential-hash-" + login;
-        long userId =
-                jdbc.queryForObject(
-                        """
-                        INSERT INTO users (
-                            login, password_hash, last_name, first_name,
-                            role, status, is_headman, group_id,
-                            initial_password, password_changed, created_at, updated_at
-                        ) VALUES (?, ?, 'Jdbc', 'Authority',
-                                  CAST('student' AS user_role), CAST('active' AS account_status),
-                                  FALSE, 1, 'initial', FALSE, ?, ?)
-                        RETURNING id
-                        """,
-                        Long.class,
-                        login,
-                        hash,
-                        Timestamp.from(GRANT_TIME),
-                        Timestamp.from(GRANT_TIME));
+        String hash = AuthDatabaseFixture.PASSWORD_HASH;
+        long userId = AuthDatabaseFixture.identity(jdbc, login, GRANT_TIME);
         for (GrantSeed seed : seeds) {
             jdbc.queryForObject(
                     """
@@ -1933,7 +2021,9 @@ SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM use
     private UserFixture loadUser(long userId, String passwordHash) {
         long rolesVersion =
                 jdbc.queryForObject(
-                        "SELECT roles_version FROM users WHERE id = ?", Long.class, userId);
+                        "SELECT roles_version FROM auth_identities WHERE id = ?",
+                        Long.class,
+                        userId);
         List<RoleGrant> grants =
                 jdbc.query(
                         """
@@ -1994,17 +2084,7 @@ SELECT id,telegram_id,9001,telegram_binding_version,credentials_version FROM use
     }
 
     private static Path migrationDirectory() {
-        Path current = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
-        while (current != null) {
-            Path candidate =
-                    current.resolve(
-                            "services/academic-service/academic-app/src/main/resources/db/migration");
-            if (Files.isRegularFile(candidate.resolve("V24__auth_session_authority.sql"))) {
-                return candidate;
-            }
-            current = current.getParent();
-        }
-        throw new IllegalStateException("academic migration directory is unavailable");
+        return AuthDatabaseFixture.migrations();
     }
 
     private record UserFixture(

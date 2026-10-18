@@ -38,6 +38,8 @@ services:
       target: rct-migration-password
     - source: pg-academic-monitor-password
       target: rct-monitor-password
+    - source: pg-auth-migration-password
+      target: rct-auth-migration-password
     networks:
       - private_net
     # M09 G7 (NEW-157) — см. docs/resource-limits.md.
@@ -252,8 +254,11 @@ services:
     container_name: rct-auth-service
     logging: *bounded-logs
     environment:
-      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-auth/
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-auth/,configtree:/run/rct-directed/
       SPRING_DATASOURCE_USERNAME: rct_auth_runtime
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-academic:5432/auth_db
+      SPRING_FLYWAY_USER: rct_auth_migrator
+      SPRING_FLYWAY_LOCATIONS: classpath:db/auth-migration
       MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
@@ -292,10 +297,20 @@ services:
       # M09 G7 (NEW-157) — heap = 0.75 × mem_limit. См. docs/resource-limits.md.
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
+    - source: mobile-bff-to-auth-service-token
+      target: /run/rct-directed/grpc.service-identity.mobile-bff-to-auth-token
+    - source: academic-to-auth-service-token
+      target: /run/rct-directed/grpc.service-identity.academic-to-auth-token
+    - source: attendance-to-auth-service-token
+      target: /run/rct-directed/grpc.service-identity.attendance-to-auth-token
+    - source: auth-to-academic-presentation-service-token
+      target: /run/rct-directed/grpc.service-identity.auth-to-academic-presentation-token
     - source: bot-to-auth-service-token
       target: /run/rct-auth/BOT_TO_AUTH_SERVICE_TOKEN
     - source: pg-auth-runtime-password
-      target: /run/rct-db/POSTGRES_ACADEMIC_PASSWORD
+      target: /run/rct-db/POSTGRES_AUTH_PASSWORD
+    - source: pg-auth-migration-password
+      target: /run/rct-db/SPRING_FLYWAY_PASSWORD
     volumes:
       - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
       - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.key:/run/rct-auth-tls/auth-server.key:ro
@@ -347,13 +362,15 @@ services:
     container_name: rct-academic-service
     logging: *bounded-logs
     environment:
-      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-cache/
+      AUTH_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-auth-tls/auth-server.crt
+      AUTH_GRPC_TLS_AUTHORITY: auth-service
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-cache/,configtree:/run/rct-directed/
       RCT_CACHE_REDIS_HOST: redis-cache
       RCT_CACHE_REDIS_PORT: '6379'
       RCT_CACHE_REDIS_USERNAME: rct_cache
       SPRING_DATASOURCE_USERNAME: rct_academic_runtime
       SPRING_FLYWAY_USER: rct_migrator
-      SPRING_FLYWAY_LOCATIONS: classpath:db/migration,filesystem:/etc/rct/flyway-callbacks
+      SPRING_FLYWAY_LOCATIONS: classpath:db/academic-migration
       MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
@@ -386,6 +403,20 @@ services:
       # M09 G7 (NEW-157).
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
+    - source: academic-to-auth-service-token
+      target: /run/rct-directed/grpc.service-identity.academic-to-auth-token
+    - source: auth-to-academic-presentation-service-token
+      target: /run/rct-directed/grpc.service-identity.auth-to-academic-presentation-token
+    - source: mobile-bff-to-academic-service-token
+      target: /run/rct-directed/grpc.service-identity.mobile-bff-to-academic-token
+    - source: attendance-bot-read-to-academic-service-token
+      target: /run/rct-directed/grpc.service-identity.attendance-bot-read-to-academic-token
+    - source: academic-report-to-attendance-service-token
+      target: /run/rct-directed/grpc.service-identity.academic-report-to-attendance-token
+    - source: academic-report-to-schedule-service-token
+      target: /run/rct-directed/grpc.service-identity.academic-report-to-schedule-token
+    - source: notification-to-academic-service-token
+      target: /run/rct-directed/grpc.service-identity.notification-to-academic-token
     - source: redis-cache-runtime-password
       target: /run/rct-cache/rct.cache.redis.password
     - source: pg-academic-service-runtime-password
@@ -393,7 +424,7 @@ services:
     - source: pg-academic-migration-password
       target: /run/rct-db/spring.flyway.password
     volumes:
-      - ./infra/postgres/flyway-callbacks:/etc/rct/flyway-callbacks:ro
+      - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.key:/run/rct-academic-tls/academic-server.key:ro
@@ -427,7 +458,7 @@ services:
     container_name: rct-schedule-service
     logging: *bounded-logs
     environment:
-      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-directed/
       SPRING_DATASOURCE_USERNAME: rct_runtime
       SPRING_FLYWAY_USER: rct_migrator
       SPRING_FLYWAY_LOCATIONS: classpath:db/migration,filesystem:/etc/rct/flyway-callbacks
@@ -461,6 +492,12 @@ services:
       # M09 G7 (NEW-157).
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
+    - source: mobile-bff-to-schedule-service-token
+      target: /run/rct-directed/grpc.service-identity.mobile-bff-to-schedule-token
+    - source: attendance-bot-read-to-schedule-service-token
+      target: /run/rct-directed/grpc.service-identity.attendance-bot-read-to-schedule-token
+    - source: academic-report-to-schedule-service-token
+      target: /run/rct-directed/grpc.service-identity.academic-report-to-schedule-token
     - source: pg-schedule-runtime-password
       target: /run/rct-db/POSTGRES_SCHEDULE_PASSWORD
     - source: pg-schedule-migration-password
@@ -500,6 +537,10 @@ services:
     container_name: rct-attendance-service
     logging: *bounded-logs
     environment:
+      ATTENDANCE_BOT_READ_AUTH_GRPC_CA_PATH: file:/run/rct-auth-tls/auth-server.crt
+      ATTENDANCE_BOT_READ_ACADEMIC_GRPC_CA_PATH: file:/run/rct-academic-tls/academic-server.crt
+      ATTENDANCE_BOT_READ_SCHEDULE_GRPC_CA_PATH: file:/run/rct-schedule-tls/schedule-server.crt
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-directed/
       MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
@@ -531,7 +572,19 @@ services:
       # 512m/75% heap; gateway saw PrematureClose BEFORE response. Keep heap
       # lower and leave room for JVM native memory + DOCX zip buffers.
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=30.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+    secrets:
+      - source: attendance-to-auth-service-token
+        target: /run/rct-directed/grpc.service-identity.attendance-to-auth-token
+      - source: mobile-bff-to-attendance-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-attendance-token
+      - source: attendance-bot-read-to-academic-service-token
+        target: /run/rct-directed/grpc.service-identity.attendance-bot-read-to-academic-token
+      - source: attendance-bot-read-to-schedule-service-token
+        target: /run/rct-directed/grpc.service-identity.attendance-bot-read-to-schedule-token
+      - source: academic-report-to-attendance-service-token
+        target: /run/rct-directed/grpc.service-identity.academic-report-to-attendance-token
     volumes:
+      - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
@@ -612,6 +665,7 @@ services:
     container_name: rct-notification-web
     logging: *bounded-logs
     environment:
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-directed/
       MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
@@ -664,6 +718,9 @@ services:
       NOTIFICATION_HISTORY_TTL_DAYS: ${NOTIFICATION_HISTORY_TTL_DAYS:-30}
       # M09 G7 (NEW-157).
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+    secrets:
+      - source: notification-to-academic-service-token
+        target: /run/rct-directed/grpc.service-identity.notification-to-academic-token
     volumes:
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
@@ -700,11 +757,17 @@ services:
     container_name: rct-notification-bot
     logging: *bounded-logs
     # The dedicated credential is not part of the shared Compose environment.
-    command: ['/bin/sh', '-ec', 'BOT_TO_AUTH_SERVICE_TOKEN="$$(cat /run/secrets/bot-to-auth-service-token)"; export BOT_TO_AUTH_SERVICE_TOKEN; exec python -m bot']
+    command: ['/bin/sh', '-ec', 'BOT_TO_AUTH_SERVICE_TOKEN="$$(cat /run/secrets/bot-to-auth-service-token)"; export BOT_TO_AUTH_SERVICE_TOKEN; BOT_TO_READ_SERVICE_TOKEN="$$(cat /run/secrets/bot-to-read-service-token)"; export BOT_TO_READ_SERVICE_TOKEN; exec python -m bot']
     secrets:
+    - source: bot-to-read-service-token
+      target: bot-to-read-service-token
     - source: bot-to-auth-service-token
       target: bot-to-auth-service-token
     environment:
+      BOT_READ_GRPC_HOST: mobile-bff
+      BOT_READ_GRPC_PORT: '19098'
+      BOT_READ_GRPC_TLS_ENABLED: 'true'
+      BOT_READ_GRPC_TLS_CA_PATH: /run/rct-mobile-bff-tls/mobile-bff-server.crt
       AUTH_GRPC_HOST: auth-service
       AUTH_GRPC_PORT: '19090'
       AUTH_GRPC_TLS_ENABLED: 'true'
@@ -751,6 +814,7 @@ services:
       ADMIN_TELEGRAM_IDS: ${ADMIN_TELEGRAM_IDS:-0}
       TZ: Europe/Moscow
     volumes:
+      - ${MOBILE_BFF_GRPC_TLS_DIR:?MOBILE_BFF_GRPC_TLS_DIR must be set}/mobile-bff-server.crt:/run/rct-mobile-bff-tls/mobile-bff-server.crt:ro
       - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
@@ -780,6 +844,15 @@ services:
     container_name: rct-mobile-bff
     logging: *bounded-logs
     environment:
+      MOBILE_BFF_BOT_GRPC_PORT: '19098'
+      MOBILE_BFF_BOT_GRPC_BIND_ADDRESS: 0.0.0.0
+      MOBILE_BFF_BOT_GRPC_CERTIFICATE_CHAIN: file:/run/rct-mobile-bff-tls/mobile-bff-server.crt
+      MOBILE_BFF_BOT_GRPC_PRIVATE_KEY: file:/run/rct-mobile-bff-tls/mobile-bff-server.key
+      BOT_READ_AUTH_GRPC_CA_PATH: file:/run/rct-auth-tls/auth-server.crt
+      BOT_READ_ACADEMIC_GRPC_CA_PATH: file:/run/rct-academic-tls/academic-server.crt
+      BOT_READ_ATTENDANCE_GRPC_CA_PATH: file:/run/rct-attendance-tls/attendance-server.crt
+      BOT_READ_SCHEDULE_GRPC_CA_PATH: file:/run/rct-schedule-tls/schedule-server.crt
+      SPRING_CONFIG_IMPORT: configtree:/run/rct-directed/
       MANAGEMENT_TRACING_BAGGAGE_REMOTE_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_CORRELATION_FIELDS: requestId
       MANAGEMENT_TRACING_BAGGAGE_TAG_FIELDS: requestId
@@ -804,10 +877,26 @@ services:
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+    secrets:
+      - source: bot-to-read-service-token
+        target: /run/rct-directed/grpc.service-identity.bot-to-mobile-bff-token
+      - source: mobile-bff-to-auth-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-auth-token
+      - source: mobile-bff-to-academic-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-academic-token
+      - source: mobile-bff-to-attendance-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-attendance-token
+      - source: mobile-bff-to-schedule-service-token
+        target: /run/rct-directed/grpc.service-identity.mobile-bff-to-schedule-token
     volumes:
+      - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
+      - ${ATTENDANCE_GRPC_TLS_DIR:?ATTENDANCE_GRPC_TLS_DIR must be set}/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro
+      - ${MOBILE_BFF_GRPC_TLS_DIR:?MOBILE_BFF_GRPC_TLS_DIR must be set}/mobile-bff-server.crt:/run/rct-mobile-bff-tls/mobile-bff-server.crt:ro
+      - ${MOBILE_BFF_GRPC_TLS_DIR:?MOBILE_BFF_GRPC_TLS_DIR must be set}/mobile-bff-server.key:/run/rct-mobile-bff-tls/mobile-bff-server.key:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
     expose:
+      - '19098'
       - '9080'
     networks:
       - private_net
@@ -1587,3 +1676,45 @@ secrets:
     file: ${REDIS_CACHE_MONITOR_PASSWORD_MAP_FILE:?REDIS_CACHE_MONITOR_PASSWORD_MAP_FILE must be set}
   mongo-monitor-env:
     file: ${MONGO_MONITOR_ENV_FILE:?MONGO_MONITOR_ENV_FILE must be set}
+
+  pg-auth-migration-password:
+    file: ${PG_AUTH_MIGRATION_PASSWORD_FILE:?PG_AUTH_MIGRATION_PASSWORD_FILE must be set}
+
+  mobile-bff-to-auth-service-token:
+    file: ${MOBILE_BFF_TO_AUTH_SERVICE_TOKEN_FILE:?MOBILE_BFF_TO_AUTH_SERVICE_TOKEN_FILE must be set}
+
+  academic-to-auth-service-token:
+    file: ${ACADEMIC_TO_AUTH_SERVICE_TOKEN_FILE:?ACADEMIC_TO_AUTH_SERVICE_TOKEN_FILE must be set}
+
+  attendance-to-auth-service-token:
+    file: ${ATTENDANCE_TO_AUTH_SERVICE_TOKEN_FILE:?ATTENDANCE_TO_AUTH_SERVICE_TOKEN_FILE must be set}
+
+  auth-to-academic-presentation-service-token:
+    file: ${AUTH_TO_ACADEMIC_PRESENTATION_SERVICE_TOKEN_FILE:?AUTH_TO_ACADEMIC_PRESENTATION_SERVICE_TOKEN_FILE must be set}
+
+  mobile-bff-to-academic-service-token:
+    file: ${MOBILE_BFF_TO_ACADEMIC_SERVICE_TOKEN_FILE:?MOBILE_BFF_TO_ACADEMIC_SERVICE_TOKEN_FILE must be set}
+
+  mobile-bff-to-attendance-service-token:
+    file: ${MOBILE_BFF_TO_ATTENDANCE_SERVICE_TOKEN_FILE:?MOBILE_BFF_TO_ATTENDANCE_SERVICE_TOKEN_FILE must be set}
+
+  mobile-bff-to-schedule-service-token:
+    file: ${MOBILE_BFF_TO_SCHEDULE_SERVICE_TOKEN_FILE:?MOBILE_BFF_TO_SCHEDULE_SERVICE_TOKEN_FILE must be set}
+
+  attendance-bot-read-to-academic-service-token:
+    file: ${ATTENDANCE_BOT_READ_TO_ACADEMIC_SERVICE_TOKEN_FILE:?ATTENDANCE_BOT_READ_TO_ACADEMIC_SERVICE_TOKEN_FILE must be set}
+
+  attendance-bot-read-to-schedule-service-token:
+    file: ${ATTENDANCE_BOT_READ_TO_SCHEDULE_SERVICE_TOKEN_FILE:?ATTENDANCE_BOT_READ_TO_SCHEDULE_SERVICE_TOKEN_FILE must be set}
+
+  academic-report-to-attendance-service-token:
+    file: ${ACADEMIC_REPORT_TO_ATTENDANCE_SERVICE_TOKEN_FILE:?ACADEMIC_REPORT_TO_ATTENDANCE_SERVICE_TOKEN_FILE must be set}
+
+  academic-report-to-schedule-service-token:
+    file: ${ACADEMIC_REPORT_TO_SCHEDULE_SERVICE_TOKEN_FILE:?ACADEMIC_REPORT_TO_SCHEDULE_SERVICE_TOKEN_FILE must be set}
+
+  notification-to-academic-service-token:
+    file: ${NOTIFICATION_TO_ACADEMIC_SERVICE_TOKEN_FILE:?NOTIFICATION_TO_ACADEMIC_SERVICE_TOKEN_FILE must be set}
+
+  bot-to-read-service-token:
+    file: ${BOT_TO_READ_SERVICE_TOKEN_FILE:?BOT_TO_READ_SERVICE_TOKEN_FILE must be set}

@@ -3,6 +3,11 @@ package ru.rutcampustrack.academic.studentprojection;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataAccessResourceFailureException;
+
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -13,9 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Test;
-import org.springframework.dao.DataAccessResourceFailureException;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 class StudentProjectionScopeServiceTest {
 
@@ -635,6 +637,23 @@ class StudentProjectionScopeServiceTest {
         assertThat(query.rosterCalls).isZero();
     }
 
+    @Test
+    void sessionRevokedAfterDomainReadDoesNotDiscloseProjection() {
+        FakeQuery query = baseQuery();
+        query.beforeVerification = () -> query.session = Optional.empty();
+        assertCode(query, StudentProjectionException.Code.INVALID_SESSION);
+        assertThat(query.historyCalls).isEqualTo(1);
+        assertThat(query.sessionCalls).isEqualTo(2);
+    }
+
+    @Test
+    void authorityChangedAfterDomainReadDoesNotDiscloseProjection() {
+        FakeQuery query = baseQuery();
+        query.beforeVerification = () -> query.authority = Optional.empty();
+        assertCode(query, StudentProjectionException.Code.INVALID_SESSION);
+        assertThat(query.historyCalls).isEqualTo(1);
+    }
+
     private static StudentProjectionScopeService service(FakeQuery query, Clock clock) {
         return new StudentProjectionScopeService(query, clock);
     }
@@ -750,12 +769,28 @@ class StudentProjectionScopeServiceTest {
         }
 
         @Override
-        public Optional<SessionSnapshot> findSession(long userId, UUID sessionId) {
+        public Optional<SessionSnapshot> findSession(InternalJwtClaims claims) {
             sessionCalls++;
             if (sessionFailure != null) {
                 throw sessionFailure;
             }
             return session;
+        }
+
+        private Runnable beforeVerification = () -> {};
+
+        @Override
+        public <T> T readSnapshot(
+                AuthoritySnapshot authority, java.util.function.Supplier<T> action) {
+            return action.get();
+        }
+
+        @Override
+        public void verifyCurrent(AuthoritySnapshot admitted, StudentProjectionScope scope) {
+            beforeVerification.run();
+            if (!authority.equals(Optional.of(admitted))) {
+                throw StudentProjectionException.invalidSession("Authority changed");
+            }
         }
 
         @Override

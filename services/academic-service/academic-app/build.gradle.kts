@@ -24,6 +24,7 @@ dependencyManagement {
 dependencies {
     // Наш контракт
     implementation(project(":services:academic-service:academic-api-contract"))
+    implementation(project(":services:auth-service:auth-api-contract"))
 
     // M11 G0.4: shared-web Spring Boot starter (GlobalExceptionHandler
     // catch-all для Spring MVC exceptions + JacksonConfig + AdminActionAspect

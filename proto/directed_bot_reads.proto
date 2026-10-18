@@ -1,0 +1,162 @@
+syntax = "proto3";
+
+package rutcampustrack.botreads;
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.botreads.grpc";
+
+// MobileBFF hosts this read-only producer. Existing x-service-token credentials
+// require authenticated TLS, exact target authority and exact method allow-list.
+// Public methods admit notification-bot only; internal methods admit MobileBFF only.
+// No method accepts a role override, arbitrary user/group/date, or write capability.
+service DirectedBotReadService {
+  rpc GetOwnTeacherToday(DirectedBotIdentity) returns (BotTeacherTodayResponse);
+  rpc GetOwnHeadmanCurrentAttendance(BotHeadmanCurrentAttendanceRequest)
+      returns (BotHeadmanCurrentAttendanceResponse);
+}
+
+// Academic checks Auth through CheckAcademicBotOwnAuthority, then its own live
+// profile/eligibility/assignment/headman/membership state. No user JWT is minted.
+service AcademicOwnBotReadService {
+  rpc ResolveOwnBotReadScope(BotAcademicScopeRequest) returns (BotAcademicScopeResponse);
+  // Attendance-only, fixed HEADMAN_CURRENT action. Separate method preserves the
+  // existing exact-one-principal-per-method directed transport policy.
+  rpc ResolveAttendanceOwnBotReadScope(BotAcademicScopeRequest) returns (BotAcademicScopeResponse);
+}
+
+// Attendance checks Auth through CheckAttendanceBotOwnAuthority and Academic's
+// exact live headman scope before exposing this minimal, read-only roster.
+service AttendanceOwnBotReadService {
+  rpc GetOwnBotLessonAttendance(BotOwnLessonAttendanceRequest)
+      returns (BotOwnLessonAttendanceResponse);
+}
+
+message DirectedBotIdentity {
+  int64 telegram_sender_id = 1;
+  int64 private_chat_id = 2;
+  int64 expected_user_id = 3;
+  int64 expected_binding_version = 4;
+  int64 expected_roles_version = 5;
+}
+message BotLessonSummary {
+  int64 lesson_id = 1;
+  string group_name = 2;
+  string subject_name = 3;
+  string lesson_type = 4;
+  string lesson_date = 5;
+  int32 lesson_number = 6;
+  string start_time = 7;
+  string end_time = 8;
+  string room = 9;
+  string status = 10;
+  bool cancelled = 11;
+  bool moved = 12;
+  bool one_off = 13;
+  int64 group_id = 14; // server-derived display context, never request authority
+  int64 subject_id = 15;
+  int64 semester_id = 16;
+}
+message BotTeacherTodayResponse {
+  string server_now = 1; // ISO-8601 offset timestamp
+  string educational_date = 2; // server Europe/Moscow date
+  repeated BotLessonSummary lessons = 3;
+}
+message BotHeadmanCurrentAttendanceRequest {
+  DirectedBotIdentity identity = 1;
+  int64 selected_lesson_id = 2; // zero means automatic; positive must be in current own choices
+}
+enum BotCurrentAttendanceState {
+  BOT_CURRENT_ATTENDANCE_STATE_UNSPECIFIED = 0;
+  BOT_CURRENT_ATTENDANCE_STATE_NO_CURRENT = 1;
+  BOT_CURRENT_ATTENDANCE_STATE_CHOOSE = 2;
+  BOT_CURRENT_ATTENDANCE_STATE_READY = 3;
+}
+message BotAttendanceRow {
+  int64 student_id = 1;
+  string display_name = 2;
+  string status = 3;
+  bool record_present = 4; // false means unmarked, never infer absent
+  string source = 5;
+}
+message BotAttendanceStatistics {
+  int32 roster_count = 1;
+  int32 marked_count = 2;
+  int32 present_count = 3;
+  int32 late_count = 4;
+  int32 absent_count = 5;
+  int32 excused_count = 6;
+  int32 unmarked_count = 7;
+  int32 free_attendance_count = 8;
+  int32 cancelled_count = 9;
+}
+message BotHeadmanCurrentAttendanceResponse {
+  string server_now = 1;
+  string educational_date = 2;
+  BotCurrentAttendanceState state = 3;
+  repeated BotLessonSummary choices = 4;
+  BotLessonSummary lesson = 5;
+  repeated BotAttendanceRow rows = 6;
+  BotAttendanceStatistics statistics = 7;
+}
+enum BotAcademicReadAction {
+  BOT_ACADEMIC_READ_ACTION_UNSPECIFIED = 0;
+  BOT_ACADEMIC_READ_ACTION_TEACHER_TODAY = 1;
+  BOT_ACADEMIC_READ_ACTION_HEADMAN_CURRENT = 2;
+}
+message BotAcademicScopeRequest {
+  DirectedBotIdentity identity = 1;
+  BotAcademicReadAction action = 2; // closed, fixed by the producer method
+}
+message BotTeacherAssignment {
+  int64 assignment_id = 1;
+  int64 group_id = 2;
+  int64 subject_id = 3;
+  int64 semester_id = 4;
+  string lesson_type = 5;
+  string valid_from = 6;
+  string valid_until_exclusive = 7;
+  string group_name = 8;
+  string subject_name = 9;
+}
+message BotScopeRosterMember {
+  int64 student_id = 1;
+  string display_name = 2;
+}
+message BotScopeSubject {
+  int64 subject_id = 1;
+  string subject_name = 2;
+  repeated string lesson_types = 3;
+}
+message BotAcademicScopeResponse {
+  int64 user_id = 1;
+  int64 telegram_binding_version = 2;
+  int64 roles_version = 3;
+  BotAcademicReadAction action = 4;
+  string server_now = 5;
+  string educational_date = 6;
+  int64 semester_id = 7;
+  string semester_date_from = 8;
+  string semester_date_to = 9;
+  int64 own_group_id = 10; // headman only; teacher scope derives from assignments
+  string own_group_name = 11;
+  repeated BotTeacherAssignment assignments = 12;
+  repeated BotScopeRosterMember roster = 13; // headman own group on educational_date only
+  int64 eligibility_revision = 14;
+  repeated BotScopeSubject subjects = 15; // headman own active-semester scope only
+}
+message BotOwnLessonAttendanceRequest {
+  DirectedBotIdentity identity = 1;
+  int64 lesson_id = 2; // positive; own current group/semester/date rechecked server-side
+}
+message BotOwnLessonAttendanceResponse {
+  BotLessonSummary lesson = 1;
+  repeated BotAttendanceRow rows = 2;
+  BotAttendanceStatistics statistics = 3;
+  string server_now = 4;
+  string educational_date = 5;
+}
+
+// Each protected read rechecks Auth before and after data composition. Scope
+// comes only from Academic, not from a reply or callback payload. All clients
+// set <=3s deadlines per RPC. Stale expected tuple: FAILED_PRECONDITION; denied
+// identity/role/lesson: PERMISSION_DENIED; malformed/unknown enum: INVALID_ARGUMENT;
+// missing/ambiguous authority or failed dependency: UNAVAILABLE. Never partial rows.

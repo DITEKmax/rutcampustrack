@@ -65,9 +65,9 @@ import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 import ru.rutcampustrack.auth.session.model.SessionState;
 import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
+import ru.rutcampustrack.auth.support.AuthDatabaseFixture;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -85,8 +85,8 @@ import java.util.UUID;
 import javax.sql.DataSource;
 
 /**
- * Source proof for admission against a fresh PostgreSQL 16/V24 authority. Reuse is deliberately
- * disabled; this test is not run during source stage.
+ * Source proof for admission against a fresh PostgreSQL 16 Auth-only authority. Reuse is
+ * deliberately disabled; this test is not run during source stage.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class InternalSessionAdmissionIT {
@@ -107,16 +107,23 @@ class InternalSessionAdmissionIT {
     @BeforeAll
     void startDatabase() {
         POSTGRES.start();
-        ru.rutcampustrack.shared.testcontainers.MigrationTestUtils.prepareAcademicAuthPrincipals(
-                POSTGRES);
         Flyway.configure()
                 .dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
                 .locations("filesystem:" + migrationDirectory().toAbsolutePath())
                 .load()
                 .migrate();
+        var owner =
+                new JdbcTemplate(
+                        new DriverManagerDataSource(
+                                POSTGRES.getJdbcUrl(),
+                                POSTGRES.getUsername(),
+                                POSTGRES.getPassword()));
+        AuthDatabaseFixture.runtimePrincipal(owner);
         DriverManagerDataSource source =
                 new DriverManagerDataSource(
-                        POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
+                        POSTGRES.getJdbcUrl(),
+                        "rct_auth_runtime",
+                        AuthDatabaseFixture.RUNTIME_PASSWORD);
         source.setDriverClassName("org.postgresql.Driver");
         DataSource dataSource = source;
         jdbc = new JdbcTemplate(dataSource);
@@ -222,8 +229,8 @@ class InternalSessionAdmissionIT {
         rebuiltSource.setDriverClassName("org.postgresql.Driver");
         rebuiltSource.setUrl(
                 jdbcUrl + (jdbcUrl.contains("?") ? "&" : "?") + "connectTimeout=2&socketTimeout=2");
-        rebuiltSource.setUsername(POSTGRES.getUsername());
-        rebuiltSource.setPassword(POSTGRES.getPassword());
+        rebuiltSource.setUsername("rct_auth_runtime");
+        rebuiltSource.setPassword(AuthDatabaseFixture.RUNTIME_PASSWORD);
         JdbcTemplate rebuiltJdbc = new JdbcTemplate(rebuiltSource);
         var rebuiltAuthority =
                 new ru.rutcampustrack.auth.session.jdbc.JdbcSessionAuthority(
@@ -625,14 +632,20 @@ class InternalSessionAdmissionIT {
                         GrantSeed.active(AuthRole.TEACHER, null));
         CreatedSession session = createSession(user, now, AuthRole.STUDENT);
         String previousAccess = accessToken(session.snapshot(), now);
-        jdbc.update("UPDATE user_role_grants SET status='archived' WHERE user_id=?", user.userId());
+        new org.springframework.transaction.support.TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        transaction -> {
+                            UUID operation = AuthDatabaseFixture.fence(jdbc, user.userId());
+                            jdbc.update(
+                                    "UPDATE user_role_grants SET status='archived' WHERE user_id=?",
+                                    user.userId());
+                            AuthDatabaseFixture.unfence(jdbc, operation, user.userId());
+                        });
         jdbc.update(
                 "UPDATE auth_sessions SET"
                     + " active_role_grant_id=NULL,session_version=session_version+1 WHERE sid=?",
                 session.sessionId());
-        jdbc.update(
-                "UPDATE users SET status='active',group_id=NULL,is_headman=FALSE WHERE id=?",
-                user.userId());
+        jdbc.update("UPDATE auth_identities SET account_state='ACTIVE' WHERE id=?", user.userId());
         assertThatThrownBy(() -> admissionService(now).admit(previousAccess))
                 .isInstanceOf(SessionAdmissionException.class);
         var snapshot =
@@ -845,7 +858,7 @@ class InternalSessionAdmissionIT {
         UserFixture staleAdmin = seedUser(GrantSeed.active(AuthRole.ADMIN, null));
         CreatedSession staleSession = createSession(staleAdmin, now, AuthRole.ADMIN);
         String staleInternal = internalToken(staleSession.snapshot(), now);
-        updateGrantStatus(staleAdmin, AuthRole.ADMIN, RoleStatus.GRADUATED);
+        updateGrantStatus(staleAdmin, AuthRole.ADMIN, RoleStatus.ARCHIVED);
         MvcResult staleDenial =
                 mvc.perform(
                                 post(route)
@@ -1217,22 +1230,7 @@ class InternalSessionAdmissionIT {
 
     private UserFixture seedUser(GrantSeed... seeds) {
         String login = "admission-it-" + (++userSequence);
-        long userId =
-                jdbc.queryForObject(
-                        """
-                        INSERT INTO users (
-                            login, password_hash, last_name, first_name,
-                            role, status, is_headman, group_id,
-                            initial_password, password_changed, created_at, updated_at
-                        ) VALUES (?, 'admission-hash', 'Admission', 'Test',
-                                  CAST('student' AS user_role), CAST('active' AS account_status),
-                                  FALSE, 1, 'initial', FALSE, ?, ?)
-                        RETURNING id
-                        """,
-                        Long.class,
-                        login,
-                        Timestamp.from(Instant.now()),
-                        Timestamp.from(Instant.now()));
+        long userId = AuthDatabaseFixture.identity(jdbc, login, Instant.now());
         Instant created = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         for (GrantSeed seed : seeds) {
             if (seed.role() == AuthRole.ADMIN && seed.status() == RoleStatus.ACTIVE) {
@@ -1256,7 +1254,9 @@ class InternalSessionAdmissionIT {
         }
         long rolesVersion =
                 jdbc.queryForObject(
-                        "SELECT roles_version FROM users WHERE id = ?", Long.class, userId);
+                        "SELECT roles_version FROM auth_identities WHERE id = ?",
+                        Long.class,
+                        userId);
         List<RoleGrant> grants =
                 jdbc.query(
                         """
@@ -1272,13 +1272,22 @@ class InternalSessionAdmissionIT {
         RoleGrant grant = grant(user, role);
         Instant updatedAt = grant.createdAt().plusSeconds(1);
         int updatedRows =
-                jdbc.update(
-                        "UPDATE user_role_grants SET status = ?, updated_at = ? WHERE id = ? AND"
-                                + " user_id = ?",
-                        status.name().toLowerCase(Locale.ROOT),
-                        Timestamp.from(updatedAt),
-                        grant.grantId(),
-                        user.userId());
+                new org.springframework.transaction.support.TransactionTemplate(transactionManager)
+                        .execute(
+                                transaction -> {
+                                    UUID operation = AuthDatabaseFixture.fence(jdbc, user.userId());
+                                    int changed =
+                                            jdbc.update(
+                                                    "UPDATE user_role_grants SET status = ?,"
+                                                        + " updated_at = ? WHERE id = ? AND user_id"
+                                                        + " = ?",
+                                                    status.name().toLowerCase(Locale.ROOT),
+                                                    Timestamp.from(updatedAt),
+                                                    grant.grantId(),
+                                                    user.userId());
+                                    AuthDatabaseFixture.unfence(jdbc, operation, user.userId());
+                                    return changed;
+                                });
         assertThat(updatedRows).isEqualTo(1);
 
         Boolean timestampsAreOrdered =
@@ -1297,23 +1306,29 @@ class InternalSessionAdmissionIT {
 
     private void updateActiveGrantGroup(UserFixture user, AuthRole role) {
         RoleGrant grant = grant(user, role);
-        long groupId =
-                jdbc.queryForObject(
-                        "INSERT INTO groups(name, is_active) VALUES (?, TRUE) RETURNING id",
-                        Long.class,
-                        "admission-group-" + user.userId());
+        long groupId = 100000L + user.userId(); // Opaque Auth context, no Academic group row.
         int updatedRows =
-                jdbc.update(
-                        "UPDATE user_role_grants SET group_id = ?, updated_at = ? WHERE id = ? AND"
-                                + " user_id = ?",
-                        groupId,
-                        Timestamp.from(grant.createdAt().plusSeconds(1)),
-                        grant.grantId(),
-                        user.userId());
+                new org.springframework.transaction.support.TransactionTemplate(transactionManager)
+                        .execute(
+                                transaction -> {
+                                    UUID operation = AuthDatabaseFixture.fence(jdbc, user.userId());
+                                    int changed =
+                                            jdbc.update(
+                                                    "UPDATE user_role_grants SET group_id = ?,"
+                                                        + " updated_at = ? WHERE id = ? AND user_id"
+                                                        + " = ?",
+                                                    groupId,
+                                                    Timestamp.from(
+                                                            grant.createdAt().plusSeconds(1)),
+                                                    grant.grantId(),
+                                                    user.userId());
+                                    AuthDatabaseFixture.unfence(jdbc, operation, user.userId());
+                                    return changed;
+                                });
         assertThat(updatedRows).isEqualTo(1);
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT roles_version FROM users WHERE id = ?",
+                                "SELECT roles_version FROM auth_identities WHERE id = ?",
                                 Long.class,
                                 user.userId()))
                 .isGreaterThan(user.rolesVersion());
@@ -1355,17 +1370,7 @@ class InternalSessionAdmissionIT {
     }
 
     private static Path migrationDirectory() {
-        Path current = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
-        while (current != null) {
-            Path candidate =
-                    current.resolve(
-                            "services/academic-service/academic-app/src/main/resources/db/migration");
-            if (Files.isRegularFile(candidate.resolve("V24__auth_session_authority.sql"))) {
-                return candidate;
-            }
-            current = current.getParent();
-        }
-        throw new IllegalStateException("academic migration directory is unavailable");
+        return AuthDatabaseFixture.migrations();
     }
 
     private static void setField(Object target, String name, Object value) throws Exception {
@@ -1442,7 +1447,9 @@ class InternalSessionAdmissionIT {
                         userId),
                 "rolesVersion",
                 database.queryForObject(
-                        "SELECT roles_version FROM users WHERE id = ?", Long.class, userId),
+                        "SELECT roles_version FROM auth_identities WHERE id = ?",
+                        Long.class,
+                        userId),
                 "events",
                 database.queryForList(
                         "SELECT id, sid, event_type, occurred_at, auth_method, client_label,"

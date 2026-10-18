@@ -12,79 +12,28 @@ import ru.rutcampustrack.auth.entity.enums.AccountStatus;
 import ru.rutcampustrack.auth.entity.enums.UserRole;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
+/** Auth-owned identity only. Academic presentation is composed outside authentication. */
 @Entity
-@Table(name = "users")
+@Table(name = "auth_identities")
 @Getter
 @NoArgsConstructor
 public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id private Long id;
 
     @Column(nullable = false, unique = true, length = 32)
     private String login;
 
     @Setter
-    @Column(name = "password_hash")
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
-
-    @Column(
-            name = "last_name",
-            nullable = false,
-            length = 128,
-            insertable = false,
-            updatable = false)
-    private String lastName;
-
-    @Column(
-            name = "first_name",
-            nullable = false,
-            length = 128,
-            insertable = false,
-            updatable = false)
-    private String firstName;
-
-    @Column(name = "middle_name", length = 128, insertable = false, updatable = false)
-    private String middleName;
-
-    @JsonIgnore
-    @Transient
-    public String getDisplayName() {
-        StringBuilder sb = new StringBuilder(lastName).append(' ').append(firstName);
-        if (middleName != null && !middleName.isBlank()) {
-            sb.append(' ').append(middleName);
-        }
-        return sb.toString();
-    }
-
-    @Column(insertable = false, updatable = false)
-    private String email;
-
-    @Column(insertable = false, updatable = false)
-    private String phone;
 
     @Column(name = "telegram_id")
     private Long telegramId;
 
     @Column(name = "telegram_username", length = 64)
     private String telegramUsername;
-
-    @Column(name = "employee_number", length = 32, insertable = false, updatable = false)
-    private String employeeNumber;
-
-    @Column(nullable = false)
-    private UserRole role;
-
-    @Column(nullable = false)
-    private AccountStatus status;
-
-    @Column(name = "is_headman", nullable = false)
-    private boolean isHeadman;
-
-    @Column(name = "group_id", insertable = false, updatable = false)
-    private Long groupId;
 
     @Setter
     @Column(name = "initial_password", length = 128)
@@ -94,9 +43,64 @@ public class User {
     @Column(name = "password_changed", nullable = false)
     private boolean passwordChanged;
 
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
+    @Column(name = "generated_password_origin", length = 16)
+    private String generatedPasswordOrigin;
+
+    @Column(name = "account_state", nullable = false)
+    private String accountState;
+
+    @Column(name = "roles_version", nullable = false)
+    private long rolesVersion;
+
+    @Column(name = "credentials_version", nullable = false)
+    private long credentialsVersion;
+
+    @Column(name = "telegram_binding_version", nullable = false)
+    private long telegramBindingVersion;
+
+    @Column(name = "provision_operation_id", nullable = false)
+    private UUID provisionOperationId;
+
+    @Column(name = "fence_operation_id")
+    private UUID fenceOperationId;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private OffsetDateTime updatedAt;
+
+    // Compatibility for the retired entity-based JWT builder. Admission and role
+    // selection always use the current Auth session/grant ports, never these values.
+    @JsonIgnore
+    @Transient
+    public UserRole getRole() {
+        return null;
+    }
+
+    @JsonIgnore
+    @Transient
+    public Long getGroupId() {
+        return null;
+    }
+
+    @JsonIgnore
+    @Transient
+    public boolean isHeadman() {
+        return false;
+    }
+
+    @JsonIgnore
+    @Transient
+    public AccountStatus getStatus() {
+        return "ACTIVE".equals(accountState) && fenceOperationId == null
+                ? AccountStatus.ACTIVE
+                : AccountStatus.ARCHIVED;
+    }
+
+    @JsonIgnore
+    @Transient
+    public String getDisplayName() {
+        return "";
+    }
 }

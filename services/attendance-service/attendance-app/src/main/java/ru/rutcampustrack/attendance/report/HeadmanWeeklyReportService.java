@@ -3,8 +3,6 @@ package ru.rutcampustrack.attendance.report;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +24,7 @@ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.DocumentRendererGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.journal.JournalLessonPolicy;
+import ru.rutcampustrack.attendance.report.planned.*;
 import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceDocxRenderer;
 import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel;
 import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Cell;
@@ -60,7 +59,6 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
 public class HeadmanWeeklyReportService {
 
     private static final int MAX_SELECTED_WEEKS = 64;
@@ -72,15 +70,62 @@ public class HeadmanWeeklyReportService {
                     "lab", "Лабораторная",
                     "laboratory", "Лабораторная");
 
-    private final AcademicGrpcClient academicGrpcClient;
-    private final ScheduleGrpcClient scheduleGrpcClient;
+    private final ReportAcademicReadPort academicGrpcClient;
+    private final ReportScheduleReadPort scheduleGrpcClient;
     private final AttendanceReadPort attendanceReadPort;
     private final TeacherAttendanceDocxRenderer docxRenderer;
     private final HeadmanWeeklyTabularRenderer tabularRenderer;
     private final DocumentRendererGrpcClient documentRendererGrpcClient;
-    private final RequestContext requestContext;
+    private final ReportActor requestContext;
     private final Clock clock;
     private final ReportExecution reportExecution;
+    private final boolean plannedDataOnly;
+
+    public HeadmanWeeklyReportService(
+            AcademicGrpcClient academicGrpcClient,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AttendanceReadPort attendanceReadPort,
+            TeacherAttendanceDocxRenderer docxRenderer,
+            HeadmanWeeklyTabularRenderer tabularRenderer,
+            DocumentRendererGrpcClient documentRendererGrpcClient,
+            RequestContext requestContext,
+            Clock clock,
+            ReportExecution reportExecution) {
+        this(
+                ReportAcademicReadPort.live(academicGrpcClient),
+                ReportScheduleReadPort.live(scheduleGrpcClient),
+                attendanceReadPort,
+                docxRenderer,
+                tabularRenderer,
+                documentRendererGrpcClient,
+                ReportActor.live(requestContext),
+                clock,
+                reportExecution,
+                false);
+    }
+
+    private HeadmanWeeklyReportService(
+            ReportAcademicReadPort academicGrpcClient,
+            ReportScheduleReadPort scheduleGrpcClient,
+            AttendanceReadPort attendanceReadPort,
+            TeacherAttendanceDocxRenderer docxRenderer,
+            HeadmanWeeklyTabularRenderer tabularRenderer,
+            DocumentRendererGrpcClient documentRendererGrpcClient,
+            ReportActor requestContext,
+            Clock clock,
+            ReportExecution reportExecution,
+            boolean plannedDataOnly) {
+        this.academicGrpcClient = academicGrpcClient;
+        this.scheduleGrpcClient = scheduleGrpcClient;
+        this.attendanceReadPort = attendanceReadPort;
+        this.docxRenderer = docxRenderer;
+        this.tabularRenderer = tabularRenderer;
+        this.documentRendererGrpcClient = documentRendererGrpcClient;
+        this.requestContext = requestContext;
+        this.clock = clock;
+        this.reportExecution = reportExecution;
+        this.plannedDataOnly = plannedDataOnly;
+    }
 
     @Autowired
     public HeadmanWeeklyReportService(
@@ -108,6 +153,29 @@ public class HeadmanWeeklyReportService {
                 reportExecution);
     }
 
+    public HeadmanWeeklyReportService forPlan(AdmittedReportPlan plan) {
+        return new HeadmanWeeklyReportService(
+                plan,
+                plan,
+                attendanceReadPort,
+                docxRenderer,
+                tabularRenderer,
+                documentRendererGrpcClient,
+                plan,
+                plan.clock(),
+                reportExecution,
+                true);
+    }
+
+    private <T> T execute(
+            ReportExecution.Report report,
+            HeadmanWeeklyReportFormat format,
+            java.util.function.Supplier<T> operation) {
+        return plannedDataOnly
+                ? operation.get()
+                : reportExecution.execute(report, format, operation);
+    }
+
     public HeadmanWeeklyWeeksResponse getActiveSemesterWeeks() {
         ensureHeadman();
         return buildWeeksResponse(academicGrpcClient.getActiveSemester(), LocalDate.now(clock));
@@ -115,7 +183,7 @@ public class HeadmanWeeklyReportService {
 
     public HeadmanWeeklyExportResult exportSingleWeek(LocalDate weekStart, String rawFormat) {
         HeadmanWeeklyReportFormat format = HeadmanWeeklyReportFormat.from(rawFormat);
-        return reportExecution.execute(
+        return execute(
                 ReportExecution.Report.WEEKLY,
                 format,
                 () -> export(buildReportModels(List.of(weekStart)), format));
@@ -129,7 +197,7 @@ public class HeadmanWeeklyReportService {
             throw new ReportValidationException("Можно выбрать не более 64 недель за один раз");
         }
         HeadmanWeeklyReportFormat format = HeadmanWeeklyReportFormat.from(request.format());
-        return reportExecution.execute(
+        return execute(
                 ReportExecution.Report.WEEKLY,
                 format,
                 () -> export(buildReportModels(request.weekStarts()), format));
@@ -275,7 +343,7 @@ public class HeadmanWeeklyReportService {
                     request) {
         HeadmanWeeklyReportFormat format =
                 HeadmanWeeklyReportFormat.from(request == null ? null : request.format());
-        return reportExecution.execute(
+        return execute(
                 ReportExecution.Report.SUBJECT_JOURNAL,
                 format,
                 () -> exportSubjectJournalOnce(request, format));

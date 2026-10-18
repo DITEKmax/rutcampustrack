@@ -1,37 +1,63 @@
 package ru.rutcampustrack.academic.admin;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.grpc.*;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
+import io.grpc.ServerInterceptors;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-import ru.rutcampustrack.academic.grpc.*;
-import ru.rutcampustrack.shared.security.*;
-import ru.rutcampustrack.shared.security.admin.*;
 
-class AdminPermissionRpcIT {
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
+import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
+import ru.rutcampustrack.academic.grpc.AdminPermissionCheckRequest;
+import ru.rutcampustrack.academic.grpc.StudentHomeworkGrpcIdentityInterceptor;
+import ru.rutcampustrack.academic.identitycatalog.AuthIdentityDataClient;
+import ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations;
+import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+class AdminPermissionRpcIT extends AbstractAcademicIntegrationTest {
+    @Autowired private AcademicGrpcServiceImpl service;
+    @Autowired private StudentHomeworkGrpcIdentityInterceptor identityInterceptor;
+    @Autowired private AuthIdentityDataClient authority;
+    @Autowired private AcademicUserIdentityOperations identityOperations;
+
     @Test
     void signedIdentityFreshDenyForgedIdentityAndUnavailableCannotGrantFull() throws Exception {
-        var signer = new InternalJwtTestFactory();
-        var provider = mock(PublicKeyProvider.class);
-        when(provider.getPublicKey()).thenReturn(signer.publicKey());
-        var validator =
-                new InternalJwtValidator(
-                        provider, new InternalJwtProperties(null, 60, 0, false, null, null, null));
-        var authority = mock(AdminAccessJdbcAuthority.class);
-        var service = mock(AcademicGrpcServiceImpl.class, CALLS_REAL_METHODS);
-        ReflectionTestUtils.setField(service, "adminAuthority", authority);
+        var controller =
+                identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        var target =
+                identityFixture.seedUser(
+                        new CreateUserRequest(
+                                "Тестов",
+                                "Администратор",
+                                null,
+                                UserRole.ADMIN,
+                                null,
+                                null,
+                                null,
+                                new AdminAccessInput("FULL", List.of())),
+                        controller);
+        var actor = identityFixture.select(target.userId(), AuthRole.ADMIN);
         Server server =
                 ServerBuilder.forPort(0)
-                        .addService(
-                                ServerInterceptors.intercept(
-                                        service,
-                                        new StudentHomeworkGrpcIdentityInterceptor(validator)))
+                        .addService(ServerInterceptors.intercept(service, identityInterceptor))
                         .build()
                         .start();
         ManagedChannel channel =
@@ -41,22 +67,23 @@ class AdminPermissionRpcIT {
         try {
             var base =
                     AcademicGrpcServiceGrpc.newBlockingStub(channel)
-                            .withDeadlineAfter(3, TimeUnit.SECONDS);
+                            .withDeadlineAfter(5, TimeUnit.SECONDS);
             var request = AdminPermissionCheckRequest.newBuilder().setFullOnly(true).build();
-            when(authority.current(any()))
-                    .thenReturn(
-                            new AdminAccessProfile(1, true, "FULL", AdminPermission.allCodes(), 1));
-            var token =
-                    signer.validToken(
-                            1, UUID.randomUUID(), 1, 1, "ADMIN", "ACTIVE", null, false, false);
-            var accepted = signed(base, token);
+            var accepted = signed(base, actor.internalToken());
             assertThat(accepted.checkAdminPermission(request).getAllowed()).isTrue();
-            when(authority.current(any()))
-                    .thenReturn(
-                            new AdminAccessProfile(1, true, "LIMITED", List.of("USERS_VIEW"), 2));
+            try (var ignored = identityFixture.request(controller)) {
+                identityOperations.adminAccess(
+                        target.userId(),
+                        new AdminAccessInput("LIMITED", List.of("USERS_VIEW")),
+                        actor.profile().version(),
+                        false);
+            }
             assertThat(accepted.checkAdminPermission(request).getAllowed()).isFalse();
+            var currentActor = identityFixture.select(target.userId(), AuthRole.ADMIN);
+            var current = signed(base, currentActor.internalToken());
+            assertThat(current.checkAdminPermission(request).getAllowed()).isFalse();
             assertThat(
-                            accepted.checkAdminPermission(
+                            current.checkAdminPermission(
                                             AdminPermissionCheckRequest.newBuilder()
                                                     .addPermissions("UNKNOWN")
                                                     .build())
@@ -71,10 +98,10 @@ class AdminPermissionRpcIT {
             var forged =
                     new InternalJwtTestFactory()
                             .validToken(
-                                    1,
-                                    UUID.randomUUID(),
-                                    1,
-                                    1,
+                                    actor.userId(),
+                                    actor.sessionId(),
+                                    actor.sessionVersion(),
+                                    actor.rolesVersion(),
                                     "ADMIN",
                                     "ACTIVE",
                                     null,
@@ -86,13 +113,17 @@ class AdminPermissionRpcIT {
                             e ->
                                     assertThat(((StatusRuntimeException) e).getStatus().getCode())
                                             .isEqualTo(Status.Code.UNAUTHENTICATED));
-            when(authority.current(any())).thenThrow(AdminAccessException.unavailable());
-            assertThatThrownBy(() -> accepted.checkAdminPermission(request))
-                    .isInstanceOf(StatusRuntimeException.class)
-                    .satisfies(
-                            e ->
-                                    assertThat(((StatusRuntimeException) e).getStatus().getCode())
-                                            .isEqualTo(Status.Code.UNAVAILABLE));
+            try (var ignored = identityFixture.unavailableAdminAuthority(authority)) {
+                assertThatThrownBy(() -> current.checkAdminPermission(request))
+                        .isInstanceOf(StatusRuntimeException.class)
+                        .satisfies(
+                                e ->
+                                        assertThat(
+                                                        ((StatusRuntimeException) e)
+                                                                .getStatus()
+                                                                .getCode())
+                                                .isEqualTo(Status.Code.UNAVAILABLE));
+            }
         } finally {
             channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
             server.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);

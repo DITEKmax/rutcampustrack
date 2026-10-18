@@ -13,8 +13,8 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
+import ru.rutcampustrack.auth.support.AuthDatabaseFixture;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.time.Clock;
@@ -28,9 +28,9 @@ import javax.sql.DataSource;
 /**
  * PostgreSQL proof for the read-only public session query adapter.
  *
- * <p>The fixture is fresh and non-reusable and runs the same V1..V24 migration chain as the
- * authority tests. Queries are asserted against two users so a caller supplied cursor or session id
- * cannot cross the owner boundary.
+ * <p>The fixture is fresh and non-reusable and runs only the Auth migration chain. Queries are
+ * asserted against two users so a caller supplied cursor or session id cannot cross the owner
+ * boundary.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JdbcAuthSessionQueryAdapterIT {
@@ -60,7 +60,7 @@ class JdbcAuthSessionQueryAdapterIT {
         DataSource dataSource = source;
         jdbc = new JdbcTemplate(dataSource);
         adapter = new JdbcAuthSessionQueryAdapter(jdbc, Clock.fixed(NOW, ZoneOffset.UTC));
-        groupId = jdbc.queryForObject("SELECT id FROM groups ORDER BY id LIMIT 1", Long.class);
+        groupId = 991L; // Opaque context; no Academic group table exists in auth_db.
     }
 
     @AfterAll
@@ -69,25 +69,87 @@ class JdbcAuthSessionQueryAdapterIT {
     }
 
     @Test
-    void loginAuthorityAndIdentityUseStoredRolesAndLabels() {
+    void loginAuthorityUsesLocalRolesAndOptionalPresentationIsBlank() {
         UserFixture user = seedUser("Query", "Adapter", "Middle");
 
         AuthSessionQueryPort.LoginAuthority authority =
                 adapter.findLoginAuthority(user.userId()).orElseThrow();
         assertThat(authority.userId()).isEqualTo(user.userId());
-        assertThat(authority.rolesVersion()).isEqualTo(3L);
-        assertThat(authority.displayName()).isEqualTo("Query Adapter Middle");
+        assertThat(authority.rolesVersion()).isEqualTo(1L);
+        assertThat(authority.displayName()).isEmpty();
         assertThat(authority.grants()).hasSize(2);
         assertThat(authority.grants())
                 .extracting(grant -> grant.role().name())
                 .containsExactly("STUDENT", "TEACHER");
-        assertThat(authority.grantContextLabels()).containsEntry(user.studentGrantId(), "ИВТ-211");
-        assertThat(authority.groupLabels()).containsEntry(groupId, "ИВТ-211");
+        assertThat(authority.grantContextLabels()).isEmpty();
+        assertThat(authority.groupLabels()).isEmpty();
 
         AuthSessionQueryPort.UserIdentity identity =
                 adapter.findUserIdentity(user.userId()).orElseThrow();
-        assertThat(identity.displayName()).isEqualTo("Query Adapter Middle");
-        assertThat(identity.groupLabels()).containsEntry(groupId, "ИВТ-211");
+        assertThat(identity.displayName()).isEmpty();
+        assertThat(identity.groupLabels()).isEmpty();
+    }
+
+    @Test
+    void presentationIsOptionalRestrictedToOwnContextAndNeverCalledInsideAuthTransaction() {
+        UserFixture user = seedUser("Presentation", "Owner", null);
+        var presentation =
+                org.mockito.Mockito.mock(
+                        ru.rutcampustrack.auth.authority.AcademicIdentityPresentationClient.class);
+        org.mockito.Mockito.when(presentation.resolve(org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(
+                        invocation -> {
+                            assertThat(
+                                            org.springframework.transaction.support
+                                                    .TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .isFalse();
+                            return ru.rutcampustrack.authauthority.grpc.IdentityPresentationResponse
+                                    .newBuilder()
+                                    .addUsers(
+                                            ru.rutcampustrack.authauthority.grpc.UserPresentation
+                                                    .newBuilder()
+                                                    .setUserId(user.userId())
+                                                    .setDisplayName("Academic label"))
+                                    .addGroups(
+                                            ru.rutcampustrack.authauthority.grpc.GroupPresentation
+                                                    .newBuilder()
+                                                    .setGroupId(groupId)
+                                                    .setLabel("Own group"))
+                                    .addGroups(
+                                            ru.rutcampustrack.authauthority.grpc.GroupPresentation
+                                                    .newBuilder()
+                                                    .setGroupId(999999)
+                                                    .setLabel("Foreign group"))
+                                    .build();
+                        });
+        var query =
+                new JdbcAuthSessionQueryAdapter(
+                        jdbc, Clock.fixed(NOW, ZoneOffset.UTC), presentation);
+        assertThat(query.findLoginAuthority(user.userId()).orElseThrow().displayName()).isEmpty();
+        var identity = query.findUserIdentity(user.userId()).orElseThrow();
+        assertThat(identity.displayName()).isEqualTo("Academic label");
+        assertThat(identity.groupLabels()).containsOnlyKeys(groupId);
+        new org.springframework.transaction.support.TransactionTemplate(
+                        new org.springframework.jdbc.datasource.DataSourceTransactionManager(
+                                jdbc.getDataSource()))
+                .executeWithoutResult(
+                        status -> {
+                            assertThat(
+                                            query.findUserIdentity(user.userId())
+                                                    .orElseThrow()
+                                                    .displayName())
+                                    .isEmpty();
+                            AuthDatabaseFixture.fence(jdbc, user.userId());
+                        });
+        assertThat(query.findLoginAuthority(user.userId())).isEmpty();
+        assertThat(query.findUserIdentity(user.userId())).isEmpty();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT to_regclass('public.users') IS NULL AND"
+                                        + " to_regclass('public.groups') IS NULL",
+                                Boolean.class))
+                .isTrue();
     }
 
     @Test
@@ -241,26 +303,7 @@ class JdbcAuthSessionQueryAdapterIT {
     private UserFixture seedUser(String lastName, String firstName, String middleName) {
         String login = "query-it-" + (++userSequence);
         Instant created = NOW.minusSeconds(1000L + userSequence);
-        long userId =
-                jdbc.queryForObject(
-                        """
-                        INSERT INTO users (
-                            login, password_hash, last_name, first_name, middle_name,
-                            role, status, is_headman, group_id,
-                            initial_password, password_changed, created_at, updated_at
-                        ) VALUES (?, 'query-hash', ?, ?, ?,
-                                  CAST('student' AS user_role), CAST('active' AS account_status),
-                                  FALSE, ?, 'initial', FALSE, ?, ?)
-                        RETURNING id
-                        """,
-                        Long.class,
-                        login,
-                        lastName,
-                        firstName,
-                        middleName,
-                        groupId,
-                        Timestamp.from(created),
-                        Timestamp.from(created));
+        long userId = AuthDatabaseFixture.identity(jdbc, login, created);
         insertGrant(userId, "student", "active", groupId, created);
         insertGrant(userId, "teacher", "active", null, created.plusSeconds(1));
         long studentGrantId =
@@ -346,17 +389,7 @@ class JdbcAuthSessionQueryAdapterIT {
     }
 
     private static Path migrationDirectory() {
-        Path current = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
-        while (current != null) {
-            Path candidate =
-                    current.resolve(
-                            "services/academic-service/academic-app/src/main/resources/db/migration");
-            if (Files.isRegularFile(candidate.resolve("V24__auth_session_authority.sql"))) {
-                return candidate;
-            }
-            current = current.getParent();
-        }
-        throw new IllegalStateException("academic migration directory is unavailable");
+        return AuthDatabaseFixture.migrations();
     }
 
     private record UserFixture(long userId, long studentGrantId) {}
@@ -372,8 +405,6 @@ class JdbcAuthSessionQueryAdapterIT {
 
         void start() {
             delegate.start();
-            ru.rutcampustrack.shared.testcontainers.MigrationTestUtils
-                    .prepareAcademicAuthPrincipals(delegate);
         }
 
         void stop() {

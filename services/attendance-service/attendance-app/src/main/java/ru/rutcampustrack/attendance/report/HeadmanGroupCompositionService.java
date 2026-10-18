@@ -2,15 +2,9 @@ package ru.rutcampustrack.attendance.report;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.text.Normalizer;
-import java.time.Clock;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
+
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanGroupCompositionFormatsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanGroupCompositionFormatsResponse.FormatOption;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
@@ -20,22 +14,47 @@ import ru.rutcampustrack.attendance.exception.ReportExportTooLargeException;
 import ru.rutcampustrack.attendance.exception.ReportExportUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.DocumentRendererGrpcClient;
+import ru.rutcampustrack.attendance.report.planned.*;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
+
+import java.text.Normalizer;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 @Service
 public class HeadmanGroupCompositionService {
     private static final int MAX_MEMBERS = 5000;
     private static final int MAX_BYTES = 20 * 1024 * 1024;
-    private final RequestContext context;
-    private final AcademicGrpcClient academic;
+    private final ReportActor context;
+    private final ReportAcademicReadPort academic;
     private final DocumentRendererGrpcClient converter;
     private final HeadmanGroupCompositionRenderer renderer;
     private final Clock clock;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public HeadmanGroupCompositionService(
             RequestContext context,
             AcademicGrpcClient academic,
+            DocumentRendererGrpcClient converter,
+            HeadmanGroupCompositionRenderer renderer,
+            Clock clock) {
+        this(
+                ReportActor.live(context),
+                ReportAcademicReadPort.live(academic),
+                converter,
+                renderer,
+                clock);
+    }
+
+    private HeadmanGroupCompositionService(
+            ReportActor context,
+            ReportAcademicReadPort academic,
             DocumentRendererGrpcClient converter,
             HeadmanGroupCompositionRenderer renderer,
             Clock clock) {
@@ -44,6 +63,10 @@ public class HeadmanGroupCompositionService {
         this.converter = converter;
         this.renderer = renderer;
         this.clock = clock;
+    }
+
+    public HeadmanGroupCompositionService forPlan(AdmittedReportPlan plan) {
+        return new HeadmanGroupCompositionService(plan, plan, converter, renderer, plan.clock());
     }
 
     public HeadmanGroupCompositionFormatsResponse formats() {

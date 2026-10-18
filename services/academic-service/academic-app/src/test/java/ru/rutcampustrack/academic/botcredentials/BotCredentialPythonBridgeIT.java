@@ -10,7 +10,6 @@ import io.grpc.ServerInterceptors;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyServerBuilder;
 
-import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -18,7 +17,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.SharedEntityManagerCreator;
@@ -32,7 +30,6 @@ import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceImpl;
 import ru.rutcampustrack.academic.grpc.AcademicReadService;
 import ru.rutcampustrack.academic.grpc.GrpcAuthInterceptor;
 import ru.rutcampustrack.academic.grpc.GrpcUserAuthorityReader;
-import ru.rutcampustrack.academic.migration.OwnedAuthPrincipals;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
@@ -42,7 +39,6 @@ import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.auth.botcredentials.AuthBotCredentialServiceIdentityInterceptor;
 import ru.rutcampustrack.auth.botcredentials.AuthBotCredentialsGrpcService;
 import ru.rutcampustrack.auth.botcredentials.AuthBotOwnInitialCredentialsQuery;
-import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -96,149 +92,23 @@ class BotCredentialPythonBridgeIT {
                         .withPassword("rct_np01_disposable")
                         .withReuse(false)) {
             postgres.start();
-            OwnedAuthPrincipals.prepare(postgres);
-            Flyway.configure()
-                    .dataSource(OwnedAuthPrincipals.source(postgres, "rct_migrator"))
-                    .locations(
-                            "filesystem:"
-                                    + root.resolve(
-                                            "services/academic-service/academic-app/src/main/resources/db/migration"))
-                    .load()
-                    .migrate();
-            var data =
-                    new DriverManagerDataSource(
-                            postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
-            var jdbc = new JdbcTemplate(data);
-            Map<String, Map<String, Object>> fixtures = fixtures(jdbc);
-            var entities = new LocalContainerEntityManagerFactoryBean();
-            entities.setDataSource(data);
-            entities.setPackagesToScan(
-                    "ru.rutcampustrack.academic.entity", "ru.rutcampustrack.academic.config");
-            entities.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-            entities.setJpaPropertyMap(
-                    Map.of(
-                            "hibernate.hbm2ddl.auto",
-                            "validate",
-                            "hibernate.jdbc.time_zone",
-                            "UTC"));
-            entities.afterPropertiesSet();
-            var authData = OwnedAuthPrincipals.source(postgres, "rct_auth_runtime");
-            var authJdbc = new JdbcTemplate(authData);
-            assertThat(authJdbc.queryForObject("SELECT current_user", String.class))
-                    .isEqualTo("rct_auth_runtime");
-            assertThat(
-                            authJdbc.queryForObject(
-                                    "SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE"
-                                            + " rolname=current_user",
-                                    Boolean.class))
-                    .isFalse();
-            try (var context = new AnnotationConfigApplicationContext();
-                    var authContext = new AnnotationConfigApplicationContext()) {
-                var emf = entities.getObject();
-                var transactionManager = new JpaTransactionManager(emf);
-                context.registerBean(
-                        "transactionManager",
-                        JpaTransactionManager.class,
-                        () -> transactionManager);
-                context.registerBean(JdbcTemplate.class, () -> jdbc);
-                context.registerBean(
-                        AdminAccessJdbcAuthority.class, () -> new AdminAccessJdbcAuthority(jdbc));
-                context.register(
-                        Transactions.class,
-                        BotOwnInitialCredentialsQuery.class,
-                        BotCredentialMessageRepository.class,
-                        BotCredentialsService.class);
-                context.refresh();
-                authContext.registerBean(JdbcTemplate.class, () -> authJdbc);
-                authContext.registerBean(
-                        "transactionManager",
-                        DataSourceTransactionManager.class,
-                        () -> new DataSourceTransactionManager(authData));
-                authContext.registerBean(
-                        AdminAccessJdbcAuthority.class,
-                        () -> new AdminAccessJdbcAuthority(authJdbc));
-                authContext.register(Transactions.class, AuthBotOwnInitialCredentialsQuery.class);
-                authContext.refresh();
-                var repositoryFactory =
-                        new JpaRepositoryFactory(
-                                SharedEntityManagerCreator.createSharedEntityManager(emf));
-                repositoryFactory.setBeanFactory(context.getBeanFactory());
-                UserRepository users = repositoryFactory.getRepository(UserRepository.class);
-                GroupRepository groups = repositoryFactory.getRepository(GroupRepository.class);
-                SemesterRepository semesters =
-                        repositoryFactory.getRepository(SemesterRepository.class);
-                var readService = new AcademicReadService(groups, users, semesters, null);
-                var grpc =
-                        new AcademicGrpcServiceImpl(
-                                readService,
-                                groups,
-                                users,
-                                repositoryFactory.getRepository(SubjectRepository.class),
-                                null,
-                                semesters,
-                                null,
-                                repositoryFactory.getRepository(HomeworkRepository.class),
-                                repositoryFactory.getRepository(HomeworkCompletionRepository.class),
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                context.getBean(BotCredentialsService.class),
-                                new GrpcUserAuthorityReader(jdbc));
-                var auth = new GrpcAuthInterceptor();
-                ReflectionTestUtils.setField(auth, "expectedSecret", sharedSecret);
-                Path ca = certificate(temporary);
-                var keys = KeyStore.getInstance("PKCS12");
-                try (var stream = Files.newInputStream(temporary.resolve("server.p12"))) {
-                    keys.load(stream, "np01-test-only".toCharArray());
-                }
-                var manager =
-                        KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                manager.init(keys, "np01-test-only".toCharArray());
-                Server server =
-                        NettyServerBuilder.forAddress(
-                                        new InetSocketAddress(InetAddress.getLoopbackAddress(), 0))
-                                .sslContext(
-                                        GrpcSslContexts.configure(
-                                                        io.netty.handler.ssl.SslContextBuilder
-                                                                .forServer(manager))
-                                                .build())
-                                .addService(
-                                        ServerInterceptors.intercept(
-                                                grpc,
-                                                auth,
-                                                new BotCredentialServiceIdentityInterceptor(
-                                                        serviceToken)))
-                                .build();
-                Server authServer =
-                        NettyServerBuilder.forAddress(
-                                        new InetSocketAddress(InetAddress.getLoopbackAddress(), 0))
-                                .sslContext(
-                                        GrpcSslContexts.configure(
-                                                        io.netty.handler.ssl.SslContextBuilder
-                                                                .forServer(manager))
-                                                .build())
-                                .addService(
-                                        ServerInterceptors.intercept(
-                                                new AuthBotCredentialsGrpcService(
-                                                        authContext.getBean(
-                                                                AuthBotOwnInitialCredentialsQuery
-                                                                        .class)),
-                                                new AuthBotCredentialServiceIdentityInterceptor(
-                                                        authServiceToken)))
-                                .build();
+            var split = new BotCredentialLifecycleIT.SplitDatabases(postgres, root);
+            var jdbc = split.auth;
+            Map<String, Map<String, Object>> fixtures = fixtures(split);
+            try (var services =
+                    new TlsServices(
+                            split, temporary, serviceToken, authServiceToken, sharedSecret)) {
+                Server server = services.academicServer;
+                Server authServer = services.authServer;
+                Path ca = services.ca;
                 try {
-                    server.start();
-                    authServer.start();
                     var control = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
                     var controlWorkers = Executors.newFixedThreadPool(2);
                     try {
                         control.setExecutor(controlWorkers);
-                        var tx = new TransactionTemplate(transactionManager);
+                        var tx =
+                                new TransactionTemplate(
+                                        new DataSourceTransactionManager(split.authData));
                         long own = ((Number) fixtures.get("student").get("uid")).longValue();
                         long foreign = ((Number) fixtures.get("foreign").get("uid")).longValue();
                         long ownChat = ((Number) fixtures.get("student").get("chat")).longValue();
@@ -266,80 +136,70 @@ class BotCredentialPythonBridgeIT {
                                                     .getPath()
                                                     .substring("/control/".length());
                                     try {
+                                        if (action.equals("revoke") || action.equals("reactivate"))
+                                            split.studentGrant(own, action.equals("reactivate"));
                                         Map<String, Object> facts =
                                                 tx.execute(
                                                         status -> {
                                                             jdbc.queryForObject(
-                                                                    "SELECT id FROM users WHERE"
-                                                                            + " id=? FOR UPDATE",
+                                                                    "SELECT id FROM auth_identities"
+                                                                        + " WHERE id=? FOR UPDATE",
                                                                     Long.class,
                                                                     own);
                                                             switch (action) {
                                                                 case "change" ->
                                                                         jdbc.update(
-                                                                                "UPDATE users SET"
-                                                                                    + " password_hash=?,password_changed=true,initial_password=NULL"
+                                                                                "UPDATE"
+                                                                                    + " auth_identities"
+                                                                                    + " SET password_hash=?,password_changed=true,initial_password=NULL"
                                                                                     + " WHERE id=?",
-                                                                                UUID.randomUUID()
-                                                                                        .toString(),
+                                                                                BotCredentialLifecycleIT
+                                                                                        .REPLACEMENT_HASH,
                                                                                 own);
                                                                 case "new_initial" ->
                                                                         jdbc.update(
-                                                                                "UPDATE users SET"
-                                                                                    + " password_hash=?,password_changed=false,initial_password=?"
+                                                                                "UPDATE"
+                                                                                    + " auth_identities"
+                                                                                    + " SET password_hash=?,password_changed=false,initial_password=?"
                                                                                     + " WHERE id=?",
-                                                                                UUID.randomUUID()
-                                                                                        .toString(),
+                                                                                BotCredentialLifecycleIT
+                                                                                        .PASSWORD_HASH,
                                                                                 UUID.randomUUID()
                                                                                         .toString(),
                                                                                 own);
                                                                 case "rebind_foreign" -> {
                                                                     jdbc.update(
-                                                                            "UPDATE users SET"
-                                                                                + " telegram_id=NULL"
+                                                                            "UPDATE auth_identities"
+                                                                                + " SET telegram_id=NULL"
                                                                                 + " WHERE id=?",
                                                                             own);
                                                                     jdbc.update(
-                                                                            "UPDATE users SET"
-                                                                                + " telegram_id=?"
+                                                                            "UPDATE auth_identities"
+                                                                                + " SET telegram_id=?"
                                                                                 + " WHERE id=?",
                                                                             ownChat,
                                                                             foreign);
                                                                 }
                                                                 case "restore_binding" -> {
                                                                     jdbc.update(
-                                                                            "UPDATE users SET"
-                                                                                + " telegram_id=?"
+                                                                            "UPDATE auth_identities"
+                                                                                + " SET telegram_id=?"
                                                                                 + " WHERE id=?",
                                                                             foreignChat,
                                                                             foreign);
                                                                     jdbc.update(
-                                                                            "UPDATE users SET"
-                                                                                + " telegram_id=?"
+                                                                            "UPDATE auth_identities"
+                                                                                + " SET telegram_id=?"
                                                                                 + " WHERE id=?",
                                                                             ownChat,
                                                                             own);
                                                                 }
-                                                                case "revoke" ->
-                                                                        jdbc.update(
-                                                                                "UPDATE"
-                                                                                    + " user_role_grants"
-                                                                                    + " SET status='suspended'"
-                                                                                    + " WHERE"
-                                                                                    + " user_id=?",
-                                                                                own);
-                                                                case "reactivate" ->
-                                                                        jdbc.update(
-                                                                                "UPDATE"
-                                                                                    + " user_role_grants"
-                                                                                    + " SET status='active'"
-                                                                                    + " WHERE"
-                                                                                    + " user_id=?",
-                                                                                own);
+                                                                case "revoke", "reactivate" -> {}
                                                                 case "archive" ->
                                                                         jdbc.update(
-                                                                                "UPDATE users SET"
-                                                                                    + " status='archived'"
+                                                                                "UPDATE"
+                                                                                    + " auth_identities"
+                                                                                    + " SET account_state='ARCHIVED'"
                                                                                     + " WHERE id=?",
                                                                                 own);
                                                                 case "facts", "verify" -> {}
@@ -353,7 +213,8 @@ class BotCredentialPythonBridgeIT {
                                                                     jdbc.queryForMap(
                                                                             "SELECT"
                                                                                 + " credentials_version,telegram_binding_version,roles_version"
-                                                                                + " FROM users"
+                                                                                + " FROM"
+                                                                                + " auth_identities"
                                                                                 + " WHERE id=?",
                                                                             own);
                                                             versions.put(
@@ -487,70 +348,270 @@ class BotCredentialPythonBridgeIT {
                     assertThat(authServer.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
                     assertThat(server.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
                 }
-            } finally {
-                entities.destroy();
             }
         }
     }
 
-    private Map<String, Map<String, Object>> fixtures(JdbcTemplate jdbc) {
+    /** Actual Auth/Acedemic TLS services over independent runtime connections. */
+    static final class TlsServices implements AutoCloseable {
+        final AnnotationConfigApplicationContext academicContext =
+                new AnnotationConfigApplicationContext();
+        final AnnotationConfigApplicationContext authContext =
+                new AnnotationConfigApplicationContext();
+        final LocalContainerEntityManagerFactoryBean entities =
+                new LocalContainerEntityManagerFactoryBean();
+        Server academicServer;
+        Server authServer;
+        final Path ca;
+        io.grpc.ManagedChannel authChannel;
+        io.grpc.ManagedChannel academicChannel;
+
+        TlsServices(
+                BotCredentialLifecycleIT.SplitDatabases split,
+                Path temporary,
+                String academicToken,
+                String authToken,
+                String sharedSecret)
+                throws Exception {
+            ca = certificate(temporary);
+            try {
+                var keys = KeyStore.getInstance("PKCS12");
+                try (var stream = Files.newInputStream(temporary.resolve("server.p12"))) {
+                    keys.load(stream, "np01-test-only".toCharArray());
+                }
+                var manager =
+                        KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                manager.init(keys, "np01-test-only".toCharArray());
+                var ssl =
+                        GrpcSslContexts.configure(
+                                        io.netty.handler.ssl.SslContextBuilder.forServer(manager))
+                                .build();
+                String academicToAuth = token();
+                String authToPresentation = token();
+                authContext.registerBean(
+                        "transactionManager",
+                        DataSourceTransactionManager.class,
+                        () -> new DataSourceTransactionManager(split.authData));
+                authContext.registerBean(JdbcTemplate.class, () -> split.auth);
+                authContext.register(
+                        Transactions.class,
+                        AuthBotOwnInitialCredentialsQuery.class,
+                        ru.rutcampustrack.auth.botcredentials.AuthBotCredentialMessageRepository
+                                .class,
+                        ru.rutcampustrack.auth.authority.AuthBotAuthorityQuery.class);
+                authContext.refresh();
+                var labels =
+                        new ru.rutcampustrack.auth.authority.AcademicIdentityPresentationClient(
+                                authToPresentation, "localhost");
+                authServer =
+                        NettyServerBuilder.forAddress(
+                                        new InetSocketAddress(InetAddress.getLoopbackAddress(), 0))
+                                .sslContext(ssl)
+                                .addService(
+                                        ServerInterceptors.intercept(
+                                                new AuthBotCredentialsGrpcService(
+                                                        authContext.getBean(
+                                                                AuthBotOwnInitialCredentialsQuery
+                                                                        .class),
+                                                        authContext.getBean(
+                                                                ru.rutcampustrack.auth
+                                                                        .botcredentials
+                                                                        .AuthBotCredentialMessageRepository
+                                                                        .class)),
+                                                new AuthBotCredentialServiceIdentityInterceptor(
+                                                        authToken)))
+                                .addService(
+                                        ServerInterceptors.intercept(
+                                                new ru.rutcampustrack.auth.authority
+                                                        .AuthBotIdentityGrpcService(
+                                                        authContext.getBean(
+                                                                ru.rutcampustrack.auth.authority
+                                                                        .AuthBotAuthorityQuery
+                                                                        .class),
+                                                        labels),
+                                                new ru.rutcampustrack.auth.authority
+                                                        .AuthDirectedIdentityInterceptor(
+                                                        authToken, "", academicToAuth, "")))
+                                .build()
+                                .start();
+                authChannel =
+                        io.grpc.netty.NettyChannelBuilder.forAddress(
+                                        "localhost", authServer.getPort())
+                                .overrideAuthority("localhost")
+                                .sslContext(
+                                        GrpcSslContexts.forClient()
+                                                .trustManager(ca.toFile())
+                                                .build())
+                                .build();
+                var authRead =
+                        new ru.rutcampustrack.academic.botread.AuthBotReadAuthorityClient(
+                                academicToAuth, "localhost");
+                ReflectionTestUtils.setField(
+                        authRead,
+                        "stub",
+                        ru.rutcampustrack.authauthority.grpc.AuthIdentityGrpcServiceGrpc
+                                .newBlockingStub(authChannel));
+                entities.setDataSource(split.academicData);
+                entities.setPackagesToScan(
+                        "ru.rutcampustrack.academic.entity", "ru.rutcampustrack.academic.config");
+                entities.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+                entities.setJpaPropertyMap(
+                        Map.of(
+                                "hibernate.hbm2ddl.auto",
+                                "validate",
+                                "hibernate.jdbc.time_zone",
+                                "UTC"));
+                entities.afterPropertiesSet();
+                var transactionManager = new JpaTransactionManager(entities.getObject());
+                academicContext.registerBean(
+                        "transactionManager",
+                        JpaTransactionManager.class,
+                        () -> transactionManager);
+                academicContext.registerBean(JdbcTemplate.class, () -> split.academic);
+                academicContext.registerBean(
+                        ru.rutcampustrack.academic.botread.AuthBotReadAuthorityClient.class,
+                        () -> authRead);
+                academicContext.register(
+                        Transactions.class,
+                        ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence
+                                .class,
+                        ru.rutcampustrack.academic.botread.AcademicBotHomeworkQuery.class,
+                        ru.rutcampustrack.academic.botread.AcademicBotHomeworkService.class,
+                        ru.rutcampustrack.academic.identitypresentation
+                                .AcademicIdentityPresentationGrpcService.class);
+                academicContext.refresh();
+                var factory =
+                        new JpaRepositoryFactory(
+                                SharedEntityManagerCreator.createSharedEntityManager(
+                                        entities.getObject()));
+                factory.setBeanFactory(academicContext.getBeanFactory());
+                var grpc =
+                        new AcademicGrpcServiceImpl(
+                                new AcademicReadService(
+                                        factory.getRepository(GroupRepository.class),
+                                        factory.getRepository(UserRepository.class),
+                                        factory.getRepository(SemesterRepository.class),
+                                        null,
+                                        null,
+                                        academicContext.getBean(
+                                                ru.rutcampustrack.academic.identityoperation
+                                                        .AcademicIdentityReadFence.class)),
+                                null,
+                                null,
+                                factory.getRepository(SubjectRepository.class),
+                                null,
+                                factory.getRepository(SemesterRepository.class),
+                                null,
+                                factory.getRepository(HomeworkRepository.class),
+                                factory.getRepository(HomeworkCompletionRepository.class),
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                (GrpcUserAuthorityReader) null);
+                ReflectionTestUtils.setField(
+                        grpc,
+                        "botHomeworkService",
+                        academicContext.getBean(
+                                ru.rutcampustrack.academic.botread.AcademicBotHomeworkService
+                                        .class));
+                var legacy = new GrpcAuthInterceptor();
+                ReflectionTestUtils.setField(legacy, "expectedSecret", sharedSecret);
+                academicServer =
+                        NettyServerBuilder.forAddress(
+                                        new InetSocketAddress(InetAddress.getLoopbackAddress(), 0))
+                                .sslContext(ssl)
+                                .addService(
+                                        ServerInterceptors.intercept(
+                                                grpc,
+                                                legacy,
+                                                new ru.rutcampustrack.academic.botread
+                                                        .AcademicBotHomeworkServiceIdentityInterceptor(
+                                                        academicToken)))
+                                .addService(
+                                        ServerInterceptors.intercept(
+                                                academicContext.getBean(
+                                                        ru.rutcampustrack.academic
+                                                                .identitypresentation
+                                                                .AcademicIdentityPresentationGrpcService
+                                                                .class),
+                                                new ru.rutcampustrack.academic.identitypresentation
+                                                        .IdentityPresentationServiceIdentityInterceptor(
+                                                        authToPresentation)))
+                                .build()
+                                .start();
+                academicChannel =
+                        io.grpc.netty.NettyChannelBuilder.forAddress(
+                                        "localhost", academicServer.getPort())
+                                .overrideAuthority("localhost")
+                                .sslContext(
+                                        GrpcSslContexts.forClient()
+                                                .trustManager(ca.toFile())
+                                                .build())
+                                .build();
+                ReflectionTestUtils.setField(
+                        labels,
+                        "stub",
+                        ru.rutcampustrack.authauthority.grpc.AcademicIdentityPresentationServiceGrpc
+                                .newBlockingStub(academicChannel));
+            } catch (Exception failure) {
+                try {
+                    close();
+                } catch (Exception cleanup) {
+                    failure.addSuppressed(cleanup);
+                }
+                throw failure;
+            }
+        }
+
+        @Override
+        public void close() throws Exception {
+            if (academicServer != null) academicServer.shutdownNow();
+            if (authServer != null) authServer.shutdownNow();
+            if (academicChannel != null) academicChannel.shutdownNow();
+            if (authChannel != null) authChannel.shutdownNow();
+            if (academicServer != null)
+                assertThat(academicServer.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+            if (authServer != null)
+                assertThat(authServer.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+            if (academicChannel != null)
+                assertThat(academicChannel.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+            if (authChannel != null)
+                assertThat(authChannel.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
+            academicContext.close();
+            authContext.close();
+            if (entities.getObject() != null) entities.destroy();
+        }
+    }
+
+    private Map<String, Map<String, Object>> fixtures(
+            BotCredentialLifecycleIT.SplitDatabases split) {
+        var jdbc = split.academicOwner;
         Map<String, Map<String, Object>> result = new LinkedHashMap<>();
         for (String role : List.of("student", "teacher", "headman", "FULL", "LIMITED", "foreign")) {
-            long group =
-                    jdbc.queryForObject(
-                            "INSERT INTO groups(name) VALUES(?) RETURNING id",
-                            Long.class,
-                            "NP01 " + UUID.randomUUID().toString().substring(0, 20));
+            long group = split.group();
             String login = "np" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
             String initial = UUID.randomUUID().toString();
             long id =
-                    jdbc.queryForObject(
-                            "INSERT INTO"
-                                + " users(login,password_hash,last_name,first_name,initial_password,group_id)"
-                                + " VALUES(?,?,'NP01','Own',?,?) RETURNING id",
-                            Long.class,
+                    split.identity(
                             login,
-                            UUID.randomUUID().toString(),
+                            BotCredentialLifecycleIT.PASSWORD_HASH,
                             initial,
-                            group);
+                            group,
+                            role.equals("foreign") ? "teacher" : role);
             long chat = 830000000L + id;
-            jdbc.update("UPDATE users SET telegram_id=? WHERE id=?", chat, id);
-            if (role.equals("FULL") || role.equals("LIMITED")) {
-                jdbc.update(
-                        "INSERT INTO"
-                            + " admin_access_profiles(user_id,assigned,mode,permissions,version)"
-                            + " VALUES(?,true,?,?::text[],1)",
-                        id,
-                        role,
-                        role.equals("FULL") ? "{}" : "{USERS_VIEW}");
-                jdbc.update(
-                        "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) "
-                                + "VALUES(?,'admin','active',NOW(),NOW())",
-                        id);
-            } else {
-                String base =
-                        role.equals("teacher") || role.equals("foreign") ? "teacher" : "student";
-                jdbc.update(
-                        "INSERT INTO"
-                            + " user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
-                            + " VALUES(?,?,'active',?,NOW(),NOW())",
-                        id,
-                        base,
-                        base.equals("teacher") ? null : group);
-                if (role.equals("headman"))
-                    jdbc.update(
-                            "INSERT INTO"
-                                + " user_role_grants(user_id,role,status,group_id,created_at,updated_at)"
-                                + " VALUES(?,'headman','active',?,NOW(),NOW())",
-                            id,
-                            group);
-            }
+            split.authOwner.update("UPDATE auth_identities SET telegram_id=? WHERE id=?", chat, id);
             result.put(role, Map.of("uid", id, "chat", chat, "login", login, "initial", initial));
         }
         long student = ((Number) result.get("student").get("uid")).longValue();
         long group =
                 jdbc.queryForObject(
-                        "SELECT group_id FROM user_role_grants WHERE user_id=? AND role='student'",
+                        "SELECT group_id FROM academic_role_eligibility WHERE user_id=? AND"
+                                + " role='STUDENT'",
                         Long.class,
                         student);
         jdbc.update("UPDATE groups SET is_active=true WHERE id=?", group);

@@ -17,7 +17,7 @@ import ru.rutcampustrack.academic.security.RequestContext;
 import java.util.List;
 import java.util.UUID;
 
-/** Generation is bound to one owned durable job; Auth commits the immutable export audit fact. */
+/** Generation is bound to one owned durable job; Academic commits the immutable export audit fact. */
 @Service
 public class AdminAttendanceExportService {
     private final AdminAttendanceReportService reports;
@@ -140,17 +140,20 @@ public class AdminAttendanceExportService {
         var claims = context.getClaims();
         var rows =
                 jdbc.query(
-                        "SELECT selector_json AS selector FROM"
-                                + " auth_api.read_export_selector(?,?,?,?,?,?,?,?)",
+                        "SELECT identity->'report'->? AS selector FROM academic_export_jobs"
+                                + " WHERE user_id=? AND identity->'actor'->>'rolesVersion'=?"
+                                + " AND session_id=? AND identity->'actor'->>'sessionVersion'=?"
+                                + " AND job_id=? AND lease_id=? AND identity->'report'->>'kind'=?"
+                                + " AND state='preparing' AND lease_until>NOW() AND expires_at>NOW()",
                         (rs, n) -> rs.getString("selector"),
+                        "adminGroupAttendance",
                         claims.userId(),
-                        claims.rolesVersion(),
+                        Long.toString(claims.rolesVersion()),
                         claims.sessionId(),
-                        claims.sessionVersion(),
+                        Long.toString(claims.sessionVersion()),
                         jobId,
                         leaseId,
-                        "ADMIN_GROUP_ATTENDANCE",
-                        "adminGroupAttendance");
+                        "ADMIN_GROUP_ATTENDANCE");
         try {
             if (rows.size() != 1
                     || !mapper.readTree(rows.getFirst()).equals(mapper.valueToTree(query)))

@@ -82,6 +82,13 @@ grpc:
   auth:
     secret: ${GRPC_SECRET:}
   service-identity:
+    academic-to-auth-token: ${ACADEMIC_TO_AUTH_SERVICE_TOKEN:}
+    auth-to-academic-presentation-token: ${AUTH_TO_ACADEMIC_PRESENTATION_SERVICE_TOKEN:}
+    mobile-bff-to-academic-token: ${MOBILE_BFF_TO_ACADEMIC_SERVICE_TOKEN:}
+    attendance-bot-read-to-academic-token: ${ATTENDANCE_BOT_READ_TO_ACADEMIC_SERVICE_TOKEN:}
+    notification-to-academic-token: ${NOTIFICATION_TO_ACADEMIC_SERVICE_TOKEN:}
+    academic-report-to-attendance-token: ${ACADEMIC_REPORT_TO_ATTENDANCE_SERVICE_TOKEN:}
+    academic-report-to-schedule-token: ${ACADEMIC_REPORT_TO_SCHEDULE_SERVICE_TOKEN:}
     attendance-to-academic-token: ${ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN:}
     academic-to-schedule-token: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:}
     academic-to-attendance-token: ${ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN:}
@@ -90,6 +97,11 @@ grpc:
     # Optional bot-only identity; protected RPCs deny access while unconfigured.
     bot-to-academic-token: ${BOT_TO_ACADEMIC_SERVICE_TOKEN:}
   client:
+    auth-service:
+      address: ${AUTH_GRPC_ADDRESS:dns:///auth-service:19090}
+      negotiation-type: TLS
+      security:
+        authority-override: ${AUTH_GRPC_TLS_AUTHORITY:auth-service}
     # Phase 61 D-04: резолв пары по (group, date, lessonNumber) для валидации ДЗ
     schedule-service:
       address: dns:///schedule-service:19092
@@ -97,11 +109,19 @@ grpc:
     attendance-service:
       address: dns:///attendance-service:19093
       negotiation-type: plaintext
+    report-render-attendance:
+      address: dns:///attendance-service:19093
+      negotiation-type: TLS
+      max-inbound-message-size: 22020096
+      security:
+        authority-override: ${ATTENDANCE_GRPC_TLS_AUTHORITY:attendance-service}
     document-renderer-service:
       address: dns:///document-renderer-service:19095
       negotiation-type: plaintext
 
 rutcampustrack:
+  export-jobs:
+    owner-url: ${ACADEMIC_REPORT_OWNER_URL:http://academic-service:9091}
   security:
     # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
     required-env-vars: ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN,POSTGRES_ACADEMIC_PASSWORD,REDIS_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET,ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN,SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN

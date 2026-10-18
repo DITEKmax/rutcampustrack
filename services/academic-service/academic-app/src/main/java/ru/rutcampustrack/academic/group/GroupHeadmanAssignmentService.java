@@ -1,13 +1,10 @@
 package ru.rutcampustrack.academic.group;
 
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
 import ru.rutcampustrack.academic.contract.dto.group.HeadmanAssignmentPreviewResponse;
@@ -17,7 +14,6 @@ import ru.rutcampustrack.academic.contract.dto.group.HeadmanRosterResponse;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.User;
-import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.GroupRepository;
@@ -25,7 +21,6 @@ import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,6 +42,13 @@ public class GroupHeadmanAssignmentService {
 
     @org.springframework.beans.factory.annotation.Autowired
     private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations
+            identityOperations;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence fences;
 
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
@@ -71,9 +73,12 @@ public class GroupHeadmanAssignmentService {
         this.cacheManager = cacheManager;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(
+            readOnly = true,
+            isolation = org.springframework.transaction.annotation.Isolation.REPEATABLE_READ)
     public HeadmanRosterResponse roster(Long groupId) {
         Group group = requireActiveGroup(groupId);
+        fences.requireGroupReadable(group.getId());
         CurrentHeadman current = readCurrentHeadman(group.getId());
         List<HeadmanCandidateResponse> candidates =
                 userRepository.findActiveStudentsByGrantGroupId(group.getId()).stream()
@@ -90,9 +95,12 @@ public class GroupHeadmanAssignmentService {
                 group.getId(), current.id(), current.fio(), candidates, activeAssistants);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(
+            readOnly = true,
+            isolation = org.springframework.transaction.annotation.Isolation.REPEATABLE_READ)
     public HeadmanAssignmentPreviewResponse preview(Long groupId, Long studentId) {
         Group group = requireActiveGroup(groupId);
+        fences.requireGroupReadable(group.getId());
         User candidate = requireCandidate(group.getId(), studentId);
         CurrentHeadman current = readCurrentHeadman(group.getId());
         boolean same = Objects.equals(current.id(), candidate.getId());
@@ -109,12 +117,14 @@ public class GroupHeadmanAssignmentService {
                 assistants);
     }
 
-    @Transactional
+    @Transactional(
+            propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public HeadmanAssignmentResponse assign(Long groupId, AssignHeadmanRequest request) {
-        adminAccess.begin("GROUPS_MANAGE");
-        if (request == null) throw new BadRequestException("Запрос назначения старосты обязателен");
-        return mutate(
-                groupId, request.studentId(), request.expectedHeadmanId(), true, false, null, null);
+        adminAccess.require("GROUPS_MANAGE");
+        if (request == null || request.studentId() == null)
+            throw new BadRequestException("Запрос назначения старосты обязателен");
+        return identityOperations.headman(
+                groupId, request.studentId(), request.expectedHeadmanId(), true, null);
     }
 
     /**
@@ -122,18 +132,32 @@ public class GroupHeadmanAssignmentService {
      * caller-supplied CAS value, but still uses the canonical lock order and all locked rechecks.
      * The public group endpoint always uses CAS.
      */
-    @Transactional
+    @Transactional(
+            propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public HeadmanAssignmentResponse assignLegacyHeadman(Long studentId) {
         return assignLegacyHeadman(studentId, null, null);
     }
 
-    @Transactional
+    @Transactional(
+            propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public HeadmanAssignmentResponse assignLegacyHeadman(
             Long studentId, Long telegramId, String status) {
-        adminAccess.begin("USERS_MANAGE");
-        adminAccess.require("GROUPS_MANAGE");
-        Long groupId = activeStudentGroup(studentId);
-        return mutate(groupId, studentId, null, false, true, telegramId, status);
+        adminAccess.require("USERS_MANAGE", "GROUPS_MANAGE");
+        if (studentId == null) throw new BadRequestException("ID студента обязателен");
+        var patch =
+                new ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest(
+                        null,
+                        null,
+                        null,
+                        true,
+                        null,
+                        null,
+                        telegramId,
+                        status == null
+                                ? null
+                                : ru.rutcampustrack.academic.contract.enums.AccountStatus.valueOf(
+                                        status.toUpperCase(java.util.Locale.ROOT)));
+        return identityOperations.headman(null, studentId, null, false, patch);
     }
 
     /** The legacy false flag is a no-op for non-headmen; current headmen require replacement. */
@@ -183,90 +207,6 @@ public class GroupHeadmanAssignmentService {
                 "Снять действующего старосту можно только заменой на другого студента");
     }
 
-    private HeadmanAssignmentResponse mutate(
-            Long groupId,
-            Long studentId,
-            Long expectedHeadmanId,
-            boolean enforceCas,
-            boolean legacy,
-            Long telegramId,
-            String status) {
-        Group initialGroup = requireActiveGroup(groupId);
-        User candidate = requireCandidate(initialGroup.getId(), studentId);
-        CurrentHeadman initialCurrent = readCurrentHeadman(initialGroup.getId());
-
-        List<Long> idsToLock = new ArrayList<>();
-        idsToLock.add(candidate.getId());
-        if (initialCurrent.id() != null) idsToLock.add(initialCurrent.id());
-        Map<Long, User> lockedUsers = lockUsers(idsToLock);
-        for (Long affected : idsToLock) adminAccess.target(affected);
-        Group group = lockActiveGroup(initialGroup.getId());
-
-        List<Long> currentIds = readCurrentHeadmanIds(group.getId());
-        if (currentIds.size() > 1) throw duplicateHeadmanConflict(group.getId());
-        Long currentId = currentIds.isEmpty() ? null : currentIds.get(0);
-        if (currentId != null && !lockedUsers.containsKey(currentId)) {
-            throw new ConflictException(
-                    "expectedHeadmanId",
-                    expectedHeadmanId,
-                    "Состояние старосты изменилось, обнови реестр");
-        }
-
-        User lockedCandidate = lockedUsers.get(studentId);
-        validateCandidateAfterLocks(lockedCandidate, studentId, group.getId());
-        if (enforceCas && !Objects.equals(expectedHeadmanId, currentId)) {
-            throw new ConflictException(
-                    "expectedHeadmanId",
-                    expectedHeadmanId,
-                    "Состояние старосты изменилось, обнови реестр");
-        }
-
-        if (Objects.equals(currentId, studentId)) {
-            if (legacy)
-                roleGrantWriter.replaceHeadman(
-                        currentId,
-                        lockedCandidate.getId(),
-                        group.getId(),
-                        true,
-                        telegramId,
-                        status);
-            return new HeadmanAssignmentResponse(
-                    group.getId(), studentId, lockedCandidate.getDisplayName(), false, false, 0);
-        }
-
-        User previous = currentId == null ? null : lockedUsers.get(currentId);
-        if (previous != null) {
-            previous.setHeadman(false);
-            previous.setUpdatedAt(OffsetDateTime.now());
-            userRepository.save(previous);
-        }
-        lockedCandidate.setHeadman(true);
-        lockedCandidate.setUpdatedAt(OffsetDateTime.now());
-        userRepository.save(lockedCandidate);
-        userRepository.flush();
-        roleGrantWriter.replaceHeadman(
-                currentId, lockedCandidate.getId(), group.getId(), legacy, telegramId, status);
-        int revoked = revokeAssistants(group.getId());
-        if (personalNotifications != null) {
-            if (previous != null)
-                personalNotifications.headman(previous.getId(), group.getId(), true, false);
-            personalNotifications.headman(lockedCandidate.getId(), group.getId(), false, true);
-        }
-        eventPublisher.publishEvent(new GroupUpdatedEvent(this, group.getId()));
-        List<Long> affectedUsers =
-                previous == null
-                        ? List.of(lockedCandidate.getId())
-                        : List.of(previous.getId(), lockedCandidate.getId());
-        evictAfterCommit(group.getId(), affectedUsers);
-        return new HeadmanAssignmentResponse(
-                group.getId(),
-                lockedCandidate.getId(),
-                lockedCandidate.getDisplayName(),
-                true,
-                currentId == null,
-                revoked);
-    }
-
     private Group requireActiveGroup(Long groupId) {
         if (groupId == null || groupId <= 0) {
             throw new BadRequestException("groupId", "ID группы должен быть положительным");
@@ -280,12 +220,6 @@ public class GroupHeadmanAssignmentService {
                     "groupId", groupId, "Архивная группа не принимает нового старосту");
         }
         return group;
-    }
-
-    private int revokeAssistants(long groupId) {
-        return personalNotifications == null
-                ? assistantRepository.revokeAllByGroupId(groupId)
-                : personalNotifications.revokeGroupAssistants(groupId);
     }
 
     private Group lockActiveGroup(Long groupId) {
@@ -325,20 +259,6 @@ public class GroupHeadmanAssignmentService {
                     "Старостой может быть только студент с активной ролью STUDENT в выбранной"
                             + " группе");
         }
-    }
-
-    private Long activeStudentGroup(Long studentId) {
-        if (studentId == null || studentId <= 0) {
-            throw new BadRequestException("studentId", "ID студента должен быть положительным");
-        }
-        return userRepository
-                .findActiveStudentGrantGroupId(studentId)
-                .orElseThrow(
-                        () ->
-                                new ConflictException(
-                                        "studentId",
-                                        studentId,
-                                        "Активная группа студента не найдена"));
     }
 
     private Long activeStudentGroupOrLegacyGroup(User candidate) {
@@ -385,37 +305,6 @@ public class GroupHeadmanAssignmentService {
                 "groupId",
                 groupId,
                 "В группе уже сохранено несколько активных старост; требуется исправление данных");
-    }
-
-    private void evictAfterCommit(Long groupId, List<Long> userIds) {
-        if (cacheManager == null) return;
-        List<Long> affected = userIds.stream().filter(Objects::nonNull).distinct().toList();
-        Runnable evict =
-                () -> {
-                    evict(cacheManager.getCache("groups"), groupId);
-                    evict(cacheManager.getCache("group_members"), groupId);
-                    Cache users = cacheManager.getCache("users");
-                    Cache rbac = cacheManager.getCache("rbac");
-                    for (Long userId : affected) {
-                        evict(users, userId);
-                        evict(rbac, userId + ":" + groupId);
-                    }
-                };
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(
-                    new TransactionSynchronization() {
-                        @Override
-                        public void afterCommit() {
-                            evict.run();
-                        }
-                    });
-        } else {
-            evict.run();
-        }
-    }
-
-    private static void evict(Cache cache, Object key) {
-        if (cache != null) cache.evict(key);
     }
 
     private record CurrentHeadman(Long id, String fio) {}

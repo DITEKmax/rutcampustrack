@@ -1,13 +1,13 @@
 package ru.rutcampustrack.academic.history;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
+
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
 import ru.rutcampustrack.academic.entity.Semester;
@@ -19,9 +19,35 @@ import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 class HistoricalMembershipServiceTest {
 
     private static final LocalDate DATE = LocalDate.of(2026, 4, 20);
+
+    @Test
+    void pendingPeerMembershipDeniesBothDatedReadPathsBeforeLoadingAnyRoster() {
+        var groups = mock(GroupRepository.class);
+        var coverage = mock(GroupHistoryCoverageRepository.class);
+        var semesters = mock(SemesterRepository.class);
+        var histories = mock(StudentGroupHistoryRepository.class);
+        var users = mock(UserRepository.class);
+        var fence =
+                mock(ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence.class);
+        doThrow(io.grpc.Status.UNAVAILABLE.asRuntimeException())
+                .when(fence)
+                .requireGroupReadable(7L);
+        var service =
+                new HistoricalMembershipService(
+                        groups, coverage, semesters, histories, users, fence);
+        assertThatThrownBy(() -> service.readRoster(7L, DATE, 3L))
+                .isInstanceOf(io.grpc.StatusRuntimeException.class);
+        assertThatThrownBy(() -> service.readMemberUserIds(7L, DATE))
+                .isInstanceOf(io.grpc.StatusRuntimeException.class);
+        verifyNoInteractions(groups, coverage, semesters, histories, users);
+    }
 
     @Test
     void currentStudentWithoutOriginFailsEvenWhenHistoryHasOtherStudents() {
@@ -41,7 +67,15 @@ class HistoricalMembershipServiceTest {
                 .thenReturn(List.of(origin));
 
         HistoricalMembershipService service =
-                new HistoricalMembershipService(groups, coverage, semesters, histories, users);
+                new HistoricalMembershipService(
+                        groups,
+                        coverage,
+                        semesters,
+                        histories,
+                        users,
+                        mock(
+                                ru.rutcampustrack.academic.identityoperation
+                                        .AcademicIdentityReadFence.class));
 
         assertThatThrownBy(() -> service.readRoster(7L, DATE, 3L))
                 .isInstanceOfSatisfying(
@@ -69,7 +103,15 @@ class HistoricalMembershipServiceTest {
         when(users.findAllIncludingArchivedByIds(List.of(41L))).thenReturn(List.of());
 
         HistoricalMembershipService service =
-                new HistoricalMembershipService(groups, coverage, semesters, histories, users);
+                new HistoricalMembershipService(
+                        groups,
+                        coverage,
+                        semesters,
+                        histories,
+                        users,
+                        mock(
+                                ru.rutcampustrack.academic.identityoperation
+                                        .AcademicIdentityReadFence.class));
 
         assertThatThrownBy(() -> service.readRoster(7L, DATE, 3L))
                 .isInstanceOf(HistoricalMembershipException.class);
@@ -95,7 +137,15 @@ class HistoricalMembershipServiceTest {
         when(users.findAllIncludingArchivedByIds(List.of(41L))).thenReturn(List.of(currentStudent));
 
         HistoricalMembershipService service =
-                new HistoricalMembershipService(groups, coverage, semesters, histories, users);
+                new HistoricalMembershipService(
+                        groups,
+                        coverage,
+                        semesters,
+                        histories,
+                        users,
+                        mock(
+                                ru.rutcampustrack.academic.identityoperation
+                                        .AcademicIdentityReadFence.class));
 
         assertThatThrownBy(() -> service.readRoster(7L, DATE, 3L))
                 .isInstanceOfSatisfying(
@@ -129,7 +179,15 @@ class HistoricalMembershipServiceTest {
         when(users.findAllIncludingArchivedByIds(List.of(41L))).thenReturn(List.of(currentStudent));
 
         HistoricalMembershipService service =
-                new HistoricalMembershipService(groups, coverage, semesters, histories, users);
+                new HistoricalMembershipService(
+                        groups,
+                        coverage,
+                        semesters,
+                        histories,
+                        users,
+                        mock(
+                                ru.rutcampustrack.academic.identityoperation
+                                        .AcademicIdentityReadFence.class));
 
         assertThatThrownBy(() -> service.readRoster(7L, DATE, 3L))
                 .isInstanceOf(HistoricalMembershipException.class);
@@ -146,7 +204,15 @@ class HistoricalMembershipServiceTest {
         when(semester.getDateFrom()).thenReturn(null);
 
         HistoricalMembershipService service =
-                new HistoricalMembershipService(groups, coverage, semesters, histories, users);
+                new HistoricalMembershipService(
+                        groups,
+                        coverage,
+                        semesters,
+                        histories,
+                        users,
+                        mock(
+                                ru.rutcampustrack.academic.identityoperation
+                                        .AcademicIdentityReadFence.class));
 
         assertThatThrownBy(() -> service.readRoster(7L, DATE, 3L))
                 .isInstanceOfSatisfying(
@@ -170,7 +236,15 @@ class HistoricalMembershipServiceTest {
         when(semester.getDateTo()).thenReturn(DATE);
 
         HistoricalMembershipService service =
-                new HistoricalMembershipService(groups, coverage, semesters, histories, users);
+                new HistoricalMembershipService(
+                        groups,
+                        coverage,
+                        semesters,
+                        histories,
+                        users,
+                        mock(
+                                ru.rutcampustrack.academic.identityoperation
+                                        .AcademicIdentityReadFence.class));
 
         assertThatThrownBy(() -> service.readRoster(7L, DATE, 3L))
                 .isInstanceOfSatisfying(
@@ -192,7 +266,15 @@ class HistoricalMembershipServiceTest {
         configureBase(groups, coverage, semesters, histories, 7L);
 
         HistoricalMembershipService service =
-                new HistoricalMembershipService(groups, coverage, semesters, histories, users);
+                new HistoricalMembershipService(
+                        groups,
+                        coverage,
+                        semesters,
+                        histories,
+                        users,
+                        mock(
+                                ru.rutcampustrack.academic.identityoperation
+                                        .AcademicIdentityReadFence.class));
 
         assertThatThrownBy(() -> service.readRoster(7L, DATE.minusDays(11), 3L))
                 .isInstanceOfSatisfying(

@@ -1,5 +1,6 @@
 """Private admission for /start and /credentials; generic RPC never supplies a password."""
 
+from dataclasses import replace
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
@@ -8,6 +9,7 @@ import pytest
 from bot.grpc_client.academic_pb2 import UserResponse, UserRoleGrant
 from bot.handlers.prefs import HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL
 from bot.handlers.start import cmd_credentials, cmd_links, cmd_start
+from bot.services.bot_menu import BotGrant, MenuScope
 
 
 def _message(user_id=12345, *, chat_id=12345, chat_type="private", sender=True):
@@ -22,6 +24,8 @@ def _profile(found=True, *, changed=False):
     return SimpleNamespace(
         found=found,
         user_id=17,
+        telegram_binding_version=2,
+        roles_version=1,
         display_name="Иван Иванов",
         login="current_login",
         initial_password="generic_ignored_marker",
@@ -30,11 +34,19 @@ def _profile(found=True, *, changed=False):
     )
 
 
-async def _invoke(handler, message, academic, cards=None):
+async def _invoke(handler, message, academic, cards=None, menu=None):
+    menu = menu or SimpleNamespace(
+        own_profile=academic.get_user_by_telegram_id,
+        menu_scope=AsyncMock(return_value=MenuScope(17, 2, 1, (BotGrant("STUDENT", 10),))),
+    )
+    if not hasattr(menu, "own_profile"):
+        menu.own_profile = academic.get_user_by_telegram_id
     if handler is cmd_start:
-        await handler(message, academic_client=academic, prefs_client=MagicMock(), credential_cards=cards)
+        await handler(
+            message, academic_client=academic, prefs_client=MagicMock(), credential_cards=cards, bot_menu_client=menu
+        )
     else:
-        await handler(message, academic_client=academic, credential_cards=cards)
+        await handler(message, academic_client=academic, credential_cards=cards, bot_menu_client=menu)
 
 
 @pytest.mark.asyncio
@@ -119,23 +131,125 @@ async def test_start_menu_uses_current_grants_and_preserves_dedicated_card_capab
         get_user_by_id=AsyncMock(return_value=UserResponse(roles_version=1, id=17, telegram_id=12345, roles=roles)),
     )
     cards = SimpleNamespace(deliver=AsyncMock(return_value=True))
-    await _invoke(cmd_start, message, academic, cards)
+    menu = SimpleNamespace(
+        menu_scope=AsyncMock(
+            return_value=MenuScope(
+                17, 2, 1, tuple(BotGrant(grant.role, grant.group_id, grant.status) for grant in roles)
+            )
+        )
+    )
+    await _invoke(cmd_start, message, academic, cards, menu)
     labels = [button.text for row in cards.deliver.await_args.kwargs["reply_markup"].keyboard for button in row]
     assert (HOMEWORK_TODAY_LABEL in labels) is student
     assert (HOMEWORK_WEEK_LABEL in labels) is student
-    academic.get_user_by_id.assert_awaited_once_with(17)
+    academic.get_user_by_id.assert_not_awaited()
+    menu.menu_scope.assert_awaited_once_with(12345)
     cards.deliver.assert_awaited_once()
     message.answer.assert_not_awaited()
 
 
-async def test_start_role_lookup_outage_hides_homework_but_does_not_replace_credentials_flow():
+async def test_start_authority_outage_denies_profile_and_credential_delivery():
     message = _message()
-    academic = SimpleNamespace(
-        get_user_by_telegram_id=AsyncMock(return_value=_profile()),
-        get_user_by_id=AsyncMock(side_effect=RuntimeError("PRIVATE_MARKER")),
-    )
+    academic = SimpleNamespace(get_user_by_telegram_id=AsyncMock(return_value=_profile()))
+    menu = SimpleNamespace(menu_scope=AsyncMock(side_effect=RuntimeError("PRIVATE_MARKER")))
     cards = SimpleNamespace(deliver=AsyncMock(return_value=True))
-    await _invoke(cmd_start, message, academic, cards)
-    labels = [button.text for row in cards.deliver.await_args.kwargs["reply_markup"].keyboard for button in row]
-    assert HOMEWORK_WEEK_LABEL not in labels and HOMEWORK_TODAY_LABEL not in labels
+    await _invoke(cmd_start, message, academic, cards, menu)
+    cards.deliver.assert_not_awaited()
+    assert "current_login" not in message.answer.await_args.args[0]
+    assert "Иван Иванов" not in message.answer.await_args.args[0]
+    assert "PRIVATE_MARKER" not in message.answer.await_args.args[0]
+
+
+@pytest.mark.parametrize("handler", [cmd_start, cmd_credentials])
+@pytest.mark.parametrize("changed", [None, "outage", "uid", "binding", "roles", "no_grant"])
+async def test_found_profile_needs_positive_matching_current_authority_before_any_card_or_profile(handler, changed):
+    current = MenuScope(17, 2, 1, (BotGrant("STUDENT", 10),))
+    changed_scope = {
+        None: None,
+        "uid": replace(current, user_id=18),
+        "binding": replace(current, telegram_binding_version=3),
+        "roles": replace(current, roles_version=2),
+        "no_grant": replace(current, grants=()),
+    }.get(changed)
+    menu = SimpleNamespace(
+        own_profile=AsyncMock(return_value=_profile()), menu_scope=AsyncMock(return_value=changed_scope)
+    )
+    if changed == "outage":
+        menu.menu_scope.side_effect = RuntimeError("PRIVATE_MARKER")
+    cards = SimpleNamespace(deliver=AsyncMock(return_value=True))
+    message = _message()
+    await _invoke(handler, message, SimpleNamespace(), cards, menu)
+    cards.deliver.assert_not_awaited()
+    rendered = message.answer.await_args.args[0]
+    assert all(value not in rendered for value in ("current_login", "Иван Иванов", "ИБ-21", "PRIVATE_MARKER"))
+    assert "временно недоступен" in rendered
+    if handler is cmd_start:
+        assert len([button for row in message.answer.await_args.kwargs["reply_markup"].keyboard for button in row]) == 4
+
+
+@pytest.mark.parametrize("handler", [cmd_start, cmd_credentials])
+@pytest.mark.parametrize(
+    "changed",
+    [
+        "menu_missing",
+        "menu_outage",
+        "binding",
+        "roles",
+        "no_grant",
+        "profile_unbound",
+        "profile_rebound",
+        "profile_outage",
+    ],
+)
+async def test_denied_card_never_exposes_prior_profile_when_fallback_authority_changes(handler, changed):
+    current = MenuScope(17, 2, 1, (BotGrant("STUDENT", 10),))
+    fresh = _profile(changed=True)
+    changed_scope = current
+    if changed == "menu_missing":
+        changed_scope = None
+    elif changed == "menu_outage":
+        changed_scope = RuntimeError("PRIVATE_MARKER")
+    elif changed == "binding":
+        changed_scope = replace(current, telegram_binding_version=3)
+    elif changed == "roles":
+        changed_scope = replace(current, roles_version=2)
+    elif changed == "no_grant":
+        changed_scope = replace(current, grants=())
+    elif changed == "profile_unbound":
+        fresh.found = False
+    elif changed == "profile_rebound":
+        fresh.user_id = 18
+    elif changed == "profile_outage":
+        fresh = RuntimeError("PRIVATE_MARKER")
+    menu = SimpleNamespace(
+        own_profile=AsyncMock(side_effect=[_profile(), fresh]),
+        menu_scope=AsyncMock(side_effect=[current, changed_scope]),
+    )
+    cards = SimpleNamespace(deliver=AsyncMock(return_value=False))
+    message = _message()
+    await _invoke(handler, message, SimpleNamespace(), cards, menu)
     cards.deliver.assert_awaited_once()
+    rendered = message.answer.await_args.args[0]
+    assert all(value not in rendered for value in ("current_login", "Иван Иванов", "ИБ-21", "PRIVATE_MARKER"))
+    assert "временно недоступен" in rendered
+    if handler is cmd_start:
+        assert len([button for row in message.answer.await_args.kwargs["reply_markup"].keyboard for button in row]) == 4
+
+
+@pytest.mark.parametrize("handler", [cmd_start, cmd_credentials])
+async def test_password_changed_fallback_uses_only_newly_confirmed_profile_with_current_grant(handler):
+    current = MenuScope(17, 2, 1, (BotGrant("STUDENT", 10),))
+    fresh = _profile(changed=True)
+    fresh.login, fresh.display_name, fresh.group_name = "fresh_login", "Текущее имя", "Текущая группа"
+    menu = SimpleNamespace(
+        own_profile=AsyncMock(side_effect=[_profile(), fresh]), menu_scope=AsyncMock(return_value=current)
+    )
+    cards = SimpleNamespace(deliver=AsyncMock(return_value=False))
+    message = _message()
+    await _invoke(handler, message, SimpleNamespace(), cards, menu)
+    rendered = message.answer.await_args.args[0]
+    assert "fresh_login" in rendered and "Текущее имя" in rendered and "Текущая группа" in rendered
+    assert all(value not in rendered for value in ("current_login", "Иван Иванов", "ИБ-21", "generic_ignored_marker"))
+    if handler is cmd_credentials:
+        assert "Пароль: уже изменён" in rendered
+    assert menu.own_profile.await_count == menu.menu_scope.await_count == 2

@@ -15,14 +15,20 @@ import io.grpc.MethodDescriptor;
 import io.grpc.ServerCall;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.util.Base64;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.net.ssl.SSLSession;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import ru.rutcampustrack.academic.botread.AcademicBotHomeworkServiceIdentityInterceptor;
+import ru.rutcampustrack.auth.botcredentials.AuthBotCredentialServiceIdentityInterceptor;
 import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
 import ru.rutcampustrack.shared.security.grpc.ServicePrincipal;
+
+import java.util.Base64;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.net.ssl.SSLSession;
 
 class BotCredentialServiceIdentityInterceptorTest {
 
@@ -30,12 +36,12 @@ class BotCredentialServiceIdentityInterceptorTest {
     @ValueSource(strings = {"GetOwnBotInitialCredentials", "ManageOwnBotCredentialMessages"})
     void onlyVerifiedTlsBotCanEnterDomain(String method) {
         var called = new AtomicBoolean();
-        new BotCredentialServiceIdentityInterceptor(token())
+        new AuthBotCredentialServiceIdentityInterceptor(token())
                 .interceptCall(
                         call(method, true),
                         headers(token()),
                         (call, headers) -> {
-                            BotCredentialServiceIdentityInterceptor.requireBot();
+                            AuthBotCredentialServiceIdentityInterceptor.requireBot();
                             called.set(true);
                             return new ServerCall.Listener<>() {};
                         });
@@ -61,7 +67,8 @@ class BotCredentialServiceIdentityInterceptorTest {
         if (defect.equals("duplicate"))
             headers.put(DirectedServiceCredential.TOKEN_METADATA_KEY, token());
         var called = new AtomicBoolean();
-        new BotCredentialServiceIdentityInterceptor(defect.equals("unconfigured") ? "" : token())
+        new AuthBotCredentialServiceIdentityInterceptor(
+                        defect.equals("unconfigured") ? "" : token())
                 .interceptCall(
                         call,
                         headers,
@@ -75,21 +82,22 @@ class BotCredentialServiceIdentityInterceptorTest {
 
     @Test
     void directDomainInvocationRequiresVerifiedBotPrincipal() {
-        assertThatThrownBy(BotCredentialServiceIdentityInterceptor::requireBot)
+        assertThatThrownBy(AuthBotCredentialServiceIdentityInterceptor::requireBot)
                 .isInstanceOf(StatusRuntimeException.class);
         Context.current()
                 .withValue(ServicePrincipal.CONTEXT_KEY, ServicePrincipal.SCHEDULE_SERVICE)
                 .run(
                         () ->
                                 assertThatThrownBy(
-                                                BotCredentialServiceIdentityInterceptor::requireBot)
+                                                AuthBotCredentialServiceIdentityInterceptor
+                                                        ::requireBot)
                                         .isInstanceOf(StatusRuntimeException.class));
     }
 
     @Test
     void ordinaryProfileRetainsExistingAdmission() {
         var called = new AtomicBoolean();
-        new BotCredentialServiceIdentityInterceptor("")
+        new AuthBotCredentialServiceIdentityInterceptor("")
                 .interceptCall(
                         call("GetUserByTelegramId", false),
                         new Metadata(),
@@ -98,6 +106,30 @@ class BotCredentialServiceIdentityInterceptorTest {
                             return new ServerCall.Listener<>() {};
                         });
         assertThat(called.get()).isTrue();
+    }
+
+    @Test
+    void academicHomeworkRetainsDedicatedBotGuard() {
+        var called = new AtomicBoolean();
+        new AcademicBotHomeworkServiceIdentityInterceptor(token())
+                .interceptCall(
+                        call("GetOwnBotHomeworksForWeek", true),
+                        headers(token()),
+                        (call, metadata) -> {
+                            AcademicBotHomeworkServiceIdentityInterceptor.requireBot();
+                            called.set(true);
+                            return new ServerCall.Listener<>() {};
+                        });
+        assertThat(called.get()).isTrue();
+        var rejected = call("GetOwnBotHomeworksForWeek", false);
+        new AcademicBotHomeworkServiceIdentityInterceptor(token())
+                .interceptCall(
+                        rejected,
+                        headers(token()),
+                        (call, metadata) -> {
+                            throw new AssertionError("plaintext own homework was admitted");
+                        });
+        verify(rejected).close(any(Status.class), any(Metadata.class));
     }
 
     private static ServerCall<Object, Object> call(String method, boolean tls) {

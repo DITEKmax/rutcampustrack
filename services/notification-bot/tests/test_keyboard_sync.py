@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -13,6 +14,7 @@ from bot.handlers.prefs import (
     keyboard_signature,
     main_keyboard,
 )
+from bot.services.bot_menu import BotGrant, MenuScope
 from bot.services.keyboard_sync import KeyboardSyncClient, mark_keyboard_synced, sync_registered_keyboards
 
 
@@ -64,7 +66,7 @@ def test_common_actions_first_once_and_role_actions_are_explicit(enabled):
     keyboard = main_keyboard(homework_enabled=enabled)
     rows = [[button.text for button in row] for row in keyboard.keyboard]
     labels = sum(rows, [])
-    assert rows[:3] == [[CREDENTIALS_LABEL, LINKS_LABEL], [SETTINGS_LABEL], [LOGIN_LABEL]]
+    assert rows[:3] == [[CREDENTIALS_LABEL, LINKS_LABEL], [LOGIN_LABEL], [SETTINGS_LABEL]]
     assert len(labels) == len(set(labels))
     assert (HOMEWORK_TODAY_LABEL in labels) is enabled
     assert (HOMEWORK_WEEK_LABEL in labels) is enabled
@@ -100,7 +102,16 @@ async def test_sync_resolves_each_current_user_and_removes_old_homework_keyboard
             RuntimeError("PRIVATE_MARKER"),
         ]
     )
-    await sync_registered_keyboards(bot, client, academic, delay_seconds=0)
+    menu = SimpleNamespace(
+        menu_scope=AsyncMock(
+            side_effect=[
+                MenuScope(111, 2, 1, (BotGrant("TEACHER"),)),
+                MenuScope(222, 2, 1, (BotGrant("TEACHER"), BotGrant("STUDENT", 10))),
+                RuntimeError("PRIVATE_MARKER"),
+            ]
+        )
+    )
+    await sync_registered_keyboards(bot, client, academic, delay_seconds=0, bot_menu_client=menu)
     sent = {call.kwargs["chat_id"]: call.kwargs["reply_markup"] for call in bot.send_message.await_args_list}
     assert set(sent) == {111, 222, 333}
 
@@ -110,5 +121,7 @@ async def test_sync_resolves_each_current_user_and_removes_old_homework_keyboard
     assert HOMEWORK_WEEK_LABEL not in labels(111)
     assert HOMEWORK_WEEK_LABEL in labels(222) and HOMEWORK_TODAY_LABEL in labels(222)
     assert HOMEWORK_WEEK_LABEL not in labels(333)
-    assert await client.get_user_keyboard_version(111) == keyboard_signature()
-    assert await client.get_user_keyboard_version(222) == keyboard_signature(homework_enabled=True)
+    assert await client.get_user_keyboard_version(111) == keyboard_signature(teacher_enabled=True)
+    assert await client.get_user_keyboard_version(222) == keyboard_signature(
+        homework_enabled=True, teacher_enabled=True
+    )

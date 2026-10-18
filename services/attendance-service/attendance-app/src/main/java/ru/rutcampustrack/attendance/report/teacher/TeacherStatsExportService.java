@@ -1,12 +1,7 @@
 package ru.rutcampustrack.attendance.report.teacher;
 
 import io.grpc.Status;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
@@ -15,8 +10,16 @@ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.DocumentRendererGrpcClient;
 import ru.rutcampustrack.attendance.grpc.TeacherAcademicGrpcClient;
 import ru.rutcampustrack.attendance.report.ReportService;
+import ru.rutcampustrack.attendance.report.planned.*;
 import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsExportResponse;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /** Exports the same filtered, sorted server aggregation returned by the teacher stats query. */
 public final class TeacherStatsExportService {
@@ -35,8 +38,8 @@ public final class TeacherStatsExportService {
                     "lab", "Лабораторная");
 
     private final ReportService reportService;
-    private final AcademicGrpcClient academic;
-    private final TeacherAcademicGrpcClient teacherAcademic;
+    private final ReportAcademicReadPort academic;
+    private final TeacherAssignmentReadPort teacherAcademic;
     private final DocumentRendererGrpcClient renderer;
     private final TeacherStatsDocxRenderer docxRenderer = new TeacherStatsDocxRenderer();
     private final TeacherStatsTabularRenderer tabularRenderer = new TeacherStatsTabularRenderer();
@@ -46,10 +49,27 @@ public final class TeacherStatsExportService {
             AcademicGrpcClient academic,
             TeacherAcademicGrpcClient teacherAcademic,
             DocumentRendererGrpcClient renderer) {
+        this(
+                reportService,
+                ReportAcademicReadPort.live(academic),
+                teacherAcademic == null ? null : teacherAcademic::fullSemesterAssignments,
+                renderer);
+    }
+
+    private TeacherStatsExportService(
+            ReportService reportService,
+            ReportAcademicReadPort academic,
+            TeacherAssignmentReadPort teacherAcademic,
+            DocumentRendererGrpcClient renderer) {
         this.reportService = reportService;
         this.academic = academic;
         this.teacherAcademic = teacherAcademic;
         this.renderer = renderer;
+    }
+
+    public static TeacherStatsExportService forPlan(
+            AdmittedReportPlan plan, ReportService reports, DocumentRendererGrpcClient converter) {
+        return new TeacherStatsExportService(reports, plan, plan, converter);
     }
 
     public TeacherStatsExportResponse export(

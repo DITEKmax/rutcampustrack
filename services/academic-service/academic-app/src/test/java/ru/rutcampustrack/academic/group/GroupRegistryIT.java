@@ -13,25 +13,35 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.academic.contract.dto.dashboard.DashboardStatsResponse;
 import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
+import ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.ArchiveRequest;
+import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.dashboard.DashboardService;
 import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.grpc.AttendanceUserImpactGrpcClient;
+import ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
+import ru.rutcampustrack.academic.user.UserArchiveService;
+import ru.rutcampustrack.attendance.grpc.UserImpactSnapshot;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * One real PostgreSQL proof for the additive ADMIN registry read model.
@@ -41,7 +51,6 @@ import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
  * coverage, grant-derived DRAFT/ACTIVE, tab counts and an unknown legacy programme duration.
  */
 @AutoConfigureMockMvc
-@Transactional
 class GroupRegistryIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
@@ -49,49 +58,21 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
     @Autowired private JdbcTemplate jdbc;
     @Autowired private GroupService groupService;
     @Autowired private DashboardService dashboardService;
-    @Autowired private PlatformTransactionManager transactionManager;
-    @PersistenceContext private EntityManager entityManager;
-
-    @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory jwtFactory;
-    private String adminToken;
+    @Autowired private AcademicUserIdentityOperations identityOperations;
+    @Autowired private UserArchiveService userArchives;
+    @MockitoBean private AttendanceUserImpactGrpcClient attendanceImpact;
+    private SelectedActor admin;
+    private SelectedActor teacher;
 
     @org.junit.jupiter.api.BeforeEach
     void selectDurableFullAdminSession() {
-        Long adminId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
-        jdbc.update(
-                "INSERT INTO admin_access_profiles(user_id, assigned, mode, permissions, version) "
-                        + "VALUES (?, true, 'FULL', '{}', 1) ON CONFLICT(user_id) DO UPDATE "
-                        + "SET assigned = true, mode = 'FULL', permissions = '{}', "
-                        + "version = admin_access_profiles.version + 1, updated_at = NOW()",
-                adminId);
-        Long grantId =
-                jdbc.queryForObject(
-                        "SELECT id FROM user_role_grants "
-                                + "WHERE user_id = ? AND role = 'admin' AND status = 'active'",
-                        Long.class,
-                        adminId);
-        java.util.UUID sid = java.util.UUID.randomUUID();
-        jdbc.update(
-                "INSERT INTO auth_sessions(sid, user_id, active_role_grant_id, session_version, "
-                        + "current_refresh_jti, refresh_expires_at, created_at, last_seen_at, auth_method) "
-                        + "VALUES (?, ?, ?, 1, ?, NOW() + interval '1 day', NOW(), NOW(), 'PASSWORD')",
-                sid,
-                adminId,
-                grantId,
-                java.util.UUID.randomUUID());
-        Long rolesVersion =
-                jdbc.queryForObject(
-                        "SELECT roles_version FROM users WHERE id = ?", Long.class, adminId);
-        adminToken =
-                jwtFactory.validToken(
-                        adminId, sid, 1, rolesVersion, "ADMIN", "ACTIVE", null, false, false);
+        admin = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        teacher = identityFixture.select(identityFixture.canonical().teacherId(), AuthRole.TEACHER);
     }
 
     @Test
     void registryCreateCoverageStatusCountsAndLegacyDurationAreServerDerived() throws Exception {
-        Long adminId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        Long adminId = admin.userId();
 
         jdbc.update("UPDATE semesters SET is_active = false WHERE is_active = true");
         jdbc.update(
@@ -102,7 +83,6 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
                 LocalDate.of(2046, 6, 30));
 
         Group created = groupService.createAdminGroup(new CreateAdminGroupRequest("РЕГ", "311", 3));
-        entityManager.flush();
 
         Long coverageRows =
                 jdbc.queryForObject(
@@ -155,20 +135,20 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
                 .andExpect(jsonPath("$.draftCount", equalTo(1)))
                 .andExpect(jsonPath("$.activeCount", equalTo(0)));
 
-        Long headmanId =
-                jdbc.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
-                                + "is_headman, password_changed, created_at, updated_at) "
-                                + "VALUES (?, 'x', 'Тестов', 'Староста', 'student', 'active', false, false, NOW(), NOW()) "
-                                + "RETURNING id",
-                        Long.class,
-                        "reg_h_" + System.nanoTime());
-        jdbc.update(
-                "INSERT INTO user_role_grants "
-                        + "(user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'headman', 'active', ?, NOW(), NOW())",
-                headmanId,
-                created.getId());
+        long headmanId =
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Тестов",
+                                        "Староста",
+                                        null,
+                                        UserRole.STUDENT,
+                                        created.getId(),
+                                        null,
+                                        null),
+                                admin)
+                        .userId();
+        assignHeadman(headmanId, created.getId());
 
         mockMvc.perform(registryRequest(adminId, "РЕГ-311", "ACTIVE"))
                 .andExpect(status().isOk())
@@ -204,8 +184,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
     @Test
     void restoreArchivedGroupsIsAdminOnlyIdempotentAndKeepsLegacyNamesAndRegistryCounts()
             throws Exception {
-        Long adminId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        Long adminId = admin.userId();
         String suffix = Long.toUnsignedString(System.nanoTime());
         String letters = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ";
         String alphabeticCode =
@@ -315,103 +294,65 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void dashboardCountsOnlyActiveRoleGrantsAndRegistryActiveGroups() throws Exception {
-        Long adminId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        Long adminId = admin.userId();
         DashboardStatsResponse before = dashboardService.getStats().getContent();
         String suffix = Long.toString(System.nanoTime());
 
-        var committedFixture = new TransactionTemplate(transactionManager);
-        committedFixture.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        List<Long> ownedUsers = new ArrayList<>();
-        List<Long> ownedGroups = new ArrayList<>();
-        Throwable primaryFailure = null;
-        try {
-            // The real dashboard capture reads committed state in its own transaction.
-            // Keep the enclosing test and its administrator admission rollback-only.
-            committedFixture.executeWithoutResult(
-                    status -> {
-                        Long activeStudent = createUser("ds_" + suffix, "student");
-                        ownedUsers.add(activeStudent);
-                        addGrant(activeStudent, "student", "active", null);
-                        Long activeTeacher = createUser("dt_" + suffix, "teacher");
-                        ownedUsers.add(activeTeacher);
-                        addGrant(activeTeacher, "teacher", "active", null);
-                        Long suspendedStudent = createUser("dsp_" + suffix, "student");
-                        ownedUsers.add(suspendedStudent);
-                        addGrant(suspendedStudent, "student", "suspended", null);
-                        Long archivedStudent = createUser("da_" + suffix, "student");
-                        ownedUsers.add(archivedStudent);
-                        addGrant(archivedStudent, "student", "archived", null);
-                        Long multiRoleUser = createUser("dm_" + suffix, "student");
-                        ownedUsers.add(multiRoleUser);
-                        addGrant(multiRoleUser, "student", "active", null);
-                        addGrant(multiRoleUser, "teacher", "active", null);
-
-                        Long activeGroup = addGroup("dg-a-" + suffix, true);
-                        ownedGroups.add(activeGroup);
-                        ownedGroups.add(addGroup("dg-d-" + suffix, true));
-                        ownedGroups.add(addGroup("dg-x-" + suffix, false));
-                        Long headman = createUser("dh_" + suffix, "student");
-                        ownedUsers.add(headman);
-                        addGrant(headman, "headman", "active", activeGroup);
-                    });
-
-            mockMvc.perform(dashboardRequest(adminId))
-                    .andExpect(status().isOk())
-                    .andExpect(
-                            jsonPath(
-                                    "$.totalStudents",
-                                    equalTo(Math.toIntExact(before.getTotalStudents() + 2))))
-                    .andExpect(
-                            jsonPath(
-                                    "$.totalTeachers",
-                                    equalTo(Math.toIntExact(before.getTotalTeachers() + 2))))
-                    .andExpect(
-                            jsonPath(
-                                    "$.totalGroups",
-                                    equalTo(Math.toIntExact(before.getActiveGroups() + 1))))
-                    .andExpect(
-                            jsonPath(
-                                    "$.activeGroups",
-                                    equalTo(Math.toIntExact(before.getActiveGroups() + 1))));
-        } catch (Exception | Error failure) {
-            primaryFailure = failure;
-            throw failure;
-        } finally {
-            try {
-                committedFixture.executeWithoutResult(
-                        status -> {
-                            for (Long userId : ownedUsers) {
-                                jdbc.update(
-                                        "DELETE FROM user_role_grants WHERE user_id = ?", userId);
-                                jdbc.update("DELETE FROM users WHERE id = ?", userId);
-                            }
-                            for (Long groupId : ownedGroups) {
-                                jdbc.update("DELETE FROM groups WHERE id = ?", groupId);
-                            }
-                        });
-            } catch (RuntimeException | Error cleanupFailure) {
-                if (primaryFailure != null) {
-                    primaryFailure.addSuppressed(cleanupFailure);
-                } else {
-                    throw cleanupFailure;
-                }
-            }
+        Long activeGroup = addGroup("dg-a-" + suffix, true);
+        addGroup("dg-d-" + suffix, true);
+        addGroup("dg-x-" + suffix, false);
+        Long activeStudent = createUser("ds_" + suffix, UserRole.STUDENT, activeGroup);
+        createUser("dt_" + suffix, UserRole.TEACHER, null);
+        Long suspendedStudent = createUser("dsp_" + suffix, UserRole.STUDENT, null);
+        changeRole(suspendedStudent, "STUDENT", RoleGrantStatus.SUSPENDED, null);
+        Long archivedStudent = createUser("da_" + suffix, UserRole.STUDENT, null);
+        org.mockito.Mockito.when(attendanceImpact.preview(archivedStudent))
+                .thenReturn(
+                        UserImpactSnapshot.newBuilder()
+                                .setUserId(archivedStudent)
+                                .setObservedAtEpochMs(System.currentTimeMillis())
+                                .setSnapshotDigest("0".repeat(64))
+                                .build());
+        try (var ignored = identityFixture.request(admin)) {
+            var preview = userArchives.preview(archivedStudent);
+            userArchives.archive(
+                    archivedStudent,
+                    new ArchiveRequest(UUID.randomUUID(), preview.previewDigest(), null));
         }
+        Long multiRoleUser = createUser("dm_" + suffix, UserRole.STUDENT, null);
+        changeRole(multiRoleUser, "TEACHER", RoleGrantStatus.ACTIVE, "dm_" + suffix);
+        // The active student also holds HEADMAN; a derived headman does not count twice.
+        assignHeadman(activeStudent, activeGroup);
+
+        mockMvc.perform(dashboardRequest(adminId))
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath(
+                                "$.totalStudents",
+                                equalTo(Math.toIntExact(before.getTotalStudents() + 2))))
+                .andExpect(
+                        jsonPath(
+                                "$.totalTeachers",
+                                equalTo(Math.toIntExact(before.getTotalTeachers() + 2))))
+                .andExpect(
+                        jsonPath(
+                                "$.totalGroups",
+                                equalTo(Math.toIntExact(before.getActiveGroups() + 1))))
+                .andExpect(
+                        jsonPath(
+                                "$.activeGroups",
+                                equalTo(Math.toIntExact(before.getActiveGroups() + 1))));
     }
 
     @Test
     void registryFiltersBeforePaginationAndUsesIdenticalFiltersForEveryTabCount() throws Exception {
-        Long adminId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        Long adminId = admin.userId();
         addRegistryGroup("ФЛТ-251", "ФЛТ", "251", 2, true);
         addRegistryGroup("ФЛТ-252", "ФЛТ", "252", 2, true);
         Long thirdDraft = addRegistryGroup("ФЛТ-253", "ФЛТ", "253", 2, true);
         Long active = addRegistryGroup("ФЛТ-254", "ФЛТ", "254", 2, true);
-        addGrant(
-                createUser("filter_headman_" + System.nanoTime(), "student"),
-                "headman",
-                "active",
+        assignHeadman(
+                createUser("filter_headman_" + System.nanoTime(), UserRole.STUDENT, active),
                 active);
         Long archived = addRegistryGroup("ФЛТ-255", "ФЛТ", "255", 2, false);
         addRegistryGroup("ФЛТ-151", "ФЛТ", "151", 1, true);
@@ -451,8 +392,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
     @Test
     void registrySortsWholeResultWithStableTiesAndUnknownMetadataLastInBothDirections()
             throws Exception {
-        Long adminId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        Long adminId = admin.userId();
         Long a = addRegistryGroup("ОРД-311", "ОРД", "311", 3, true);
         Long b = addRegistryGroup("ОРД-191", "ОРД", "191", 1, true);
         Long c = addRegistryGroup("ОРД-251", "ОРД", "251", 2, true);
@@ -486,8 +426,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
     @Test
     void registryCreatesAllNineProgramTypesWithExplicitDurationAndRejectsInvalidQueryValues()
             throws Exception {
-        Long adminId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = 'admin'", Long.class);
+        Long adminId = admin.userId();
         jdbc.update("UPDATE semesters SET is_active = false WHERE is_active = true");
         jdbc.update(
                 "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
@@ -503,12 +442,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
             String level = levels[(digit - 1) / 3];
             mockMvc.perform(
                             post("/academic/groups/registry")
-                                    .header("X-Internal-Token", adminToken)
-                                    .header("X-User-Id", adminId)
-                                    .header("X-User-Role", "ADMIN")
-                                    .with(signedAdmin())
-                                    .header("X-Group-Id", "")
-                                    .header("X-Is-Headman", "false")
+                                    .with(identityFixture.signed(admin))
                                     .contentType(APPLICATION_JSON)
                                     .content(
                                             objectMapper.writeValueAsBytes(
@@ -518,7 +452,6 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
                     .andExpect(jsonPath("$.studyMode", equalTo(mode)))
                     .andExpect(jsonPath("$.educationLevel", equalTo(level)))
                     .andExpect(jsonPath("$.trainingDurationYears", equalTo(5)));
-            entityManager.flush();
             mockMvc.perform(
                             registryRequest(adminId, "КТ-" + numeric, "DRAFT")
                                     .param("course", "1")
@@ -533,12 +466,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
         // The name-only compatibility writer cannot invent a duration for type 5.
         mockMvc.perform(
                         post("/academic/groups")
-                                .header("X-Internal-Token", adminToken)
-                                .header("X-User-Id", adminId)
-                                .header("X-User-Role", "ADMIN")
-                                .with(signedAdmin())
-                                .header("X-Group-Id", "")
-                                .header("X-Is-Headman", "false")
+                                .with(identityFixture.signed(admin))
                                 .contentType(APPLICATION_JSON)
                                 .content("{\"name\":\"КТ-151\"}"))
                 .andExpect(status().isBadRequest());
@@ -596,30 +524,50 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
         return ids;
     }
 
-    private Long createUser(String login, String legacyRole) {
-        return jdbc.queryForObject(
-                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
-                        + "is_headman, password_changed, created_at, updated_at) "
-                        + "VALUES (?, 'x', 'Тестов', 'Сводки', ?, 'active', false, false, NOW(), NOW()) "
-                        + "RETURNING id",
-                Long.class,
-                login,
-                legacyRole);
+    private Long createUser(String suffix, UserRole role, Long groupId) {
+        if (role == UserRole.STUDENT && groupId != null) {
+            jdbc.update(
+                    "INSERT INTO"
+                        + " group_history_coverage(group_id,coverage_from,writer_version,created_at)"
+                        + " SELECT ?,date_from,'managed_v1',NOW() FROM semesters WHERE is_active ON"
+                        + " CONFLICT(group_id) DO NOTHING",
+                    groupId);
+        }
+        return identityFixture
+                .seedUser(
+                        new CreateUserRequest(
+                                "Тестов",
+                                "Сводки",
+                                null,
+                                role,
+                                role == UserRole.STUDENT
+                                        ? (groupId == null
+                                                ? identityFixture.canonical().groupId()
+                                                : groupId)
+                                        : null,
+                                role == UserRole.TEACHER ? suffix : null,
+                                null),
+                        admin)
+                .userId();
     }
 
-    private void addGrant(Long userId, String role, String status, Long groupId) {
-        jdbc.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, ?, ?, ?, NOW(), NOW())",
-                userId,
-                role,
-                status,
-                groupId);
+    private void changeRole(long userId, String role, RoleGrantStatus status, String employee) {
+        try (var ignored = identityFixture.request(admin)) {
+            identityOperations.role(
+                    userId, role, new RoleGrantUpdateRequest(status, null, employee, null));
+        }
+    }
+
+    private void assignHeadman(long userId, long groupId) {
+        try (var ignored = identityFixture.request(admin)) {
+            identityOperations.headman(groupId, userId, null, false, null);
+        }
     }
 
     private Long addGroup(String name, boolean active) {
         return jdbc.queryForObject(
-                "INSERT INTO groups (name, is_active, created_at) VALUES (?, ?, NOW()) RETURNING id",
+                "INSERT INTO groups (name, is_active, created_at) VALUES (?, ?, NOW()) RETURNING"
+                    + " id",
                 Long.class,
                 name,
                 active);
@@ -627,24 +575,13 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
             dashboardRequest(Long adminId) {
-        return get("/academic/dashboard/stats")
-                .header("X-Internal-Token", adminToken)
-                .header("X-User-Id", adminId)
-                .header("X-User-Role", "ADMIN")
-                .with(signedAdmin())
-                .header("X-Group-Id", "")
-                .header("X-Is-Headman", "false");
+        return get("/academic/dashboard/stats").with(identityFixture.signed(admin));
     }
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
             registryRequest(Long adminId, String search, String status) {
         return get("/academic/groups/registry")
-                .header("X-Internal-Token", adminToken)
-                .header("X-User-Id", adminId)
-                .header("X-User-Role", "ADMIN")
-                .with(signedAdmin())
-                .header("X-Group-Id", "")
-                .header("X-Is-Headman", "false")
+                .with(identityFixture.signed(admin))
                 .param("status", status)
                 .param("search", search);
     }
@@ -672,12 +609,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
             restoreRequest(Long userId, Long groupId, String role) {
-        var request =
-                post("/academic/groups/{id}/restore", groupId)
-                        .header("X-User-Id", userId)
-                        .header("X-User-Role", role)
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false");
-        return "ADMIN".equals(role) ? request.header("X-Internal-Token", adminToken) : request;
+        return post("/academic/groups/{id}/restore", groupId)
+                .with(identityFixture.signed("ADMIN".equals(role) ? admin : teacher));
     }
 }

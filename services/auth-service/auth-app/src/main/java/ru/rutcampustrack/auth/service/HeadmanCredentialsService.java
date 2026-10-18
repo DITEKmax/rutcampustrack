@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import ru.rutcampustrack.auth.dto.AdminPasswordResetLinkResponse;
@@ -41,6 +40,8 @@ public class HeadmanCredentialsService {
     private final PasswordChangedOutbox outbox;
     private final SessionLifecycleService sessions;
     private final String recoveryUrl;
+    private final ru.rutcampustrack.auth.authority.AcademicIdentityPresentationClient academic;
+    private final org.springframework.transaction.support.TransactionTemplate tx;
     private final SecureRandom random = new SecureRandom();
 
     public HeadmanCredentialsService(
@@ -49,19 +50,30 @@ public class HeadmanCredentialsService {
             PasswordEncoder encoder,
             PasswordChangedOutbox outbox,
             SessionLifecycleService sessions,
+            ru.rutcampustrack.auth.authority.AcademicIdentityPresentationClient academic,
+            org.springframework.transaction.PlatformTransactionManager manager,
             @Value("${auth.password-reset-url:}") String recoveryUrl) {
         this.jdbc = jdbc;
         this.auth = auth;
         this.encoder = encoder;
         this.outbox = outbox;
         this.sessions = sessions;
+        this.academic = academic;
+        this.tx = new org.springframework.transaction.support.TransactionTemplate(manager);
         this.recoveryUrl = recoveryUrl;
     }
 
-    @Transactional
     public HeadmanCredentialView read(SessionPrincipal actor, long studentId) {
+        var eligibility = preflight(actor, studentId);
+        return tx.execute(status -> readLocal(actor, studentId, eligibility));
+    }
+
+    private HeadmanCredentialView readLocal(
+            SessionPrincipal actor,
+            long studentId,
+            ru.rutcampustrack.authauthority.grpc.HeadmanCredentialEligibility eligibility) {
         try {
-            lockAndAuthorize(actor, studentId);
+            lockAndAuthorize(actor, studentId, eligibility);
             HeadmanCredentialView result = currentView(studentId);
             audit(actor.userId(), studentId, "HEADMAN_PASSWORD_SHOWN", result);
             return result;
@@ -70,12 +82,20 @@ public class HeadmanCredentialsService {
         }
     }
 
-    @Transactional
     public HeadmanCredentialView generate(
             SessionPrincipal actor, long studentId, String expectedVersion) {
+        var eligibility = preflight(actor, studentId);
+        return tx.execute(status -> generateLocal(actor, studentId, expectedVersion, eligibility));
+    }
+
+    private HeadmanCredentialView generateLocal(
+            SessionPrincipal actor,
+            long studentId,
+            String expectedVersion,
+            ru.rutcampustrack.authauthority.grpc.HeadmanCredentialEligibility eligibility) {
         long expected = positiveVersion(expectedVersion);
         try {
-            lockAndAuthorize(actor, studentId);
+            lockAndAuthorize(actor, studentId, eligibility);
             HeadmanCredentialView before = currentView(studentId);
             if (!Long.toString(expected).equals(before.credentialsVersion())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Версия доступа изменилась");
@@ -91,7 +111,7 @@ public class HeadmanCredentialsService {
             int changed =
                     jdbc.update(
                             """
-UPDATE users SET password_hash = ?, initial_password = ?, password_changed = FALSE,
+UPDATE auth_identities SET password_hash = ?, initial_password = ?, password_changed = FALSE,
     generated_password_origin = 'headman_reset'
 WHERE id = ? AND credentials_version = ?
 """,
@@ -131,10 +151,17 @@ WHERE id = ? AND credentials_version = ?
         }
     }
 
-    @Transactional
     public AdminPasswordResetLinkResponse issueLink(SessionPrincipal actor, long studentId) {
+        var eligibility = preflight(actor, studentId);
+        return tx.execute(status -> issueLinkLocal(actor, studentId, eligibility));
+    }
+
+    private AdminPasswordResetLinkResponse issueLinkLocal(
+            SessionPrincipal actor,
+            long studentId,
+            ru.rutcampustrack.authauthority.grpc.HeadmanCredentialEligibility eligibility) {
         try {
-            lockAndAuthorize(actor, studentId);
+            lockAndAuthorize(actor, studentId, eligibility);
             PasswordResetLinkMaterial material =
                     PasswordResetLinkMaterial.create(recoveryUrl, Instant.now());
             if (!sessions.issuePasswordResetTicket(
@@ -150,7 +177,43 @@ WHERE id = ? AND credentials_version = ?
         }
     }
 
-    private void lockAndAuthorize(SessionPrincipal actor, long studentId) {
+    private ru.rutcampustrack.authauthority.grpc.HeadmanCredentialEligibility preflight(
+            SessionPrincipal actor, long studentId) {
+        if (actor == null
+                || studentId <= 0
+                || actor.selectedRole() != AuthRole.HEADMAN
+                || actor.selectedStatus() != RoleStatus.ACTIVE
+                || !actor.headman()
+                || actor.readOnly()
+                || actor.groupId() == null) throw denied();
+        if (org.springframework.transaction.support.TransactionSynchronizationManager
+                .isActualTransactionActive()) throw unavailable();
+        var versions =
+                jdbc.queryForList(
+                        "SELECT roles_version FROM auth_identities WHERE id=? AND"
+                            + " account_state='ACTIVE' AND fence_operation_id IS NULL",
+                        Long.class,
+                        studentId);
+        if (versions.size() != 1) throw denied();
+        var eligibility =
+                academic.headmanEligibility(
+                        ru.rutcampustrack.authauthority.grpc.HeadmanCredentialEligibilityRequest
+                                .newBuilder()
+                                .setActorUserId(actor.userId())
+                                .setExpectedActorRolesVersion(actor.rolesVersion())
+                                .setStudentUserId(studentId)
+                                .setExpectedStudentRolesVersion(versions.getFirst())
+                                .build());
+        if (eligibility.getGroupId() <= 0
+                || eligibility.getActorAcademicRevision() <= 0
+                || eligibility.getStudentAcademicRevision() <= 0) throw denied();
+        return eligibility;
+    }
+
+    private void lockAndAuthorize(
+            SessionPrincipal actor,
+            long studentId,
+            ru.rutcampustrack.authauthority.grpc.HeadmanCredentialEligibility eligibility) {
         if (actor == null)
             throw new AuthSessionException(AuthSessionException.Code.INVALID_SESSION);
         if (studentId <= 0)
@@ -164,17 +227,27 @@ WHERE id = ? AND credentials_version = ?
         // locks.
         List<Long> users =
                 jdbc.query(
-                        "SELECT id FROM users WHERE id IN (?, ?) ORDER BY id FOR UPDATE",
+                        "SELECT id FROM auth_identities WHERE id IN (?, ?) AND"
+                            + " account_state='ACTIVE' AND fence_operation_id IS NULL ORDER BY id"
+                            + " FOR UPDATE",
                         (row, index) -> row.getLong(1),
                         actor.userId(),
                         studentId);
         if (!users.contains(actor.userId()) || !users.contains(studentId)) throw denied();
-        List<Boolean> group =
-                jdbc.query(
-                        "SELECT is_active FROM auth_api.lock_group_state(?)",
-                        (row, index) -> row.getBoolean(1),
-                        actor.groupId());
-        if (group.size() != 1 || !group.getFirst()) throw denied();
+        Long actorRv =
+                jdbc.queryForObject(
+                        "SELECT roles_version FROM auth_identities WHERE id=?",
+                        Long.class,
+                        actor.userId());
+        Long targetRv =
+                jdbc.queryForObject(
+                        "SELECT roles_version FROM auth_identities WHERE id=?",
+                        Long.class,
+                        studentId);
+        if (eligibility.getActorRolesVersion() != actor.rolesVersion()
+                || !Objects.equals(actorRv, eligibility.getActorRolesVersion())
+                || !Objects.equals(targetRv, eligibility.getStudentRolesVersion())
+                || !Objects.equals(actor.groupId(), eligibility.getGroupId())) throw denied();
         jdbc.query(
                 "SELECT sid FROM auth_sessions WHERE (user_id = ? AND sid = ?) OR user_id = ? ORDER"
                         + " BY sid FOR UPDATE",
@@ -191,8 +264,8 @@ WHERE id = ? AND credentials_version = ?
         List<Long> headmen =
                 jdbc.query(
                         """
-SELECT g.user_id FROM user_role_grants g JOIN users u ON u.id = g.user_id
-WHERE g.role = 'headman' AND g.status = 'active' AND g.group_id = ? AND u.status <> 'archived'
+SELECT g.user_id FROM user_role_grants g JOIN auth_identities u ON u.id = g.user_id
+WHERE g.role = 'headman' AND g.status = 'active' AND g.group_id = ? AND u.account_state='ACTIVE' AND u.fence_operation_id IS NULL
 ORDER BY g.user_id
 """,
                         (row, index) -> row.getLong(1),
@@ -214,9 +287,9 @@ SELECT EXISTS(SELECT 1 FROM user_role_grants WHERE user_id = ? AND role = 'admin
         return Boolean.TRUE.equals(
                 jdbc.queryForObject(
                         """
-SELECT EXISTS(SELECT 1 FROM user_role_grants g JOIN users u ON u.id = g.user_id
+SELECT EXISTS(SELECT 1 FROM user_role_grants g JOIN auth_identities u ON u.id = g.user_id
     WHERE g.user_id = ? AND g.role = 'student' AND g.status = 'active'
-    AND g.group_id = ? AND u.status <> 'archived')
+    AND g.group_id = ? AND u.account_state='ACTIVE' AND u.fence_operation_id IS NULL)
 """,
                         Boolean.class,
                         userId,
@@ -227,7 +300,7 @@ SELECT EXISTS(SELECT 1 FROM user_role_grants g JOIN users u ON u.id = g.user_id
         return jdbc.queryForObject(
                 """
 SELECT credentials_version, password_changed, initial_password, generated_password_origin, password_hash IS NOT NULL AS has_hash
-FROM users WHERE id = ?
+FROM auth_identities WHERE id = ?
 """,
                 (row, index) -> {
                     String originCode = row.getString("generated_password_origin");

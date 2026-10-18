@@ -60,7 +60,11 @@ public class SubjectDeletionService {
                 throw SubjectDeletionAcademicData.conflict();
             UUID proof = auth.verify(target, request);
             commands.accept(
-                    request.operationId(), key, proof, confirmationHash(key, request), snapshot);
+                    request.operationId(),
+                    key,
+                    auth.check(target, request.operationId(), snapshot.digest(), proof),
+                    confirmationHash(key, request),
+                    snapshot);
         } catch (ResponseStatusException changedDuringReplay) {
             var winner = commands.get(request.operationId());
             if (winner == null) throw changedDuringReplay;

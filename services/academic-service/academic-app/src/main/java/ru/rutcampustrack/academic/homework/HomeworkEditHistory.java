@@ -146,7 +146,7 @@ public class HomeworkEditHistory {
                        NULLIF(CONCAT_WS(' ', author.last_name, author.first_name,
                            CASE WHEN author.middle_name IS NULL OR BTRIM(author.middle_name) = ''
                                 THEN NULL ELSE author.middle_name END), '') AS actor_display_name
-                  FROM homework_edit_history history LEFT JOIN users author ON author.id = history.actor_id
+                  FROM homework_edit_history history LEFT JOIN academic_profiles author ON author.id = history.actor_id
                  WHERE history.homework_id = ?
                  ORDER BY history.revision ASC, history.id ASC LIMIT ? OFFSET ?
                 """,

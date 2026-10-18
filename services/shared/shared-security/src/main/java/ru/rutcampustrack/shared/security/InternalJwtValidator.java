@@ -3,6 +3,7 @@ package ru.rutcampustrack.shared.security;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -51,6 +52,47 @@ public class InternalJwtValidator {
      *     invariant fails.
      */
     public InternalJwtClaims validate(String token) {
+        return validatePurpose(token, "internal");
+    }
+
+    /** Purpose-bound report authority is never accepted by ordinary CRUD validation. */
+    public InternalJwtClaims validateAcademicReport(
+            String token,
+            String expectedKind,
+            String expectedHash,
+            String expectedJobUUID,
+            String expectedLeaseUUID) {
+        InternalJwtClaims identity = validatePurpose(token, "academic_report");
+        try {
+            if (expectedKind == null
+                    || !expectedKind.matches("[A-Z][A-Z0-9_]{1,63}")
+                    || expectedHash == null
+                    || !expectedHash.matches("[0-9a-f]{64}")) {
+                throw new InternalJwtException("Invalid report binding");
+            }
+            parseCanonicalUuid(expectedJobUUID, "report_job");
+            parseCanonicalUuid(expectedLeaseUUID, "report_lease");
+            RawJwtPayload raw = RawJwtToken.parse(token).payload();
+            if (!expectedKind.equals(raw.requiredPlainString("report_kind"))
+                    || !expectedHash.equals(raw.requiredPlainString("report_hash"))
+                    || !expectedJobUUID.equals(raw.requiredPlainString("report_job"))
+                    || !expectedLeaseUUID.equals(raw.requiredPlainString("report_lease"))) {
+                throw new InternalJwtException("Report binding mismatch");
+            }
+            long notAfter = raw.requiredWholeSecondNumber("report_not_after");
+            if (raw.requiredWholeSecondNumber("exp") > notAfter
+                    || notAfter <= Instant.now().getEpochSecond()) {
+                throw new InternalJwtException("Report authority expired");
+            }
+            return identity;
+        } catch (InternalJwtException failure) {
+            throw failure;
+        } catch (RuntimeException failure) {
+            throw new InternalJwtException("Invalid report authority", failure);
+        }
+    }
+
+    private InternalJwtClaims validatePurpose(String token, String purpose) {
         if (token == null || token.isBlank()) {
             throw new InternalJwtException("Token is missing");
         }
@@ -62,12 +104,12 @@ public class InternalJwtValidator {
                     .verifyWith(publicKeyProvider.getPublicKey())
                     .requireIssuer(properties.expectedIssuer())
                     .requireAudience(properties.expectedAudience())
-                    .require("token_use", "internal")
+                    .require("token_use", purpose)
                     .clockSkewSeconds(properties.clockSkewSeconds())
                     .build()
                     .parseSignedClaims(token);
 
-            requireWire(raw.payload());
+            requireWire(raw.payload(), purpose);
             long userId = parsePositiveDecimal(raw.payload().requiredPlainString("sub"), "sub");
             UUID sessionId = parseCanonicalUuid(raw.payload().requiredPlainString("sid"), "sid");
             long sessionVersion =
@@ -116,7 +158,7 @@ public class InternalJwtValidator {
         }
     }
 
-    private void requireWire(RawJwtPayload raw) {
+    private void requireWire(RawJwtPayload raw, String purpose) {
         if (!properties.expectedIssuer().equals(raw.requiredPlainString("iss"))) {
             throw new InternalJwtException("Invalid issuer");
         }
@@ -124,7 +166,7 @@ public class InternalJwtValidator {
                 .equals(raw.requiredSingletonStringArray("aud"))) {
             throw new InternalJwtException("Invalid audience");
         }
-        if (!"internal".equals(raw.requiredPlainString("token_use"))) {
+        if (!purpose.equals(raw.requiredPlainString("token_use"))) {
             throw new InternalJwtException("Invalid token purpose");
         }
     }

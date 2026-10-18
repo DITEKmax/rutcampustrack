@@ -6,7 +6,7 @@ import redis.asyncio as aioredis
 from aiogram import Bot
 
 from bot.handlers.prefs import keyboard_signature, main_keyboard
-from bot.services.menu_scope import resolve_homework_scope
+from bot.services.bot_menu import resolve_menu_scope
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +87,7 @@ async def sync_registered_keyboards(
     academic_client,
     *,
     delay_seconds: float = 0.05,
+    bot_menu_client=None,
 ) -> None:
     """Push the current reply keyboard to registered users whose version is stale."""
     user_ids = await keyboard_sync.get_registered_user_ids()
@@ -95,9 +96,10 @@ async def sync_registered_keyboards(
     failed = 0
 
     for telegram_id in user_ids:
-        scope = await resolve_homework_scope(academic_client, telegram_id)
-        keyboard = main_keyboard(homework_enabled=scope is not None)
-        keyboard_version = keyboard_signature(homework_enabled=scope is not None)
+        scope = await resolve_menu_scope(bot_menu_client, telegram_id)
+        options = scope.keyboard_options if scope else {}
+        keyboard = main_keyboard(**options)
+        keyboard_version = keyboard_signature(**options)
         stored_version = await keyboard_sync.get_user_keyboard_version(telegram_id)
         if stored_version == keyboard_version:
             skipped += 1

@@ -8,22 +8,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
+
 import ru.rutcampustrack.academic.contract.dto.group.PromotionExecuteRequest;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem;
 import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem.Action;
@@ -37,6 +26,19 @@ import ru.rutcampustrack.academic.repository.GroupPromotionCycleRecordRepository
 import ru.rutcampustrack.academic.repository.GroupRegistryReadRepository;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
+
+import java.lang.reflect.Field;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** Unit tests for prefix planning within a completed spring promotion cycle. */
 class GroupPromotionServiceTest {
@@ -87,6 +89,55 @@ class GroupPromotionServiceTest {
                         publisher,
                         FIXED_CLOCK,
                         jdbc);
+        configured(service);
+    }
+
+    private GroupPromotionService configured(GroupPromotionService target) {
+        // Isolate existing cycle transformations after an admitted fixed manifest.
+        var availability =
+                mock(ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService.class);
+        @SuppressWarnings("unchecked")
+        org.springframework.beans.factory.ObjectProvider<
+                        ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService>
+                provider = mock(org.springframework.beans.factory.ObjectProvider.class);
+        when(provider.getObject()).thenReturn(availability);
+        when(provider.getIfAvailable()).thenReturn(availability);
+        target.setAvailability(provider);
+        when(jdbc.queryForObject(
+                        org.mockito.ArgumentMatchers.anyString(),
+                        org.mockito.ArgumentMatchers.eq(Boolean.class),
+                        org.mockito.ArgumentMatchers.any(Object[].class)))
+                .thenReturn(true);
+        var operation = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001");
+        when(availability.executePromotion(any()))
+                .thenAnswer(
+                        invocation -> {
+                            var plan =
+                                    ru.rutcampustrack.academic.groupavailability
+                                            .GroupAvailabilityCommand.Plan.from(
+                                            target.prepareAvailabilityPlan(
+                                                    invocation.getArgument(0)));
+                            target.applyAvailabilityPlan(plan, false, operation);
+                            return plan.result();
+                        });
+        when(availability.executeAutomaticallyIfDue())
+                .thenAnswer(
+                        invocation ->
+                                target.prepareAutomaticAvailabilityPlan()
+                                        .map(
+                                                summary -> {
+                                                    var plan =
+                                                            ru.rutcampustrack.academic
+                                                                    .groupavailability
+                                                                    .GroupAvailabilityCommand.Plan
+                                                                    .from(summary);
+                                                    if (!plan.promote().isEmpty()
+                                                            || !plan.archive().isEmpty())
+                                                        target.applyAvailabilityPlan(
+                                                                plan, true, operation);
+                                                    return plan.result();
+                                                }));
+        return target;
     }
 
     private Group group(String name) {
@@ -180,16 +231,17 @@ class GroupPromotionServiceTest {
     }
 
     private GroupPromotionService serviceWithClock(Clock selectedClock) {
-        return new GroupPromotionService(
-                groupRepository,
-                semesterRepository,
-                cycleRecordRepository,
-                registryReadRepository,
-                new GroupNameParser(),
-                new GroupArchivalService(publisher, selectedClock),
-                publisher,
-                selectedClock,
-                jdbc);
+        return configured(
+                new GroupPromotionService(
+                        groupRepository,
+                        semesterRepository,
+                        cycleRecordRepository,
+                        registryReadRepository,
+                        new GroupNameParser(),
+                        new GroupArchivalService(publisher, selectedClock),
+                        publisher,
+                        selectedClock,
+                        jdbc));
     }
 
     @Test

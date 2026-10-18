@@ -648,9 +648,9 @@ def e2e_async_browser():
             return processes
 
         counters = {
-            "accepted_jobs": 'sum(rct_export_jobs_accepted_total{job="auth-service",kind="HEADMAN_WEEKLY_SELECTED"})',
-            "terminal_success": 'sum(rct_export_jobs_terminal_total{job="auth-service",kind="HEADMAN_WEEKLY_SELECTED",outcome="success",reason="none"})',
-            "success_within60s": 'sum(rct_export_jobs_duration_seconds_bucket{job="auth-service",kind="HEADMAN_WEEKLY_SELECTED",outcome="success",le="60.0"})',
+            "accepted_jobs": 'sum(rct_export_jobs_accepted_total{job="academic-service",kind="HEADMAN_WEEKLY_SELECTED"})',
+            "terminal_success": 'sum(rct_export_jobs_terminal_total{job="academic-service",kind="HEADMAN_WEEKLY_SELECTED",outcome="success",reason="none"})',
+            "success_within60s": 'sum(rct_export_jobs_duration_seconds_bucket{job="academic-service",kind="HEADMAN_WEEKLY_SELECTED",outcome="success",le="60.0"})',
             "successful_docx_reports": 'sum(attendance_report_duration_seconds_count{job="attendance-service",report="weekly",format="docx",outcome="success"})',
         }
         try:

@@ -8,7 +8,7 @@ import re
 import grpc
 
 ACADEMIC_SERVICE = "rutcampustrack.academic.AcademicGrpcService"
-PROTECTED_METHODS = frozenset({"ManageOwnBotCredentialMessages", "GetOwnBotHomeworksForWeek"})
+PROTECTED_METHODS = frozenset({"GetOwnBotHomeworksForWeek"})
 
 
 class BotCredentialTransportUnavailable(RuntimeError):
@@ -33,23 +33,40 @@ class BotServiceCredentials(grpc.AuthMetadataPlugin):
     """
 
     _allowed_methods = PROTECTED_METHODS
+    _service_name = ACADEMIC_SERVICE
+    _header_name = "x-service-token"
 
     def __init__(self, authority: str, token: str) -> None:
         if not authority or any(char in authority for char in "/@?#\\"):
             raise BotCredentialTransportUnavailable("Protected bot TLS authority is invalid")
         if not canonical_token(token):
             raise BotCredentialTransportUnavailable("Directed bot identity is unavailable")
-        self._service_url = f"https://{authority}/{ACADEMIC_SERVICE}"
+        self._service_url = f"https://{authority}/{self._service_name}"
         self._token = token
 
     def __call__(self, context, callback) -> None:
         if context.service_url != self._service_url or context.method_name not in self._allowed_methods:
             callback((), BotCredentialTransportUnavailable("Directed bot identity destination is denied"))
             return
-        callback((("x-service-token", self._token),), None)
+        callback(((self._header_name, self._token),), None)
 
 
 class BotAuthReadCredentials(BotServiceCredentials):
     """The new Auth credential can accompany only the existing own-read wire method."""
 
-    _allowed_methods = frozenset({"GetOwnBotInitialCredentials"})
+    _allowed_methods = frozenset({"GetOwnBotInitialCredentials", "ManageOwnBotCredentialMessages"})
+
+
+class BotMenuCredentials(BotServiceCredentials):
+    """Own menu/profile only; never attach the bot identity to domain authority checks."""
+
+    _service_name = "rutcampustrack.authauthority.AuthIdentityGrpcService"
+    _header_name = "x-service-token"
+    _allowed_methods = frozenset({"GetOwnBotMenuScope", "GetOwnBotProfile"})
+
+
+class BotReadCredentials(BotServiceCredentials):
+    """The bot can call only its two public own-read methods on MobileBFF."""
+
+    _service_name = "rutcampustrack.botreads.DirectedBotReadService"
+    _allowed_methods = frozenset({"GetOwnTeacherToday", "GetOwnHeadmanCurrentAttendance"})

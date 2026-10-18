@@ -1,10 +1,13 @@
 package ru.rutcampustrack.academic.studentprojection;
 
 import com.google.protobuf.Any;
+
 import io.grpc.Status;
 import io.grpc.protobuf.StatusProto;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.TransactionException;
+
 import ru.rutcampustrack.academic.grpc.AcademicProjectionErrorCode;
 import ru.rutcampustrack.academic.grpc.AcademicProjectionErrorDetail;
 

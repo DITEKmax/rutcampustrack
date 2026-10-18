@@ -201,14 +201,14 @@ if [ -L "${AUTH_SECRETS_DIR}" ]; then
 fi
 mkdir -p "${AUTH_SECRETS_DIR}"
 chmod 700 "${AUTH_SECRETS_DIR}"
-for name in bot-to-auth-token pg-legacy-runtime-password pg-migration-password pg-monitor-password pg-auth-runtime-password pg-academic-runtime-password; do
+for name in bot-to-read-token mobile-bff-to-auth-token academic-to-auth-token attendance-to-auth-token auth-to-academic-presentation-token mobile-bff-to-academic-token mobile-bff-to-attendance-token mobile-bff-to-schedule-token attendance-bot-read-to-academic-token attendance-bot-read-to-schedule-token academic-report-to-attendance-token academic-report-to-schedule-token notification-to-academic-token bot-to-auth-token pg-legacy-runtime-password pg-migration-password pg-monitor-password pg-auth-runtime-password pg-auth-migration-password pg-academic-runtime-password; do
   path="${AUTH_SECRETS_DIR}/${name}"
   if [ -L "${path}" ] || { [ -e "${path}" ] && [ ! -f "${path}" ]; }; then
     echo "Refusing a non-regular synthetic Auth secret file." >&2
     exit 1
   fi
   if [ ! -f "${path}" ]; then
-    if [ "${name}" = "bot-to-auth-token" ]; then
+    if [[ "${name}" == *-token ]]; then
       # Existing directed-credential validators require canonical base64url(32 bytes).
       (umask 077; set -o noclobber; openssl rand -base64 32 | tr '/+' '_-' | tr -d '=\r\n' > "${path}")
     else
@@ -236,5 +236,17 @@ else
   echo "Attendance gRPC test certs already exist in ${CERTS_DIR} — keep them."
 fi
 
+if [ ! -f "${CERTS_DIR}/mobile-bff-server.crt" ] || [ ! -f "${CERTS_DIR}/mobile-bff-server.key" ]; then
+  echo "Generating self-signed MobileBFF private gRPC test certificate."
+  MOBILE_BFF_SUBJ="/CN=mobile-bff"
+  if [ -n "${MSYSTEM:-}" ] || [ -n "${WSL_DISTRO_NAME:-}" ]; then MOBILE_BFF_SUBJ="//CN=mobile-bff"; fi
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "${CERTS_DIR}/mobile-bff-server.key" \
+    -out "${CERTS_DIR}/mobile-bff-server.crt" \
+    -subj "${MOBILE_BFF_SUBJ}" -addext "subjectAltName=DNS:mobile-bff"
+  chmod 644 "${CERTS_DIR}/mobile-bff-server.crt"
+fi
+set_server_key_owner "${CERTS_DIR}/mobile-bff-server.key" 10007 10007
+
 echo "Done:"
-ls -l "${CERTS_DIR}/server."* "${CERTS_DIR}/schedule-server."* "${CERTS_DIR}/academic-server."* "${CERTS_DIR}/attendance-server."* "${CERTS_DIR}/auth-server."*
+ls -l "${CERTS_DIR}/server."* "${CERTS_DIR}/schedule-server."* "${CERTS_DIR}/academic-server."* "${CERTS_DIR}/attendance-server."* "${CERTS_DIR}/auth-server."* "${CERTS_DIR}/mobile-bff-server."*

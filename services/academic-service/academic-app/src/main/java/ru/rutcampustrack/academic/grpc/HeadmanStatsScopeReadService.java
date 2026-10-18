@@ -1,20 +1,34 @@
 package ru.rutcampustrack.academic.grpc;
 
 import io.grpc.Status;
-import java.util.Comparator;
-import org.springframework.jdbc.core.JdbcTemplate;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.rutcampustrack.academic.studentprojection.StudentProjectionScope;
-import ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeService;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.academic.assistant.AssistantPermissionAuthority;
 import ru.rutcampustrack.academic.entity.Semester;
+import ru.rutcampustrack.academic.identitycatalog.AuthIdentityDataClient;
+import ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
+import ru.rutcampustrack.academic.security.AcademicLiveSessionClient;
+import ru.rutcampustrack.academic.studentprojection.StudentProjectionScope;
+import ru.rutcampustrack.academic.studentprojection.StudentProjectionScopeService;
+import ru.rutcampustrack.authauthority.grpc.AuthorityAccountState;
+import ru.rutcampustrack.authsecurity.grpc.LiveSessionAuthority;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 
 /** Catalog metadata is returned only after current durable own-group authorization. */
 @Service
@@ -25,15 +39,10 @@ public class HeadmanStatsScopeReadService {
     private final JdbcTemplate jdbc;
     private final StudentGroupHistoryRepository history;
     private final StudentProjectionScopeService studentProjection;
-
-    public HeadmanStatsScopeReadService(
-            AssistantPermissionAuthority authority,
-            GroupRepository groups,
-            SemesterRepository semesters,
-            JdbcTemplate jdbc,
-            StudentGroupHistoryRepository history) {
-        this(authority, groups, semesters, jdbc, history, null);
-    }
+    private final AcademicLiveSessionClient sessions;
+    private final AuthIdentityDataClient identities;
+    private final AcademicIdentityReadFence fences;
+    private final TransactionTemplate reads;
 
     @Autowired
     public HeadmanStatsScopeReadService(
@@ -42,16 +51,26 @@ public class HeadmanStatsScopeReadService {
             SemesterRepository semesters,
             JdbcTemplate jdbc,
             StudentGroupHistoryRepository history,
-            StudentProjectionScopeService studentProjection) {
+            StudentProjectionScopeService studentProjection,
+            AcademicLiveSessionClient sessions,
+            AuthIdentityDataClient identities,
+            AcademicIdentityReadFence fences,
+            PlatformTransactionManager transactionManager) {
         this.studentProjection = studentProjection;
         this.authority = authority;
         this.groups = groups;
         this.semesters = semesters;
         this.jdbc = jdbc;
         this.history = history;
+        this.sessions = sessions;
+        this.identities = identities;
+        this.fences = fences;
+        this.reads = new TransactionTemplate(transactionManager);
+        this.reads.setReadOnly(true);
+        this.reads.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
+        this.reads.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
-    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public HeadmanStatsScopeResponse read(
             InternalJwtClaims actor, HeadmanStatsScopeRequest request) {
         long groupId = request.getGroupId();
@@ -62,6 +81,37 @@ public class HeadmanStatsScopeReadService {
                     .withDescription("group_id/semester_id must be positive")
                     .asRuntimeException();
         }
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            throw Status.UNAVAILABLE
+                    .withDescription("scope admission requires no transaction")
+                    .asRuntimeException();
+        }
+        var admitted = sessions.admitProjection(actor);
+        var local = reads.execute(ignored -> readLocal(actor, request));
+        verifyCurrent(actor, admitted, local);
+        var response = local.response().toBuilder();
+        if (request.hasStudentId() && local.response().hasSelectedSemester()) {
+            response.setStudentRankScope(
+                    toRankProto(
+                            studentProjection.resolveHeadmanRank(
+                                    local.response().getSelectedSemester().getId(),
+                                    request.getStudentId(),
+                                    groupId)));
+        }
+        var rechecked = reads.execute(ignored -> readLocal(actor, request));
+        if (!local.equals(rechecked)) {
+            throw Status.UNAVAILABLE
+                    .withDescription("headman scope changed during read")
+                    .asRuntimeException();
+        }
+        verifyCurrent(actor, sessions.admitProjection(actor), rechecked);
+        return response.build();
+    }
+
+    private LocalRead readLocal(InternalJwtClaims actor, HeadmanStatsScopeRequest request) {
+        long groupId = request.getGroupId();
+        fences.requireUserReadable(actor.userId());
+        fences.requireGroupReadable(groupId);
         if (!authority.allows(actor, groupId, "VIEW_STATS")) {
             throw Status.PERMISSION_DENIED
                     .withDescription("current own-group VIEW_STATS required")
@@ -117,14 +167,15 @@ public class HeadmanStatsScopeReadService {
                         : active.isEmpty() ? null : active.getFirst();
         if (selected != null) response.setSelectedSemester(toProto(selected));
         if (request.hasStudentId()) {
+            fences.requireUserReadable(request.getStudentId());
             boolean current =
                     Boolean.TRUE.equals(
                             jdbc.queryForObject(
                                     """
-                    SELECT EXISTS (SELECT 1 FROM user_role_grants g JOIN users u ON u.id = g.user_id
-                        WHERE g.user_id = ? AND g.role = 'student' AND g.group_id = ?
-                          AND g.status <> 'archived' AND u.status <> 'archived')
-                    """,
+SELECT EXISTS (SELECT 1 FROM academic_role_eligibility g
+    WHERE g.user_id = ? AND g.role = 'STUDENT' AND g.group_id = ?
+      AND g.status <> 'ARCHIVED')
+""",
                                     Boolean.class,
                                     request.getStudentId(),
                                     groupId));
@@ -162,29 +213,113 @@ public class HeadmanStatsScopeReadService {
                         .asRuntimeException();
             }
         }
-        // Current assigned student grants, including temporarily inactive grants; archived members
-        // excluded.
-        jdbc.query(
-                """
-                SELECT count(DISTINCT g.user_id) FILTER (WHERE g.status = 'active') AS active,
-                       count(DISTINCT g.user_id) AS total
-                FROM user_role_grants g JOIN users u ON u.id = g.user_id
-                WHERE g.role = 'student' AND g.group_id = ?
-                  AND g.status <> 'archived' AND u.status <> 'archived'
-                """,
-                result -> {
-                    response.setMembershipActive(result.getLong("active"));
-                    response.setMembershipTotal(result.getLong("total"));
-                },
-                groupId);
-        if (request.hasStudentId() && selected != null && studentProjection != null) {
-            response.setStudentRankScope(
-                    toRankProto(
-                            studentProjection.resolveHeadmanRank(
-                                    selected.getId(), request.getStudentId(), groupId)));
+        var members =
+                jdbc.query(
+                        """
+SELECT p.id,p.applied_auth_roles_version,p.academic_revision,e.status,e.group_id
+FROM academic_role_eligibility e JOIN academic_profiles p ON p.id=e.user_id
+WHERE e.role='STUDENT' AND e.group_id=? AND e.status<>'ARCHIVED'
+ORDER BY p.id
+""",
+                        (rs, n) ->
+                                new LocalIdentity(
+                                        rs.getLong("id"),
+                                        rs.getLong("applied_auth_roles_version"),
+                                        rs.getLong("academic_revision"),
+                                        rs.getString("status"),
+                                        rs.getLong("group_id")),
+                        groupId);
+        for (var member : members) fences.requireUserReadable(member.userId());
+        response.setMembershipTotal(members.size());
+        response.setMembershipActive(
+                members.stream().filter(member -> "ACTIVE".equals(member.status())).count());
+        var actorRows =
+                jdbc.query(
+                        "SELECT id,applied_auth_roles_version,academic_revision FROM"
+                                + " academic_profiles WHERE id=?",
+                        (rs, n) ->
+                                new LocalIdentity(
+                                        rs.getLong("id"),
+                                        rs.getLong("applied_auth_roles_version"),
+                                        rs.getLong("academic_revision"),
+                                        actor.status(),
+                                        groupId),
+                        actor.userId());
+        if (actorRows.size() != 1 || actorRows.getFirst().rolesVersion() != actor.rolesVersion()) {
+            throw Status.UNAVAILABLE
+                    .withDescription("actor domain revision is stale")
+                    .asRuntimeException();
         }
-        return response.build();
+        return new LocalRead(response.build(), List.copyOf(members), actorRows.getFirst());
     }
+
+    private void verifyCurrent(
+            InternalJwtClaims actor, LiveSessionAuthority session, LocalRead local) {
+        var selected = new TreeSet<Long>();
+        selected.add(actor.userId());
+        local.members().forEach(member -> selected.add(member.userId()));
+        var ids = List.copyOf(selected);
+        var current =
+                new java.util.LinkedHashMap<
+                        Long, ru.rutcampustrack.authauthority.grpc.IdentityAuthoritySnapshot>();
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
+        for (int offset = 0; offset < ids.size(); offset += 200) {
+            current.putAll(
+                    identities.readServiceIdentity(
+                            ids.subList(offset, Math.min(offset + 200, ids.size())), deadline));
+        }
+        var actorIdentity = current.get(actor.userId());
+        if (actorIdentity == null
+                || actorIdentity.getRolesVersion() != actor.rolesVersion()
+                || actorIdentity.getAcademicRevision() != local.actor().academicRevision()
+                || actorIdentity.getAccountState()
+                        != AuthorityAccountState.AUTHORITY_ACCOUNT_STATE_ACTIVE
+                || actorIdentity.getGrantsList().stream()
+                        .noneMatch(
+                                grant ->
+                                        grant.getGrantId() == session.getActiveRoleGrantId()
+                                                && grant.getRole().equalsIgnoreCase(actor.role())
+                                                && grant.getStatus()
+                                                        .equalsIgnoreCase(actor.status())
+                                                && grant.hasGroupId()
+                                                && Objects.equals(
+                                                        grant.getGroupId(), actor.groupId()))) {
+            throw Status.PERMISSION_DENIED
+                    .withDescription("current own-group VIEW_STATS required")
+                    .asRuntimeException();
+        }
+        for (var member : local.members()) {
+            var identity = current.get(member.userId());
+            if (identity == null
+                    || identity.getRolesVersion() != member.rolesVersion()
+                    || identity.getAcademicRevision() != member.academicRevision()
+                    || identity.getAccountState()
+                            != AuthorityAccountState.AUTHORITY_ACCOUNT_STATE_ACTIVE) {
+                throw Status.UNAVAILABLE
+                        .withDescription("cohort authority changed")
+                        .asRuntimeException();
+            }
+            var students =
+                    identity.getGrantsList().stream()
+                            .filter(grant -> "STUDENT".equalsIgnoreCase(grant.getRole()))
+                            .toList();
+            if (students.size() != 1
+                    || students.getFirst().getGrantId() <= 0
+                    || !students.getFirst().getStatus().equalsIgnoreCase(member.status())
+                    || !students.getFirst().hasGroupId()
+                    || students.getFirst().getGroupId() != member.groupId()) {
+                throw Status.UNAVAILABLE
+                        .withDescription("cohort domain revision is stale")
+                        .asRuntimeException();
+            }
+        }
+    }
+
+    private record LocalIdentity(
+            long userId, long rolesVersion, long academicRevision, String status, long groupId) {}
+
+    private record LocalRead(
+            HeadmanStatsScopeResponse response, List<LocalIdentity> members, LocalIdentity actor) {}
 
     private static StudentProjectionScopeResponse toRankProto(StudentProjectionScope scope) {
         var result =

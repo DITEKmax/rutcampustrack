@@ -39,11 +39,13 @@ HOMEWORK_TODAY_LABEL = "📚 ДЗ на сегодня"
 HOMEWORK_WEEK_LABEL = "📚 ДЗ на неделю"
 CREDENTIALS_LABEL = "🔐 Данные для входа"
 LINKS_LABEL = "🌐 Сайт и PWA"
+HEADMAN_LABEL = "Учёт группы"
+TEACHER_TODAY_LABEL = "Мои пары сегодня"
 
 _MAIN_KEYBOARD_LAYOUT: tuple[tuple[str, ...], ...] = (
     (CREDENTIALS_LABEL, LINKS_LABEL),
-    (SETTINGS_LABEL,),
     (LOGIN_LABEL,),
+    (SETTINGS_LABEL,),
 )
 
 _CATEGORY_LABELS: dict[str, str] = {
@@ -62,7 +64,13 @@ _MUTE_WEEK_CB = "prefs:mute:week"
 _MUTE_CLEAR_CB = "prefs:mute:clear"
 
 
-def main_keyboard(notifications_enabled: bool | None = None, *, homework_enabled: bool = False) -> ReplyKeyboardMarkup:
+def main_keyboard(
+    notifications_enabled: bool | None = None,
+    *,
+    homework_enabled: bool = False,
+    headman_enabled: bool = False,
+    teacher_enabled: bool = False,
+) -> ReplyKeyboardMarkup:
     """Persistent reply keyboard shown to user after /start.
 
     Сохранён параметр для обратной совместимости со старыми вызовами —
@@ -70,19 +78,33 @@ def main_keyboard(notifications_enabled: bool | None = None, *, homework_enabled
     """
     del notifications_enabled  # unused — kept for backward-compat keyword args
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=label) for label in row] for row in _keyboard_layout(homework_enabled)],
+        keyboard=[
+            [KeyboardButton(text=label) for label in row]
+            for row in _keyboard_layout(homework_enabled, headman_enabled, teacher_enabled)
+        ],
         resize_keyboard=True,
         is_persistent=True,
     )
 
 
-def _keyboard_layout(homework_enabled: bool) -> tuple[tuple[str, ...], ...]:
-    return _MAIN_KEYBOARD_LAYOUT + (((HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL),) if homework_enabled else ())
+def _keyboard_layout(
+    homework_enabled: bool, headman_enabled: bool = False, teacher_enabled: bool = False
+) -> tuple[tuple[str, ...], ...]:
+    rows = _MAIN_KEYBOARD_LAYOUT
+    if homework_enabled:
+        rows += ((HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL),)
+    if headman_enabled:
+        rows += ((HEADMAN_LABEL,),)
+    if teacher_enabled:
+        rows += ((TEACHER_TODAY_LABEL,),)
+    return rows
 
 
-def keyboard_signature(*, homework_enabled: bool = False) -> str:
+def keyboard_signature(
+    *, homework_enabled: bool = False, headman_enabled: bool = False, teacher_enabled: bool = False
+) -> str:
     """Stable signature for backend-driven reply keyboard updates."""
-    raw = "\n".join("|".join(row) for row in _keyboard_layout(homework_enabled))
+    raw = "\n".join("|".join(row) for row in _keyboard_layout(homework_enabled, headman_enabled, teacher_enabled))
     return sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 

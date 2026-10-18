@@ -1,7 +1,5 @@
 package ru.rutcampustrack.attendance.report;
 
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +32,7 @@ import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableExceptio
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.journal.JournalLessonPolicy;
+import ru.rutcampustrack.attendance.report.planned.*;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
@@ -49,6 +48,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -66,7 +66,6 @@ import java.util.stream.Collectors;
  * RequestContext)
  */
 @Service
-@RequiredArgsConstructor
 public class ReportService {
 
     /** Status symbols per D-08 specification. */
@@ -79,13 +78,52 @@ public class ReportService {
                     AttendanceStatus.CANCELLED, "--");
 
     private final AttendanceReadPort attendanceReadPort;
-    private final AcademicGrpcClient academicGrpcClient;
-    private final ScheduleGrpcClient scheduleGrpcClient;
+    private final ReportAcademicReadPort academicGrpcClient;
+    private final ReportScheduleReadPort scheduleGrpcClient;
     private final SemesterCacheService semesterCacheService;
-    private final RequestContext requestContext;
+    private final ReportActor requestContext;
     private final Clock clock;
     private final JournalAttachmentPort journalAttachmentPort;
     private final HeadmanApprovedTicketResolver approvedTicketResolver;
+
+    public ReportService(
+            AttendanceReadPort attendanceReadPort,
+            AcademicGrpcClient academicGrpcClient,
+            ScheduleGrpcClient scheduleGrpcClient,
+            SemesterCacheService semesterCacheService,
+            RequestContext requestContext,
+            Clock clock,
+            JournalAttachmentPort journalAttachmentPort,
+            HeadmanApprovedTicketResolver approvedTicketResolver) {
+        this(
+                attendanceReadPort,
+                ReportAcademicReadPort.live(academicGrpcClient),
+                ReportScheduleReadPort.live(scheduleGrpcClient),
+                semesterCacheService,
+                ReportActor.live(requestContext),
+                clock,
+                journalAttachmentPort,
+                approvedTicketResolver);
+    }
+
+    private ReportService(
+            AttendanceReadPort attendanceReadPort,
+            ReportAcademicReadPort academicGrpcClient,
+            ReportScheduleReadPort scheduleGrpcClient,
+            SemesterCacheService semesterCacheService,
+            ReportActor requestContext,
+            Clock clock,
+            JournalAttachmentPort journalAttachmentPort,
+            HeadmanApprovedTicketResolver approvedTicketResolver) {
+        this.attendanceReadPort = attendanceReadPort;
+        this.academicGrpcClient = academicGrpcClient;
+        this.scheduleGrpcClient = scheduleGrpcClient;
+        this.semesterCacheService = semesterCacheService;
+        this.requestContext = requestContext;
+        this.clock = clock;
+        this.journalAttachmentPort = journalAttachmentPort;
+        this.approvedTicketResolver = approvedTicketResolver;
+    }
 
     @Autowired
     public ReportService(
@@ -131,6 +169,18 @@ public class ReportService {
                 null);
     }
 
+    public ReportService forPlan(AdmittedReportPlan plan) {
+        return new ReportService(
+                attendanceReadPort,
+                plan,
+                plan,
+                semesterCacheService,
+                plan,
+                plan.clock(),
+                journalAttachmentPort,
+                approvedTicketResolver);
+    }
+
     private String statusSymbol(AttendanceStatus s) {
         return STATUS_SYMBOLS.getOrDefault(s, "?");
     }
@@ -153,6 +203,61 @@ public class ReportService {
         authorizeHeadmanOrTeacher(lesson);
 
         return buildLessonAttendance(lesson, false);
+    }
+
+    /**
+     * Minimal read-only projection for the directed bot boundary. The producer supplies freshly
+     * resolved Academic own-group eligibility and its dated roster; this method never installs an
+     * HTTP actor, widens edit permissions, or resolves excuse/attachment details.
+     */
+    public LessonAttendanceResponse getDirectedBotLessonAttendance(
+            LessonResponse lesson, long ownGroupId, GroupMembersResponse members) {
+        if (lesson == null || ownGroupId <= 0 || lesson.getGroupId() != ownGroupId) {
+            throw new AccessDeniedException("Cannot view data for another group");
+        }
+        JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
+        validateHistoricalRoster(members, timing.date(), lesson.getSemesterId());
+        if (members.getStudentsList().stream()
+                .anyMatch(member -> member.getDisplayName().isBlank())) {
+            throw new AcademicServiceUnavailableException(
+                    "Academic returned an incomplete roster name");
+        }
+        Map<Long, AttendanceRecord> records = lessonAttendanceRecords(lesson.getId());
+        List<StudentAttendanceEntry> entries =
+                members.getStudentsList().stream()
+                        .map(
+                                student -> {
+                                    AttendanceRecord record = records.get(student.getUserId());
+                                    AttendanceStatus status =
+                                            record == null ? null : record.status();
+                                    return new StudentAttendanceEntry(
+                                            student.getUserId(),
+                                            student.getDisplayName(),
+                                            status == null
+                                                    ? null
+                                                    : status.name().toLowerCase(Locale.ROOT),
+                                            status == null ? null : statusSymbol(status),
+                                            record == null || record.source() == null
+                                                    ? null
+                                                    : record.source()
+                                                            .name()
+                                                            .toLowerCase(Locale.ROOT));
+                                })
+                        .toList();
+        return new LessonAttendanceResponse(
+                lesson.getId(),
+                ownGroupId,
+                lesson.getSubjectId(),
+                lesson.getDate(),
+                lesson.getSemesterId(),
+                timing.status(),
+                false,
+                entries);
+    }
+
+    private Map<Long, AttendanceRecord> lessonAttendanceRecords(long lessonId) {
+        return attendanceReadPort.findByLessonId(lessonId).stream()
+                .collect(Collectors.toMap(AttendanceRecord::userId, record -> record, (a, b) -> a));
     }
 
     /**
@@ -224,10 +329,7 @@ public class ReportService {
                                                 .HeadmanStatsStudentLessonsResponse.ApprovedTicket>
                                         of();
 
-        List<AttendanceRecord> records = attendanceReadPort.findByLessonId(lessonId);
-        Map<Long, AttendanceRecord> recordsByUserId =
-                records.stream()
-                        .collect(Collectors.toMap(AttendanceRecord::userId, r -> r, (a, b) -> a));
+        Map<Long, AttendanceRecord> recordsByUserId = lessonAttendanceRecords(lessonId);
 
         List<StudentAttendanceEntry> entries =
                 members.getStudentsList().stream()

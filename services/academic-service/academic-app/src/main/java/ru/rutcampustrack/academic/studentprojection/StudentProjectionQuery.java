@@ -1,5 +1,7 @@
 package ru.rutcampustrack.academic.studentprojection;
 
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -8,18 +10,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
- * Read-only data port for the student projection resolver.
+ * Read-only Auth authority and Academic domain port for the student projection resolver.
  *
- * <p>The port keeps SQL authority reads separate from the deterministic history/rank calculation,
+ * <p>The port keeps current remote authority separate from the local history/rank calculation,
  * which also makes the fail-closed rules testable without replacing the real query adapter.
  */
 public interface StudentProjectionQuery {
 
     Optional<AuthoritySnapshot> findAuthority(long userId);
 
-    Optional<SessionSnapshot> findSession(long userId, UUID sessionId);
+    Optional<SessionSnapshot> findSession(InternalJwtClaims claims);
+
+    /** Runs only local domain reads in one own-database repeatable-read snapshot. */
+    <T> T readSnapshot(AuthoritySnapshot authority, Supplier<T> action);
+
+    /** Rechecks current Auth grants and exact local revisions before disclosure. */
+    void verifyCurrent(AuthoritySnapshot authority, StudentProjectionScope scope);
 
     Optional<SemesterSnapshot> findSemester(long semesterId);
 
@@ -41,7 +50,16 @@ public interface StudentProjectionQuery {
             long rolesVersion,
             /** Current status of the authoritative STUDENT grant. */
             String accountStatus,
-            List<RoleGrantSnapshot> grants) {
+            List<RoleGrantSnapshot> grants,
+            long academicRevision) {
+        public AuthoritySnapshot(
+                long userId,
+                long rolesVersion,
+                String accountStatus,
+                List<RoleGrantSnapshot> grants) {
+            this(userId, rolesVersion, accountStatus, grants, 0);
+        }
+
         public AuthoritySnapshot {
             grants = List.copyOf(Objects.requireNonNull(grants, "grants"));
         }

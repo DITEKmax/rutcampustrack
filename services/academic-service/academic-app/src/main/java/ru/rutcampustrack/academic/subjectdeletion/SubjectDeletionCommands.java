@@ -83,15 +83,16 @@ public class SubjectDeletionCommands {
     public void accept(
             UUID operation,
             UUID key,
-            UUID proof,
+            AuthSubjectDeletionClient.Admission admission,
             String confirmationHash,
             SubjectDeletionSnapshot snapshot) {
+        UUID proof = admission.proof();
         // Same global state-transition lock as SemesterService, BEFORE accepting a durable fence.
         // Once inserted, the pending operation blocks activation/archive until completion/release.
         jdbc.queryForList("SELECT pg_advisory_xact_lock(?, ?)", 0x53454D, 1);
         var target = snapshot.target();
         var actor = target.actor();
-        lockActor(actor.userId(), target.group(), actor.sessionId());
+        lockActor(actor.userId(), target.group());
         var accepted = get(operation);
         UUID keyed = byKey(key);
         if (accepted != null || keyed != null) {
@@ -114,7 +115,7 @@ public class SubjectDeletionCommands {
                                 + " AND phase NOT IN ('COMPLETED','CANCELLED'))",
                         Boolean.class,
                         target.subject()))) throw SubjectDeletionAcademicData.conflict();
-        if (!validProof(
+        if (!admission.matches(
                         proof,
                         operation,
                         snapshot.digest(),
@@ -122,9 +123,24 @@ public class SubjectDeletionCommands {
                         target.semester(),
                         target.group(),
                         actor.userId(),
-                        actor.sessionId())
+                        actor.sessionId(),
+                        clock.instant())
                 || !data.snapshot(target).digest().equals(snapshot.academic().digest()))
             throw SubjectDeletionAcademicData.conflict();
+        jdbc.update(
+                """
+INSERT INTO subject_deletion_admission_receipts(receipt_id,operation_id,actor_id,session_id,
+    subject_id,semester_id,group_id,preview_digest,checked_at) VALUES (?,?,?,?,?,?,?,?,?)
+""",
+                proof,
+                operation,
+                actor.userId(),
+                actor.sessionId(),
+                target.subject(),
+                target.semester(),
+                target.group(),
+                snapshot.digest(),
+                Timestamp.from(admission.checkedAt()));
         var command =
                 snapshot.command(
                         operation,
@@ -177,27 +193,37 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?::JSONB,?,?,?,'PREPARING',?,?,?)
     }
 
     @Transactional
-    public boolean beginCommit(UUID operation) {
-        // Keep the same user -> group -> session -> semester -> subject -> operation order as
-        // acceptance.
+    public boolean beginCommit(UUID operation, AuthSubjectDeletionClient.Admission admission) {
+        // Local group -> profile -> semester -> subject -> operation order matches acceptance.
         SubjectDeletionOperation before = get(operation);
         if (before == null) return false;
-        lockActor(before.actor(), before.group(), before.sid());
+        lockActor(before.actor(), before.group());
         lockTarget(before.subject(), before.semester());
         SubjectDeletionOperation current = lockOperation(operation);
         if (current.phase() == Phase.COMMITTING || current.phase() == Phase.COMPLETED) return true;
         if (current.phase() != Phase.PREPARING && current.phase() != Phase.SEALED) return false;
         if (!current.scheduleState().equals("SEALED")
                 || !current.attendanceState().equals("SEALED")) return false;
-        if (!validProof(
-                current.proof(),
-                current.id(),
-                current.digest(),
-                current.subject(),
-                current.semester(),
-                current.group(),
-                current.actor(),
-                current.sid())) return false;
+        if (admission == null
+                || !admission.matches(
+                        current.proof(),
+                        current.id(),
+                        current.digest(),
+                        current.subject(),
+                        current.semester(),
+                        current.group(),
+                        current.actor(),
+                        current.sid(),
+                        clock.instant())
+                || !validProof(
+                        current.proof(),
+                        current.id(),
+                        current.digest(),
+                        current.subject(),
+                        current.semester(),
+                        current.group(),
+                        current.actor(),
+                        current.sid())) return false;
         var target = target(current);
         if (!data.snapshot(target).digest().equals(current.academicDigest())) return false;
         jdbc.update(
@@ -307,10 +333,13 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?::JSONB,?,?,?,'PREPARING',?,?,?)
         return get(operation);
     }
 
-    private void lockActor(long user, long group, UUID sid) {
-        jdbc.query("SELECT id FROM users WHERE id=? FOR UPDATE", (rs, i) -> rs.getLong(1), user);
+    private void lockActor(long actor, long group) {
         jdbc.query("SELECT id FROM groups WHERE id=? FOR UPDATE", (rs, i) -> rs.getLong(1), group);
-        jdbc.query("SELECT auth_api.lock_current_session(?,?)", rs -> {}, user, sid);
+        jdbc.query(
+                "SELECT id FROM academic_profiles WHERE id=? FOR UPDATE",
+                (rs, i) -> rs.getLong(1),
+                actor);
+        data.localActor(actor, group);
     }
 
     private void lockTarget(long subject, long semester) {
@@ -337,7 +366,10 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?::JSONB,?,?,?,'PREPARING',?,?,?)
             UUID sid) {
         return Boolean.TRUE.equals(
                 jdbc.queryForObject(
-                        "SELECT auth_api.subject_proof_admitted(?,?,?,?,?,?,?,?,?)",
+                        "SELECT EXISTS(SELECT 1 FROM subject_deletion_admission_receipts WHERE"
+                            + " receipt_id=? AND operation_id=? AND preview_digest=? AND"
+                            + " subject_id=? AND semester_id=? AND group_id=? AND actor_id=? AND"
+                            + " session_id=?)",
                         Boolean.class,
                         proof,
                         operation,
@@ -346,8 +378,7 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?::JSONB,?,?,?,'PREPARING',?,?,?)
                         semester,
                         group,
                         actor,
-                        sid,
-                        Timestamp.from(clock.instant())));
+                        sid));
     }
 
     private static int rank(String state) {

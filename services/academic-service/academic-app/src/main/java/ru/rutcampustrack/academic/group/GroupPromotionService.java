@@ -1,5 +1,30 @@
 package ru.rutcampustrack.academic.group;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import ru.rutcampustrack.academic.contract.dto.group.PromotionExecuteRequest;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem.Action;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionSkippedItem;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionSkippedItem.Reason;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary.PrefixConflict;
+import ru.rutcampustrack.academic.contract.enums.SemesterType;
+import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.entity.GroupPromotionCycleRecord;
+import ru.rutcampustrack.academic.entity.Semester;
+import ru.rutcampustrack.academic.event.AdministrativeNotificationGroupPromotionCompletedEvent;
+import ru.rutcampustrack.academic.event.GroupRenamedEvent;
+import ru.rutcampustrack.academic.repository.GroupPromotionCycleRecordRepository;
+import ru.rutcampustrack.academic.repository.GroupRegistryReadRepository;
+import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.SemesterRepository;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -18,29 +43,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionExecuteRequest;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionPreviewItem.Action;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionSkippedItem;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionSkippedItem.Reason;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
-import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary.PrefixConflict;
-import ru.rutcampustrack.academic.contract.enums.SemesterType;
-import ru.rutcampustrack.academic.entity.Group;
-import ru.rutcampustrack.academic.entity.GroupPromotionCycleRecord;
-import ru.rutcampustrack.academic.entity.Semester;
-import ru.rutcampustrack.academic.event.AdministrativeNotificationGroupPromotionCompletedEvent;
-import ru.rutcampustrack.academic.event.GroupRenamedEvent;
-import ru.rutcampustrack.academic.repository.GroupPromotionCycleRecordRepository;
-import ru.rutcampustrack.academic.repository.GroupRegistryReadRepository;
-import ru.rutcampustrack.academic.repository.GroupRepository;
-import ru.rutcampustrack.academic.repository.SemesterRepository;
 
 /**
  * Single-group and mass promotion share the same completed-spring-cycle guard. Execute locks the
@@ -80,8 +82,11 @@ public class GroupPromotionService {
         this.jdbc = jdbc;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(
+            readOnly = true,
+            isolation = org.springframework.transaction.annotation.Isolation.REPEATABLE_READ)
     public PromotionSummary preview(Long groupId) {
+        availability().requireAvailableScope(groupId == null ? 0 : groupId);
         Semester cycle = findLatestCompletedSpring();
         List<Group> active = groupRepository.findAllByIsActiveTrue();
         List<GroupPromotionCycleRecord> processed =
@@ -89,8 +94,13 @@ public class GroupPromotionService {
         return buildSummary(cycle, active, processed, groupId, true);
     }
 
-    @Transactional
     public PromotionSummary execute(PromotionExecuteRequest request) {
+        return availability().executePromotion(request);
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public PromotionSummary prepareAvailabilityPlan(PromotionExecuteRequest request) {
+        jdbc.queryForList("SELECT pg_advisory_xact_lock(?,?)", 0x53454D, 1);
         if (request == null
                 || request.getCycleSemesterId() == null
                 || request.getPreviewVersion() == null) {
@@ -102,6 +112,8 @@ public class GroupPromotionService {
         List<Group> active = groupRepository.findAllActiveForPromotionUpdate();
         List<GroupPromotionCycleRecord> processed =
                 cycleRecordRepository.findAllByCycleSemesterIdOrderByGroupId(cycle.getId());
+        availability()
+                .requireAvailableScope(request.getGroupId() == null ? 0 : request.getGroupId());
         PromotionSummary plan = buildSummary(cycle, active, processed, request.getGroupId(), true);
         if (!Objects.equals(plan.getPreviewVersion(), request.getPreviewVersion())) {
             throw new ResponseStatusException(
@@ -109,18 +121,7 @@ public class GroupPromotionService {
                     "Предпросмотр устарел. Обнови реестр и подготовь новый план.");
         }
 
-        apply(plan, active, cycle, false);
-        return new PromotionSummary(
-                plan.getToPromote(),
-                plan.getToArchive(),
-                plan.getSkipped(),
-                plan.getConflicts(),
-                plan.getCycleSemesterId(),
-                plan.getCycleDateTo(),
-                plan.getGroupId(),
-                plan.getPreviewVersion(),
-                false,
-                true);
+        return plan;
     }
 
     /**
@@ -128,8 +129,13 @@ public class GroupPromotionService {
      * same cycle lock, plan and ledger as manual execution are used so manual and scheduled work
      * cannot promote a group twice.
      */
-    @Transactional
     public Optional<PromotionSummary> executeAutomaticallyIfDue() {
+        return availability().executeAutomaticallyIfDue();
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public Optional<PromotionSummary> prepareAutomaticAvailabilityPlan() {
+        jdbc.queryForList("SELECT pg_advisory_xact_lock(?,?)", 0x53454D, 1);
         LocalDate today = LocalDate.now(clock);
         Optional<Semester> candidate =
                 semesterRepository.findLatestCompletedSpringPromotionCycle(today);
@@ -145,22 +151,27 @@ public class GroupPromotionService {
         List<Group> active = groupRepository.findAllActiveForPromotionUpdate();
         List<GroupPromotionCycleRecord> processed =
                 cycleRecordRepository.findAllByCycleSemesterIdOrderByGroupId(cycle.getId());
+        availability().requireAvailableScope(0);
         PromotionSummary plan = buildSummary(cycle, active, processed, null, true);
-        if (!plan.getToPromote().isEmpty() || !plan.getToArchive().isEmpty()) {
-            apply(plan, active, cycle, true);
-        }
-        return Optional.of(
-                new PromotionSummary(
-                        plan.getToPromote(),
-                        plan.getToArchive(),
-                        plan.getSkipped(),
-                        plan.getConflicts(),
-                        plan.getCycleSemesterId(),
-                        plan.getCycleDateTo(),
-                        null,
-                        plan.getPreviewVersion(),
-                        false,
-                        true));
+        return Optional.of(plan);
+    }
+
+    private org.springframework.beans.factory.ObjectProvider<
+                    ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService>
+            availabilityProvider;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setAvailability(
+            org.springframework.beans.factory.ObjectProvider<
+                            ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService>
+                    provider) {
+        this.availabilityProvider = provider;
+    }
+
+    private ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService availability() {
+        if (availabilityProvider == null || availabilityProvider.getIfAvailable() == null)
+            throw io.grpc.Status.UNAVAILABLE.asRuntimeException();
+        return availabilityProvider.getObject();
     }
 
     private static LocalDate cycleDateTo(Semester cycle) {
@@ -181,7 +192,8 @@ public class GroupPromotionService {
                         () ->
                                 new ResponseStatusException(
                                         HttpStatus.CONFLICT,
-                                        "Нет завершённого весеннего семестра для цикла перевода групп."));
+                                        "Нет завершённого весеннего семестра для цикла перевода"
+                                                + " групп."));
     }
 
     private Semester requireCurrentCycleForUpdate(Long cycleSemesterId) {
@@ -382,7 +394,8 @@ public class GroupPromotionService {
                         "unrepresentable_next_course",
                         "Следующий курс группы «"
                                 + group.getName()
-                                + "» нельзя записать в трёхзначный код. Перевод этого префикса невозможен.",
+                                + "» нельзя записать в трёхзначный код. Перевод этого префикса"
+                                + " невозможен.",
                         eligible,
                         List.of(group.getId()));
             }
@@ -438,6 +451,75 @@ public class GroupPromotionService {
         Set<Long> ids = new java.util.TreeSet<>(additionalIds);
         eligible.stream().map(Group::getId).forEach(ids::add);
         return new PrefixConflict(prefix, reason, message, new ArrayList<>(ids));
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public void applyAvailabilityPlan(
+            ru.rutcampustrack.academic.groupavailability.GroupAvailabilityCommand.Plan accepted,
+            boolean automatic,
+            java.util.UUID operation) {
+        Semester cycle =
+                semesterRepository
+                        .findByIdForUpdate(accepted.semester())
+                        .orElseThrow(() -> io.grpc.Status.ABORTED.asRuntimeException());
+        if (cycle.getSemesterType() != SemesterType.SPRING
+                || !Objects.equals(cycleDateTo(cycle), accepted.dateTo())
+                || !accepted.dateTo().isBefore(LocalDate.now(clock)))
+            throw io.grpc.Status.ABORTED
+                    .withDescription("accepted cycle identity changed")
+                    .asRuntimeException();
+        List<Group> active = groupRepository.findAllActiveForPromotionUpdate();
+        var byId = active.stream().collect(java.util.stream.Collectors.toMap(Group::getId, g -> g));
+        var items =
+                java.util.stream.Stream.concat(
+                                accepted.promote().stream(), accepted.archive().stream())
+                        .toList();
+        var processed =
+                cycleRecordRepository.findAllByCycleSemesterIdOrderByGroupId(cycle.getId()).stream()
+                        .map(GroupPromotionCycleRecord::getGroupId)
+                        .collect(java.util.stream.Collectors.toSet());
+        for (var item : items) {
+            var group = byId.get(item.id());
+            if (group == null
+                    || !group.isActive()
+                    || !Objects.equals(group.getName(), item.from())
+                    || processed.contains(item.id()))
+                throw io.grpc.Status.ABORTED
+                        .withDescription("accepted cycle group changed")
+                        .asRuntimeException();
+            var next =
+                    GroupCodeRules.fromName(group.getName(), group.getTrainingDurationYears())
+                            .next();
+            if (item.action() == Action.ARCHIVE
+                    ? next != null
+                    : next == null || !Objects.equals(next.name(), item.to()))
+                throw io.grpc.Status.ABORTED
+                        .withDescription("accepted cycle transformation changed")
+                        .asRuntimeException();
+        }
+        var planned =
+                java.util.stream.Stream.concat(
+                                accepted.promote().stream(), accepted.archive().stream())
+                        .map(
+                                ru.rutcampustrack.academic.groupavailability
+                                                .GroupAvailabilityCommand.Item
+                                        ::id)
+                        .sorted()
+                        .toList();
+        for (long group : planned)
+            if (!Boolean.TRUE.equals(
+                    jdbc.queryForObject(
+                            "SELECT EXISTS(SELECT 1 FROM academic_group_availability_guards g JOIN"
+                                    + " academic_group_availability_operations o ON"
+                                    + " o.operation_id=g.operation_id WHERE g.group_id=? AND"
+                                    + " g.operation_id=? AND o.phase='AUTH_INVALIDATED')",
+                            Boolean.class,
+                            group,
+                            operation)))
+                throw io.grpc.Status.ABORTED
+                        .withDescription("accepted cycle guard required")
+                        .asRuntimeException();
+        apply(accepted.result(), active, cycle, automatic);
     }
 
     private void apply(
@@ -508,10 +590,10 @@ public class GroupPromotionService {
             int claimed =
                     jdbc.update(
                             """
-                    INSERT INTO group_promotion_notification_cycle
-                        (cycle_semester_id, promoted, graduated, skipped, completed_at)
-                    VALUES (?, ?, ?, ?, ?) ON CONFLICT (cycle_semester_id) DO NOTHING
-                    """,
+                            INSERT INTO group_promotion_notification_cycle
+                                (cycle_semester_id, promoted, graduated, skipped, completed_at)
+                            VALUES (?, ?, ?, ?, ?) ON CONFLICT (cycle_semester_id) DO NOTHING
+                            """,
                             cycle.getId(),
                             promoted,
                             graduated,

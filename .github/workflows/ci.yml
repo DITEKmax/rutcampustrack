@@ -5275,7 +5275,7 @@ jobs:
               deadline = time.monotonic() + 8
               identity_format = ('{"id":{{json .Id}},"image":{{json .Image}},'
                                  '"project":{{json (index .Config.Labels "com.docker.compose.project")}},'
-                                 '"service":{{json (index .Config.Labels "com.docker.compose.service")}}')
+                                 '"service":{{json (index .Config.Labels "com.docker.compose.service")}}}')
 
               def read_selected(pins, state=False):
                   remaining = deadline - time.monotonic()

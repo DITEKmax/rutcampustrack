@@ -18,7 +18,7 @@ def _token() -> str:
     return base64.urlsafe_b64encode(bytes(range(32))).decode().rstrip("=")
 
 
-@pytest.mark.parametrize("method", ["ManageOwnBotCredentialMessages", "GetOwnBotHomeworksForWeek"])
+@pytest.mark.parametrize("method", ["GetOwnBotHomeworksForWeek"])
 def test_dedicated_token_is_emitted_only_for_exact_service_and_method(method):
     observed = {}
 
@@ -70,7 +70,7 @@ def test_wrong_destination_never_receives_token(service_url, method):
         ("auth.test:19090", "GetOwnBotInitialCredentials", True),
         ("academic.test:19491", "GetOwnBotInitialCredentials", False),
         ("auth.test:19091", "GetOwnBotInitialCredentials", False),
-        ("auth.test:19090", "ManageOwnBotCredentialMessages", False),
+        ("auth.test:19090", "ManageOwnBotCredentialMessages", True),
         ("auth.test:19090", "GetOwnBotHomeworksForWeek", False),
         ("auth.test:19090", "GetUserById", False),
     ],
@@ -100,7 +100,7 @@ def test_auth_identity_config_is_optional_and_hidden_from_repr():
 
 @pytest.mark.parametrize("with_auth", [True, False])
 @pytest.mark.asyncio
-async def test_auth_read_has_no_academic_fallback_while_homework_and_management_stay_academic(
+async def test_auth_read_and_card_management_have_no_academic_fallback_while_homework_stays_academic(
     tmp_path, monkeypatch, with_auth
 ):
     from unittest.mock import AsyncMock, Mock
@@ -117,7 +117,10 @@ async def test_auth_read_has_no_academic_fallback_while_homework_and_management_
         GetOwnBotHomeworksForWeek=AsyncMock(return_value=SimpleNamespace(homeworks=[])),
         ManageOwnBotCredentialMessages=AsyncMock(return_value=object()),
     )
-    auth = SimpleNamespace(GetOwnBotInitialCredentials=AsyncMock(return_value=SimpleNamespace(user_id=1)))
+    auth = SimpleNamespace(
+        GetOwnBotInitialCredentials=AsyncMock(return_value=SimpleNamespace(user_id=1)),
+        ManageOwnBotCredentialMessages=AsyncMock(return_value=object()),
+    )
     channels = {"academic.test:19491": academic_channel, "auth.test:19090": auth_channel}
     monkeypatch.setattr(
         module.grpc.aio, "secure_channel", Mock(side_effect=lambda target, credentials: channels[target])
@@ -165,11 +168,20 @@ async def test_auth_read_has_no_academic_fallback_while_homework_and_management_
         )
         == []
     )
-    await client.register(user_id=1, chat_id=42, message_id=7, binding_version=2, credentials_version=3)
-    for method in (academic.GetOwnBotHomeworksForWeek, academic.ManageOwnBotCredentialMessages):
-        assert method.call_args.kwargs["metadata"] == (("x-grpc-secret", "synthetic-shared"),)
-        assert type(method.call_args.kwargs["credentials"]) is BotServiceCredentials
-        assert method.call_args.kwargs["timeout"] == 3.0
+    if with_auth:
+        await client.register(user_id=1, chat_id=42, message_id=7, binding_version=2, credentials_version=3)
+        managed = auth.ManageOwnBotCredentialMessages.call_args
+        assert managed.kwargs["metadata"] == ()
+        assert isinstance(managed.kwargs["credentials"], BotAuthReadCredentials)
+        assert managed.kwargs["timeout"] == 3.0
+    else:
+        with pytest.raises(NotificationPreferencesUnavailable):
+            await client.register(user_id=1, chat_id=42, message_id=7, binding_version=2, credentials_version=3)
+    academic.ManageOwnBotCredentialMessages.assert_not_awaited()
+    homework = academic.GetOwnBotHomeworksForWeek.call_args
+    assert homework.kwargs["metadata"] == (("x-grpc-secret", "synthetic-shared"),)
+    assert type(homework.kwargs["credentials"]) is BotServiceCredentials
+    assert homework.kwargs["timeout"] == 3.0
     await client.close()
     assert academic_channel.close.await_count == 1
     assert auth_channel.close.await_count == (1 if with_auth else 0)

@@ -27,7 +27,8 @@ import java.util.List;
  * <p>Key differences from AbstractAcademicIntegrationTest: - Adds RabbitMQContainer alongside
  * PostgreSQLContainer - Does NOT exclude RabbitAutoConfiguration -- AMQP stack is needed for event
  * tests (Pitfall 2) - Excludes Redis autoconfiguration (no Redis container needed for event tests
- * per D-12) - Sets grpc.server.port=-1 to disable Netty port binding (matches Phase 07 convention)
+ * for Academic; Auth still has its separate critical Redis process) - Sets grpc.server.port=-1 to
+ * disable the application listener; the fixture owns directed TLS listeners.
  *
  * <p>M02 Группа 5: {@code DomainEventListener} пишет в outbox (а не напрямую в Rabbit). Для
  * event-тестов после сервисного вызова нужно явно дёрнуть {@link #flushOutbox()} — эмулирует
@@ -42,13 +43,11 @@ import java.util.List;
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
 public abstract class AbstractAcademicEventIntegrationTest {
 
-    @Autowired private javax.sql.DataSource fixtureDataSource;
-    @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory fixtureTokenFactory;
+    @org.springframework.beans.factory.annotation.Autowired
+    protected AcademicIdentityIntegrationFixture identityFixture;
 
     protected org.springframework.test.web.servlet.request.RequestPostProcessor signedAdmin() {
-        return AcademicTestAdminRequest.signed(
-                new org.springframework.jdbc.core.JdbcTemplate(fixtureDataSource),
-                fixtureTokenFactory);
+        return AcademicTestAdminRequest.signed(identityFixture);
     }
 
     @Autowired protected OutboxPublisherJob outboxPublisherJob;
@@ -69,15 +68,13 @@ public abstract class AbstractAcademicEventIntegrationTest {
     protected void flushOutbox() {
         new TransactionTemplate(transactionManager)
                 .executeWithoutResult(status -> outboxPublisherJob.publishBatch());
+        identityFixture.flushAuthOutbox();
     }
 
-    /**
-     * M02: drain leftover pending outbox rows между тестами — academic_outbox shared через reused
-     * Testcontainer. Без этого предыдущий тест может оставить события, которые flushOutbox()
-     * подхватит и пошлёт в Rabbit next testу.
-     */
+    /** Drain only canonical setup events from both actual owned outboxes before the test action. */
     @BeforeEach
     void drainOutboxBeforeEach() {
+        identityFixture.drainAuthSetupOutbox();
         if (outboxStorage == null) return;
         new TransactionTemplate(transactionManager)
                 .executeWithoutResult(
@@ -87,32 +84,19 @@ public abstract class AbstractAcademicEventIntegrationTest {
                         });
     }
 
-    static final PostgreSQLContainer<?> POSTGRES;
+    static final AcademicIdentityIntegrationFixture IDENTITY_FIXTURE =
+            AcademicIdentityIntegrationFixture.start();
+    static final PostgreSQLContainer<?> POSTGRES = IDENTITY_FIXTURE.postgres();
     static final RabbitMQContainer RABBITMQ;
 
     static {
-        // Only this fresh resource may be reset by AcademicFixtureResetListener.
-        POSTGRES =
-                new PostgreSQLContainer<>("postgres:16")
-                        .withDatabaseName(
-                                "academic_ci_"
-                                        + java.util.UUID.randomUUID().toString().replace("-", ""))
-                        .withUsername("rct_user")
-                        .withPassword("rct_dev_pass")
-                        .withReuse(false);
-        POSTGRES.start();
-        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
-
         RABBITMQ = new RabbitMQContainer("rabbitmq:3.13-management-alpine").withReuse(false);
         RABBITMQ.start();
     }
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
-        // PostgreSQL
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        IDENTITY_FIXTURE.properties(registry, "event");
 
         // RabbitMQ -- point at Testcontainers broker (credentials: guest/guest by default)
         registry.add("spring.rabbitmq.host", RABBITMQ::getHost);

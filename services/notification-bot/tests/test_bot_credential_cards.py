@@ -20,6 +20,7 @@ from bot.grpc_client import academic_pb2 as pb
 from bot.grpc_client.bot_credentials_client import BotCredentialRequestDenied, BotCredentialsGrpcClient
 from bot.handlers.start import cmd_start
 from bot.services.bot_credential_cards import BotCredentialCards
+from bot.services.bot_menu import BotGrant, MenuScope
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
 
 
@@ -225,6 +226,8 @@ def profile():
     return SimpleNamespace(
         found=True,
         user_id=17,
+        telegram_binding_version=2,
+        roles_version=1,
         display_name="Own",
         login="ordinary",
         group_name="Group",
@@ -256,7 +259,15 @@ async def test_native_dispatcher_first_start_renders_one_registered_html_escaped
             context={"bot": bot},
         )
         await dispatcher.feed_update(
-            bot, update, academic_client=academic, prefs_client=SimpleNamespace(), credential_cards=cards
+            bot,
+            update,
+            academic_client=academic,
+            prefs_client=SimpleNamespace(),
+            credential_cards=cards,
+            bot_menu_client=SimpleNamespace(
+                own_profile=AsyncMock(return_value=profile()),
+                menu_scope=AsyncMock(return_value=MenuScope(17, 2, 1, (BotGrant("STUDENT", 10),))),
+            ),
         )
         assert provider.has_secret() and provider.has_login()
         assert provider.registered_before_edit
@@ -293,6 +304,10 @@ async def test_missing_dedicated_capability_keeps_ordinary_profile_usable_withou
         generic,
         SimpleNamespace(),
         credential_cards=BotCredentialCards(bot=bot, client=authority),
+        bot_menu_client=SimpleNamespace(
+            own_profile=AsyncMock(return_value=public),
+            menu_scope=AsyncMock(return_value=MenuScope(17, 2, 1, (BotGrant("STUDENT", 10),))),
+        ),
     )
     authority.read.assert_not_awaited()
     bot.edit_message_text.assert_not_awaited()

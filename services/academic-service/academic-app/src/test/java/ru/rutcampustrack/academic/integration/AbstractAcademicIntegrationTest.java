@@ -21,42 +21,23 @@ import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 public abstract class AbstractAcademicIntegrationTest {
 
     @org.springframework.beans.factory.annotation.Autowired
-    private javax.sql.DataSource fixtureDataSource;
-
-    @org.springframework.beans.factory.annotation.Autowired
-    private ru.rutcampustrack.shared.security.InternalJwtTestFactory fixtureTokenFactory;
+    protected AcademicIdentityIntegrationFixture identityFixture;
 
     protected org.springframework.test.web.servlet.request.RequestPostProcessor signedAdmin() {
-        return AcademicTestAdminRequest.signed(
-                new org.springframework.jdbc.core.JdbcTemplate(fixtureDataSource),
-                fixtureTokenFactory);
+        return AcademicTestAdminRequest.signed(identityFixture);
     }
 
     @MockitoBean RabbitTemplate rabbitTemplate;
 
     @MockitoBean OutboxEventSender outboxEventSender;
 
-    static final PostgreSQLContainer<?> POSTGRES;
-
-    static {
-        // Only this fresh resource may be reset by AcademicFixtureResetListener.
-        POSTGRES =
-                new PostgreSQLContainer<>("postgres:16")
-                        .withDatabaseName(
-                                "academic_ci_"
-                                        + java.util.UUID.randomUUID().toString().replace("-", ""))
-                        .withUsername("rct_user")
-                        .withPassword("rct_dev_pass")
-                        .withReuse(false);
-        POSTGRES.start();
-        ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.prepare(POSTGRES);
-    }
+    static final AcademicIdentityIntegrationFixture IDENTITY_FIXTURE =
+            AcademicIdentityIntegrationFixture.start();
+    static final PostgreSQLContainer<?> POSTGRES = IDENTITY_FIXTURE.postgres();
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        IDENTITY_FIXTURE.properties(registry, "ordinary");
         registry.add(
                 "spring.autoconfigure.exclude",
                 () ->

@@ -24,6 +24,9 @@ public final class AuthBotCredentialServiceIdentityInterceptor implements Server
     public static final String READ_METHOD =
             "rutcampustrack.academic.AcademicGrpcService/GetOwnBotInitialCredentials";
 
+    public static final String MANAGE_METHOD =
+            "rutcampustrack.academic.AcademicGrpcService/ManageOwnBotCredentialMessages";
+
     private final ServiceIdentityServerInterceptor delegate;
 
     public AuthBotCredentialServiceIdentityInterceptor(
@@ -33,7 +36,8 @@ public final class AuthBotCredentialServiceIdentityInterceptor implements Server
                         .map(List::of)
                         .orElseGet(List::of);
         delegate =
-                new ServiceIdentityServerInterceptor(AUTH, Map.of(READ_METHOD, BOT), credentials);
+                new ServiceIdentityServerInterceptor(
+                        AUTH, Map.of(READ_METHOD, BOT, MANAGE_METHOD, BOT), credentials);
     }
 
     public static void requireBot() {

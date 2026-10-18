@@ -22,9 +22,9 @@ spring:
     password: ${SPRING_RABBITMQ_PASSWORD:rct_dev_pass}
 
   datasource:
-    url: jdbc:postgresql://postgres-academic:5432/academic_db
-    username: rct_user
-    password: ${POSTGRES_ACADEMIC_PASSWORD:rct_dev_pass}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres-academic:5432/auth_db}
+    username: ${SPRING_DATASOURCE_USERNAME:rct_auth_runtime}
+    password: ${POSTGRES_AUTH_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     # M05 Группа 6 / P2-10/6 — HikariCP tuning. auth-service делает
     # только login-lookup'ы (1 SELECT по логину), pool 10 достаточен.
@@ -47,7 +47,10 @@ spring:
         default_schema: public
 
   flyway:
-    enabled: false
+    enabled: true
+    locations: classpath:db/auth-migration
+    user: ${SPRING_FLYWAY_USER:rct_auth_migrator}
+    password: ${SPRING_FLYWAY_PASSWORD:}
 
 grpc:
   server:
@@ -60,6 +63,10 @@ grpc:
       private-key: ${AUTH_GRPC_PRIVATE_KEY:}
   service-identity:
     bot-to-auth-token: ${BOT_TO_AUTH_SERVICE_TOKEN:}
+    mobile-bff-to-auth-token: ${MOBILE_BFF_TO_AUTH_SERVICE_TOKEN:}
+    academic-to-auth-token: ${ACADEMIC_TO_AUTH_SERVICE_TOKEN:}
+    attendance-to-auth-token: ${ATTENDANCE_TO_AUTH_SERVICE_TOKEN:}
+    auth-to-academic-presentation-token: ${AUTH_TO_ACADEMIC_PRESENTATION_SERVICE_TOKEN:}
   auth:
     secret: ${GRPC_SECRET:}
   client:
@@ -86,7 +93,7 @@ rutcampustrack:
     # При active profile=test/local validator skip'ается. На prod (default
     # profile) deploy без --env-file → IllegalStateException на старте.
     # См. shared-web/RequiredSecretsValidator.java.
-    required-env-vars: REDIS_PASSWORD,SPRING_RABBITMQ_PASSWORD,POSTGRES_ACADEMIC_PASSWORD,INTERNAL_ISSUER_SECRET,TMA_BOT_TOKEN,GRPC_SECRET
+    required-env-vars: REDIS_PASSWORD,SPRING_RABBITMQ_PASSWORD,POSTGRES_AUTH_PASSWORD,INTERNAL_ISSUER_SECRET,TMA_BOT_TOKEN,GRPC_SECRET
     internal-issuer:
       # M03a: token exchange endpoint shared secret (api-gateway ↔ auth-service).
       # Required ≥32 bytes; fail-fast on empty. Rotate simultaneously on both services.
@@ -177,7 +184,7 @@ spring:
     activate:
       on-profile: local
   datasource:
-    url: jdbc:postgresql://localhost:5432/academic_db
+    url: jdbc:postgresql://localhost:5432/auth_db
   data:
     redis:
       host: localhost

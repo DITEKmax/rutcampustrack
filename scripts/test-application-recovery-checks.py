@@ -168,7 +168,13 @@ class EvidenceGuards(unittest.TestCase):
             "history": [{"past": "preserved"}],
         }
         baseline["capture_sha256"] = app.capture_fingerprint(baseline)
-        inventory = {"schedule": {"tables": [{"schema": "public", "name": "lesson_transfer_operations", "rows": [op]}]}}
+        inventory = {
+            "academic": {"tables": []},
+            "auth": {"tables": []},
+            "schedule": {"tables": [{"schema": "public", "name": "lesson_transfer_operations", "rows": [op]}]},
+            "mongo": {"attendance_db": {}, "notification_db": {}},
+            "files": [],
+        }
         self.assertEqual(app.validate_capture(baseline, inventory, "original-manifest"), op)
         mutations = [
             (lambda b: b["request"].update(targetRoom="different command"), False),

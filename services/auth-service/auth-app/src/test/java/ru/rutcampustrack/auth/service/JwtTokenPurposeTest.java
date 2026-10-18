@@ -11,6 +11,19 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.data.redis.core.StringRedisTemplate;
+
+import ru.rutcampustrack.auth.config.JwtProperties;
+import ru.rutcampustrack.auth.entity.User;
+import ru.rutcampustrack.auth.session.model.AuthMethod;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.auth.session.model.RoleGrant;
+import ru.rutcampustrack.auth.session.model.RoleStatus;
+import ru.rutcampustrack.auth.session.model.SessionSnapshot;
+
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -25,17 +38,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import ru.rutcampustrack.auth.config.JwtProperties;
-import ru.rutcampustrack.auth.entity.User;
-import ru.rutcampustrack.auth.entity.enums.UserRole;
-import ru.rutcampustrack.auth.session.model.AuthMethod;
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.auth.session.model.RoleGrant;
-import ru.rutcampustrack.auth.session.model.RoleStatus;
-import ru.rutcampustrack.auth.session.model.SessionSnapshot;
 
 class JwtTokenPurposeTest {
 
@@ -62,14 +64,14 @@ class JwtTokenPurposeTest {
 
         user = mock(User.class);
         when(user.getId()).thenReturn(USER_ID);
-        when(user.getRole()).thenReturn(UserRole.STUDENT);
-        when(user.getGroupId()).thenReturn(GROUP_ID);
-        when(user.isHeadman()).thenReturn(false);
     }
 
     @Test
     void generatedAccessTokenIsStrictlyAcceptedAndParseTokenIsAccessAlias() {
-        String token = jwtService.generateAccessToken(user);
+        Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        String token =
+                jwtService.generateSessionAccessToken(
+                        snapshot(), issuedAt, issuedAt.plusSeconds(60));
 
         Jws<Claims> parsed = jwtService.parseAccessToken(token);
 
@@ -97,7 +99,10 @@ class JwtTokenPurposeTest {
 
     @Test
     void accessTokenCannotBeUsedByRefreshParser() {
-        String token = jwtService.generateAccessToken(user);
+        Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        String token =
+                jwtService.generateSessionAccessToken(
+                        snapshot(), issuedAt, issuedAt.plusSeconds(60));
 
         assertThatThrownBy(() -> jwtService.parseRefreshToken(token))
                 .isInstanceOf(RuntimeException.class);
@@ -158,7 +163,13 @@ class JwtTokenPurposeTest {
         assertThat(claims.get("readOnly", Boolean.class)).isFalse();
         assertThat(claims.getIssuedAt()).isEqualTo(Date.from(issuedAt));
         assertThat(claims.getExpiration()).isEqualTo(Date.from(issuedAt.plusSeconds(60)));
-        String legacy = jwtService.generateAccessToken(user);
+        String legacy =
+                signedToken(
+                        JwtService.TOKEN_USE_ACCESS,
+                        Long.toString(USER_ID),
+                        future(),
+                        "STUDENT",
+                        null);
         assertThatThrownBy(() -> jwtService.parseSessionAccessToken(legacy))
                 .isInstanceOf(RuntimeException.class);
     }

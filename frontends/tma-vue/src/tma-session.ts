@@ -339,6 +339,7 @@ export function useTmaSession(options: TmaSessionOptions) {
       {
         currentGeneration,
         accessTokenFor,
+        sessionScopeFor,
         refreshFor: authenticateFor,
       },
       fetcher,
@@ -369,6 +370,7 @@ export function useTmaSession(options: TmaSessionOptions) {
       {
         currentGeneration,
         accessTokenFor,
+        sessionScopeFor,
         refreshFor: authenticateFor,
       },
       fetcher,

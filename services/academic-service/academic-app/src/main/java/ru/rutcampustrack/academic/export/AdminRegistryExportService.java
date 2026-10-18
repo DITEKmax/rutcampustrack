@@ -299,17 +299,20 @@ public class AdminRegistryExportService {
         var claims = context.getClaims();
         var rows =
                 jdbc.query(
-                        "SELECT selector_json AS selector FROM"
-                                + " auth_api.read_export_selector(?,?,?,?,?,?,?,?)",
+                        "SELECT identity->'report'->? AS selector FROM academic_export_jobs"
+                                + " WHERE user_id=? AND identity->'actor'->>'rolesVersion'=?"
+                                + " AND session_id=? AND identity->'actor'->>'sessionVersion'=?"
+                                + " AND job_id=? AND lease_id=? AND identity->'report'->>'kind'=?"
+                                + " AND state='preparing' AND lease_until>NOW() AND expires_at>NOW()",
                         (rs, n) -> rs.getString("selector"),
+                        selector,
                         claims.userId(),
-                        claims.rolesVersion(),
+                        Long.toString(claims.rolesVersion()),
                         claims.sessionId(),
-                        claims.sessionVersion(),
+                        Long.toString(claims.sessionVersion()),
                         jobId,
                         leaseId,
-                        kind,
-                        selector);
+                        kind);
         try {
             if (rows.size() != 1
                     || !mapper.readTree(rows.getFirst()).equals(mapper.valueToTree(query))) {

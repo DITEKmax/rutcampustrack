@@ -438,6 +438,7 @@ message BotOwnHomeworksForWeekRequest {
   int64 expected_roles_version = 3;
   string date_from = 4;
   string date_to = 5;
+  int64 expected_telegram_binding_version = 6; // positive live Auth binding fence
 }
 
 message HomeworksForWeekResponse {

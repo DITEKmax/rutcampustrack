@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.util.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -13,10 +12,13 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.broker.SimpleBrokerMessageHandler;
 import org.springframework.messaging.support.ExecutorSubscribableChannel;
 import org.springframework.messaging.support.MessageBuilder;
+
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 import ru.rutcampustrack.notification.config.WsSessionAdmissionOutboundInterceptor;
 import ru.rutcampustrack.notification.config.WsSessionBindingRegistry;
 import ru.rutcampustrack.notification.config.WsTicketClient;
+
+import java.util.*;
 
 class ExportReadyEventConsumerTest {
     private Map<String, Object> event() {
@@ -25,7 +27,7 @@ class ExportReadyEventConsumerTest {
                         "event_type",
                         "export.state.changed",
                         "source",
-                        "auth-service",
+                        "academic-service",
                         "event_version",
                         1,
                         "event_id",
@@ -73,7 +75,7 @@ class ExportReadyEventConsumerTest {
         var messaging = mock(SimpMessagingTemplate.class);
         var consumer = new ExportReadyEventConsumer(messaging);
         var source = event();
-        source.put("source", "academic-service");
+        source.put("source", "auth-service");
         assertThatThrownBy(() -> consumer.onEvent(source))
                 .isInstanceOf(IllegalArgumentException.class);
         var version = event();

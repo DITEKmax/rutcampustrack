@@ -3,9 +3,11 @@ package ru.rutcampustrack.academic.subjectdeletion;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
@@ -20,13 +22,16 @@ import java.util.Objects;
 public class SubjectDeletionAcademicData {
     private final JdbcTemplate jdbc;
     private final RequestContext context;
+    private final AcademicIdentityReadFence fences;
 
-    public SubjectDeletionAcademicData(JdbcTemplate jdbc, RequestContext context) {
+    public SubjectDeletionAcademicData(
+            JdbcTemplate jdbc, RequestContext context, AcademicIdentityReadFence fences) {
         this.jdbc = jdbc;
         this.context = context;
+        this.fences = fences;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Target target(long subjectId) {
         InternalJwtClaims actor = actor(null);
         var rows =
@@ -49,6 +54,7 @@ public class SubjectDeletionAcademicData {
         return target;
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public InternalJwtClaims actor(Long group) {
         var claims = context.getClaims();
         if (claims == null
@@ -56,24 +62,32 @@ public class SubjectDeletionAcademicData {
                 || !"ACTIVE".equals(claims.status())
                 || !claims.isHeadman()
                 || claims.readOnly()
+                || context.getAdmittedAdminProfile() == null
+                || claims.sessionId() == null
+                || claims.sessionVersion() <= 0
+                || claims.rolesVersion() <= 0
                 || claims.groupId() == null
                 || group != null && !Objects.equals(group, claims.groupId())) throw denied();
+        localActor(claims.userId(), claims.groupId());
+        return claims;
+    }
+
+    void localActor(long user, long group) {
+        fences.requireGroupReadable(group);
+        fences.requireUserReadable(user);
         Boolean active =
                 jdbc.queryForObject(
                         """
-SELECT EXISTS(SELECT 1 FROM groups g JOIN user_role_grants h ON h.group_id=g.id
-    JOIN users u ON u.id=h.user_id
-    WHERE g.id=? AND g.is_active AND h.role='headman' AND h.status='active' AND h.user_id=?
-    AND u.status<>'archived' AND NOT EXISTS(SELECT 1 FROM user_role_grants peer
-        WHERE peer.group_id=g.id AND peer.role='headman' AND peer.status='active' AND peer.user_id<>h.user_id)
-    AND EXISTS(SELECT 1 FROM user_role_grants student WHERE student.user_id=h.user_id
-        AND student.role='student' AND student.status='active' AND student.group_id=g.id))
+SELECT EXISTS(SELECT 1 FROM groups g JOIN academic_role_eligibility h ON h.group_id=g.id
+    JOIN academic_profiles p ON p.id=h.user_id
+    JOIN academic_role_eligibility s ON s.user_id=p.id AND s.role='STUDENT'
+    WHERE g.id=? AND g.is_active AND h.user_id=? AND h.role='HEADMAN' AND h.status='ACTIVE'
+      AND p.archived_at IS NULL AND s.status='ACTIVE' AND s.group_id=g.id)
 """,
                         Boolean.class,
-                        claims.groupId(),
-                        claims.userId());
+                        group,
+                        user);
         if (!Boolean.TRUE.equals(active)) throw denied();
-        return claims;
     }
 
     public void writable(long semester) {
@@ -87,8 +101,20 @@ SELECT EXISTS(SELECT 1 FROM semesters WHERE id=? AND is_active AND NOT is_archiv
                         semester))) throw conflict();
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Snapshot snapshot(Target target) {
+        // A preview checks live local eligibility. An already COMMITTING operation only
+        // revalidates its frozen domain digest so later revocation cannot strand accepted effects.
+        if (target.actor() != null) localActor(target.actor().userId(), target.group());
         long id = target.subject();
+        if (!Boolean.TRUE.equals(
+                jdbc.queryForObject(
+                        "SELECT EXISTS(SELECT 1 FROM subjects WHERE id=? AND semester_id=? AND"
+                            + " group_id=?)",
+                        Boolean.class,
+                        target.subject(),
+                        target.semester(),
+                        target.group()))) throw conflict();
         Boolean invalid =
                 jdbc.queryForObject(
                         """

@@ -23,6 +23,9 @@ public class UserAssembler
     private final UserRoleGrantReader grantReader;
 
     @org.springframework.beans.factory.annotation.Autowired
+    private ru.rutcampustrack.academic.security.RequestContext context;
+
+    @org.springframework.beans.factory.annotation.Autowired
     private ru.rutcampustrack.academic.admin.AcademicAdminAccess adminAccess;
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -53,9 +56,9 @@ public class UserAssembler
                         entity.getGroupId(),
                         entity.isHeadman(),
                         entity.getEmployeeNumber(),
-                        entity.getTelegramId(),
+                        discloseTelegram() ? entity.getTelegramId() : null,
                         entity.getCreatedAt(),
-                        adminAccess.credentials(entity.getId()) ? plainPassword : null);
+                        plainPassword);
         response.setRoles(roleViews(entity));
         response.add(linkTo(methodOn(UserController.class).getUser(entity.getId())).withSelfRel());
         return EntityModel.of(response);
@@ -75,10 +78,21 @@ public class UserAssembler
 
     public UserResponse toResponse(
             User entity, boolean includeInitialPassword, List<RoleGrantViewResponse> roles) {
+        return response(entity, includeInitialPassword, roles, discloseTelegram());
+    }
+
+    public UserResponse toRegistryResponse(
+            User entity, List<RoleGrantViewResponse> roles, boolean full) {
+        return response(entity, false, roles, full);
+    }
+
+    private UserResponse response(
+            User entity,
+            boolean includeInitialPassword,
+            List<RoleGrantViewResponse> roles,
+            boolean discloseTelegram) {
         String initial =
-                (includeInitialPassword
-                                && adminAccess.credentials(entity.getId())
-                                && !entity.isPasswordChanged())
+                (includeInitialPassword && !entity.isPasswordChanged())
                         ? authCommands.initialPassword(entity.getId())
                         : null;
         UserResponse response =
@@ -93,7 +107,7 @@ public class UserAssembler
                         entity.getGroupId(),
                         entity.isHeadman(),
                         entity.getEmployeeNumber(),
-                        entity.getTelegramId(),
+                        discloseTelegram ? entity.getTelegramId() : null,
                         entity.getCreatedAt(),
                         entity.getAvatarId(),
                         initial);
@@ -107,6 +121,18 @@ public class UserAssembler
         return EntityModel.of(
                 response,
                 linkTo(methodOn(UserController.class).getUser(entity.getId())).withSelfRel());
+    }
+
+    public EntityModel<UserResponse> toAdminModel(
+            User entity, List<RoleGrantViewResponse> roles, boolean full) {
+        return EntityModel.of(
+                response(entity, true, roles, full),
+                linkTo(methodOn(UserController.class).getUser(entity.getId())).withSelfRel());
+    }
+
+    private boolean discloseTelegram() {
+        return context.getRole() != ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN
+                || adminAccess.current().full();
     }
 
     private List<RoleGrantViewResponse> roleViews(User entity) {

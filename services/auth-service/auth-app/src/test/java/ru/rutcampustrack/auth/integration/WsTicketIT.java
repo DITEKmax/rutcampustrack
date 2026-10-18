@@ -12,12 +12,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketRequest;
 import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.dto.WsSessionAdmissionRequest;
 import ru.rutcampustrack.auth.dto.WsTicketResponse;
+import ru.rutcampustrack.auth.support.AuthDatabaseFixture;
+
+import java.util.UUID;
 
 class WsTicketIT extends AbstractIntegrationTest {
 
@@ -27,6 +33,7 @@ class WsTicketIT extends AbstractIntegrationTest {
     @Autowired private TestRestTemplate restTemplate;
 
     @Autowired private JdbcTemplate jdbc;
+    @Autowired private PlatformTransactionManager transactionManager;
 
     @Test
     void issueTicket_withValidAccessToken_returnsTicket() {
@@ -111,20 +118,30 @@ class WsTicketIT extends AbstractIntegrationTest {
         String accessToken = loginAndGetAccessToken("student");
         String ticket = issueTicket(accessToken);
         Long userId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = ?", Long.class, "student");
+                jdbc.queryForObject(
+                        "SELECT id FROM auth_identities WHERE login = ?", Long.class, "student");
         String originalStatus =
                 jdbc.queryForObject(
-                        "SELECT status FROM user_role_grants WHERE user_id = ? AND role = 'student'",
+                        "SELECT status FROM user_role_grants WHERE user_id = ? AND role ="
+                                + " 'student'",
                         String.class,
                         userId);
         int changed =
-                jdbc.update(
-                        """
-                UPDATE user_role_grants
-                   SET status = 'suspended', updated_at = CURRENT_TIMESTAMP
-                 WHERE user_id = ? AND role = 'student'
-                """,
-                        userId);
+                new TransactionTemplate(transactionManager)
+                        .execute(
+                                status -> {
+                                    UUID operation = AuthDatabaseFixture.fence(jdbc, userId);
+                                    int updated =
+                                            jdbc.update(
+                                                    """
+UPDATE user_role_grants
+   SET status = 'suspended', updated_at = CURRENT_TIMESTAMP
+ WHERE user_id = ? AND role = 'student'
+""",
+                                                    userId);
+                                    AuthDatabaseFixture.unfence(jdbc, operation, userId);
+                                    return updated;
+                                });
         assertThat(changed).isEqualTo(1);
 
         try {
@@ -144,14 +161,20 @@ class WsTicketIT extends AbstractIntegrationTest {
                             String.class);
             assertThat(secondConsume.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         } finally {
-            jdbc.update(
-                    """
-                    UPDATE user_role_grants
-                       SET status = ?, updated_at = CURRENT_TIMESTAMP
-                     WHERE user_id = ? AND role = 'student'
-                    """,
-                    originalStatus,
-                    userId);
+            new TransactionTemplate(transactionManager)
+                    .executeWithoutResult(
+                            status -> {
+                                UUID operation = AuthDatabaseFixture.fence(jdbc, userId);
+                                jdbc.update(
+                                        """
+                                        UPDATE user_role_grants
+                                           SET status = ?, updated_at = CURRENT_TIMESTAMP
+                                         WHERE user_id = ? AND role = 'student'
+                                        """,
+                                        originalStatus,
+                                        userId);
+                                AuthDatabaseFixture.unfence(jdbc, operation, userId);
+                            });
         }
     }
 

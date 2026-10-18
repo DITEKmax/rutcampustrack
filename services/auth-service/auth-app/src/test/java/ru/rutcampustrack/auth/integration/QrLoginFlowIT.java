@@ -5,10 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -18,10 +15,19 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.auth.dto.*;
 import ru.rutcampustrack.auth.qr.QrLoginCrypto;
 import ru.rutcampustrack.auth.qr.QrLoginPersistence;
 import ru.rutcampustrack.auth.qr.QrLoginProperties;
+import ru.rutcampustrack.auth.support.AuthDatabaseFixture;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Real HTTP security/controller + canonical committed session/receipt/audit transactions +
@@ -35,6 +41,7 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
             "$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi";
     @Autowired TestRestTemplate http;
     @Autowired JdbcTemplate jdbc;
+    @Autowired PlatformTransactionManager transactionManager;
     @Autowired ObjectMapper json;
     @Autowired StringRedisTemplate redis;
     @Autowired QrLoginPersistence persistence;
@@ -45,17 +52,10 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
     @BeforeEach
     void ownUser() throws Exception {
         String login = "qr-" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
-        user =
-                jdbc.queryForObject(
-                        """
-                INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,initial_password,password_changed)
-                VALUES(?,?,'Qr','Boundary','student'::user_role,'active'::account_status,false,'password',false) RETURNING id
-                """,
-                        Long.class,
-                        login,
-                        PASSWORD_HASH);
+        user = AuthDatabaseFixture.identity(jdbc, login, Instant.now(), PASSWORD_HASH, "password");
         jdbc.update(
-                "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES(?,'student','active',NOW(),NOW()),(?,'teacher','active',NOW(),NOW())",
+                "INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
+                    + "VALUES(?,'student','active',1,NOW(),NOW()),(?,'teacher','active',NULL,NOW(),NOW())",
                 user,
                 user);
         ResponseEntity<TokenResponse> loginResponse =
@@ -201,7 +201,7 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
                 .contains("STUDENT", "TEACHER");
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT password_changed FROM users WHERE id=?",
+                                "SELECT password_changed FROM auth_identities WHERE id=?",
                                 Boolean.class,
                                 user))
                 .isFalse();
@@ -364,13 +364,7 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
     void sourceRevocationAndSourceOrTargetAuthorityDriftFenceExchangeAndRecovery()
             throws Exception {
         String neutralLogin = "qr-neutral-" + UUID.randomUUID().toString().substring(0, 12);
-        jdbc.update(
-                """
-                INSERT INTO users(login,password_hash,last_name,first_name,role,status,is_headman,initial_password,password_changed)
-                VALUES(?,?,'Qr','Neutral','student'::user_role,'active'::account_status,false,'password',false)
-                """,
-                neutralLogin,
-                PASSWORD_HASH);
+        AuthDatabaseFixture.identity(jdbc, neutralLogin, Instant.now(), PASSWORD_HASH, "password");
         var neutralLoginResponse =
                 http.postForEntity(
                         "/auth/login",
@@ -429,7 +423,15 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.UNAUTHORIZED);
         Challenge accountRevoked = issue(null);
         confirm(accountRevoked);
-        jdbc.update("UPDATE user_role_grants SET status='archived' WHERE user_id=?", user);
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status -> {
+                            UUID operation = AuthDatabaseFixture.fence(jdbc, user);
+                            jdbc.update(
+                                    "UPDATE user_role_grants SET status='archived' WHERE user_id=?",
+                                    user);
+                            AuthDatabaseFixture.unfence(jdbc, operation, user);
+                        });
         assertThat(post("/auth/qr/exchange", accountRevoked.proof(), null).getStatusCode())
                 .isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(
@@ -446,12 +448,16 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
             throws Exception {
         Challenge challenge = issue(null);
         confirm(challenge);
-        jdbc.execute(
-                "CREATE FUNCTION qr_it_fail_receipt() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN IF NEW.id='"
+        var owner = authFixtureOwnerJdbc();
+        owner.execute(
+                "CREATE FUNCTION qr_it_fail_receipt() RETURNS TRIGGER LANGUAGE plpgsql AS $$ BEGIN"
+                        + " IF NEW.id='"
                         + challenge.proof().challengeId()
-                        + "'::uuid AND NEW.issued_target_sid IS NOT NULL THEN RAISE EXCEPTION 'owned receipt fault'; END IF; RETURN NEW; END $$");
-        jdbc.execute(
-                "CREATE TRIGGER qr_it_receipt_fault BEFORE UPDATE ON qr_login_challenges FOR EACH ROW EXECUTE FUNCTION qr_it_fail_receipt()");
+                        + "'::uuid AND NEW.issued_target_sid IS NOT NULL THEN RAISE EXCEPTION"
+                        + " 'owned receipt fault'; END IF; RETURN NEW; END $$");
+        owner.execute(
+                "CREATE TRIGGER qr_it_receipt_fault BEFORE UPDATE ON qr_login_challenges FOR EACH"
+                        + " ROW EXECUTE FUNCTION qr_it_fail_receipt()");
         try {
             assertThat(post("/auth/qr/exchange", challenge.proof(), null).getStatusCode())
                     .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
@@ -459,13 +465,14 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
             assertThat(qrLogins()).isZero();
             assertThat(
                             jdbc.queryForObject(
-                                    "SELECT issued_target_sid IS NULL FROM qr_login_challenges WHERE id=?",
+                                    "SELECT issued_target_sid IS NULL FROM qr_login_challenges"
+                                            + " WHERE id=?",
                                     Boolean.class,
                                     challenge.proof().challengeId()))
                     .isTrue();
         } finally {
-            jdbc.execute("DROP TRIGGER qr_it_receipt_fault ON qr_login_challenges");
-            jdbc.execute("DROP FUNCTION qr_it_fail_receipt()");
+            owner.execute("DROP TRIGGER qr_it_receipt_fault ON qr_login_challenges");
+            owner.execute("DROP FUNCTION qr_it_fail_receipt()");
         }
         var recovered = post("/auth/qr/exchange", challenge.proof(), null);
         assertThat(recovered.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -474,7 +481,8 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
         assertThatThrownBy(
                         () ->
                                 jdbc.update(
-                                        "UPDATE qr_login_challenges SET issued_at=issued_at-INTERVAL '1 second' WHERE id=?",
+                                        "UPDATE qr_login_challenges SET"
+                                            + " issued_at=issued_at-INTERVAL '1 second' WHERE id=?",
                                         challenge.proof().challengeId()))
                 .isInstanceOf(org.springframework.dao.DataAccessException.class);
         long allSessions = jdbc.queryForObject("SELECT count(*) FROM auth_sessions", Long.class);
@@ -489,9 +497,9 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
                 Timestamp.from(expiredAt.minusSeconds(120)));
         jdbc.update(
                 """
-                INSERT INTO qr_login_challenges(id,issuer_id,purpose,approval_hash,state,browser_label,created_at,expires_at)
-                VALUES(?,?,'LOGIN',?,'EXPIRED','synthetic-expired',?,?)
-                """,
+INSERT INTO qr_login_challenges(id,issuer_id,purpose,approval_hash,state,browser_label,created_at,expires_at)
+VALUES(?,?,'LOGIN',?,'EXPIRED','synthetic-expired',?,?)
+""",
                 oldChallenge,
                 oldIssuer,
                 QrLoginCrypto.hash("synthetic-expired-approval"),
@@ -614,7 +622,8 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
 
     private Session loginOwnUser() throws Exception {
         String login =
-                jdbc.queryForObject("SELECT login FROM users WHERE id=?", String.class, user);
+                jdbc.queryForObject(
+                        "SELECT login FROM auth_identities WHERE id=?", String.class, user);
         var result =
                 http.postForEntity(
                         "/auth/login", new LoginRequest(login, "password"), TokenResponse.class);
@@ -640,7 +649,8 @@ class QrLoginFlowIT extends AbstractIntegrationTest {
 
     private long qrLogins() {
         return jdbc.queryForObject(
-                "SELECT count(*) FROM account_security_events WHERE user_id=? AND auth_method='QR' AND event_type='LOGIN'",
+                "SELECT count(*) FROM account_security_events WHERE user_id=? AND auth_method='QR'"
+                        + " AND event_type='LOGIN'",
                 Long.class,
                 user);
     }

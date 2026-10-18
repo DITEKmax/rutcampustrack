@@ -225,6 +225,102 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         return new Verification(true, receipt);
     }
 
+    /** Security receipt only: Academic owns subject/group eligibility and local admission. */
+    @Transactional
+    public ru.rutcampustrack.authsecurity.grpc.SubjectDeletionReceipt receipt(
+            String token, Binding binding, UUID receipt) {
+        return receipt(authorize(token, binding), binding, receipt);
+    }
+
+    private ru.rutcampustrack.authsecurity.grpc.SubjectDeletionReceipt receipt(
+            Actor actor, Binding binding, UUID receipt) {
+        var expiry =
+                jdbc.query(
+                        """
+SELECT expires_at FROM subject_deletion_proofs
+WHERE receipt_id=? AND consumed_at IS NOT NULL AND operation_id=? AND subject_id=? AND semester_id=? AND group_id=?
+  AND preview_digest=? AND actor_id=? AND session_id=? AND session_version=? AND roles_version=?
+  AND credentials_version=? AND binding_version=? AND telegram_id=? AND expires_at>?
+""",
+                        (rs, n) -> rs.getTimestamp(1).toInstant(),
+                        receipt,
+                        binding.operationId(),
+                        binding.subjectId(),
+                        binding.semesterId(),
+                        binding.groupId(),
+                        binding.previewDigest(),
+                        actor.userId(),
+                        actor.sid(),
+                        actor.sv(),
+                        actor.rv(),
+                        actor.credentials(),
+                        actor.binding(),
+                        actor.telegram(),
+                        Timestamp.from(clock.instant()));
+        if (expiry.size() != 1) throw denied();
+        return ru.rutcampustrack.authsecurity.grpc.SubjectDeletionReceipt.newBuilder()
+                .setReceiptId(receipt.toString())
+                .setBinding(
+                        ru.rutcampustrack.authsecurity.grpc.SubjectDeletionBinding.newBuilder()
+                                .setSubjectId(binding.subjectId())
+                                .setSemesterId(binding.semesterId())
+                                .setGroupId(binding.groupId())
+                                .setOperationId(binding.operationId().toString())
+                                .setPreviewDigest(binding.previewDigest()))
+                .setActor(
+                        ru.rutcampustrack.authsecurity.grpc.StoredSessionIdentity.newBuilder()
+                                .setUserId(actor.userId())
+                                .setSessionId(actor.sid().toString())
+                                .setSessionVersion(actor.sv())
+                                .setRolesVersion(actor.rv())
+                                .setRole("HEADMAN")
+                                .setStatus("ACTIVE")
+                                .setGroupId(binding.groupId())
+                                .setIsHeadman(true))
+                .setCredentialsVersion(actor.credentials())
+                .setTelegramBindingVersion(actor.binding())
+                .setTelegramId(actor.telegram())
+                .setExpiresAt(expiry.getFirst().toString())
+                .build();
+    }
+
+    /** Fixed accepted proof continuation; never creates or accepts a synthetic user bearer. */
+    @Transactional
+    public ru.rutcampustrack.authsecurity.grpc.SubjectDeletionReceipt storedReceipt(
+            Binding binding, UUID receipt) {
+        validateBinding(binding);
+        if (receipt == null) throw denied();
+        // Read immutable proof identity first, then the canonical identity -> session locks.
+        // Final exact proof check below compares current CV/BV/TG and expiry as well.
+        var owners =
+                jdbc.query(
+                        """
+SELECT actor_id,session_id,session_version,roles_version FROM subject_deletion_proofs
+ WHERE receipt_id=? AND consumed_at IS NOT NULL AND operation_id=? AND subject_id=?
+ AND semester_id=? AND group_id=? AND preview_digest=? AND expires_at>?
+""",
+                        (rs, n) ->
+                                new SessionPrincipal(
+                                        rs.getLong(1),
+                                        rs.getObject(2, UUID.class),
+                                        rs.getLong(3),
+                                        rs.getLong(4),
+                                        AuthRole.HEADMAN,
+                                        RoleStatus.ACTIVE,
+                                        binding.groupId(),
+                                        true,
+                                        false),
+                        receipt,
+                        binding.operationId(),
+                        binding.subjectId(),
+                        binding.semesterId(),
+                        binding.groupId(),
+                        binding.previewDigest(),
+                        Timestamp.from(clock.instant()));
+        if (owners.size() != 1) throw denied();
+        return receipt(authorize(owners.getFirst(), binding), binding, receipt);
+    }
+
     private void append(ru.rutcampustrack.auth.event.DomainEvent event) {
         if (!org.springframework.transaction.support.TransactionSynchronizationManager
                 .isActualTransactionActive()) throw unavailable();
@@ -241,7 +337,21 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     }
 
     private Actor authorize(String token, Binding b) {
-        SessionPrincipal principal = parse(token);
+        return authorize(parse(token), b);
+    }
+
+    private static void validateBinding(Binding b) {
+        if (b == null
+                || b.subjectId() <= 0
+                || b.semesterId() <= 0
+                || b.groupId() <= 0
+                || b.operationId() == null
+                || b.previewDigest() == null
+                || !b.previewDigest().matches("[0-9a-f]{64}")) throw denied();
+    }
+
+    private Actor authorize(SessionPrincipal principal, Binding b) {
+        validateBinding(b);
         if (principal.selectedRole() != AuthRole.HEADMAN
                 || principal.selectedStatus() != RoleStatus.ACTIVE
                 || !principal.headman()
@@ -251,7 +361,8 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 jdbc.query(
                         "SELECT"
                             + " password_hash,credentials_version,telegram_binding_version,telegram_id"
-                            + " FROM users WHERE id=? AND status<>'archived' FOR UPDATE",
+                            + " FROM auth_identities WHERE id=? AND account_state='ACTIVE' AND"
+                            + " fence_operation_id IS NULL FOR UPDATE",
                         (rs, i) ->
                                 new User(
                                         rs.getString(1),
@@ -260,12 +371,6 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                         rs.getObject(4, Long.class)),
                         principal.userId());
         if (users.size() != 1) throw denied();
-        var groups =
-                jdbc.query(
-                        "SELECT is_active FROM auth_api.lock_group_state(?)",
-                        (rs, i) -> rs.getBoolean(1),
-                        b.groupId());
-        if (groups.size() != 1 || !groups.getFirst()) throw denied();
         jdbc.query(
                 "SELECT sid FROM auth_sessions WHERE sid=? AND user_id=? FOR UPDATE",
                 (rs, i) -> rs.getObject(1),
@@ -291,14 +396,6 @@ VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                         Boolean.class,
                         principal.userId(),
                         b.groupId()))) throw denied();
-        if (!Boolean.TRUE.equals(
-                jdbc.queryForObject(
-                        "SELECT EXISTS(SELECT 1 FROM subjects WHERE id=? AND group_id=? AND"
-                                + " semester_id=?)",
-                        Boolean.class,
-                        b.subjectId(),
-                        b.groupId(),
-                        b.semesterId()))) throw denied();
         User user = users.getFirst();
         if (user.telegram() == null || user.telegram() <= 0 || user.passwordHash() == null)
             throw denied();

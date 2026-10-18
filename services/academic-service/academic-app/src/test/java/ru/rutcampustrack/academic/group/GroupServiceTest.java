@@ -12,11 +12,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import java.lang.reflect.Field;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +23,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
+
 import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
@@ -43,6 +40,12 @@ import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
+
+import java.lang.reflect.Field;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Unit tests for GroupService and Group DTO validation.
@@ -71,6 +74,61 @@ class GroupServiceTest {
 
     @BeforeEach
     void setUpValidator() {
+        // These unit tests isolate the unchanged domain writer after an accepted lifecycle scope.
+        // Coordinator/own-DB tests cover real admission and durable guards separately.
+        var jdbc =
+                org.mockito.Mockito.mock(
+                        org.springframework.jdbc.core.JdbcTemplate.class,
+                        invocation -> {
+                            if (invocation.getMethod().getName().equals("queryForObject")
+                                    && invocation.getArgument(1) == Boolean.class)
+                                return ((String) invocation.getArgument(0))
+                                        .contains("o.phase='AUTH_INVALIDATED'");
+                            if (invocation.getMethod().getName().equals("update")) return 1;
+                            return org.mockito.Answers.RETURNS_DEFAULTS.answer(invocation);
+                        });
+        groupService.setAvailabilityJdbc(
+                jdbc,
+                new ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence(jdbc));
+        var availability =
+                org.mockito.Mockito.mock(
+                        ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService
+                                .class);
+        @SuppressWarnings("unchecked")
+        org.springframework.beans.factory.ObjectProvider<
+                        ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService>
+                provider =
+                        org.mockito.Mockito.mock(
+                                org.springframework.beans.factory.ObjectProvider.class);
+        lenient().when(provider.getObject()).thenReturn(availability);
+        lenient().when(provider.getIfAvailable()).thenReturn(availability);
+        groupService.setAvailability(provider);
+        var operation = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001");
+        lenient()
+                .when(availability.updateGroup(org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenAnswer(
+                        invocation -> {
+                            long id = invocation.getArgument(0);
+                            UpdateGroupRequest request = invocation.getArgument(1);
+                            return request.active()
+                                    ? groupService.applyOrdinaryUpdate(id, request)
+                                    : groupService.applyAvailabilityUpdate(
+                                            id,
+                                            request,
+                                            2026,
+                                            requestContext.getUserId(),
+                                            operation);
+                        });
+        org.mockito.Mockito.lenient()
+                .doAnswer(
+                        invocation -> {
+                            long id = invocation.getArgument(0);
+                            if (groupService.validateAvailabilityRestore(id))
+                                groupService.applyAvailabilityRestore(id, operation);
+                            return null;
+                        })
+                .when(availability)
+                .restoreGroup(org.mockito.ArgumentMatchers.anyLong());
         Semester activeSemester = new Semester();
         activeSemester.setDateFrom(LocalDate.of(2026, 9, 1));
         activeSemester.setDateTo(LocalDate.of(2027, 1, 31));
@@ -393,11 +451,11 @@ class GroupServiceTest {
                             return null;
                         })
                 .when(archivalService)
-                .archiveByActor(existing, actorUserId);
+                .archiveByActor(existing, 2026, actorUserId);
 
         groupService.updateGroup(81L, new UpdateGroupRequest("УИТ-311", false));
 
-        verify(archivalService).archiveByActor(existing, actorUserId);
+        verify(archivalService).archiveByActor(existing, 2026, actorUserId);
         assertThat(existing.isActive()).isFalse();
         assertThat(existing.getName()).isEqualTo("УИТ-311 (выпуск 2026)");
         assertThat(existing.getAlphabeticCode()).isEqualTo("УИТ");

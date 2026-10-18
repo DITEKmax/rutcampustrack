@@ -1,7 +1,9 @@
 package ru.rutcampustrack.academic.grpc;
 
 import io.grpc.*;
+
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor;
+
 import org.springframework.beans.factory.annotation.Value;
 
 /**
@@ -22,6 +24,17 @@ public class GrpcAuthInterceptor implements ServerInterceptor {
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+
+        String method =
+                call == null || call.getMethodDescriptor() == null
+                        ? ""
+                        : call.getMethodDescriptor().getFullMethodName();
+        if (ru.rutcampustrack.academic.botread.AcademicBotReadServiceIdentityInterceptor.admitted(
+                        method)
+                || ru.rutcampustrack.academic.identitypresentation
+                        .IdentityPresentationServiceIdentityInterceptor.admitted(method)) {
+            return next.startCall(call, headers);
+        }
 
         if (expectedSecret != null && !expectedSecret.isBlank()) {
             String provided = headers.get(SECRET_KEY);

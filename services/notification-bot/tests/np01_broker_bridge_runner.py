@@ -32,6 +32,7 @@ from bot.consumers.event_consumer import DLQ_QUEUE_NAME, QUEUE_NAME, start_consu
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.bot_credentials_client import BotCredentialsGrpcClient
+from bot.grpc_client.bot_menu_client import BotMenuGrpcClient
 from bot.handlers.start import start_router
 from bot.services.bot_credential_cards import BotCredentialCards
 from bot.services.idempotency_guard import BotIdempotencyGuard
@@ -263,6 +264,14 @@ async def supervisor():
     fixtures = json.loads(os.environ["NP01_FIXTURES"])
     own, foreign = fixtures["own"], fixtures["foreign"]
     generic, protected = clients()
+    auth_host, auth_port = os.environ["NP01_AUTH_SERVICE_AUTHORITY"].rsplit(":", 1)
+    menu = BotMenuGrpcClient(
+        auth_host,
+        int(auth_port),
+        tls_enabled=True,
+        tls_ca_path=os.environ["NP01_AUTH_SERVICE_CA"],
+        service_token=os.environ["NP01_AUTH_SERVICE_TOKEN"],
+    )
     redis = redis_client()
     guard = BotIdempotencyGuard(redis_client=redis)  # Observation only; no claim/complete writes here.
     child = observer = provider_runner = bot = None
@@ -391,7 +400,12 @@ async def supervisor():
                 context={"bot": bot},
             )
             await dispatcher.feed_update(
-                bot, update, academic_client=generic, prefs_client=SimpleNamespace(), credential_cards=cards
+                bot,
+                update,
+                academic_client=generic,
+                prefs_client=SimpleNamespace(),
+                credential_cards=cards,
+                bot_menu_client=menu,
             )
 
         async def observed_ack(event_id, previous_ack):
@@ -652,6 +666,7 @@ async def supervisor():
                 provider.delete_gate.set()
             if observer is not None:
                 await observer.close()
+            await menu.close()
             await generic.close()
             await protected.close()
             await redis.aclose()

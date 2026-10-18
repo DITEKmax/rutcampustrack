@@ -4,6 +4,7 @@ from bot.handlers.late_checkin import late_checkin_router
 from bot.handlers.login import login_router
 from bot.handlers.password_reset import password_reset_router
 from bot.handlers.prefs import prefs_router
+from bot.handlers.role_reads import role_reads_router
 from bot.handlers.start import start_router
 from bot.handlers.status import status_router
 
@@ -13,6 +14,7 @@ __all__ = [
     "login_router",
     "password_reset_router",
     "status_router",
+    "role_reads_router",
     "prefs_router",
     "late_checkin_router",
     "excuse_router",

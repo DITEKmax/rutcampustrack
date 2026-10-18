@@ -1,7 +1,8 @@
-# S19 boundary protocol — DRAFT / independent review pending
+# S19 boundary protocol — accepted source boundaries / runtime pending
 
 Target/GO: TASK-ADDENDUM-SPLIT-APPS-20261018.md. VariantБ owner-approved; this
-engineering contract is source-level design, not implemented/runtime acceptance.
+engineering contract has independently reviewed source implementations; Group
+whole-cycle continuation is finishing. Source acceptance is not runtime acceptance.
 Base26c. Auth/sharedproto writer s19_boundary; Academic writer s19_academic;
 BotPython s19_bot; directed BotRead producer s19_bot_producer; reviewer s19_review.
 Root soleintegration/docs. No cross-owner SQL/shared users/FDW as final state.
@@ -77,6 +78,36 @@ strong lostresponse replay requires caller supplied stable Idempotency-Key. Do n
 payload-dedupe identical names/optionalTG legitimate creates. Actual PWA/TMA per-intent
 keys preserve unknownoutcome recovery; never blind retry with a newUUID.
 
+Definite local preflight failure reserves an immutable negative receipt under the
+same operationUUID advisory lock as positive acceptance, exact actor/API intent.
+It blocks delayed acceptance; a positive winner returns its actual state. A missing
+GET receipt or generic409 is not evidence of rejection. Group preflight must also
+terminate its new key K before returning a selector for an older failed operation O.
+Unknown RPC/DB outcomes remain recoverable, never inferred rejected by the client.
+
+## Group availability / credential-reader invalidation
+
+Academic installs durable group/headman guards before selecting an immutable ordered
+manifest; ANY guard row denies the affected read scope, without phase filtering.
+Only the current eligible HEADMAN credential-reader rolesVersion is invalidated;
+ordinary students/teachers are not an all-user fanout. Auth prepares one multi-group
+command and locks identities in order, bumps RV once, then Academic applies the
+whole accepted manual cycle/group change locally. RPC never spans Academic locks.
+Auth commit rechecks the accepted actor/security tuple and exact local receipt,
+publishes the catalog without another RV bump. Failed-safe retains local guards;
+fresh currently authorized reconcile uses the same immutable command and staged
+effect, with history/outbox once. RejectUnprepared uses the same UUID lock.
+
+Existing all-group manual cycle semantics remain; no arbitrary cycle-count cap.
+Semester transition identity is durably guarded across RPC gaps; lock order is
+semester transition family, then groups, then profiles, consistent with deletion.
+Ordinary successful group DTO/204 stays compatible; pending202 returns operation
+status/header/Location. Explicit POST identity-operations/{failedUUID}/reconcile
+has no body, a new stable key and OperationStatus200/202; current GROUPS_MANAGE
+can inspect an automatic Group operation without widening other ledger ownership.
+The opaque failed UUID is a selector, not authority. UI confirms FAILED_SAFE by
+current GET before offering recovery, then refreshes authoritative registry data.
+
 ## Transport / consumers
 
 Additive proto/auth_authority.proto; existing academic/subject deletion wire numbers
@@ -134,6 +165,27 @@ Current Auth authority + fresh local report eligibility rechecked at claim/compl
 download; final CAS publishes artifact. Recheck after bytes where applicable.
 Lost202/navigation/reconnect/crash/retry resolve the same durable job, not replacement.
 1..64weekStarts validation preserved; prove2x18week and a short distinct validperiod.
+
+## Current recovery boundary (source implementation, runtime pending)
+
+User FAILED_SAFE requires explicit fresh RECONCILE; never auto-unfence or resend the
+original command blindly. Additive own ledger links immutable root intent and a
+single active successor; atomically transfer ALL fences under group→profile→operation
+locks. Unknown Auth outcome retains fences. Confirmed negative tombstone returns
+them atomically. Staged effects get fresh receipts/RV only; unstaged effects apply
+once. Preserve originating local admission capability, assigned CREATE UID/credentials,
+sticky archive danger and fresh proof bound to the new UUID. S3 design GO is not
+implementation acceptance. Canonical HTTP seam41688487: directed reconcile-preview
+for ARCHIVE; existing reconcile POST optional archive body, others/group empty.
+Same-key accepted replay precedes preview/password. UI retains scoped nonsecret
+recovery reference and confirms current status before explicit recovery.
+
+Dashboard publication capture runs only after committed SUCCEEDED/guard release,
+using existing pending CHANGE and REQUIRES_NEW; failure keeps the durable marker.
+Assistant RPC uses live Auth pre/post outside local RR; pending local fence takes
+precedence over definitive Auth denial. Both source-reviewed; runtime NOT_RUN.
+Existing map/semester password-confirm HTTP compatibility stays: Auth own security
+checks, Academic own eligibility/digest/receipt; no transport-only rewrite.
 
 ## Required changed-risk proof / implementation order
 

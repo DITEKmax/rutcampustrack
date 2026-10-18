@@ -428,27 +428,15 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
     @ResourceLock("java.util.Locale.default")
     void enumDatabaseAndHttpBoundaryRemainCanonicalUnderTurkishLocale() {
         Locale previous = Locale.getDefault();
-        UUID sessionId = null;
         try {
             Locale.setDefault(Locale.forLanguageTag("tr-TR"));
             var admin = users.findById(ADMIN_ID).orElseThrow();
             assertThat(admin.getRole()).isEqualTo(UserRole.ADMIN);
             assertThat(admin.getStatus()).isEqualTo(AccountStatus.ACTIVE);
-            long rolesVersion =
-                    jdbcTemplate.queryForObject(
-                            "SELECT roles_version FROM users WHERE id = ?", Long.class, ADMIN_ID);
-            sessionId = AcademicTestAdminRequest.selectedSession(jdbcTemplate, ADMIN_ID, 1L);
-            String token =
-                    internalJwtTestFactory.validToken(
-                            ADMIN_ID,
-                            sessionId,
-                            1L,
-                            rolesVersion,
-                            "ADMIN",
-                            "ACTIVE",
-                            null,
-                            false,
-                            false);
+            var selected =
+                    identityFixture.select(
+                            ADMIN_ID, ru.rutcampustrack.auth.session.model.AuthRole.ADMIN);
+            String token = selected.internalToken();
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-Internal-Token", token);
             SoftAssertions localeEquality = new SoftAssertions();
@@ -479,9 +467,6 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
             localeEquality.assertAll();
         } finally {
             Locale.setDefault(previous);
-            if (sessionId != null) {
-                jdbcTemplate.update("DELETE FROM auth_sessions WHERE sid = ?", sessionId);
-            }
         }
     }
 

@@ -82,7 +82,14 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
 
     @Autowired private CacheManager cacheManager;
 
+    @Autowired private ru.rutcampustrack.academic.grpc.AcademicReadService academicReads;
+
     @Autowired private UserService userService;
+
+    @Autowired private ru.rutcampustrack.academic.user.UserArchiveService archiveService;
+
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private ru.rutcampustrack.academic.grpc.AttendanceUserImpactGrpcClient archiveImpact;
 
     @Autowired private GroupService groupService;
 
@@ -473,34 +480,54 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
 
     /**
      * CACHE-02 / USER-ARCHIVE: archiveUser evicts the users cache for that user. After eviction,
-     * the next GetUserById call must hit the DB again. Uses a dedicated test user (not seed data)
-     * to isolate mutation effects.
+     * the next cached profile read must hit the DB again. Uses a dedicated test user (not seed
+     * data) to isolate mutation effects.
      */
     @Test
     void archiveUser_invalidatesUsersCache() {
-        // Create a dedicated test user (active student, no group)
+        var admin =
+                identityFixture.select(
+                        identityFixture.canonical().adminId(),
+                        ru.rutcampustrack.auth.session.model.AuthRole.ADMIN);
         Long testUserId =
-                jdbcTemplate.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role,"
-                            + " status, is_headman, password_changed, created_at, updated_at)"
-                            + " VALUES ('cache_archive_test',"
-                            + " '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi',"
-                            + " 'Cache', 'ArchiveTest', 'student', 'active', false, false, NOW(),"
-                            + " NOW()) RETURNING id",
-                        Long.class);
-
-        UserRequest request = UserRequest.newBuilder().setUserId(testUserId).build();
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Cache",
+                                        "ArchiveTest",
+                                        null,
+                                        UserRole.STUDENT,
+                                        identityFixture.canonical().groupId(),
+                                        null,
+                                        900000000444L),
+                                admin)
+                        .userId();
+        org.mockito.Mockito.when(archiveImpact.preview(testUserId))
+                .thenReturn(
+                        ru.rutcampustrack.attendance.grpc.UserImpactSnapshot.newBuilder()
+                                .setUserId(testUserId)
+                                .setObservedAtEpochMs(System.currentTimeMillis())
+                                .setSnapshotDigest("33".repeat(32))
+                                .build());
 
         // Prime the cache
-        stub.getUserById(request);
+        academicReads.fetchUserById(testUserId);
         String userCacheKey = cachePrefix(cacheManager, "users") + testUserId;
         assertThat(redisTemplate.hasKey(userCacheKey)).isTrue();
 
-        userService.archiveUser(testUserId);
+        UUID operation = UUID.randomUUID();
+        try (var ignored = identityFixture.request(admin, operation)) {
+            var preview = archiveService.preview(testUserId);
+            assertThat(preview.requiresPassword()).isFalse();
+            archiveService.archive(
+                    testUserId,
+                    new ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels
+                            .ArchiveRequest(operation, preview.previewDigest(), null));
+        }
         assertThat(redisTemplate.hasKey(userCacheKey)).isFalse();
 
-        // Next gRPC call repopulates cache
-        stub.getUserById(request);
+        // The existing Spring cache proxy repopulates the profile key.
+        academicReads.fetchUserById(testUserId);
         assertThat(redisTemplate.hasKey(userCacheKey)).isTrue();
     }
 

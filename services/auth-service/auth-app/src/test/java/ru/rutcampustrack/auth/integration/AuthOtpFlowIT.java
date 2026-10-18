@@ -5,20 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.time.Instant;
-import java.util.HexFormat;
-import java.time.Clock;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +37,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.RabbitMQContainer;
+
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
@@ -58,8 +46,24 @@ import ru.rutcampustrack.auth.event.AuthOutboxPublisherJob;
 import ru.rutcampustrack.auth.events.EventSchemaValidator;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
+import ru.rutcampustrack.auth.support.AuthDatabaseFixture;
 import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * M09 G2 (08 P0-2) — AuthOtpFlowIT.
@@ -72,8 +76,8 @@ import ru.rutcampustrack.shared.outbox.OutboxStorage;
  *   <li>RabbitMQ получает {@code otp.requested} event с тем же кодом
  * </ol>
  *
- * <p>Uses the canonical auth integration fixture (Academic V1..V24 + Redis) and adds RabbitMQ for
- * the real OTP and password-change event assertions.
+ * <p>Uses the isolated Auth-only integration fixture plus Redis, and adds RabbitMQ for the real OTP
+ * and password-change event assertions.
  */
 @TestPropertySource(
         properties = {
@@ -126,7 +130,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         if (keys != null && !keys.isEmpty()) redisTemplate.delete(keys);
 
         Long userId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
+                jdbc.queryForObject(
+                        "SELECT id FROM auth_identities WHERE login = 'student'", Long.class);
         jdbc.update(
                 "DELETE FROM auth_outbox WHERE payload -> 'payload' ->> 'telegram_id' = ?",
                 Long.toString(TELEGRAM_ID));
@@ -142,7 +147,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                         Long.class,
                         userId);
         jdbc.update(
-                "UPDATE users SET password_hash = ?, password_changed = false, "
+                "UPDATE auth_identities SET password_hash = ?, password_changed = false, "
                         + "initial_password = NULL, telegram_id = ? WHERE id = ?",
                 PASSWORD_HASH,
                 TELEGRAM_ID,
@@ -234,7 +239,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             for (long userId : List.of(changeUser, resetUser)) {
                 assertThat(
                                 jdbc.queryForObject(
-                                        "SELECT initial_password IS NOT NULL AND NOT password_changed FROM users WHERE id = ?",
+                                        "SELECT initial_password IS NOT NULL AND NOT"
+                                            + " password_changed FROM auth_identities WHERE id = ?",
                                         Boolean.class,
                                         userId))
                         .isTrue();
@@ -341,7 +347,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
             List<Object> resetBefore = unicodePasswordState(resetUser);
             assertThat(
                             jdbc.queryForObject(
-                                    "SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ? AND used_at IS NULL",
+                                    "SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ?"
+                                            + " AND used_at IS NULL",
                                     Integer.class,
                                     resetUser))
                     .isEqualTo(1);
@@ -377,7 +384,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                     resetUser, seventyTwoBytes, "\uD83D\uDE00".repeat(17) + "ac1!");
             assertThat(
                             jdbc.queryForObject(
-                                    "SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ? AND used_at IS NOT NULL",
+                                    "SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ?"
+                                            + " AND used_at IS NOT NULL",
                                     Integer.class,
                                     resetUser))
                     .isEqualTo(1);
@@ -703,7 +711,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         Map<String, Object> changedIdentity =
                 jdbc.queryForMap(
                         "SELECT id, credentials_version, telegram_binding_version, telegram_id "
-                                + "FROM users WHERE login = 'student'");
+                                + "FROM auth_identities WHERE login = 'student'");
         var changedFields = new java.util.HashSet<String>();
         changedPayload.fieldNames().forEachRemaining(changedFields::add);
         assertThat(changedFields)
@@ -732,8 +740,9 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(changedPayload.has("code")).isFalse();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT COUNT(*) FROM account_security_events WHERE user_id = "
-                                        + "(SELECT id FROM users WHERE login = 'student') AND event_type = 'PASSWORD_CHANGED'",
+                                "SELECT COUNT(*) FROM account_security_events WHERE user_id ="
+                                    + " (SELECT id FROM auth_identities WHERE login = 'student')"
+                                    + " AND event_type = 'PASSWORD_CHANGED'",
                                 Long.class))
                 .isEqualTo(passwordChangedEventCountBeforeTest + 1);
         assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
@@ -805,7 +814,7 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         Map<String, Object> storedIdentity =
                 jdbc.queryForMap(
                         "SELECT id, credentials_version, telegram_binding_version, telegram_id "
-                                + "FROM users WHERE login = 'student'");
+                                + "FROM auth_identities WHERE login = 'student'");
         var storedFields = new java.util.HashSet<String>();
         storedPayload.fieldNames().forEachRemaining(storedFields::add);
         assertThat(storedFields)
@@ -830,7 +839,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
 
         // Age must not expire an undelivered intent.
         jdbc.update(
-                "UPDATE auth_outbox SET created_at = NOW() - INTERVAL '8 days' WHERE status = 'pending'");
+                "UPDATE auth_outbox SET created_at = NOW() - INTERVAL '8 days' WHERE status ="
+                        + " 'pending'");
         new TransactionTemplate(transactionManager)
                 .executeWithoutResult(
                         status ->
@@ -849,7 +859,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                                         (type, payload) -> {
                                             outboxSender.send(type, payload);
                                             throw new IllegalStateException(
-                                                    "simulated process loss after broker confirmation");
+                                                    "simulated process loss after broker"
+                                                            + " confirmation");
                                         }))
                 .isInstanceOf(IllegalStateException.class);
         assertThat(outboxStorage.countPending()).isEqualTo(1);
@@ -948,16 +959,19 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     void passwordResetVerifyRejectsNaturallyExpiredAndConsumedChallengesWithoutMutation()
             throws Exception {
         long userId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
+                jdbc.queryForObject(
+                        "SELECT id FROM auth_identities WHERE login = 'student'", Long.class);
         // Sensitive snapshots remain in memory; assertion failures expose booleans only.
         java.util.function.Supplier<List<Object>> protectedState =
                 () ->
                         List.of(
                                 jdbc.queryForList(
-                                        "SELECT password_hash, password_changed, initial_password FROM users WHERE id = ?",
+                                        "SELECT password_hash, password_changed, initial_password"
+                                                + " FROM auth_identities WHERE id = ?",
                                         userId),
                                 jdbc.queryForList(
-                                        "SELECT * FROM auth_sessions WHERE user_id = ? ORDER BY sid",
+                                        "SELECT * FROM auth_sessions WHERE user_id = ? ORDER BY"
+                                                + " sid",
                                         userId));
         java.util.function.Supplier<List<Map<String, Object>>> tickets =
                 () ->
@@ -1027,7 +1041,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(objectMapper.valueToTree(protectedState.get()).equals(originalState)).isTrue();
         assertThat(objectMapper.valueToTree(tickets.get()).equals(originalTickets)).isTrue();
         System.out.printf(
-                "OTP_CHALLENGE_EXPIRY ttlSeconds=%d elapsedMs=%d keysAbsent=true httpStatus=410 code=OTP_EXPIRED stateUnchanged=true ticketDelta=0%n",
+                "OTP_CHALLENGE_EXPIRY ttlSeconds=%d elapsedMs=%d keysAbsent=true httpStatus=410"
+                        + " code=OTP_EXPIRED stateUnchanged=true ticketDelta=0%n",
                 ttlSeconds, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - requestedAt));
 
         // Cooldown has naturally elapsed. A fresh valid verify is only the consume precondition.
@@ -1082,7 +1097,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(objectMapper.valueToTree(protectedState.get()).equals(originalState)).isTrue();
         assertThat(objectMapper.valueToTree(tickets.get()).equals(consumedTickets)).isTrue();
         System.out.println(
-                "OTP_CHALLENGE_REUSE codeConsumed=true ownerAndUserLive=true httpStatus=410 code=OTP_EXPIRED stateUnchanged=true ticketDelta=0");
+                "OTP_CHALLENGE_REUSE codeConsumed=true ownerAndUserLive=true httpStatus=410"
+                        + " code=OTP_EXPIRED stateUnchanged=true ticketDelta=0");
     }
 
     @Test
@@ -1131,22 +1147,28 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         TokenResponse admin = loginAdmin();
         for (String login : List.of("student", "teacher")) {
             long id =
-                    jdbc.queryForObject("SELECT id FROM users WHERE login = ?", Long.class, login);
+                    jdbc.queryForObject(
+                            "SELECT id FROM auth_identities WHERE login = ?", Long.class, login);
             List<Map<String, Object>> identityBefore =
                     jdbc.queryForList(
-                            "SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY id",
+                            "SELECT role, status, group_id FROM user_role_grants WHERE user_id = ?"
+                                    + " ORDER BY id",
                             id);
             jdbc.update(
-                    "UPDATE users SET telegram_id = NULL, password_hash = ? WHERE id = ?",
+                    "UPDATE auth_identities SET telegram_id = NULL, password_hash = ? WHERE id = ?",
                     PASSWORD_HASH,
                     id);
             TokenResponse old = loginUser(login, "password");
             String beforeHash =
                     jdbc.queryForObject(
-                            "SELECT password_hash FROM users WHERE id = ?", String.class, id);
+                            "SELECT password_hash FROM auth_identities WHERE id = ?",
+                            String.class,
+                            id);
             String beforeStatus =
                     jdbc.queryForObject(
-                            "SELECT status::text FROM users WHERE id = ?", String.class, id);
+                            "SELECT account_state FROM auth_identities WHERE id = ?",
+                            String.class,
+                            id);
             try {
                 // The public no-Telegram request still gives only an indistinguishable challenge.
                 ResponseEntity<JsonNode> decoy =
@@ -1170,14 +1192,15 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 assertThat(ticket).matches("[A-Za-z0-9_-]{43}");
                 assertThat(
                                 jdbc.queryForObject(
-                                        "SELECT token_hash FROM password_reset_tokens WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+                                        "SELECT token_hash FROM password_reset_tokens WHERE user_id"
+                                                + " = ? ORDER BY id DESC LIMIT 1",
                                         String.class,
                                         id))
                         .hasSize(64)
                         .isNotEqualTo(ticket);
                 assertThat(
                                 jdbc.queryForObject(
-                                        "SELECT password_hash FROM users WHERE id = ?",
+                                        "SELECT password_hash FROM auth_identities WHERE id = ?",
                                         String.class,
                                         id))
                         .isEqualTo(beforeHash);
@@ -1211,20 +1234,25 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 assertThat(loginUser(login, "AdminRecoveryPassword42!").accessToken()).isNotBlank();
                 assertThat(
                                 jdbc.queryForObject(
-                                        "SELECT status::text FROM users WHERE id = ?",
+                                        "SELECT account_state FROM auth_identities WHERE id = ?",
                                         String.class,
                                         id))
                         .isEqualTo(beforeStatus);
                 assertThat(
                                 jdbc.queryForList(
-                                        "SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY id",
+                                        "SELECT role, status, group_id FROM user_role_grants WHERE"
+                                                + " user_id = ? ORDER BY id",
                                         id))
                         .isEqualTo(identityBefore);
                 assertThat(rabbitTemplate.receive(TEST_QUEUE, 100)).isNull();
             } finally {
-                jdbc.update("UPDATE users SET password_hash = ? WHERE id = ?", PASSWORD_HASH, id);
                 jdbc.update(
-                        "UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' WHERE user_id = ? AND revoked_at IS NULL",
+                        "UPDATE auth_identities SET password_hash = ? WHERE id = ?",
+                        PASSWORD_HASH,
+                        id);
+                jdbc.update(
+                        "UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason ="
+                                + " 'SECURITY_REVOKED' WHERE user_id = ? AND revoked_at IS NULL",
                         id);
                 jdbc.update("DELETE FROM password_reset_tokens WHERE user_id = ?", id);
             }
@@ -1235,7 +1263,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
     @Timeout(value = 20, unit = TimeUnit.SECONDS)
     void adminRecoveryRejectsWrongRoleRevokedSessionAndExpiredTicket() {
         long targetId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = 'student'", Long.class);
+                jdbc.queryForObject(
+                        "SELECT id FROM auth_identities WHERE login = 'student'", Long.class);
         TokenResponse student = loginStudent("password");
         assertThat(issueAdminRecovery(student.accessToken(), targetId).getStatusCode())
                 .isEqualTo(HttpStatus.FORBIDDEN);
@@ -1250,7 +1279,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         assertThat(issued.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         String ticket = recoveryTicket(issued.getBody().path("url").asText());
         jdbc.update(
-                "UPDATE password_reset_tokens SET expires_at = NOW() - INTERVAL '1 second' WHERE user_id = ?",
+                "UPDATE password_reset_tokens SET expires_at = NOW() - INTERVAL '1 second' WHERE"
+                        + " user_id = ?",
                 targetId);
         assertThat(
                         restTemplate
@@ -1266,8 +1296,9 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.GONE);
         assertThat(bearerSessionStatus(student.accessToken())).isEqualTo(HttpStatus.OK);
         jdbc.update(
-                "UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' "
-                        + "WHERE user_id = (SELECT id FROM users WHERE login = 'admin') AND revoked_at IS NULL");
+                "UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED'"
+                    + " WHERE user_id = (SELECT id FROM auth_identities WHERE login = 'admin') AND"
+                    + " revoked_at IS NULL");
         ResponseEntity<JsonNode> denied = issueAdminRecovery(admin.accessToken(), targetId);
         assertThat(denied.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(denied.getHeaders().getCacheControl().split("\\s*,\\s*"))
@@ -1296,21 +1327,20 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                         .execute(
                                 status -> {
                                     Long id =
-                                            jdbc.queryForObject(
-                                                    """
-                    INSERT INTO users (login, password_hash, last_name, first_name, role, status,
-                        is_headman, initial_password, password_changed, telegram_id, created_at, updated_at)
-                    VALUES (?, ?, 'Unicode', 'Boundary', CAST('student' AS user_role),
-                        CAST('active' AS account_status), FALSE, 'password', FALSE, ?, NOW(), NOW())
-                    RETURNING id
-                    """,
-                                                    Long.class,
+                                            AuthDatabaseFixture.identity(
+                                                    jdbc,
                                                     login,
+                                                    Instant.now(),
                                                     PASSWORD_HASH,
-                                                    telegramId);
+                                                    "password");
                                     jdbc.update(
-                                            "INSERT INTO user_role_grants (user_id, role, status, created_at, updated_at) "
-                                                    + "VALUES (?, 'student', 'active', NOW(), NOW())",
+                                            "UPDATE auth_identities SET telegram_id=? WHERE id=?",
+                                            telegramId,
+                                            id);
+                                    jdbc.update(
+                                            "INSERT INTO user_role_grants (user_id, role, status,"
+                                                + " group_id, created_at, updated_at) VALUES (?,"
+                                                + " 'student', 'active', 1, NOW(), NOW())",
                                             id);
                                     return id;
                                 });
@@ -1322,26 +1352,22 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         new TransactionTemplate(transactionManager)
                 .executeWithoutResult(
                         status -> {
-                            jdbc.queryForObject(
-                                    "SELECT id FROM users WHERE id = ? FOR UPDATE",
-                                    Long.class,
-                                    userId);
+                            UUID operation = AuthDatabaseFixture.fence(jdbc, userId);
                             assertThat(
                                             jdbc.update(
-                                                    "INSERT INTO admin_access_profiles (user_id, assigned, mode, permissions, version) "
-                                                            + "VALUES (?, TRUE, 'FULL', '{}', 1)",
+                                                    "INSERT INTO admin_access_profiles (user_id,"
+                                                        + " assigned, mode, permissions, version)"
+                                                        + " VALUES (?, TRUE, 'FULL', '{}', 1)",
                                                     userId))
                                     .isEqualTo(1);
                             assertThat(
                                             jdbc.update(
-                                                    "UPDATE user_role_grants SET role = 'admin', updated_at = NOW() WHERE user_id = ?",
+                                                    "UPDATE user_role_grants SET role = 'admin',"
+                                                        + " group_id=NULL, updated_at = NOW() WHERE"
+                                                        + " user_id = ?",
                                                     userId))
                                     .isEqualTo(1);
-                            assertThat(
-                                            jdbc.update(
-                                                    "UPDATE users SET role = CAST('admin' AS user_role), roles_version = roles_version + 1, updated_at = NOW() WHERE id = ?",
-                                                    userId))
-                                    .isEqualTo(1);
+                            AuthDatabaseFixture.unfence(jdbc, operation, userId);
                         });
     }
 
@@ -1459,13 +1485,13 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         // Admission may update last_seen_at; failed-attempt audit/counters remain permitted.
         return List.of(
                 jdbc.queryForList(
-                        "SELECT password_hash, initial_password, password_changed, credentials_version "
-                                + "FROM users WHERE id = ?",
+                        "SELECT password_hash, initial_password, password_changed,"
+                                + " credentials_version FROM auth_identities WHERE id = ?",
                         userId),
                 jdbc.queryForList(
-                        "SELECT sid, active_role_grant_id, session_version, current_refresh_jti, "
-                                + "previous_refresh_jti, refresh_expires_at, revoked_at, revoke_reason "
-                                + "FROM auth_sessions WHERE user_id = ? ORDER BY sid",
+                        "SELECT sid, active_role_grant_id, session_version, current_refresh_jti,"
+                            + " previous_refresh_jti, refresh_expires_at, revoked_at, revoke_reason"
+                            + " FROM auth_sessions WHERE user_id = ? ORDER BY sid",
                         userId),
                 jdbc.queryForList(
                         "SELECT * FROM password_reset_tokens WHERE user_id = ? ORDER BY id",
@@ -1475,21 +1501,25 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                                 + "AND event_type = 'PASSWORD_CHANGED' ORDER BY id",
                         userId),
                 jdbc.queryForList(
-                        "SELECT id, event_type, payload, created_at FROM auth_outbox WHERE event_type = 'password.changed' "
-                                + "AND payload -> 'payload' ->> 'user_id' = ? ORDER BY id",
+                        "SELECT id, event_type, payload, created_at FROM auth_outbox WHERE"
+                                + " event_type = 'password.changed' AND payload -> 'payload' ->>"
+                                + " 'user_id' = ? ORDER BY id",
                         Long.toString(userId)));
     }
 
     private void assertUnicodePasswordCommitted(long userId, String exact, String different) {
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT initial_password IS NULL AND password_changed FROM users WHERE id = ?",
+                                "SELECT initial_password IS NULL AND password_changed FROM"
+                                        + " auth_identities WHERE id = ?",
                                 Boolean.class,
                                 userId))
                 .isTrue();
         String hash =
                 jdbc.queryForObject(
-                        "SELECT password_hash FROM users WHERE id = ?", String.class, userId);
+                        "SELECT password_hash FROM auth_identities WHERE id = ?",
+                        String.class,
+                        userId);
         BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
         assertThat(
                         hash != null
@@ -1499,7 +1529,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                 .isTrue();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT COUNT(*) FROM auth_sessions WHERE user_id = ? AND revoked_at IS NULL",
+                                "SELECT COUNT(*) FROM auth_sessions WHERE user_id = ? AND"
+                                        + " revoked_at IS NULL",
                                 Integer.class,
                                 userId))
                 .isZero();
@@ -1531,7 +1562,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
 
     private void assertUnicodePasswordLoginDenied(String login, String password) {
         long userId =
-                jdbc.queryForObject("SELECT id FROM users WHERE login = ?", Long.class, login);
+                jdbc.queryForObject(
+                        "SELECT id FROM auth_identities WHERE login = ?", Long.class, login);
         List<Object> before = unicodePasswordState(userId);
         ResponseEntity<JsonNode> response =
                 restTemplate.postForEntity(
@@ -1560,7 +1592,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
                         .executeWithoutResult(
                                 status -> {
                                     jdbc.update(
-                                            "DELETE FROM auth_outbox WHERE payload -> 'payload' ->> 'user_id' = ?",
+                                            "DELETE FROM auth_outbox WHERE payload -> 'payload' ->>"
+                                                    + " 'user_id' = ?",
                                             Long.toString(userId));
                                     jdbc.update(
                                             "DELETE FROM password_reset_tokens WHERE user_id = ?",
@@ -1607,9 +1640,8 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
 
     private int activeSessionCount() {
         return jdbc.queryForObject(
-                "SELECT COUNT(*) FROM auth_sessions "
-                        + "WHERE user_id = (SELECT id FROM users WHERE login = 'student') "
-                        + "AND revoked_at IS NULL",
+                "SELECT COUNT(*) FROM auth_sessions WHERE user_id = (SELECT id FROM auth_identities"
+                        + " WHERE login = 'student') AND revoked_at IS NULL",
                 Integer.class);
     }
 

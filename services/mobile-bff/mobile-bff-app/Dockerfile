@@ -33,7 +33,7 @@ RUN java -Djarmode=layertools -jar app.jar extract
 
 # Stage 3: Non-root runtime
 FROM eclipse-temurin:21-jre-alpine
-RUN addgroup -S app && adduser -S app -G app
+RUN addgroup -S -g 10007 app && adduser -S -u 10007 app -G app
 WORKDIR /app
 
 COPY --from=extractor /app/dependencies/ ./

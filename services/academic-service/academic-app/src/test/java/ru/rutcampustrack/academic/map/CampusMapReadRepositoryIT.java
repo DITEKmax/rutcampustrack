@@ -18,7 +18,9 @@ import static ru.rutcampustrack.academic.map.CampusMapReadModels.PlanResult;
 
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.parallel.Execution;
@@ -26,6 +28,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -34,7 +37,10 @@ import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture;
 import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.lang.reflect.InvocationHandler;
@@ -76,7 +82,7 @@ import javax.sql.DataSource;
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.SAME_THREAD)
-class CampusMapReadRepositoryIT {
+class CampusMapReadRepositoryIT extends AbstractAcademicIntegrationTest {
 
     private static final UUID SESSION_ID = UUID.fromString("55555555-5555-4555-8555-555555555555");
     private static final long USER_ID = 100L;
@@ -102,7 +108,10 @@ class CampusMapReadRepositoryIT {
                     .withPassword("rct_dev_pass");
 
     private JdbcTemplate adminJdbc;
-    private final java.util.Map<String, DriverManagerDataSource> currentAuthorityDatabases =
+    @Autowired private DataSource currentAcademicDataSource;
+    @Autowired private ru.rutcampustrack.academic.admin.AcademicAdminAccess liveAdminAccess;
+    private AcademicIdentityIntegrationFixture.RequestScope currentAdminRequest;
+    private final java.util.Map<String, DataSource> currentAuthorityDatabases =
             new java.util.HashMap<>();
 
     @BeforeAll
@@ -114,6 +123,20 @@ class CampusMapReadRepositoryIT {
     @AfterAll
     void stopContainer() {
         POSTGRES.stop();
+    }
+
+    @BeforeEach
+    void admitCurrentDeletionAdministrator() {
+        var admin = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        currentAdminRequest = identityFixture.request(admin, null);
+    }
+
+    @AfterEach
+    void closeCurrentDeletionAdministrator() {
+        if (currentAdminRequest != null) {
+            currentAdminRequest.close();
+            currentAdminRequest = null;
+        }
     }
 
     @Test
@@ -228,6 +251,7 @@ class CampusMapReadRepositoryIT {
     void adminLifecycleDeletesAllVersionsAndUsageWithBoundReplayAndPreservesAnotherFloor() {
         String schema = newSchema();
         migrateDeletion(schema);
+        long ownerId = identityFixture.canonical().adminId();
         var admin = adminHarness(schema);
         var building =
                 admin.createBuilding(
@@ -313,12 +337,12 @@ class CampusMapReadRepositoryIT {
         var request =
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(
                         UUID.randomUUID(), preview.previewDigest(), "password");
-        assertThat(deletion.delete(preview.targetType(), floorId, USER_ID, request).status())
+        assertThat(deletion.delete(preview.targetType(), floorId, ownerId, request).status())
                 .isEqualTo("COMPLETED");
-        assertThat(deletion.delete(preview.targetType(), floorId, USER_ID, request).status())
+        assertThat(deletion.delete(preview.targetType(), floorId, ownerId, request).status())
                 .isEqualTo("COMPLETED");
         assertThatThrownBy(
-                        () -> deletion.delete(preview.targetType(), floorId, USER_ID + 1, request))
+                        () -> deletion.delete(preview.targetType(), floorId, ownerId + 1, request))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
         for (String table :
                 List.of(
@@ -362,7 +386,7 @@ class CampusMapReadRepositoryIT {
         deletion.delete(
                 otherPreview.targetType(),
                 Long.parseLong(other.id()),
-                USER_ID,
+                ownerId,
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(
                         UUID.randomUUID(), otherPreview.previewDigest(), "password"));
         var empty =
@@ -373,7 +397,7 @@ class CampusMapReadRepositoryIT {
         deletion.delete(
                 empty.targetType(),
                 buildingId,
-                USER_ID,
+                ownerId,
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(
                         UUID.randomUUID(), empty.previewDigest(), "password"));
         assertThat(admin.listBuildings()).isEmpty();
@@ -482,6 +506,7 @@ VALUES (?,?,?,?,?,?,?,?)
     void planTargetClearPreservesHistoryUsageAndReplaysAgainstOriginalIdentity() {
         String schema = newSchema();
         migrateDeletion(schema);
+        long ownerId = identityFixture.canonical().adminId();
         var db = jdbc(schema);
         var source = dataSourceForSchema(schema);
         var admin =
@@ -533,10 +558,10 @@ VALUES (?,?,?,?,?,?,?,?)
                         UUID.randomUUID(),
                         preview.previewDigest(),
                         "synthetic");
-        long confirmed = deletion.planConfirmationTarget(USER_ID, request);
+        long confirmed = deletion.planConfirmationTarget(ownerId, request);
         db.update(
                 "UPDATE campus_map_floor_daily_demand SET open_count=8 WHERE floor_id=?", floorId);
-        assertThat(deletion.deletePlan(confirmed, USER_ID, request).status())
+        assertThat(deletion.deletePlan(confirmed, ownerId, request).status())
                 .isEqualTo("COMPLETED");
         var successor = admin.getPlanTarget("91", "2").floor();
         assertThat(successor.currentPlan().png().state().name()).isEqualTo("absent");
@@ -550,7 +575,7 @@ VALUES (?,?,?,?,?,?,?,?)
                                         original.png().id())
                                 .content())
                 .containsExactly(uploadPng());
-        assertThat(deletion.deletePlan(confirmed, USER_ID, request).status())
+        assertThat(deletion.deletePlan(confirmed, ownerId, request).status())
                 .isEqualTo("COMPLETED");
         assertThatThrownBy(
                         () ->
@@ -558,7 +583,7 @@ VALUES (?,?,?,?,?,?,?,?)
                                         ru.rutcampustrack.academic.contract.dto.map
                                                 .CampusMapAdminModels.DeletionTarget.FLOOR,
                                         confirmed,
-                                        USER_ID,
+                                        ownerId,
                                         new ru.rutcampustrack.academic.contract.dto.map
                                                 .CampusMapAdminModels.DeleteRequest(
                                                 request.operationId(),
@@ -577,8 +602,8 @@ VALUES (?,?,?,?,?,?,?,?)
                         "synthetic");
         assertThat(
                         deletion.deletePlan(
-                                        deletion.planConfirmationTarget(USER_ID, clear),
-                                        USER_ID,
+                                        deletion.planConfirmationTarget(ownerId, clear),
+                                        ownerId,
                                         clear)
                                 .status())
                 .isEqualTo("COMPLETED");
@@ -591,7 +616,7 @@ VALUES (?,?,?,?,?,?,?,?)
                 .isEqualTo(2L);
         var replaced = admin.uploadPlan("91", "2", "После снятия", png, null).plan();
         assertThat(replaced.version()).isEqualTo("3");
-        assertThat(deletion.deletePlan(confirmed, USER_ID, clear).status()).isEqualTo("COMPLETED");
+        assertThat(deletion.deletePlan(confirmed, ownerId, clear).status()).isEqualTo("COMPLETED");
         assertThat(admin.getPlanTarget("91", "2").floor().currentPlan().version()).isEqualTo("3");
         admin.updateFloor(
                 original.floorId(),
@@ -599,15 +624,15 @@ VALUES (?,?,?,?,?,?,?,?)
                         .UpdateInventoryRequest("3", "Переименован"));
         var reused = admin.uploadPlan("91", "2", null, png, null).plan();
         assertThat(reused.floorId()).isNotEqualTo(original.floorId());
-        assertThat(deletion.planConfirmationTarget(USER_ID, clear)).isEqualTo(confirmed);
-        assertThat(deletion.deletePlan(confirmed, USER_ID, clear).status()).isEqualTo("COMPLETED");
+        assertThat(deletion.planConfirmationTarget(ownerId, clear)).isEqualTo(confirmed);
+        assertThat(deletion.deletePlan(confirmed, ownerId, clear).status()).isEqualTo("COMPLETED");
         assertThat(admin.getPlanTarget("91", "2").floor().currentPlan()).isNotNull();
-        assertThatThrownBy(() -> deletion.planConfirmationTarget(USER_ID + 1, clear))
+        assertThatThrownBy(() -> deletion.planConfirmationTarget(ownerId + 1, clear))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
         assertThatThrownBy(
                         () ->
                                 deletion.planConfirmationTarget(
-                                        USER_ID,
+                                        ownerId,
                                         new ru.rutcampustrack.academic.contract.dto.map
                                                 .CampusMapAdminModels.PlanDeleteRequest(
                                                 "91",
@@ -623,6 +648,7 @@ VALUES (?,?,?,?,?,?,?,?)
     void planTargetStalePreviewAndReceiptFailureKeepPointerAndHistory() {
         String schema = newSchema();
         migrateDeletion(schema);
+        long ownerId = identityFixture.canonical().adminId();
         var db = jdbc(schema);
         var admin = adminHarness(schema);
         var png =
@@ -640,9 +666,9 @@ VALUES (?,?,?,?,?,?,?,?)
                         "92", "1", null, UUID.randomUUID(), preview.previewDigest(), "synthetic");
         long floor = Long.parseLong(original.floorId());
         // The Auth target was resolved before a concurrent replacement.
-        long confirmed = deletion.planConfirmationTarget(USER_ID, stale);
+        long confirmed = deletion.planConfirmationTarget(ownerId, stale);
         admin.uploadPlan("92", "1", null, png, null);
-        assertThatThrownBy(() -> deletion.deletePlan(confirmed, USER_ID, stale))
+        assertThatThrownBy(() -> deletion.deletePlan(confirmed, ownerId, stale))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
         assertThat(admin.getPlanTarget("92", "1").floor().currentPlan().version()).isEqualTo("2");
         var refreshed = deletion.previewPlan("92", "1", null);
@@ -669,7 +695,7 @@ VALUES (?,?,?,?,?,?,?,?)
                                     }
                                 });
         org.springframework.test.util.ReflectionTestUtils.setField(fault, "adminAccess", authority);
-        assertThatThrownBy(() -> fault.deletePlan(floor, USER_ID, request))
+        assertThatThrownBy(() -> fault.deletePlan(floor, ownerId, request))
                 .isInstanceOf(IllegalStateException.class);
         assertThat(admin.getPlanTarget("92", "1").floor().currentPlan().version()).isEqualTo("2");
         assertThat(
@@ -694,72 +720,20 @@ VALUES (?,?,?,?,?,?,?,?)
                 original.floorId(),
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
                         .UpdateInventoryRequest("1", "Первый"));
-        assertThatThrownBy(() -> deletion.deletePlan(floor, USER_ID, request))
+        assertThatThrownBy(() -> deletion.deletePlan(floor, ownerId, request))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
     }
 
     private ru.rutcampustrack.academic.admin.AcademicAdminAccess activityAdminAuthority(
             JdbcTemplate db) {
-        // The existing constructor-only deletion harness predates the current
-        // ADMIN authority. Keep the real guard and give this V52 scenario a
-        // persisted synthetic FULL grant and live selected-role session.
-        if (db.queryForObject(
-                        "SELECT count(*) FROM admin_access_profiles WHERE user_id=?",
-                        Long.class,
-                        USER_ID)
-                == 0) {
-            db.update(
-                    "INSERT INTO users(id,login,last_name,first_name) VALUES (?, 'activity-admin',"
-                            + " 'Synthetic', 'Admin')",
-                    USER_ID);
-            db.update(
-                    "INSERT INTO admin_access_profiles(user_id,assigned,mode,version) VALUES"
-                            + " (?,TRUE,'FULL',1)",
-                    USER_ID);
-            Long grant =
-                    db.queryForObject(
-                            """
-                            INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
-                            VALUES (?,'admin','active',NOW(),NOW()) RETURNING id
-                            """,
-                            Long.class,
-                            USER_ID);
-            db.update(
-                    """
-INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
-    refresh_expires_at,created_at,last_seen_at,auth_method)
-VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
-""",
-                    SESSION_ID,
-                    USER_ID,
-                    grant,
-                    UUID.randomUUID());
-        }
-        var context = new ru.rutcampustrack.academic.security.RequestContext();
-        context.setUserId(USER_ID);
-        context.setRole(ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN);
-        context.setClaims(
-                new InternalJwtClaims(
-                        USER_ID,
-                        SESSION_ID,
-                        1,
-                        db.queryForObject(
-                                "SELECT roles_version FROM users WHERE id=?", Long.class, USER_ID),
-                        "ADMIN",
-                        "ACTIVE",
-                        null,
-                        false,
-                        false));
-        return new ru.rutcampustrack.academic.admin.AcademicAdminAccess(
-                new ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority(db),
-                context,
-                db);
+        return liveAdminAccess;
     }
 
     @Test
     void stalePreviewAndMidDeleteFailureLeavePublishedPlanAndBytesIntact() {
         String schema = newSchema();
         migrateDeletion(schema);
+        long ownerId = identityFixture.canonical().adminId();
         var admin = adminHarness(schema);
         var building =
                 admin.createBuilding(
@@ -786,7 +760,7 @@ VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
                                 deletion.delete(
                                         preview.targetType(),
                                         floorId,
-                                        USER_ID,
+                                        ownerId,
                                         new ru.rutcampustrack.academic.contract.dto.map
                                                 .CampusMapAdminModels.DeleteRequest(
                                                 UUID.randomUUID(),
@@ -816,7 +790,7 @@ VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
         var request =
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeleteRequest(
                         operation, refreshed.previewDigest(), "password");
-        assertThatThrownBy(() -> fault.delete(preview.targetType(), floorId, USER_ID, request))
+        assertThatThrownBy(() -> fault.delete(preview.targetType(), floorId, ownerId, request))
                 .isInstanceOf(IllegalStateException.class);
         assertThat(admin.listFloors(building.id()).get(0).currentPlan().version()).isEqualTo("2");
         assertThat(admin.downloadAsset(floor.id(), "1", "png", plan.png().id()).content())
@@ -834,7 +808,7 @@ VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
                                                 "DELETE FROM campus_map_asset WHERE id = ?",
                                                 Long.parseLong(plan.png().id())))
                 .isInstanceOf(org.springframework.dao.DataAccessException.class);
-        assertThat(deletion.delete(preview.targetType(), floorId, USER_ID, request).status())
+        assertThat(deletion.delete(preview.targetType(), floorId, ownerId, request).status())
                 .isEqualTo("COMPLETED");
     }
 
@@ -843,6 +817,7 @@ VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
             throws Exception {
         String schema = newSchema();
         migrateDeletion(schema);
+        long ownerId = identityFixture.canonical().adminId();
         var admin = adminHarness(schema);
         var building =
                 admin.createBuilding(
@@ -889,7 +864,16 @@ VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
         try {
             var removed =
                     pool.submit(
-                            () -> deletion.delete(preview.targetType(), floorId, USER_ID, request));
+                            () -> {
+                                var selected =
+                                        identityFixture.select(
+                                                identityFixture.canonical().adminId(),
+                                                AuthRole.ADMIN);
+                                try (var ignored = identityFixture.request(selected, null)) {
+                                    return deletion.delete(
+                                            preview.targetType(), floorId, ownerId, request);
+                                }
+                            });
             assertThat(deleting.await(10, TimeUnit.SECONDS)).isTrue();
             var replacement = pool.submit(() -> admin.uploadVersion(floor.id(), null, png, null));
             awaitAdvisoryWait(schema);
@@ -1299,12 +1283,9 @@ VALUES (?,?,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
     }
 
     private void migrateDeletion(String schema) {
-        // Only current deletion/admission cases need the complete public/auth_api authority.
-        // Historical V26 read and V54 activity migrations still use their original schemas.
-        currentAuthorityDatabases.put(
-                schema,
-                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.freshPublicDatabase(
-                        POSTGRES));
+        // Current deletion fixtures share the actual split app's Academic runtime database.
+        // Historical V26/V54 proofs retain their original isolated schema/container path.
+        currentAuthorityDatabases.put(schema, currentAcademicDataSource);
     }
 
     private CampusMapAdminService adminHarness(String schema) {
@@ -1866,7 +1847,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, %s)
         return new JdbcTemplate(dataSourceForSchema(schema));
     }
 
-    private DriverManagerDataSource dataSourceForSchema(String schema) {
+    private DataSource dataSourceForSchema(String schema) {
         if (schema != null && currentAuthorityDatabases.containsKey(schema))
             return currentAuthorityDatabases.get(schema);
         DriverManagerDataSource dataSource = new DriverManagerDataSource();

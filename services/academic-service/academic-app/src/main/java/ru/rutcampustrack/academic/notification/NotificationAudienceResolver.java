@@ -1,23 +1,32 @@
 package ru.rutcampustrack.academic.notification;
 
 import io.grpc.Status;
+
+import jakarta.persistence.EntityManager;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import ru.rutcampustrack.academic.assignment.TeacherAssignmentReadAuthority;
+import ru.rutcampustrack.academic.assistant.AssistantPermissionAuthority;
+import ru.rutcampustrack.academic.contract.enums.SubjectType;
+import ru.rutcampustrack.academic.grpc.*;
+import ru.rutcampustrack.academic.history.HistoricalMembershipService;
+import ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence;
+import ru.rutcampustrack.academic.repository.*;
+
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.assignment.TeacherAssignmentReadAuthority;
-import ru.rutcampustrack.academic.assistant.AssistantPermissionAuthority;
-import ru.rutcampustrack.academic.contract.enums.AccountStatus;
-import ru.rutcampustrack.academic.contract.enums.SubjectType;
-import ru.rutcampustrack.academic.grpc.*;
-import ru.rutcampustrack.academic.history.HistoricalMembershipService;
-import ru.rutcampustrack.academic.repository.*;
-import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 
-/** Closed business catalogue + live authority, from one repeatable-read database snapshot. */
+/**
+ * Closed business catalogue; local eligibility and fresh Auth recipient data are composed
+ * explicitly.
+ */
 @Service
 public class NotificationAudienceResolver {
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
@@ -25,35 +34,61 @@ public class NotificationAudienceResolver {
     private final UserRepository users;
     private final GroupRepository groups;
     private final SubjectRepository subjects;
-    private final UserRoleGrantRepository grants;
     private final HeadmanAssistantRepository assistants;
     private final AssistantPermissionAuthority helperAuthority;
     private final TeacherAssignmentReadAuthority teacherAuthority;
-    private final AdminAccessJdbcAuthority adminAuthority;
+    private final JdbcTemplate jdbc;
+    private final AcademicIdentityReadFence fences;
+    private final NotificationAudienceAuthority authority;
+    private final TransactionTemplate snapshot;
+    private final EntityManager entities;
 
     public NotificationAudienceResolver(
             HistoricalMembershipService membership,
             UserRepository users,
             GroupRepository groups,
             SubjectRepository subjects,
-            UserRoleGrantRepository grants,
             HeadmanAssistantRepository assistants,
             AssistantPermissionAuthority helperAuthority,
             TeacherAssignmentReadAuthority teacherAuthority,
-            AdminAccessJdbcAuthority adminAuthority) {
+            JdbcTemplate jdbc,
+            AcademicIdentityReadFence fences,
+            NotificationAudienceAuthority authority,
+            PlatformTransactionManager transactions,
+            EntityManager entities) {
         this.membership = membership;
         this.users = users;
         this.groups = groups;
         this.subjects = subjects;
-        this.grants = grants;
         this.assistants = assistants;
         this.helperAuthority = helperAuthority;
         this.teacherAuthority = teacherAuthority;
-        this.adminAuthority = adminAuthority;
+        this.jdbc = jdbc;
+        this.fences = fences;
+        this.authority = authority;
+        this.entities = entities;
+        this.snapshot = new TransactionTemplate(transactions);
+        snapshot.setReadOnly(true);
+        snapshot.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
     }
 
-    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public NotificationAudienceResponse resolve(NotificationAudienceRequest request) {
+        // Reject malformed closed-envelope input before any remote dependency is needed.
+        policy(request.getEventType());
+        try {
+            if (!UUID.fromString(request.getRequestId()).toString().equals(request.getRequestId()))
+                throw new IllegalArgumentException();
+            OffsetDateTime.parse(request.getOccurredAt());
+        } catch (RuntimeException malformed) {
+            throw invalid("request_id and occurred_at must be canonical UUID/ISO timestamp");
+        }
+        return authority.resolve(() -> snapshot.execute(ignored -> collect(request)));
+    }
+
+    private NotificationAudienceAuthority.LocalSnapshot collect(
+            NotificationAudienceRequest request) {
+        // Both captures must query their own RR snapshot, including when an HTTP open-EM exists.
+        entities.clear();
         boolean decided =
                 Set.of("excuse.decided", "late_checkin.decided").contains(request.getEventType());
         if (decided
@@ -109,6 +144,12 @@ public class NotificationAudienceResolver {
                                 .orElseThrow(() -> invalid("unknown group"))
                                 .isActive();
 
+        var watchedGroups = new TreeSet<Long>();
+        if (request.hasGroupId()) watchedGroups.add(request.getGroupId());
+        request.getLessonScopesList().forEach(scope -> watchedGroups.add(scope.getGroupId()));
+        watchedGroups.forEach(fences::requireGroupReadable);
+        if (policy.adminPermission() != null && !policy.personalAdmin())
+            fences.requireRegistryReadable();
         Map<Long, SortedSet<String>> recipients = new TreeMap<>();
         long affected = request.hasAffectedUserId() ? request.getAffectedUserId() : -1;
         if (policy.students()) {
@@ -134,14 +175,12 @@ public class NotificationAudienceResolver {
                 if (user != affected
                         && helperAuthority.allowsRecipient(
                                 user, request.getGroupId(), policy.helperPermission()))
-                    add(recipients, user, "STUDENT");
+                    addIfActive(recipients, user, "STUDENT");
             }
         }
         if (policy.personal()) {
             if (policy.personalAdmin()) {
-                if (policy.adminPermission() == null
-                        || adminAllows(affected, policy.adminPermission()))
-                    addIfActive(recipients, affected, "ADMIN");
+                addIfActive(recipients, affected, "ADMIN");
             } else addIfActive(recipients, affected, "STUDENT");
         }
         if (policy.teacher())
@@ -179,38 +218,82 @@ public class NotificationAudienceResolver {
                     addIfActive(recipients, teacher, "TEACHER");
             }
         if (policy.adminPermission() != null && !policy.personalAdmin()) {
-            for (var grant : grants.findByRoleAndStatus("admin", "active"))
-                if (adminAllows(grant.getUserId(), policy.adminPermission()))
-                    addIfActive(recipients, grant.getUserId(), "ADMIN");
+            // This caught-up index enumerates candidates only. Auth decides their current
+            // recipient grants/profile after the local transaction has ended.
+            for (long user :
+                    jdbc.queryForList(
+                            "SELECT user_id FROM academic_identity_read_model_grants"
+                                    + " WHERE role='ADMIN' AND status='ACTIVE' ORDER BY user_id",
+                            Long.class)) addIfActive(recipients, user, "ADMIN");
         }
-        var response =
-                NotificationAudienceResponse.newBuilder()
-                        .setRequestId(request.getRequestId())
-                        .setEventType(request.getEventType());
-        recipients.forEach(
-                (user, roles) ->
-                        response.addRecipients(
-                                NotificationAudienceRecipient.newBuilder()
-                                        .setUserId(user)
-                                        .addAllRoles(roles)));
-        return response.build();
-    }
-
-    private boolean adminAllows(long user, String permission) {
-        if (users.findById(user).isEmpty()
-                || grants.findByUserIdAndRoleAndStatus(user, "admin", "active").isEmpty())
-            return false;
-        return adminAuthority.profile(user).allows(permission);
+        var profiles = new TreeMap<Long, NotificationAudienceAuthority.ProfileStamp>();
+        for (long user : recipients.keySet()) {
+            fences.requireUserReadable(user);
+            var stamp =
+                    jdbc.queryForObject(
+                            "SELECT academic_revision,applied_auth_roles_version FROM"
+                                    + " academic_profiles WHERE id=?",
+                            (rs, row) ->
+                                    new NotificationAudienceAuthority.ProfileStamp(
+                                            rs.getLong("academic_revision"),
+                                            rs.getLong("applied_auth_roles_version"),
+                                            Map.of()),
+                            user);
+            if (stamp == null) throw NotificationAudienceAuthority.unavailable();
+            var roleGroups = new TreeMap<String, Long>();
+            jdbc.query(
+                    "SELECT role,group_id FROM academic_role_eligibility WHERE user_id=?"
+                            + " AND status='ACTIVE'",
+                    rs -> {
+                        long group = rs.getLong("group_id");
+                        Long selectedGroup = rs.wasNull() ? 0L : group;
+                        roleGroups.put(rs.getString("role"), selectedGroup);
+                    },
+                    user);
+            profiles.put(
+                    user,
+                    new NotificationAudienceAuthority.ProfileStamp(
+                            stamp.academicRevision(), stamp.authRolesVersion(), roleGroups));
+            watchedGroups.addAll(
+                    jdbc.queryForList(
+                            "SELECT group_id FROM academic_role_eligibility WHERE user_id=?"
+                                    + " AND status='ACTIVE' AND group_id IS NOT NULL",
+                            Long.class,
+                            user));
+        }
+        var revisions = new TreeMap<Long, Long>();
+        for (long group : watchedGroups) {
+            fences.requireGroupReadable(group);
+            Long revision =
+                    jdbc.queryForObject(
+                            "SELECT academic_revision FROM groups WHERE id=?", Long.class, group);
+            if (revision == null || revision <= 0)
+                throw NotificationAudienceAuthority.unavailable();
+            revisions.put(group, revision);
+        }
+        return new NotificationAudienceAuthority.LocalSnapshot(
+                request.getRequestId(),
+                request.getEventType(),
+                recipients,
+                profiles,
+                revisions,
+                policy.adminPermission());
     }
 
     private void addIfActive(Map<Long, SortedSet<String>> recipients, long user, String role) {
-        if (user > 0
-                && users.findById(user)
-                        .filter(account -> account.getStatus() != AccountStatus.ARCHIVED)
-                        .isPresent()
-                && !grants.findByUserIdAndRoleAndStatus(
-                                user, role.toLowerCase(Locale.ROOT), "active")
-                        .isEmpty()) add(recipients, user, role);
+        if (user <= 0) return;
+        fences.requireUserReadable(user);
+        Boolean eligible =
+                jdbc.queryForObject(
+                        "SELECT EXISTS(SELECT 1 FROM academic_profiles p WHERE p.id=? AND"
+                                + " p.archived_at IS NULL AND p.directory_status<>'ARCHIVED' AND"
+                                + " (?='ADMIN' OR EXISTS(SELECT 1 FROM academic_role_eligibility e"
+                                + " WHERE e.user_id=p.id AND e.role=? AND e.status='ACTIVE')))",
+                        Boolean.class,
+                        user,
+                        role,
+                        role);
+        if (Boolean.TRUE.equals(eligible)) add(recipients, user, role);
     }
 
     private static void add(Map<Long, SortedSet<String>> recipients, long user, String role) {

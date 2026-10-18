@@ -1,21 +1,11 @@
 package ru.rutcampustrack.auth.session.jdbc;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.function.Supplier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.auth.event.PasswordChangedOutbox;
 import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.session.model.AuthMethod;
@@ -29,6 +19,18 @@ import ru.rutcampustrack.auth.session.model.SessionState;
 import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
 import ru.rutcampustrack.auth.session.port.SessionStatePort;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.function.Supplier;
+
 /**
  * PostgreSQL authority for the session ports.
  *
@@ -41,8 +43,8 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
 
     private static final String LOCK_USER_SQL =
             """
-            SELECT id, password_hash, roles_version
-            FROM users
+            SELECT id, password_hash, roles_version, account_state, fence_operation_id
+            FROM auth_identities
             WHERE id = ?
             FOR UPDATE
             """;
@@ -150,10 +152,10 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
 
     private static final String UPDATE_PASSWORD_SQL =
             """
-            UPDATE users
-            SET password_hash = ?, password_changed = TRUE, initial_password = NULL
-            WHERE id = ? AND password_hash = ?
-            """;
+UPDATE auth_identities
+SET password_hash = ?, password_changed = TRUE, initial_password = NULL, generated_password_origin = NULL
+WHERE id = ? AND password_hash = ?
+""";
 
     private static final String REVOKE_PASSWORD_SESSIONS_SQL =
             """
@@ -193,10 +195,10 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
 
     private static final String RESET_PASSWORD_SQL =
             """
-            UPDATE users
-            SET password_hash = ?, password_changed = TRUE, initial_password = NULL
-            WHERE id = ?
-            """;
+UPDATE auth_identities
+SET password_hash = ?, password_changed = TRUE, initial_password = NULL, generated_password_origin = NULL
+WHERE id = ?
+""";
 
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
@@ -312,7 +314,8 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         PasswordResetTicketIssue outcome =
                 inTransaction(
                         () -> {
-                            if (findUser(userId, true) == null) {
+                            UserRow user = findUser(userId, true);
+                            if (user == null || !user.admitted()) {
                                 return PasswordResetTicketIssue.UNAVAILABLE;
                             }
                             if (hasActiveAdminGrant(userId)) return PasswordResetTicketIssue.DENIED;
@@ -367,7 +370,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         }
 
         UserRow user = findUser(state.userId(), true);
-        if (user == null) {
+        if (user == null || !user.admitted()) {
             return CreateSessionResult.failure(SessionStatePort.FailureCode.INVALID_SESSION);
         }
         if (state.authMethod() == AuthMethod.PASSWORD
@@ -419,7 +422,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
 
     private SnapshotResult snapshotInTransaction(SnapshotCommand command) {
         UserRow user = findUser(command.userId(), true);
-        if (user == null) {
+        if (user == null || !user.admitted()) {
             return SnapshotResult.failure(SessionStatePort.FailureCode.INVALID_SESSION);
         }
         SessionRow session = findSession(command.userId(), command.sessionId(), true);
@@ -437,7 +440,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
 
     private RoleSelectionResult selectRoleInTransaction(SelectRoleCommand command) {
         UserRow user = findUser(command.userId(), true);
-        if (user == null) {
+        if (user == null || !user.admitted()) {
             return RoleSelectionResult.failure(SessionStatePort.FailureCode.INVALID_SESSION);
         }
         SessionRow session = findSession(command.userId(), command.sessionId(), true);
@@ -493,7 +496,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
 
     private RefreshResult refreshInTransaction(RefreshCommand command) {
         UserRow user = findUser(command.userId(), true);
-        if (user == null) {
+        if (user == null || !user.admitted()) {
             return RefreshResult.failure(SessionStatePort.FailureCode.INVALID_SESSION);
         }
         SessionRow session = findSession(command.userId(), command.sessionId(), true);
@@ -547,6 +550,8 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
     }
 
     private RevokeResult revokeCurrentInTransaction(RevokeCurrentCommand command) {
+        // Logout remains possible while authority is fenced. The permanent revoke
+        // must invalidate a prepared identity operation's actor security stamp.
         UserRow user = findUser(command.userId(), true);
         if (user == null) {
             return RevokeResult.failure(SessionStatePort.FailureCode.INVALID_SESSION);
@@ -585,7 +590,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         // All session/credential/grant writers take this user lock first. It serializes
         // cross-session commands and prevents actor/target lock inversion.
         UserRow user = findUser(command.userId(), true);
-        if (user == null) {
+        if (user == null || !user.admitted()) {
             return RevokeResult.failure(SessionStatePort.FailureCode.INVALID_SESSION);
         }
         SessionRow actor = findSession(command.userId(), command.actorSessionId(), true);
@@ -696,7 +701,7 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
 
     private ChangePasswordResult changePasswordInTransaction(ChangePasswordCommand command) {
         UserRow user = findUser(command.userId(), true);
-        if (user == null) {
+        if (user == null || !user.admitted()) {
             return ChangePasswordResult.failure(
                     CredentialSessionTransactionPort.FailureCode.INVALID_SESSION);
         }
@@ -755,7 +760,8 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         }
 
         long userId = userIds.getFirst();
-        if (findUser(userId, true) == null || hasActiveAdminGrant(userId)) {
+        UserRow user = findUser(userId, true);
+        if (user == null || !user.admitted() || hasActiveAdminGrant(userId)) {
             return PasswordResetResult.failure(PasswordResetFailureCode.RESET_TICKET_INVALID);
         }
         List<Long> lockedTickets =
@@ -846,7 +852,9 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
     private UserRow findUser(long userId, boolean lock) {
         List<UserRow> rows =
                 jdbcTemplate.query(LOCK_USER_SQL, JdbcSessionAuthority::mapUser, userId);
-        return rows.isEmpty() ? null : rows.get(0);
+        // Lock the identity even when admission is fenced. Operation commit/revoke
+        // races depend on identity lock acquisition preceding every session lock.
+        return rows.isEmpty() ? null : rows.getFirst();
     }
 
     private SessionRow findSession(long userId, UUID sessionId, boolean lock) {
@@ -928,7 +936,11 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
 
     private static UserRow mapUser(ResultSet rs, int rowNum) throws SQLException {
         return new UserRow(
-                rs.getLong("id"), rs.getString("password_hash"), rs.getLong("roles_version"));
+                rs.getLong("id"),
+                rs.getString("password_hash"),
+                rs.getLong("roles_version"),
+                rs.getString("account_state"),
+                rs.getObject("fence_operation_id", UUID.class));
     }
 
     private static SessionRow mapSession(ResultSet rs, int rowNum) throws SQLException {
@@ -993,7 +1005,21 @@ public class JdbcSessionAuthority implements SessionStatePort, CredentialSession
         void after(String operation);
     }
 
-    private record UserRow(long userId, String passwordHash, long rolesVersion) {}
+    private record UserRow(
+            long userId,
+            String passwordHash,
+            long rolesVersion,
+            String accountState,
+            UUID fenceOperationId) {
+        private boolean admitted() {
+            return "ACTIVE".equals(accountState) && fenceOperationId == null;
+        }
+
+        @Override
+        public String toString() {
+            return "AuthSessionIdentity[redacted]";
+        }
+    }
 
     private record SessionRow(
             UUID sessionId,

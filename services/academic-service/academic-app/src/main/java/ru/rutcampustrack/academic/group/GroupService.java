@@ -1,7 +1,5 @@
 package ru.rutcampustrack.academic.group;
 
-import java.time.OffsetDateTime;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -9,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.academic.contract.dto.group.AdminGroupStatus;
 import ru.rutcampustrack.academic.contract.dto.group.CreateAdminGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
@@ -16,11 +15,11 @@ import ru.rutcampustrack.academic.contract.dto.group.EducationLevel;
 import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
 import ru.rutcampustrack.academic.contract.dto.group.StudyMode;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
 import ru.rutcampustrack.academic.entity.Semester;
-import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
 import ru.rutcampustrack.academic.event.GroupRenamedEvent;
 import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
@@ -35,6 +34,9 @@ import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+
 /** Business logic for Group domain: CRUD and member listing. */
 @Service
 public class GroupService {
@@ -48,6 +50,8 @@ public class GroupService {
     private final SemesterRepository semesterRepository;
     private final GroupHistoryCoverageRepository coverageRepository;
     private final GroupRegistryReadRepository registryReadRepository;
+
+    @Autowired private ru.rutcampustrack.academic.user.UserAssembler memberAssembler;
 
     @Autowired
     public GroupService(
@@ -156,13 +160,17 @@ public class GroupService {
         return saved;
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Group findGroupById(Long id) {
+        readFences().requireGroupReadable(id);
         return groupRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", id));
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Page<Group> listGroups(Boolean active, Pageable pageable) {
+        readFences().requireRegistryReadable();
         if (active != null) {
             return groupRepository.findByIsActive(active, pageable);
         }
@@ -170,7 +178,9 @@ public class GroupService {
     }
 
     /** 58-06 / BUG-006-6: фильтр по статусу жизненного цикла + ILIKE по name. */
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Page<Group> listGroups(GroupStatus status, String search, Pageable pageable) {
+        readFences().requireRegistryReadable();
         return groupRepository.findAll(
                 GroupSpecifications.statusAndSearch(status, search), pageable);
     }
@@ -196,6 +206,7 @@ public class GroupService {
             throw HistoricalMembershipException.precondition(
                     "Group registry read model is unavailable");
         }
+        readFences().requireRegistryReadable();
         Page<GroupRegistryReadRepository.GroupRegistryRow> page =
                 registryReadRepository.find(
                         status, search, course, studyMode, educationLevel, pageable);
@@ -208,12 +219,51 @@ public class GroupService {
             Page<GroupRegistryReadRepository.GroupRegistryRow> page,
             GroupRegistryReadRepository.GroupRegistryCounts counts) {}
 
-    @Transactional
     public Group updateGroup(Long id, UpdateGroupRequest request) {
-        Group group =
+        return availability().updateGroup(id, request);
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public Group applyOrdinaryUpdate(Long id, UpdateGroupRequest request) {
+        if (request == null || !request.active())
+            throw io.grpc.Status.INVALID_ARGUMENT.asRuntimeException();
+        groupRepository
+                .findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Group", "id", id));
+        requireOrdinaryGroupWritable(id);
+        Group result = updateGroupLocal(id, request, null, requestContext.getUserId());
+        groupRepository.flush();
+        availabilityJdbc.update(
+                "UPDATE groups SET academic_revision=academic_revision+1 WHERE id=?", id);
+        return result;
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public Group applyAvailabilityUpdate(
+            Long id,
+            UpdateGroupRequest request,
+            Integer graduationYear,
+            Long acceptedActor,
+            java.util.UUID operation) {
+        requireAvailabilityGuard(id, operation);
+        Group result = updateGroupLocal(id, request, graduationYear, acceptedActor);
+        groupRepository.flush();
+        return result;
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public void validateAvailabilityUpdate(Long id, UpdateGroupRequest request) {
+        var group =
                 groupRepository
                         .findByIdForUpdate(id)
                         .orElseThrow(() -> new ResourceNotFoundException("Group", "id", id));
+        requireOrdinaryGroupWritable(id);
+        validateUpdate(group, request);
+    }
+
+    private record UpdateValidation(GroupCodeRules.CanonicalCode code, boolean nameChanged) {}
+
+    private UpdateValidation validateUpdate(Group group, UpdateGroupRequest request) {
         // 58-06 / BUG-006-6: архивные группы неизменяемы. Deactivation of an
         // active group goes through the existing archival writer below so the
         // suffix, archived_at and archive event stay canonical.
@@ -250,13 +300,25 @@ public class GroupService {
             throw new ConflictException(
                     "name", code.name(), "Группа с таким названием уже существует");
         }
+        return new UpdateValidation(code, nameChanged);
+    }
+
+    private Group updateGroupLocal(
+            Long id, UpdateGroupRequest request, Integer graduationYear, Long acceptedActor) {
+        Group group =
+                groupRepository
+                        .findByIdForUpdate(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Group", "id", id));
+        var validation = validateUpdate(group, request);
+        var code = validation.code();
+        boolean nameChanged = validation.nameChanged();
         GroupCodeRules.apply(group, code);
         if (!request.active()) {
             if (archivalService == null) {
                 throw HistoricalMembershipException.precondition(
                         "Group archival writer is unavailable");
             }
-            archivalService.archiveByActor(group, requestContext.getUserId());
+            archivalService.archiveByActor(group, graduationYear, acceptedActor);
         } else {
             group.setActive(true);
         }
@@ -265,16 +327,18 @@ public class GroupService {
         // GroupUpdatedEvent продолжает публиковаться для инвалидации кэшей и STOMP-рассылок.
         if (nameChanged) {
             eventPublisher.publishEvent(
-                    new GroupRenamedEvent(
-                            this, saved.getId(), saved.getName(), requestContext.getUserId()));
+                    new GroupRenamedEvent(this, saved.getId(), saved.getName(), acceptedActor));
         }
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, saved.getId()));
         eventPublisher.publishEvent(new DashboardInvalidatedEvent(this));
         return saved;
     }
 
-    @Transactional
     public void restoreGroup(Long id) {
+        availability().restoreGroup(id);
+    }
+
+    private void restoreGroupLocal(Long id) {
         Group group =
                 groupRepository
                         .findByIdForUpdate(id)
@@ -289,6 +353,17 @@ public class GroupService {
                     "Group archival writer is unavailable");
         }
 
+        GroupArchivalService.RestorableName restoredName = validateRestore(group, id);
+
+        if (groupRepository.restoreArchivedGroup(id, restoredName.name()) != 1) {
+            throw new ConflictException(
+                    "archived", id, "Группа изменилась во время восстановления");
+        }
+        eventPublisher.publishEvent(new GroupUpdatedEvent(this, id));
+        eventPublisher.publishEvent(new DashboardInvalidatedEvent(this));
+    }
+
+    private GroupArchivalService.RestorableName validateRestore(Group group, Long id) {
         GroupArchivalService.RestorableName restoredName = archivalService.restorableName(group);
         try {
             GroupCodeRules.fromName(restoredName.name(), group.getTrainingDurationYears());
@@ -310,17 +385,103 @@ public class GroupService {
                     "Группа с таким кодом уже существует");
         }
 
-        if (groupRepository.restoreArchivedGroup(id, restoredName.name()) != 1) {
-            throw new ConflictException(
-                    "archived", id, "Группа изменилась во время восстановления");
-        }
-        eventPublisher.publishEvent(new GroupUpdatedEvent(this, id));
-        eventPublisher.publishEvent(new DashboardInvalidatedEvent(this));
+        return restoredName;
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public void applyAvailabilityRestore(Long id, java.util.UUID operation) {
+        requireAvailabilityGuard(id, operation);
+        restoreGroupLocal(id);
+        groupRepository.flush();
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public boolean validateAvailabilityRestore(Long id) {
+        var group =
+                groupRepository
+                        .findByIdForUpdate(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Group", "id", id));
+        requireOrdinaryGroupWritable(id);
+        if (group.isActive()) return false;
+        validateRestore(group, id);
+        return true;
+    }
+
+    private org.springframework.beans.factory.ObjectProvider<
+                    ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService>
+            availabilityProvider;
+
+    @Autowired
+    public void setAvailability(
+            org.springframework.beans.factory.ObjectProvider<
+                            ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService>
+                    provider) {
+        this.availabilityProvider = provider;
+    }
+
+    private ru.rutcampustrack.academic.groupavailability.GroupAvailabilityService availability() {
+        if (availabilityProvider == null || availabilityProvider.getIfAvailable() == null)
+            throw io.grpc.Status.UNAVAILABLE.asRuntimeException();
+        return availabilityProvider.getObject();
+    }
+
+    private void requireOrdinaryGroupWritable(Long id) {
+        if (availabilityJdbc == null
+                || !Boolean.FALSE.equals(
+                        availabilityJdbc.queryForObject(
+                                "SELECT EXISTS(SELECT 1 FROM academic_group_availability_guards"
+                                        + " WHERE group_id=?) OR EXISTS(SELECT 1 FROM"
+                                        + " academic_identity_operation_groups g JOIN"
+                                        + " academic_identity_operations o ON"
+                                        + " o.operation_id=g.operation_id WHERE g.group_id=? AND"
+                                        + " o.phase NOT IN ('SUCCEEDED','REJECTED'))",
+                                Boolean.class,
+                                id,
+                                id)))
+            throw io.grpc.Status.UNAVAILABLE
+                    .withDescription("group lifecycle operation is pending")
+                    .asRuntimeException();
+    }
+
+    private org.springframework.jdbc.core.JdbcTemplate availabilityJdbc;
+    private ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence readFences;
+
+    private ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence readFences() {
+        if (readFences == null) throw io.grpc.Status.UNAVAILABLE.asRuntimeException();
+        return readFences;
+    }
+
+    @Autowired
+    public void setAvailabilityJdbc(
+            org.springframework.jdbc.core.JdbcTemplate jdbc,
+            ru.rutcampustrack.academic.identityoperation.AcademicIdentityReadFence fences) {
+        this.availabilityJdbc = jdbc;
+        this.readFences = fences;
+    }
+
+    private void requireAvailabilityGuard(Long group, java.util.UUID operation) {
+        if (availabilityJdbc == null
+                || !Boolean.TRUE.equals(
+                        availabilityJdbc.queryForObject(
+                                "SELECT EXISTS(SELECT 1 FROM academic_group_availability_guards g"
+                                        + " JOIN academic_group_availability_operations o ON"
+                                        + " o.operation_id=g.operation_id WHERE g.group_id=? AND"
+                                        + " g.operation_id=? AND o.phase='AUTH_INVALIDATED')",
+                                Boolean.class,
+                                group,
+                                operation)))
+            throw io.grpc.Status.ABORTED
+                    .withDescription("accepted group lifecycle guard required")
+                    .asRuntimeException();
     }
 
     @Transactional
     public void deleteGroup(Long id) {
-        Group group = findGroupById(id);
+        Group group =
+                groupRepository
+                        .findByIdForUpdate(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Group", "id", id));
+        requireOrdinaryGroupWritable(id);
         if (coverageRepository != null && coverageRepository.existsById(id)) {
             throw HistoricalMembershipException.unsupported(
                     "Нельзя удалить группу с управляемой историей посещаемости");
@@ -330,9 +491,16 @@ public class GroupService {
         eventPublisher.publishEvent(new DashboardInvalidatedEvent(this));
     }
 
-    public Page<User> getMyGroupMembers(Pageable pageable) {
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public Page<UserResponse> getMyGroupMembers(Pageable pageable) {
         Long groupId = requestContext.getGroupId();
-        return userRepository.findActiveStudentsByGrantGroupId(groupId, pageable);
+        readFences().requireUserReadable(requestContext.getUserId());
+        readFences().requireGroupReadable(groupId);
+        // Own User is a scalar directory projection. Resolve its local role/group display here,
+        // in the same snapshot as the scope guard and roster; no Auth/credential read is requested.
+        return userRepository
+                .findActiveStudentsByGrantGroupId(groupId, pageable)
+                .map(memberAssembler::toResponse);
     }
 
     private Semester requireSingleActiveSemester() {

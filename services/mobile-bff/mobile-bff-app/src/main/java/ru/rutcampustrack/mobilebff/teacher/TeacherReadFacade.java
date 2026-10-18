@@ -1,21 +1,9 @@
 package ru.rutcampustrack.mobilebff.teacher;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.academic.grpc.SubjectInfo;
 import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
@@ -52,6 +40,21 @@ import ru.rutcampustrack.teacher.grpc.TeacherStatsScope;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsSort;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsSubjectOption;
 import ru.rutcampustrack.teacher.grpc.TeacherStudentStats;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.LongFunction;
 
 /** Composes server-scoped teacher read RPCs into the mobile HTTP contract. */
 @Service
@@ -331,11 +334,44 @@ public final class TeacherReadFacade {
         InternalJwtClaims claims = requireTeacher();
         TeacherAssignmentsResponse assignments =
                 academic.teacherAssignments(semesterId, date.toString(), date.toString());
+        return composeDay(
+                claims.userId(),
+                semesterId,
+                date,
+                assignments,
+                groupId -> schedule.lessons(groupId, semesterId, date, date));
+    }
+
+    /**
+     * Composes the existing day read from a freshly admitted, server-owned bot scope. The caller
+     * obtains the teacher and assignment snapshot from the dedicated authority; no HTTP request
+     * context or synthetic user token is installed for the bot.
+     */
+    public TeacherApiModels.DayResponse directedBotDay(
+            long teacherId,
+            long semesterId,
+            LocalDate date,
+            TeacherAssignmentsResponse assignments,
+            LongFunction<LessonsResponse> ownGroupLessons) {
+        if (teacherId <= 0
+                || semesterId <= 0
+                || date == null
+                || assignments == null
+                || ownGroupLessons == null) throw incompleteCatalog();
+        return composeDay(teacherId, semesterId, date, assignments, ownGroupLessons);
+    }
+
+    private TeacherApiModels.DayResponse composeDay(
+            long teacherId,
+            long semesterId,
+            LocalDate date,
+            TeacherAssignmentsResponse assignments,
+            LongFunction<LessonsResponse> ownGroupLessons) {
         Map<Long, TeacherAssignment> assignmentById = new HashMap<>();
         Set<Long> groupIds = new HashSet<>();
         for (TeacherAssignment assignment : assignments.getAssignmentsList()) {
             if (assignment.getAssignmentId() <= 0
-                    || assignment.getTeacherId() != claims.userId()
+                    || assignment.getTeacherId() != teacherId
                     || !inRange(assignment, date)
                     || assignment.getGroupId() <= 0) {
                 continue;
@@ -346,18 +382,16 @@ public final class TeacherReadFacade {
 
         List<LessonResponse> lessons = new ArrayList<>();
         for (Long groupId : groupIds) {
-            lessons.addAll(schedule.lessons(groupId, semesterId, date, date).getLessonsList());
+            lessons.addAll(ownGroupLessons.apply(groupId).getLessonsList());
         }
         List<TeacherApiModels.DayLesson> result =
                 lessons.stream()
-                        .filter(lesson -> lesson.getAssignedTeacherId() == claims.userId())
+                        .filter(lesson -> lesson.getAssignedTeacherId() == teacherId)
                         .filter(
                                 lesson ->
                                         lesson.getSemesterId() == semesterId
                                                 && date.toString().equals(lesson.getDate()))
-                        .filter(
-                                lesson ->
-                                        assignedToTeacher(lesson, assignmentById, claims.userId()))
+                        .filter(lesson -> assignedToTeacher(lesson, assignmentById, teacherId))
                         .map(lesson -> dayLesson(lesson, assignmentById))
                         .sorted(
                                 Comparator.comparing(TeacherApiModels.DayLesson::date)
@@ -371,7 +405,7 @@ public final class TeacherReadFacade {
                                         .thenComparing(TeacherApiModels.DayLesson::id))
                         .toList();
         return new TeacherApiModels.DayResponse(
-                Long.toString(semesterId), date, result, Instant.now());
+                Long.toString(semesterId), date, result, educationalClock.instant());
     }
 
     public TeacherApiModels.LessonResponse lesson(long lessonId) {

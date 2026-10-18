@@ -7,22 +7,36 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import com.fasterxml.jackson.databind.*;
 
+import io.grpc.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import ru.rutcampustrack.academic.contract.dto.subject.SubjectDeletionModels.*;
-import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.InternalJwtTestConfig;
+import ru.rutcampustrack.academic.security.AcademicLiveSessionClient;
+import ru.rutcampustrack.authsecurity.grpc.AuthSecurityCapabilityServiceGrpc;
+import ru.rutcampustrack.authsecurity.grpc.StoredSessionIdentity;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+import ru.rutcampustrack.shared.security.admin.AdminAccessProfile;
 import ru.rutcampustrack.subjectdeletion.grpc.*;
 
 import java.util.*;
@@ -30,22 +44,64 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** Real REST/PG/fences/outbox with explicit Auth and participant transport doubles. */
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
+@Import(InternalJwtTestConfig.class)
 @AutoConfigureMockMvc
-@TestPropertySource(properties = "subject-deletion.retry-delay-ms=3600000")
-class SubjectDeletionHttpIT extends AbstractAcademicIntegrationTest {
+@TestPropertySource(
+        properties = {
+            "subject-deletion.retry-delay-ms=3600000",
+            "rutcampustrack.security.internal-jwt.legacy-headers-enabled=false",
+            "grpc.service-identity.academic-to-auth-token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        })
+class SubjectDeletionHttpIT {
+    static final PostgreSQLContainer<?> POSTGRES =
+            new PostgreSQLContainer<>("postgres:16")
+                    .withDatabaseName(
+                            "subject_deletion_" + UUID.randomUUID().toString().replace("-", ""))
+                    .withUsername("subject_deletion_test")
+                    .withPassword("synthetic-local-only")
+                    .withReuse(false);
+
+    static {
+        POSTGRES.start();
+    }
+
+    @DynamicPropertySource
+    static void database(DynamicPropertyRegistry properties) {
+        properties.add("spring.datasource.url", POSTGRES::getJdbcUrl);
+        properties.add("spring.datasource.username", POSTGRES::getUsername);
+        properties.add("spring.datasource.password", POSTGRES::getPassword);
+        properties.add("spring.flyway.locations", () -> "classpath:db/academic-migration");
+        properties.add(
+                "spring.autoconfigure.exclude",
+                () ->
+                        "org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,"
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,"
+                            + "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
+    }
+
+    @MockitoBean org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+    @MockitoBean ru.rutcampustrack.shared.outbox.OutboxEventSender outboxEventSender;
+    @MockitoBean AcademicLiveSessionClient liveSessions;
     @Autowired MockMvc mvc;
     @Autowired JdbcTemplate jdbc;
     @Autowired ObjectMapper json;
     @Autowired InternalJwtTestFactory tokens;
     @Autowired SubjectDeletionCoordinator coordinator;
+    @Autowired SubjectDeletionAcademicData data;
     @Autowired PlatformTransactionManager transactions;
     @Autowired ru.rutcampustrack.academic.semester.SemesterService semesterService;
     @Autowired ru.rutcampustrack.academic.threshold.ThresholdService thresholds;
     @MockitoBean SubjectDeletionParticipants participants;
-    @MockitoBean AuthSubjectDeletionClient auth;
+    @MockitoSpyBean AuthSubjectDeletionClient auth;
     private long subject, foreign;
     private UUID sid;
     private String actor;
+    private final java.util.concurrent.ConcurrentMap<
+                    UUID, ru.rutcampustrack.authsecurity.grpc.SubjectDeletionReceipt>
+            proofs = new java.util.concurrent.ConcurrentHashMap<>();
+    private final AtomicBoolean proofAuthority = new AtomicBoolean(true);
     private final AtomicInteger scheduleCommits = new AtomicInteger();
     private final AtomicInteger attendanceCommits = new AtomicInteger();
 
@@ -70,23 +126,85 @@ class SubjectDeletionHttpIT extends AbstractAcademicIntegrationTest {
 
     @BeforeEach
     void fixture() {
-        scheduleCommits.set(0);
-        attendanceCommits.set(0);
-        sid = UUID.randomUUID();
-        jdbc.update("UPDATE users SET telegram_id=730000000003 WHERE id=3");
-        long grant =
-                jdbc.queryForObject(
-                        "SELECT id FROM user_role_grants WHERE user_id=3 AND role='headman'",
-                        Long.class);
+        // This fixture owns a fresh unique ownDB. Historical combined Auth migrations never run.
+        try (var connection =
+                java.sql.DriverManager.getConnection(
+                        POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())) {
+            assertThat(connection.getCatalog()).isEqualTo(POSTGRES.getDatabaseName());
+            assertThat(connection.getMetaData().getURL()).isEqualTo(POSTGRES.getJdbcUrl());
+            var tables =
+                    jdbc.queryForList(
+                            "SELECT quote_ident(tablename) FROM pg_tables WHERE"
+                                    + " schemaname='public' AND tablename<>'flyway_schema_history'",
+                            String.class);
+            jdbc.execute("TRUNCATE " + String.join(",", tables) + " RESTART IDENTITY CASCADE");
+        } catch (java.sql.SQLException failure) {
+            throw new IllegalStateException(failure);
+        }
+        assertThat(
+                        jdbc.queryForList(
+                                "SELECT tablename FROM pg_tables WHERE schemaname='public' AND"
+                                    + " tablename IN"
+                                    + " ('users','auth_sessions','user_role_grants','subject_deletion_proofs')",
+                                String.class))
+                .isEmpty();
+        jdbc.update("INSERT INTO groups(id,name) VALUES(1,'Own group'),(2,'Other group')");
         jdbc.update(
                 "INSERT INTO"
-                    + " auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,refresh_expires_at,created_at,last_seen_at,auth_method)"
-                    + " VALUES(?,3,?,1,?,NOW()+INTERVAL '1 hour',NOW(),NOW(),'PASSWORD')",
-                sid,
-                grant,
-                UUID.randomUUID());
-        long rv = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=3", Long.class);
-        actor = tokens.validToken(3, sid, 1, rv, "HEADMAN", "ACTIVE", 1L, true, false);
+                    + " semesters(id,name,date_from,date_to,is_active,semester_type,academic_year)"
+                    + " VALUES(1,'Own current"
+                    + " semester','2026-01-01','2026-06-30',TRUE,'SPRING',2025)");
+        jdbc.queryForObject(
+                "SELECT setval(pg_get_serial_sequence('semesters','id'),1)", Long.class);
+        for (long user : new long[] {2, 3})
+            jdbc.update(
+                    "INSERT INTO"
+                        + " academic_profiles(id,directory_role,directory_status,last_name,first_name,"
+                        + "academic_revision,applied_auth_roles_version,created_at,updated_at)"
+                        + " VALUES(?,?,'ACTIVE','Synthetic','Own',1,1,NOW(),NOW())",
+                    user,
+                    user == 2 ? "TEACHER" : "STUDENT");
+        jdbc.update(
+                "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
+                    + " VALUES(3,'STUDENT','ACTIVE',1,NOW()),(3,'HEADMAN','ACTIVE',1,NOW()),(2,'TEACHER','ACTIVE',NULL,NOW())");
+        jdbc.update(
+                "INSERT INTO"
+                    + " academic_identity_read_model(user_id,catalog_version,login,account_state,roles_version,telegram_binding_version,password_changed,academic_revision)"
+                    + " VALUES(2,1,'ownteacher','ACTIVE',1,1,FALSE,1),"
+                    + "(3,2,'ownheadman','ACTIVE',1,1,FALSE,1)");
+        jdbc.update(
+                "INSERT INTO academic_identity_catalog_cursor(singleton,applied_catalog_version)"
+                        + " VALUES(TRUE,2)");
+        scheduleCommits.set(0);
+        attendanceCommits.set(0);
+        proofs.clear();
+        proofAuthority.set(true);
+        sid = UUID.randomUUID();
+        actor = tokens.validToken(3, sid, 1, 1, "HEADMAN", "ACTIVE", 1L, true, false);
+        when(liveSessions.admit(any()))
+                .thenAnswer(
+                        call -> {
+                            ru.rutcampustrack.shared.security.InternalJwtClaims c =
+                                    call.getArgument(0);
+                            boolean selected =
+                                    ("HEADMAN".equals(c.role())
+                                                    && c.isHeadman()
+                                                    && (Objects.equals(c.groupId(), 1L)
+                                                            || Objects.equals(c.groupId(), 2L)))
+                                            || ("STUDENT".equals(c.role())
+                                                    && !c.isHeadman()
+                                                    && Objects.equals(c.groupId(), 1L));
+                            if (c.userId() != 3
+                                    || !sid.equals(c.sessionId())
+                                    || c.sessionVersion() != 1
+                                    || c.rolesVersion() != 1
+                                    || !"ACTIVE".equals(c.status())
+                                    || c.readOnly()
+                                    || !selected) throw Status.UNAUTHENTICATED.asRuntimeException();
+                            return new AdminAccessProfile(3, false, "", List.of(), 0);
+                        });
+        ReflectionTestUtils.setField(
+                auth, "stub", AuthSecurityCapabilityServiceGrpc.newBlockingStub(new AuthChannel()));
         subject = seedSubject("Same label", 1L);
         long otherSemester =
                 jdbc.queryForObject(
@@ -105,16 +223,6 @@ class SubjectDeletionHttpIT extends AbstractAcademicIntegrationTest {
         when(participants.schedule(any())).thenAnswer(call -> receipt(call.getArgument(0), true));
         when(participants.attendance(any()))
                 .thenAnswer(call -> receipt(call.getArgument(0), false));
-        when(auth.challenge(any(), any()))
-                .thenReturn(
-                        new Challenge("S".repeat(32), java.time.Instant.now().plusSeconds(120), 3));
-        when(auth.verify(any(), any()))
-                .thenAnswer(
-                        call -> {
-                            SubjectDeletionAcademicData.Target target = call.getArgument(0);
-                            ConfirmRequest request = call.getArgument(1);
-                            return proof(target, request);
-                        });
     }
 
     @Test
@@ -470,18 +578,7 @@ class SubjectDeletionHttpIT extends AbstractAcademicIntegrationTest {
                 .schedule(argThat(c -> c.getAction() != SubjectDeletionAction.PREVIEW));
         long legacy = seedSubject("Unresolved legacy", null);
         body(signed(get("/academic/subjects/" + legacy + "/deletion-preview")), 409);
-        String student =
-                tokens.validToken(
-                        3,
-                        sid,
-                        1,
-                        jdbc.queryForObject(
-                                "SELECT roles_version FROM users WHERE id=3", Long.class),
-                        "STUDENT",
-                        "ACTIVE",
-                        1L,
-                        false,
-                        false);
+        String student = tokens.validToken(3, sid, 1, 1, "STUDENT", "ACTIVE", 1L, false, false);
         body(get(path() + "/deletion-preview").header("X-Internal-Token", student), 403);
         String outsider = tokens.validToken(3, sid, 1, 1, "HEADMAN", "ACTIVE", 2L, true, false);
         body(get(path() + "/deletion-preview").header("X-Internal-Token", outsider), 403);
@@ -497,11 +594,7 @@ class SubjectDeletionHttpIT extends AbstractAcademicIntegrationTest {
                         call -> {
                             SubjectDeletionCommand c = call.getArgument(0);
                             if (c.getAction() == SubjectDeletionAction.SEAL
-                                    && revokeOnce.getAndSet(false))
-                                jdbc.update(
-                                        "UPDATE user_role_grants SET"
-                                            + " status='suspended',updated_at=NOW() WHERE user_id=3"
-                                            + " AND role='headman'");
+                                    && revokeOnce.getAndSet(false)) proofAuthority.set(false);
                             return receipt(c, true);
                         })
                 .when(participants)
@@ -579,23 +672,351 @@ class SubjectDeletionHttpIT extends AbstractAcademicIntegrationTest {
         assertThat(attendanceCommits.get()).isEqualTo(1);
     }
 
+    @Test
+    void rejectedProofAndUnadmittedSessionCannotAcceptOrPrepareDeletion() throws Exception {
+        var preview = body(signed(get(path() + "/deletion-preview")), 200);
+        body(
+                confirm(
+                        UUID.randomUUID(),
+                        new ConfirmRequest(
+                                UUID.randomUUID(),
+                                preview.path("previewDigest").asText(),
+                                "S".repeat(32),
+                                "999999")),
+                403);
+        String unadmitted =
+                tokens.validToken(
+                        99, UUID.randomUUID(), 1, 1, "HEADMAN", "ACTIVE", 1L, true, false);
+        var denied =
+                mvc.perform(
+                                get(path() + "/deletion-preview")
+                                        .header("X-Internal-Token", unadmitted))
+                        .andReturn()
+                        .getResponse();
+        assertThat(denied.getStatus()).isEqualTo(401);
+        assertThat(count("SELECT count(*) FROM subject_deletion_operations")).isZero();
+        assertThat(count("SELECT count(*) FROM subject_deletion_admission_receipts")).isZero();
+        assertThat(count("SELECT count(*) FROM subjects WHERE id=?", subject)).isEqualTo(1);
+        verify(participants, never())
+                .schedule(argThat(c -> c.getAction() != SubjectDeletionAction.PREVIEW));
+    }
+
+    @Test
+    void lostAuthVerificationResponseReusesItsExactReceiptOnIdenticalConfirmation()
+            throws Exception {
+        var preview = body(signed(get(path() + "/deletion-preview")), 200);
+        var once = new AtomicBoolean(true);
+        doAnswer(
+                        call -> {
+                            Object proof = call.callRealMethod();
+                            if (once.getAndSet(false))
+                                throw AuthSubjectDeletionClient.unavailable();
+                            return proof;
+                        })
+                .when(auth)
+                .verify(any(), any());
+        UUID operation = UUID.randomUUID(), key = UUID.randomUUID();
+        var request =
+                new ConfirmRequest(
+                        operation,
+                        preview.path("previewDigest").asText(),
+                        "S".repeat(32),
+                        "123456");
+        body(confirm(key, request), 503);
+        assertThat(count("SELECT count(*) FROM subject_deletion_operations")).isZero();
+        UUID consumedReceipt = UUID.fromString(proofs.get(operation).getReceiptId());
+        assertThat(body(confirm(key, request), 200).path("phase").asText()).isEqualTo("COMPLETED");
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT proof_receipt_id FROM subject_deletion_operations WHERE"
+                                        + " operation_id=?",
+                                UUID.class,
+                                operation))
+                .isEqualTo(consumedReceipt);
+        assertThat(
+                        count(
+                                "SELECT count(*) FROM subject_deletion_admission_receipts WHERE"
+                                        + " receipt_id=?",
+                                consumedReceipt))
+                .isEqualTo(1);
+        assertThat(scheduleCommits.get()).isEqualTo(1);
+        assertThat(attendanceCommits.get()).isEqualTo(1);
+    }
+
+    @Test
+    void lostParticipantCommitResponseRepeatsOnlyItsIdempotentCommandAndKeepsOneEffect()
+            throws Exception {
+        var preview = body(signed(get(path() + "/deletion-preview")), 200);
+        var committed =
+                new java.util.concurrent.ConcurrentHashMap<String, SubjectDeletionReceipt>();
+        var once = new AtomicBoolean(true);
+        doAnswer(
+                        call -> {
+                            SubjectDeletionCommand command = call.getArgument(0);
+                            if (command.getAction() != SubjectDeletionAction.COMMIT)
+                                return receipt(command, true);
+                            var result =
+                                    committed.computeIfAbsent(
+                                            command.getOperationId(),
+                                            ignored -> receipt(command, true));
+                            if (once.getAndSet(false))
+                                throw new IllegalStateException(
+                                        "Synthetic response lost after participant commit");
+                            return result;
+                        })
+                .when(participants)
+                .schedule(any());
+        UUID operation = UUID.randomUUID();
+        var request =
+                new ConfirmRequest(
+                        operation,
+                        preview.path("previewDigest").asText(),
+                        "S".repeat(32),
+                        "123456");
+        assertThat(body(confirm(UUID.randomUUID(), request), 202).path("phase").asText())
+                .isEqualTo("COMMITTING");
+        assertThat(scheduleCommits.get()).isEqualTo(1);
+        coordinator.resumePending();
+        assertThat(
+                        body(signed(get("/academic/subject-deletion-operations/" + operation)), 200)
+                                .path("phase")
+                                .asText())
+                .isEqualTo("COMPLETED");
+        assertThat(scheduleCommits.get()).isEqualTo(1);
+        assertThat(attendanceCommits.get()).isEqualTo(1);
+        assertThat(count("SELECT count(*) FROM subjects WHERE id=?", subject)).isZero();
+        assertThat(count("SELECT count(*) FROM subjects WHERE id=?", foreign)).isEqualTo(1);
+    }
+
+    @Test
+    void localSnapshotRejectsSubjectMovedOutsideItsExactAcceptedTarget() {
+        long moving = seedSubject("Moved own subject", 1L);
+        var target =
+                new SubjectDeletionAcademicData.Target(moving, 1L, 1, "Moved own subject", null);
+        jdbc.update("UPDATE subjects SET group_id=2 WHERE id=?", moving);
+        assertThatThrownBy(() -> data.snapshot(target))
+                .isInstanceOfSatisfying(
+                        org.springframework.web.server.ResponseStatusException.class,
+                        denied -> assertThat(denied.getStatusCode().value()).isEqualTo(409));
+        assertThat(count("SELECT count(*) FROM subject_deletion_operations")).isZero();
+        verifyNoInteractions(auth, participants);
+    }
+
     private UUID proof(SubjectDeletionAcademicData.Target target, ConfirmRequest request) {
-        UUID receipt = UUID.randomUUID();
-        jdbc.update(
-                "INSERT INTO"
-                    + " subject_deletion_proofs(challenge_hash,operation_id,subject_id,semester_id,group_id,actor_id,session_id,session_version,roles_version,credentials_version,binding_version,telegram_id,preview_digest,code_hash,created_at,expires_at,consumed_at,receipt_id)"
-                    + " SELECT"
-                    + " ?,?,?,?,1,3,?,1,roles_version,credentials_version,telegram_binding_version,telegram_id,?,?,NOW(),NOW()+INTERVAL"
-                    + " '2 minutes',NOW(),? FROM users WHERE id=3",
-                "a".repeat(64),
-                request.operationId(),
-                target.subject(),
-                target.semester(),
-                sid,
-                request.previewDigest(),
-                "b".repeat(64),
-                receipt);
-        return receipt;
+        return proofs.computeIfAbsent(
+                        request.operationId(),
+                        ignored ->
+                                ru.rutcampustrack.authsecurity.grpc.SubjectDeletionReceipt
+                                        .newBuilder()
+                                        .setReceiptId(UUID.randomUUID().toString())
+                                        .setBinding(
+                                                ru.rutcampustrack.authsecurity.grpc
+                                                        .SubjectDeletionBinding.newBuilder()
+                                                        .setSubjectId(target.subject())
+                                                        .setSemesterId(target.semester())
+                                                        .setGroupId(target.group())
+                                                        .setOperationId(
+                                                                request.operationId().toString())
+                                                        .setPreviewDigest(request.previewDigest()))
+                                        .setActor(
+                                                StoredSessionIdentity.newBuilder()
+                                                        .setUserId(3)
+                                                        .setSessionId(sid.toString())
+                                                        .setSessionVersion(1)
+                                                        .setRolesVersion(1)
+                                                        .setRole("HEADMAN")
+                                                        .setStatus("ACTIVE")
+                                                        .setGroupId(1)
+                                                        .setIsHeadman(true))
+                                        .setCredentialsVersion(1)
+                                        .setTelegramBindingVersion(1)
+                                        .setTelegramId(730000000003L)
+                                        .setExpiresAt(
+                                                java.time.Instant.now().plusSeconds(120).toString())
+                                        .build())
+                .getReceiptId()
+                .transform(UUID::fromString);
+    }
+
+    /**
+     * Real generated Auth stub and TLS-scoped CallCredentials, with synthetic service responses.
+     */
+    private final class AuthChannel extends Channel {
+        @Override
+        public String authority() {
+            return "auth-service";
+        }
+
+        @Override
+        public <Q, S> ClientCall<Q, S> newCall(MethodDescriptor<Q, S> method, CallOptions options) {
+            assertThat(options.getDeadline()).isNotNull();
+            assertThat(options.getDeadline().timeRemaining(java.util.concurrent.TimeUnit.SECONDS))
+                    .isLessThanOrEqualTo(3);
+            return new ClientCall<>() {
+                Listener<S> listener;
+                Q request;
+                Metadata prepared;
+
+                public void start(Listener<S> listener, Metadata headers) {
+                    this.listener = listener;
+                    prepared = new Metadata();
+                    prepared.merge(headers);
+                }
+
+                public void request(int amount) {}
+
+                public void cancel(String message, Throwable cause) {}
+
+                public void sendMessage(Q value) {
+                    request = value;
+                }
+
+                public void halfClose() {
+                    assertThat(
+                                    org.springframework.transaction.support
+                                            .TransactionSynchronizationManager
+                                            .isActualTransactionActive())
+                            .isFalse();
+                    options.getCredentials()
+                            .applyRequestMetadata(
+                                    new CallCredentials.RequestInfo() {
+                                        public MethodDescriptor<?, ?> getMethodDescriptor() {
+                                            return method;
+                                        }
+
+                                        public SecurityLevel getSecurityLevel() {
+                                            return SecurityLevel.PRIVACY_AND_INTEGRITY;
+                                        }
+
+                                        public String getAuthority() {
+                                            return "auth-service";
+                                        }
+
+                                        public Attributes getTransportAttrs() {
+                                            return Attributes.EMPTY;
+                                        }
+                                    },
+                                    Runnable::run,
+                                    new CallCredentials.MetadataApplier() {
+                                        public void fail(Status status) {
+                                            listener.onClose(status, new Metadata());
+                                        }
+
+                                        @SuppressWarnings("unchecked")
+                                        public void apply(Metadata credentialMetadata) {
+                                            var metadata = new Metadata();
+                                            metadata.merge(prepared);
+                                            metadata.merge(credentialMetadata);
+                                            assertThat(
+                                                            metadata.get(
+                                                                    ru.rutcampustrack.shared
+                                                                            .security.grpc
+                                                                            .DirectedServiceCredential
+                                                                            .TOKEN_METADATA_KEY))
+                                                    .isNotBlank();
+                                            boolean stored =
+                                                    method.getBareMethodName()
+                                                            .equals(
+                                                                    "CheckStoredSubjectDeletionReceipt");
+                                            String bearer =
+                                                    metadata.get(
+                                                            Metadata.Key.of(
+                                                                    "x-internal-token",
+                                                                    Metadata
+                                                                            .ASCII_STRING_MARSHALLER));
+                                            if (stored) assertThat(bearer).isNull();
+                                            else if (!actor.equals(bearer)) {
+                                                fail(Status.UNAUTHENTICATED);
+                                                return;
+                                            }
+                                            Object response;
+                                            if (request
+                                                    instanceof
+                                                    ru.rutcampustrack.authsecurity.grpc
+                                                                    .SubjectDeletionChallengeRequest
+                                                            c) {
+                                                if (!c.getPassword()
+                                                        .equals("Own-synthetic-password")) {
+                                                    fail(Status.PERMISSION_DENIED);
+                                                    return;
+                                                }
+                                                response =
+                                                        ru.rutcampustrack.authsecurity.grpc
+                                                                .SubjectDeletionChallenge
+                                                                .newBuilder()
+                                                                .setChallengeId("S".repeat(32))
+                                                                .setAttemptsRemaining(3)
+                                                                .setExpiresAt(
+                                                                        java.time.Instant.now()
+                                                                                .plusSeconds(120)
+                                                                                .toString())
+                                                                .build();
+                                            } else if (request
+                                                    instanceof
+                                                    ru.rutcampustrack.authsecurity.grpc
+                                                                    .SubjectDeletionVerifyRequest
+                                                            v) {
+                                                if (!v.getCode().equals("123456")
+                                                        || !v.getChallengeId()
+                                                                .equals("S".repeat(32))) {
+                                                    fail(Status.PERMISSION_DENIED);
+                                                    return;
+                                                }
+                                                var binding = v.getBinding();
+                                                var receipt =
+                                                        proof(
+                                                                new SubjectDeletionAcademicData
+                                                                        .Target(
+                                                                        binding.getSubjectId(),
+                                                                        binding.getSemesterId(),
+                                                                        binding.getGroupId(),
+                                                                        "",
+                                                                        null),
+                                                                new ConfirmRequest(
+                                                                        UUID.fromString(
+                                                                                binding
+                                                                                        .getOperationId()),
+                                                                        binding.getPreviewDigest(),
+                                                                        v.getChallengeId(),
+                                                                        v.getCode()));
+                                                response =
+                                                        ru.rutcampustrack.authsecurity.grpc
+                                                                .SubjectDeletionVerification
+                                                                .newBuilder()
+                                                                .setAccepted(true)
+                                                                .setReceiptId(receipt.toString())
+                                                                .build();
+                                            } else if (request
+                                                    instanceof
+                                                    ru.rutcampustrack.authsecurity.grpc
+                                                                    .SubjectDeletionReceiptRequest
+                                                            c) {
+                                                var receipt =
+                                                        proofs.get(
+                                                                UUID.fromString(
+                                                                        c.getBinding()
+                                                                                .getOperationId()));
+                                                if (!proofAuthority.get()
+                                                        || receipt == null
+                                                        || !receipt.getReceiptId()
+                                                                .equals(c.getReceiptId())
+                                                        || !receipt.getBinding()
+                                                                .equals(c.getBinding())) {
+                                                    fail(Status.PERMISSION_DENIED);
+                                                    return;
+                                                }
+                                                response = receipt;
+                                            } else {
+                                                fail(Status.UNIMPLEMENTED);
+                                                return;
+                                            }
+                                            listener.onMessage((S) response);
+                                            listener.onClose(Status.OK, new Metadata());
+                                        }
+                                    });
+                }
+            };
+        }
     }
 
     private SubjectDeletionReceipt receipt(SubjectDeletionCommand c, boolean schedule) {

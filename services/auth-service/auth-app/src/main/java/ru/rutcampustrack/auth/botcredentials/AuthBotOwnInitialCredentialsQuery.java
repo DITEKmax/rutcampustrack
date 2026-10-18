@@ -10,11 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.grpc.BotCredentialReadMode;
 import ru.rutcampustrack.academic.grpc.BotOwnInitialCredentialsRequest;
 import ru.rutcampustrack.academic.grpc.BotOwnInitialCredentialsResponse;
+import ru.rutcampustrack.auth.authority.AuthAdminJdbcAuthority;
 import ru.rutcampustrack.shared.security.admin.AdminAccessException;
-import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
 
 /**
  * Uncached own-account capability, separate from default-role activation and admin target access.
@@ -22,17 +22,15 @@ import java.util.Set;
 @Service
 public class AuthBotOwnInitialCredentialsQuery {
 
-    private static final Set<String> ACCOUNT_STATES =
-            Set.of("active", "expelled", "suspended", "archived");
     private final JdbcTemplate jdbc;
-    private final AdminAccessJdbcAuthority admins;
+    private final AuthAdminJdbcAuthority admins;
 
     @Autowired
     public AuthBotOwnInitialCredentialsQuery(JdbcTemplate jdbc) {
-        this(jdbc, new AdminAccessJdbcAuthority(jdbc));
+        this(jdbc, new AuthAdminJdbcAuthority(jdbc));
     }
 
-    public AuthBotOwnInitialCredentialsQuery(JdbcTemplate jdbc, AdminAccessJdbcAuthority admins) {
+    public AuthBotOwnInitialCredentialsQuery(JdbcTemplate jdbc, AuthAdminJdbcAuthority admins) {
         this.jdbc = jdbc;
         this.admins = admins;
     }
@@ -68,20 +66,21 @@ public class AuthBotOwnInitialCredentialsQuery {
         List<UserState> rows =
                 jdbc.query(
                         """
-SELECT id, telegram_id, status::text, login, initial_password, password_changed,
-       credentials_version, telegram_binding_version
-FROM users WHERE id = ? FOR UPDATE
+SELECT id, telegram_id, account_state, login, initial_password, password_changed,
+       credentials_version, telegram_binding_version, fence_operation_id
+FROM auth_identities WHERE id = ? FOR UPDATE
 """,
                         (rs, index) ->
                                 new UserState(
                                         rs.getLong("id"),
                                         rs.getLong("telegram_id"),
-                                        rs.getString("status"),
+                                        rs.getString("account_state"),
                                         rs.getString("login"),
                                         rs.getString("initial_password"),
                                         rs.getBoolean("password_changed"),
                                         rs.getLong("credentials_version"),
-                                        rs.getLong("telegram_binding_version")),
+                                        rs.getLong("telegram_binding_version"),
+                                        rs.getObject("fence_operation_id", UUID.class)),
                         userId);
         return rows.isEmpty() ? null : rows.getFirst();
     }
@@ -89,8 +88,8 @@ FROM users WHERE id = ? FOR UPDATE
     boolean hasOwnAuthority(UserState user) {
         if (user == null
                 || user.status == null
-                || !ACCOUNT_STATES.contains(user.status)
-                || "archived".equals(user.status)
+                || !"ACTIVE".equals(user.status)
+                || user.fenceOperationId != null
                 || user.credentialsVersion <= 0
                 || user.bindingVersion <= 0) return false;
         List<Grant> grants =
@@ -206,6 +205,7 @@ SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY i
         final boolean passwordChanged;
         final long credentialsVersion;
         final long bindingVersion;
+        final UUID fenceOperationId;
 
         UserState(
                 long id,
@@ -215,7 +215,8 @@ SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY i
                 String initialPassword,
                 boolean passwordChanged,
                 long credentialsVersion,
-                long bindingVersion) {
+                long bindingVersion,
+                UUID fenceOperationId) {
             this.id = id;
             this.telegramId = telegramId;
             this.status = status;
@@ -224,6 +225,7 @@ SELECT role, status, group_id FROM user_role_grants WHERE user_id = ? ORDER BY i
             this.passwordChanged = passwordChanged;
             this.credentialsVersion = credentialsVersion;
             this.bindingVersion = bindingVersion;
+            this.fenceOperationId = fenceOperationId;
         }
 
         boolean eligible() {

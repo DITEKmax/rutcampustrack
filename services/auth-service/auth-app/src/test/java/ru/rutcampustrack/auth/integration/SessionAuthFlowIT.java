@@ -4,6 +4,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import ru.rutcampustrack.auth.dto.LoginRequest;
+import ru.rutcampustrack.auth.dto.TokenResponse;
+import ru.rutcampustrack.auth.service.JwtService;
+import ru.rutcampustrack.auth.session.SessionLifecycleService;
+import ru.rutcampustrack.auth.session.model.AuthMethod;
+import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
+import ru.rutcampustrack.auth.support.AuthDatabaseFixture;
+
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -17,23 +38,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
-import ru.rutcampustrack.auth.dto.LoginRequest;
-import ru.rutcampustrack.auth.dto.TokenResponse;
-import ru.rutcampustrack.auth.service.JwtService;
-import ru.rutcampustrack.auth.session.SessionLifecycleService;
-import ru.rutcampustrack.auth.session.model.AuthMethod;
-import ru.rutcampustrack.auth.session.port.AuthSessionQueryPort;
 
 /**
  * Real Boot/Spring Security proof for the session-bound public auth flow.
@@ -219,7 +223,9 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
     void naturallyExpiredRefreshCookieIsRejectedWithoutRevokingOrMutatingItsSession()
             throws Exception {
         String login = seedStudentUser();
-        long userId = jdbc.queryForObject("SELECT id FROM users WHERE login=?", Long.class, login);
+        long userId =
+                jdbc.queryForObject(
+                        "SELECT id FROM auth_identities WHERE login=?", Long.class, login);
         var authority = sessionQueries.findLoginAuthority(userId).orElseThrow();
         Instant createdAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         Instant expiresAt = createdAt.plusSeconds(15);
@@ -334,7 +340,8 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
         String newPassword = "NewPassword1!";
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT initial_password IS NOT NULL AND NOT password_changed FROM users WHERE login=?",
+                                "SELECT initial_password IS NOT NULL AND NOT password_changed FROM"
+                                        + " auth_identities WHERE login=?",
                                 Boolean.class,
                                 login))
                 .isTrue();
@@ -360,13 +367,14 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
 
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT initial_password IS NULL AND password_changed FROM users WHERE login=?",
+                                "SELECT initial_password IS NULL AND password_changed FROM"
+                                        + " auth_identities WHERE login=?",
                                 Boolean.class,
                                 login))
                 .isTrue();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT password_hash=? FROM users WHERE login=?",
+                                "SELECT password_hash=? FROM auth_identities WHERE login=?",
                                 Boolean.class,
                                 newPassword,
                                 login))
@@ -460,20 +468,7 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
     private String seedNeutralUser() {
         String login = "flow-n-" + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
         Instant now = Instant.now();
-        jdbc.update(
-                """
-                        INSERT INTO users (
-                            login, password_hash, last_name, first_name, middle_name,
-                            role, status, is_headman, group_id, initial_password,
-                            password_changed, created_at, updated_at
-                        ) VALUES (?, ?, 'Flow', 'Neutral', NULL,
-                                  CAST('student' AS user_role), CAST('active' AS account_status),
-                                  FALSE, NULL, 'password', FALSE, ?, ?)
-                """,
-                login,
-                PASSWORD_HASH,
-                Timestamp.from(now),
-                Timestamp.from(now));
+        AuthDatabaseFixture.identity(jdbc, login, now, PASSWORD_HASH, "password");
         return login;
     }
 
@@ -482,14 +477,14 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
         Instant now = Instant.now();
         jdbc.update(
                 """
-                        INSERT INTO user_role_grants (
-                            user_id, role, status, group_id, created_at, updated_at
-                        )
-                        SELECT id, grant_role, 'active', NULL, ?, ?
-                        FROM users
-                        CROSS JOIN (VALUES ('student'), ('teacher')) AS role_values(grant_role)
-                        WHERE login = ?
-                """,
+        INSERT INTO user_role_grants (
+            user_id, role, status, group_id, created_at, updated_at
+        )
+        SELECT id, grant_role, 'active', CASE WHEN grant_role='student' THEN 1 ELSE NULL END, ?, ?
+        FROM auth_identities
+        CROSS JOIN (VALUES ('student'), ('teacher')) AS role_values(grant_role)
+        WHERE login = ?
+""",
                 Timestamp.from(now),
                 Timestamp.from(now),
                 login);
@@ -504,8 +499,8 @@ class SessionAuthFlowIT extends AbstractIntegrationTest {
                         INSERT INTO user_role_grants (
                             user_id, role, status, group_id, created_at, updated_at
                         )
-                        SELECT id, 'student', 'active', NULL, ?, ?
-                        FROM users
+                        SELECT id, 'student', 'active', 1, ?, ?
+                        FROM auth_identities
                         WHERE login = ?
                 """,
                 Timestamp.from(now),

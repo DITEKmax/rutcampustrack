@@ -1,3 +1,9 @@
+import {
+  readIdentityRecovery,
+  confirmIdentityRecoverySuccess,
+  type IdentityRecoveryReference,
+} from '../admin-users/admin-users-client'
+import { IdentityOperationError, IdentityOperations } from '../../shared/identity-operation'
 import type { MobileProblemDetails } from '../../api/types'
 export const adminPermissionCodes = [
   'DASHBOARD_VIEW',
@@ -42,6 +48,7 @@ export interface AdminAccessUpdate extends AdminAccessSelection {
 }
 export interface AdminAccessOptions {
   readonly accessToken: () => string | null
+  readonly sessionScopeFor?: () => string | null
   readonly onUnauthorized?: () => Promise<void>
   readonly assertCurrent?: () => void
   readonly fetcher?: typeof fetch
@@ -66,11 +73,111 @@ export class AdminAccessApiError extends Error {
     this.name = 'AdminAccessApiError'
   }
 }
+export interface AdminAccessOperationResult {
+  readonly userId: number
+  readonly revoked: boolean
+  readonly profile: AdminAccessProfile | null
+  readonly recovered?: boolean
+}
 export class AdminAccessClient {
   private readonly fetcher: typeof fetch
+  private identity: IdentityOperations
+  private recovery: IdentityRecoveryReference | null = null
+  private confirmedRecovery: string | null = null
+  private recoveryScope: string | null = null
+  private recoveryRevision = 0
+  private persistRecovery: (value: IdentityRecoveryReference | null) => void = () => {}
+  private operation: { userId: number; revoked: boolean } | null = null
+  private mutationError: AdminAccessApiError | null = null
   constructor(private readonly options: AdminAccessOptions) {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
+    this.identity = this.createIdentityOperations()
   }
+  private createIdentityOperations(): IdentityOperations {
+    const revision = this.recoveryRevision
+    return new IdentityOperations(
+      (path, init) => this.requestResponse(path, init),
+      () => {
+        try {
+          this.options.assertCurrent?.()
+          if (revision !== this.recoveryRevision) throw new Error('Владелец операции изменился.')
+        } catch (cause) {
+          if (revision === this.recoveryRevision) {
+            this.operation = null
+            this.mutationError = null
+          }
+          throw cause
+        }
+      },
+    )
+  }
+  getIdentityRecoverySessionScope(): string | null {
+    this.options.assertCurrent?.()
+    return this.options.sessionScopeFor?.() ?? null
+  }
+  bindIdentityRecovery(
+    scope: string | null,
+    saved: unknown,
+    persist: (value: IdentityRecoveryReference | null) => void,
+  ): void {
+    if (scope !== this.recoveryScope) {
+      ++this.recoveryRevision
+      this.identity = this.createIdentityOperations()
+      this.operation = null
+      this.mutationError = null
+      this.confirmedRecovery = null
+      this.recovery = readIdentityRecovery(saved, 'ADMIN_ACCESS')
+      this.recoveryScope = scope
+    }
+    this.persistRecovery = persist
+  }
+  get failedIdentityOperation(): IdentityRecoveryReference | null {
+    this.options.assertCurrent?.()
+    return this.recovery ? { ...this.recovery } : null
+  }
+  private saveRecovery(): void {
+    this.persistRecovery(this.recovery ? { ...this.recovery } : null)
+  }
+  async confirmIdentityRecovery(): Promise<IdentityRecoveryReference | null> {
+    const saved = this.recovery
+    if (!saved || saved.reconcileId) return null
+    const status = await this.identity.inspect(saved.operationId)
+    this.options.assertCurrent?.()
+    if (this.recovery !== saved || status !== 'FAILED_SAFE') return null
+    this.confirmedRecovery = saved.operationId
+    return { ...saved }
+  }
+  async reconcileIdentityOperation(signal?: AbortSignal): Promise<void> {
+    const revision = this.recoveryRevision
+    const saved = this.recovery
+    if (
+      !saved ||
+      saved.reconcileId ||
+      this.confirmedRecovery !== saved.operationId ||
+      this.identity.pending
+    )
+      throw new Error('Сначала проверь состояние остановленной операции.')
+    this.recovery = { ...saved, reconcileId: crypto.randomUUID() }
+    this.operation = { userId: saved.userId!, revoked: false }
+    this.mutationError = null
+    this.saveRecovery()
+    try {
+      const response = await this.identity.run(
+        `/api/academic/identity-operations/${saved.operationId}/reconcile`,
+        {
+          method: 'POST',
+          signal: signal ?? new AbortController().signal,
+        },
+        this.recovery.reconcileId!,
+      )
+      await confirmIdentityRecoverySuccess(response)
+      this.options.assertCurrent?.()
+    } catch (cause) {
+      if (revision !== this.recoveryRevision) throw cause
+      this.rethrowOperationError(cause)
+    }
+  }
+
   async getCatalog(signal?: AbortSignal): Promise<AdminAccessCatalog> {
     const value = record(
       await this.request('/api/academic/admin-access/catalog', signal ? { signal } : undefined),
@@ -107,6 +214,7 @@ export class AdminAccessClient {
     const profile = normalizeAdminAccessProfile(
       await this.request(this.path(userId), signal ? { signal } : undefined),
     )
+    this.options.assertCurrent?.()
     if (profile.userId !== userId) throw new Error('Не удалось подтвердить пользователя.')
     return profile
   }
@@ -124,12 +232,13 @@ export class AdminAccessClient {
     )
       throw new Error('Проверь выбранные права доступа.')
     const profile = normalizeAdminAccessProfile(
-      await this.request(this.path(userId), {
+      await this.mutate(userId, {
         method: 'PUT',
         body: JSON.stringify(input),
         ...(signal ? { signal } : {}),
       }),
     )
+    this.options.assertCurrent?.()
     if (profile.userId !== userId) throw new Error('Не удалось подтвердить пользователя.')
     return profile
   }
@@ -140,17 +249,130 @@ export class AdminAccessClient {
   ): Promise<void> {
     if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 0)
       throw new Error('Обнови текущие права доступа.')
-    await this.request(this.path(userId), {
+    await this.mutate(userId, {
       method: 'DELETE',
       body: JSON.stringify({ expectedVersion }),
       ...(signal ? { signal } : {}),
     })
   }
+  get hasPendingIdentityOperation(): boolean {
+    return this.identity.pending || Boolean(this.recovery?.reconcileId)
+  }
+  get identityOperationUserId(): number | null {
+    void this.identity.pending // Apply the same session guard before exposing transient context.
+    return this.operation?.userId ?? this.recovery?.userId ?? null
+  }
+  acknowledgeIdentityOperation(): void {
+    this.identity.acknowledge()
+    if (!this.identity.pending) {
+      this.operation = null
+      this.mutationError = null
+      this.recovery = null
+      this.confirmedRecovery = null
+      this.saveRecovery()
+    }
+  }
+  async resumeIdentityOperation(): Promise<AdminAccessOperationResult> {
+    const revision = this.recoveryRevision
+    try {
+      const saved = this.recovery
+      let result: Awaited<ReturnType<IdentityOperations['resume']>>
+      if (!this.identity.pending && saved?.reconcileId) {
+        const status = await this.identity.inspect(saved.reconcileId)
+        if (this.recovery !== saved) throw new Error('Владелец операции изменился.')
+        if (status === 'REJECTED' || status === 'FAILED_SAFE')
+          throw new IdentityOperationError(status, saved.reconcileId)
+        const path = `/api/academic/identity-operations/${saved.operationId}/reconcile`
+        result = {
+          path,
+          response: await this.identity.run(
+            path,
+            { method: 'POST', signal: new AbortController().signal },
+            saved.reconcileId,
+          ),
+        }
+      } else result = await this.identity.resume()
+      const { path, response } = result
+      if (path.endsWith('/reconcile')) {
+        await confirmIdentityRecoverySuccess(response)
+        this.options.assertCurrent?.()
+        return {
+          userId: saved?.userId ?? this.operation!.userId,
+          revoked: false,
+          profile: null,
+          recovered: true,
+        }
+      }
+      const operation = this.operation
+      if (!operation) throw new Error('Нет незавершённого действия.')
+      const profile = operation.revoked ? null : normalizeAdminAccessProfile(await response.json())
+      this.options.assertCurrent?.()
+      if (profile && profile.userId !== operation.userId)
+        throw new Error('Не удалось подтвердить пользователя.')
+      return { ...operation, profile }
+    } catch (cause) {
+      if (revision !== this.recoveryRevision) throw cause
+      this.rethrowOperationError(cause)
+    }
+  }
+  private async mutate(userId: number, init: RequestInit): Promise<unknown> {
+    const revision = this.recoveryRevision
+    const path = this.path(userId)
+    if (!this.identity.pending) {
+      if (this.recovery) throw new Error('Сначала восстанови остановленную операцию.')
+      this.operation = { userId, revoked: init.method === 'DELETE' }
+      this.mutationError = null
+    }
+    try {
+      const response = await this.identity.run(path, init)
+      const value: unknown = response.status === 204 ? null : await response.json()
+      this.options.assertCurrent?.()
+      return value
+    } catch (cause) {
+      if (revision !== this.recoveryRevision) throw cause
+      this.rethrowOperationError(cause)
+    }
+  }
+  private rethrowOperationError(cause: unknown): never {
+    // Preserve the original denial/CAS body, without treating its HTTP status as
+    // proof that an earlier same-key attempt had no effect.
+    if (cause instanceof IdentityOperationError) {
+      if (cause.state === 'FAILED_SAFE' && cause.operationId && (this.recovery || this.operation)) {
+        this.recovery = {
+          operationId: cause.operationId,
+          kind: 'ADMIN_ACCESS',
+          userId: this.recovery?.userId ?? this.operation!.userId,
+          reconcileId: null,
+          archivePreviewDigest: null,
+        }
+        this.confirmedRecovery = null
+        this.saveRecovery()
+        throw cause // Never erase a recoverable terminal UUID behind an earlier HTTP denial.
+      }
+      if (cause.state === 'REJECTED' && this.recovery?.reconcileId) {
+        this.recovery = { ...this.recovery, reconcileId: null }
+        this.confirmedRecovery = null
+        this.saveRecovery()
+      }
+      if (this.mutationError) throw this.mutationError
+    }
+    throw cause
+  }
   private path(userId: number): string {
     if (!Number.isSafeInteger(userId) || userId <= 0) throw new Error('Пользователь недоступен.')
     return `/api/academic/users/${userId}/admin-access`
   }
-  private async request(path: string, init?: RequestInit, retried = false): Promise<unknown> {
+  private async request(path: string, init?: RequestInit): Promise<unknown> {
+    const response = await this.requestResponse(path, init)
+    const value: unknown = response.status === 204 ? null : await response.json()
+    this.options.assertCurrent?.()
+    return value
+  }
+  private async requestResponse(
+    path: string,
+    init?: RequestInit,
+    retried = false,
+  ): Promise<Response> {
     this.options.assertCurrent?.()
     const headers = new Headers(init?.headers)
     headers.set('Accept', 'application/json')
@@ -164,15 +386,11 @@ export class AdminAccessClient {
       cache: 'no-store',
     })
     this.options.assertCurrent?.()
-    if (response.ok) {
-      const value: unknown = response.status === 204 ? null : await response.json()
-      this.options.assertCurrent?.()
-      return value
-    }
+    if (response.ok) return response
     if (response.status === 401 && !retried && this.options.onUnauthorized) {
       await this.options.onUnauthorized()
       this.options.assertCurrent?.()
-      return this.request(path, init, true)
+      return this.requestResponse(path, init, true)
     }
     let problem: MobileProblemDetails | null = null,
       currentProfile: AdminAccessProfile | null = null
@@ -188,7 +406,9 @@ export class AdminAccessClient {
       /* HTTP status remains authoritative. */
     }
     this.options.assertCurrent?.()
-    throw new AdminAccessApiError(response, problem, currentProfile)
+    const cause = new AdminAccessApiError(response, problem, currentProfile)
+    if (init?.method === 'PUT' || init?.method === 'DELETE') this.mutationError = cause
+    throw cause
   }
 }
 export function normalizeAdminAccessProfile(value: unknown): AdminAccessProfile {

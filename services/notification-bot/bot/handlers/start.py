@@ -6,8 +6,8 @@ from aiogram.filters import Command
 from aiogram.types import Message
 
 from bot.handlers.prefs import CREDENTIALS_LABEL, LINKS_LABEL, keyboard_signature, main_keyboard
+from bot.services.bot_menu import resolve_menu_scope
 from bot.services.keyboard_sync import mark_keyboard_synced
-from bot.services.menu_scope import resolve_homework_scope
 
 logger = logging.getLogger(__name__)
 
@@ -70,19 +70,47 @@ async def _private_only(message: Message) -> bool:
     return False
 
 
+def _profile_tuple(profile) -> tuple[int, int, int]:
+    values = (profile.user_id, profile.telegram_binding_version, profile.roles_version)
+    if profile.found is not True or any(type(value) is not int or value <= 0 for value in values):
+        raise RuntimeError("Own profile identity unavailable")
+    return values
+
+
+async def _require_profile_scope(client, sender: int, profile):
+    expected = _profile_tuple(profile)
+    scope = await resolve_menu_scope(client, sender)
+    if (
+        scope is None
+        or (scope.user_id, scope.telegram_binding_version, scope.roles_version) != expected
+        or not any(grant.role in {"TEACHER", "ADMIN"} or grant.group_id > 0 for grant in scope.grants)
+    ):
+        raise RuntimeError("Own profile authority unavailable or changed")
+    return scope
+
+
+async def _refresh_own_profile(client, sender: int, previous):
+    """A denied card cannot authorize disclosure of the earlier redacted profile."""
+    fresh = await client.own_profile(sender)
+    if _profile_tuple(fresh) != _profile_tuple(previous):
+        raise RuntimeError("Own profile binding or grants changed")
+    scope = await _require_profile_scope(client, sender, fresh)
+    return fresh, scope
+
+
 @start_router.message(Command("start"))
-async def cmd_start(message: Message, academic_client, prefs_client, keyboard_sync=None, credential_cards=None) -> None:
+async def cmd_start(
+    message: Message, academic_client, prefs_client, keyboard_sync=None, credential_cards=None, bot_menu_client=None
+) -> None:
     """Handle /start command — account linking (D-02, D-03)."""
     if not await _private_only(message):
         return
     telegram_id = private_sender(message)
     keyboard = main_keyboard()
     try:
-        response = await academic_client.get_user_by_telegram_id(telegram_id)
-        scope = await resolve_homework_scope(academic_client, telegram_id, response)
-        keyboard = main_keyboard(homework_enabled=scope is not None)
-        await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(homework_enabled=scope is not None))
-
+        if bot_menu_client is None:
+            raise RuntimeError("Own Auth profile capability unavailable")
+        response = await bot_menu_client.own_profile(telegram_id)
         if not response.found:
             # D-03: unknown telegram_id
             await message.answer(
@@ -94,9 +122,12 @@ async def cmd_start(message: Message, academic_client, prefs_client, keyboard_sy
             )
             return
 
-        # D-02: known user
+        # D-02: a found profile needs positive current authority before any own data/card.
+        scope = await _require_profile_scope(bot_menu_client, telegram_id, response)
+        options = scope.keyboard_options
+        keyboard = main_keyboard(**options)
+        await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(**options))
         display_name = html.escape(str(response.display_name or ""))
-        login = html.escape(str(response.login or ""))
         if credential_cards is not None and await credential_cards.deliver(
             message,
             response,
@@ -105,6 +136,10 @@ async def cmd_start(message: Message, academic_client, prefs_client, keyboard_sy
             reply_markup=keyboard,
         ):
             return
+        response, scope = await _refresh_own_profile(bot_menu_client, telegram_id, response)
+        keyboard = main_keyboard(**scope.keyboard_options)
+        display_name = html.escape(str(response.display_name or ""))
+        login = html.escape(str(response.login or ""))
         group_name = html.escape(str(response.group_name or ""))
         await message.answer(
             f"👋 <b>Добро пожаловать, {display_name}</b>\n\n"
@@ -119,25 +154,27 @@ async def cmd_start(message: Message, academic_client, prefs_client, keyboard_sy
 
     except Exception:
         # D-14: service unavailability
-        logger.warning("Academic unavailable for /start")
+        logger.warning("Own Auth profile unavailable for /start")
         await message.answer(
             "⚠️ <b>Сервис временно недоступен</b>\n\nПопробуйте ещё раз чуть позже.",
-            reply_markup=keyboard,
+            reply_markup=main_keyboard(),
             parse_mode="HTML",
         )
 
 
 @start_router.message(Command("credentials"))
 @start_router.message(F.text == CREDENTIALS_LABEL)
-async def cmd_credentials(message: Message, academic_client, credential_cards=None) -> None:
+async def cmd_credentials(message: Message, academic_client, credential_cards=None, bot_menu_client=None) -> None:
     """Show structured login data for the linked Telegram account."""
     if not await _private_only(message):
         return
     telegram_id = private_sender(message)
     try:
-        response = await academic_client.get_user_by_telegram_id(telegram_id)
+        if bot_menu_client is None:
+            raise RuntimeError("Own Auth profile capability unavailable")
+        response = await bot_menu_client.own_profile(telegram_id)
     except Exception:
-        logger.warning("Academic unavailable for credentials")
+        logger.warning("Own Auth profile unavailable for credentials")
         await message.answer("⚠️ <b>Сервис временно недоступен</b>\n\nПопробуйте ещё раз чуть позже.", parse_mode="HTML")
         return
 
@@ -148,18 +185,19 @@ async def cmd_credentials(message: Message, academic_client, credential_cards=No
         )
         return
 
+    try:
+        await _require_profile_scope(bot_menu_client, telegram_id, response)
+        if credential_cards is not None and await credential_cards.deliver(message, response):
+            return
+        response, _ = await _refresh_own_profile(bot_menu_client, telegram_id, response)
+    except Exception:
+        logger.warning("Own profile fallback authority unavailable")
+        await message.answer("Сервис временно недоступен. Попробуй ещё раз чуть позже.")
+        return
+
     display_name = html.escape(str(response.display_name or ""))
     login = html.escape(str(response.login or ""))
     group_name = html.escape(str(response.group_name or ""))
-    if credential_cards is not None:
-        try:
-            if await credential_cards.deliver(message, response):
-                return
-        except Exception:
-            logger.warning("Own credential capability unavailable")
-            await message.answer("Сервис временно недоступен. Попробуй ещё раз чуть позже.")
-            return
-
     lines = [
         "🔐 <b>Данные для входа</b>",
         "",

@@ -8,6 +8,14 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
+
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.shared.web.time.EducationalTime;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -15,12 +23,6 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.GenericApplicationContext;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
-import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 /** Actual mixed resolver and Spring constructor selection, with controlled authority port data. */
 class EducationalSessionClockIsolationTest {
@@ -72,7 +74,7 @@ class EducationalSessionClockIsolationTest {
                                         List.of(
                                                 new StudentProjectionQuery.RoleGrantSnapshot(
                                                         11L, "STUDENT", "ACTIVE", 10L)))));
-        when(query.findSession(100L, SESSION))
+        when(query.findSession(CLAIMS))
                 .thenReturn(
                         Optional.of(
                                 new StudentProjectionQuery.SessionSnapshot(
@@ -95,6 +97,8 @@ class EducationalSessionClockIsolationTest {
         when(query.findAssignments(anyLong(), anyCollection(), any(), any())).thenReturn(List.of());
         when(query.findActiveStudentIds(anyLong(), anyLong(), any(), any()))
                 .thenReturn(List.of(100L));
+        when(query.readSnapshot(any(), any()))
+                .thenAnswer(call -> ((java.util.function.Supplier<?>) call.getArgument(1)).get());
         GenericApplicationContext context = new AnnotationConfigApplicationContext();
         context.registerBean(StudentProjectionQuery.class, () -> query);
         context.registerBean(Clock.class, () -> realClock);

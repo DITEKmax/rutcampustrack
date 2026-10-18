@@ -1,18 +1,20 @@
 package ru.rutcampustrack.academic.group;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
+import ru.rutcampustrack.academic.event.GroupArchivedEvent;
+import ru.rutcampustrack.academic.exception.ConflictException;
+
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.entity.Group;
-import ru.rutcampustrack.academic.event.DashboardInvalidatedEvent;
-import ru.rutcampustrack.academic.event.GroupArchivedEvent;
-import ru.rutcampustrack.academic.exception.ConflictException;
 
 /**
  * Архивация группы при выпуске (BUG-006-6 / план 58-06).
@@ -55,6 +57,11 @@ public class GroupArchivalService {
     @Transactional
     public void archiveByActor(Group group, Long actorUserId) {
         archive(group, LocalDate.now(clock).getYear(), actorUserId, null);
+    }
+
+    @Transactional
+    public void archiveByActor(Group group, int graduationYear, Long actorUserId) {
+        archive(group, graduationYear, actorUserId, null);
     }
 
     @Transactional

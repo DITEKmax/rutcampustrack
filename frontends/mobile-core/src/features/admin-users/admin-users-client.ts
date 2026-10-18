@@ -1,3 +1,4 @@
+import { IdentityOperationError, IdentityOperations } from '../../shared/identity-operation'
 import { parseReportFormats, type ReportFormatOption } from '../../shared/report-download-client'
 import type { AdminAccessSelection } from '../admin-access/admin-access-client'
 import type { MobileProblemDetails } from '../../api/types'
@@ -127,9 +128,65 @@ export interface AdminRecoveryLink {
 
 export interface AdminUsersApiOptions {
   readonly accessToken: () => string | null
+  readonly sessionScopeFor?: () => string | null
   readonly onUnauthorized?: () => Promise<void>
   readonly assertCurrent?: () => void
   readonly fetcher?: typeof fetch
+}
+
+export interface IdentityRecoveryReference {
+  readonly operationId: string
+  readonly kind: 'USER' | 'ARCHIVE' | 'ADMIN_ACCESS'
+  readonly userId: number | null
+  readonly reconcileId: string | null
+  readonly archivePreviewDigest: string | null
+}
+export function readIdentityRecovery(
+  value: unknown,
+  owner: 'USER' | 'ADMIN_ACCESS',
+): IdentityRecoveryReference | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  const v = value as Record<string, unknown>
+  const uuid = (id: unknown) =>
+    typeof id === 'string' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)
+  if (
+    Object.keys(v).length !== 5 ||
+    !uuid(v.operationId) ||
+    !(owner === 'USER'
+      ? ['USER', 'ARCHIVE'].includes(String(v.kind))
+      : v.kind === 'ADMIN_ACCESS') ||
+    !(
+      (v.userId === null && v.kind === 'USER') ||
+      (Number.isSafeInteger(v.userId) && Number(v.userId) > 0)
+    ) ||
+    !(v.reconcileId === null || uuid(v.reconcileId)) ||
+    !(
+      v.archivePreviewDigest === null ||
+      (v.kind === 'ARCHIVE' &&
+        typeof v.archivePreviewDigest === 'string' &&
+        /^[0-9a-f]{64}$/.test(v.archivePreviewDigest))
+    )
+  )
+    return null
+  return {
+    operationId: String(v.operationId),
+    kind: v.kind as IdentityRecoveryReference['kind'],
+    userId: v.userId as number | null,
+    reconcileId: v.reconcileId as string | null,
+    archivePreviewDigest: v.archivePreviewDigest as string | null,
+  }
+}
+export async function confirmIdentityRecoverySuccess(response: Response): Promise<void> {
+  const value = (await response.json()) as Record<string, unknown>
+  if (
+    Object.keys(value).length !== 3 ||
+    value.status !== 'SUCCEEDED' ||
+    value.retryAfterSeconds !== 0 ||
+    typeof value.operationId !== 'string' ||
+    value.operationId !== response.headers.get('X-Operation-Id')
+  )
+    throw new Error('Сервер не подтвердил восстановление операции.')
 }
 
 export class AdminUsersApiError extends Error {
@@ -146,9 +203,151 @@ export class AdminUsersApiError extends Error {
 export class AdminUsersClient {
   private static readonly basePath = '/api/academic/users'
   private readonly fetcher: typeof fetch
+  private identity: IdentityOperations
+  private recovery: IdentityRecoveryReference | null = null
+  private confirmedRecovery: string | null = null
+  private intentContext: Pick<IdentityRecoveryReference, 'kind' | 'userId'> | null = null
+  private recoveryScope: string | null = null
+  private recoveryRevision = 0
+  private persistRecovery: (value: IdentityRecoveryReference | null) => void = () => {}
 
   constructor(private readonly options: AdminUsersApiOptions) {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
+    this.identity = this.createIdentityOperations()
+  }
+  private createIdentityOperations(): IdentityOperations {
+    const revision = this.recoveryRevision
+    return new IdentityOperations(
+      (path, init) => this.requestResponse(path, init),
+      () => {
+        this.options.assertCurrent?.()
+        if (revision !== this.recoveryRevision) throw new Error('Владелец операции изменился.')
+      },
+    )
+  }
+  getIdentityRecoverySessionScope(): string | null {
+    this.options.assertCurrent?.()
+    return this.options.sessionScopeFor?.() ?? null
+  }
+  bindIdentityRecovery(
+    scope: string | null,
+    saved: unknown,
+    persist: (value: IdentityRecoveryReference | null) => void,
+  ): void {
+    if (scope !== this.recoveryScope) {
+      ++this.recoveryRevision
+      this.identity = this.createIdentityOperations()
+      this.intentContext = null
+      this.confirmedRecovery = null
+      this.recovery = readIdentityRecovery(saved, 'USER')
+      this.recoveryScope = scope
+    }
+    this.persistRecovery = persist
+  }
+  get failedIdentityOperation(): IdentityRecoveryReference | null {
+    this.options.assertCurrent?.()
+    return this.recovery ? { ...this.recovery } : null
+  }
+  private saveRecovery(): void {
+    this.persistRecovery(this.recovery ? { ...this.recovery } : null)
+  }
+  async confirmIdentityRecovery(): Promise<IdentityRecoveryReference | null> {
+    const saved = this.recovery
+    if (!saved || saved.reconcileId) return null
+    const status = await this.identity.inspect(saved.operationId)
+    this.options.assertCurrent?.()
+    if (this.recovery !== saved || status !== 'FAILED_SAFE') return null
+    this.confirmedRecovery = saved.operationId
+    return { ...saved }
+  }
+  async previewIdentityRecovery(signal?: AbortSignal): Promise<AdminUserArchivePreview> {
+    const saved = this.recovery
+    if (
+      !saved ||
+      saved.kind !== 'ARCHIVE' ||
+      this.confirmedRecovery !== saved.operationId ||
+      saved.userId === null
+    )
+      throw new Error('Сначала проверь состояние остановленной операции.')
+    return this.readArchivePreview(
+      `/api/academic/identity-operations/${saved.operationId}/reconcile-preview`,
+      saved.userId,
+      signal,
+    )
+  }
+  async reconcileIdentityOperation(
+    proof?: { archivePreviewDigest: string; password?: string },
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const revision = this.recoveryRevision
+    const saved = this.recovery
+    if (
+      !saved ||
+      saved.reconcileId ||
+      this.confirmedRecovery !== saved.operationId ||
+      this.identity.pending
+    )
+      throw new Error('Сначала проверь состояние остановленной операции.')
+    if (saved.kind === 'ARCHIVE' && (!proof || !/^[0-9a-f]{64}$/.test(proof.archivePreviewDigest)))
+      throw new Error('Обнови предпросмотр восстановления операции.')
+    if (saved.kind !== 'ARCHIVE' && proof)
+      throw new Error('Для этого действия подтверждение архива не требуется.')
+    this.recovery = {
+      ...saved,
+      reconcileId: crypto.randomUUID(),
+      archivePreviewDigest: proof?.archivePreviewDigest ?? null,
+    }
+    this.intentContext = saved
+    this.saveRecovery() // Durable nonsecret reference precedes any HTTP send; proof is memory-only.
+    try {
+      const response = await this.identity.run(
+        `/api/academic/identity-operations/${saved.operationId}/reconcile`,
+        {
+          method: 'POST',
+          ...(proof ? { body: JSON.stringify(proof) } : {}),
+          signal: signal ?? new AbortController().signal,
+        },
+        this.recovery.reconcileId!,
+      )
+      await confirmIdentityRecoverySuccess(response)
+      this.options.assertCurrent?.()
+    } catch (cause) {
+      if (revision === this.recoveryRevision) this.captureFailedOperation(cause)
+      throw cause
+    }
+  }
+  private captureFailedOperation(cause: unknown): void {
+    if (!(cause instanceof IdentityOperationError)) return
+    if (cause.state === 'FAILED_SAFE' && cause.operationId && this.intentContext) {
+      this.recovery = {
+        ...this.intentContext,
+        operationId: cause.operationId,
+        reconcileId: null,
+        archivePreviewDigest: null,
+      }
+      this.confirmedRecovery = null
+      this.saveRecovery()
+    } else if (cause.state === 'REJECTED' && this.recovery?.reconcileId) {
+      this.recovery = { ...this.recovery, reconcileId: null, archivePreviewDigest: null }
+      this.confirmedRecovery = null
+      this.saveRecovery()
+    }
+  }
+  private async runIdentity(path: string, init: RequestInit, id?: string): Promise<Response> {
+    const revision = this.recoveryRevision
+    if (!this.identity.pending) {
+      if (this.recovery) throw new Error('Сначала восстанови остановленную операцию.')
+      this.intentContext = {
+        kind: path.endsWith('/archive') ? 'ARCHIVE' : 'USER',
+        userId: Number(path.match(/users\/(\d+)/)?.[1]) || null,
+      }
+    }
+    try {
+      return await this.identity.run(path, init, id)
+    } catch (cause) {
+      if (revision === this.recoveryRevision) this.captureFailedOperation(cause)
+      throw cause
+    }
   }
 
   async listUsers(input: AdminUsersListInput = {}, signal?: AbortSignal): Promise<AdminUsersPage> {
@@ -220,7 +419,7 @@ export class AdminUsersClient {
 
   createUser(input: CreateAdminUserInput, signal?: AbortSignal): Promise<AdminUser> {
     const payload = normalizeCreateInput(input)
-    return this.request<unknown>(AdminUsersClient.basePath, {
+    return this.identityRequest(AdminUsersClient.basePath, {
       method: 'POST',
       body: JSON.stringify(payload),
       ...(signal ? { signal } : {}),
@@ -234,7 +433,7 @@ export class AdminUsersClient {
   ): Promise<AdminUser> {
     positiveInteger(id, 'userId')
     const payload = normalizeProfileInput(input)
-    return this.request<unknown>(`${AdminUsersClient.basePath}/${id}`, {
+    return this.identityRequest(`${AdminUsersClient.basePath}/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(payload),
       ...(signal ? { signal } : {}),
@@ -249,7 +448,7 @@ export class AdminUsersClient {
   ): Promise<AdminUser> {
     positiveInteger(id, 'userId')
     const payload = normalizeRoleInput(input)
-    return this.request<unknown>(`${AdminUsersClient.basePath}/${id}/roles/${role}`, {
+    return this.identityRequest(`${AdminUsersClient.basePath}/${id}/roles/${role}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
       ...(signal ? { signal } : {}),
@@ -264,7 +463,7 @@ export class AdminUsersClient {
     positiveInteger(id, 'userId')
     const newGroupId = positiveInteger(input.newGroupId, 'newGroupId')
     const reason = requiredText(input.reason, 'reason')
-    return this.request<unknown>(`${AdminUsersClient.basePath}/${id}/transfer`, {
+    return this.identityRequest(`${AdminUsersClient.basePath}/${id}/transfer`, {
       method: 'POST',
       body: JSON.stringify({ newGroupId, reason }),
       ...(signal ? { signal } : {}),
@@ -273,8 +472,15 @@ export class AdminUsersClient {
 
   async previewArchive(id: number, signal?: AbortSignal): Promise<AdminUserArchivePreview> {
     positiveInteger(id, 'userId')
+    return this.readArchivePreview(`${AdminUsersClient.basePath}/${id}/archive-preview`, id, signal)
+  }
+  private async readArchivePreview(
+    path: string,
+    id: number,
+    signal?: AbortSignal,
+  ): Promise<AdminUserArchivePreview> {
     const value = requiredRecord(
-      await this.request<unknown>(`${AdminUsersClient.basePath}/${id}/archive-preview`, {
+      await this.request<unknown>(path, {
         cache: 'no-store',
         ...(signal ? { signal } : {}),
       }),
@@ -305,23 +511,31 @@ export class AdminUsersClient {
     positiveInteger(id, 'userId')
     operationId(input.operationId)
     if (!/^[0-9a-f]{64}$/.test(input.previewDigest)) throw new Error('Обнови предпросмотр архива.')
-    await this.requestResponse(`${AdminUsersClient.basePath}/${id}/archive`, {
-      method: 'POST',
-      cache: 'no-store',
-      body: JSON.stringify(input),
-      ...(signal ? { signal } : {}),
-    })
+    await this.runIdentity(
+      `${AdminUsersClient.basePath}/${id}/archive`,
+      {
+        method: 'POST',
+        cache: 'no-store',
+        body: JSON.stringify(input),
+        ...(signal ? { signal } : {}),
+      },
+      input.operationId,
+    )
   }
 
   async restoreUser(id: number, idempotencyId: string, signal?: AbortSignal): Promise<void> {
     positiveInteger(id, 'userId')
     operationId(idempotencyId)
-    await this.requestResponse(`${AdminUsersClient.basePath}/${id}/restore`, {
-      method: 'POST',
-      cache: 'no-store',
-      body: JSON.stringify({ operationId: idempotencyId }),
-      ...(signal ? { signal } : {}),
-    })
+    await this.runIdentity(
+      `${AdminUsersClient.basePath}/${id}/restore`,
+      {
+        method: 'POST',
+        cache: 'no-store',
+        body: JSON.stringify({ operationId: idempotencyId }),
+        ...(signal ? { signal } : {}),
+      },
+      idempotencyId,
+    )
   }
 
   async issueRecoveryLink(id: number, signal?: AbortSignal): Promise<AdminRecoveryLink> {
@@ -360,6 +574,75 @@ export class AdminUsersClient {
     return parseReportFormats(
       await this.request<unknown>('/api/academic/registry-exports/users/formats'),
     )
+  }
+
+  acknowledgeIdentityOperation(): void {
+    this.identity.acknowledge()
+    if (!this.identity.pending) {
+      this.recovery = null
+      this.confirmedRecovery = null
+      this.saveRecovery()
+    }
+  }
+
+  get hasPendingIdentityOperation(): boolean {
+    return this.identity.pending || Boolean(this.recovery?.reconcileId)
+  }
+
+  async resumeIdentityOperation(): Promise<{
+    user: AdminUser | null
+    created: boolean
+    recovered?: boolean
+  }> {
+    const revision = this.recoveryRevision
+    let result: Awaited<ReturnType<IdentityOperations['resume']>>
+    try {
+      const saved = this.recovery
+      if (!this.identity.pending && saved?.reconcileId) {
+        const status = await this.identity.inspect(saved.reconcileId)
+        if (this.recovery !== saved) throw new Error('Владелец операции изменился.')
+        this.intentContext = saved
+        if (status === 'REJECTED' || status === 'FAILED_SAFE')
+          throw new IdentityOperationError(status, saved.reconcileId)
+        const path = `/api/academic/identity-operations/${saved.operationId}/reconcile`
+        const response = await this.identity.run(
+          path,
+          {
+            method: 'POST',
+            signal: new AbortController().signal,
+            ...(saved.archivePreviewDigest
+              ? { body: JSON.stringify({ archivePreviewDigest: saved.archivePreviewDigest }) }
+              : {}),
+          },
+          saved.reconcileId,
+        )
+        result = { path, response }
+      } else result = await this.identity.resume()
+    } catch (cause) {
+      if (revision === this.recoveryRevision) this.captureFailedOperation(cause)
+      throw cause
+    }
+    const { path, response } = result
+    if (path.endsWith('/reconcile')) {
+      await confirmIdentityRecoverySuccess(response)
+      this.options.assertCurrent?.()
+      return { user: null, created: false, recovered: true }
+    }
+    if (path.endsWith('/archive') || path.endsWith('/restore'))
+      return { user: null, created: false }
+    const value = (await response.json()) as unknown
+    this.options.assertCurrent?.()
+    return {
+      user: normalizeUser(value, path === AdminUsersClient.basePath),
+      created: path === AdminUsersClient.basePath,
+    }
+  }
+
+  private async identityRequest(path: string, init: RequestInit): Promise<unknown> {
+    const response = await this.runIdentity(path, init)
+    const value = (await response.json()) as unknown
+    this.options.assertCurrent?.()
+    return value
   }
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {

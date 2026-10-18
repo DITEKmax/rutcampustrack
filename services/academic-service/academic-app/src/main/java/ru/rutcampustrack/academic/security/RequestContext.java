@@ -3,6 +3,7 @@ package ru.rutcampustrack.academic.security;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
+
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 
 /**
@@ -31,6 +32,17 @@ public class RequestContext {
     private Long groupId;
     private boolean headman;
     private String internalToken;
+    private ru.rutcampustrack.shared.security.admin.AdminAccessProfile admittedAdminProfile;
+
+    public ru.rutcampustrack.shared.security.admin.AdminAccessProfile getAdmittedAdminProfile() {
+        return admittedAdminProfile;
+    }
+
+    /** Transient profile returned by Auth's current ordinary/report admission for this request. */
+    public void setAdmittedAdminProfile(
+            ru.rutcampustrack.shared.security.admin.AdminAccessProfile profile) {
+        this.admittedAdminProfile = profile;
+    }
 
     public Long getUserId() {
         return userId;

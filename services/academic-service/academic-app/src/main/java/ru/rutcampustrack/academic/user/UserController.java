@@ -4,7 +4,6 @@ import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
 import static ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT;
 import static ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER;
 
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -13,6 +12,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+
 import ru.rutcampustrack.academic.contract.api.UserApi;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
@@ -28,6 +28,8 @@ import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
 import ru.rutcampustrack.academic.security.RequireRole;
 import ru.rutcampustrack.shared.web.audit.AdminAction;
+
+import java.util.List;
 
 /**
  * REST controller implementing UserApi contract. Delegates all business logic to UserService. Role
@@ -66,11 +68,13 @@ public class UserController implements UserApi {
             value = {ADMIN},
             admin = {"USERS_VIEW"})
     public ResponseEntity<EntityModel<UserResponse>> getUser(Long id) {
-        User user = userService.findUserById(id);
-        // BUG-006: ADMIN видит initialPassword пока пользователь его не сменил.
+        var detail = userService.findUserDetail(id);
+        User user = detail.page().getContent().getFirst();
         return ResponseEntity.ok()
                 .cacheControl(org.springframework.http.CacheControl.noStore())
-                .body(userAssembler.toAdminModel(user));
+                .body(
+                        userAssembler.toAdminModel(
+                                user, detail.grants().getOrDefault(id, List.of()), detail.full()));
     }
 
     @Override
@@ -84,16 +88,16 @@ public class UserController implements UserApi {
             String roleStatus,
             Pageable pageable,
             PagedResourcesAssembler<UserResponse> assembler) {
-        Page<User> page = userService.listUsers(search, role, status, roleStatus, pageable);
-        var grants =
-                grantReader.findByUserIds(page.getContent().stream().map(User::getId).toList());
+        var registry = userService.listUserRegistry(search, role, status, roleStatus, pageable);
+        Page<User> page = registry.page();
+        var grants = registry.grants();
         Page<UserResponse> responsePage =
                 page.map(
                         u ->
-                                userAssembler.toResponse(
+                                userAssembler.toRegistryResponse(
                                         u,
-                                        false,
-                                        grants.getOrDefault(u.getId(), java.util.List.of())));
+                                        grants.getOrDefault(u.getId(), java.util.List.of()),
+                                        registry.full()));
         return ResponseEntity.ok(
                 assembler.toModel(responsePage, response -> EntityModel.of(response)));
     }

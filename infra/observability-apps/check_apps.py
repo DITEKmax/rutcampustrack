@@ -179,6 +179,10 @@ def main():
             if key != "RCT_OBSERVER_HTPASSWD_FILE":
                 # The official GlitchTip image runs as UID5000; keep plaintext files private.
                 run(["sudo", "chown", "5000:5000", str(path)])
+            else:
+                # Compose file secrets retain source ownership. The proxy's existing
+                # root entrypoint needs to read this 0400 file without DAC capabilities.
+                run(["sudo", "chown", "0:0", str(path)])
             environment[key] = str(path)
         envfile = work / "compose.env"
         envfile.write_text("\n".join(k + "=" + v for k, v in environment.items() if k.startswith("RCT_OBSERVER_") or k.startswith("RCT_GLITCHTIP_")) + "\n")

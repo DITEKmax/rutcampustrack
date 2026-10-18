@@ -3,7 +3,7 @@
 target: all
 architecture_storage: v1
 api:
-  base_url: /pyroscope
+  base-url: /pyroscope
 server:
   http_listen_port: 4040
 analytics:
@@ -22,6 +22,8 @@ pyroscopedb:
   min_disk_available_percentage: 10
   enforcement_interval: 1m
 limits:
+  # The pinned binary defaults to segment-writer, which requires v2 storage.
+  write_path: ingester
   ingestion_rate_mb: 1
   ingestion_burst_size_mb: 2
   ingestion_body_limit_mb: 2

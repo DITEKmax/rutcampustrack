@@ -227,7 +227,7 @@ class CampusMapReadRepositoryIT {
     @Test
     void adminLifecycleDeletesAllVersionsAndUsageWithBoundReplayAndPreservesAnotherFloor() {
         String schema = newSchema();
-        migrateActivity(schema);
+        migrateDeletion(schema);
         var admin = adminHarness(schema);
         var building =
                 admin.createBuilding(

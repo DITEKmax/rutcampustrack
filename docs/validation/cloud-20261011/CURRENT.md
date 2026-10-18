@@ -1,98 +1,74 @@
-# IN_PROGRESS — объединённая цель 17–18.10.2026
+# ACTIVE — объединённая цель / separate DB + apps, 18.10.2026
 
-Восстановление: [TASK18](TASK-CONTRACT-20261018.md), [TASK17](TASK-CONTRACT-20261017.md),
-[async](TASK-ADDENDUM-ASYNC-20261017.md), этот файл, [ресурсы](resources.md).
-Q031/D037: TASK-CONTRACT/CURRENT — принятая сохранённая цель ACTIVE; отдельного Goal API нет.
-[Матрица v1](selected-results-20261018.csv)/[веса](selected-results-20261018.meta.json),
-[решения](decisions.md), [вопросы](questions.md), [evidence](attempts.ndjson),
-[единственный HANDOFF](HANDOFF-20261017.md). Историю заново не исследовать.
+Восстановление: [новый контракт](TASK-ADDENDUM-SPLIT-APPS-20261018.md),
+[TASK18](TASK-CONTRACT-20261018.md), [TASK17](TASK-CONTRACT-20261017.md),
+[ASYNC](TASK-ADDENDUM-ASYNC-20261017.md), этот CURRENT и [ресурсы](resources.md).
+Q031/D037: эти файлы — persisted Goal; отдельного Goal API нет, falsecomplete нет.
+Root soleGit/taskdocs; ветка codex/server-validation-20261011,
+[draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), main не merged.
+Starting/published HEAD **26cbe5912f6683a81780a831609dbddbc26feba4**.
+Stage17base753173688d633ca07991f4dd73bdcd2698f45d96; received18basee66b1711.
 
-## Revision / принятие
+## Принятие и конечный остаток
 
-Ветка codex/server-validation-20261011, [draft PR2](https://github.com/DITEKmax/rutcampustrack/pull/2), main не merged.
-Подтверждённый local=remote=PR head **0d663fe1d5c0d29a64026383baa66e667c5f9788**.
-Stage17 base753173688d633ca07991f4dd73bdcd2698f45d96; received18 basee66b1711b3d93faee625b50a2e2f785020a0f43a.
-На f2 опубликован U14 coherent63 +8 contract/diagnostic/CI source paths; review1f9f21eb.
-На 0d только 19 CI scalar bindings после U14; assertions/restoration/gates сохранены,
-review1f895e43; пять применимых hooks PASS, JSON неприменим. Новое WIP: canonical
-E2E Flyway password target c1ccc28d; Data15+Infra2 corrections ниже frozen/compilePASS/reviewbb0161b8; normalpublishpending.
-Чужие25untracked, старыеWT/WIP/stand/volumes/keys сохранены.
+[Матрица v2-КТ1 FROZEN](selected-results-20261018-v2.csv)/[веса](selected-results-20261018-v2.meta.json):
+**22/38,107/188=56.91% плана**, не production-readiness. Веса/acceptance зафиксированы.
+[Историческая v1](selected-results-20261018.csv)/[meta](selected-results-20261018.meta.json):
+**23/25,110/123=89.43%**, U15 восстановлен из owner/PRbody/review45b5989a/SAFE50821c16.
+U15 oldsameDBrepeat не две новыеDB/VPSrestart. U14 старый parent раскрыт детьми,
+U23 assessment исторический и не counted вv2, приложения/PMM имеют отдельные критерии.
+TASK17 функционально9/9 DONE_CHANGED9, начальные6/9 в истории; старые manual/FROZEN
+ограничения не превращены вPASS. Остальные применимые23→22 старые исходы не перепроверять
+без затронутого риска; изменённый consumer требует актуального доказательства.
 
-Матрица **v1-КТ1 FROZEN: 22/25, вес105/123=85.37% принятого плана**, DONE_CHANGED19,
-ALREADY_SATISFIED3. Состав/веса не менялись; это не production readiness.
-U12 actual62c Auth200IT/148unit/generator/TS приняты9f691350;
-U13 actualf2 все6 native snapshots + неизменённые prefix/4TS/inventory приняты7e64bfb6.
-Публичные232paths/267ops +2directedinternal/3ops = прежний inventory234/270, без нового scope.
-U16/U20 actual903 cache/principals/menu/TODAY-WEEK приняты7b580917/dfed6ec6;
-U17 actual62c restored bytes/currentgrantdeny принятыe11ae909;
-U21 actual62c browser size1→backend HALnext→GET200→две карточки принятf104287a,
-пять файлов неизменны через0d. U19/U22 notification/Alloy приняты ранее; не переоткрывать.
-U24 два k6 scripts/40portable controls принятыbe3a402a/f5025c2a; realk6/load/capacity NOT_RUN.
+| КТ | Принято / всего | Вес / всего | % плана |
+| --- | --- | --- | --- |
+| КТ2: boundary/AAA/contracts/persistence | 8/13 | 32/63 | 50.79 |
+| КТ3: bot/apps | 1/9 | 5/37 | 13.51 |
+| КТ4: changedchains/monitoring/jobs | 13/15 | 70/83 | 84.34 |
+| КТ5: finalgates/review/handoff | 0/1 | 0/5 | 0 |
 
-Прежние **9/9 функционально DONE_CHANGED9, ALREADY_SATISFIED0**; исходные6/9 в истории.
-Это не завершение расширенного Goal и не отмена прежних manual/environment ограничений.
-
-| ID | Статус | Достаточное evidence |
-| --- | --- | --- |
-| A01 | DONE_CHANGED | BCrypt/DI/credential lifecycle +realVue create→login12114507172/12114133029/review. |
-| A02 | DONE_CHANGED | Текстовые enum/JPA/JDBC/REST/gRPC unknown/null12114232912/review; wire frozen. |
-| A03 | DONE_CHANGED | Redaction/RS256/CI privacy,145unit+200IT12114133029/review. |
-| A04 | DONE_CHANGED | RealSQL currentpage/order/student scope: subject2/HW1 enrichment12114232912/review. |
-| M01 | DONE_CHANGED | Gateway→BFF→gRPC24spans; Rabbit retry/dedup10spans→Tempo/Loki12114439186/review. |
-| M02 | DONE_CHANGED | 9a2DOCX exact+2job/reportdeltas/8apps/3117series12120205958/review85f1ca36. |
-| M03 | DONE_CHANGED | 426livequeries/idle/noevent/insufficient30d +logs↔traces12120205958/review. |
-| M04 | DONE_CHANGED | 9a correct2x18weekDOCX/navigation/lost202/reconnect/currentrights +PG/broker/recovery proofs/review85f1ca36. |
-| M05 | DONE_CHANGED | e66PG/Mongo/Redis rights/exporters/Rabbit/privateaccess/recreate12118842862/review. |
-
-C01 actualPG oldstaleRED→afterCommit commit/rollback2GREEN12113673595;
-C02 immutable93publishedmigrations/28controls; C03 runtime/migrator/monitor M05.
-Это не новое владение фактами U14.
-
-## Конечный исполнимый остаток
-
-| ID | Статус / достаточное и отсутствующее |
+| Остаток | Владелец / следующий достаточный результат |
 | --- | --- |
-| U14 | REVIEW. f2 actual Auth200IT/148unit, Academic401ITPASS84FAIL/506unitPASS; оба privateAuthTLS→Python/broker native paths PASS. Data исправляет доказанные fixtures/новую SQL-неоднозначность; actual whole lifecycle/ordinaryCI ещё нужен. |
-| U15 | IN_PROGRESS. f2 Flyway4 PASS: fresh/61→62, новые principals/ACL/atomicSQL/repeatstartup. После NEWV63 нужны соответствующие fresh/upgrade/repeat и успешный обычный startup; publishedSQL не переписывать. |
-| U25 | IN_PROGRESS. Итоговый changed-risk review, совместимые текущие CI/Coverage/Security/OpenAPI, local=remote=PRhead, Q009 source-equivalence/final-doc SHA и handoff. |
+| U14.1/.2/.3/.5 | Boundary+Academic: auth_db/academic_db, AAA-only, fenced durableoperation create/grant/transfer/archive/proofs; frozenproto+независимыйS3review→code→actualfailure/recovery/minrights. |
+| U14.4/.6 | Academic+Boundary: single domainjobqueue/worker/artifacts и compatibleconsumers/OpenAPI/gRPC; 2DOCX+короткийдругойпериод/уход/lost202/recovery/currentrights. |
+| U15.1 | Academic+Boundary: twoDB fresh/repeat сохраняютIDs/credentials/grants/history/sessions/jobs; newSQLonly. |
+| U20.1/.2/.3 | Bot+BotProducer+Boundary: exactcommon4/studentHW/headmancurrentroster/teacherownToday; privatefreshauthority/choice/timezone/empty/revoke proof. |
+| U23.1/.2/.3/.4/.5 | Apps: actualGlitchTipVueJava+Pyroprofile+protectedHomepage, combinedresourcebudget, PMMjustification; CIruntimeнеcomposePASS. |
+| U25 | Root+independentreview: allcurrentgatesPASS/source/executable/PRhead/Q009doconly/handoff. |
 
-Критический пакет: Infra исправил ТОЛЬКО E2E secret target SPRING_FLYWAY_PASSWORD→
-spring.flyway.password, как в prod. Boot3.5.16 ConfigTree/Binder: старое имя NOTbound,
-новое bound expected synthetic; 1.591s/RSS94944KiB/reaped. Actual startup после правки NOT_RUN.
-На f2 оба browser jobs остановились при Academic exit1 до сценариев; appcause отсутствует.
-Data11 fixtures: currentprincipal/auth_api вместо устаревшей authority схемы, sameDS rollback,
-валидный group110..119, JDBC fixture seed readonlyAuthfields. ReviewReports R1 нашёл две
-currentMap plan-target проверки ещё наV54; автор перевёл ТОЛЬКО их наcurrentfullchain.
-Auth RCA оставшихся12: Event6 missing genuineadminclaims/setup; Dashboard1 barrier после
-глобального TXlock; SubjectDeletion5 конфликт sid parameter/column в PLpgSQL.
-V62 dd498250 сохраняется byteexact; NEWV63 квалифицирует параметр без изменения predicates.
-Actual old42702→new safe invalid/полныйHTTP результат ещё не доказан; existingFlyway case
-и достаточные native checks запланированы. Data soleauthor; ONEcompilePASS50.05s/RSS854144KiB/reaped, actualSQL/testsNOT_RUN.
-ReviewReports coherent17 bb0161b8 accepted/R1closed; SQLReviewAuth d40ff838 linked.
-CI audit3scalar05179faf currentfixtureSHA/frame1286, gates/oracles/identity preserved.
-Старые62c D002 refresh/sessiontimeout и ADMIN_UI FAIL causeUNKNOWN остаются до нового
-достаточного browser результата; U21 собственный HW PASS независим.
+## Текущий связный пакет / failures
 
-Последний snapshot02:52UTC: 0d CI39090969593/Coverage39090969574 IN_PROGRESS,
-Security39090969552/OpenAPI39090969541 SUCCESS. AcademicCI вновь FAIL доordinaryIT,
-SAFE12123011925: phaseXML_RULE, primary+additional expectedassertions proved; auditstate absent
-causeUNKNOWN, exactsourcesrestored. Nativefixture repairs pending. AuthCI SUCCESS. Monitoring/browser идут.
-f2 CI39089909475/Coverage39089909428 FAIL сохранены; никаких общегоPASS/таймаутослабления.
-Продуктовых вопросов владельцу нет; следующий шаг — coherent corrections→compile→
-независимое review→normal push/CI, actual runtime, затем финальная приёмка U14/U15/U25.
+На26c Academic **476PASS/9FAIL/0skip**, все485executed; Coverage теже9.
+Event6 AccessDenied228; Map1AdminAccess316; ORM2SQLGrammar/PSQL193+rollbackassert266.
+Оба browser Boot SUCCESS, затем datasetPOST/api/academic/users500 доlogin/UI/DOCX.
+ActualSQLSTATEUNKNOWN, не установленнаяUIregression. CI39091941238/Coverage39091941236
+FAIL; Security39091941198/OpenAPI39091941265 SUCCESS; monitoringwholepipelineSUCCESS.
+Flyway4(old62SQL42702→63false/repeat/principals) иSubjectHTTP8PASS; V62byteexact.
 
-## Owners / ресурсы / границы
+Presplit3 восстановлен в/tmp/rct-s19-academic: Eventoriginalheadmancontext beforeSubject,
+Mapодинguardedcase currentmigrateDeletion, Academicgeneratedkeys=false candidate.
+Patch1406d4a8549a70ffcb0da0bc20e99219f0067bcdafa5dc4fd95a8ef5bdde900f.
+Formatter/transform/diff+6hooksPASS; independentS3sourceAPPROVE. АдресныйcompileJava/
+compileTestJava PASS43tasks153.06s/RSS1.12GiB/reaped; runtime/SQLSTATEнеPASS.
+Следующий шаг: интеграция3+taskstate→normalpush/CI; не выдавать sharedDB
+как конечныйU14DONE. Конечныйsplit идёт параллельно послеfrozenboundaryreview.
 
-Root soleGit/taskdocs; /tmp/rct-s18-{auth,data,infra,reports}, известнаяbase9a и явные
-readonly crossinputs. Data soleV62/commands/entities/fixtures+NEWV63; Auth API/generated/
-privateTLS bridges; Infra configs/CI/bootstrap; Reports Python/UI/files; reviewers независимы.
-Sol6.1/high/forknone, actualUNKNOWN — принятое Cloud-исключение. Nativecapacity7inclRoot.
-Data CPU1/cache /tmp/rct-stage17-gradle-home; Auth CPU0/отдельныйcache. TWOheavy только
-при доказанной вместимости, workers1/fork1/≤2.5GiBRSS/≤512MiBnewTMP/floor4GiB.
-Локальный Docker не запускать: workspace почти наfloor; actualDB/broker/browser вordinaryCI.
-Rootown1309objects pack5c439ead SHA196283b9, checkpoint/tmp/rct-s18-domain-checkpoint;
-всеrefs/index/WIP сохранены, noGC/prune: auxiliaryWTs используют readonlyRootobjects.
-No main/merge/deploy/productiongrants/reset/volumedelete/secrets/Angular/newweb/redesign/
-projectdocs refactor/secondCLI. B013/B014/B015 FROZEN, no equivalents.
-DEFERRED_OWNER: realTelegram/push/install/Safari, alertbot, offhostprobe при deploy,
-прежняя manual приёмка. Исходный syncDOCX crashcause UNKNOWN. D032–D037 действуют.
+## KT0 / writers / восстановление
+
+Cloud current running/connected, exec работает. /tmp послеoutage пуст: старые4WT,
+2последнихfixtureWIP/receipts/caches утрачены. Root4taskdocsWIP+25foreignuntracked,
+regularGitpack/index сохранены. Не заявлять старыйstand/volumes/keys проверенными;
+ничего не reset/delete. Actualpacka0e5040f SHAefd2f155…4705 unchanged.
+НовыеWT/tmp/rct-s19-{auth,academic,bot,apps}, cleanbase26 черезauxbare readonlyRootobjects;
+noRootGC/prune. Native7slots=Root+6Sol6.1/high, actualmetadataUNKNOWN accepted.
+BoundaryAuth/proto/generated; Academicprofile/coordinator/fixtures; BotPython;
+Appsinfra/SDK/build/lock; BotProducerMobileBFF/Attendancebotreads; Reviewerindependent.
+No localDB/Docker/images/heavy сейчас; ресурсы/leases только поresources.
+
+[Evidence/history](attempts.ndjson), [decisions](decisions.md), [questions](questions.md),
+[единственный HANDOFF](HANDOFF-20261017.md) обновляются вместе связнымcheckpoint.
+Существенных вопросов владельцу пока нет. No main/merge/deploy/reset/secrets/Angular/newweb.
+B013/B014/B015FROZEN, никаких эквивалентов черезCI/model/agent/launcher.
+DEFERRED_LOCAL/OWNER: realTelegram/push/install/Safari/alertbot/offhostprobe/ownerstand/
+realdeploy/backup/VPS/multiworker. ИсторическийsyncWORD crashcauseUNKNOWN.

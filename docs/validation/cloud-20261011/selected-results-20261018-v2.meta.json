@@ -1,0 +1,52 @@
+{
+  "version": "v2-КТ1 FROZEN",
+  "utc": "2026-10-18T07:45:52.379454+00:00",
+  "base": "26cbe5912f6683a81780a831609dbddbc26feba4",
+  "goal": "TASK-ADDENDUM-SPLIT-APPS-20261018.md",
+  "historicalV1": {
+    "closed": 23,
+    "total": 25,
+    "closedWeight": 110,
+    "weight": 123,
+    "percent": 89.43
+  },
+  "mandatoryRows": 38,
+  "mandatoryWeight": 188,
+  "closed": 22,
+  "closedWeight": 107,
+  "percent": 56.91,
+  "byCheckpoint": {
+    "КТ2": {
+      "closed": 8,
+      "total": 13,
+      "weight": 32,
+      "denominator": 63,
+      "percent": 50.79
+    },
+    "КТ3": {
+      "closed": 1,
+      "total": 9,
+      "weight": 5,
+      "denominator": 37,
+      "percent": 13.51
+    },
+    "КТ4": {
+      "closed": 13,
+      "total": 15,
+      "weight": 70,
+      "denominator": 83,
+      "percent": 84.34
+    },
+    "КТ5": {
+      "closed": 0,
+      "total": 1,
+      "weight": 0,
+      "denominator": 5,
+      "percent": 0.0
+    }
+  },
+  "delta": "U14parent8 replaced6children39; U15newtwoDB5; U20new3children11; U23oldassessment3 historicalnotcounted, new5children21. Net123-8-3+39+5+11+21=188. No double parent-child credit. Old23minusU23assessment=22,110-3=107.",
+  "weightPolicy": "Weights1/2/3/5/8frozenbefore newimplementation; changedtargetscope versioneddelta, no retroactive oldv1weightschange. Acceptedoldproof retainedonlywhileapplicable; affectedoldrow requiresnewproof beforefinalclosure.",
+  "deferred": "Realdeploy/ownerstand/TG/push/install/Safari/alertbot/offhostprobe/realbackup/VPS/multiworker/Angularretirement/newweb. B013/B014/B015FROZEN remain no replay.",
+  "riskGate": "No wholeGoalPASS fromweightedcount; U25CI/CoverageFAIL remain separatelyblocking."
+}

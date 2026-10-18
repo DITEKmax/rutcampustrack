@@ -4,9 +4,9 @@
   "baseline": "e66b1711b3d93faee625b50a2e2f785020a0f43a",
   "rows": 25,
   "mandatoryWeight": 123,
-  "closed": 20,
-  "closedWeight": 94,
-  "weightedPercent": 76.42,
+  "closed": 23,
+  "closedWeight": 110,
+  "weightedPercent": 89.43,
   "historicalStage": "9/9 functional DONE_CHANGED9 ALREADY_SATISFIED0 at9a; original6/9 kept incontract/history; globalCI/newscope notDONE",
   "weightPolicy": "1/2/3/5/8 chosen byscope-risk before new implementation; no retrospective change for percentage; existing outcomes mapped once, U10 is sufficient acceptedM04subset notextraoldwholepackage",
   "scopePolicy": "ContextIDEA033/034/045 crosscut; allownerDEFERREDtable entries outside denominator, conditionalintegration notselected outside; U23assessment remainsmandatory; mandatoryblockers staydenominator",
@@ -68,6 +68,26 @@
       "closed": 20,
       "closedWeight": 94,
       "weightedPercent": 76.42
+    },
+    {
+      "utc": "2026-10-18T03:00:38.257908+00:00",
+      "change": "Synchronize bookkeeping with already accepted U21 and U13 in CSV/CURRENT; finalreview found stale meta20/94. No new acceptance, source work, weights or denominator change.",
+      "previous": {
+        "closed": 20,
+        "closedWeight": 94,
+        "weightedPercent": 76.42
+      },
+      "closed": 22,
+      "closedWeight": 105,
+      "weightedPercent": 85.37,
+      "evidence": "U21 reviewf104287a actual62c; U13 review7e64bfb6 actualf2; attempts/S18-U21-ACTUAL-BROWSER-ACCEPTANCE-AND-F2-ADMISSION-RCA +S18-U13-SIX-NATIVE-HTTP-CONTRACT-ACCEPTANCE"
+    },
+    {
+      "utc": "2026-10-18T07:45:52.379454+00:00",
+      "change": "Recover acceptedU15fromPRbody+ownernewGO; localreviewTMP lost but reviewSHA45b5989a/nativeSAFE50821c16 preserved inmessage/PR. Samev1scope/weights; historical only.",
+      "closed": 23,
+      "closedWeight": 110,
+      "weightedPercent": 89.43
     }
   ],
   "changeReason": "FourboundedKT1 mappings narrowedactualsourcecriteria; same25rows/same123weights, no denominatorchange. U23 assessmentaccepted, all4conditionalintegrations unselected/excluded; no productintegrationclaim."

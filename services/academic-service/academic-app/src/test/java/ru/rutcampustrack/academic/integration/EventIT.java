@@ -221,6 +221,14 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
 
         testSemester = semesterService.activateSemester(testSemester.getId());
 
+        // Keep the original homework actor context separate from setup's admitted administrator.
+        when(requestContext.getClaims()).thenReturn(null);
+        // Stub RequestContext mock for homework permission checks
+        when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
+        when(requestContext.isHeadman()).thenReturn(true);
+        when(requestContext.getUserId()).thenReturn(testUser.getId());
+        when(requestContext.getGroupId()).thenReturn(groupA.getId());
+
         // Create the subject and its canonical lesson type atomically through
         // the managed writer; the database requires every subject to retain a
         // corresponding subject_lesson_types row.
@@ -231,14 +239,6 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                                 SubjectType.LECTURE,
                                 List.of(SubjectType.LECTURE),
                                 List.of()));
-
-        // Keep the original homework actor context separate from setup's admitted administrator.
-        when(requestContext.getClaims()).thenReturn(null);
-        // Stub RequestContext mock for homework permission checks
-        when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
-        when(requestContext.isHeadman()).thenReturn(true);
-        when(requestContext.getUserId()).thenReturn(testUser.getId());
-        when(requestContext.getGroupId()).thenReturn(groupA.getId());
 
         // Phase 61-03 / D-04: мок резолва пары — возвращаем LessonResponse с subjectId=testSubject.
         when(scheduleGrpcClient.resolveLesson(anyLong(), any(), anyInt()))

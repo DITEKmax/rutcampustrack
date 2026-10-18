@@ -4,22 +4,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.ValidationMessage;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.group.GroupCodeRules;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.integration.AbstractAcademicEventIntegrationTest;
 import ru.rutcampustrack.academic.repository.GroupRepository;
-import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
 
 /**
  * M02 Группа 8 — contract test: updateGroup → group.updated envelope валидируется против
@@ -34,8 +36,6 @@ class GroupUpdatedContractIT extends AbstractAcademicEventIntegrationTest {
     @Autowired OutboxStorage outboxStorage;
 
     @Autowired ObjectMapper objectMapper;
-
-    @MockitoBean RequestContext requestContext;
 
     private Group group;
 
@@ -55,7 +55,10 @@ class GroupUpdatedContractIT extends AbstractAcademicEventIntegrationTest {
         group = groupRepository.save(group);
 
         String newName = "ТНБ-111";
-        groupService.updateGroup(group.getId(), new UpdateGroupRequest(newName, true));
+        var actor = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        try (var ignored = identityFixture.request(actor)) {
+            groupService.updateGroup(group.getId(), new UpdateGroupRequest(newName, true));
+        }
         assertThat(groupRepository.findById(group.getId()).orElseThrow().getName())
                 .isEqualTo(newName);
 

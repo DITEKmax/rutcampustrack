@@ -971,19 +971,30 @@ jobs:
                   accepted_boundary = boundary_rules[service]
                   for key in ('source', 'production'):
                       accepted_boundary[key] = pathlib.Path(accepted_boundary[key])
+                  proof['sourceAdmissionCheck'] = 'READ_SOURCE'
                   boundary_source = accepted_boundary['source'].read_bytes()
+                  proof['sourceAdmissionCheck'] = 'READ_PRODUCTION'
                   boundary_current = accepted_boundary['production'].read_bytes()
+                  proof['sourceAdmissionCheck'] = 'TEST_SHA'
                   assert hashlib.sha256(boundary_source).hexdigest() == accepted_boundary['testSha']
+                  proof['sourceAdmissionCheck'] = 'PRODUCTION_SHA'
                   assert hashlib.sha256(boundary_current).hexdigest() == accepted_boundary['productionSha']
+                  proof['sourceAdmissionCheck'] = 'GIT_HEAD'
                   assert boundary_source == subprocess.check_output(['git', 'show', 'HEAD:' + accepted_boundary['source'].as_posix()])
                   for path in (accepted_boundary['source'], accepted_boundary['production']):
+                      proof['sourceAdmissionCheck'] = ('CLEAN_TEST' if path == accepted_boundary['source']
+                                                       else 'CLEAN_PRODUCTION')
                       assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
+                  proof['sourceAdmissionCheck'] = 'FRAME'
                   assert boundary_source.decode().splitlines()[accepted_boundary['ruleLine'] - 1].strip() == accepted_boundary['ruleSource']
                   boundary_base = replacements.get(accepted_boundary['production'], boundary_current)
                   boundary_anchor = accepted_boundary['anchor'].encode()
+                  proof['sourceAdmissionCheck'] = 'ANCHOR'
                   assert boundary_base.count(boundary_anchor) == 1
                   boundary_negative = boundary_base.replace(boundary_anchor, accepted_boundary['changed'].encode(), 1)
+                  proof['sourceAdmissionCheck'] = 'NEGATIVE_SHA'
                   assert hashlib.sha256(boundary_negative).hexdigest() == accepted_boundary['negativeSha']
+                  proof.pop('sourceAdmissionCheck', None)
                   replacements[accepted_boundary['production']] = boundary_negative
                   boundary_file = accepted_boundary['source'].name
                   proof['acceptedBoundaryRule'] = {
@@ -3462,7 +3473,7 @@ jobs:
           umask 077
           mkdir -m 700 "$RCT_REMAINING5_RUN" "$RCT_REMAINING5_RUN/artifacts"
           docker build --tag "rct/notification-bot:u20-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" ../../services/notification-bot
-          npx playwright test --config playwright.real-mobile.config.ts --project=chromium --grep '^actual private bot menu roster and teacher Today use hosted current authority$'
+          npx playwright test --config playwright.real-mobile.config.ts --project=chromium --grep 'actual private bot menu roster and teacher Today use hosted current authority$'
 
       - name: Upload only safe hosted bot role outcomes
         if: always() && matrix.group == 'client' && steps.hosted-bot-roles.outcome != 'skipped'

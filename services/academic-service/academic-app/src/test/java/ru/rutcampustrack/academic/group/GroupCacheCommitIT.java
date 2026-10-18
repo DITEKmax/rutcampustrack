@@ -13,15 +13,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
+
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.grpc.AcademicReadService;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.RequestScope;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 
 /** A real outer transaction must not let a reader cache the pre-commit group indefinitely. */
 @Import(GroupCacheCommitIT.OwnedCaches.class)
@@ -40,17 +40,16 @@ class GroupCacheCommitIT extends AbstractAcademicIntegrationTest {
     @Autowired CacheManager caches;
     @Autowired PlatformTransactionManager transactions;
     @Autowired JdbcTemplate jdbc;
-    @Autowired ru.rutcampustrack.academic.security.RequestContext actor;
+    private RequestScope requestScope;
     private long groupId;
     private String original;
 
     @BeforeEach
     void prime() {
-        RequestContextHolder.setRequestAttributes(
-                new ServletRequestAttributes(new MockHttpServletRequest()));
-        actor.setUserId(
-                jdbc.queryForObject("SELECT id FROM users WHERE login='admin'", Long.class));
-        groupId = jdbc.queryForObject("SELECT id FROM groups WHERE name='ИВТ-211'", Long.class);
+        var admin = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        // Admission precedes the real outer transaction used by both commit/rollback cases.
+        requestScope = identityFixture.request(admin);
+        groupId = identityFixture.canonical().groupId();
         caches.getCache("groups").clear();
         original = reads.fetchGroup(groupId).getName();
         caches.getCache("group_members").put(groupId, "roster-snapshot");
@@ -58,7 +57,7 @@ class GroupCacheCommitIT extends AbstractAcademicIntegrationTest {
 
     @AfterEach
     void clearRequest() {
-        RequestContextHolder.resetRequestAttributes();
+        if (requestScope != null) requestScope.close();
     }
 
     @Test

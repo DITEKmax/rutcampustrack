@@ -16,12 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterDeletionCounts;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
@@ -39,12 +36,11 @@ import ru.rutcampustrack.academic.grpc.SemesterStateResponse;
 import ru.rutcampustrack.academic.homework.HomeworkBindingTransferCoordinator;
 import ru.rutcampustrack.academic.homework.LessonTransferBatch;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
-import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.semester.*;
 import ru.rutcampustrack.academic.semester.SemesterService;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.schedule.grpc.SemesterArchiveParticipantState;
 import ru.rutcampustrack.schedule.grpc.SetSemesterArchiveBarrierResponse;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -86,7 +82,6 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
     @Autowired private SemesterRepository semesterRepository;
 
     @Autowired private SemesterArchiveCommandTransaction deletionCommands;
-    @Autowired private RequestContext requestContext;
     @Autowired private AcademicSemesterArchiveBarrierTransaction deletionBarrier;
     @Autowired private AcademicSemesterDeletionSnapshotReader deletionSnapshots;
     @Autowired private SemesterArchiveCoordinator deletionCoordinator;
@@ -901,12 +896,8 @@ class SemesterArchiveStateIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void deletePreparingDrainsExactHomeworkEffectsAndRejectsOrdinaryWrites() {
-        long actorId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM users WHERE login = 'student'", Long.class);
-        long groupId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM groups WHERE name = '\u0418\u0412\u0422-211'", Long.class);
+        long actorId = identityFixture.canonical().studentId();
+        long groupId = identityFixture.canonical().groupId();
         long subjectId =
                 new TransactionTemplate(transactionManager)
                         .execute(
@@ -1211,8 +1202,7 @@ VALUES (?, ?, ?, ?, 1, 'delete-drain', ?, ?, ?, ?, ?, 'PENDING', now(), now()) R
     }
 
     private long adminId() {
-        return jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        return identityFixture.canonical().adminId();
     }
 
     private SemesterDeletionPreviewService.Snapshot deletionSnapshot(long id) {
@@ -1362,61 +1352,32 @@ VALUES (?, ?, ?, ?, 1, 'delete-drain', ?, ?, ?, ?, ?, 'PENDING', now(), now()) R
         withActiveAdminRequest(() -> deleteEmptyFixtureWithAdminRequest(id));
     }
 
-    /** Direct protected service calls carry the same durable session/claims as cleanup. */
+    /** Direct protected calls and cleanup use a real current Auth-selected ADMIN session. */
     private void withActiveAdminRequest(Runnable action) {
         long actorId = adminId();
+        var auth = identityFixture.authJdbc();
         Long grantId =
-                jdbcTemplate.queryForObject(
+                auth.queryForObject(
                         "SELECT id FROM user_role_grants "
                                 + "WHERE user_id = ? AND role = 'admin' AND status = 'active'",
                         Long.class,
                         actorId);
         assertThat(
-                        jdbcTemplate.queryForObject(
+                        auth.queryForObject(
                                 "SELECT assigned AND mode = 'FULL' "
                                         + "FROM admin_access_profiles WHERE user_id = ?",
                                 Boolean.class,
                                 actorId))
                 .isTrue();
-        UUID sessionId = UUID.randomUUID();
-        jdbcTemplate.update(
-                "INSERT INTO auth_sessions(sid, user_id, active_role_grant_id, session_version,"
-                    + " current_refresh_jti, refresh_expires_at, created_at, last_seen_at,"
-                    + " auth_method) VALUES (?, ?, ?, 1, ?, NOW() + interval '1 day', NOW(), NOW(),"
-                    + " 'PASSWORD')",
-                sessionId,
-                actorId,
-                grantId,
-                UUID.randomUUID());
-        var previousAttributes = RequestContextHolder.getRequestAttributes();
-        var attributes = new ServletRequestAttributes(new MockHttpServletRequest());
-        RequestContextHolder.setRequestAttributes(attributes);
-        try {
-            requestContext.setUserId(actorId);
-            requestContext.setRole(UserRole.ADMIN);
-            requestContext.setClaims(
-                    new InternalJwtClaims(
-                            actorId,
-                            sessionId,
-                            1,
-                            jdbcTemplate.queryForObject(
-                                    "SELECT roles_version FROM users WHERE id = ?",
-                                    Long.class,
-                                    actorId),
-                            "ADMIN",
-                            "ACTIVE",
-                            null,
-                            false,
-                            false));
+        var actor = identityFixture.select(actorId, AuthRole.ADMIN);
+        assertThat(
+                        auth.queryForObject(
+                                "SELECT active_role_grant_id FROM auth_sessions WHERE sid = ?",
+                                Long.class,
+                                actor.sessionId()))
+                .isEqualTo(grantId);
+        try (var ignored = identityFixture.request(actor)) {
             action.run();
-        } finally {
-            attributes.requestCompleted();
-            if (previousAttributes == null) {
-                RequestContextHolder.resetRequestAttributes();
-            } else {
-                RequestContextHolder.setRequestAttributes(previousAttributes);
-            }
-            jdbcTemplate.update("DELETE FROM auth_sessions WHERE sid = ?", sessionId);
         }
     }
 
@@ -1433,7 +1394,8 @@ VALUES (?, ?, ?, ?, 1, 'delete-drain', ?, ?, ?, ?, ?, 'PENDING', now(), now()) R
         if (semester.isReleasePending()) {
             semester = semesterService.completeRestoreRelease(id, semester.getStateVersion());
         }
-        long usersBefore = jdbcTemplate.queryForObject("SELECT count(*) FROM users", Long.class);
+        long usersBefore =
+                jdbcTemplate.queryForObject("SELECT count(*) FROM academic_profiles", Long.class);
         long groupsBefore = jdbcTemplate.queryForObject("SELECT count(*) FROM groups", Long.class);
         UUID operationId = UUID.randomUUID();
         var preview = deletionSnapshot(id);
@@ -1473,19 +1435,44 @@ VALUES (?, ?, ?, ?, 1, 'delete-drain', ?, ?, ?, ?, ?, 'PENDING', now(), now()) R
                                 operationId.toString()))
                 .isEqualTo(semester.getName());
         assertThat(semesterRepository.findById(id)).isEmpty();
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM users", Long.class))
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT count(*) FROM academic_profiles", Long.class))
                 .isEqualTo(usersBefore);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM groups", Long.class))
                 .isEqualTo(groupsBefore);
         assertThat(deletionCommands.completeDelete(operationId).getDeletePhase())
                 .isEqualTo(SemesterDeletionPhase.COMPLETED);
         assertThat(completionEventCount(operationId)).isOne();
+        // Only the deleted semester is invalid: all other FK references are genuine.
+        long controlGroup = identityFixture.canonical().groupId();
+        long controlSubject =
+                new TransactionTemplate(transactionManager)
+                        .execute(
+                                status ->
+                                        jdbcTemplate.queryForObject(
+                                                """
+WITH subject AS (
+    INSERT INTO subjects(name,type,group_id)
+    VALUES (?, 'lecture', ?) RETURNING id,type
+), lesson_type AS (
+    INSERT INTO subject_lesson_types(subject_id,lesson_type)
+    SELECT id,type FROM subject RETURNING subject_id
+) SELECT subject_id FROM lesson_type
+""",
+                                                Long.class,
+                                                "deleted-semester-control-" + UUID.randomUUID(),
+                                                controlGroup));
+        fixtureSubjectIds.add(controlSubject);
         assertThatThrownBy(
                         () ->
                                 jdbcTemplate.update(
                                         "INSERT INTO teacher_subject_groups (teacher_id,"
-                                            + " subject_id, group_id, semester_id) VALUES (1, 1, 1,"
+                                            + " subject_id, group_id, semester_id) VALUES (?, ?, ?,"
                                             + " ?)",
+                                        identityFixture.canonical().teacherId(),
+                                        controlSubject,
+                                        controlGroup,
                                         id))
                 .isInstanceOf(DataAccessException.class);
     }

@@ -137,6 +137,8 @@ def pg_schema(container, password, db, *, user="rct_user"):
 def pg_access(container, password, db, *, user):
     # Catalog ACL text contains role names, never OIDs or passwords. Array order is not
     # an authority fact; NULL (default ACL) remains distinct from an explicit empty ACL.
+    # In the supported UTF8 inventory, C ordering matches Python Unicode ordering.
+    # Canonicalize both ACL values and object order independently of the DB locale.
     value = json.loads(pg_query(container, password, db, """
 WITH namespaces AS (
   SELECT oid,nspname,nspowner,nspacl FROM pg_namespace
@@ -160,11 +162,12 @@ WITH namespaces AS (
 ), named AS (
   SELECT kind,name,pg_get_userbyid(owner) AS owner,
     CASE WHEN acl IS NULL THEN NULL ELSE
-      COALESCE((SELECT jsonb_agg(a::text ORDER BY a::text) FROM unnest(acl) a),'[]'::jsonb) END AS acl
+      COALESCE((SELECT jsonb_agg(a::text ORDER BY a::text COLLATE "C") FROM unnest(acl) a),'[]'::jsonb) END AS acl
   FROM objects
 )
 SELECT json_build_object('format',1,'objects',
-  COALESCE((SELECT jsonb_agg(to_jsonb(o) ORDER BY kind,name,owner) FROM named o),'[]'::jsonb),
+  COALESCE((SELECT jsonb_agg(to_jsonb(o)
+    ORDER BY kind COLLATE "C",name COLLATE "C",owner COLLATE "C") FROM named o),'[]'::jsonb),
   'unsupported',EXISTS(SELECT 1 FROM pg_class c JOIN namespaces n ON n.oid=c.relnamespace
     WHERE c.relkind NOT IN ('r','p','S','v','m','f','i','I','c','t'))
     OR EXISTS(SELECT 1 FROM pg_foreign_server)

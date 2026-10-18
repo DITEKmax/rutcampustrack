@@ -63,6 +63,8 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         archiveOperationIds.clear();
         bindingIds.clear();
         activeSemesterIds.clear();
+        actorId = identityFixture.canonical().studentId();
+        groupId = identityFixture.canonical().groupId();
         new TransactionTemplate(transactionManager)
                 .executeWithoutResult(
                         status -> {
@@ -70,33 +72,26 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
                                     jdbcTemplate.queryForList(
                                             "SELECT id FROM semesters WHERE is_active = true",
                                             Long.class));
-                            actorId =
-                                    jdbcTemplate.queryForObject(
-                                            "SELECT id FROM users WHERE login = 'student'",
-                                            Long.class);
-                            groupId =
-                                    jdbcTemplate.queryForObject(
-                                            "SELECT id FROM groups WHERE name = 'ИВТ-211'",
-                                            Long.class);
                             subjectId =
                                     jdbcTemplate.queryForObject(
                                             """
-                    INSERT INTO subjects (name, type, group_id)
-                    VALUES (?, 'lecture', ?) RETURNING id
-                    """,
+                                            INSERT INTO subjects (name, type, group_id)
+                                            VALUES (?, 'lecture', ?) RETURNING id
+                                            """,
                                             Long.class,
                                             "transfer-it-subject-" + UUID.randomUUID(),
                                             groupId);
                             jdbcTemplate.update(
-                                    "INSERT INTO subject_lesson_types (subject_id, lesson_type) VALUES (?, 'lecture')",
+                                    "INSERT INTO subject_lesson_types (subject_id, lesson_type)"
+                                            + " VALUES (?, 'lecture')",
                                     subjectId);
                             int year = ThreadLocalRandom.current().nextInt(2200, 3000);
                             semesterId =
                                     jdbcTemplate.queryForObject(
                                             """
-                    INSERT INTO semesters (name, date_from, date_to, is_active, created_at)
-                    VALUES (?, ?, ?, false, NOW()) RETURNING id
-                    """,
+INSERT INTO semesters (name, date_from, date_to, is_active, created_at)
+VALUES (?, ?, ?, false, NOW()) RETURNING id
+""",
                                             Long.class,
                                             "transfer-it-semester-" + UUID.randomUUID(),
                                             LocalDate.of(year, 1, 1),
@@ -196,24 +191,24 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT encode(payload_hash, 'hex') FROM homeworks WHERE id = ?
-                """,
+                                SELECT encode(payload_hash, 'hex') FROM homeworks WHERE id = ?
+                                """,
                                 String.class,
                                 activeHomeworkId))
                 .isEqualTo(java.util.HexFormat.of().formatHex(activeHash));
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT COUNT(*) FROM homework_binding_transfer_history WHERE binding_id = ?
-                """,
+SELECT COUNT(*) FROM homework_binding_transfer_history WHERE binding_id = ?
+""",
                                 Integer.class,
                                 activeBindingId))
                 .isEqualTo(2);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT COUNT(*) FROM lesson_transfer_receipts WHERE operation_id IN (?, ?)
-                """,
+SELECT COUNT(*) FROM lesson_transfer_receipts WHERE operation_id IN (?, ?)
+""",
                                 Integer.class,
                                 operationIds.get(0),
                                 operationIds.get(1)))
@@ -221,20 +216,20 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT COUNT(*) FROM academic_outbox
-                 WHERE event_type = 'homework.updated'
-                   AND payload #>> '{payload,homework_id}' = ?
-                """,
+                                SELECT COUNT(*) FROM academic_outbox
+                                 WHERE event_type = 'homework.updated'
+                                   AND payload #>> '{payload,homework_id}' = ?
+                                """,
                                 Integer.class,
                                 Long.toString(activeHomeworkId)))
                 .isEqualTo(2);
         List<String> activeAcks =
                 jdbcTemplate.queryForList(
                         """
-                SELECT payload::text FROM academic_outbox
-                 WHERE event_type = 'lesson.transfer.participant.applied'
-                   AND payload #>> '{payload,operation_id}' IN (?, ?)
-                """,
+                        SELECT payload::text FROM academic_outbox
+                         WHERE event_type = 'lesson.transfer.participant.applied'
+                           AND payload #>> '{payload,operation_id}' IN (?, ?)
+                        """,
                         String.class,
                         operationIds.get(0).toString(),
                         operationIds.get(1).toString());
@@ -299,9 +294,9 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForMap(
                                 """
-                SELECT source_lesson_id, target_lesson_id, source_date, target_date, state
-                  FROM homework_binding_transfer_markers WHERE binding_id = ?
-                """,
+SELECT source_lesson_id, target_lesson_id, source_date, target_date, state
+  FROM homework_binding_transfer_markers WHERE binding_id = ?
+""",
                                 pendingBindingId))
                 .containsEntry("source_lesson_id", 20001L)
                 .containsEntry("target_lesson_id", 20003L)
@@ -338,9 +333,9 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForMap(
                                 """
-                SELECT homework_id, source_lesson_id, target_lesson_id, source_date, target_date, state
-                  FROM homework_binding_transfer_markers WHERE binding_id = ?
-                """,
+SELECT homework_id, source_lesson_id, target_lesson_id, source_date, target_date, state
+  FROM homework_binding_transfer_markers WHERE binding_id = ?
+""",
                                 pendingBindingId))
                 .containsEntry("homework_id", materialized.getId())
                 .containsEntry("source_lesson_id", 20001L)
@@ -351,16 +346,16 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT COUNT(*) FROM homework_binding_transfer_history WHERE binding_id = ?
-                """,
+SELECT COUNT(*) FROM homework_binding_transfer_history WHERE binding_id = ?
+""",
                                 Integer.class,
                                 pendingBindingId))
                 .isEqualTo(2);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT COUNT(*) FROM lesson_transfer_receipts WHERE operation_id IN (?, ?)
-                """,
+SELECT COUNT(*) FROM lesson_transfer_receipts WHERE operation_id IN (?, ?)
+""",
                                 Integer.class,
                                 pendingFirstOperation,
                                 pendingSecondOperation))
@@ -448,13 +443,16 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThatThrownBy(
                         () ->
                                 jdbcTemplate.update(
-                                        "UPDATE homeworks SET placement_lesson_id = 10001, placement_binding_revision = 2 WHERE id = ?",
+                                        "UPDATE homeworks SET placement_lesson_id = 10001,"
+                                                + " placement_binding_revision = 2 WHERE id = ?",
                                         active.getId()))
                 .isInstanceOf(org.springframework.dao.DataAccessException.class)
                 .hasMessageContaining("cannot move backwards");
         List<String> actions =
                 jdbcTemplate.queryForList(
-                        "SELECT payload::text FROM academic_outbox WHERE event_type = 'homework.action-recorded' AND payload #>> '{payload,homework_id}' = ? ORDER BY id",
+                        "SELECT payload::text FROM academic_outbox WHERE event_type ="
+                            + " 'homework.action-recorded' AND payload #>> '{payload,homework_id}'"
+                            + " = ? ORDER BY id",
                         String.class,
                         active.getId().toString());
         assertThat(actions).hasSize(3);
@@ -498,9 +496,7 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         UUID transferSourceEventId = UUID.fromString((String) transferEvent.get("event_id"));
         transferConsumer.onEvent(transferEvent);
 
-        long adminId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        long adminId = identityFixture.canonical().adminId();
         var archive =
                 archiveCommands.startOrReplay(
                         semesterId, adminId, UUID.randomUUID(), SemesterArchiveAction.ARCHIVE);
@@ -545,9 +541,9 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         Map<String, Object> marker =
                 jdbcTemplate.queryForMap(
                         """
-                SELECT state, source_event_id, batch_index, operation_id
-                  FROM homework_binding_transfer_markers WHERE binding_id = ?
-                """,
+                        SELECT state, source_event_id, batch_index, operation_id
+                          FROM homework_binding_transfer_markers WHERE binding_id = ?
+                        """,
                         bindingId);
         assertThat(marker.get("state")).isEqualTo("CANCELLED_UNPUBLISHED");
         assertThat(marker.get("source_event_id")).isEqualTo(transferSourceEventId);
@@ -557,10 +553,10 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         Map<String, Object> admission =
                 jdbcTemplate.queryForMap(
                         """
-                SELECT source_event_id, terminal_event_id, resolution_state, consumed_at
-                  FROM academic_semester_archive_publication_admissions
-                 WHERE operation_id = ? AND binding_id = ?
-                """,
+                        SELECT source_event_id, terminal_event_id, resolution_state, consumed_at
+                          FROM academic_semester_archive_publication_admissions
+                         WHERE operation_id = ? AND binding_id = ?
+                        """,
                         archive.getOperationId(),
                         bindingId);
         assertThat(admission.get("source_event_id")).isEqualTo(transferSourceEventId);
@@ -572,44 +568,44 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT count(*) FROM lesson_transfer_receipts
-                 WHERE source_event_id = ? AND result = 'APPLIED'
-                """,
+                                SELECT count(*) FROM lesson_transfer_receipts
+                                 WHERE source_event_id = ? AND result = 'APPLIED'
+                                """,
                                 Long.class,
                                 transferSourceEventId))
                 .isEqualTo(1L);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT count(*) FROM academic_semester_archive_effect_receipts
-                 WHERE source_event_id = ? AND event_type = 'homework.binding.archived'
-                   AND state = 'APPLIED'
-                """,
+SELECT count(*) FROM academic_semester_archive_effect_receipts
+ WHERE source_event_id = ? AND event_type = 'homework.binding.archived'
+   AND state = 'APPLIED'
+""",
                                 Long.class,
                                 cancellationEventId))
                 .isEqualTo(1L);
         Map<String, Object> effectReceipt =
                 jdbcTemplate.queryForMap(
                         """
-                SELECT payload_hash, acknowledgement_event_id
-                  FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?
-                """,
+                        SELECT payload_hash, acknowledgement_event_id
+                          FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?
+                        """,
                         cancellationEventId);
         UUID firstAcknowledgementEventId = (UUID) effectReceipt.get("acknowledgement_event_id");
         List<Map<String, Object>> acknowledgements =
                 jdbcTemplate.queryForList(
                         """
-                SELECT payload ->> 'event_id' AS event_id,
-                       payload #>> '{payload,source_event_id}' AS source_event_id,
-                       payload #>> '{payload,target}' AS target,
-                       payload #>> '{payload,source_event_type}' AS source_event_type,
-                       payload #>> '{payload,semester_id}' AS semester_id,
-                       payload #>> '{payload,payload_hash}' AS payload_hash,
-                       payload #>> '{payload,result}' AS result
-                  FROM academic_outbox
-                 WHERE event_type = 'semester.archive.effect.ack'
-                   AND payload #>> '{payload,source_event_id}' = ?
-                """,
+                        SELECT payload ->> 'event_id' AS event_id,
+                               payload #>> '{payload,source_event_id}' AS source_event_id,
+                               payload #>> '{payload,target}' AS target,
+                               payload #>> '{payload,source_event_type}' AS source_event_type,
+                               payload #>> '{payload,semester_id}' AS semester_id,
+                               payload #>> '{payload,payload_hash}' AS payload_hash,
+                               payload #>> '{payload,result}' AS result
+                          FROM academic_outbox
+                         WHERE event_type = 'semester.archive.effect.ack'
+                           AND payload #>> '{payload,source_event_id}' = ?
+                        """,
                         cancellationEventId.toString());
         assertThat(acknowledgements).hasSize(2);
         List<String> acknowledgementEventIds =
@@ -665,7 +661,8 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
                 actorId);
         Map<String, Object> originalCompletion =
                 jdbcTemplate.queryForMap(
-                        "SELECT id, student_id, completed_at FROM homework_completions WHERE homework_id = ?",
+                        "SELECT id, student_id, completed_at FROM homework_completions WHERE"
+                                + " homework_id = ?",
                         homeworkId);
         Map<String, Object> transfer =
                 oneOffEvent(
@@ -704,24 +701,29 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         assertThat(moved.getPublicationState()).isEqualTo(HomeworkPublicationState.ACTIVE);
         assertThat(
                         jdbcTemplate.queryForMap(
-                                "SELECT id, student_id, completed_at FROM homework_completions WHERE homework_id = ?",
+                                "SELECT id, student_id, completed_at FROM homework_completions"
+                                        + " WHERE homework_id = ?",
                                 homeworkId))
                 .isEqualTo(originalCompletion);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT count(*) FROM homework_binding_transfer_history WHERE binding_id = ?",
+                                "SELECT count(*) FROM homework_binding_transfer_history WHERE"
+                                        + " binding_id = ?",
                                 Long.class,
                                 bindingId))
                 .isEqualTo(1);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT count(*) FROM lesson_transfer_receipts WHERE operation_id = ?",
+                                "SELECT count(*) FROM lesson_transfer_receipts WHERE operation_id ="
+                                        + " ?",
                                 Long.class,
                                 operation))
                 .isEqualTo(1);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT count(*) FROM academic_outbox WHERE event_type = 'lesson.transfer.participant.applied' AND payload #>> '{payload,operation_id}' = ?",
+                                "SELECT count(*) FROM academic_outbox WHERE event_type ="
+                                        + " 'lesson.transfer.participant.applied' AND payload #>>"
+                                        + " '{payload,operation_id}' = ?",
                                 Long.class,
                                 operation.toString()))
                 .isEqualTo(1);
@@ -760,19 +762,22 @@ class HomeworkBindingTransferIT extends AbstractAcademicIntegrationTest {
         }
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT count(*) FROM homework_binding_transfer_history WHERE binding_id = ?",
+                                "SELECT count(*) FROM homework_binding_transfer_history WHERE"
+                                        + " binding_id = ?",
                                 Long.class,
                                 bindingId))
                 .isEqualTo(1);
         assertThat(
                         jdbcTemplate.queryForObject(
-                                "SELECT count(*) FROM lesson_transfer_receipts WHERE operation_id = ?",
+                                "SELECT count(*) FROM lesson_transfer_receipts WHERE operation_id ="
+                                        + " ?",
                                 Long.class,
                                 operation))
                 .isEqualTo(1);
         assertThat(
                         jdbcTemplate.queryForMap(
-                                "SELECT id, student_id, completed_at FROM homework_completions WHERE homework_id = ?",
+                                "SELECT id, student_id, completed_at FROM homework_completions"
+                                        + " WHERE homework_id = ?",
                                 homeworkId))
                 .isEqualTo(originalCompletion);
     }

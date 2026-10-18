@@ -5,90 +5,117 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+
+import ru.rutcampustrack.academic.admin.AdminAccessService;
+import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
+import ru.rutcampustrack.academic.user.UserService;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+
+import java.util.List;
 
 /** Actual read DTO and durable live credential authority; no plaintext is printed in assertions. */
 @AutoConfigureMockMvc(
         print = org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint.NONE)
 class InitialPasswordBoundaryIT extends AbstractAcademicIntegrationTest {
     @Autowired MockMvc mvc;
-    @Autowired JdbcTemplate jdbc;
     @Autowired ObjectMapper mapper;
+    @Autowired UserService users;
+    @Autowired AdminAccessService adminAccess;
 
     @Test
     void initialPasswordReadUsesLiveGrantTargetProtectionAndNoStore() throws Exception {
-        long admin = jdbc.queryForObject("SELECT id FROM users WHERE login='admin'", Long.class);
-        long student =
-                jdbc.queryForObject("SELECT id FROM users WHERE login='student'", Long.class);
-        String marker = "RCT_SYNTHETIC_INITIAL_PASSWORD_SENTINEL";
-        // Keep the product invariant: a separate FULL administrator survives all fixture grant
-        // changes.
-        long protectedAdmin =
-                jdbc.queryForObject(
-                        """
-                INSERT INTO users(login,password_hash,last_name,first_name,role,status,initial_password,password_changed)
-                SELECT 'initial-password-full-control',password_hash,'Control','Admin','admin','active',?,FALSE
-                FROM users WHERE id=? RETURNING id
-                """,
-                        Long.class,
-                        marker,
-                        admin);
-        jdbc.update(
-                """
-                INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version)
-                VALUES (?,TRUE,'FULL','{}',1)
-                """,
-                protectedAdmin);
-        jdbc.update(
-                """
-                INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
-                VALUES (?,'admin','active',NOW(),NOW())
-                """,
-                protectedAdmin);
-        jdbc.update(
-                "UPDATE users SET initial_password=?,password_changed=FALSE WHERE id IN (?,?)",
-                marker,
-                student,
-                admin);
-        String full = token(admin);
-        assertPassword(student, full, marker, true);
-        assertPassword(protectedAdmin, full, marker, true);
+        var control = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        var admin = create(control, UserRole.ADMIN, "CredentialReader");
+        var protectedAdmin = create(control, UserRole.ADMIN, "ProtectedControl");
+        var student = create(control, UserRole.STUDENT, "CredentialTarget");
+        long adminId = admin.getId(), studentId = student.getId();
+        String studentPassword = initial(student);
+        String protectedPassword = initial(protectedAdmin);
+        String full = token(adminId);
+        assertPassword(studentId, full, studentPassword, true);
+        assertPassword(protectedAdmin.getId(), full, protectedPassword, true);
 
-        limited(admin, "USERS_VIEW");
-        mvc.perform(get("/academic/users/{id}", student).header("X-Internal-Token", full))
-                .andExpect(status().isForbidden());
-        assertPassword(student, token(admin), marker, false);
+        // The canonical FULL control and separately provisioned FULL target both survive.
+        limited(control, adminId, 1L, "USERS_VIEW");
+        assertStaleDenied(studentId, full);
+        assertPassword(studentId, token(adminId), studentPassword, false);
 
-        limited(admin, "USERS_VIEW", "USER_CREDENTIALS_MANAGE");
-        String credentials = token(admin);
-        assertPassword(student, credentials, marker, true);
-        assertPassword(protectedAdmin, credentials, marker, false);
-        // Auth's real password-change transaction has a separate HTTP+DB oracle.
-        // Here its documented durable post-change shape exercises the consumer DTO.
-        jdbc.update(
-                "UPDATE users SET initial_password=NULL,password_changed=TRUE WHERE id=?", student);
-        assertPassword(student, credentials, marker, false);
-        limited(admin, "USERS_VIEW");
-        mvc.perform(get("/academic/users/{id}", student).header("X-Internal-Token", credentials))
-                .andExpect(status().isForbidden());
-        assertPassword(student, token(admin), marker, false);
+        limited(control, adminId, 2L, "USERS_VIEW", "USER_CREDENTIALS_MANAGE");
+        String credentials = token(adminId);
+        assertPassword(studentId, credentials, studentPassword, true);
+        assertPassword(protectedAdmin.getId(), credentials, protectedPassword, false);
+
+        // Validate the actual generated password and perform Auth's own credential transaction.
+        identityFixture.changePassword(
+                identityFixture.select(studentId, AuthRole.STUDENT),
+                studentPassword,
+                "RCT-synthetic-changed-password-2026!");
+        identityFixture.catchUpCatalog();
+        assertPassword(studentId, credentials, studentPassword, false);
+
+        limited(control, adminId, 3L, "USERS_VIEW");
+        assertStaleDenied(studentId, credentials);
+        assertPassword(studentId, token(adminId), studentPassword, false);
     }
 
-    private void limited(long admin, String... grants) {
-        jdbc.update(
-                "UPDATE admin_access_profiles SET mode='LIMITED',permissions=?::text[],version=version+1 WHERE user_id=?",
-                "{" + String.join(",", grants) + "}",
-                admin);
+    private UserCreatedResponse create(SelectedActor control, UserRole role, String name) {
+        try (var ignored = identityFixture.request(control)) {
+            var created =
+                    users.createUser(
+                                    new CreateUserRequest(
+                                            "Synthetic",
+                                            name,
+                                            null,
+                                            role,
+                                            role == UserRole.STUDENT
+                                                    ? identityFixture.canonical().groupId()
+                                                    : null,
+                                            null,
+                                            role == UserRole.STUDENT ? 620000000101L : null,
+                                            role == UserRole.ADMIN
+                                                    ? new AdminAccessInput("FULL", List.of())
+                                                    : null))
+                            .getContent();
+            assertThat(created != null && created.getId() != null).as("created identity").isTrue();
+            return created;
+        }
+    }
+
+    private static String initial(UserCreatedResponse created) {
+        String initial = created.getInitialPassword();
+        assertThat(initial != null && !initial.isBlank())
+                .as("generated initial credential")
+                .isTrue();
+        return initial;
+    }
+
+    private void limited(SelectedActor control, long admin, long version, String... grants) {
+        try (var ignored = identityFixture.request(control)) {
+            var updated =
+                    adminAccess.put(
+                            admin, new AdminAccessInput("LIMITED", List.of(grants)), version);
+            assertThat(updated.version()).isEqualTo(version + 1);
+            assertThat(updated.permissions()).containsExactlyInAnyOrder(grants);
+        }
     }
 
     private String token(long admin) {
-        return identityFixture
-                .select(admin, ru.rutcampustrack.auth.session.model.AuthRole.ADMIN)
-                .internalToken();
+        return identityFixture.select(admin, AuthRole.ADMIN).internalToken();
+    }
+
+    private void assertStaleDenied(long target, String token) throws Exception {
+        // Real permission operations advance rolesVersion, invalidating the old signed identity.
+        mvc.perform(get("/academic/users/{id}", target).header("X-Internal-Token", token))
+                .andExpect(status().isUnauthorized());
     }
 
     private void assertPassword(long target, String token, String marker, boolean expected)

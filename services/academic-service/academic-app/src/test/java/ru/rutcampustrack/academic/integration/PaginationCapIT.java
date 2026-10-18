@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -22,13 +21,9 @@ class PaginationCapIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
 
-    @Autowired private JdbcTemplate jdbcTemplate;
-
     @Test
     void listUsers_sizeExceedsMax_truncatedToShared100() throws Exception {
-        Long adminId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        long adminId = identityFixture.canonical().adminId();
 
         mockMvc.perform(
                         get("/academic/users?size=1000000&page=0")

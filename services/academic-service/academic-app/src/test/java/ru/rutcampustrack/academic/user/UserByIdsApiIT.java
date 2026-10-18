@@ -11,10 +11,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
+
+import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * GET /academic/users/by-ids — batch-резолв display-имён для STUDENT/TEACHER.
@@ -29,45 +36,73 @@ import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
  * </ul>
  */
 @AutoConfigureMockMvc
-@Transactional
 class UserByIdsApiIT extends AbstractAcademicIntegrationTest {
 
     @Autowired MockMvc mockMvc;
-    @Autowired JdbcTemplate jdbcTemplate;
+    @Autowired GroupHeadmanAssignmentService headmen;
+    private static final AtomicLong TELEGRAM = new AtomicLong(610000009000L);
 
     private Long student1Id;
     private Long student2Id;
     private Long studentNoMiddleId;
-    private Long callerStudentId;
+    private SelectedActor caller;
 
     @BeforeEach
     void setUp() {
-        jdbcTemplate.update(
-                "INSERT INTO users (login, password_hash, last_name, first_name, middle_name, "
-                        + "role, status, is_headman, password_changed, created_at, updated_at) VALUES "
-                        + "('byids_a', 'x', 'Алексеев','Алексей',  'Алексеевич', 'student', 'active', true,  false, NOW(), NOW()),"
-                        + "('byids_b', 'x', 'Борисов', 'Борис',    'Борисович',  'student', 'active', false, false, NOW(), NOW()),"
-                        + "('byids_c', 'x', 'Сидоров', 'Семён',    NULL,         'student', 'active', false, false, NOW(), NOW())");
+        var canonical = identityFixture.canonical();
+        var admin = identityFixture.select(canonical.adminId(), AuthRole.ADMIN);
         student1Id =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM users WHERE login = 'byids_a'", Long.class);
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Алексеев",
+                                        "Алексей",
+                                        "Алексеевич",
+                                        UserRole.STUDENT,
+                                        canonical.groupId(),
+                                        null,
+                                        TELEGRAM.incrementAndGet()),
+                                admin)
+                        .userId();
         student2Id =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM users WHERE login = 'byids_b'", Long.class);
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Борисов",
+                                        "Борис",
+                                        "Борисович",
+                                        UserRole.STUDENT,
+                                        canonical.groupId(),
+                                        null,
+                                        TELEGRAM.incrementAndGet()),
+                                admin)
+                        .userId();
         studentNoMiddleId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM users WHERE login = 'byids_c'", Long.class);
-        callerStudentId = student1Id; // headman caller
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Сидоров",
+                                        "Семён",
+                                        null,
+                                        UserRole.STUDENT,
+                                        canonical.groupId(),
+                                        null,
+                                        TELEGRAM.incrementAndGet()),
+                                admin)
+                        .userId();
+        try (var ignored = identityFixture.request(admin)) {
+            headmen.assign(
+                    canonical.groupId(),
+                    new AssignHeadmanRequest(student1Id, canonical.studentId()));
+        }
+        caller = identityFixture.select(student1Id, AuthRole.HEADMAN);
     }
 
     private org.springframework.test.web.servlet.ResultActions callAsStudent(String idsCsv)
             throws Exception {
         return mockMvc.perform(
                 get("/academic/users/by-ids")
-                        .header("X-User-Id", callerStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "true")
+                        .with(identityFixture.signed(caller))
                         .param("ids", idsCsv));
     }
 
@@ -123,12 +158,7 @@ class UserByIdsApiIT extends AbstractAcademicIntegrationTest {
         // Spring отвергнёт отсутствующий required @RequestParam как 400 раньше
         // того, как наш cap-валидатор сработает. Это всё ещё HTTP 400 — чего
         // достаточно с точки зрения contract'а.
-        mockMvc.perform(
-                        get("/academic/users/by-ids")
-                                .header("X-User-Id", callerStudentId)
-                                .header("X-User-Role", "STUDENT")
-                                .header("X-Group-Id", "")
-                                .header("X-Is-Headman", "true"))
+        mockMvc.perform(get("/academic/users/by-ids").with(identityFixture.signed(caller)))
                 .andExpect(status().isBadRequest());
     }
 

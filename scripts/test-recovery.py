@@ -15,6 +15,38 @@ spec.loader.exec_module(r)
 COMPOSE = HERE.parent / "docker-compose.test-restore.yml"
 
 
+# Only owned literal guards become public codes; unknown exception material stays private.
+FAILURE_GUARDS = {
+    "Unsupported/incomplete PostgreSQL access inventory": "PG_ACCESS_INCOMPLETE",
+    "Unsupported PostgreSQL access object": "PG_ACCESS_OBJECT",
+    "Duplicate PostgreSQL access object": "PG_ACCESS_DUPLICATE",
+    "PostgreSQL access inventory must include its database": "PG_ACCESS_DATABASE",
+    "Source changed during backup; incomplete bundle retained": "SOURCE_CHANGED",
+    "Choose exactly one of --no-files or --files-dir": "FILES_MODE",
+    "Stop application writers first; acknowledge using --quiesced": "NOT_QUIESCED",
+    "Backup output already exists; choose a new path": "OUTPUT_EXISTS",
+    "Files directory must not be a symlink": "FILES_SYMLINK",
+    "Backup cannot live within files source": "OUTPUT_IN_SOURCE",
+    "Explicit credential file is missing": "CREDENTIAL_FILE_MISSING",
+    "Unsupported recovery admin identity": "RECOVERY_ADMIN",
+    "Three distinct DB containers are required": "DISTINCT_TARGETS",
+    "DB target is not running": "TARGET_NOT_RUNNING",
+    "Files source must be a real directory": "FILES_SOURCE",
+    "Files source must contain only regular files/directories (no links/devices)": "FILES_ENTRY",
+    "Bundle must be a real directory": "BUNDLE_DIRECTORY",
+    "Bundle incomplete or contains unexpected artifacts": "BUNDLE_ARTIFACTS",
+    "Bundle artifacts must be regular files": "BUNDLE_REGULAR_FILES",
+    "Unsupported/incomplete manifest; format 3 with owner/ACL evidence is required": "MANIFEST_FORMAT",
+    "Unsupported files mode in manifest": "MANIFEST_FILES_MODE",
+    "Restore files mode does not match bundle; refused before target writes": "BUNDLE_MODE_MISMATCH",
+    "Incomplete/unexpected database inventory": "BUNDLE_DATABASES",
+    "Bundle lacks mandatory PostgreSQL access evidence; a new format-3 backup is required": "BUNDLE_ACCESS_MISSING",
+    "Database-only bundle declares files; restore refused": "BUNDLE_DATABASE_ONLY_FILES",
+    "Unsafe files archive member": "FILES_ARCHIVE_MEMBER",
+    "Files archive inventory mismatch": "FILES_ARCHIVE_INVENTORY",
+}
+
+
 def compose(work, project, *args):
     return ["docker", "compose", "-f", str(COMPOSE), "--env-file", str(work / (project + ".env")), "-p", project, *args]
 
@@ -242,7 +274,23 @@ def main():
     try:
         exercise(args)
     except (r.RecoveryError, OSError, ValueError, KeyError) as error:
+        failure_class = next(
+            (code for kind, code in (
+                (r.RecoveryError, "RECOVERY_ERROR"),
+                (json.JSONDecodeError, "JSON_DECODE_ERROR"),
+                (UnicodeDecodeError, "UNICODE_DECODE_ERROR"),
+                (OSError, "OS_ERROR"),
+                (ValueError, "VALUE_ERROR"),
+                (KeyError, "KEY_ERROR"),
+            ) if isinstance(error, kind)),
+            "OTHER",
+        )
+        guard = "OTHER"
+        if isinstance(error, r.RecoveryError) and len(error.args) == 1 and type(error.args[0]) is str:
+            guard = FAILURE_GUARDS.get(error.args[0], "OTHER")
         print("RECOVERY_FAILURE_HINT:" + (error.hint if isinstance(error, r.RecoveryError) and error.hint in r.FAILURE_HINTS else "GUARD"), file=sys.stderr)
+        print("RECOVERY_FAILURE_CLASS:" + failure_class, file=sys.stderr)
+        print("RECOVERY_FAILURE_GUARD:" + guard, file=sys.stderr)
         print(
             f"FAIL synthetic recovery: stage={args.failure_stage}; owned resources/artifacts retained", file=sys.stderr
         )

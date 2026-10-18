@@ -492,7 +492,11 @@ public final class AcademicIdentityIntegrationFixture implements AutoCloseable {
         registry.add(
                 "grpc.service-identity.auth-to-academic-presentation-token",
                 () -> presentationToken);
-        registry.add("rutcampustrack.security.internal-jwt.legacy-headers-enabled", () -> false);
+        // Only an explicit property on the owning test class enables the legacy filter branch.
+        // All other fixture consumers keep strict mode, irrespective of application-test.yml.
+        registry.add(
+                "rutcampustrack.security.internal-jwt.legacy-headers-enabled",
+                () -> "${rct.fixture.legacy-headers-enabled:false}");
     }
 
     public PostgreSQLContainer<?> postgres() {
@@ -694,6 +698,32 @@ public final class AcademicIdentityIntegrationFixture implements AutoCloseable {
                         .setReadOnly(snapshot.isReadOnly());
         if (grant.groupId() != null) identity.setGroupId(grant.groupId());
         return new SelectedActor(admit(identity.build()));
+    }
+
+    /** Runs Auth's actual current-password validation and credential/session transaction. */
+    public void changePassword(SelectedActor actor, String currentPassword, String replacement) {
+        outsideTransaction();
+        var claims = actor.claims();
+        var principal =
+                new ru.rutcampustrack.auth.security.SessionPrincipal(
+                        actor.userId(),
+                        actor.sessionId(),
+                        actor.sessionVersion(),
+                        actor.rolesVersion(),
+                        actor.role(),
+                        ru.rutcampustrack.auth.session.model.RoleStatus.valueOf(claims.status()),
+                        claims.groupId(),
+                        claims.isHeadman(),
+                        claims.readOnly());
+        var result =
+                authContext
+                        .getBean(AuthService.class)
+                        .changePassword(
+                                principal,
+                                new ru.rutcampustrack.auth.dto.ChangePasswordRequest(
+                                        currentPassword, replacement));
+        if (!result.succeeded())
+            throw new IllegalStateException("Actual Auth password change rejected");
     }
 
     private LiveSessionAuthority admit(StoredSessionIdentity identity) {

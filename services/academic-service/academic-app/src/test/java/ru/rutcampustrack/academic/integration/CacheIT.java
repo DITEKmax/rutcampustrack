@@ -20,7 +20,11 @@ import ru.rutcampustrack.academic.config.CacheConfig;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
+import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
+import ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.ArchiveRequest;
+import ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.RestoreRequest;
+import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
@@ -28,9 +32,12 @@ import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
 import ru.rutcampustrack.academic.grpc.GroupRequest;
 import ru.rutcampustrack.academic.grpc.UserRequest;
+import ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.semester.SemesterService;
 import ru.rutcampustrack.academic.user.UserService;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 
 import java.util.Set;
 import java.util.UUID;
@@ -53,9 +60,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>Uses a unique in-process gRPC server name ("academic-cache-test") to avoid conflicts with
  * AcademicGrpcIT ("academic-grpc-test").
  *
- * <p>Data from V2__seed_test_data.sql: group(id=1, name=ИВТ-211), semester(id=1, is_active=true),
- * users: admin(id=1), teacher(id=2), student(id=3, is_headman=true, group_id=1),
- * campus_settings(id=1, lat=55.788204, lng=37.606762, radius_m=200)
+ * <p>Uses the fresh canonical two-database fixture's actual group, semester, teacher and headman
+ * student IDs. Identity mutations use admitted Auth actors and the real coordinator.
  */
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -68,11 +74,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class CacheIT extends AbstractAcademicCacheIntegrationTest {
 
-    // Seed data constants matching V2__seed_test_data.sql
-    private static final long GROUP_ID = 1L;
-    private static final long SEMESTER_ID = 1L;
-    private static final long TEACHER_ID = 2L;
-    private static final long STUDENT_ID = 3L; // is_headman=true, group_id=1
+    private long groupId;
+    private long semesterId;
+    private long teacherId;
+    private long studentId;
+    private SelectedActor admin;
 
     @GrpcClient("inProcess")
     @SuppressWarnings("unused") // injected by grpc-spring-boot-starter
@@ -85,6 +91,8 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
     @Autowired private ru.rutcampustrack.academic.grpc.AcademicReadService academicReads;
 
     @Autowired private UserService userService;
+
+    @Autowired private AcademicUserIdentityOperations identityOperations;
 
     @Autowired private ru.rutcampustrack.academic.user.UserArchiveService archiveService;
 
@@ -101,6 +109,12 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
 
     @BeforeEach
     void clearCaches() {
+        var canonical = identityFixture.canonical();
+        groupId = canonical.groupId();
+        semesterId = canonical.semesterId();
+        teacherId = canonical.teacherId();
+        studentId = canonical.studentId();
+        admin = identityFixture.select(canonical.adminId(), AuthRole.ADMIN);
         // Clear all caches (flushes Redis) so every test starts with empty cache
         cacheManager
                 .getCacheNames()
@@ -265,7 +279,7 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void getGroup_secondCall_servedFromCache() {
-        GroupRequest request = GroupRequest.newBuilder().setGroupId(GROUP_ID).build();
+        GroupRequest request = GroupRequest.newBuilder().setGroupId(groupId).build();
 
         stub.getGroup(request);
         stub.getGroup(request);
@@ -279,46 +293,72 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void getGroupMembers_readsCurrentGrantWithoutSemesterCoupling() {
-        GroupMembersRequest request = GroupMembersRequest.newBuilder().setGroupId(GROUP_ID).build();
+        GroupMembersRequest request = GroupMembersRequest.newBuilder().setGroupId(groupId).build();
 
         assertThat(stub.getGroupMembers(request).getStudentsList())
                 .extracting(student -> student.getUserId())
-                .contains(STUDENT_ID);
+                .contains(studentId);
+        long telegramId =
+                stub.getUserById(UserRequest.newBuilder().setUserId(studentId).build())
+                        .getTelegramId();
         var activeSemesterIds =
                 jdbcTemplate.queryForList(
                         "SELECT id FROM semesters WHERE is_active = true", Long.class);
         try {
             // No cache eviction: a previously read roster cannot confer authority.
-            jdbcTemplate.update(
-                    "UPDATE user_role_grants SET status = 'suspended' WHERE user_id = ? AND role ="
-                            + " 'student'",
-                    STUDENT_ID);
+            try (var ignored = identityFixture.request(admin)) {
+                identityOperations.role(
+                        studentId,
+                        "STUDENT",
+                        new RoleGrantUpdateRequest(RoleGrantStatus.SUSPENDED, null, null, null));
+            }
             assertThat(stub.getGroupMembers(request).getStudentsList())
                     .extracting(student -> student.getUserId())
-                    .doesNotContain(STUDENT_ID);
-            jdbcTemplate.update(
-                    "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role ="
-                            + " 'student'",
-                    STUDENT_ID);
-            jdbcTemplate.update("UPDATE users SET status = 'archived' WHERE id = ?", STUDENT_ID);
+                    .doesNotContain(studentId);
+            try (var ignored = identityFixture.request(admin)) {
+                identityOperations.role(
+                        studentId,
+                        "STUDENT",
+                        new RoleGrantUpdateRequest(RoleGrantStatus.ACTIVE, null, null, null));
+            }
+            org.mockito.Mockito.when(archiveImpact.preview(studentId))
+                    .thenReturn(
+                            ru.rutcampustrack.attendance.grpc.UserImpactSnapshot.newBuilder()
+                                    .setUserId(studentId)
+                                    .setObservedAtEpochMs(System.currentTimeMillis())
+                                    .setSnapshotDigest("44".repeat(32))
+                                    .build());
+            UUID archive = UUID.randomUUID();
+            try (var ignored = identityFixture.request(admin, archive)) {
+                var preview = archiveService.preview(studentId);
+                assertThat(preview.requiresPassword()).isFalse();
+                archiveService.archive(
+                        studentId, new ArchiveRequest(archive, preview.previewDigest(), null));
+            }
             assertThat(stub.getGroupMembers(request).getStudentsList())
                     .extracting(student -> student.getUserId())
-                    .doesNotContain(STUDENT_ID);
-            jdbcTemplate.update("UPDATE users SET status = 'active' WHERE id = ?", STUDENT_ID);
+                    .doesNotContain(studentId);
+            UUID restore = UUID.randomUUID();
+            try (var ignored = identityFixture.request(admin, restore)) {
+                archiveService.restore(studentId, new RestoreRequest(restore));
+            }
+            // Restore does not revive grants; a fresh real assignment restores this audience.
+            try (var ignored = identityFixture.request(admin)) {
+                identityOperations.role(
+                        studentId,
+                        "STUDENT",
+                        new RoleGrantUpdateRequest(
+                                RoleGrantStatus.ACTIVE, groupId, null, telegramId));
+            }
             jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
-            jdbcTemplate.update("UPDATE groups SET is_active = false WHERE id = ?", GROUP_ID);
+            jdbcTemplate.update("UPDATE groups SET is_active = false WHERE id = ?", groupId);
             // Archiving the group keeps active student grants; group.archived still has its
             // audience.
             assertThat(stub.getGroupMembers(request).getStudentsList())
                     .extracting(student -> student.getUserId())
-                    .contains(STUDENT_ID);
+                    .contains(studentId);
         } finally {
-            jdbcTemplate.update(
-                    "UPDATE user_role_grants SET status = 'active' WHERE user_id = ? AND role ="
-                            + " 'student'",
-                    STUDENT_ID);
-            jdbcTemplate.update("UPDATE users SET status = 'active' WHERE id = ?", STUDENT_ID);
-            jdbcTemplate.update("UPDATE groups SET is_active = true WHERE id = ?", GROUP_ID);
+            jdbcTemplate.update("UPDATE groups SET is_active = true WHERE id = ?", groupId);
             activeSemesterIds.forEach(
                     id ->
                             jdbcTemplate.update(
@@ -336,37 +376,25 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
                 GroupMembersRequest.newBuilder().setGroupId(managedGroupId).build();
         assertThat(stub.getGroupMembers(request).getStudentsList()).isEmpty();
 
-        Long createdId = null;
-        try {
-            createdId =
-                    userService
-                            .createUser(
-                                    new CreateUserRequest(
-                                            "Cache",
-                                            "RoleGrantCreateTest",
-                                            null,
-                                            UserRole.STUDENT,
-                                            managedGroupId,
-                                            null,
-                                            Math.floorMod(System.nanoTime(), 9_000_000_000L)
-                                                    + 100_000L))
-                            .getContent()
-                            .getId();
+        Long createdId =
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Cache",
+                                        "RoleGrantCreateTest",
+                                        null,
+                                        UserRole.STUDENT,
+                                        managedGroupId,
+                                        null,
+                                        Math.floorMod(System.nanoTime(), 9_000_000_000L)
+                                                + 100_000L),
+                                admin)
+                        .userId();
 
-            assertThat(stub.getGroupMembers(request).getStudentsList())
-                    .extracting(student -> student.getUserId())
-                    .contains(createdId);
-        } finally {
-            if (createdId != null) {
-                jdbcTemplate.update(
-                        "DELETE FROM student_group_history WHERE user_id = ?", createdId);
-                jdbcTemplate.update("DELETE FROM user_role_grants WHERE user_id = ?", createdId);
-                jdbcTemplate.update("DELETE FROM users WHERE id = ?", createdId);
-            }
-            jdbcTemplate.update(
-                    "DELETE FROM group_history_coverage WHERE group_id = ?", managedGroupId);
-            jdbcTemplate.update("DELETE FROM groups WHERE id = ?", managedGroupId);
-        }
+        assertThat(stub.getGroupMembers(request).getStudentsList())
+                .extracting(student -> student.getUserId())
+                .contains(createdId);
+        // The fresh split fixture owns cleanup; no legacy Auth rows are deleted locally.
     }
 
     /**
@@ -400,16 +428,22 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
     }
 
     /**
-     * CACHE-01 / GRPC-07: Two consecutive GetUserById calls for the same userId must trigger only
-     * ONE DB query (userRepository.findByIdIncludingArchived).
+     * CACHE-01 / GRPC-07 lineage: keep two current-authority GetUserById results and the cached
+     * Academic profile key as separate checks after the split.
      */
     @Test
     void getUserById_secondCall_servedFromCache() {
-        UserRequest request = UserRequest.newBuilder().setUserId(TEACHER_ID).build();
+        UserRequest request = UserRequest.newBuilder().setUserId(teacherId).build();
 
-        stub.getUserById(request);
-        stub.getUserById(request);
+        var first = stub.getUserById(request);
+        var second = stub.getUserById(request);
+        assertThat(first.getId()).isEqualTo(teacherId);
+        assertThat(second).isEqualTo(first);
 
+        // Current-authority gRPC deliberately bypasses the cached profile. Retain the original
+        // Redis-key oracle on the actual Spring profile proxy that owns the users cache.
+        academicReads.fetchUserById(teacherId);
+        academicReads.fetchUserById(teacherId);
         assertThat(redisTemplate.keys(cachePrefix(cacheManager, "users") + "*")).isNotEmpty();
     }
 
@@ -458,7 +492,7 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
                 today.plusDays(5),
                 spring ? "SPRING" : "AUTUMN",
                 today.getYear() - (spring ? 1 : 0),
-                SEMESTER_ID);
+                semesterId);
 
         // Prime the cache
         stub.getActiveSemester(request);
@@ -466,7 +500,7 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
                 .isNotEmpty();
 
         // Mutation: activateSemester triggers @CacheEvict(active_semester, allEntries=true)
-        semesterService.activateSemester(SEMESTER_ID);
+        semesterService.activateSemester(semesterId);
 
         // Cache must be evicted
         assertThat(redisTemplate.keys(cachePrefix(cacheManager, "active_semester") + "*"))
@@ -545,8 +579,8 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
                         .createGroup(new CreateGroupRequest(firstAvailableManagedGroupName("УВП")))
                         .getId();
         Long transferStudentId =
-                userService
-                        .createUser(
+                identityFixture
+                        .seedUser(
                                 new CreateUserRequest(
                                         "Cache",
                                         "TransferTest",
@@ -555,9 +589,9 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
                                         sourceGroupId,
                                         null,
                                         Math.floorMod(System.nanoTime(), 9_000_000_000L)
-                                                + 100_000L))
-                        .getContent()
-                        .getId();
+                                                + 100_000L),
+                                admin)
+                        .userId();
 
         GroupMembersRequest req1 =
                 GroupMembersRequest.newBuilder().setGroupId(sourceGroupId).build();
@@ -570,8 +604,10 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
                 .extracting(student -> student.getUserId())
                 .doesNotContain(transferStudentId);
 
-        userService.transferStudent(
-                transferStudentId, new TransferStudentRequest(group2Id, "Test transfer"));
+        try (var ignored = identityFixture.request(admin)) {
+            userService.transferStudent(
+                    transferStudentId, new TransferStudentRequest(group2Id, "Test transfer"));
+        }
         assertThat(stub.getGroupMembers(req1).getStudentsList())
                 .extracting(student -> student.getUserId())
                 .doesNotContain(transferStudentId);
@@ -597,44 +633,46 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
     @Test
     void headmanChange_invalidatesGroupCacheAndCurrentRosterReflectsChange() {
         Long replacementId =
-                jdbcTemplate.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role,"
-                            + " status, is_headman, group_id) VALUES ('cache_replacement', 'x',"
-                            + " 'Cache', 'Replacement', 'student', 'active', false, ?) RETURNING"
-                            + " id",
-                        Long.class,
-                        GROUP_ID);
-        jdbcTemplate.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at,"
-                        + " updated_at) VALUES (?, 'student', 'active', ?, NOW(), NOW())",
-                replacementId,
-                GROUP_ID);
-        GroupRequest groupReq = GroupRequest.newBuilder().setGroupId(GROUP_ID).build();
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Cache",
+                                        "Replacement",
+                                        null,
+                                        UserRole.STUDENT,
+                                        groupId,
+                                        null,
+                                        900000000445L),
+                                admin)
+                        .userId();
+        GroupRequest groupReq = GroupRequest.newBuilder().setGroupId(groupId).build();
         GroupMembersRequest membersReq =
-                GroupMembersRequest.newBuilder().setGroupId(GROUP_ID).build();
+                GroupMembersRequest.newBuilder().setGroupId(groupId).build();
 
         // Prime group detail and read the current roster.
         stub.getGroup(groupReq);
         assertThat(stub.getGroupMembers(membersReq).getStudentsList())
-                .filteredOn(student -> student.getUserId() == STUDENT_ID)
+                .filteredOn(student -> student.getUserId() == studentId)
                 .extracting(student -> student.getIsHeadman())
                 .containsExactly(true);
 
-        String groupKey = cachePrefix(cacheManager, "groups") + GROUP_ID;
+        String groupKey = cachePrefix(cacheManager, "groups") + groupId;
         assertThat(redisTemplate.hasKey(groupKey)).isTrue();
 
         try {
             // D016: replacement revokes the old flag and evicts the same group cache.
-            userService.patchUser(
-                    replacementId,
-                    new PatchUserRequest(null, null, null, true, null, null, null, null));
+            try (var ignored = identityFixture.request(admin)) {
+                userService.patchUser(
+                        replacementId,
+                        new PatchUserRequest(null, null, null, true, null, null, null, null));
+            }
 
             assertThat(redisTemplate.hasKey(groupKey)).isFalse();
 
             stub.getGroup(groupReq);
             var roster = stub.getGroupMembers(membersReq).getStudentsList();
             assertThat(roster)
-                    .filteredOn(student -> student.getUserId() == STUDENT_ID)
+                    .filteredOn(student -> student.getUserId() == studentId)
                     .extracting(student -> student.getIsHeadman())
                     .containsExactly(false);
             assertThat(roster)
@@ -643,9 +681,11 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
                     .containsExactly(true);
             assertThat(redisTemplate.hasKey(groupKey)).isTrue();
         } finally {
-            userService.patchUser(
-                    STUDENT_ID,
-                    new PatchUserRequest(null, null, null, true, null, null, null, null));
+            try (var ignored = identityFixture.request(admin)) {
+                userService.patchUser(
+                        studentId,
+                        new PatchUserRequest(null, null, null, true, null, null, null, null));
+            }
         }
     }
 }

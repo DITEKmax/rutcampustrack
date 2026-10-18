@@ -32,13 +32,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.schedule.grpc.HomeworkBindingResponse;
 import ru.rutcampustrack.schedule.grpc.HomeworkBindingState;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
@@ -50,7 +52,8 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
  * <p>Покрывает D-06 (HEADMAN-only), D-04 (lesson must exist + subject match). ScheduleGrpcClient
  * замокан — тесты не поднимают реальный schedule-service.
  *
- * <p>Runs in @Transactional — состояние БД откатывается после каждого теста.
+ * <p>The common owned two-database fixture resets committed setup before each test. Auth RPCs
+ * execute outside local Academic transactions.
  */
 @AutoConfigureMockMvc
 class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
@@ -59,11 +62,11 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private PlatformTransactionManager transactionManager;
-    @Autowired private ru.rutcampustrack.shared.security.InternalJwtTestFactory internalTokens;
 
     @MockitoBean private ScheduleGrpcClient scheduleGrpcClient;
 
     // Seed data
+    private SelectedActor studentActor, headmanActor;
     private Long seedStudentId; // отдельная canonical STUDENT роль без HEADMAN
     private Long seedHeadmanId; // canonical HEADMAN из fresh owned seed
     private Long seedAdminId;
@@ -76,53 +79,56 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     @BeforeEach
     void setUp() {
         fixtureToday = LocalDate.now(java.time.ZoneId.of("Europe/Moscow"));
-        seedGroupId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
-        seedAdminId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        seedGroupId = identityFixture.canonical().groupId();
+        seedAdminId = identityFixture.canonical().adminId();
+        seedHeadmanId = identityFixture.canonical().studentId();
+        var administrator = identityFixture.select(seedAdminId, AuthRole.ADMIN);
         seedStudentId =
-                jdbcTemplate.queryForObject(
-                        """
-                INSERT INTO users(login,password_hash,last_name,first_name,role,status,group_id,
-                    is_headman,password_changed,created_at,updated_at)
-                VALUES(?,'synthetic-hash','Обычный','Студент','student','active',?,FALSE,TRUE,NOW(),NOW()) RETURNING id
-                """,
-                        Long.class,
-                        "plain_hw_" + System.nanoTime(),
-                        seedGroupId);
-        jdbcTemplate.update(
-                "INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) "
-                        + "VALUES(?,'student','active',?,NOW(),NOW())",
-                seedStudentId,
-                seedGroupId);
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Обычный",
+                                        "Студент",
+                                        null,
+                                        UserRole.STUDENT,
+                                        seedGroupId,
+                                        null,
+                                        610000005201L),
+                                administrator)
+                        .userId();
+        studentActor = identityFixture.select(seedStudentId, AuthRole.STUDENT);
+        headmanActor = identityFixture.select(seedHeadmanId, AuthRole.HEADMAN);
         publicationRequestKey = null;
     }
 
     private void ensureSubjectAndSemester() {
-        // Subject для группы (Phase 60-01 V12: subjects.group_id NOT NULL)
-        subjectId =
-                jdbcTemplate.queryForObject(
-                        "INSERT INTO subjects (name, type, group_id) VALUES ('HW Test Subject', 'lecture', ?) RETURNING id",
-                        Long.class,
-                        seedGroupId);
-        jdbcTemplate.update(
-                "INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,'lecture')",
-                subjectId);
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(
+                        status -> {
+                            // Subject для группы (Phase 60-01 V12: subjects.group_id NOT NULL)
+                            subjectId =
+                                    jdbcTemplate.queryForObject(
+                                            "INSERT INTO subjects (name, type, group_id) VALUES"
+                                                + " ('HW Test Subject', 'lecture', ?) RETURNING id",
+                                            Long.class,
+                                            seedGroupId);
+                            jdbcTemplate.update(
+                                    "INSERT INTO subject_lesson_types(subject_id,lesson_type)"
+                                            + " VALUES(?,'lecture')",
+                                    subjectId);
 
-        // Деактивируем активные семестры чтобы не конфликтовать с exclusion constraint
-        jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
+                            // Деактивируем активные семестры чтобы не конфликтовать с exclusion
+                            // constraint
+                            jdbcTemplate.update(
+                                    "UPDATE semesters SET is_active = false WHERE is_active ="
+                                            + " true");
 
-        semesterId = insertHomeworkSemester("HW Ctrl IT Semester");
+                            semesterId = insertHomeworkSemester("HW Ctrl IT Semester");
+                        });
     }
 
     private void ensureHeadmanUser() {
-        seedHeadmanId =
-                jdbcTemplate.queryForObject(
-                        "SELECT user_id FROM user_role_grants WHERE group_id=? AND role='headman' AND status='active'",
-                        Long.class,
-                        seedGroupId);
+        seedHeadmanId = identityFixture.canonical().studentId();
     }
 
     private org.springframework.test.web.servlet.request.RequestPostProcessor signedStudentRole() {
@@ -130,22 +136,12 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
             if (request.getHeader("X-Internal-Token") != null) return request;
             long actor = Long.parseLong(request.getHeader("X-User-Id"));
             boolean headman = Boolean.parseBoolean(request.getHeader("X-Is-Headman"));
-            long rolesVersion =
-                    jdbcTemplate.queryForObject(
-                            "SELECT roles_version FROM users WHERE id=?", Long.class, actor);
-            request.addHeader(
-                    "X-Internal-Token",
-                    internalTokens.validToken(
-                            actor,
-                            UUID.randomUUID(),
-                            1L,
-                            rolesVersion,
-                            headman ? "HEADMAN" : "STUDENT",
-                            "ACTIVE",
-                            seedGroupId,
-                            headman,
-                            false));
-            return request;
+            SelectedActor selected;
+            if (actor == seedHeadmanId && headman) selected = headmanActor;
+            else if (actor == seedStudentId && !headman) selected = studentActor;
+            else
+                throw new IllegalArgumentException("Only the selected fixture actors are admitted");
+            return identityFixture.signed(selected).postProcessRequest(request);
         };
     }
 
@@ -153,9 +149,9 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
         boolean spring = fixtureToday.getMonthValue() <= 6;
         return jdbcTemplate.queryForObject(
                 """
-                INSERT INTO semesters(name,date_from,date_to,is_active,semester_type,academic_year,created_at)
-                VALUES(?,?,?,FALSE,?,?,NOW()) RETURNING id
-                """,
+INSERT INTO semesters(name,date_from,date_to,is_active,semester_type,academic_year,created_at)
+VALUES(?,?,?,FALSE,?,?,NOW()) RETURNING id
+""",
                 Long.class,
                 name,
                 fixtureToday.minusDays(1),
@@ -266,12 +262,14 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                         status -> {
                             subjectId =
                                     jdbcTemplate.queryForObject(
-                                            "INSERT INTO subjects (name, type, group_id) VALUES (?, 'lecture', ?) RETURNING id",
+                                            "INSERT INTO subjects (name, type, group_id) VALUES (?,"
+                                                    + " 'lecture', ?) RETURNING id",
                                             Long.class,
                                             "HW Publication Subject " + UUID.randomUUID(),
                                             seedGroupId);
                             jdbcTemplate.update(
-                                    "INSERT INTO subject_lesson_types (subject_id, lesson_type) VALUES (?, 'lecture')",
+                                    "INSERT INTO subject_lesson_types (subject_id, lesson_type)"
+                                            + " VALUES (?, 'lecture')",
                                     subjectId);
                             semesterId =
                                     insertHomeworkSemester(
@@ -288,7 +286,6 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     // =========================================================================
 
     @Test
-    @Transactional
     void createHomework_returns403_forAdmin() throws Exception {
         ensureSubjectAndSemester();
         stubLessonFound();
@@ -312,7 +309,6 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     // =========================================================================
 
     @Test
-    @Transactional
     void createHomework_returns403_forPlainStudent() throws Exception {
         ensureSubjectAndSemester();
         stubLessonFound();
@@ -335,7 +331,6 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     // =========================================================================
 
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     void createHomework_returns201_forHeadman() throws Exception {
         publicationRequestKey = UUID.randomUUID();
         LocalDate lessonDate = fixtureToday.plusDays(2);
@@ -367,7 +362,6 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     // =========================================================================
 
     @Test
-    @Transactional
     void createHomework_returns400_whenLessonNotInSchedule() throws Exception {
         ensureSubjectAndSemester();
         ensureHeadmanUser();
@@ -393,7 +387,6 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     // =========================================================================
 
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     void createHomework_allowsMultiplePerLesson() throws Exception {
         publicationRequestKey = UUID.randomUUID();
         UUID secondRequestKey = UUID.randomUUID();
@@ -459,7 +452,6 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     // =========================================================================
 
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     void publicationPendingIsDurableHiddenAndSameKeyRetryActivatesOnce() throws Exception {
         publicationRequestKey = UUID.randomUUID();
         LocalDate lessonDate = fixtureToday.plusDays(2);
@@ -578,7 +570,6 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
     }
 
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     void publicationStateGuardAllowsArchiveAndRejectsPendingOrReopen() throws Exception {
         publicationRequestKey = UUID.randomUUID();
         LocalDate lessonDate = fixtureToday.plusDays(2);
@@ -606,7 +597,8 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                     DataAccessException.class,
                     () ->
                             jdbcTemplate.update(
-                                    "UPDATE homeworks SET publication_state = 'PENDING' WHERE id = ?",
+                                    "UPDATE homeworks SET publication_state = 'PENDING' WHERE id ="
+                                            + " ?",
                                     homeworkId));
 
             jdbcTemplate.update(
@@ -622,7 +614,8 @@ class HomeworkControllerIT extends AbstractAcademicIntegrationTest {
                     DataAccessException.class,
                     () ->
                             jdbcTemplate.update(
-                                    "UPDATE homeworks SET publication_state = 'ACTIVE' WHERE id = ?",
+                                    "UPDATE homeworks SET publication_state = 'ACTIVE' WHERE id ="
+                                            + " ?",
                                     homeworkId));
             assertThat(
                     jdbcTemplate.queryForObject(

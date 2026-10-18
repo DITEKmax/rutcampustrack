@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,12 +15,16 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.repository.GroupRepository;
-import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 58-07 / BUG-006-6: интеграционный тест — PUT /groups с изменением name публикует event {@code
@@ -35,8 +37,6 @@ class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
 
     private static final String EXCHANGE = "rut-uit.events";
     private static final int RECEIVE_TIMEOUT_MS = 5000;
-
-    @MockitoBean private RequestContext requestContext;
 
     @Autowired private RabbitTemplate rabbitTemplate;
 
@@ -78,7 +78,10 @@ class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
         String queueName = bindTempQueue();
 
         String newName = "Тно-121";
-        groupService.updateGroup(group.getId(), new UpdateGroupRequest(newName, true, 4));
+        var actor = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        try (var ignored = identityFixture.request(actor)) {
+            groupService.updateGroup(group.getId(), new UpdateGroupRequest(newName, true, 4));
+        }
         flushOutbox();
 
         // Должно прийти минимум 2 события: group.renamed + group.updated (порядок не
@@ -107,7 +110,11 @@ class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
         String queueName = bindTempQueue();
 
         // Переименовываем «в то же имя» — rename-event не должен публиковаться.
-        groupService.updateGroup(group.getId(), new UpdateGroupRequest(group.getName(), true, 4));
+        var actor = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        try (var ignored = identityFixture.request(actor)) {
+            groupService.updateGroup(
+                    group.getId(), new UpdateGroupRequest(group.getName(), true, 4));
+        }
         flushOutbox();
 
         // Собрать все события в окне и убедиться что rename среди них нет.

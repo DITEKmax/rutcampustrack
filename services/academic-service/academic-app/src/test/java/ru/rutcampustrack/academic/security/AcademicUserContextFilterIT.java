@@ -4,17 +4,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.shared.security.InternalJwtProperties;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 /**
  * M03a: verifies {@link AcademicUserContextFilter} behaviour end-to-end.
@@ -24,8 +29,9 @@ import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
  * filter concern is only that it NEVER returns 401 for valid/legacy auth, and ALWAYS 401 for
  * invalid token.
  */
-@AutoConfigureMockMvc
-@TestPropertySource(properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=true")
+@AutoConfigureMockMvc(
+        print = org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint.NONE)
+@TestPropertySource(properties = "rct.fixture.legacy-headers-enabled=true")
 class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
 
     private static final UUID SESSION_ID = UUID.fromString("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
@@ -33,6 +39,13 @@ class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
     @Autowired private MockMvc mockMvc;
 
     @Autowired private InternalJwtTestFactory factory;
+
+    @Autowired private InternalJwtProperties properties;
+
+    @BeforeEach
+    void dualModeIsEffective() {
+        assertThat(properties.legacyHeadersEnabled()).isTrue();
+    }
 
     @Test
     void invalidInternalToken_returns401() throws Exception {
@@ -123,7 +136,9 @@ class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
     }
 
     private String validToken() {
-        return factory.validToken(1L, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", null, false, false);
+        return identityFixture
+                .select(identityFixture.canonical().adminId(), AuthRole.ADMIN)
+                .internalToken();
     }
 
     private static Instant now() {

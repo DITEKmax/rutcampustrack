@@ -3,19 +3,17 @@ package ru.rutcampustrack.academic.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+
 import net.devh.boot.grpc.client.inject.GrpcClient;
+
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,10 +28,21 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import ru.rutcampustrack.academic.assistant.AssistantService;
+import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
+import ru.rutcampustrack.academic.contract.dto.assistant.UpdateAssistantPermissionsRequest;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
+import ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.ArchiveRequest;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+import ru.rutcampustrack.academic.contract.enums.AssistantPermission;
+import ru.rutcampustrack.academic.contract.enums.RoleGrantStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.AssistantPermissionCheckRequest;
+import ru.rutcampustrack.academic.grpc.AttendanceUserImpactGrpcClient;
 import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GeofenceResponse;
 import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
@@ -52,16 +61,23 @@ import ru.rutcampustrack.academic.grpc.UserByTelegramIdResponse;
 import ru.rutcampustrack.academic.grpc.UserRequest;
 import ru.rutcampustrack.academic.grpc.UserResponse;
 import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+import ru.rutcampustrack.academic.security.AcademicLiveSessionClient;
+import ru.rutcampustrack.academic.user.UserArchiveService;
+import ru.rutcampustrack.academic.user.UserService;
+import ru.rutcampustrack.attendance.grpc.UserImpactSnapshot;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 /**
- * Integration tests for all 7 gRPC RPCs in AcademicGrpcServiceImpl. Uses in-process gRPC server
- * (grpc.server.in-process-name=academic-grpc-test) to avoid port binding and enable parallel test
- * execution.
- *
- * <p>Data setup: V2 seed data provides group(id=1), semester(id=1, active=true), users admin(id=1),
- * teacher(id=2), student(id=3, is_headman=true, group_id=1), campus_settings(id=1). Additional data
- * inserted in @BeforeEach.
+ * Real in-process Academic gRPC calls backed by the canonical independent Auth/Academic fixture.
+ * Auth identities, grants, selected sessions and archival use the existing two-database protocol.
  */
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -76,11 +92,13 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
-    // Seed data constants — match V2__seed_test_data.sql exactly
-    private static final long GROUP_ID = 1L;
-    private static final long ADMIN_ID = 1L;
-    private static final long TEACHER_ID = 2L;
-    private static final long STUDENT_ID = 3L; // is_headman=true, group_id=1
+    private long groupId;
+    private long adminId;
+    private long teacherId;
+    private long studentId;
+    private String teacherLogin;
+    private String archivedLogin;
+    private AcademicIdentityIntegrationFixture.SelectedActor adminActor;
 
     private static final long NONEXISTENT_ID = 99999L;
 
@@ -90,9 +108,18 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @Autowired private JdbcTemplate jdbcTemplate;
 
-    @Autowired private InternalJwtTestFactory internalJwtTestFactory;
-
     @Autowired private UserRepository users;
+
+    @Autowired private UserService userService;
+
+    @Autowired private UserArchiveService archives;
+
+    @Autowired private AssistantService assistants;
+
+    @Autowired private AcademicLiveSessionClient liveSessions;
+
+    // Archive setup needs only the external impact snapshot; identity authority remains real.
+    @MockitoBean private AttendanceUserImpactGrpcClient attendance;
 
     @Autowired private TestRestTemplate http;
 
@@ -105,6 +132,13 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @BeforeEach
     void setUpAdditionalData() {
+        var canonical = identityFixture.canonical();
+        groupId = canonical.groupId();
+        adminId = canonical.adminId();
+        teacherId = canonical.teacherId();
+        studentId = canonical.studentId();
+        adminActor = identityFixture.select(adminId, AuthRole.ADMIN);
+        teacherLogin = users.findById(teacherId).orElseThrow().getLogin();
         priorActiveSemesterIds =
                 jdbcTemplate.query(
                         "SELECT id FROM semesters WHERE is_active = true ORDER BY id",
@@ -112,12 +146,13 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         testSemesterId = ensureCurrentSemester();
         jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
         jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", testSemesterId);
-        ensureTeacherGrant(TEACHER_ID);
         subjectId = insertCanonicalSubject();
         unassignedTeacherId = insertUnassignedTeacher();
 
-        // Seed an archived user without deleting a reused row or its durable grant.
-        archivedUserId = ensureArchivedUser();
+        var archived = seedStudent("Archived", "User", 610000000101L);
+        archivedUserId = archived.userId();
+        archivedLogin = archived.login();
+        archiveUser(archivedUserId);
     }
 
     @AfterEach
@@ -155,14 +190,6 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
                 today.plusDays(30));
     }
 
-    private void ensureTeacherGrant(long teacherId) {
-        jdbcTemplate.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'teacher', 'active', NULL, NOW(), NOW()) "
-                        + "ON CONFLICT (user_id, role) DO UPDATE SET status = 'active', updated_at = NOW()",
-                teacherId);
-    }
-
     private long insertCanonicalSubject() {
         String name = "Algorithms " + UUID.randomUUID();
         LocalDate today = LocalDate.now(MOSCOW);
@@ -175,59 +202,71 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
                 semesterFrom.isAfter(today.minusDays(1)) ? semesterFrom : today.minusDays(1);
         long id =
                 jdbcTemplate.queryForObject(
-                        "WITH inserted_subject AS ("
-                                + "INSERT INTO subjects (name, type, group_id) "
-                                + "VALUES (?, 'lecture'::subject_type, ?) RETURNING id) "
-                                + "INSERT INTO subject_lesson_types (subject_id, lesson_type) "
-                                + "SELECT id, 'lecture'::subject_type FROM inserted_subject RETURNING subject_id",
+                        "WITH inserted_subject AS (INSERT INTO subjects (name, type, group_id)"
+                            + " VALUES (?, 'lecture'::subject_type, ?) RETURNING id) INSERT INTO"
+                            + " subject_lesson_types (subject_id, lesson_type) SELECT id,"
+                            + " 'lecture'::subject_type FROM inserted_subject RETURNING subject_id",
                         Long.class,
                         name,
-                        GROUP_ID);
+                        groupId);
         jdbcTemplate.update(
-                "INSERT INTO assignments (teacher_id, subject_id, group_id, semester_id, lesson_type, "
-                        + "valid_from, valid_until_exclusive) VALUES (?, ?, ?, ?, 'lecture'::subject_type, ?, NULL)",
-                TEACHER_ID,
+                "INSERT INTO assignments (teacher_id, subject_id, group_id, semester_id,"
+                        + " lesson_type, valid_from, valid_until_exclusive) VALUES (?, ?, ?, ?,"
+                        + " 'lecture'::subject_type, ?, NULL)",
+                teacherId,
                 id,
-                GROUP_ID,
+                groupId,
                 testSemesterId,
                 validFrom);
         return id;
     }
 
     private long insertUnassignedTeacher() {
-        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 18);
-        long id =
-                jdbcTemplate.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
-                                + "is_headman, password_changed, created_at, updated_at) "
-                                + "VALUES (?, NULL, 'L5A', 'Unassigned', 'teacher'::user_role, "
-                                + "'active'::account_status, false, false, NOW(), NOW()) RETURNING id",
-                        Long.class,
-                        "l5a-grpc-" + suffix);
-        ensureTeacherGrant(id);
-        return id;
+        return identityFixture
+                .seedUser(
+                        new CreateUserRequest(
+                                "L5A",
+                                "Unassigned",
+                                null,
+                                UserRole.TEACHER,
+                                null,
+                                "GRPC-" + UUID.randomUUID().toString().substring(0, 20),
+                                null),
+                        adminActor)
+                .userId();
     }
 
-    private long ensureArchivedUser() {
-        List<Long> existing =
-                jdbcTemplate.query(
-                        "SELECT id FROM users WHERE login = 'archived_test'",
-                        (rs, rowNum) -> rs.getLong(1));
-        if (existing.isEmpty()) {
-            return jdbcTemplate.queryForObject(
-                    "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
-                            + "is_headman, password_changed, created_at, updated_at) "
-                            + "VALUES ('archived_test', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', "
-                            + "'Archived', 'User', 'student'::user_role, 'archived'::account_status, "
-                            + "false, false, NOW(), NOW()) RETURNING id",
-                    Long.class);
+    private AcademicIdentityIntegrationFixture.SeededUser seedStudent(
+            String lastName, String firstName, long telegramId) {
+        return identityFixture.seedUser(
+                new CreateUserRequest(
+                        lastName, firstName, null, UserRole.STUDENT, groupId, null, telegramId),
+                adminActor);
+    }
+
+    private void archiveUser(long userId) {
+        when(attendance.preview(userId))
+                .thenReturn(
+                        UserImpactSnapshot.newBuilder()
+                                .setUserId(userId)
+                                .setObservedAtEpochMs(Instant.now().toEpochMilli())
+                                .setSnapshotDigest("b".repeat(64))
+                                .build());
+        ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.Preview preview;
+        try (var ignored = identityFixture.request(adminActor)) {
+            preview = archives.preview(userId);
         }
-        long id = existing.get(0);
-        jdbcTemplate.update(
-                "UPDATE users SET status = 'archived'::account_status, is_headman = false, "
-                        + "group_id = NULL WHERE id = ?",
-                id);
-        return id;
+        var request =
+                new ArchiveRequest(
+                        UUID.randomUUID(),
+                        preview.previewDigest(),
+                        preview.requiresPassword()
+                                ? AcademicIdentityIntegrationFixture.FIRST_FULL_TEST_PASSWORD
+                                : null);
+        try (var ignored = identityFixture.request(adminActor, request.operationId())) {
+            archives.archive(userId, request);
+        }
+        identityFixture.catchUpCatalog();
     }
 
     // =====================================================================
@@ -236,11 +275,11 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void getGroup_validId_returnsGroupInfo() {
-        GroupRequest request = GroupRequest.newBuilder().setGroupId(GROUP_ID).build();
+        GroupRequest request = GroupRequest.newBuilder().setGroupId(groupId).build();
 
         GroupResponse response = stub.getGroup(request);
 
-        assertThat(response.getId()).isEqualTo(GROUP_ID);
+        assertThat(response.getId()).isEqualTo(groupId);
         assertThat(response.getName()).isEqualTo("ИВТ-211");
         // 58-04: поле code удалено из GroupResponse (proto reserved 3).
         assertThat(response.getIsActive()).isTrue();
@@ -261,37 +300,32 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void getGroupMembers_returnsActiveStudentsOnly() {
-        GroupMembersRequest request = GroupMembersRequest.newBuilder().setGroupId(GROUP_ID).build();
+        GroupMembersRequest request = GroupMembersRequest.newBuilder().setGroupId(groupId).build();
 
         GroupMembersResponse response = stub.getGroupMembers(request);
 
-        // Should contain the student from V2 seed data
+        // The canonical selected headman remains an active member.
         assertThat(response.getStudentsList()).isNotEmpty();
         assertThat(response.getStudentsList())
-                .anyMatch(s -> s.getUserId() == STUDENT_ID && s.getIsHeadman());
+                .anyMatch(s -> s.getUserId() == studentId && s.getIsHeadman());
 
-        // Archived user (if group_id matches) must NOT be in the list
-        // Our archived test user has no group_id set (NULL), so verify no archived login
-        // by checking IDs — the archived_test user has no group_id, so won't appear here
-        // Additional assertion: all returned users should have valid IDs > 0
+        assertThat(response.getStudentsList()).noneMatch(s -> s.getUserId() == archivedUserId);
         response.getStudentsList().forEach(s -> assertThat(s.getUserId()).isGreaterThan(0L));
     }
 
     @Test
     void getGroupMembers_archivedUserInGroup_notReturned() {
-        // Insert an archived student in group 1 and verify they are excluded
-        String login =
-                "archived-in-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
-        jdbcTemplate.update(
-                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id, password_changed, created_at, updated_at) "
-                        + "VALUES (?, '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', "
-                        + "'Archived', 'InGroup', 'student', 'archived', false, 1, false, NOW(), NOW())",
-                login);
-        Long archivedInGroupId =
-                jdbcTemplate.queryForObject(
-                        "SELECT id FROM users WHERE login = ?", Long.class, login);
+        long archivedInGroupId = seedStudent("Archived", "InGroup", 610000000102L).userId();
+        assertThat(
+                        stub.getGroupMembers(
+                                        GroupMembersRequest.newBuilder()
+                                                .setGroupId(groupId)
+                                                .build())
+                                .getStudentsList())
+                .anyMatch(s -> s.getUserId() == archivedInGroupId);
+        archiveUser(archivedInGroupId);
 
-        GroupMembersRequest request = GroupMembersRequest.newBuilder().setGroupId(GROUP_ID).build();
+        GroupMembersRequest request = GroupMembersRequest.newBuilder().setGroupId(groupId).build();
 
         GroupMembersResponse response = stub.getGroupMembers(request);
 
@@ -307,7 +341,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
     void getTeacherSubjects_returnsSubjectsWithGroups() {
         TeacherSubjectsRequest request =
                 TeacherSubjectsRequest.newBuilder()
-                        .setTeacherId(TEACHER_ID)
+                        .setTeacherId(teacherId)
                         .setSemesterId(testSemesterId)
                         .build();
 
@@ -320,7 +354,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
                             assertThat(info.getSubjectId()).isEqualTo(subjectId);
                             assertThat(info.getGroupName()).isEqualTo("ИВТ-211");
                             assertThat(info.getSubjectType()).isEqualTo("lecture");
-                            assertThat(info.getGroupId()).isEqualTo(GROUP_ID);
+                            assertThat(info.getGroupId()).isEqualTo(groupId);
                             assertThat(info.getSemesterId()).isEqualTo(testSemesterId);
                         });
     }
@@ -342,7 +376,8 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
     @Test
     void getSubjectsByIds_returnsSubjectNamesAndTypes() {
         jdbcTemplate.update(
-                "INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES (?,'practice') ON CONFLICT DO NOTHING",
+                "INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES (?,'practice') ON"
+                        + " CONFLICT DO NOTHING",
                 subjectId);
         SubjectsByIdsRequest request =
                 SubjectsByIdsRequest.newBuilder().addSubjectIds(subjectId).build();
@@ -352,7 +387,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         assertThat(response.getSubjectsList()).hasSize(1);
         assertThat(response.getSubjectsList().get(0).getSubjectName()).startsWith("Algorithms ");
         assertThat(response.getSubjectsList().get(0).getSubjectType()).isEqualTo("lecture");
-        assertThat(response.getSubjectsList().get(0).getGroupId()).isEqualTo(1L);
+        assertThat(response.getSubjectsList().get(0).getGroupId()).isEqualTo(groupId);
         assertThat(response.getSubjectsList().get(0).getLessonTypesList())
                 .containsExactly("lecture", "practice");
     }
@@ -363,9 +398,9 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void isHeadman_headmanOfGroup_returnsTrue() {
-        // student (id=3) is is_headman=true and group_id=1 in seed data
+        // The canonical student has a genuinely assigned HEADMAN grant.
         HeadmanCheckRequest request =
-                HeadmanCheckRequest.newBuilder().setUserId(STUDENT_ID).setGroupId(GROUP_ID).build();
+                HeadmanCheckRequest.newBuilder().setUserId(studentId).setGroupId(groupId).build();
 
         HeadmanCheckResponse response = stub.isHeadman(request);
 
@@ -374,9 +409,9 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void isHeadman_notHeadman_returnsFalse() {
-        // teacher (id=2) is not a student/headman of this group
+        // The canonical teacher is not a student/headman of this group.
         HeadmanCheckRequest request =
-                HeadmanCheckRequest.newBuilder().setUserId(TEACHER_ID).setGroupId(GROUP_ID).build();
+                HeadmanCheckRequest.newBuilder().setUserId(teacherId).setGroupId(groupId).build();
 
         HeadmanCheckResponse response = stub.isHeadman(request);
 
@@ -388,7 +423,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         HeadmanCheckRequest request =
                 HeadmanCheckRequest.newBuilder()
                         .setUserId(NONEXISTENT_ID)
-                        .setGroupId(GROUP_ID)
+                        .setGroupId(groupId)
                         .build();
 
         HeadmanCheckResponse response = stub.isHeadman(request);
@@ -405,7 +440,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         HeadmanCheckRequest request =
                 HeadmanCheckRequest.newBuilder()
                         .setUserId(uniqueUserId)
-                        .setGroupId(GROUP_ID)
+                        .setGroupId(groupId)
                         .build();
 
         // 300 вызовов — все должны пройти (consume all tokens).
@@ -430,13 +465,10 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         Locale previous = Locale.getDefault();
         try {
             Locale.setDefault(Locale.forLanguageTag("tr-TR"));
-            var admin = users.findById(ADMIN_ID).orElseThrow();
+            var admin = users.findById(adminId).orElseThrow();
             assertThat(admin.getRole()).isEqualTo(UserRole.ADMIN);
             assertThat(admin.getStatus()).isEqualTo(AccountStatus.ACTIVE);
-            var selected =
-                    identityFixture.select(
-                            ADMIN_ID, ru.rutcampustrack.auth.session.model.AuthRole.ADMIN);
-            String token = selected.internalToken();
+            String token = adminActor.internalToken();
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-Internal-Token", token);
             SoftAssertions localeEquality = new SoftAssertions();
@@ -448,14 +480,14 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
             assertFilteredUsersEqualUnderLocales(
                     headers,
                     "/academic/users?status=active&role=ADMIN&page=0&size=100&sort=id,asc",
-                    "u.status = 'active' AND EXISTS (SELECT 1 FROM user_role_grants g "
+                    "u.status = 'active' AND EXISTS (SELECT 1 FROM academic_role_directory g "
                             + "WHERE g.user_id = u.id AND g.role = 'admin')",
                     localeEquality);
             assertFilteredUsersEqualUnderLocales(
                     headers,
                     "/academic/users?role=admin&roleStatus=ACTIVE&page=0&size=100&sort=id,asc",
-                    "u.status <> 'archived' AND EXISTS (SELECT 1 FROM user_role_grants g "
-                            + "WHERE g.user_id = u.id AND g.role = 'admin' AND g.status = 'active')",
+                    "u.status <> 'archived' AND EXISTS (SELECT 1 FROM academic_role_directory g"
+                        + " WHERE g.user_id = u.id AND g.role = 'admin' AND g.status = 'active')",
                     localeEquality);
             var unknown =
                     http.exchange(
@@ -475,14 +507,14 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         // Only closed test predicates enter this SQL; no registry body or credentials are retained.
         List<FilteredUserRow> expected =
                 jdbcTemplate.query(
-                        "SELECT u.id, u.status::text FROM users u WHERE "
+                        "SELECT u.id, u.status::text FROM academic_user_directory u WHERE "
                                 + predicate
                                 + " ORDER BY u.id",
                         (rs, rowNum) ->
                                 new FilteredUserRow(
                                         rs.getLong(1), rs.getString(2).toUpperCase(Locale.ROOT)));
         assertThat(expected).as("%s nonempty SQL fixture", uri).isNotEmpty();
-        assertThat(expected).extracting(FilteredUserRow::id).contains(ADMIN_ID);
+        assertThat(expected).extracting(FilteredUserRow::id).contains(adminId);
         assertThat(expected).extracting(FilteredUserRow::id).doesNotContain(archivedUserId);
         assertThat(expected.size())
                 .as("%s fits the explicit first page", uri)
@@ -546,139 +578,139 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void checkAssistantPermission_usesSignedIdentityAndFreshDurableGrant() {
-        String login =
-                "grpc-assist-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
-        long assistantId =
-                jdbcTemplate.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
-                                + "is_headman, group_id, password_changed, created_at, updated_at) "
-                                + "VALUES (?, NULL, 'Grpc', 'Assistant', 'student', 'active', false, ?, true, NOW(), NOW()) "
-                                + "RETURNING id",
-                        Long.class,
-                        login,
-                        GROUP_ID);
-        jdbcTemplate.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
-                        + "VALUES (?, 'student', 'active', ?, NOW(), NOW()) "
-                        + "ON CONFLICT (user_id, role) DO UPDATE SET status = 'active', group_id = EXCLUDED.group_id, updated_at = NOW()",
-                assistantId,
-                GROUP_ID);
-        long assistantAssignmentId =
-                jdbcTemplate.queryForObject(
-                        "INSERT INTO headman_assistants (group_id, student_id, permissions, assigned_by, is_active, assigned_at) "
-                                + "VALUES (?, ?, ARRAY['mark_attendance', 'manage_excuses', 'manage_homework']::varchar(64)[], ?, true, NOW()) "
-                                + "RETURNING id",
-                        Long.class,
-                        GROUP_ID,
-                        assistantId,
-                        STUDENT_ID);
-        try {
-            String activeToken =
-                    internalJwtTestFactory.validToken(
-                            assistantId,
-                            UUID.randomUUID(),
-                            1L,
-                            1L,
-                            "STUDENT",
-                            "ACTIVE",
-                            GROUP_ID,
-                            false,
-                            false);
-
-            AssistantPermissionCheckRequest markAttendance =
-                    AssistantPermissionCheckRequest.newBuilder()
-                            .setGroupId(GROUP_ID)
-                            .setPermission("MARK_ATTENDANCE")
-                            .build();
-            assertThat(
-                            withInternalToken(activeToken)
-                                    .checkAssistantPermission(markAttendance)
-                                    .getAllowed())
-                    .isTrue();
-            AssistantPermissionCheckRequest homework =
-                    markAttendance.toBuilder().setPermission("MANAGE_HOMEWORK").build();
-            assertThat(
-                            withInternalToken(activeToken)
-                                    .checkAssistantPermission(homework)
-                                    .getAllowed())
-                    .isTrue();
-            assertThat(
-                            withInternalToken(activeToken)
-                                    .checkAssistantPermission(
-                                            homework.toBuilder()
-                                                    .setGroupId(GROUP_ID + 10_000)
-                                                    .build())
-                                    .getAllowed())
-                    .isFalse();
-            jdbcTemplate.update(
-                    "UPDATE headman_assistants SET permissions = ARRAY['mark_attendance', 'manage_excuses']::varchar(64)[] WHERE id = ?",
-                    assistantAssignmentId);
-            assertThat(
-                            withInternalToken(activeToken)
-                                    .checkAssistantPermission(homework)
-                                    .getAllowed())
-                    .isFalse();
-
-            // The same signed actor is denied a different capability and a
-            // foreign target group; request payload has no actor override.
-            assertThat(
-                            withInternalToken(activeToken)
-                                    .checkAssistantPermission(
-                                            markAttendance.toBuilder()
-                                                    .setPermission("CANCEL_LESSONS")
-                                                    .build())
-                                    .getAllowed())
-                    .isFalse();
-            assertThat(
-                            withInternalToken(activeToken)
-                                    .checkAssistantPermission(
-                                            markAttendance.toBuilder()
-                                                    .setGroupId(GROUP_ID + 10_000)
-                                                    .build())
-                                    .getAllowed())
-                    .isFalse();
-
-            // Revocation is visible on the next uncached RPC.
-            jdbcTemplate.update(
-                    "UPDATE headman_assistants SET is_active = false, revoked_at = NOW() WHERE id = ?",
-                    assistantAssignmentId);
-            assertThat(
-                            withInternalToken(activeToken)
-                                    .checkAssistantPermission(markAttendance)
-                                    .getAllowed())
-                    .isFalse();
-
-            // A terminal/read-only signed identity cannot use a still-present
-            // assistant row after account disablement.
-            String disabledToken =
-                    internalJwtTestFactory.validToken(
-                            assistantId,
-                            UUID.randomUUID(),
-                            2L,
-                            2L,
-                            "STUDENT",
-                            "EXPELLED",
-                            GROUP_ID,
-                            false,
-                            true);
-            assertThat(
-                            withInternalToken(disabledToken)
-                                    .checkAssistantPermission(markAttendance)
-                                    .getAllowed())
-                    .isFalse();
-
-            assertThatThrownBy(() -> stub.checkAssistantPermission(markAttendance))
-                    .isInstanceOfSatisfying(
-                            StatusRuntimeException.class,
-                            error ->
-                                    assertThat(error.getStatus().getCode())
-                                            .isEqualTo(Status.Code.UNAUTHENTICATED));
-        } finally {
-            jdbcTemplate.update(
-                    "DELETE FROM headman_assistants WHERE id = ?", assistantAssignmentId);
-            jdbcTemplate.update("DELETE FROM user_role_grants WHERE user_id = ?", assistantId);
-            jdbcTemplate.update("DELETE FROM users WHERE id = ?", assistantId);
+        long assistantId = seedStudent("Grpc", "Assistant", 610000000103L).userId();
+        var headman = identityFixture.select(studentId, AuthRole.HEADMAN);
+        long assistantAssignmentId;
+        try (var ignored = identityFixture.request(headman)) {
+            assistantAssignmentId =
+                    assistants
+                            .assignAssistant(
+                                    new AssignAssistantRequest(
+                                            assistantId,
+                                            groupId,
+                                            List.of(
+                                                    AssistantPermission.MARK_ATTENDANCE,
+                                                    AssistantPermission.MANAGE_EXCUSES,
+                                                    AssistantPermission.MANAGE_HOMEWORK)))
+                            .getId();
         }
+        var activeActor = identityFixture.select(assistantId, AuthRole.STUDENT);
+        String activeToken = activeActor.internalToken();
+
+        AssistantPermissionCheckRequest markAttendance =
+                AssistantPermissionCheckRequest.newBuilder()
+                        .setGroupId(groupId)
+                        .setPermission("MARK_ATTENDANCE")
+                        .build();
+        assertThat(
+                        withInternalToken(activeToken)
+                                .checkAssistantPermission(markAttendance)
+                                .getAllowed())
+                .isTrue();
+        AssistantPermissionCheckRequest homework =
+                markAttendance.toBuilder().setPermission("MANAGE_HOMEWORK").build();
+        assertThat(withInternalToken(activeToken).checkAssistantPermission(homework).getAllowed())
+                .isTrue();
+        assertThat(
+                        withInternalToken(activeToken)
+                                .checkAssistantPermission(
+                                        homework.toBuilder().setGroupId(groupId + 10_000).build())
+                                .getAllowed())
+                .isFalse();
+        try (var ignored = identityFixture.request(headman)) {
+            assistants.updatePermissions(
+                    assistantAssignmentId,
+                    new UpdateAssistantPermissionsRequest(
+                            List.of(
+                                    AssistantPermission.MARK_ATTENDANCE,
+                                    AssistantPermission.MANAGE_EXCUSES)));
+        }
+        assertThat(withInternalToken(activeToken).checkAssistantPermission(homework).getAllowed())
+                .isFalse();
+
+        // The same signed actor is denied a different capability and a
+        // foreign target group; request payload has no actor override.
+        assertThat(
+                        withInternalToken(activeToken)
+                                .checkAssistantPermission(
+                                        markAttendance.toBuilder()
+                                                .setPermission("CANCEL_LESSONS")
+                                                .build())
+                                .getAllowed())
+                .isFalse();
+        assertThat(
+                        withInternalToken(activeToken)
+                                .checkAssistantPermission(
+                                        markAttendance.toBuilder()
+                                                .setGroupId(groupId + 10_000)
+                                                .build())
+                                .getAllowed())
+                .isFalse();
+
+        // Revocation is visible on the next uncached RPC.
+        try (var ignored = identityFixture.request(headman)) {
+            assistants.revokeAssistant(assistantAssignmentId);
+        }
+        assertThat(
+                        withInternalToken(activeToken)
+                                .checkAssistantPermission(markAttendance)
+                                .getAllowed())
+                .isFalse();
+
+        // Restore a real active helper before changing its Auth/domain role status.
+        try (var ignored = identityFixture.request(headman)) {
+            assistantAssignmentId =
+                    assistants
+                            .assignAssistant(
+                                    new AssignAssistantRequest(
+                                            assistantId,
+                                            groupId,
+                                            List.of(AssistantPermission.MARK_ATTENDANCE)))
+                            .getId();
+        }
+        assertThat(
+                        withInternalToken(activeToken)
+                                .checkAssistantPermission(markAttendance)
+                                .getAllowed())
+                .isTrue();
+        try (var ignored = identityFixture.request(adminActor)) {
+            userService.updateRoleGrant(
+                    assistantId,
+                    "STUDENT",
+                    new RoleGrantUpdateRequest(RoleGrantStatus.EXPELLED, null, null, null));
+        }
+        assertThat(
+                        jdbcTemplate.queryForObject(
+                                "SELECT is_active FROM headman_assistants WHERE id = ?",
+                                Boolean.class,
+                                assistantAssignmentId))
+                .isTrue();
+        // The former active session cannot override the current durable role status.
+        assertThat(
+                        withInternalToken(activeToken)
+                                .checkAssistantPermission(markAttendance)
+                                .getAllowed())
+                .isFalse();
+        assertThat(users.findById(assistantId).orElseThrow().getStatus())
+                .isEqualTo(AccountStatus.EXPELLED);
+        // A terminal grant cannot produce a fresh selected identity. The real Auth boundary
+        // also refuses the formerly selected session; no terminal token is manufactured.
+        assertThatThrownBy(() -> liveSessions.admitProjection(activeActor.claims()))
+                .isInstanceOfSatisfying(
+                        StatusRuntimeException.class,
+                        error ->
+                                assertThat(error.getStatus().getCode())
+                                        .isEqualTo(Status.Code.PERMISSION_DENIED));
+        assertThatThrownBy(() -> identityFixture.select(assistantId, AuthRole.STUDENT))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Actual Auth role selection rejected");
+
+        assertThatThrownBy(() -> stub.checkAssistantPermission(markAttendance))
+                .isInstanceOfSatisfying(
+                        StatusRuntimeException.class,
+                        error ->
+                                assertThat(error.getStatus().getCode())
+                                        .isEqualTo(Status.Code.UNAUTHENTICATED));
     }
 
     // =====================================================================
@@ -734,7 +766,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
         GeofenceResponse response = stub.getCampusGeofence(request);
 
-        // V2 seed: lat=55.788204, lng=37.606762, radius_m=200 (RUT MIIT, ул. Образцова 9)
+        // Canonical campus: lat=55.788204, lng=37.606762, radius_m=200 (RUT MIIT, ул. Образцова 9)
         assertThat(response.getLat()).isNotZero();
         assertThat(response.getLng()).isNotZero();
         assertThat(response.getRadiusM()).isGreaterThan(0);
@@ -749,12 +781,12 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void getUserById_validId_returnsUserInfo() {
-        UserRequest request = UserRequest.newBuilder().setUserId(TEACHER_ID).build();
+        UserRequest request = UserRequest.newBuilder().setUserId(teacherId).build();
 
         UserResponse response = stub.getUserById(request);
 
-        assertThat(response.getId()).isEqualTo(TEACHER_ID);
-        assertThat(response.getLogin()).isEqualTo("teacher");
+        assertThat(response.getId()).isEqualTo(teacherId);
+        assertThat(response.getLogin()).isEqualTo(teacherLogin);
         assertThat(response.getDisplayName()).isEqualTo("Преподавателев Учитель Знаниевич");
         assertThat(response.getRole()).isEqualTo("teacher");
         assertThat(response.getStatus()).isEqualTo("active");
@@ -763,13 +795,13 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
     @Test
     void getUserById_archivedUser_stillReturnsUser() {
         // The archived user must be returned (not NOT_FOUND)
-        // This validates that findByIdIncludingArchived bypasses @SQLRestriction
+        // Auth metadata and the Academic archived profile must agree.
         UserRequest request = UserRequest.newBuilder().setUserId(archivedUserId).build();
 
         UserResponse response = stub.getUserById(request);
 
         assertThat(response.getId()).isEqualTo(archivedUserId);
-        assertThat(response.getLogin()).isEqualTo("archived_test");
+        assertThat(response.getLogin()).isEqualTo(archivedLogin);
         assertThat(response.getStatus()).isEqualTo("archived");
     }
 
@@ -788,13 +820,8 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void getUserByTelegramId_found_returnsProfileWithoutCredentials() {
-        // Insert a student with telegram_id, initial_password, and group_id
-        jdbcTemplate.update("DELETE FROM users WHERE login = 'bot_test_student'");
-        jdbcTemplate.update(
-                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id, "
-                        + "telegram_id, initial_password, password_changed, created_at, updated_at) "
-                        + "VALUES ('bot_test_student', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', "
-                        + "'Bot', 'TestStudent', 'student', 'active', false, 1, 987654321, 'initpass123', false, NOW(), NOW())");
+        var botStudent = seedStudent("Bot", "TestStudent", 987654321L);
+        identityFixture.catchUpCatalog();
 
         UserByTelegramIdRequest request =
                 UserByTelegramIdRequest.newBuilder().setTelegramId(987654321L).build();
@@ -802,19 +829,17 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         UserByTelegramIdResponse response = stub.getUserByTelegramId(request);
 
         assertThat(response.getFound()).isTrue();
-        assertThat(response.getLogin()).isEqualTo("bot_test_student");
+        assertThat(response.getUserId()).isEqualTo(botStudent.userId());
+        assertThat(response.getLogin()).isEqualTo(botStudent.login());
         assertThat(response.getDisplayName()).isEqualTo("Bot TestStudent");
         assertThat(response.getRole()).isEqualTo("student");
-        assertThat(response.getGroupId()).isEqualTo(GROUP_ID);
+        assertThat(response.getGroupId()).isEqualTo(groupId);
         assertThat(response.getGroupName()).isEqualTo("ИВТ-211");
         assertThat(response.getIsHeadman()).isFalse();
         assertThat(response.getTelegramId()).isEqualTo(987654321L);
         // A generic bot lookup has no capability bound to credential access.
         assertThat(response.getInitialPassword()).isEmpty();
         assertThat(response.getPasswordChanged()).isFalse();
-
-        // Cleanup
-        jdbcTemplate.update("DELETE FROM users WHERE login = 'bot_test_student'");
     }
 
     @Test

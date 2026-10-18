@@ -172,7 +172,7 @@ public class HeadmanWeeklyReportService {
             HeadmanWeeklyReportFormat format,
             java.util.function.Supplier<T> operation) {
         return plannedDataOnly
-                ? operation.get()
+                ? reportExecution.observe(report, format, operation)
                 : reportExecution.execute(report, format, operation);
     }
 

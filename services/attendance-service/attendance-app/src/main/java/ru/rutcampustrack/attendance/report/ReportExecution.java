@@ -15,7 +15,7 @@ import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableExceptio
 import java.util.concurrent.Semaphore;
 import java.util.function.Supplier;
 
-/** Bounded recovery of the original synchronous read/export; no background job is implied. */
+/** Synchronous export recovery and observation-only timing of owner-scheduled report renders. */
 @Component
 public final class ReportExecution {
     private static final class ExportCancelled extends ReportExportUnavailableException {
@@ -107,33 +107,60 @@ public final class ReportExecution {
                 }
             }
         } catch (RuntimeException failure) {
-            if (failure instanceof ru.rutcampustrack.attendance.exception.ReportValidationException
-                    || failure
-                            instanceof
-                            ru.rutcampustrack.attendance.exception.ReportExportTooLargeException
-                    || failure
-                            instanceof ru.rutcampustrack.attendance.exception.AccessDeniedException
-                    || failure instanceof ru.rutcampustrack.attendance.exception.BadRequestException
-                    || failure
-                            instanceof
-                            ru.rutcampustrack.attendance.contract.exception
-                                    .ResourceNotFoundException
-                    || failure instanceof ru.rutcampustrack.attendance.exception.ConflictException
-                    || failure instanceof ru.rutcampustrack.attendance.exception.RateLimitException
-                    || failure instanceof org.springframework.security.access.AccessDeniedException
-                    || failure instanceof java.util.concurrent.CancellationException
-                    || failure instanceof ExportCancelled
-                    || (failure
-                                    instanceof
-                                    org.springframework.web.server.ResponseStatusException status
-                            && status.getStatusCode().is4xxClientError())) {
-                outcome = "rejected";
-            }
+            outcome = failureOutcome(failure);
             throw failure;
         } finally {
             permits.release();
             finish(sample, report, format, outcome);
         }
+    }
+
+    /** Observes one owner-scheduled render without synchronous admission or recovery. */
+    public <T> T observe(Report report, HeadmanWeeklyReportFormat format, Supplier<T> operation) {
+        Timer.Sample sample = Timer.start(registry);
+        String outcome = "failure";
+        try {
+            T result = operation.get();
+            outcome = "success";
+            return result;
+        } catch (RuntimeException failure) {
+            outcome = failureOutcome(failure);
+            throw failure;
+        } finally {
+            finish(sample, report, format, outcome);
+        }
+    }
+
+    private static String failureOutcome(RuntimeException failure) {
+        return (failure instanceof ru.rutcampustrack.attendance.exception.ReportValidationException
+                        || failure
+                                instanceof
+                                ru.rutcampustrack.attendance.exception.ReportExportTooLargeException
+                        || failure
+                                instanceof
+                                ru.rutcampustrack.attendance.exception.AccessDeniedException
+                        || failure
+                                instanceof
+                                ru.rutcampustrack.attendance.exception.BadRequestException
+                        || failure
+                                instanceof
+                                ru.rutcampustrack.attendance.contract.exception
+                                        .ResourceNotFoundException
+                        || failure
+                                instanceof ru.rutcampustrack.attendance.exception.ConflictException
+                        || failure
+                                instanceof ru.rutcampustrack.attendance.exception.RateLimitException
+                        || failure
+                                instanceof org.springframework.security.access.AccessDeniedException
+                        || failure instanceof java.util.concurrent.CancellationException
+                        || failure instanceof ExportCancelled
+                        || (failure
+                                        instanceof
+                                        org.springframework.web.server.ResponseStatusException
+                                                status
+                                && status.getStatusCode().is4xxClientError()))
+                ? "rejected"
+                : "failure";
     }
 
     private static boolean transientDependency(RuntimeException failure) {
@@ -153,7 +180,9 @@ public final class ReportExecution {
         }
         sample.stop(
                 Timer.builder("attendance.report.duration")
-                        .description("Original synchronous export including bounded recovery")
+                        .description(
+                                "Attendance report rendering, including bounded recovery for"
+                                        + " synchronous exports")
                         .tags(
                                 "report",
                                 report.code,

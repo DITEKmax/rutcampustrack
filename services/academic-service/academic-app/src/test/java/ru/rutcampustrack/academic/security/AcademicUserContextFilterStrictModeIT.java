@@ -4,15 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
-import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.shared.security.InternalJwtProperties;
 
 /**
  * M03a: verifies strict mode (legacy-headers-enabled=false) — X-User-* headers are rejected, only a
@@ -20,16 +22,19 @@ import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
  *
  * <p>This mirrors the final state of M03a after the strict toggle commit.
  */
-@AutoConfigureMockMvc
-@TestPropertySource(
-        properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=false")
+@AutoConfigureMockMvc(
+        print = org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint.NONE)
+@TestPropertySource(properties = "rct.fixture.legacy-headers-enabled=false")
 class AcademicUserContextFilterStrictModeIT extends AbstractAcademicIntegrationTest {
-
-    private static final UUID SESSION_ID = UUID.fromString("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
 
     @Autowired private MockMvc mockMvc;
 
-    @Autowired private InternalJwtTestFactory factory;
+    @Autowired private InternalJwtProperties properties;
+
+    @BeforeEach
+    void strictModeIsEffective() {
+        assertThat(properties.legacyHeadersEnabled()).isFalse();
+    }
 
     @Test
     void noHeaders_strictMode_returns401() throws Exception {
@@ -48,7 +53,9 @@ class AcademicUserContextFilterStrictModeIT extends AbstractAcademicIntegrationT
     @Test
     void validInternalToken_strictMode_passes() throws Exception {
         String token =
-                factory.validToken(1L, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", null, false, false);
+                identityFixture
+                        .select(identityFixture.canonical().adminId(), AuthRole.ADMIN)
+                        .internalToken();
         MvcResult result =
                 mockMvc.perform(get("/academic/users").header("X-Internal-Token", token))
                         .andReturn();

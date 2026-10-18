@@ -10,14 +10,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.user.UserService;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 
 import java.util.concurrent.TimeUnit;
 
@@ -56,8 +58,6 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
     @Autowired private CacheManager cacheManager;
 
     @Autowired private UserService userService;
-
-    @Autowired private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
     void clearCaches() {
@@ -112,31 +112,38 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void patchUser_headmanReplacement_evictsRbacCache() {
-        Long replacementId =
-                jdbcTemplate.queryForObject(
-                        "INSERT INTO users (login, password_hash, last_name, first_name, role,"
-                            + " status, is_headman, group_id) VALUES ('rbac_replacement', 'x',"
-                            + " 'Rbac', 'Replacement', 'student', 'active', false, ?) RETURNING id",
-                        Long.class,
-                        GROUP_ID);
-        jdbcTemplate.update(
-                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at,"
-                        + " updated_at) VALUES (?, 'student', 'active', ?, NOW(), NOW())",
-                replacementId,
-                GROUP_ID);
+        var canonical = identityFixture.canonical();
+        long groupId = canonical.groupId();
+        long studentId = canonical.studentId();
+        var admin = identityFixture.select(canonical.adminId(), AuthRole.ADMIN);
+        long replacementId =
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Rbac",
+                                        "Replacement",
+                                        null,
+                                        UserRole.STUDENT,
+                                        groupId,
+                                        null,
+                                        610000000201L),
+                                admin)
+                        .userId();
         HeadmanCheckRequest request =
-                HeadmanCheckRequest.newBuilder().setUserId(STUDENT_ID).setGroupId(GROUP_ID).build();
+                HeadmanCheckRequest.newBuilder().setUserId(studentId).setGroupId(groupId).build();
 
         // Разогрев кеша
         stub.isHeadman(request);
-        String cacheKey = cachePrefix(cacheManager, "rbac") + STUDENT_ID + ":" + GROUP_ID;
+        String cacheKey = cachePrefix(cacheManager, "rbac") + studentId + ":" + groupId;
         assertThat(redisTemplate.hasKey(cacheKey)).isTrue();
 
         try {
             // D016 permits replacement, while standalone removal is rejected.
-            userService.patchUser(
-                    replacementId,
-                    new PatchUserRequest(null, null, null, true, null, null, null, null));
+            try (var ignored = identityFixture.request(admin)) {
+                userService.patchUser(
+                        replacementId,
+                        new PatchUserRequest(null, null, null, true, null, null, null, null));
+            }
 
             assertThat(redisTemplate.hasKey(cacheKey)).isFalse();
             HeadmanCheckResponse fresh = stub.isHeadman(request);
@@ -145,14 +152,16 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
                             stub.isHeadman(
                                             HeadmanCheckRequest.newBuilder()
                                                     .setUserId(replacementId)
-                                                    .setGroupId(GROUP_ID)
+                                                    .setGroupId(groupId)
                                                     .build())
                                     .getIsHeadman())
                     .isTrue();
         } finally {
-            userService.patchUser(
-                    STUDENT_ID,
-                    new PatchUserRequest(null, null, null, true, null, null, null, null));
+            try (var ignored = identityFixture.request(admin)) {
+                userService.patchUser(
+                        studentId,
+                        new PatchUserRequest(null, null, null, true, null, null, null, null));
+            }
         }
     }
 

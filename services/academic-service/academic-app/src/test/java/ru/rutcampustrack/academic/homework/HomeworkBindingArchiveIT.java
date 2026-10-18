@@ -26,25 +26,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.enums.HomeworkPublicationState;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveAction;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantCommand;
 import ru.rutcampustrack.academic.contract.enums.SemesterArchiveParticipantStatus;
-import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.event.HomeworkBindingArchivedEventConsumer;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
-import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.semester.AcademicSemesterArchiveBarrierTransaction;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCommandTransaction;
 import ru.rutcampustrack.academic.semester.SemesterArchiveCoordinator;
@@ -60,7 +57,6 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
     @Autowired private HomeworkBindingArchivedEventConsumer archiveConsumer;
     @Autowired private HomeworkNotificationJob notificationJob;
     @Autowired private HomeworkService homeworkService;
-    @Autowired private RequestContext requestContext;
     @Autowired private SemesterArchiveCommandTransaction archiveCommands;
     @Autowired private SemesterArchiveCoordinator semesterArchiveCoordinator;
     @Autowired private AcademicSemesterArchiveBarrierTransaction archiveBarrier;
@@ -71,6 +67,7 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
 
     private long bindingId;
     private long actorId;
+    private SelectedActor actor;
     private long adminId;
     private long groupId;
     private long subjectId;
@@ -92,6 +89,11 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         ThreadLocalRandom.current().nextBytes(payloadHash);
         semesterYear = ThreadLocalRandom.current().nextInt(2200, 3000);
 
+        actorId = identityFixture.canonical().studentId();
+        adminId = identityFixture.canonical().adminId();
+        groupId = identityFixture.canonical().groupId();
+        actor = identityFixture.select(actorId, AuthRole.HEADMAN);
+
         new TransactionTemplate(transactionManager)
                 .executeWithoutResult(
                         status -> {
@@ -99,31 +101,22 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
                                     jdbcTemplate.queryForList(
                                             "SELECT id FROM semesters WHERE is_active = true",
                                             Long.class));
-                            actorId =
-                                    jdbcTemplate.queryForObject(
-                                            "SELECT id FROM users WHERE login = 'student'",
-                                            Long.class);
-                            adminId =
-                                    jdbcTemplate.queryForObject(
-                                            "SELECT id FROM users WHERE login = 'admin'",
-                                            Long.class);
-                            groupId =
-                                    jdbcTemplate.queryForObject(
-                                            "SELECT id FROM groups WHERE name = 'ИВТ-211'",
-                                            Long.class);
                             subjectId =
                                     jdbcTemplate.queryForObject(
-                                            "INSERT INTO subjects (name, type, group_id) VALUES (?, 'lecture', ?) RETURNING id",
+                                            "INSERT INTO subjects (name, type, group_id) VALUES (?,"
+                                                    + " 'lecture', ?) RETURNING id",
                                             Long.class,
                                             "archive-it-subject-" + UUID.randomUUID(),
                                             groupId);
                             jdbcTemplate.update(
-                                    "INSERT INTO subject_lesson_types (subject_id, lesson_type) VALUES (?, 'lecture')",
+                                    "INSERT INTO subject_lesson_types (subject_id, lesson_type)"
+                                            + " VALUES (?, 'lecture')",
                                     subjectId);
                             semesterId =
                                     jdbcTemplate.queryForObject(
-                                            "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
-                                                    + "VALUES (?, ?, ?, false, NOW()) RETURNING id",
+                                            "INSERT INTO semesters (name, date_from, date_to,"
+                                                + " is_active, created_at) VALUES (?, ?, ?, false,"
+                                                + " NOW()) RETURNING id",
                                             Long.class,
                                             "archive-it-semester-" + UUID.randomUUID(),
                                             LocalDate.of(semesterYear, 1, 1),
@@ -199,8 +192,8 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT participant_state FROM academic_semester_archive_barriers WHERE semester_id = ?
-                """,
+SELECT participant_state FROM academic_semester_archive_barriers WHERE semester_id = ?
+""",
                                 String.class,
                                 semesterId))
                 .isEqualTo("READY");
@@ -247,9 +240,9 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForMap(
                                 """
-                SELECT actor_id, request_key, resolution_state FROM academic_semester_archive_publication_admissions
-                 WHERE operation_id = ? AND binding_id = ?
-                """,
+SELECT actor_id, request_key, resolution_state FROM academic_semester_archive_publication_admissions
+ WHERE operation_id = ? AND binding_id = ?
+""",
                                 firstArchive.getOperationId(),
                                 bindingId))
                 .containsEntry("actor_id", actorId)
@@ -299,10 +292,10 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         Map<String, Object> terminal =
                 jdbcTemplate.queryForMap(
                         """
-                SELECT resolution_state, terminal_event_id, schedule_occurrence_id, schedule_revision, consumed_at
-                  FROM academic_semester_archive_publication_admissions
-                 WHERE operation_id = ? AND binding_id = ?
-                """,
+SELECT resolution_state, terminal_event_id, schedule_occurrence_id, schedule_revision, consumed_at
+  FROM academic_semester_archive_publication_admissions
+ WHERE operation_id = ? AND binding_id = ?
+""",
                         firstArchive.getOperationId(),
                         bindingId);
         assertThat(terminal.get("resolution_state")).isEqualTo("CANCELLED_UNPUBLISHED");
@@ -313,9 +306,9 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT count(*) FROM homework_binding_archives
-                 WHERE binding_id = ? AND semester_id = ? AND source_event_id = ?
-                """,
+                                SELECT count(*) FROM homework_binding_archives
+                                 WHERE binding_id = ? AND semester_id = ? AND source_event_id = ?
+                                """,
                                 Long.class,
                                 bindingId,
                                 semesterId,
@@ -407,9 +400,9 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT count(*) FROM academic_semester_archive_publication_admissions
-                 WHERE operation_id = ? AND binding_id = ?
-                """,
+SELECT count(*) FROM academic_semester_archive_publication_admissions
+ WHERE operation_id = ? AND binding_id = ?
+""",
                                 Long.class,
                                 nextArchive.getOperationId(),
                                 bindingId))
@@ -417,10 +410,10 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         assertThat(
                         jdbcTemplate.queryForObject(
                                 """
-                SELECT count(*) FROM academic_semester_archive_publication_admissions
-                 WHERE operation_id = ? AND binding_id = ? AND resolution_state = 'CANCELLED_UNPUBLISHED'
-                   AND terminal_event_id = ? AND consumed_at IS NOT NULL
-                """,
+SELECT count(*) FROM academic_semester_archive_publication_admissions
+ WHERE operation_id = ? AND binding_id = ? AND resolution_state = 'CANCELLED_UNPUBLISHED'
+   AND terminal_event_id = ? AND consumed_at IS NOT NULL
+""",
                                 Long.class,
                                 firstArchive.getOperationId(),
                                 bindingId,
@@ -531,13 +524,7 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
             lateEdit =
                     executor.submit(
                             () -> {
-                                ServletRequestAttributes requestAttributes =
-                                        new ServletRequestAttributes(new MockHttpServletRequest());
-                                RequestContextHolder.setRequestAttributes(requestAttributes);
-                                try {
-                                    requestContext.setUserId(actorId);
-                                    requestContext.setGroupId(groupId);
-                                    requestContext.setRole(UserRole.STUDENT);
+                                try (var ignored = identityFixture.request(actor)) {
                                     return new TransactionTemplate(transactionManager)
                                             .execute(
                                                     status -> {
@@ -562,9 +549,6 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
                                                                         UUID.randomUUID(),
                                                                         1L));
                                                     });
-                                } finally {
-                                    RequestContextHolder.resetRequestAttributes();
-                                    requestAttributes.requestCompleted();
                                 }
                             });
 
@@ -664,9 +648,11 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
                 .executeWithoutResult(
                         status -> {
                             jdbcTemplate.update(
-                                    "UPDATE semesters SET is_active = false WHERE is_active = true");
+                                    "UPDATE semesters SET is_active = false WHERE is_active ="
+                                            + " true");
                             jdbcTemplate.update(
-                                    "UPDATE semesters SET date_from = ?, date_to = ?, is_active = true WHERE id = ?",
+                                    "UPDATE semesters SET date_from = ?, date_to = ?, is_active ="
+                                            + " true WHERE id = ?",
                                     today.minusDays(1),
                                     dueDate.plusDays(3),
                                     semesterId);
@@ -788,7 +774,8 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
 
     private int archiveEffectReceiptCount(UUID eventId) {
         return jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?",
+                "SELECT COUNT(*) FROM academic_semester_archive_effect_receipts WHERE"
+                        + " source_event_id = ?",
                 Integer.class,
                 eventId);
     }
@@ -798,10 +785,10 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         Map<String, Object> receipt =
                 jdbcTemplate.queryForMap(
                         """
-                SELECT event_type, semester_id, binding_id, encode(payload_hash, 'hex') AS payload_hash,
-                       state, acknowledgement_event_id
-                  FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?
-                """,
+SELECT event_type, semester_id, binding_id, encode(payload_hash, 'hex') AS payload_hash,
+       state, acknowledgement_event_id
+  FROM academic_semester_archive_effect_receipts WHERE source_event_id = ?
+""",
                         sourceEventId);
         assertThat(receipt)
                 .containsEntry("event_type", "homework.binding.archived")
@@ -813,17 +800,17 @@ class HomeworkBindingArchiveIT extends AbstractAcademicIntegrationTest {
         List<Map<String, Object>> acknowledgementEnvelopes =
                 jdbcTemplate.queryForList(
                         """
-                SELECT payload ->> 'event_id' AS event_id,
-                       payload #>> '{payload,source_event_id}' AS source_event_id,
-                       payload #>> '{payload,target}' AS target,
-                       payload #>> '{payload,source_event_type}' AS source_event_type,
-                       payload #>> '{payload,semester_id}' AS semester_id,
-                       payload #>> '{payload,payload_hash}' AS payload_hash,
-                       payload #>> '{payload,result}' AS result
-                  FROM academic_outbox
-                 WHERE event_type = 'semester.archive.effect.ack'
-                   AND payload #>> '{payload,source_event_id}' = ?
-                """,
+                        SELECT payload ->> 'event_id' AS event_id,
+                               payload #>> '{payload,source_event_id}' AS source_event_id,
+                               payload #>> '{payload,target}' AS target,
+                               payload #>> '{payload,source_event_type}' AS source_event_type,
+                               payload #>> '{payload,semester_id}' AS semester_id,
+                               payload #>> '{payload,payload_hash}' AS payload_hash,
+                               payload #>> '{payload,result}' AS result
+                          FROM academic_outbox
+                         WHERE event_type = 'semester.archive.effect.ack'
+                           AND payload #>> '{payload,source_event_id}' = ?
+                        """,
                         sourceEventId.toString());
         assertThat(acknowledgementEnvelopes).hasSize(expectedAcknowledgementCount);
         List<String> acknowledgementEventIds =

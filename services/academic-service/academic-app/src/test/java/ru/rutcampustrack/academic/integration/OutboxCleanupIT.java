@@ -2,11 +2,6 @@ package ru.rutcampustrack.academic.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -16,9 +11,16 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.shared.outbox.OutboxCleanupJob;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
+
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
 
 /**
  * M02 Группа 6 acceptance — integration-тест retention (7 дней, NEW-7).
@@ -50,6 +52,13 @@ class OutboxCleanupIT extends AbstractAcademicIntegrationTest {
     @Test
     void cleanup_deletesSentOlderThanRetention_keepsRecent() {
         TransactionTemplate tt = new TransactionTemplate(txManager);
+
+        // Завершаем только события canonical setup до записи трёх retention-свидетелей.
+        tt.executeWithoutResult(
+                s ->
+                        outboxStorage
+                                .findPending(1000)
+                                .forEach(row -> outboxStorage.markSent(row.id())));
 
         // Record A: SENT 10 дней назад → должна удалиться
         // Record B: SENT 3 дня назад → остаётся

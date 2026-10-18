@@ -8,16 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.BlockedListener;
 import com.rabbitmq.client.Connection;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.FanoutExchange;
@@ -36,13 +27,26 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.event.RabbitConfig;
 import ru.rutcampustrack.academic.event.RabbitOutboxEventSender;
 import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.shared.outbox.OutboxDeliveryException;
 import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Real broker refusal must not turn the committed user operation's outbox into SENT. */
 @AutoConfigureMockMvc
@@ -118,12 +122,11 @@ class OutboxBrokerConfirmIT extends AbstractAcademicEventIntegrationTest {
                         public void handleUnblocked() {}
                     });
 
-            long adminId =
-                    jdbc.queryForObject("SELECT id FROM users WHERE login='admin'", Long.class);
+            var actor =
+                    identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
             mvc.perform(
                             put("/academic/groups/{id}", group.getId())
-                                    .header("X-User-Id", adminId)
-                                    .with(signedAdmin())
+                                    .with(identityFixture.signed(actor))
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(
                                             "{\"name\":\"Тно-121\",\"active\":true,\"trainingDurationYears\":4}"))
@@ -263,12 +266,11 @@ class OutboxBrokerConfirmIT extends AbstractAcademicEventIntegrationTest {
                                     java.time.Instant.now().toString(),
                                     "payload",
                                     java.util.Map.of())));
-            long adminId =
-                    jdbc.queryForObject("SELECT id FROM users WHERE login='admin'", Long.class);
+            var actor =
+                    identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
             mvc.perform(
                             put("/academic/groups/{id}", group.getId())
-                                    .header("X-User-Id", adminId)
-                                    .with(signedAdmin())
+                                    .with(identityFixture.signed(actor))
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(
                                             "{\"name\":\"Тно-121\",\"active\":true,\"trainingDurationYears\":4}"))
@@ -289,7 +291,7 @@ class OutboxBrokerConfirmIT extends AbstractAcademicEventIntegrationTest {
                                             record ->
                                                     jdbc.queryForObject(
                                                             "SELECT status FROM academic_outbox"
-                                                                + " WHERE id=?",
+                                                                    + " WHERE id=?",
                                                             String.class,
                                                             record.id()))
                                     .toList())

@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,7 +43,8 @@ class PlannedReportRendererTest {
     private final RequestContext caller = mock(RequestContext.class);
     private final AttendanceReadPort marks = mock(AttendanceReadPort.class);
     private final DocumentRendererGrpcClient converter = mock(DocumentRendererGrpcClient.class);
-    private final ReportExecution retry = mock(ReportExecution.class);
+    private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
+    private final ReportExecution execution = new ReportExecution(registry);
     private PlannedReportRenderer renderer;
     private final Map<Long, LocalDate> markDates = new HashMap<>();
 
@@ -59,7 +63,7 @@ class PlannedReportRendererTest {
                         converter,
                         caller,
                         clock,
-                        retry);
+                        execution);
         var stats =
                 new HeadmanStatsService(
                         academic,
@@ -135,6 +139,13 @@ class PlannedReportRendererTest {
                         });
     }
 
+    @AfterEach
+    void plannedRenderingNeverUsesLegacyRecoveryOrExecutionSlots() {
+        assertThat(registry.find("attendance.report.retries.total").counter()).isNull();
+        assertThat(registry.get("attendance.report.active").gauge().value()).isZero();
+        registry.close();
+    }
+
     @ParameterizedTest
     @ValueSource(
             strings = {
@@ -153,7 +164,7 @@ class PlannedReportRendererTest {
         assertThat(html).contains("УИТ-311").doesNotContain("${");
         assertThat(result.getContentType()).contains("text/html");
         assertThat(result.getFilename()).endsWith(".html");
-        verifyNoInteractions(academic, schedule, caller, converter, retry);
+        verifyNoInteractions(academic, schedule, caller, converter);
     }
 
     @Test
@@ -197,7 +208,14 @@ class PlannedReportRendererTest {
             }
         }
         assertThat(documents.get(0)).isNotEqualTo(documents.get(1));
-        verifyNoInteractions(academic, schedule, caller, converter, retry);
+        var duration =
+                registry.get("attendance.report.duration")
+                        .tags("report", "weekly", "format", "docx", "outcome", "success")
+                        .timer();
+        assertThat(duration.count()).isEqualTo(3);
+        assertThat(duration.totalTime(java.util.concurrent.TimeUnit.NANOSECONDS)).isPositive();
+
+        verifyNoInteractions(academic, schedule, caller, converter);
     }
 
     @Test
@@ -243,7 +261,7 @@ class PlannedReportRendererTest {
                                                 java.time.format.DateTimeFormatter.ofPattern(
                                                         "dd.MM")));
         }
-        verifyNoInteractions(academic, schedule, caller, converter, retry);
+        verifyNoInteractions(academic, schedule, caller, converter);
     }
 
     @ParameterizedTest
@@ -261,7 +279,7 @@ class PlannedReportRendererTest {
         assertThat(entry(result.getBody().toByteArray(), "xl/worksheets/sheet1.xml"))
                 .contains("Студент 1")
                 .doesNotContain("<f>");
-        verifyNoInteractions(academic, schedule, caller, converter, retry);
+        verifyNoInteractions(academic, schedule, caller, converter);
     }
 
     @ParameterizedTest
@@ -303,7 +321,7 @@ class PlannedReportRendererTest {
             assertThat(result.getContentType())
                     .isEqualTo(format.equals("pdf") ? "application/pdf" : "application/zip");
         }
-        verifyNoInteractions(academic, schedule, caller, retry);
+        verifyNoInteractions(academic, schedule, caller);
     }
 
     @Test
@@ -318,7 +336,7 @@ class PlannedReportRendererTest {
         assertThatThrownBy(() -> renderer.render(admit(oversized)))
                 .isInstanceOf(
                         ru.rutcampustrack.attendance.exception.ReportExportTooLargeException.class);
-        verifyNoInteractions(academic, schedule, caller, converter, retry);
+        verifyNoInteractions(academic, schedule, caller, converter);
     }
 
     @Test
@@ -358,27 +376,33 @@ class PlannedReportRendererTest {
                         new ByteArrayInputStream(result.getBody().toByteArray()));
         assertThat(image).isNotNull();
         assertThat(image.getWidth()).isGreaterThan(100);
-        verifyNoInteractions(converter, retry, academic, schedule, caller);
+        verifyNoInteractions(converter, academic, schedule, caller);
     }
 
     @Test
     void plannedWeeklyFailureIsNotRetriedByLegacyReportExecution() {
         reset(marks);
-        when(marks.findByGroupAndDateRange(anyLong(), any(), any()))
-                .thenThrow(
-                        new org.springframework.dao.TransientDataAccessResourceException(
-                                "synthetic local outage"));
+        var failure =
+                new org.springframework.dao.TransientDataAccessResourceException(
+                        "synthetic local outage");
+        when(marks.findByGroupAndDateRange(anyLong(), any(), any())).thenThrow(failure);
         assertThatThrownBy(
                         () ->
                                 renderer.render(
                                         admit(
                                                 ReportPlanFixtures.plan(
                                                         "HEADMAN_WEEKLY_SELECTED", "docx"))))
-                .isInstanceOf(org.springframework.dao.TransientDataAccessResourceException.class);
+                .isSameAs(failure);
+        var duration =
+                registry.get("attendance.report.duration")
+                        .tags("report", "weekly", "format", "docx", "outcome", "failure")
+                        .timer();
+        assertThat(duration.count()).isEqualTo(1);
+        assertThat(duration.totalTime(java.util.concurrent.TimeUnit.NANOSECONDS)).isPositive();
         verify(marks)
                 .findByGroupAndDateRange(
                         33L, LocalDate.of(2026, 10, 12), LocalDate.of(2026, 10, 18));
-        verifyNoInteractions(retry, academic, schedule, caller, converter);
+        verifyNoInteractions(academic, schedule, caller, converter);
     }
 
     private static AdmittedReportPlan admit(ReportRenderPlan plan) {

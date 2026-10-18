@@ -63,6 +63,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
     @MockitoBean private AttendanceUserImpactGrpcClient attendanceImpact;
     private SelectedActor admin;
     private SelectedActor teacher;
+    private long nextStudentTelegram = 720000000001L;
 
     @org.junit.jupiter.api.BeforeEach
     void selectDurableFullAdminSession() {
@@ -145,7 +146,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
                                         UserRole.STUDENT,
                                         created.getId(),
                                         null,
-                                        null),
+                                        nextStudentTelegram++),
                                 admin)
                         .userId();
         assignHeadman(headmanId, created.getId());
@@ -546,7 +547,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
                                                 : groupId)
                                         : null,
                                 role == UserRole.TEACHER ? suffix : null,
-                                null),
+                                role == UserRole.STUDENT ? nextStudentTelegram++ : null),
                         admin)
                 .userId();
     }
@@ -567,7 +568,7 @@ class GroupRegistryIT extends AbstractAcademicIntegrationTest {
     private Long addGroup(String name, boolean active) {
         return jdbc.queryForObject(
                 "INSERT INTO groups (name, is_active, created_at) VALUES (?, ?, NOW()) RETURNING"
-                    + " id",
+                        + " id",
                 Long.class,
                 name,
                 active);

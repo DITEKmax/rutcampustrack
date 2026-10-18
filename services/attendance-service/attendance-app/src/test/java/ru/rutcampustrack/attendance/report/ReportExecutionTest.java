@@ -246,6 +246,27 @@ class ReportExecutionTest {
                                     .timer()
                                     .count())
                     .isEqualTo(1);
+            assertThat(
+                            execution.observe(
+                                    ReportExecution.Report.WEEKLY,
+                                    HeadmanWeeklyReportFormat.DOCX,
+                                    () -> {
+                                        assertThat(
+                                                        registry.get("attendance.report.active")
+                                                                .gauge()
+                                                                .value())
+                                                .isEqualTo(2);
+                                        return "planned";
+                                    }))
+                    .isEqualTo("planned");
+            assertThat(
+                            registry.get("attendance.report.duration")
+                                    .tags(
+                                            "report", "weekly", "format", "docx", "outcome",
+                                            "success")
+                                    .timer()
+                                    .count())
+                    .isEqualTo(1);
             first.cancel(true);
             release.countDown();
             assertThat(second.get(5, TimeUnit.SECONDS)).isEqualTo("done");

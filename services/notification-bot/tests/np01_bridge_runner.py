@@ -651,8 +651,14 @@ async def hosted_role_menu_main():
     global _phase
     from bot.grpc_client.bot_read_client import BotReadGrpcClient
     from bot.handlers.prefs import (
-        CREDENTIALS_LABEL, LINKS_LABEL, LOGIN_LABEL, SETTINGS_LABEL,
-        HOMEWORK_TODAY_LABEL, HOMEWORK_WEEK_LABEL, HEADMAN_LABEL, TEACHER_TODAY_LABEL,
+        CREDENTIALS_LABEL,
+        HEADMAN_LABEL,
+        HOMEWORK_TODAY_LABEL,
+        HOMEWORK_WEEK_LABEL,
+        LINKS_LABEL,
+        LOGIN_LABEL,
+        SETTINGS_LABEL,
+        TEACHER_TODAY_LABEL,
     )
     from bot.handlers.role_reads import LessonChoices, role_reads_router
     from bot.services.bot_menu import BotReadDenied, resolve_menu_scope
@@ -832,7 +838,11 @@ if __name__ == "__main__":
         if sys.argv[1:] == ["--hosted-role-menu"]:
             asyncio.run(asyncio.wait_for(hosted_role_menu_main(), timeout=45))
         else:
-            asyncio.run(asyncio.wait_for(own_homework_main(), timeout=30) if sys.argv[1:] == ["--own-homework"] else main())
+            asyncio.run(
+                asyncio.wait_for(own_homework_main(), timeout=30)
+                if sys.argv[1:] == ["--own-homework"]
+                else main()
+            )
     except BaseException:
         print(
             json.dumps(

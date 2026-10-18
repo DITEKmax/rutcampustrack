@@ -12,9 +12,9 @@
   },
   "mandatoryRows": 39,
   "mandatoryWeight": 196,
-  "closed": 27,
-  "closedWeight": 130,
-  "percent": 66.33,
+  "closed": 30,
+  "closedWeight": 146,
+  "percent": 74.49,
   "weightPolicy": "Weights1/2/3/5/8frozenbefore newimplementation; changedtargetscope versioneddelta, no retroactive oldv1weightschange. Acceptedoldproof retainedonlywhileapplicable; affectedoldrow requiresnewproof beforefinalclosure.",
   "deferred": "Realdeploy/ownerstand/TG/push/install/Safari/alertbot/offhostprobe/realbackup/VPS/multiworker/Angularretirement/newweb. B013/B014/B015FROZEN remain no replay.",
   "riskGate": "No wholeGoalPASS fromweightedcount; U25CI/CoverageFAIL remain separatelyblocking.",
@@ -36,11 +36,11 @@
       "percent": 70.42
     },
     "КТ3": {
-      "closed": 3,
+      "closed": 6,
       "total": 9,
-      "weight": 10,
+      "weight": 26,
       "denominator": 37,
-      "percent": 27.03
+      "percent": 70.27
     },
     "КТ4": {
       "closed": 13,
@@ -57,5 +57,5 @@
       "percent": 0.0
     }
   },
-  "latestAccepted": "U14.2 actual658 create/credentials/fenced rollback/sameUID recovery+Auth unknownACK/restart; independent evidence-applicability APPLICABLE. No archive/globalgates claim."
+  "latestAccepted": "U23.1/U23.2/U23.4 actual9cf Apps SUCCESS + independent applicability ACCEPT; realerrors/profile/restart/resourcephases/outage/cleanup. Source9cf, canonical12151983958/apps.json SHA2222f88f7ddc2acf5c793bac193238775497d42af9d01f6b6809f7011f199ba5. No VPS/fullauthenticatedjourney/7dayelapsed claim."
 }

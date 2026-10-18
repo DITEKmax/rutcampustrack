@@ -526,6 +526,72 @@ def e2e_gateway_openapi(docker, safe):
     return result
 
 
+def e2e_export_failure_snapshot(query, baseline=None):
+    """One last-scraped aggregate observation; never an acceptance or actor/job identity."""
+    counters = {
+        ("rct_export_jobs_accepted_total", "", "", ""): "accepted_jobs",
+        ("rct_export_jobs_retries_total", "", "", "generation_failed"): "retried_jobs",
+        ("rct_export_jobs_terminal_total", "", "success", "none"): "terminal_success",
+        ("rct_export_jobs_terminal_total", "", "failure", "generation_failed"): "terminal_generation_failed",
+        ("rct_export_jobs_terminal_total", "", "failure", "expired"): "terminal_expired",
+        ("rct_export_jobs_terminal_total", "", "denied", "authority_denied"): "terminal_denied",
+        ("rct_export_jobs_terminal_total", "", "rejected", "export_too_large"): "terminal_rejected",
+        ("rct_export_jobs_duration_seconds_bucket", "", "success", ""): "success_within60s",
+        ("attendance_report_duration_seconds_count", "", "success", ""): "successful_docx_reports",
+    }
+    gauges = {
+        **{("rct_export_jobs_queue", state, "", ""): state for state in ["queued", "preparing", "ready", "error"]},
+        ("rct_export_jobs_due", "", "", ""): "due",
+        ("rct_export_jobs_waiting", "", "", ""): "waiting",
+        ("rct_export_jobs_snapshot_timestamp_seconds", "", "", ""): "owner_snapshot_age_seconds",
+    }
+    result = {
+        "counters": {key: {"value": "UNKNOWN", "delta": "UNKNOWN"} for key in counters.values()},
+        "gauges": {key: "UNKNOWN" for key in gauges.values()},
+    }
+    expression = (
+        'sum by (__name__,state,outcome,reason) ('
+        '{job="academic-service",kind="HEADMAN_WEEKLY_SELECTED",__name__=~"rct_export_jobs_(accepted|retries|terminal)_total|rct_export_jobs_(queue|due|waiting)"}'
+        ' or rct_export_jobs_duration_seconds_bucket{job="academic-service",kind="HEADMAN_WEEKLY_SELECTED",outcome="success",le="60.0"}'
+        ' or attendance_report_duration_seconds_count{job="attendance-service",report="weekly",format="docx",outcome="success"}'
+        ' or rct_export_jobs_snapshot_timestamp_seconds{job="academic-service"})'
+    )
+    try:
+        rows = query(expression)
+        if not isinstance(rows, list) or len(rows) > 32:
+            return result
+        values = {}
+        for row in rows:
+            if not isinstance(row, dict) or not isinstance(row.get("metric"), dict):
+                continue
+            labels = row["metric"]
+            identity = tuple(labels.get(key, "") for key in ["__name__", "state", "outcome", "reason"])
+            if not all(isinstance(value, str) for value in identity) or identity not in counters and identity not in gauges:
+                continue
+            raw = row.get("value")
+            value = float(raw[1]) if isinstance(raw, list) and len(raw) == 2 and type(raw[1]) in {str, int, float} else -1
+            value = value if math.isfinite(value) and value >= 0 else "UNKNOWN"
+            values[identity] = "UNKNOWN" if identity in values else value
+        for identity, key in counters.items():
+            value = values.get(identity, "UNKNOWN")
+            before = baseline["counters"][key]["value"] if baseline is not None else "UNKNOWN"
+            delta = value - before if type(value) is float and type(before) is float and math.isfinite(before) and before >= 0 else -1
+            result["counters"][key] = {
+                "value": value,
+                "delta": delta if math.isfinite(delta) and delta >= 0 else "UNKNOWN",
+            }
+        for identity, key in gauges.items():
+            value = values.get(identity, "UNKNOWN")
+            if key == "owner_snapshot_age_seconds":
+                value = time.time() - value if type(value) is float and value > 0 else -1
+                value = value if math.isfinite(value) and value >= 0 else "UNKNOWN"
+            result["gauges"][key] = value
+    except Exception:
+        # Diagnostics must never replace the original browser failure or block PASS assertions.
+        pass
+    return result
+
+
 def e2e_async_browser():
     """Observe the existing real browser scenario, never launch another app stand."""
     assert os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"
@@ -576,6 +642,7 @@ def e2e_async_browser():
         safe["panel_rules_sha256"] = hashlib.sha256(panel_rules.read_bytes()).hexdigest()
         safe["resources"].update(scrape_interval_seconds=5, sample_limit_per_target=3000, retained_series_guard=16000)
         browser = None
+        failure_baseline = None
         attempted = False
         address = None
 
@@ -727,6 +794,9 @@ def e2e_async_browser():
             baseline = {
                 key: number(expr, allow_absent=key == "successful_docx_reports") for key, expr in counters.items()
             }
+            failure_baseline = e2e_export_failure_snapshot(query)
+            for key, value in baseline.items():
+                failure_baseline["counters"][key]["value"] = value
             safe["phase"] = "BROWSER_REAL_DOWNLOADS"
             with (private / "browser.private.log").open("wb") as log:
                 browser = subprocess.Popen(
@@ -819,6 +889,8 @@ def e2e_async_browser():
                 in {"AssertionError", "CalledProcessError", "TimeoutExpired", "OSError", "HTTPError", "URLError"}
                 else "OTHER"
             )
+            if safe["phase"] == "BROWSER_REAL_DOWNLOADS" and browser is not None:
+                safe["browser_failure_metrics"] = e2e_export_failure_snapshot(query, failure_baseline)
         finally:
             try:
                 if browser is not None and browser.poll() is None:

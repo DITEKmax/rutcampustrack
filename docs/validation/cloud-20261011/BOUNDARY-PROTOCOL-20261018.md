@@ -25,6 +25,33 @@ identity fields use an owner-fed NONAUTHORITATIVE read model for full-list filte
 No crossDB FK. Runtime/migrator identities restricted to their own DB; published
 V62/V63 immutable, new schema/bootstrap/migrations explicit and nonresetting.
 
+## First cutover / code rollback boundary (prepared; no deploy executed)
+
+Owner confirmed there are no production legacy data. First rollout uses the explicit
+Auth/Academic own-DB migration paths and restricted principals; retained Cloud synthetic
+stores are not reset, reseeded or used as an implicit migration source. Verify the
+resolved DB names/principals, immutable migration ledger and own/foreign rights before
+opening admission; then run Q033 explicitly once only if no administrator exists.
+
+Auth and Academic are switched as a compatible pair with the same directed proto,
+operation receipts/fences/catalog and report job formats. A timeout or partial startup
+keeps accepted work in those stores; reconcile its original operation ID after repair.
+After the first new write, never route back to the old shared database, rewrite/repair
+Flyway, replay an older snapshot, delete a volume or discard a job to roll code back.
+
+A previous binary pair is eligible only after schema/wire/stored-state compatibility
+and retained-data/current-permission checks on the same stores. Otherwise keep the
+new stores and apply a forward fix; incompatible backward rollback is refused. No
+previous production-compatible split pair is declared here. Before first rollout,
+the separately authorized operator must choose the exact eligible pair or forward-fix
+path; quiescing/resuming writers and real backups remain separate deployment actions.
+
+Evidence applicability: UserOwnershipLifecycleIT at219 proves nonempty two-DB repeat,
+not a binary rollback experiment. The219 package changes no SQL migration or protobuf
+from b836 (git diff inventory); this is a bounded source compatibility observation,
+not an approved production fallback. Existing durable unknown-outcome/lease fencing
+and the strict own-DB startup/role guards remain required in either permitted path.
+
 ## Provisioning / mutation stages
 
 Academic ACCEPTED → AUTH_PREPARED → LOCAL_COMMITTED → SUCCEEDED.

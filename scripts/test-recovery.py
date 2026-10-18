@@ -125,6 +125,18 @@ def exercise(args):
             "CREATE TABLE recovery_probe(id bigserial PRIMARY KEY, payload text NOT NULL); INSERT INTO recovery_probe(payload) VALUES ('Привет — recovery'),('second row'); CREATE INDEX recovery_payload_idx ON recovery_probe(payload);",
             user=user,
         )
+        if label in ("academic", "auth"):
+            runtime = "rct_academic_runtime" if label == "academic" else "rct_auth_runtime"
+            r.pg_query(container, secret[key], db, f"""
+CREATE TABLE recovery_private(id integer PRIMARY KEY,payload text NOT NULL);
+INSERT INTO recovery_private VALUES(1,'synthetic-private-probe');
+REVOKE ALL ON recovery_private FROM {runtime};
+GRANT SELECT(id) ON recovery_private TO {runtime};
+CREATE FUNCTION recovery_probe_function() RETURNS integer LANGUAGE SQL AS 'SELECT 42';
+REVOKE EXECUTE ON FUNCTION recovery_probe_function() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION recovery_probe_function() TO {runtime};
+ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+""", user=user)
     args.failure_stage = "SOURCE_SEED_MONGO"
     r.mongo_query(
         source.mongo_container,
@@ -175,6 +187,24 @@ def exercise(args):
     dest.target_project = original_project
     args.failure_stage = "RESTORE"
     r.restore(dest)
+    args.failure_stage = "RESTORED_RUNTIME_ACL"
+    restored_secret = r.credentials(dest.env_file)
+    for label, container, db, key, user in r.pg_targets(dest):
+        if label not in ("academic", "auth"):
+            continue
+        runtime = "rct_academic_runtime" if label == "academic" else "rct_auth_runtime"
+        password = restored_secret["POSTGRES_ACADEMIC_PASSWORD" if label == "academic" else "POSTGRES_AUTH_PASSWORD"]
+        r.require(r.pg_query(container, password, db, "SELECT id FROM recovery_private", user=runtime) == "1",
+                  "Restored explicit column grant was lost")
+        r.require(r.pg_query(container, password, db, "SELECT recovery_probe_function()", user=runtime) == "42",
+                  "Restored explicit function grant was lost")
+        expect_refusal(lambda: r.pg_query(container, password, db, "SELECT payload FROM recovery_private", user=runtime),
+                       "restored runtime cannot read an ungranted column")
+        expect_refusal(lambda: r.pg_query(container, password, db, "INSERT INTO recovery_private VALUES(2,'refused')", user=runtime),
+                       "restored runtime cannot write a protected table")
+        other_db = "auth_db" if label == "academic" else "academic_db"
+        expect_refusal(lambda: r.pg_query(container, password, other_db, "SELECT 1", user=runtime),
+                       "restored runtime cannot connect to the other owner's database")
     # Remove files guard from this refusal check so it reaches the DB freshness guard.
     args.failure_stage = "REFUSAL_NONEMPTY"
     dest.files_dir = args.work_dir / "never-created-repeat-files"
@@ -187,7 +217,8 @@ def exercise(args):
             "projects": projects,
             "bundle_manifest_sha256": r.digest(source.output / "manifest.json"),
             "checks": [
-                "all three PG databases: exact data/schema/sequences with separate Auth/Academic owners",
+                "all three PG databases: exact data/schema/sequences/owners/ACL/default privileges",
+                "restored Auth/Academic runtime explicit column/function grants and protected DML/cross-DB denial",
                 "both Mongo documents/indexes/options",
                 "all file bytes/paths",
                 "overwrite/corruption/project/nonempty refusal",

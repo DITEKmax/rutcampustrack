@@ -67,7 +67,7 @@ class BotCredentialPythonBridgeIT {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Configuration(proxyBeanMethods = false)
-    @EnableTransactionManagement
+    @EnableTransactionManagement(proxyTargetClass = true)
     static class Transactions {}
 
     @Test

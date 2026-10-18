@@ -229,7 +229,10 @@ public class AcademicUserIdentityOperations {
                         if (old == null && employee == null)
                             throw new BadRequestException(
                                     "Для добавления TEACHER нужен табельный номер");
-                        if (employee != null) profile = withEmployee(profile, employee);
+                        if (employee != null) {
+                            requireEmployeeAvailable(employee, profile.userId());
+                            profile = withEmployee(profile, employee);
+                        }
                         if (request.status() == RoleGrantStatus.ACTIVE
                                 && blankToNull(profile.employeeNumber()) == null)
                             throw new BadRequestException(

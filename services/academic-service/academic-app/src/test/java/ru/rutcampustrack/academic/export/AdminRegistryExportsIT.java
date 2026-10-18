@@ -5,18 +5,28 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.zip.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.identitycatalog.AuthIdentityDataClient;
+import ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
-import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.zip.*;
 
 /**
  * Canonical HTTP + service/JPA/JDBC query; complete filtered rows, explicit safe schema, live
@@ -26,7 +36,10 @@ import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
     @Autowired MockMvc mvc;
     @Autowired JdbcTemplate jdbc;
-    @Autowired InternalJwtTestFactory tokens;
+    @Autowired ObjectMapper mapper;
+    @Autowired AcademicUserIdentityOperations identities;
+    @Autowired AuthIdentityDataClient identityData;
+    private SelectedActor actor;
     @MockitoBean RegistryDocumentClient documents;
     private String token;
     private long admin;
@@ -34,39 +47,61 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
 
     @BeforeEach
     void fixture() {
-        admin = jdbc.queryForObject("SELECT id FROM users WHERE login='admin'", Long.class);
-        long grant =
-                jdbc.queryForObject(
-                        "SELECT id FROM user_role_grants WHERE user_id=? AND role='admin'",
-                        Long.class,
-                        admin);
-        long rv =
-                jdbc.queryForObject(
-                        "SELECT roles_version FROM users WHERE id=?", Long.class, admin);
-        jdbc.update(
-                "UPDATE admin_access_profiles SET version=version+1,assigned=true,mode='FULL',permissions='{}' WHERE user_id=?",
-                admin);
-        sid = UUID.randomUUID();
-        jdbc.update(
-                "INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,refresh_expires_at,created_at,last_seen_at,auth_method) VALUES (?,?,?,1,?,NOW()+interval '1 day',NOW(),NOW(),'PASSWORD')",
-                sid,
-                admin,
-                grant,
-                UUID.randomUUID());
-        rv = jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, admin);
-        token = tokens.validToken(admin, sid, 1, rv, "ADMIN", "ACTIVE", null, false, false);
+        var full = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        admin =
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Registry",
+                                        "Administrator",
+                                        null,
+                                        UserRole.ADMIN,
+                                        null,
+                                        null,
+                                        null,
+                                        new AdminAccessInput("FULL", List.of())),
+                                full)
+                        .userId();
+        selectCurrentClaims();
+    }
+
+    private void selectCurrentClaims() {
+        actor = identityFixture.select(admin, AuthRole.ADMIN);
+        sid = actor.sessionId();
+        token = actor.internalToken();
+    }
+
+    private void changeAccess(String mode, List<String> permissions) {
+        var full = identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        try (var ignored = identityFixture.request(full)) {
+            long version =
+                    identityData
+                            .readServiceIdentity(
+                                    List.of(admin),
+                                    System.nanoTime()
+                                            + java.util.concurrent.TimeUnit.SECONDS.toNanos(3))
+                            .get(admin)
+                            .getAdminProfile()
+                            .getVersion();
+            identities.adminAccess(admin, new AdminAccessInput(mode, permissions), version, false);
+        }
+        selectCurrentClaims();
     }
 
     @Test
     void filteredDraftRegistryExportsAllTwentyThreeRowsInOrderRatherThanOnePage() throws Exception {
         for (int i = 0; i < 23; i++)
             jdbc.update(
-                    "INSERT INTO groups(name,alphabetic_code,numeric_code,current_course,training_duration_years,duration_status,is_active) VALUES (?,?,?,1,4,'KNOWN',true)",
+                    "INSERT INTO"
+                        + " groups(name,alphabetic_code,numeric_code,current_course,training_duration_years,duration_status,is_active)"
+                        + " VALUES (?,?,?,1,4,'KNOWN',true)",
                     "ЭК" + (char) ('А' + i) + "-110",
                     "ЭК" + (char) ('А' + i),
                     "110");
         jdbc.update(
-                "INSERT INTO groups(name,alphabetic_code,numeric_code,current_course,training_duration_years,duration_status,is_active) VALUES ('ЭКЩ-220','ЭКЩ','220',2,4,'KNOWN',true)");
+                "INSERT INTO"
+                    + " groups(name,alphabetic_code,numeric_code,current_course,training_duration_years,duration_status,is_active)"
+                    + " VALUES ('ЭКЩ-220','ЭКЩ','220',2,4,'KNOWN',true)");
         String request =
                 "{\"status\":\"DRAFT\",\"search\":\"ЭК\",\"course\":1,\"studyMode\":\"FULL_TIME\",\"educationLevel\":\"BACHELOR\",\"sorts\":[{\"field\":\"name\",\"descending\":true}],\"format\":\"html\"}";
         String html =
@@ -88,7 +123,8 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
         assertThat(html.indexOf("ЭКЦ-110")).isLessThan(html.indexOf("ЭКА-110"));
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND user_id=?",
+                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND"
+                                        + " user_id=?",
                                 Long.class,
                                 admin))
                 .isEqualTo(1);
@@ -99,52 +135,49 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
             fullAndLimitedFilesExcludePasswordsRecoveryAndLimitedTelegramIdentifierInEveryDirectFormat()
                     throws Exception {
         long user =
-                jdbc.queryForObject(
-                        "INSERT INTO users(login,password_hash,last_name,first_name,role,status,telegram_id,initial_password,employee_number) VALUES ('export_fixture','HASH_FIXTURE','Экспортный','Студент','teacher','active',765432109,'INITIAL_PASSWORD_FIXTURE','STAFF-FIXTURE') RETURNING id",
-                        Long.class);
-        jdbc.update(
-                "INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at) VALUES (?,'teacher','active',NOW(),NOW())",
-                user);
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Экспортный",
+                                        "Студент",
+                                        null,
+                                        UserRole.TEACHER,
+                                        null,
+                                        "STAFF-FIXTURE",
+                                        765432109L),
+                                actor)
+                        .userId();
+        var credentials =
+                identityFixture
+                        .fixtureOwnerAuthJdbc()
+                        .queryForMap(
+                                "SELECT password_hash,initial_password FROM auth_identities WHERE"
+                                        + " id=?",
+                                user);
+        String passwordHash = (String) credentials.get("password_hash");
+        String initialPassword = (String) credentials.get("initial_password");
+        assertThat(passwordHash).isNotBlank();
+        assertThat(initialPassword).isNotBlank();
         for (String format : List.of("html", "docx", "xlsx")) {
             byte[] full = file(format);
             assertThat(text(full, format))
                     .contains("765432109", "Telegram ID", "STAFF-FIXTURE")
-                    .doesNotContain("INITIAL_PASSWORD_FIXTURE", "HASH_FIXTURE", "recovery");
+                    .doesNotContain(initialPassword, passwordHash, "recovery");
         }
-        jdbc.update(
-                "UPDATE admin_access_profiles SET version=version+1,mode='LIMITED',permissions=ARRAY['USERS_VIEW'] WHERE user_id=?",
-                admin);
-        token =
-                tokens.validToken(
-                        admin,
-                        sid,
-                        1,
-                        jdbc.queryForObject(
-                                "SELECT roles_version FROM users WHERE id=?", Long.class, admin),
-                        "ADMIN",
-                        "ACTIVE",
-                        null,
-                        false,
-                        false);
+        changeAccess("LIMITED", List.of("USERS_VIEW"));
         for (String format : List.of("html", "docx", "xlsx")) {
             byte[] limited = file(format);
             assertThat(text(limited, format))
                     .contains("Экспортный", "Привязан", "STAFF-FIXTURE")
                     .doesNotContain(
-                            "765432109",
-                            "Telegram ID",
-                            "INITIAL_PASSWORD_FIXTURE",
-                            "HASH_FIXTURE",
-                            "recovery");
+                            "765432109", "Telegram ID", initialPassword, passwordHash, "recovery");
         }
         mvc.perform(
                         get("/academic/registry-exports/users/formats")
                                 .header("X-Internal-Token", token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(5));
-        jdbc.update(
-                "UPDATE admin_access_profiles SET version=version+1,permissions=ARRAY['GROUPS_VIEW'] WHERE user_id=?",
-                admin);
+        changeAccess("LIMITED", List.of("GROUPS_VIEW"));
         mvc.perform(
                         get("/academic/registry-exports/users/formats")
                                 .header("X-Internal-Token", token))
@@ -157,12 +190,13 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
                 .andExpect(status().isForbidden());
         String audit =
                 jdbc.queryForObject(
-                        "SELECT extras::text FROM audit_log WHERE action='registry.export' AND user_id=? LIMIT 1",
+                        "SELECT extras::text FROM audit_log WHERE action='registry.export' AND"
+                                + " user_id=? LIMIT 1",
                         String.class,
                         admin);
         assertThat(audit)
                 .contains("rowCount", "kind")
-                .doesNotContain("Экспортный", "765432109", "INITIAL_PASSWORD_FIXTURE");
+                .doesNotContain("Экспортный", "765432109", initialPassword, passwordHash);
     }
 
     @Test
@@ -177,7 +211,8 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
                 .andExpect(status().isForbidden());
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND user_id=?",
+                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND"
+                                        + " user_id=?",
                                 Long.class,
                                 admin))
                 .isZero();
@@ -209,7 +244,8 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
                 .andExpect(status().isBadRequest());
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND user_id=?",
+                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND"
+                                        + " user_id=?",
                                 Long.class,
                                 admin))
                 .isZero();
@@ -228,13 +264,20 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
         String selector =
                 "{\"search\":null,\"role\":null,\"status\":null,\"roleStatus\":null,\"sorts\":null,\"format\":\"html\"}";
         jdbc.update(
-                "INSERT INTO auth_export_jobs(job_id,user_id,session_id,request_id,binding_hash,identity,state,attempts,lease_id,lease_until,expires_at) VALUES (?,?,?,?,?,?::jsonb,'preparing',1,?,NOW()+interval '90 seconds',NOW()+interval '5 minutes')",
+                "INSERT INTO"
+                    + " academic_export_jobs(job_id,user_id,session_id,request_id,binding_hash,identity,state,attempts,lease_id,lease_until,expires_at)"
+                    + " VALUES (?,?,?,?,?,?::jsonb,'preparing',1,?,NOW()+interval '90"
+                    + " seconds',NOW()+interval '5 minutes')",
                 job,
                 admin,
                 sid,
                 UUID.randomUUID(),
                 "a".repeat(64),
-                "{\"report\":{\"kind\":\"ADMIN_USERS\",\"adminUsers\":" + selector + "}}",
+                "{\"actor\":"
+                        + mapper.writeValueAsString(actor.claims())
+                        + ",\"report\":{\"kind\":\"ADMIN_USERS\",\"adminUsers\":"
+                        + selector
+                        + "}}",
                 lease);
         mvc.perform(
                         post("/academic/registry-exports/users")
@@ -246,7 +289,8 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
                 .andExpect(status().isOk());
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND user_id=?",
+                                "SELECT count(*) FROM audit_log WHERE action='registry.export' AND"
+                                        + " user_id=?",
                                 Long.class,
                                 admin))
                 .isZero();
@@ -259,7 +303,9 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
                                 .content("{\"search\":\"changed\",\"format\":\"html\"}"))
                 .andExpect(status().isForbidden());
         jdbc.update(
-                "UPDATE auth_export_jobs SET session_id=? WHERE job_id=?", UUID.randomUUID(), job);
+                "UPDATE academic_export_jobs SET session_id=? WHERE job_id=?",
+                UUID.randomUUID(),
+                job);
         mvc.perform(
                         post("/academic/registry-exports/users")
                                 .header("X-Internal-Token", token)

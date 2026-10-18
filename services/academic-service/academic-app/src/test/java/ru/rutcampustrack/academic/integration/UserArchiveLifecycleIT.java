@@ -14,6 +14,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,6 +26,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import ru.rutcampustrack.academic.assistant.AssistantService;
+import ru.rutcampustrack.academic.contract.dto.IdentityOperationHttpModels;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.*;
@@ -32,6 +34,7 @@ import ru.rutcampustrack.academic.contract.dto.user.UserArchiveModels.*;
 import ru.rutcampustrack.academic.contract.enums.*;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.grpc.AttendanceUserImpactGrpcClient;
+import ru.rutcampustrack.academic.identityoperation.AcademicIdentityPendingException;
 import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
@@ -312,7 +315,7 @@ RETURNING id
                 jdbc.queryForList(
                         "SELECT * FROM student_group_history WHERE user_id=? ORDER BY id", target);
         long beforeOutbox = jdbc.queryForObject("SELECT COUNT(*) FROM academic_outbox", Long.class);
-        doThrow(new IllegalStateException("synthetic receipt write failure"))
+        doThrow(new DataAccessResourceFailureException("synthetic receipt write outcome unknown"))
                 .doCallRealMethod()
                 .when(repository)
                 .saveReceipt(
@@ -323,7 +326,24 @@ RETURNING id
                         eq(request.previewDigest()),
                         eq(true));
         assertThatThrownBy(() -> archive(target, request))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOfSatisfying(
+                        AcademicIdentityPendingException.class,
+                        pending -> {
+                            assertThat(pending.operation().operationId())
+                                    .isEqualTo(request.operationId());
+                            assertThat(pending.operation().status())
+                                    .isEqualTo(IdentityOperationHttpModels.Status.PENDING);
+                            assertThat(pending.operation().retryAfterSeconds()).isEqualTo(2);
+                        });
+        // The typed pending outcome must originate at this exact APPLY receipt seam.
+        verify(repository, times(1))
+                .saveReceipt(
+                        request.operationId(),
+                        owner,
+                        target,
+                        "ARCHIVE",
+                        request.previewDigest(),
+                        true);
         // Only Academic APPLY rolls back. Auth PREPARE and its admission fence are durable.
         assertThat(jdbc.queryForMap("SELECT * FROM academic_profiles WHERE id=?", target))
                 .isEqualTo(beforeProfile);
@@ -691,7 +711,13 @@ RETURNING id
         CountDownLatch groupLocked = new CountDownLatch(1), finishHelper = new CountDownLatch(1);
         doAnswer(
                         invocation -> {
-                            var locked = invocation.callRealMethod();
+                            // Spring wraps a JDK repository proxy with delegatesTo(original).
+                            // callRealMethod() cannot invoke its abstract repository interface.
+                            var locked =
+                                    mockingDetails(groupRepository)
+                                            .getMockCreationSettings()
+                                            .getDefaultAnswer()
+                                            .answer(invocation);
                             groupLocked.countDown();
                             if (!finishHelper.await(10, TimeUnit.SECONDS))
                                 throw new IllegalStateException("helper release timed out");
@@ -819,14 +845,18 @@ SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=? AND wait_event_type='Lo
                         .userId();
         long subject =
                 jdbc.queryForObject(
-                        "INSERT INTO subjects(name,type,group_id)"
-                                + " VALUES(?,'lecture',?) RETURNING id",
+                        """
+                        WITH subject AS (
+                            INSERT INTO subjects(name,type,group_id)
+                            VALUES (?, 'lecture', ?) RETURNING id,type
+                        ), lesson_type AS (
+                            INSERT INTO subject_lesson_types(subject_id,lesson_type)
+                            SELECT id,type FROM subject RETURNING subject_id
+                        ) SELECT subject_id FROM lesson_type
+                        """,
                         Long.class,
                         "Archive " + UUID.randomUUID(),
                         group);
-        jdbc.update(
-                "INSERT INTO subject_lesson_types(subject_id,lesson_type)" + " VALUES(?,'lecture')",
-                subject);
         for (long teacher : List.of(target, other))
             jdbc.update(
                     """

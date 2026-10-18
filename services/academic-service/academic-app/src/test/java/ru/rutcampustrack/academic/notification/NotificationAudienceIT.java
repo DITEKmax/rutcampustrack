@@ -1,6 +1,9 @@
 package ru.rutcampustrack.academic.notification;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,15 +18,15 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.test.context.transaction.AfterTransaction;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationUtils;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.academic.assistant.AssistantService;
 import ru.rutcampustrack.academic.contract.dto.assistant.*;
 import ru.rutcampustrack.academic.contract.dto.group.AssignHeadmanRequest;
+import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
@@ -34,25 +37,35 @@ import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.group.GroupHeadmanAssignmentService;
 import ru.rutcampustrack.academic.grpc.*;
 import ru.rutcampustrack.academic.homework.HomeworkBindingArchiveCoordinator;
+import ru.rutcampustrack.academic.admin.AdminAccessService;
+import ru.rutcampustrack.academic.event.DomainEventListener;
+import ru.rutcampustrack.academic.event.HomeworkWithdrawnEvent;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
-import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.user.UserService;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** One real repository level for audience auth/date rules and transaction/outbox changes. */
-@Transactional
 class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
     @Autowired JdbcTemplate jdbc;
     @Autowired NotificationAudienceResolver resolver;
     @Autowired AssistantService assistantService;
     @Autowired GroupHeadmanAssignmentService headmanService;
     @Autowired UserService userService;
-    @Autowired RequestContext context;
     @Autowired HomeworkRepository homeworks;
     @Autowired HomeworkBindingArchiveCoordinator archive;
     @Autowired ObjectMapper mapper;
     @Autowired EntityManager entities;
+    @Autowired AdminAccessService adminAccess;
+    @Autowired PlatformTransactionManager transactions;
+    @MockitoSpyBean DomainEventListener events;
+    private AcademicIdentityIntegrationFixture.SelectedActor fixtureAdmin;
+    private AcademicIdentityIntegrationFixture.SelectedActor selectedActor;
+    private AcademicIdentityIntegrationFixture.RequestScope selectedRequest;
+    private static final AtomicLong TELEGRAM = new AtomicLong(9_300_000_000L);
+    private long outboxBaseline;
     private final LocalDate day = LocalDate.of(2043, 3, 10);
     private long group,
             foreignGroup,
@@ -63,12 +76,11 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
             helper,
             foreignStudent,
             teacher;
-    private final List<Long> outboxIds = new ArrayList<>();
 
     @BeforeEach
     void fixture() {
-        RequestContextHolder.setRequestAttributes(
-                new ServletRequestAttributes(new MockHttpServletRequest()));
+        fixtureAdmin =
+                identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
         group = group();
         foreignGroup = group();
         owner = student(group);
@@ -76,35 +88,25 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
         helper = student(group);
         foreignStudent = student(foreignGroup);
         grant(headman, "headman", group);
-        jdbc.update("UPDATE users SET is_headman=true WHERE id=?", headman);
         teacher = user("teacher", null);
         grant(teacher, "teacher", null);
         subject = subject(group);
         semester =
                 jdbc.queryForObject(
-                        "INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id",
+                        "INSERT INTO semesters(name,date_from,date_to,is_active,created_at)"
+                                + " VALUES(?,?,?,false,NOW()) RETURNING id",
                         Long.class,
                         "Audience " + UUID.randomUUID(),
                         LocalDate.of(2043, 2, 1),
                         LocalDate.of(2043, 6, 30));
+        identityFixture.catchUpCatalog();
+        outboxBaseline =
+                jdbc.queryForObject("SELECT COALESCE(max(id),0) FROM academic_outbox", Long.class);
     }
 
     @AfterEach
     void releaseContext() {
-        RequestContextHolder.resetRequestAttributes();
-    }
-
-    @AfterTransaction
-    void rollbackLeavesNoSyntheticFactOrUser() {
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM users WHERE id=?", Long.class, owner))
-                .isZero();
-        for (long id : outboxIds)
-            assertThat(
-                            jdbc.queryForObject(
-                                    "SELECT count(*) FROM academic_outbox WHERE id=?",
-                                    Long.class,
-                                    id))
-                    .isZero();
+        if (selectedRequest != null) selectedRequest.close();
     }
 
     @Test
@@ -171,17 +173,15 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
         if (mismatch.equals("semester")) {
             long other =
                     jdbc.queryForObject(
-                            "INSERT INTO semesters(name,date_from,date_to,is_active,created_at) VALUES(?,?,?,false,NOW()) RETURNING id",
+                            "INSERT INTO semesters(name,date_from,date_to,is_active,created_at)"
+                                    + " VALUES(?,?,?,false,NOW()) RETURNING id",
                             Long.class,
                             "Audience foreign " + UUID.randomUUID(),
                             LocalDate.of(2044, 2, 1),
                             LocalDate.of(2044, 6, 30));
             scope.setSemesterId(other).setLessonDate(day.plusYears(1).toString());
         }
-        if (mismatch.equals("revoked"))
-            jdbc.update(
-                    "UPDATE user_role_grants SET status='archived' WHERE user_id=? AND role='teacher'",
-                    teacher);
+        if (mismatch.equals("revoked")) roleStatus(teacher, "TEACHER", RoleGrantStatus.DISMISSED);
         var request =
                 request("homework.updated").setGroupId(targetGroup).addLessonScopes(scope).build();
         assertThat(audience(resolver.resolve(request))).doesNotContainKey(teacher);
@@ -194,10 +194,10 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
         UUID operation = UUID.randomUUID();
         jdbc.update(
                 """
-                INSERT INTO assignment_replacement_operations(operation_id,actor_id,request_key,payload_hash,target_assignment_id,
-                effective_from,source_valid_until,target_valid_until,state,operation_kind,requested_cutoff)
-                VALUES(?,?,?,decode(repeat('11',32),'hex'),?,?,?,?,'PREPARED','ADOPT_UNASSIGNED',?)
-                """,
+INSERT INTO assignment_replacement_operations(operation_id,actor_id,request_key,payload_hash,target_assignment_id,
+effective_from,source_valid_until,target_valid_until,state,operation_kind,requested_cutoff)
+VALUES(?,?,?,decode(repeat('11',32),'hex'),?,?,?,?,'PREPARED','ADOPT_UNASSIGNED',?)
+""",
                 operation,
                 owner,
                 UUID.randomUUID(),
@@ -208,11 +208,14 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
                 day);
         if (!state.equals("PREPARED"))
             jdbc.update(
-                    "UPDATE assignment_replacement_operations SET state='APPLIED',schedule_receipt_state='APPLIED' WHERE operation_id=?",
+                    "UPDATE assignment_replacement_operations SET"
+                        + " state='APPLIED',schedule_receipt_state='APPLIED' WHERE operation_id=?",
                     operation);
         if (state.equals("COMMITTED"))
             jdbc.update(
-                    "UPDATE assignment_replacement_operations SET state='COMMITTED',schedule_receipt_state='COMMITTED' WHERE operation_id=?",
+                    "UPDATE assignment_replacement_operations SET"
+                            + " state='COMMITTED',schedule_receipt_state='COMMITTED' WHERE"
+                            + " operation_id=?",
                     operation);
         var result =
                 audience(
@@ -244,20 +247,22 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void membershipUsesMoscowOccurredDayAndDoesNotGuessLegacyCoverage() {
+        asAdministrator(
+                () ->
+                        userService.transferStudent(
+                                owner,
+                                new TransferStudentRequest(
+                                        foreignGroup, "Owned history boundary")));
         jdbc.update(
-                "UPDATE student_group_history SET left_at=? WHERE user_id=?",
+                "UPDATE student_group_history SET joined_at=? WHERE user_id=? AND group_id=?",
                 day.plusDays(1),
-                owner);
-        jdbc.update(
-                "INSERT INTO student_group_history(user_id,group_id,joined_at) VALUES(?,?,?)",
                 owner,
-                foreignGroup,
-                day.plusDays(1));
-        jdbc.update("UPDATE users SET group_id=? WHERE id=?", foreignGroup, owner);
+                foreignGroup);
         jdbc.update(
-                "UPDATE user_role_grants SET group_id=? WHERE user_id=? AND role='student'",
-                foreignGroup,
-                owner);
+                "UPDATE student_group_history SET left_at=? WHERE user_id=? AND group_id=?",
+                day.plusDays(1),
+                owner,
+                group);
         var before = request("lesson.started").setOccurredAt(day + "T20:59:00Z").build();
         var after = before.toBuilder().setOccurredAt(day + "T21:00:00Z").build();
         assertThat(audience(resolver.resolve(before))).containsKey(owner);
@@ -284,16 +289,15 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
         assertThat(audience(resolver.resolve(request("lesson.closed").build())))
                 .doesNotContainKey(helper);
         jdbc.update(
-                "UPDATE headman_assistants SET permissions=ARRAY['mark_attendance']::varchar[] WHERE group_id=? AND student_id=?",
+                "UPDATE headman_assistants SET permissions=ARRAY['mark_attendance']::varchar[]"
+                        + " WHERE group_id=? AND student_id=?",
                 group,
                 helper);
         entities.clear();
         assertThat(audience(resolver.resolve(request))).doesNotContainKey(helper);
         assertThat(audience(resolver.resolve(request("lesson.closed").build())))
                 .containsEntry(helper, Set.of("STUDENT"));
-        jdbc.update(
-                "UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='student'",
-                helper);
+        roleStatus(helper, "STUDENT", RoleGrantStatus.SUSPENDED);
         entities.clear();
         assertThat(audience(resolver.resolve(request("lesson.closed").build())))
                 .doesNotContainKey(helper);
@@ -340,9 +344,8 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
                                                 .setAffectedUserId(semesterAdmin)
                                                 .build())))
                 .containsExactlyInAnyOrderEntriesOf(Map.of(semesterAdmin, Set.of("ADMIN")));
-        jdbc.update(
-                "UPDATE user_role_grants SET status='archived' WHERE user_id=? AND role='admin'",
-                semesterAdmin);
+        asAdministrator(
+                () -> adminAccess.revoke(semesterAdmin, adminAccess.get(semesterAdmin).version()));
         assertThat(
                         resolver.resolve(
                                         request("admin.access.changed")
@@ -351,9 +354,7 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
                                                 .build())
                                 .getRecipientsList())
                 .isEmpty();
-        jdbc.update(
-                "UPDATE user_role_grants SET status='archived' WHERE user_id=? AND role='student'",
-                owner);
+        roleStatus(owner, "STUDENT", RoleGrantStatus.SUSPENDED);
         assertThat(
                         resolver.resolve(
                                         request("headman.access.changed")
@@ -492,8 +493,9 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void unknownPersonalTargetRejectsButKnownArchivedOrRevokedTargetIsEmpty() {
-        long absent = user("student", null);
-        jdbc.update("DELETE FROM users WHERE id=?", absent);
+        long absent =
+                jdbc.queryForObject(
+                        "SELECT COALESCE(max(id),0)+1 FROM academic_profiles", Long.class);
         for (String event : List.of("assistant.access.changed", "admin.access.changed")) {
             assertThatThrownBy(
                             () ->
@@ -505,7 +507,20 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
                                     assertThat(error.getStatus().getCode())
                                             .isEqualTo(Status.Code.INVALID_ARGUMENT));
         }
-        jdbc.update("UPDATE users SET status='archived' WHERE id=?", owner);
+        // Local archived-domain eligibility is separate from protected Auth account archival.
+        jdbc.update(
+                "UPDATE academic_profiles SET directory_status='ARCHIVED',archived_at=NOW() WHERE"
+                        + " id=?",
+                owner);
+        assertThat(
+                        identityFixture
+                                .authJdbc()
+                                .queryForObject(
+                                        "SELECT account_state='ACTIVE' FROM auth_identities WHERE"
+                                                + " id=?",
+                                        Boolean.class,
+                                        owner))
+                .isTrue();
         assertThat(
                         resolver.resolve(
                                         request("assistant.access.changed")
@@ -513,9 +528,7 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
                                                 .build())
                                 .getRecipientsList())
                 .isEmpty();
-        jdbc.update(
-                "UPDATE user_role_grants SET status='suspended' WHERE user_id=? AND role='student'",
-                helper);
+        roleStatus(helper, "STUDENT", RoleGrantStatus.SUSPENDED);
         assertThat(
                         resolver.resolve(
                                         request("assistant.access.changed")
@@ -530,9 +543,10 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
     @ValueSource(strings = {"role", "status"})
     void userHeadmanCascadesEmitOneRealAssistantRevocation(String transition) throws Exception {
         long admin = admin("FULL");
-        actor(admin, "ADMIN", null, false, session(admin));
+        actor(admin, AuthRole.ADMIN);
         assistantRow(helper, "manage_excuses");
         for (int repeat = 0; repeat < 2; repeat++) {
+            nextRequest();
             switch (transition) {
                 case "role" ->
                         userService.updateRoleGrant(
@@ -554,10 +568,11 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
                                         AccountStatus.EXPELLED));
             }
         }
-        beforeCommit();
+        afterCommit();
         assertThat(
                         jdbc.queryForObject(
-                                "SELECT is_active FROM headman_assistants WHERE group_id=? AND student_id=?",
+                                "SELECT is_active FROM headman_assistants WHERE group_id=? AND"
+                                        + " student_id=?",
                                 Boolean.class,
                                 group,
                                 helper))
@@ -577,7 +592,7 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void assistantTransitionsAreTransactionalAndNoOpOrRepeatDoesNotAddFacts() throws Exception {
-        actor(headman, "HEADMAN", group, true, null);
+        actor(headman, AuthRole.HEADMAN);
         var assistant =
                 assistantService.assignAssistant(
                         new AssignAssistantRequest(
@@ -591,7 +606,7 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
                         List.of(AssistantPermission.MARK_ATTENDANCE)));
         assistantService.revokeAssistant(assistant.getId());
         assistantService.revokeAssistant(assistant.getId());
-        beforeCommit();
+        afterCommit();
         var facts = facts("assistant.access.changed", helper);
         assertThat(facts).hasSize(3);
         assertThat(facts)
@@ -610,11 +625,12 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
     @Test
     void headmanSwitchEmitsBothPersonalFactsAndOneRealHelperRevocation() throws Exception {
         long admin = admin("FULL");
-        actor(admin, "ADMIN", null, false, session(admin));
+        actor(admin, AuthRole.ADMIN);
         assistantRow(helper, "manage_excuses");
         headmanService.assign(group, new AssignHeadmanRequest(owner, headman));
+        nextRequest();
         headmanService.assign(group, new AssignHeadmanRequest(owner, owner));
-        beforeCommit();
+        afterCommit();
         assertThat(facts("headman.access.changed", headman))
                 .singleElement()
                 .satisfies(
@@ -633,11 +649,11 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
     @Test
     void transferSavesOnlyPersonalMembershipFactsWithoutPrivateReason() throws Exception {
         long admin = admin("FULL");
-        actor(admin, "ADMIN", null, false, session(admin));
+        actor(admin, AuthRole.ADMIN);
         assistantRow(owner, "manage_excuses");
         userService.transferStudent(
                 owner, new TransferStudentRequest(foreignGroup, "private synthetic reason"));
-        beforeCommit();
+        afterCommit();
         assertThat(facts("group.membership.changed", owner))
                 .singleElement()
                 .satisfies(
@@ -664,30 +680,146 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
         long manual = homework("ACTIVE", day);
         long automatic = homework("ACTIVE", day);
         long expired = homework("ACTIVE", LocalDate.of(2000, 1, 1));
-        var content = homeworks.findById(manual).orElseThrow();
-        archive.archiveExistingHomework(
-                content, content.getBindingId(), content.getRequestKey(), headman, "HEADMAN", null);
-        archive.archiveExistingHomework(
-                content, content.getBindingId(), content.getRequestKey(), headman, "HEADMAN", null);
-        var system = homeworks.findById(automatic).orElseThrow();
-        archive.archiveExistingHomework(system, system.getBindingId(), system.getRequestKey());
-        var past = homeworks.findById(expired).orElseThrow();
-        archive.archiveExistingHomework(
-                past, past.getBindingId(), past.getRequestKey(), headman, "HEADMAN", null);
-        beforeCommit();
+        new TransactionTemplate(transactions)
+                .executeWithoutResult(
+                        status -> {
+                            var content = homeworks.findById(manual).orElseThrow();
+                            archive.archiveExistingHomework(
+                                    content,
+                                    content.getBindingId(),
+                                    content.getRequestKey(),
+                                    headman,
+                                    "HEADMAN",
+                                    null);
+                            archive.archiveExistingHomework(
+                                    content,
+                                    content.getBindingId(),
+                                    content.getRequestKey(),
+                                    headman,
+                                    "HEADMAN",
+                                    null);
+                            var system = homeworks.findById(automatic).orElseThrow();
+                            archive.archiveExistingHomework(
+                                    system, system.getBindingId(), system.getRequestKey());
+                            var past = homeworks.findById(expired).orElseThrow();
+                            archive.archiveExistingHomework(
+                                    past,
+                                    past.getBindingId(),
+                                    past.getRequestKey(),
+                                    headman,
+                                    "HEADMAN",
+                                    null);
+                        });
+        afterCommit();
         var rows =
                 jdbc.queryForList(
-                        "SELECT id,payload::text FROM academic_outbox WHERE event_type='homework.withdrawn' AND (payload->'payload'->>'homework_id')::bigint IN (?,?,?) ORDER BY id",
+                        "SELECT id,payload::text FROM academic_outbox WHERE"
+                            + " event_type='homework.withdrawn' AND"
+                            + " (payload->'payload'->>'homework_id')::bigint IN (?,?,?) ORDER BY"
+                            + " id",
                         manual,
                         automatic,
                         expired);
         assertThat(rows).hasSize(1);
-        for (var row : rows) outboxIds.add(((Number) row.get("id")).longValue());
         var payload = mapper.readTree(rows.getFirst().get("payload").toString()).path("payload");
         assertThat(payload.path("homework_id").asLong()).isEqualTo(manual);
         assertThat(payload.path("semester_id").asLong()).isEqualTo(semester);
         assertThat(payload.path("lesson_type").asText()).isEqualTo("lab");
         assertThat(payload.path("binding_mode").asText()).isEqualTo("DATE");
+        rollbackLeavesCommittedSetupAndNoProbeFact();
+    }
+
+    private void rollbackLeavesCommittedSetupAndNoProbeFact() {
+        long probe = homework("ACTIVE", day);
+        String homeworkBaseline =
+                jdbc.queryForObject(
+                        "SELECT to_jsonb(h)::text FROM homeworks h WHERE id=?",
+                        String.class,
+                        probe);
+        String profileBaseline =
+                jdbc.queryForObject(
+                        "SELECT to_jsonb(p)::text FROM academic_profiles p WHERE id=?",
+                        String.class,
+                        owner);
+        var probeFacts = new ArrayList<Long>();
+        var rollback = new IllegalStateException("Owned Academic notification rollback");
+        doAnswer(
+                        invocation -> {
+                            invocation.callRealMethod();
+                            var event = (HomeworkWithdrawnEvent) invocation.getArgument(0);
+                            assertThat(
+                                            ((HomeworkWithdrawnEvent.Payload) event.getPayload())
+                                                    .homeworkId())
+                                    .isEqualTo(probe);
+                            assertThat(
+                                            jdbc.queryForObject(
+                                                    "SELECT publication_state FROM homeworks WHERE"
+                                                            + " id=?",
+                                                    String.class,
+                                                    probe))
+                                    .isEqualTo("ARCHIVED");
+                            probeFacts.addAll(
+                                    jdbc.queryForList(
+                                            "SELECT id FROM academic_outbox WHERE"
+                                                + " event_type='homework.withdrawn' AND"
+                                                + " (payload->'payload'->>'homework_id')::bigint=?",
+                                            Long.class,
+                                            probe));
+                            assertThat(probeFacts).hasSize(1);
+                            throw rollback;
+                        })
+                .when(events)
+                .onDomainEvent(isA(HomeworkWithdrawnEvent.class));
+        try {
+            assertThatThrownBy(
+                            () ->
+                                    new TransactionTemplate(transactions)
+                                            .executeWithoutResult(
+                                                    status -> {
+                                                        var content =
+                                                                homeworks
+                                                                        .findById(probe)
+                                                                        .orElseThrow();
+                                                        archive.archiveExistingHomework(
+                                                                content,
+                                                                content.getBindingId(),
+                                                                content.getRequestKey(),
+                                                                headman,
+                                                                "HEADMAN",
+                                                                null);
+                                                    }))
+                    .isSameAs(rollback);
+        } finally {
+            doCallRealMethod().when(events).onDomainEvent(isA(HomeworkWithdrawnEvent.class));
+        }
+        assertThat(
+                        jdbc.queryForObject(
+                                        "SELECT to_jsonb(h)::text FROM homeworks h WHERE id=?",
+                                        String.class,
+                                        probe)
+                                .equals(homeworkBaseline))
+                .isTrue();
+        assertThat(
+                        jdbc.queryForObject(
+                                        "SELECT to_jsonb(p)::text FROM academic_profiles p WHERE"
+                                                + " id=?",
+                                        String.class,
+                                        owner)
+                                .equals(profileBaseline))
+                .isTrue();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM academic_profiles WHERE id=?",
+                                Long.class,
+                                owner))
+                .isOne();
+        for (long id : probeFacts)
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT count(*) FROM academic_outbox WHERE id=?",
+                                    Long.class,
+                                    id))
+                    .isZero();
     }
 
     private NotificationAudienceRequest.Builder request(String event) {
@@ -721,57 +853,113 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
     private long group() {
         long id =
                 jdbc.queryForObject(
-                        "INSERT INTO groups(name,is_active,created_at) VALUES(?,true,NOW()) RETURNING id",
+                        "INSERT INTO groups(name,is_active,created_at) VALUES(?,true,NOW())"
+                                + " RETURNING id",
                         Long.class,
                         "Аудитория " + UUID.randomUUID().toString().substring(0, 12));
         jdbc.update(
-                "INSERT INTO group_history_coverage(group_id,coverage_from,writer_version) VALUES(?,?,'managed_v1')",
+                "INSERT INTO group_history_coverage(group_id,coverage_from,writer_version)"
+                        + " VALUES(?,?,'managed_v1')",
                 id,
-                LocalDate.now(ZoneId.of("Europe/Moscow")).minusDays(2));
+                jdbc.queryForObject(
+                        "SELECT date_from FROM semesters WHERE id=?",
+                        LocalDate.class,
+                        identityFixture.canonical().semesterId()));
         return id;
     }
 
     private long user(String role, Long group) {
-        return jdbc.queryForObject(
-                "INSERT INTO users(login,password_hash,last_name,first_name,role,status,group_id,created_at,updated_at) VALUES(?,'$2a$10$dummy','Синтетический','Адресат',CAST(? AS user_role),'active',?,NOW(),NOW()) RETURNING id",
-                Long.class,
-                "aud_" + UUID.randomUUID().toString().substring(0, 16),
-                role,
-                group);
+        return seed(role, group, null);
+    }
+
+    private long seed(String role, Long group, AdminAccessInput access) {
+        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        return identityFixture
+                .seedUser(
+                        new CreateUserRequest(
+                                "Синтетический" + suffix,
+                                "Адресат",
+                                null,
+                                UserRole.valueOf(role.toUpperCase(Locale.ROOT)),
+                                group,
+                                role.equals("teacher") ? "AUD-" + suffix : null,
+                                role.equals("admin") ? null : TELEGRAM.incrementAndGet(),
+                                access),
+                        fixtureAdmin)
+                .userId();
     }
 
     private long student(long group) {
         long user = user("student", group);
-        grant(user, "student", group);
         jdbc.update(
-                "INSERT INTO student_group_history(user_id,group_id,joined_at) VALUES(?,?,?)",
+                "UPDATE student_group_history SET joined_at=? WHERE user_id=? AND group_id=?",
+                LocalDate.now(ZoneId.of("Europe/Moscow")).minusDays(2),
                 user,
-                group,
-                LocalDate.now(ZoneId.of("Europe/Moscow")).minusDays(2));
+                group);
         return user;
     }
 
     private void grant(long user, String role, Long group) {
-        jdbc.update(
-                "INSERT INTO user_role_grants(user_id,role,status,group_id,created_at,updated_at) VALUES(?,?,'active',?,NOW(),NOW())",
-                user,
-                role,
-                group);
+        if (role.equals("headman")) {
+            asAdministrator(
+                    () -> headmanService.assign(group, new AssignHeadmanRequest(user, null)));
+        } else if (!Boolean.TRUE.equals(
+                jdbc.queryForObject(
+                        "SELECT EXISTS(SELECT 1 FROM academic_role_eligibility WHERE user_id=? AND"
+                                + " role=? AND status='ACTIVE')",
+                        Boolean.class,
+                        user,
+                        role.toUpperCase(Locale.ROOT)))) {
+            asAdministrator(
+                    () ->
+                            userService.updateRoleGrant(
+                                    user,
+                                    role.toUpperCase(Locale.ROOT),
+                                    new RoleGrantUpdateRequest(
+                                            RoleGrantStatus.ACTIVE,
+                                            group,
+                                            role.equals("teacher")
+                                                    ? "AUD-"
+                                                            + UUID.randomUUID()
+                                                                    .toString()
+                                                                    .substring(0, 12)
+                                                    : null,
+                                            null)));
+        }
+    }
+
+    private void roleStatus(long user, String role, RoleGrantStatus status) {
+        asAdministrator(
+                () ->
+                        userService.updateRoleGrant(
+                                user, role, new RoleGrantUpdateRequest(status, null, null, null)));
+    }
+
+    private void asAdministrator(Runnable action) {
+        try (var ignored = identityFixture.request(fixtureAdmin)) {
+            action.run();
+        }
     }
 
     private long subject(long group) {
-        long id =
-                jdbc.queryForObject(
-                        "INSERT INTO subjects(name,type,group_id) VALUES(?,'lecture',?) RETURNING id",
-                        Long.class,
-                        "Audience " + UUID.randomUUID(),
-                        group);
-        for (String type : List.of("lecture", "practice", "lab"))
-            jdbc.update(
-                    "INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,CAST(? AS subject_type))",
-                    id,
-                    type);
-        return id;
+        return new TransactionTemplate(transactions)
+                .execute(
+                        status -> {
+                            long id =
+                                    jdbc.queryForObject(
+                                            "INSERT INTO subjects(name,type,group_id)"
+                                                    + " VALUES(?,'lecture',?) RETURNING id",
+                                            Long.class,
+                                            "Audience " + UUID.randomUUID(),
+                                            group);
+                            for (String type : List.of("lecture", "practice", "lab"))
+                                jdbc.update(
+                                        "INSERT INTO subject_lesson_types(subject_id,lesson_type)"
+                                                + " VALUES(?,CAST(? AS subject_type))",
+                                        id,
+                                        type);
+                            return id;
+                        });
     }
 
     private long assignment(
@@ -783,7 +971,9 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
             LocalDate until,
             String lifecycle) {
         return jdbc.queryForObject(
-                "INSERT INTO assignments(teacher_id,group_id,subject_id,semester_id,lesson_type,valid_from,valid_until_exclusive,lifecycle_state) VALUES(?,?,?,?,CAST(? AS subject_type),?,?,?) RETURNING id",
+                "INSERT INTO"
+                    + " assignments(teacher_id,group_id,subject_id,semester_id,lesson_type,valid_from,valid_until_exclusive,lifecycle_state)"
+                    + " VALUES(?,?,?,?,CAST(? AS subject_type),?,?,?) RETURNING id",
                 Long.class,
                 user,
                 group,
@@ -797,7 +987,9 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
 
     private void assistantRow(long user, String permission) {
         jdbc.update(
-                "INSERT INTO headman_assistants(group_id,student_id,permissions,assigned_by,is_active,assigned_at) VALUES(?,?,ARRAY[?]::varchar[],?,true,NOW())",
+                "INSERT INTO"
+                    + " headman_assistants(group_id,student_id,permissions,assigned_by,is_active,assigned_at)"
+                    + " VALUES(?,?,ARRAY[?]::varchar[],?,true,NOW())",
                 group,
                 user,
                 permission,
@@ -805,65 +997,34 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
     }
 
     private long admin(String mode, String... permissions) {
-        long admin = user("admin", null);
-        jdbc.update(
-                "INSERT INTO admin_access_profiles(user_id,assigned,mode,permissions,version) VALUES(?,true,?,?::text[],1)",
-                admin,
-                mode,
-                "{" + String.join(",", permissions) + "}");
-        grant(admin, "admin", null);
-        return admin;
+        return seed("admin", null, new AdminAccessInput(mode, List.of(permissions)));
     }
 
-    private UUID session(long admin) {
-        long grant =
-                jdbc.queryForObject(
-                        "SELECT id FROM user_role_grants WHERE user_id=? AND role='admin'",
-                        Long.class,
-                        admin);
-        UUID sid = UUID.randomUUID();
-        jdbc.update(
-                "INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,refresh_expires_at,created_at,last_seen_at,auth_method) VALUES(?,?,?,1,?,NOW()+interval '1 day',NOW(),NOW(),'PASSWORD')",
-                sid,
-                admin,
-                grant,
-                UUID.randomUUID());
-        return sid;
+    private void actor(long user, AuthRole role) {
+        selectedActor = identityFixture.select(user, role);
+        nextRequest();
     }
 
-    private void actor(long user, String role, Long group, boolean headman, UUID sid) {
-        long version =
-                jdbc.queryForObject("SELECT roles_version FROM users WHERE id=?", Long.class, user);
-        context.setClaims(
-                new InternalJwtClaims(
-                        user,
-                        sid == null ? UUID.randomUUID() : sid,
-                        1,
-                        version,
-                        role,
-                        "ACTIVE",
-                        group,
-                        headman,
-                        false));
-        context.setUserId(user);
-        context.setRole(role.equals("ADMIN") ? UserRole.ADMIN : UserRole.STUDENT);
-        context.setGroupId(group);
-        context.setHeadman(headman);
+    private void nextRequest() {
+        // Independent service commands are distinct admitted HTTP requests, with distinct keys.
+        if (selectedRequest != null) selectedRequest.close();
+        selectedRequest = identityFixture.request(selectedActor);
     }
 
-    private void beforeCommit() {
-        TransactionSynchronizationUtils.triggerBeforeCommit(false);
+    private void afterCommit() {
+        assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
     }
 
     private List<JsonNode> facts(String type, long user) throws Exception {
         var rows =
                 jdbc.queryForList(
-                        "SELECT id,payload::text FROM academic_outbox WHERE event_type=? AND (payload->'payload'->>'user_id')::bigint=? ORDER BY id",
+                        "SELECT id,payload::text FROM academic_outbox WHERE id>? AND event_type=?"
+                                + " AND (payload->'payload'->>'user_id')::bigint=? ORDER BY id",
+                        outboxBaseline,
                         type,
                         user);
         var result = new ArrayList<JsonNode>();
         for (var row : rows) {
-            outboxIds.add(((Number) row.get("id")).longValue());
             result.add(mapper.readTree(row.get("payload").toString()));
         }
         return result;
@@ -873,7 +1034,11 @@ class NotificationAudienceIT extends AbstractAcademicIntegrationTest {
         long binding =
                 jdbc.queryForObject("SELECT nextval('homeworks_id_seq')", Long.class) + 1000000000L;
         return jdbc.queryForObject(
-                "INSERT INTO homeworks(group_id,subject_id,semester_id,title,published_by,lesson_date,lesson_number,binding_mode,lesson_type,binding_id,actor_id,request_key,payload_hash,publication_state) VALUES(?,?,?,'Audience homework',?,?,NULL,'DATE','LAB',?,?,?,decode(repeat('11',32),'hex'),?) RETURNING id",
+                "INSERT INTO"
+                    + " homeworks(group_id,subject_id,semester_id,title,published_by,lesson_date,lesson_number,binding_mode,lesson_type,binding_id,actor_id,request_key,payload_hash,publication_state)"
+                    + " VALUES(?,?,?,'Audience"
+                    + " homework',?,?,NULL,'DATE','LAB',?,?,?,decode(repeat('11',32),'hex'),?)"
+                    + " RETURNING id",
                 Long.class,
                 group,
                 subject,

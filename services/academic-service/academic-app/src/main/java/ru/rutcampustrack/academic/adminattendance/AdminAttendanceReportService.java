@@ -1,5 +1,7 @@
 package ru.rutcampustrack.academic.adminattendance;
 
+import io.grpc.StatusRuntimeException;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -7,7 +9,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ru.rutcampustrack.academic.admin.AcademicAdminAccess;
 import ru.rutcampustrack.academic.contract.dto.adminattendance.AdminAttendanceReportModels.*;
+import ru.rutcampustrack.academic.identitycatalog.AuthIdentityDataClient;
 import ru.rutcampustrack.academic.security.RequestContext;
+import ru.rutcampustrack.shared.security.admin.AdminAccessException;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -22,25 +26,28 @@ public class AdminAttendanceReportService {
     private final AttendanceAdminGroupStatsClient attendance;
     private final RequestContext context;
     private final Clock clock;
+    private final AuthIdentityDataClient identities;
 
     public AdminAttendanceReportService(
             AcademicAdminAccess access,
             AdminAttendanceReadRepository repository,
             AttendanceAdminGroupStatsClient attendance,
             RequestContext context,
-            Clock clock) {
+            Clock clock,
+            AuthIdentityDataClient identities) {
         this.access = access;
         this.repository = repository;
         this.attendance = attendance;
         this.context = context;
         this.clock = clock;
+        this.identities = identities;
     }
 
     public Semesters semesters() {
-        access.require("DASHBOARD_VIEW");
+        requireCurrentAccess();
         try {
             Semesters result = new Semesters(repository.semesters());
-            access.require("DASHBOARD_VIEW");
+            requireCurrentAccess();
             return result;
         } catch (DataAccessException unavailable) {
             throw unavailable();
@@ -67,7 +74,7 @@ public class AdminAttendanceReportService {
     }
 
     public FullReport full(String semesterId, String search, Sort sort, Direction direction) {
-        access.require("DASHBOARD_VIEW");
+        requireCurrentAccess();
         long id = positiveId(semesterId);
         if (search == null || search.length() > 200 || sort == null || direction == null)
             throw invalid();
@@ -91,7 +98,7 @@ public class AdminAttendanceReportService {
                                 total == 0 ? DataState.NO_DATA : DataState.AVAILABLE));
             }
             rows.sort(comparator(sort, direction));
-            access.require("DASHBOARD_VIEW");
+            requireCurrentAccess();
             return new FullReport(
                     selected.semester(),
                     search,
@@ -101,6 +108,24 @@ public class AdminAttendanceReportService {
                     List.copyOf(rows));
         } catch (DataAccessException unavailable) {
             throw unavailable();
+        }
+    }
+
+    /**
+     * Live Auth checks run before/after completed local reads, never under their DB transaction.
+     */
+    void requireCurrentAccess() {
+        access.require("DASHBOARD_VIEW");
+        try {
+            identities.checkAdminAccess(
+                    List.of("DASHBOARD_VIEW"),
+                    false,
+                    System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(3));
+        } catch (StatusRuntimeException failure) {
+            switch (failure.getStatus().getCode()) {
+                case PERMISSION_DENIED, UNAUTHENTICATED -> throw AdminAccessException.denied();
+                default -> throw unavailable();
+            }
         }
     }
 

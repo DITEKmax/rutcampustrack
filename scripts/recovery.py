@@ -18,7 +18,16 @@ import uuid
 
 
 class RecoveryError(Exception):
-    pass
+    def __init__(self, message, hint="GUARD"):
+        super().__init__(message)
+        self.hint = hint
+
+
+BUNDLE_FORMAT = 3  # Exact owners/ACL/default privileges are mandatory before any restore write.
+FAILURE_HINTS = frozenset({
+    "GUARD", "INPUT_CREDENTIAL", "PG_QUERY", "PG_SCHEMA", "PG_DUMP", "PG_RESTORE",
+    "MONGO_QUERY", "MONGO_DUMP", "MONGO_RESTORE", "INSPECT", "OTHER_TOOL",
+})
 
 
 def require(condition, message):
@@ -31,7 +40,18 @@ def run(command, *, stdin=None, stdout=None, input_data=None):
     result = subprocess.run(
         command, stdin=stdin, input=input_data, stdout=stdout or subprocess.PIPE, stderr=subprocess.PIPE
     )
-    require(result.returncode == 0, f"{Path(command[0]).name} operation failed (exit {result.returncode})")
+    if result.returncode:
+        hint = "OTHER_TOOL"
+        if command[:2] == ["docker", "inspect"]:
+            hint = "INSPECT"
+        elif command[:2] == ["docker", "exec"]:
+            for tool, code in (("psql", "PG_QUERY"), ("pg_dump", "PG_DUMP"),
+                               ("pg_restore", "PG_RESTORE"), ("mongosh", "MONGO_QUERY"),
+                               ("mongodump", "MONGO_DUMP"), ("mongorestore", "MONGO_RESTORE")):
+                if tool in command:
+                    hint = "PG_SCHEMA" if tool == "pg_dump" and "--schema-only" in command else code
+                    break
+        raise RecoveryError(f"{Path(command[0]).name} operation failed (exit {result.returncode})", hint)
     return result.stdout
 
 
@@ -64,7 +84,8 @@ def credentials(path):
         "POSTGRES_SCHEDULE_PASSWORD", "MONGO_ROOT_PASSWORD",
         "POSTGRES_RECOVERY_ADMIN_USER", "POSTGRES_RECOVERY_ADMIN_PASSWORD",
     ):
-        require(values.get(key), f"Missing credential: {key}")
+        if not values.get(key):
+            raise RecoveryError(f"Missing credential: {key}", "INPUT_CREDENTIAL")
     require(values["POSTGRES_RECOVERY_ADMIN_USER"] in ("rct_user", "rct_bootstrap"),
             "Unsupported recovery admin identity")
     return values
@@ -96,7 +117,8 @@ def pg_query(container, password, db, sql, *, user="rct_user"):
 
 
 def pg_schema(container, password, db, *, user="rct_user"):
-    # Preserve executable DDL; discard only pg_dump's volatile metadata/nonces.
+    # DDL-only native scratch comparison changes object owner. Access is compared separately
+    # against the original named owners/ACLs; real archive/restore never discards privileges.
     schema = run(
         pg_command(
             container, password, "pg_dump", "-U", user, "-d", db, "--schema-only", "--no-owner", "--no-privileges"
@@ -110,6 +132,69 @@ def pg_schema(container, password, db, *, user="rct_user"):
         and not line.startswith("\\restrict")
         and not line.startswith("\\unrestrict")
     )
+
+
+def pg_access(container, password, db, *, user):
+    # Catalog ACL text contains role names, never OIDs or passwords. Array order is not
+    # an authority fact; NULL (default ACL) remains distinct from an explicit empty ACL.
+    value = json.loads(pg_query(container, password, db, """
+WITH namespaces AS (
+  SELECT oid,nspname,nspowner,nspacl FROM pg_namespace
+  WHERE nspname NOT IN ('pg_catalog','information_schema') AND nspname !~ '^pg_'
+), objects(kind,name,owner,acl) AS (
+  SELECT 'DATABASE',current_database(),datdba,datacl FROM pg_database
+    WHERE datname=current_database()
+  UNION ALL SELECT 'SCHEMA',nspname,nspowner,nspacl FROM namespaces
+  UNION ALL SELECT 'RELATION_'||c.relkind,quote_ident(n.nspname)||'.'||quote_ident(c.relname),c.relowner,c.relacl
+    FROM pg_class c JOIN namespaces n ON n.oid=c.relnamespace
+    WHERE c.relkind IN ('r','p','S','v','m','f')
+  UNION ALL SELECT 'COLUMN',quote_ident(n.nspname)||'.'||quote_ident(c.relname)||'.'||quote_ident(a.attname),c.relowner,a.attacl
+    FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid
+    JOIN namespaces n ON n.oid=c.relnamespace WHERE a.attnum>0 AND NOT a.attisdropped AND a.attacl IS NOT NULL
+  UNION ALL SELECT 'FUNCTION_'||p.prokind,quote_ident(n.nspname)||'.'||quote_ident(p.proname)||'('||pg_get_function_identity_arguments(p.oid)||')',p.proowner,p.proacl
+    FROM pg_proc p JOIN namespaces n ON n.oid=p.pronamespace
+  UNION ALL SELECT 'TYPE_'||t.typtype,quote_ident(n.nspname)||'.'||quote_ident(t.typname),t.typowner,t.typacl
+    FROM pg_type t JOIN namespaces n ON n.oid=t.typnamespace
+  UNION ALL SELECT 'DEFAULT_'||d.defaclobjtype,COALESCE(n.nspname,'*'),d.defaclrole,d.defaclacl
+    FROM pg_default_acl d LEFT JOIN pg_namespace n ON n.oid=d.defaclnamespace
+), named AS (
+  SELECT kind,name,pg_get_userbyid(owner) AS owner,
+    CASE WHEN acl IS NULL THEN NULL ELSE
+      COALESCE((SELECT jsonb_agg(a::text ORDER BY a::text) FROM unnest(acl) a),'[]'::jsonb) END AS acl
+  FROM objects
+)
+SELECT json_build_object('format',1,'objects',
+  COALESCE((SELECT jsonb_agg(to_jsonb(o) ORDER BY kind,name,owner) FROM named o),'[]'::jsonb),
+  'unsupported',EXISTS(SELECT 1 FROM pg_class c JOIN namespaces n ON n.oid=c.relnamespace
+    WHERE c.relkind NOT IN ('r','p','S','v','m','f','i','I','c','t'))
+    OR EXISTS(SELECT 1 FROM pg_foreign_server)
+    OR EXISTS(SELECT 1 FROM pg_foreign_data_wrapper)
+    OR EXISTS(SELECT 1 FROM pg_largeobject_metadata));
+""", user=user))
+    validate_access(value)
+    return value
+
+
+def validate_access(value):
+    kinds = {"DATABASE", "SCHEMA", "COLUMN", *("RELATION_" + k for k in "rpSvmf"),
+             *("FUNCTION_" + k for k in "fpaw"), *("TYPE_" + k for k in "bcdempr"),
+             *("DEFAULT_" + k for k in "rSfTn")}
+    require(type(value) is dict and set(value) == {"format", "objects", "unsupported"}
+            and type(value["format"]) is int and value["format"] == 1 and value["unsupported"] is False
+            and type(value["objects"]) is list, "Unsupported/incomplete PostgreSQL access inventory")
+    seen = set()
+    for row in value["objects"]:
+        require(type(row) is dict and set(row) == {"kind", "name", "owner", "acl"}
+                and type(row["kind"]) is str and row["kind"] in kinds
+                and all(type(row[k]) is str and row[k] for k in ("name", "owner"))
+                and (row["acl"] is None or type(row["acl"]) is list
+                     and all(type(item) is str for item in row["acl"]) and row["acl"] == sorted(row["acl"])),
+                "Unsupported PostgreSQL access object")
+        identity = (row["kind"], row["name"], row["owner"])
+        require(identity not in seen, "Duplicate PostgreSQL access object")
+        seen.add(identity)
+    require(sum(row["kind"] == "DATABASE" for row in value["objects"]) == 1,
+            "PostgreSQL access inventory must include its database")
 
 
 def canonical_reference_schema(container, password, db, schema, *, user="rct_user"):
@@ -171,7 +256,7 @@ def compare_restored_inventory(args, secret, expected):
         require(
             {k: v for k, v in expected[label].items() if k != "schema"}
             == {k: v for k, v in actual[label].items() if k != "schema"},
-            f"Restored {label} data/sequences differ; keep target isolated",
+            f"Restored {label} data/sequences/owners/access differ; keep target isolated",
         )
         require(
             canonical_reference_schema(
@@ -283,7 +368,8 @@ def inventory(args, secret):
                     container, password, db, f"SELECT row_to_json(t) FROM (SELECT last_value,is_called FROM {quoted}) t", user=user
                 )
             )
-        result[label] = {"schema": schema, "tables": data, "sequences": sequences}
+        result[label] = {"schema": schema, "tables": data, "sequences": sequences,
+                         "access": pg_access(container, password, db, user=user)}
     result["mongo"] = mongo_query(
         args.mongo_container,
         secret["MONGO_ROOT_PASSWORD"],
@@ -332,7 +418,8 @@ def verify_bundle(bundle, requested_mode=None):
         require(path.is_file() and not path.is_symlink(), "Bundle artifacts must be regular files")
     manifest = json.loads((bundle / "manifest.json").read_text(encoding="utf-8"))
     require(
-        manifest.get("format") == 2 and set(manifest.get("sha256", {})) == PAYLOADS, "Unsupported/incomplete manifest"
+        manifest.get("format") == BUNDLE_FORMAT and set(manifest.get("sha256", {})) == PAYLOADS,
+        "Unsupported/incomplete manifest; format 3 with owner/ACL evidence is required"
     )
     mode = manifest.get("files_mode")
     require(mode in ("files", "database-only"), "Unsupported files mode in manifest")
@@ -345,6 +432,10 @@ def verify_bundle(bundle, requested_mode=None):
     expected = json.loads((bundle / "inventory.json").read_text(encoding="utf-8"))
     require(set(expected) == {"academic", "auth", "schedule", "mongo", "files"},
             "Incomplete/unexpected database inventory")
+    for label in ("academic", "auth", "schedule"):
+        require(type(expected[label]) is dict and "access" in expected[label],
+                "Bundle lacks mandatory PostgreSQL access evidence; a new format-3 backup is required")
+        validate_access(expected[label]["access"])
     require(mode != "database-only" or expected["files"] == [], "Database-only bundle declares files; restore refused")
     with tarfile.open(bundle / "files.tar", "r:") as archive:
         seen = set()
@@ -413,7 +504,6 @@ def backup(args):
                     db,
                     "--format=custom",
                     "--no-owner",
-                    "--no-privileges",
                 ),
                 stdout=output,
             )
@@ -435,10 +525,10 @@ def backup(args):
     write_json(args.output / "inventory.json", before)
     write_json(
         args.output / "manifest.json",
-        {"format": 2, "files_mode": mode, "sha256": {n: digest(args.output / n) for n in sorted(PAYLOADS)}},
+        {"format": BUNDLE_FORMAT, "files_mode": mode, "sha256": {n: digest(args.output / n) for n in sorted(PAYLOADS)}},
     )
     verify_bundle(args.output, mode)
-    print(f"PASS backup: complete immutable PG/Mongo bundle; mode={mode}")
+    print(f"PASS backup: complete immutable format-3 PG/Mongo bundle with owner/ACL evidence; mode={mode}")
 
 
 def restore(args):
@@ -484,7 +574,6 @@ def restore(args):
                     "--exit-on-error",
                     "--single-transaction",
                     "--no-owner",
-                    "--no-privileges",
                     stream=True,
                 ),
                 stdin=source,
@@ -515,7 +604,7 @@ def restore(args):
                         for block in iter(lambda: source.read(1024 * 1024), b""):
                             output.write(block)
     compare_restored_inventory(args, secret, expected)
-    print(f"PASS restore: PostgreSQL data/schema/sequences, Mongo documents/indexes/options match source; mode={mode}")
+    print(f"PASS restore: PostgreSQL data/schema/sequences/owners/ACL, Mongo documents/indexes/options match source; mode={mode}")
 
 
 def verify_restored(args):
@@ -570,6 +659,8 @@ def main():
         {"backup": backup, "restore": restore, "verify-restored": verify_restored}[args.operation](args)
     except (RecoveryError, OSError, ValueError, tarfile.TarError, KeyError) as error:
         # Unexpected diagnostics never include DB subprocess output/credentials.
+        hint = getattr(error, "hint", "GUARD")
+        print("RECOVERY_FAILURE_HINT:" + (hint if hint in FAILURE_HINTS else "GUARD"), file=sys.stderr)
         print(f"FAIL recovery: {error}", file=sys.stderr)
         return 1
     return 0

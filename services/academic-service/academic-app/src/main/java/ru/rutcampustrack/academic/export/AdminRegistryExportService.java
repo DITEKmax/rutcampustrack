@@ -153,7 +153,6 @@ public class AdminRegistryExportService {
     public Download users(RegistryExportModels.Users query, UUID jobId, UUID leaseId) {
         access.require("USERS_VIEW");
         boolean deferredAudit = asyncGeneration(jobId, leaseId, "ADMIN_USERS", "adminUsers", query);
-        boolean full = access.current().full();
         RegistryExportFormat format = RegistryExportFormat.from(query.format());
         Sort sort =
                 sorts(
@@ -169,98 +168,83 @@ public class AdminRegistryExportService {
                                 "employeeNumber",
                                 "createdAt"),
                         true);
+        // The barrier captures the page and batched grant labels in one local RR snapshot;
+        // its live Auth checks must run outside any caller transaction.
+        var selected =
+                users.listUserRegistry(
+                        query.search(),
+                        query.role(),
+                        query.status(),
+                        query.roleStatus(),
+                        PageRequest.of(0, MAX_ROWS + 1, sort));
+        var page = selected.page();
+        requireSize(page.getTotalElements());
+        var roles = selected.grants();
+        boolean full = selected.full();
+        List<List<Object>> rows = new ArrayList<>();
+        for (User user : page.getContent()) {
+            var userRoles = roles.getOrDefault(user.getId(), List.of());
+            String rolesLabel =
+                    userRoles.isEmpty()
+                            ? user.getRole() + ": " + user.getStatus()
+                            : String.join(
+                                    "; ",
+                                    userRoles.stream()
+                                            .map(grant -> grant.role() + ": " + grant.status())
+                                            .toList());
+            String groupLabel =
+                    String.join(
+                            "; ",
+                            userRoles.stream()
+                                    .filter(grant -> grant.groupId() != null)
+                                    .map(
+                                            grant ->
+                                                    grant.groupName() == null
+                                                            ? grant.groupId().toString()
+                                                            : grant.groupName())
+                                    .distinct()
+                                    .toList());
+            List<Object> row =
+                    new ArrayList<>(
+                            List.of(
+                                    String.join(
+                                                    " ",
+                                                    List.of(
+                                                            text(user.getLastName()),
+                                                            text(user.getFirstName()),
+                                                            text(user.getMiddleName())))
+                                            .trim(),
+                                    text(user.getLogin()),
+                                    rolesLabel,
+                                    groupLabel,
+                                    text(user.getEmployeeNumber()),
+                                    user.getTelegramId() == null ? "Не привязан" : "Привязан"));
+            if (full) row.add(text(user.getTelegramId()));
+            rows.add(row);
+        }
+        List<String> columns =
+                new ArrayList<>(
+                        List.of(
+                                "ФИО",
+                                "Логин",
+                                "Роли и статусы",
+                                "Группа",
+                                "Табельный номер",
+                                "Привязка Telegram"));
+        if (full) columns.add("Telegram ID");
         var table =
-                snapshot.execute(
-                        transaction -> {
-                            var page =
-                                    users.listUsers(
-                                            query.search(),
-                                            query.role(),
-                                            query.status(),
-                                            query.roleStatus(),
-                                            PageRequest.of(0, MAX_ROWS + 1, sort));
-                            requireSize(page.getTotalElements());
-                            var roles =
-                                    grants.findByUserIds(
-                                            page.getContent().stream().map(User::getId).toList());
-                            List<List<Object>> rows = new ArrayList<>();
-                            for (User user : page.getContent()) {
-                                var userRoles = roles.getOrDefault(user.getId(), List.of());
-                                String rolesLabel =
-                                        userRoles.isEmpty()
-                                                ? user.getRole() + ": " + user.getStatus()
-                                                : String.join(
-                                                        "; ",
-                                                        userRoles.stream()
-                                                                .map(
-                                                                        grant ->
-                                                                                grant.role()
-                                                                                        + ": "
-                                                                                        + grant
-                                                                                                .status())
-                                                                .toList());
-                                String groupLabel =
-                                        String.join(
-                                                "; ",
-                                                userRoles.stream()
-                                                        .filter(grant -> grant.groupId() != null)
-                                                        .map(
-                                                                grant ->
-                                                                        grant.groupName() == null
-                                                                                ? grant.groupId()
-                                                                                        .toString()
-                                                                                : grant.groupName())
-                                                        .distinct()
-                                                        .toList());
-                                List<Object> row =
-                                        new ArrayList<>(
-                                                List.of(
-                                                        String.join(
-                                                                        " ",
-                                                                        List.of(
-                                                                                text(
-                                                                                        user
-                                                                                                .getLastName()),
-                                                                                text(
-                                                                                        user
-                                                                                                .getFirstName()),
-                                                                                text(
-                                                                                        user
-                                                                                                .getMiddleName())))
-                                                                .trim(),
-                                                        text(user.getLogin()),
-                                                        rolesLabel,
-                                                        groupLabel,
-                                                        text(user.getEmployeeNumber()),
-                                                        user.getTelegramId() == null
-                                                                ? "Не привязан"
-                                                                : "Привязан"));
-                                if (full) row.add(text(user.getTelegramId()));
-                                rows.add(row);
-                            }
-                            List<String> columns =
-                                    new ArrayList<>(
-                                            List.of(
-                                                    "ФИО",
-                                                    "Логин",
-                                                    "Роли и статусы",
-                                                    "Группа",
-                                                    "Табельный номер",
-                                                    "Привязка Telegram"));
-                            if (full) columns.add("Telegram ID");
-                            return new RegistryTableRenderer.Table(
-                                    "Реестр пользователей",
-                                    List.of(
-                                            "Поиск: " + text(query.search()),
-                                            "Роль: " + text(query.role()),
-                                            "Статус: " + text(query.status()),
-                                            "Статус роли: " + text(query.roleStatus()),
-                                            "Порядок: " + sort,
-                                            "Количество строк: " + rows.size(),
-                                            "Сформировано: " + Instant.now()),
-                                    columns,
-                                    rows);
-                        });
+                new RegistryTableRenderer.Table(
+                        "Реестр пользователей",
+                        List.of(
+                                "Поиск: " + text(query.search()),
+                                "Роль: " + text(query.role()),
+                                "Статус: " + text(query.status()),
+                                "Статус роли: " + text(query.roleStatus()),
+                                "Порядок: " + sort,
+                                "Количество строк: " + rows.size(),
+                                "Сформировано: " + Instant.now()),
+                        columns,
+                        rows);
         Download file = render("users", table, format);
         access.require("USERS_VIEW");
         if (full && !access.current().full())
@@ -299,11 +283,11 @@ public class AdminRegistryExportService {
         var claims = context.getClaims();
         var rows =
                 jdbc.query(
-                        "SELECT identity->'report'->? AS selector FROM academic_export_jobs"
-                                + " WHERE user_id=? AND identity->'actor'->>'rolesVersion'=?"
-                                + " AND session_id=? AND identity->'actor'->>'sessionVersion'=?"
-                                + " AND job_id=? AND lease_id=? AND identity->'report'->>'kind'=?"
-                                + " AND state='preparing' AND lease_until>NOW() AND expires_at>NOW()",
+                        "SELECT identity->'report'->? AS selector FROM academic_export_jobs WHERE"
+                            + " user_id=? AND identity->'actor'->>'rolesVersion'=? AND session_id=?"
+                            + " AND identity->'actor'->>'sessionVersion'=? AND job_id=? AND"
+                            + " lease_id=? AND identity->'report'->>'kind'=? AND state='preparing'"
+                            + " AND lease_until>NOW() AND expires_at>NOW()",
                         (rs, n) -> rs.getString("selector"),
                         selector,
                         claims.userId(),

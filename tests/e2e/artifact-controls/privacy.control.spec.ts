@@ -717,6 +717,17 @@ test('successful sensitive step metadata and worker output are not emitted', asy
     ['GET', '/api/academic/semesters/123', 'DATASET_SEMESTER_READ_HTTP'],
     ['GET', '/api/academic/semesters/123/delete-preview', 'DATASET_SEMESTER_DELETE_PREVIEW_HTTP'],
     ['GET', `/api/report-download/${'A'.repeat(43)}`, 'DATASET_REPORT_DOWNLOAD_HTTP'],
+    ['POST', '/api/auth/export-jobs', 'DATASET_EXPORT_JOB_CREATE_HTTP'],
+    [
+      'GET',
+      '/api/auth/export-jobs/12345678-abcd-abcd-abcd-123456789abc',
+      'DATASET_EXPORT_JOB_STATUS_HTTP',
+    ],
+    [
+      'POST',
+      '/api/auth/export-jobs/12345678-abcd-abcd-abcd-123456789abc/ticket',
+      'DATASET_EXPORT_JOB_TICKET_HTTP',
+    ],
     ['POST', '/api/academic/semesters/123/archive', 'DATASET_SEMESTER_ARCHIVE_HTTP'],
     ['POST', '/api/academic/semesters/123/restore', 'DATASET_SEMESTER_RESTORE_HTTP'],
     ['GET', '/api/academic/semesters/123/archive/status', 'DATASET_SEMESTER_ARCHIVE_STATUS_HTTP'],
@@ -762,6 +773,23 @@ test('successful sensitive step metadata and worker output are not emitted', asy
       });
       expect(failure.message.includes(marker)).toBe(false);
     }
+  }
+  for (const [method, path] of [
+    ['GET', '/api/auth/export-jobs'],
+    ['POST', '/api/auth/export-jobs/12345678-abcd-abcd-abcd-123456789abc'],
+    ['GET', '/api/auth/export-jobs/12345678-abcd-abcd-abcd-123456789abc/ticket'],
+    ['GET', '/api/auth/export-jobs/12345678-ABCD-abcd-abcd-123456789abc'],
+    ['GET', '/api/auth/export-jobs/12345678-abcd-abcd-abcd-123456789ab'],
+    ['POST', '/api/auth/export-jobs/12345678-abcd-abcd-abcd-123456789abc/ticket/'],
+    ['POST', '/api/auth/export-jobs/12345678-abcd-abcd-abcd-123456789abc/ticket/extra'],
+  ]) {
+    const failure = datasetHttpFailure(method, path, 503);
+    expect(classifySafeFailure(failure)).toEqual({
+      stage: 'UNKNOWN',
+      cause: 'UNKNOWN',
+      httpStatus: 0,
+    });
+    expect(/12345678|abcd|\/api\//.test(failure.message)).toBe(false);
   }
   for (const path of [
     '/api/academic/semesters?page=5&size=200&sort=id,asc',

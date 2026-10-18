@@ -17,7 +17,9 @@ import ru.rutcampustrack.academic.security.RequestContext;
 import java.util.List;
 import java.util.UUID;
 
-/** Generation is bound to one owned durable job; Academic commits the immutable export audit fact. */
+/**
+ * Generation is bound to one owned durable job; Academic commits the immutable export audit fact.
+ */
 @Service
 public class AdminAttendanceExportService {
     private final AdminAttendanceReportService reports;
@@ -46,7 +48,7 @@ public class AdminAttendanceExportService {
     }
 
     public List<FormatOption> formats() {
-        access.require("DASHBOARD_VIEW");
+        reports.requireCurrentAccess();
         return List.of(
                 new FormatOption("html", "HTML", "text/html", "html"),
                 new FormatOption("pdf", "PDF", "application/pdf", "pdf"),
@@ -64,7 +66,7 @@ public class AdminAttendanceExportService {
     }
 
     public Download generate(Export query, UUID jobId, UUID leaseId) {
-        access.require("DASHBOARD_VIEW");
+        reports.requireCurrentAccess();
         requireJob(query, jobId, leaseId);
         var report =
                 reports.full(query.semesterId(), query.search(), query.sort(), query.direction());
@@ -119,7 +121,7 @@ public class AdminAttendanceExportService {
             throw new ResponseStatusException(
                     HttpStatus.PAYLOAD_TOO_LARGE, "Файл превышает допустимый размер");
         // Recheck both the live capability and exact lease after potentially slow rendering.
-        access.require("DASHBOARD_VIEW");
+        reports.requireCurrentAccess();
         requireJob(query, jobId, leaseId);
         var format =
                 formats().stream()
@@ -140,11 +142,11 @@ public class AdminAttendanceExportService {
         var claims = context.getClaims();
         var rows =
                 jdbc.query(
-                        "SELECT identity->'report'->? AS selector FROM academic_export_jobs"
-                                + " WHERE user_id=? AND identity->'actor'->>'rolesVersion'=?"
-                                + " AND session_id=? AND identity->'actor'->>'sessionVersion'=?"
-                                + " AND job_id=? AND lease_id=? AND identity->'report'->>'kind'=?"
-                                + " AND state='preparing' AND lease_until>NOW() AND expires_at>NOW()",
+                        "SELECT identity->'report'->? AS selector FROM academic_export_jobs WHERE"
+                            + " user_id=? AND identity->'actor'->>'rolesVersion'=? AND session_id=?"
+                            + " AND identity->'actor'->>'sessionVersion'=? AND job_id=? AND"
+                            + " lease_id=? AND identity->'report'->>'kind'=? AND state='preparing'"
+                            + " AND lease_until>NOW() AND expires_at>NOW()",
                         (rs, n) -> rs.getString("selector"),
                         "adminGroupAttendance",
                         claims.userId(),

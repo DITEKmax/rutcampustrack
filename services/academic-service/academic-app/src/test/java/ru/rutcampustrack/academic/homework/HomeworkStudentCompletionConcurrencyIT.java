@@ -92,8 +92,8 @@ class HomeworkStudentCompletionConcurrencyIT extends AbstractAcademicIntegration
         semesterId = identityFixture.canonical().semesterId();
         var administrator =
                 identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
-        studentId = insertStudent("Студент А", groupId, administrator);
-        otherStudentId = insertStudent("Студент Б", groupId, administrator);
+        studentId = insertStudent("Студент А", groupId, 610000006101L, administrator);
+        otherStudentId = insertStudent("Студент Б", groupId, 610000006102L, administrator);
         student = identityFixture.select(studentId, AuthRole.STUDENT);
         subjectId =
                 jdbc.queryForObject(
@@ -397,11 +397,18 @@ class HomeworkStudentCompletionConcurrencyIT extends AbstractAcademicIntegration
         return student.claims();
     }
 
-    private long insertStudent(String firstName, long group, SelectedActor administrator) {
+    private long insertStudent(
+            String firstName, long group, long telegramId, SelectedActor administrator) {
         return identityFixture
                 .seedUser(
                         new CreateUserRequest(
-                                "HomeworkDb", firstName, null, UserRole.STUDENT, group, null, null),
+                                "HomeworkDb",
+                                firstName,
+                                null,
+                                UserRole.STUDENT,
+                                group,
+                                null,
+                                telegramId),
                         administrator)
                 .userId();
     }

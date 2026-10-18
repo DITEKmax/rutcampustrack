@@ -38,10 +38,18 @@ def arguments(root):
 
 
 def synthetic_inventory():
+    postgres = {
+        label: {
+            "schema": "", "tables": [], "sequences": [],
+            "access": {
+                "format": 1, "unsupported": False,
+                "objects": [{"kind": "DATABASE", "name": label + "_db", "owner": "rct_user", "acl": None}],
+            },
+        }
+        for label in ("academic", "auth", "schedule")
+    }
     return {
-        "academic": {"schema": "", "tables": [], "sequences": []},
-        "auth": {"schema": "", "tables": [], "sequences": []},
-        "schedule": {"schema": "", "tables": [], "sequences": []},
+        **postgres,
         "mongo": {"attendance_db": {}, "notification_db": {}},
         "files": [],
     }
@@ -58,7 +66,7 @@ def make_bundle(root):
     r.write_json(
         bundle / "manifest.json",
         {
-            "format": 2,
+            "format": r.BUNDLE_FORMAT,
             "files_mode": "database-only",
             "sha256": {name: r.digest(bundle / name) for name in sorted(r.PAYLOADS)},
         },

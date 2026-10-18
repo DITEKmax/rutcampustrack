@@ -285,6 +285,15 @@ const datasetHttpOperations = {
     method: 'GET',
     path: /^\/api\/report-download\/[A-Za-z0-9_-]{43}$/,
   },
+  DATASET_EXPORT_JOB_CREATE_HTTP: { method: 'POST', path: /^\/api\/auth\/export-jobs$/ },
+  DATASET_EXPORT_JOB_STATUS_HTTP: {
+    method: 'GET',
+    path: /^\/api\/auth\/export-jobs\/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/,
+  },
+  DATASET_EXPORT_JOB_TICKET_HTTP: {
+    method: 'POST',
+    path: /^\/api\/auth\/export-jobs\/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\/ticket$/,
+  },
   DATASET_SEMESTER_ARCHIVE_HTTP: {
     method: 'POST',
     path: /^\/api\/academic\/semesters\/[1-9][0-9]{0,18}\/archive$/,

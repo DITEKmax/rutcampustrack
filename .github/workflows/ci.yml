@@ -5255,6 +5255,27 @@ jobs:
           stage = 'source'
           application_failure = {'action': 'UNKNOWN', 'reason': 'UNKNOWN',
                                  'errorClass': 'UNKNOWN', 'errno': 'UNKNOWN', 'exitStatus': 'UNKNOWN'}
+          backup_failure = {'action': 'UNKNOWN', 'hint': 'UNKNOWN',
+                            'errorClass': 'UNKNOWN', 'exitStatus': 'UNKNOWN'}
+
+          def retain_backup_failure(error=None, *, exit_status=None, stderr=None):
+              if stage != 'backup':
+                  return
+              if error is not None:
+                  name = type(error).__name__
+                  backup_failure['errorClass'] = name if name in {
+                      'RuntimeError', 'TimeoutExpired', 'FileNotFoundError', 'PermissionError',
+                      'OSError', 'JSONDecodeError', 'ValueError', 'KeyError', 'TypeError',
+                  } else 'UNKNOWN'
+              if type(exit_status) is int and -255 <= exit_status <= 255:
+                  backup_failure['exitStatus'] = exit_status
+              if isinstance(stderr, bytes) and len(stderr) <= 65536:
+                  hints = re.findall(rb'(?m)^RECOVERY_FAILURE_HINT:([A-Z_]+)$', stderr)
+                  allowed = {b'GUARD', b'INPUT_CREDENTIAL', b'PG_QUERY', b'PG_SCHEMA', b'PG_DUMP',
+                             b'PG_RESTORE', b'MONGO_QUERY', b'MONGO_DUMP', b'MONGO_RESTORE',
+                             b'INSPECT', b'OTHER_TOOL'}
+                  if len(hints) == 1 and hints[0] in allowed:
+                      backup_failure['hint'] = hints[0].decode('ascii')
 
           def retain_application_failure(error=None, *, exit_status=None):
               if stage != 'application':
@@ -5435,14 +5456,17 @@ jobs:
                                           stderr=subprocess.PIPE, timeout=seconds)
               except subprocess.TimeoutExpired as error:
                   retain_application_failure(error)
+                  retain_backup_failure(error)
                   if verifier:
                       verify_failure(b'', timed_out=True)
                   raise
               except OSError as error:
                   retain_application_failure(error)
+                  retain_backup_failure(error)
                   raise
               if result.returncode:
                   retain_application_failure(exit_status=result.returncode)
+                  retain_backup_failure(exit_status=result.returncode, stderr=result.stderr)
                   if verifier:
                       verify_failure(result.stderr)
                   raise RuntimeError('Application recovery command failed')
@@ -5457,6 +5481,96 @@ jobs:
               if value['Config']['Labels'].get('com.docker.compose.project') != 'rct-e2e':
                   raise RuntimeError('Source container ownership mismatch')
               return value
+
+          def recovery_inputs(config, sources):
+              # Synthetic CI only. Resolve the same mounted DB secrets, never application tokens
+              # or a broad secret directory; no credential-bearing value becomes diagnostic output.
+              if (os.environ.get('GITHUB_ACTIONS') != 'true'
+                      or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
+                      or os.environ.get('RCT_E2E_SYNTHETIC_SEED') != 'true'):
+                  raise RuntimeError('Disposable recovery admission required')
+              pg = config['services']['postgres-academic']
+              environment = pg['environment']
+              if environment.get('POSTGRES_DB') != 'academic_db' or environment.get('POSTGRES_USER') != 'rct_user':
+                  raise RuntimeError('Unexpected recovery database bootstrap identity')
+              expected = {
+                  'e2e-pg-legacy-runtime-password': ('rct-runtime-password', 'pg-legacy-runtime-password'),
+                  'e2e-pg-migration-password': ('rct-migration-password', 'pg-migration-password'),
+                  'e2e-pg-monitor-password': ('rct-monitor-password', 'pg-monitor-password'),
+                  'e2e-pg-auth-runtime-password': ('rct-auth-runtime-password', 'pg-auth-runtime-password'),
+                  'e2e-pg-academic-runtime-password': ('rct-academic-runtime-password', 'pg-academic-runtime-password'),
+                  'e2e-pg-auth-migration-password': ('rct-auth-migration-password', 'pg-auth-migration-password'),
+              }
+              bindings = pg.get('secrets', [])
+              if (len(bindings) != len(expected) or {item.get('source') for item in bindings} != set(expected)):
+                  raise RuntimeError('Unexpected recovery database secret bindings')
+              definitions, passwords = {}, {}
+              parent = root / 'tests/e2e/infra/certs/auth-secrets'
+              parent_info = parent.lstat()
+              if (not stat.S_ISDIR(parent_info.st_mode) or stat.S_ISLNK(parent_info.st_mode)
+                      or parent_info.st_uid != os.getuid() or stat.S_IMODE(parent_info.st_mode) != 0o700):
+                  raise RuntimeError('Unsafe owned recovery secret directory')
+              mounts = sources['postgres-academic']['Mounts']
+              for item in bindings:
+                  source = item['source']
+                  target_name, filename = expected[source]
+                  definition = config['secrets'][source]
+                  path = parent / filename
+                  if (item.get('target') != target_name or set(definition) - {'name', 'file'}
+                          or definition.get('file') != str(path)
+                          or len([mount for mount in mounts if mount.get('Type') == 'bind'
+                                  and mount.get('Source') == str(path) and mount.get('RW') is False
+                                  and mount.get('Destination') == '/run/secrets/' + target_name]) != 1):
+                      raise RuntimeError('Owned recovery secret mount changed')
+                  # Anchor every directory component; a linked ancestor must not redirect
+                  # an authorized synthetic secret read outside this pinned workspace.
+                  directory_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+                  parent_fd = os.open(root, directory_flags)
+                  try:
+                      for part in parent.relative_to(root).parts:
+                          next_fd = os.open(part, directory_flags, dir_fd=parent_fd)
+                          os.close(parent_fd)
+                          parent_fd = next_fd
+                      held = os.fstat(parent_fd)
+                      if (held.st_dev, held.st_ino) != (parent_info.st_dev, parent_info.st_ino):
+                          raise RuntimeError('Owned recovery secret directory changed')
+                      fd = os.open(filename, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
+                                   dir_fd=parent_fd)
+                  finally:
+                      os.close(parent_fd)
+                  with os.fdopen(fd, 'rb') as stream:
+                      before = os.fstat(stream.fileno())
+                      if (not stat.S_ISREG(before.st_mode) or before.st_uid != os.getuid()
+                              or before.st_nlink != 1 or stat.S_IMODE(before.st_mode) != 0o444
+                              or not 0 < before.st_size <= 256):
+                          raise RuntimeError('Unsafe owned recovery secret file')
+                      data = stream.read(257)
+                      after = os.fstat(stream.fileno())
+                      identity = lambda info: (info.st_dev, info.st_ino, info.st_size,
+                                               info.st_mtime_ns, info.st_ctime_ns)
+                      if (identity(before) != identity(after) or identity(before) != identity(path.lstat())
+                              or not re.fullmatch(b'[0-9a-f]{64}', data)):
+                          raise RuntimeError('Owned recovery secret changed')
+                  definitions[source] = definition
+                  passwords[source] = data.decode('ascii')
+              values = {
+                  'POSTGRES_ACADEMIC_MIGRATION_PASSWORD': passwords['e2e-pg-migration-password'],
+                  'POSTGRES_AUTH_MIGRATION_PASSWORD': passwords['e2e-pg-auth-migration-password'],
+                  'POSTGRES_SCHEDULE_PASSWORD': config['services']['postgres-schedule']['environment']['POSTGRES_PASSWORD'],
+                  'MONGO_ROOT_PASSWORD': config['services']['mongo-attendance']['environment']['MONGODB_ROOT_PASSWORD'],
+                  'POSTGRES_RECOVERY_ADMIN_USER': environment['POSTGRES_USER'],
+                  'POSTGRES_RECOVERY_ADMIN_PASSWORD': environment['POSTGRES_PASSWORD'],
+              }
+              if any(not isinstance(value, str) or not 0 < len(value) <= 512
+                     or any(char in value for char in ('\n', '\r', '\0')) for value in values.values()):
+                  raise RuntimeError('Unsupported synthetic recovery credential encoding')
+              path = work / 'recovery-input.private.env'
+              fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+              with os.fdopen(fd, 'w') as stream:
+                  # Only recovery.credentials consumes this file; it strips the outer quotes
+                  # literally. No shell/Compose expansion or escape transformation occurs.
+                  stream.write(''.join(key + '="' + value + '"\n' for key, value in values.items()))
+              return path, definitions
 
           def lifecycle_diagnostic():
               # Only the failed seed's own target is queried; no log/body/identifier is published.
@@ -5566,14 +5680,36 @@ jobs:
               network_info = json.loads(call(['docker', 'network', 'inspect', network]))[0]
               if network_info['Labels'].get('com.docker.compose.project') != 'rct-e2e':
                   raise RuntimeError('Source network ownership mismatch')
+              recovery_env, db_secrets = recovery_inputs(config, sources)
               db_services = ('postgres-academic', 'postgres-schedule', 'mongo-attendance')
-              target = {'services': {}, 'networks': {'private_net': {'external': True, 'name': network}}}
+              target = {'services': {}, 'secrets': db_secrets,
+                        'networks': {'private_net': {'external': True, 'name': network}}}
+              init_mounts = {
+                  'postgres-academic': {str(root / 'infra/postgres/init-roles.sh'): '/docker-entrypoint-initdb.d/10-rct-roles.sh'},
+                  'postgres-schedule': {},
+                  'mongo-attendance': {str(root / 'infra/mongo/init-mongo.js'): '/docker-entrypoint-initdb.d/init-mongo.js'},
+              }
               for service in db_services:
                   original = config['services'][service]
                   target['services'][service] = {
-                      key: original[key] for key in ('image', 'environment', 'healthcheck', 'volumes')
+                      key: original[key] for key in ('image', 'environment', 'healthcheck')
                       if key in original
                   }
+                  mounts = original.get('volumes', [])
+                  expected_mounts = init_mounts[service]
+                  if len(mounts) != len(expected_mounts) or any(
+                          item.get('type') != 'bind' or item.get('read_only') is not True
+                          or expected_mounts.get(item.get('source')) != item.get('target')
+                          or len([mount for mount in sources[service]['Mounts']
+                                  if mount.get('Type') == 'bind' and mount.get('RW') is False
+                                  and mount.get('Source') == item['source']
+                                  and mount.get('Destination') == item['target']]) != 1
+                          for item in mounts):
+                      raise RuntimeError('Only pinned read-only database init mounts may enter fresh targets')
+                  if mounts:
+                      target['services'][service]['volumes'] = mounts
+                  if service == 'postgres-academic':
+                      target['services'][service]['secrets'] = original['secrets']
                   target['services'][service].update(
                       labels={'io.rutcampustrack.recovery': 'disposable'},
                       networks={'private_net': {'aliases': [service]}})
@@ -5588,14 +5724,18 @@ jobs:
               api('pending')
               stage = 'backup'
               writers = [name for name in ids if name not in (*db_services, 'rabbitmq', 'redis')]
+              backup_failure['action'] = 'WRITERS_STOP'
               call([*compose, 'stop', '--timeout', '30', *writers])
+              backup_failure['action'] = 'WRITER_INSPECT'
               if any(inspect(ids[name])['State']['Running'] for name in writers):
                   raise RuntimeError('Application writers remain active')
-              db_args = ['--env-file', str(env_file), '--academic-container', ids['postgres-academic'],
+              db_args = ['--env-file', str(recovery_env), '--academic-container', ids['postgres-academic'],
                          '--schedule-container', ids['postgres-schedule'], '--mongo-container', ids['mongo-attendance']]
               bundle = work / 'bundle'
+              backup_failure['action'] = 'BACKUP_SCRIPT'
               call(['python3', 'scripts/recovery.py', 'backup', *db_args,
                     '--no-files', '--quiesced', '--output', str(bundle)])
+              backup_failure['action'] = 'TRANSFER_CAPTURE'
               pending = json.loads((work / 'pending.json').read_text())
               baseline = work / 'capture.private.json'
               call(['python3', 'scripts/test-application-recovery.py', 'capture', '--bundle', str(bundle),
@@ -5618,7 +5758,7 @@ jobs:
                           or labels.get('io.rutcampustrack.recovery') != 'disposable'
                           or restored_info['Image'] != sources[name]['Image']):
                       raise RuntimeError('Fresh target identity mismatch')
-              target_args = ['--env-file', str(env_file), '--academic-container', target_ids['postgres-academic'],
+              target_args = ['--env-file', str(recovery_env), '--academic-container', target_ids['postgres-academic'],
                              '--schedule-container', target_ids['postgres-schedule'], '--mongo-container', target_ids['mongo-attendance']]
               call(['python3', 'scripts/recovery.py', 'restore', *target_args,
                     '--no-files', '--bundle', str(bundle), '--target-project', project])
@@ -5659,6 +5799,18 @@ jobs:
               api('attachment')
               print('PASS real application recovery: fresh inventory, historical attachment and exact transfer replay')
           except Exception as error:
+              if stage == 'backup':
+                  retain_backup_failure(error)
+                  receipt = {'stage': 'BACKUP', **backup_failure}
+                  try:
+                      fd = os.open(work / 'artifacts' / 'admit' / 'backup-failure.safe.json',
+                                   os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+                      with os.fdopen(fd, 'w') as stream:
+                          json.dump(receipt, stream, sort_keys=True)
+                          stream.write('\n')
+                  except OSError:
+                      print('Backup failure receipt unavailable; original failure retained')
+                  print(json.dumps(receipt, sort_keys=True))
               if stage == 'source' and (work / 'lifecycle-input.private.json').exists():
                   try:
                       lifecycle_diagnostic()
@@ -5698,6 +5850,7 @@ jobs:
             ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/seed/lifecycle-server.safe.json
             ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/admit/verification.safe.json
             ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/admit/application-failure.safe.json
+            ${{ env.RCT_APP_RECOVERY_RUN }}/artifacts/admit/backup-failure.safe.json
           if-no-files-found: warn
           retention-days: 7
 

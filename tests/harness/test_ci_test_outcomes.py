@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -866,7 +867,7 @@ class SafeCases {
             ):
                 COLLECTOR.metadata(self.root, service, task, environment)
 
-    def test_bootstrap_cli_collects_real_source_method_without_auto_acceptance(self) -> None:
+    def test_bootstrap_cli_main_collects_real_source_method_without_auto_acceptance(self) -> None:
         source_path = "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/bootstrap/InitialAdministratorBootstrapIT.java"
         classname = "ru.rutcampustrack.academic.bootstrap.InitialAdministratorBootstrapIT"
         method = "operatorCliLoadsPrivateConfigAndCommitsFirstAdministrator"
@@ -880,7 +881,20 @@ class SafeCases {
         self.results.mkdir(parents=True)
         self.environment.update(RCT_CI_JOB_ID="e2e-auth", RCT_BOOTSTRAP_CLI_ACCEPTANCE="true")
         self.xml(f'<testcase classname="{classname}" name="{method}()"/>', tests=1)
-        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        script = self.root / "scripts/collect-ci-test-outcomes.py"
+        script.parent.mkdir()
+        script.write_bytes(SCRIPT.read_bytes())
+        environment = {**self.environment, "PATH": os.environ.get("PATH", os.defpath), "RCT_PRIVATE_CONTROL": MARKER}
+        result = subprocess.run(
+            [sys.executable, str(script), "--service", "academic-service", "--task", "integrationTest"],
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        output = self.root / "build/ci-test-outcomes/academic-service/integrationTest/safe-outcomes.json"
+        report = json.loads(output.read_text())
+        self.assertEqual(json.loads(result.stdout), {"collection": "RESULTS", "acceptance": "NOT_ASSESSED"})
         self.assertEqual(report["metadata"]["job"], "e2e-auth")
         self.assertEqual(report["acceptance"], "NOT_ASSESSED")
         self.assertEqual(report["collection"], "RESULTS")
@@ -893,6 +907,34 @@ class SafeCases {
         )
         self.assertEqual(case["sourceSha256"], COLLECTOR.hashlib.sha256(source.read_bytes()).hexdigest())
         self.assertNotIn(MARKER, json.dumps(report))
+        self.assertNotIn("RCT_BOOTSTRAP_CLI_ACCEPTANCE", json.dumps(report))
+        self.assertNotIn(MARKER, result.stdout + result.stderr)
+        for service, task, flag in (
+            ("academic-service", "integrationTest", None),
+            ("academic-service", "integrationTest", "false"),
+            ("academic-service", "test", "true"),
+            ("auth-service", "integrationTest", "true"),
+        ):
+            with self.subTest(service=service, task=task, flag=flag):
+                rejected_environment = {
+                    key: value for key, value in environment.items() if key != "RCT_BOOTSTRAP_CLI_ACCEPTANCE"
+                }
+                if flag is not None:
+                    rejected_environment["RCT_BOOTSTRAP_CLI_ACCEPTANCE"] = flag
+                rejected = subprocess.run(
+                    [sys.executable, str(script), "--service", service, "--task", task],
+                    env=rejected_environment,
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                artifact = self.root / "build/ci-test-outcomes" / service / task / "safe-outcomes.json"
+                expected = {"schemaVersion": 1, "collection": "COLLECTION_ERROR", "acceptance": "NOT_ASSESSED"}
+                self.assertEqual(json.loads(artifact.read_text()), expected)
+                self.assertEqual(
+                    json.loads(rejected.stdout), {"collection": "COLLECTION_ERROR", "acceptance": "NOT_ASSESSED"}
+                )
+                self.assertNotIn(MARKER, rejected.stdout + rejected.stderr)
 
 
 if __name__ == "__main__":

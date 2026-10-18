@@ -7,8 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -16,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.mock.web.MockMultipartFile;
@@ -25,14 +24,17 @@ import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequ
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 import ru.rutcampustrack.academic.admin.AcademicAdminAccess;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperations;
+import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.security.RoleCheckAspect;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
+import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.shared.security.admin.AdminAccessJdbcAuthority;
 
 import java.awt.image.BufferedImage;
@@ -46,38 +48,24 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.UUID;
 import java.util.zip.CRC32;
 
 import javax.imageio.ImageIO;
+import javax.sql.DataSource;
 
 /** Real PG BYTEA and MVC/AOP proof; no browser or signed JWT admission is inferred. */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CampusMapFileBoundaryIT {
-    private final PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:16-alpine")
-                    .withLabel("rct.package", "file-boundaries-20261011");
+class CampusMapFileBoundaryIT extends AbstractAcademicIntegrationTest {
+    @Autowired private DataSource source;
+    @Autowired private AcademicUserIdentityOperations identityOperations;
     private JdbcTemplate jdbc;
     private CampusMapAdminService admin;
     private RequestContext context;
     private MockMvc mvc;
-    private UUID session;
-
-    @BeforeAll
-    void start() {
-        postgres.start();
-    }
-
-    @AfterAll
-    void stop() {
-        postgres.stop();
-    }
+    private AcademicIdentityIntegrationFixture.SelectedActor currentSelectedAuth;
 
     @BeforeEach
     void schemaAndLiveAuthority() {
-        var source =
-                ru.rutcampustrack.academic.migration.OwnedAuthPrincipals.freshPublicDatabase(
-                        postgres);
         jdbc = new JdbcTemplate(source);
         var transaction = new TransactionInterceptor();
         transaction.setTransactionManager(new DataSourceTransactionManager(source));
@@ -88,32 +76,7 @@ class CampusMapFileBoundaryIT {
         serviceProxy.addAdvice(transaction);
         admin = (CampusMapAdminService) serviceProxy.getProxy();
 
-        jdbc.update(
-                "INSERT INTO users(id,login,last_name,first_name) VALUES"
-                        + " (700,'files-admin','Synthetic','Admin')");
-        jdbc.update(
-                "INSERT INTO admin_access_profiles(user_id,assigned,mode,version) VALUES"
-                        + " (700,TRUE,'FULL',1)");
-        Long grant =
-                jdbc.queryForObject(
-                        """
-                        INSERT INTO user_role_grants(user_id,role,status,created_at,updated_at)
-                        VALUES (700,'admin','active',NOW(),NOW()) RETURNING id
-                        """,
-                        Long.class);
-        session = UUID.randomUUID();
-        jdbc.update(
-                """
-INSERT INTO auth_sessions(sid,user_id,active_role_grant_id,session_version,current_refresh_jti,
-    refresh_expires_at,created_at,last_seen_at,auth_method)
-VALUES (?,700,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
-""",
-                session,
-                grant,
-                UUID.randomUUID());
         context = new RequestContext();
-        context.setUserId(700L);
-        context.setRole(UserRole.ADMIN);
         refreshClaims();
         var authority = new AcademicAdminAccess(new AdminAccessJdbcAuthority(jdbc), context, jdbc);
         var aspect = new RoleCheckAspect(context);
@@ -464,10 +427,7 @@ VALUES (?,700,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
         mvc.perform(get(assetUrl(first, "png", first.png().id())))
                 .andExpect(status().isOk())
                 .andExpect(content().bytes(png()));
-        jdbc.update(
-                "UPDATE admin_access_profiles SET"
-                        + " mode='LIMITED',permissions=ARRAY['USERS_VIEW'],version=version+1 WHERE"
-                        + " user_id=700");
+        restrictMapGrant();
         refreshClaims(); // Fresh selected session remains live, but it no longer has
         // CAMPUS_MAP_MANAGE.
         byte[] denied =
@@ -543,18 +503,28 @@ VALUES (?,700,?,1,?,NOW()+INTERVAL '1 day',NOW(),NOW(),'PASSWORD')
     }
 
     private void refreshClaims() {
-        context.setClaims(
-                new InternalJwtClaims(
-                        700,
-                        session,
-                        1,
-                        jdbc.queryForObject(
-                                "SELECT roles_version FROM users WHERE id=700", Long.class),
-                        "ADMIN",
-                        "ACTIVE",
-                        null,
-                        false,
-                        false));
+        currentSelectedAuth =
+                identityFixture.select(identityFixture.canonical().adminId(), AuthRole.ADMIN);
+        context.setUserId(currentSelectedAuth.userId());
+        context.setRole(UserRole.ADMIN);
+        context.setClaims(currentSelectedAuth.claims());
+        context.setAdmittedAdminProfile(currentSelectedAuth.profile());
+    }
+
+    private void restrictMapGrant() {
+        long other = identityFixture.canonical().teacherId();
+        try (var ignored = identityFixture.request(currentSelectedAuth)) {
+            identityOperations.adminAccess(
+                    other, new AdminAccessInput("FULL", List.of()), 0L, false);
+        }
+        var full = identityFixture.select(other, AuthRole.ADMIN);
+        try (var ignored = identityFixture.request(full)) {
+            identityOperations.adminAccess(
+                    currentSelectedAuth.userId(),
+                    new AdminAccessInput("LIMITED", List.of("USERS_VIEW")),
+                    currentSelectedAuth.profile().version(),
+                    false);
+        }
     }
 
     private static MockMultipartHttpServletRequestBuilder upload() {

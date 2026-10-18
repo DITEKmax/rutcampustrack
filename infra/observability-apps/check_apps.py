@@ -93,11 +93,13 @@ def closed_profile_sdk(text):
     text = text[:64 * 1024]
     prefix = r"(?m)^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3} "
     hints = set()
+    upload_statuses = set()
     if re.search(prefix + r"\[ERROR\] Error starting profiler(?: |$)", text):
         hints.add("NATIVE_START")
     for match in re.finditer(prefix + r"\[ERROR\] Error uploading snapshot: ", text):
         status = re.compile(r"([0-9]{3})(?: |$)", re.MULTILINE).match(text, match.end())
         code = int(status[1]) if status else None
+        upload_statuses.add(code if code is not None and 100 <= code <= 599 else "UNKNOWN")
         hints.add({400: "UPLOAD_400", 413: "UPLOAD_413", 429: "UPLOAD_429"}.get(code,
                   "UPLOAD_5XX" if code is not None and 500 <= code <= 599 else
                   "UPLOAD_HTTP_OTHER" if code is not None else "UPLOAD_IO"))
@@ -106,7 +108,8 @@ def closed_profile_sdk(text):
     hint = next(iter(hints)) if len(hints) == 1 else "UNKNOWN"
     if "NATIVE_START" in hints and started:
         hint = "UNKNOWN"
-    return {"reported_hint": hint, "start_reported": started, "stop_reported": stopped}
+    return {"reported_hint": hint, "start_reported": started, "stop_reported": stopped,
+            "reported_upload_http_status": next(iter(upload_statuses)) if len(upload_statuses) == 1 else "UNKNOWN"}
 
 
 def closed_flamegraph_response(code, body):
